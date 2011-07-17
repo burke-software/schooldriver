@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% load i18n grp_tags %}
+
+{% block title %}{{ title }} | {% trans 'Django site admin' %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<script type="text/javascript" src="/static/js/jquery.js"></script>
+<script type="text/javascript" src="/static/js/jquery.autocomplete.js"></script> 
+<script type="text/javascript" src="/static/js/ajax_select.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery.autocomplete.css" /> 
+<link rel="stylesheet" type="text/css" href="/static/css/iconic.css" />
+
+<link rel="stylesheet" href="/static/css/print.css" type="text/css" media="print" />
+
+<style type="text/css">
+    td, th {
+        padding: 7px 7px 6px;
+    }
+    .span-6 {
+        min-width: 310px;
+    }
+    div#breadcrumbs {
+        padding: 2px 4px 2px 9px;
+    }
+    h1 {
+        margin: 8px 0 10px;
+    }
+    fieldset {
+        border: solid 1px;
+    }
+    .modal {
+        background-color:#fff;
+        display:none;
+        width:550px;
+        padding:15px;
+        text-align:center;
+        border:2px solid #333;
+    
+        opacity:0.9;
+        border-radius:6px;
+        -moz-border-radius:6px;
+        -webkit-border-radius:6px;
+        box-shadow: 0 0 100px #ddd;
+        -moz-box-shadow: 0 0 100px #ddd;
+        -webkit-box-shadow: 0 0 100px #ddd;
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+    <h1 id="site-name">{% trans 'Django administration' %}</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

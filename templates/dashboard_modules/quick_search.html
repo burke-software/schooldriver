@@ -1,0 +1,13 @@
+{% extends "admin_tools/dashboard/module.html" %}
+{% block module_content %}
+<ul class="{{ module.layout }}">
+        <form action="/sis/view_student/" method="post">
+	    <table>
+		<tr>
+		    <td>{{ module.form }}</td>
+		    <td><input type="submit" value="Search" /></td>
+		</tr>
+	    </table>
+	</form>
+</ul>
+{% endblock %}

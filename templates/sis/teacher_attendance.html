@@ -1,0 +1,77 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+    {% load adminmedia %}
+    {{ formset.media }}
+    
+    <style type="text/css">
+        th {
+            text-align: center;
+        }
+        td {
+            padding: 0px;
+            margin: 0px;
+        }
+        select[disabled] {
+            color: black;
+        }
+    </style> 
+    <script type="text/javascript"> 
+        $(document).ready(function() {
+            $('.student_select').attr('disabled', 'disabled');
+            
+            {% if readonly %}
+                $(".status").attr('disabled', 'disabled');
+            {% endif %}
+        })
+        
+        function set_to_present() {
+	    {% for i in number %}
+		$('#id_form-{{ i }}-status option:nth-child(2)').attr("selected", "selected");
+	    {% endfor %}
+        }
+    </script>
+{% endblock %}
+
+{% block content %}
+	<h2> Daily Attendance </h2>
+    <form method="post" action="" id="myform">
+       {{ formset.management_form }}
+       {% if not readonly %}
+        <a href="#" onclick="set_to_present()">Set all to Present</a>
+       {% else %}
+        Attendance already submitted. Please contant an administrator if you need to change it 
+       {% endif %}
+       {{ formset.non_form_errors }}
+	   {{ msg|safe }}
+       <div class='table'>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Student</th>
+                        <th>Attendance</th>
+                    </tr>
+                    {% for form in formset.forms %}
+                    <tr>
+                        <td style="vertical-align:middle;" class="student"> {{ form.non_field_errors }} {{ form.student_display }} {{ form.student }} </td>
+                        <td> {{ form.status }} {{ form.status.errors }} {{ form.date }} </td>
+                        <td> {{ form.notes }} {{ form.notes.errors }} {{ form.enroll_note }}
+                        {% for hid in form.hidden_fields %} {{hid}}{% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not readonly %}
+            <input type="submit" onclick="$('.student_select').removeAttr('disabled');" value="Submit"/>    
+        {% endif %}
+        <span><br/>
+        Tip: You can enter attendance by just pressing A for Absent, P for Present, etc</span>
+    </form>
+    <script type="text/javascript">
+        document.getElementById("id_form-0-status" ).focus();
+    </script>
+{% endblock %}
+

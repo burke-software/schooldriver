@@ -1,0 +1,26 @@
+{% extends "grappelli/templates/admin/change_list.html" %}
+
+<!-- LOADING -->
+{% load adminmedia admin_list i18n grp_tags %}
+
+<!-- OBJECT-TOOLS -->
+{% block object-tools %}
+    {% if has_add_permission %}
+        <ul class="tools">
+            <li>
+                <a href="/sis/disc/view"> Lookup Student </a>
+            </li>
+            <li>
+            <a href="/sis/disc/list/doc"> Today's List </a>
+          </li>
+          <li>
+            <a href="/sis/disc/stats"> Reports </a>
+          </li>
+            <li>
+                <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="add-handler focus">
+                    {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
+                </a>
+            </li>
+        </ul>
+    {% endif %}
+{% endblock %}

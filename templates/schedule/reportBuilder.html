@@ -1,0 +1,65 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+    <style type="text/css">
+    td.pad {
+	    padding: 3px;
+    }
+    .preport {
+	cursor: pointer;
+	    cursor: hand;
+	background-color: #F0F0F0;
+	    text-decoration: underline;
+	width: 100%;
+	text-align: left;
+	padding: 2px;
+    }
+    </style>
+{% endblock %}
+
+{% block extrahead %}
+    {% load adminmedia %}
+    
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+	<script type="text/javascript" src="/static/grappelli/js/core.js"></script>
+    <script type="text/javascript" src="/media/js/RelatedObjectLookups.js"></script>
+    <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% admin_media_prefix %}{% endfilter %}";</script>
+	{{ form.media }}
+    <script>
+    function toggle(title, details) {
+     if( document.getElementById(details).style.display=='none' ){
+       document.getElementById(details).style.display = '';
+       document.getElementById(title).style.backgroundColor = '#3B6C84';
+       document.getElementById(title).style.color = 'white';
+     }else{
+       document.getElementById(details).style.display = 'none';
+       document.getElementById(title).style.backgroundColor = '#EEEEEE';
+       document.getElementById(title).style.color = 'black';
+     }
+    }
+    </script>
+{% endblock %}
+
+{% block content %}
+    <h2> Report Builder </h2>
+    <form action="" method="post">
+	{{ form.errors }}
+	<fieldset style="padding:5px;">
+	    <legend>Pre-made Reports </legend>
+	    <table>
+		<tr>
+		    <td style="vertical-align: top;">
+			Thumbnails<br/>
+			<input class="preport" type="submit" name="thumbs_fresh" value="Freshman Thumbnails" /><br/>
+			<input class="preport" type="submit" name="thumbs_soph" value="Sophomore Thumbnails" /><br/>
+			<input class="preport" type="submit" name="thumbs_jun" value="Junior Thumbnails" /><br/>
+			<input class="preport" type="submit" name="thumbs_sen" value="Senior Thumbnails" />
+		    </td>
+		</tr>
+	    </table>
+	</fieldset>
+
+    </form>
+{% endblock %}
+

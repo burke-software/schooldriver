@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block css %}
+	textarea {
+		width:100%;
+		height:70px;
+	}
+	input[type=text] {
+		width:300px;
+	}
+{% endblock %}
+
+{% block content %}
+	<h1 style="text-align:center;"> Contract for {{ company }} </h1>
+	<br/>
+	<div class="contract">
+		Contract accepted. You may download a copy of it <a href="/work_study/company_contract_pdf/{{ contract.id }}">here</a>.
+	</div>
+{% endblock %}
+

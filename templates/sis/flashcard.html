@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+<script type="text/javascript">
+    function show() {
+        document.getElementById("name").style.display = ""
+        document.getElementById("show_name").style.display = "none"
+    }
+</script>
+<style type="text/css">
+ div#right-sidebar{
+	width: 20%;
+    float: right;
+ }
+ div#image{
+	width: 78%;
+	max-width: 800px;
+	float: left;
+ }
+</style>
+{% endblock %}
+
+{% block content %}
+	<h2> Student Photo Flash Cards </h2>
+		<div id="right-sidebar">
+			<br/><br/><br/>
+			View only:<br/>
+			<a href="/sis/flashcard/">All</a><br/>
+			{% for grade in grade_levels %}
+				<a href="/sis/flashcard/{{ grade.id }}">{{ grade.name }}</a><br/>
+			{% endfor %}
+			<br/><br/><br/><br/>
+			<form action="" method="post">
+				Search for {{ form }}<br/>
+				<input type="submit" value="Find picture"/>
+			</form>
+			<br/><br/><br/><br/>
+			<span id="name" style="display: none;"> {{ student_name }} </span>
+			<a onclick="show()" href="javascript:void(0)" id="show_name" >Show Name</a><br/>
+			<br/>
+			<a href="">Next Student</a>
+		</div>
+		<div id="image">
+			<img style="width: 100%;" src="{{ student_img }}"/>
+		</div>
+	</div>
+{% endblock %}
+

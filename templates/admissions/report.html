@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2> Admission Reports </h2>
+<form action="" method="post">
+    <fieldset class="module">
+	<div class="row">
+	    <legend>Pre-made Reports </legend>
+	    {{ report_form }}
+	    <input type="submit" name="process_statistics" value="Process Statistics (xls)"/>
+	    <input type="submit" name="applicants_to_students" value="Create students from applicants"/>
+	</div>
+    </fieldset>
+</form>
+
+
+<br/>
+{% endblock %}
+

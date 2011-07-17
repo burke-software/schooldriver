@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block nav %}
+	
+{% endblock %}
+
+{% block head %}
+	<script type="text/javascript" src="/static/js/jquery.js"/>
+
+	<script type="text/javascript" src="/static/js/jquery.dimensions.min.js"></script>
+	
+	<link rel="stylesheet" type="text/css" href="/static/css/ptTimeSelect/ui.core.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="/static/css/ptTimeSelect/ui.theme.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="/static/css/ptTimeSelect/jquery.ptTimeSelect.css" />
+	<script type="text/javascript" language="JavaScript" src="/static/js/jquery.ptTimeSelect.js"></script>
+	
+	{% load adminmedia %}
+	<script type="text/javascript" src="/admin/jsi18n/"></script>
+	<script type="text/javascript" src="/static/grappelli/js/core.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/grappelli/css/widgets.css" media="screen" />
+    <script type="text/javascript">
+		window.__admin_media_prefix__ = "{% filter escapejs %}{% admin_media_prefix %}{% endfilter %}";
+	</script>
+    {{ form.media }}
+    
+    <script language="JavaScript">
+		$(document).ready(
+			function () {
+				$('code').each(
+					function() {
+						eval($(this).html());
+					}
+				)
+			}
+		);
+	</script>
+    
+    <script type="text/javascript">
+        function check_time() {
+            lunch_out = document.timesheet_form.time_lunch.value;
+            lunch_in = document.timesheet_form.time_lunch_return.value;
+            if (lunch_out == "" && lunch_in == "") {
+                document.timesheet_form.time_lunch.value = "12:00 pm";
+                document.timesheet_form.time_lunch_return.value = "12:00 pm";
+            }
+            return check_date();
+        }
+        
+        function no_lunch() {
+            document.timesheet_form.time_lunch.value = "";
+            document.timesheet_form.time_lunch_return.value = "";
+        }
+        
+        function check_date() {
+			date = new Date(document.timesheet_form.date.value.replace('-', '/').replace('-', '/'));
+			if (date.getDay()%6==0) {
+				if (confirm('Warning: You have selected a weekend.')) {
+					return true;
+				} else {
+					return false;
+				} 
+			}
+			return true;
+		}
+    </script>
+{% endblock %}
+
+{% block css %}
+	span.hidden{
+		visibility:hidden;
+	}
+    
+    .spacer{
+        height: 10px;
+    }
+    
+	input.button {
+		background:url('/static/images/gradient_light.jpg') repeat-x 50% 50% #f8f8f8;
+		border-radius:10px;
+		color: #444;
+		padding: 2px; /* sliding doors padding */
+		font-size:1.1em;
+	}
+
+	input.button:active {
+		background-position: bottom right;
+		color: #000;
+		outline: none; /* hide dotted outline in Firefox */
+	}
+	
+	textarea {
+		width: 99.9%;
+		height: 90px;
+	}
+	
+	code {
+		position: absolute;
+		visibility:hidden;
+	}
+{% endblock %}
+
+{% block content %}
+    <h2>Time Card</h2>
+    {{ form.non_field_errors }} 
+    {% if warning %}
+        <br/><h3 style="color: red;">Warning student has already posted a time sheet for today. You may approve it <a href="{% url ecwsp.work_study.views.approve %}?key={{ key }}">here</a></h3><br/>
+    {% endif %}
+    <form action="" name="timesheet_form" onsubmit="return check_time()" method="post">
+         {% if not form.for_pay.is_hidden %}
+         {{ form.for_pay.errors }} {{ form.for_pay }} {{ form.for_pay.help_text }}
+         <br/>
+         {% endif %}
+         
+         {{ form.make_up.errors }} {{ form.make_up }} {{ form.make_up.help_text }}
+         <br/><p class="spacer"/>
+		<table style="width: 100%; margin:auto">
+			<tr>
+				<td> Student Name: {{ studentName }} </td>
+				<td> Supervisor Name: {{ supervisorName }} </td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<table class="border">
+						<tr>
+							<td class="border"> Date: {{ form.date.errors }}</td>
+							<td class="border"> Start Time: {{ form.time_in.errors }}</td>
+							<td class="border"> Lunch Out: {{ form.time_lunch.errors }} </td>
+							<td class="border"> Lunch In: {{ form.time_lunch_return.errors }}</td>
+							<td class="border"> End Time: {{ form.time_out.errors }}</td>
+						</tr>
+						<tr>
+							<td class="border"> {{ form.date }} </td>
+							<td class="border"> {{ form.time_in }} </td>
+							<td class="border"> {{ form.time_lunch }}  </td>
+							<td class="border"> {{ form.time_lunch_return }} </td>
+							<td class="border"> {{ form.time_out }} </td>
+							<code>
+								$('#id_time_in').ptTimeSelect();
+								$('#id_time_lunch').ptTimeSelect();
+								$('#id_time_lunch_return').ptTimeSelect();
+								$('#id_time_out').ptTimeSelect();
+							</code>
+						</tr>
+					</table>
+					<a href="#" onclick="no_lunch()" >No Lunch</a>
+				</td>
+			</tr>
+			<tr class="spacer"></tr>
+			<tr>
+				<td colspan="2">
+					{% if student %}
+						<table class="border"> 
+							<tr> 
+								<td colspan="5" style="text-align: center;">Daily Student Worker Performance</td>
+							</tr>
+							<tr>
+								<td class="border" style="padding"> <label for="id_performance_0"><input disabled="disabled" type="radio" id="id_performance_0" value="1" name="performance" /> Unacceptable</label> </td> 
+								<td class="border" style="padding"> <label for="id_performance_1"><input disabled="disabled" type="radio" id="id_performance_1" value="2" name="performance" /> Expectations Not Met</label> </td> 
+								<td class="border" style="padding"> <label for="id_performance_2"><input disabled="disabled" type="radio" id="id_performance_2" value="3" name="performance" /> Meets Expectations</label> </td> 
+								<td class="border" style="padding"> <label for="id_performance_3"><input disabled="disabled" type="radio" id="id_performance_3" value="4" name="performance" /> Exceeds Expectations</label> </td> 
+								<td class="border" style="padding"> <label for="id_performance_4"><input disabled="disabled" type="radio" id="id_performance_4" value="5" name="performance" /> Far Exceeds Expectations</label> </td> 
+							</tr> 
+						</table>
+					{% else %}
+						{{ form.performance.errors }}
+						<table class="border">
+							<tr> 
+								<td colspan="5" style="text-align: center;">Daily Student Worker Performance</td>
+							</tr>
+							<tr>
+								{% if student %} <span class="lock"> {% endif %}
+								{{ form.performance }}
+								{% if student %} </span> {% endif %}
+							</tr>
+						</table>
+					{% endif %}		
+				</td>
+			</tr>
+			<tr class="spacer"></tr>
+			<tr>
+				{% if approved %}
+					<td style="text-align: center;"> Approved by supervisor </td>
+				{% else %}
+					<td style="text-align: center;"> Not yet approved by supervisor </td>
+				{% endif %}	
+				{% if student %}
+					<td style="text-align: center;"> Not yet submitted by student </td>
+				{% else %}
+					<td style="text-align: center;"> Approved by student </td>
+				{% endif %}
+			</tr>
+			<tr class="spacer"></tr>
+			<tr>
+				<td colspan="2" class="border">
+					My Major Accomplishment For Today Was: {{ form.student_accomplishment.errors }}<br/>
+					{{ form.student_accomplishment }}
+				</td>
+			</tr>
+			<tr class="spacer"></tr>
+			<tr>
+				<td colspan="2" class="border">
+					Client Comments, Concerns, Praises:
+					{% if student %}
+						<textarea disabled="disabled"></textarea>
+					{% else %}
+						{{ form.supervisor_comment.errors }} 
+						{{ form.supervisor_comment }} 
+						<br/>
+						{{ form.show_student_comments }} Allow students to see comments and performance review.
+					{% endif %}
+				</td>
+			</tr>
+		</table>
+        {{ form.my_supervisor.errors }} {{ form.my_supervisor }} Primary supervisor (where emails are sent to) <br/><p class="spacer"/><p class="spacer"/>
+		<!--[if IE 7]>
+				<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+		<![endif]-->
+		{% if student %}
+			{{ form.errors }} {{ form.non_field_errors }}<input class="button" type="submit" value="Submit For Approval"/>
+		{% else %}
+			<input class="button" type="submit" value="Approve Time Card"/>
+		{% endif %}
+		<span class="hidden">{{ form.student }} {{ form.company }} {{ form.edit }}</span>
+		
+	</form>
+{% endblock %}
+

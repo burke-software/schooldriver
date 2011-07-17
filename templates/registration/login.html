@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block nav %}
+<li><a href="/admin/">Admin Interface</a></li>
+{% endblock %}
+
+{% block content %}
+
+    {{ form.non_field_errors }}
+	<br/>
+    <form method="post" action="{% url django.contrib.auth.views.login %}" style="text-align: center">
+    {% csrf_token %}
+    <table style="margin-left: auto; margin-right: auto;">
+    <tr>
+		Please Log In
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }} {{ form.username.errors }}</td>
+        
+    </tr>
+    <tr>
+        <td>{{ form.password.label_tag }}</td>
+        <td>{{ form.password }} {{ form.password.errors }}</td>
+        
+    </tr>
+    </table>
+
+    <input type="submit" value="login" />
+    <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+
+{% endblock %}

@@ -1,0 +1,70 @@
+<style type="text/css">
+  .export_table {
+    padding: 2px 0px 3px 3px;
+    text-align: left;
+  }
+</style>
+
+<script type="text/javascript"> 
+  $(document).ready(function()
+  {
+    $("#check_all").click(function()        
+    {
+      var checked_status = this.checked;
+      $(".check_field").each(function()
+      {
+        this.checked = checked_status;
+      });
+    });
+  });
+  
+  function get_related(name){
+    $.post(  
+      "/sis/export_to_xls_related/?{{ get_variables }}",  
+      {get_related: "True", rel_name: name},
+      function(data){
+        $("#field_" + name).hide('fast');
+        $("#field_" + name).html(data);
+        $("#field_" + name).show('slow');
+      }  
+    );  
+  }
+</script>   
+
+<h2> Export {{ model_name }} </h2>
+
+<form method="post" action="/sis/export_to_xls/?{{ get_variables }}">
+  <table>
+    <tr class="export_table">
+      <th class="export_table">
+        <input type="checkbox" id="check_all" checked="checked" />
+      </th>
+      <th class="export_table">
+        Field
+      </th>
+    </tr>
+  
+    {% for field in fields %}
+      <tr class="export_table">
+        <td class="export_table">
+          <input type="checkbox" class="check_field" checked="checked" name="field__{{ model }}__{{ field.name }}"/>
+        </td>
+        <td class="export_table">
+          {{ field.verbose_name }}
+        </td>
+      </tr>
+      {% if field.related %}{% if field.perm %}
+        <tr class="export_table">
+          <td class="export_table"></td>
+          <td class="export_table">
+            <div id="field_{{ field.name }}">
+              <a href="javascript:void(0)" onclick="get_related('{{ field.name }}')"> >> Expand {{ field.verbose_name }}</a>
+            </div>
+          </td>
+        </tr>
+      {% endif %}{% endif %}
+    {% endfor %}
+  </table>
+  <input type="submit" name="xls" onclick='$("#export_xls_form").overlay().close();' value="Submit"/>
+  <!-- HACK to make sure the submit button isn't under the bottom bar--><br/><br/><br/>
+</form>

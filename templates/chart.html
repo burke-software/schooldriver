@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      var chart;
+      function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Industry');
+        data.addColumn('number', 'FTE');
+        
+        {{ industryJS|safe }}
+
+        chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        chart.draw(data, {width: 580, height: 400, title: 'Jobs by Industry'});
+        google.visualization.events.addListener(chart, 'select', selectHandler);
+      }
+      
+      function selectHandler() {
+		var selection = chart.getSelection();
+		var selected = selection[0].row;
+		window.location = "/chart#"+selected ;
+	  }
+    </script>
+  </head>
+  <body>
+    <div id="chart_div"></div>
+    {{ companies|safe }}
+  </body>
+</html>

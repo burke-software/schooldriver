@@ -1,0 +1,11 @@
+{% extends "grappelli/templates/admin/change_form.html" %}
+{% load i18n admin_modify adminmedia grp_tags %}
+
+{% block content %}
+    {{ block.super }}
+    {% if add %}
+        <script type="text/javascript">
+             setInterval(function () { CKEDITOR.replace("id_answer_set-4-answer", {"filebrowserWindowWidth": 940, "disableNativeSpellChecker": false, "filebrowserUploadUrl": "/ckeditor/upload/", "height": 100, "width": 550, "resize_enabled": false, "removePlugins": "scayt,menubutton,contextmenu,elementspath", "filebrowserBrowseUrl": "/ckeditor/browse/", "skin": "v2", "filebrowserWindowHeight": 747, "toolbar": [["Bold", "Italic", "Underline", "-", "Image", "Link", "Unlink", "-", "Format", "-", "Maximize", "-", "Table", "-", "BulletedList", "NumberedList", "-", "PasteText", "PasteFromWord"]]}); }, 1000);
+        </script>
+    {% endif %}
+{% endblock %}

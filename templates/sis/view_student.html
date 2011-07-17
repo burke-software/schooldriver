@@ -1,0 +1,232 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+	<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+	<script type='text/javascript'>
+		{% if timesheets %}
+			google.load('visualization', '1', {'packages':['annotatedtimeline']});
+			google.setOnLoadCallback(drawChart);
+			function drawChart() {
+			  var data = new google.visualization.DataTable();
+			  data.addColumn('date', 'Date');
+			  data.addColumn('number', 'Work Performance');
+			  data.addRows([
+				  {% for ts in timesheets %}
+					  [new Date({{ ts.date.year }}, {{ ts.date.month }},{{ ts.date.day }}), {{ ts.performance }} ],
+				  {% endfor %}
+			  ]);
+	  
+			  var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
+			  chart.max = 6;
+			  chart.min = 1;
+			  chart.draw(data, {});
+			  $('#section_workperformance').hide();
+			}
+		{% endif %}
+		
+		// If pressing enter, submit form, don't force user to press enter twice!
+		$(document).ready(function() {
+			$('#id_student_text').bind('keyup', function(event) {
+				if(event.keyCode == 13){
+					$('#form').submit()
+				}
+		        });;
+		});
+		
+		function options_toggle(id) {
+            /*id must follow convenction toggle_model_action
+             Ex id = toggle_student_filter */
+            if ($('#' + id.split("_")[1] + '_' + id.split("_")[2]).is(':visible')) {
+                $('#' + id).html('+ Show');
+				$('#h5' + id).addClass('noprint')
+            } else {
+                $('#' + id).html('- Hide');
+				$('#h5' + id).removeClass('noprint')
+            }
+            $('#' + id.split("_")[1] + '_' + id.split("_")[2]).toggle('fast');
+        }
+		
+		{% if show_grades %}
+			$(document).ready(function() {
+				options_toggle('toggle_section_grade');
+			});
+		{% endif %}
+    </script>
+{% endblock %}
+
+{% block content %}
+	<h2> Student Record - {{ date }} </h2>
+	<form id="form" class="noprint" action="" method="post">
+		{{ form }}
+		<input type="submit" value="Get Record"/>
+	</form>
+	{% if student %}
+		<h4>{{ student }}</h4>
+		{{ student.year }} <br/>
+		<span class="noprint"> Currestaticnt Location: {{ location }}</span><br/>
+		<a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a>
+		<h5 id="h5toggle_section_infomation" class="noprint">General Information <a class="noprint" href="javascript:void(0)" id="toggle_section_infomation" onclick='options_toggle(id)'> + Show </a> </h5>
+		<div id="section_infomation" style="display: none">
+			<table>
+				<tr><td> Middle name </td><td> {{ student.mname }} </td>
+					{% if student.pic %} <td rowspan=10> <a href="/media/{{ student.pic }}"><img src="{{ student.pic.url_530x400 }}"/></a> </td>{% endif %}
+				</tr>
+				<tr><td> Pri. Cohort </td><td> {{ student.primary_cohort }} </td></tr>
+				<tr><td> Sex </td><td> {{ student.sex }} </td></tr>
+				<tr><td> Alert </td><td> {{ student.alert }} </td></tr>
+				<tr><td> Birthday </td><td> {{ student.bday }} </td></tr>
+				{% if ssn %} <tr><td> SSN </td><td> {{ student.ssn }} {% endif %}
+				<tr><td> Parent/guardian </td><td> {{ student.parent_guardian }} </td></tr>
+				<tr><td> Street </td><td> {{ student.street }} </td></tr>
+				<tr><td> State </td><td> {{ student.state }} </td></tr>
+				<tr><td> Zip </td><td> {{ student.zip }} </td></tr>
+				<tr><td> Parent email </td><td> {{ student.parent_email }} </td></tr>
+				<tr><td> Alt email </td><td> {{ student.alt_email }} </td></tr>
+				<tr><td> Notes </td><td> {{ student.notes }} </td></tr>
+				{% for ec in emergency_contacts %}
+					<tr><td> Emergency Contact </td><td> {{ ec }} </td></tr>
+				{% endfor %}
+				{% for sib in siblings %}
+					<tr><td> Sibling </td><td> {{ sib }} </td></tr>
+				{% endfor %}
+				{% for cohort in cohorts %}
+					<tr><td> Cohort </td><td> {{ cohort }} </td></tr>
+				{% endfor %}
+				{% for number in numbers %}
+					<tr><td> Phone Number </td><td> {{ number }} </td></tr>
+				{% endfor %}
+			</table>
+		</div>
+		
+		<h5 id="h5toggle_section_grade" class="noprint">Grades <a class="noprint" href="javascript:void(0)" id="toggle_section_grade" onclick='options_toggle(id)'> + Show </a> </h5>
+		<div id="section_grade" style="display: none">
+			GPA: {{ student.gpa }} <br/>
+			<table>
+				{% for year in years %}
+					<tr>
+						<th> Courses {{ year }}</th>
+						<th> Teacher </th>
+						{% for mp in year.mps %}
+							<th> {{ mp }} </th>
+						{% endfor %}
+						<th> Final </th>
+					</tr>
+					{% for course in year.courses %}
+					<tr>
+						<td> {{ course.shortname }} </td>
+						<td> {{ course.teacher }} </td>
+						<!-- The logic gets complicated here so html generation is done in python, enjoy your spaghetti -->
+						{{ course.grade_html|safe }}
+					</tr>
+					{% endfor %}	
+				{% endfor %}
+			</table>
+		</div>
+		
+		{% if current_mp %}
+			<h5 id="h5toggle_section_schedule" class="noprint"> {{ current_mp }} Schedule <a class="noprint" href="javascript:void(0)" id="toggle_section_schedule" onclick='options_toggle(id)'> + Show </a> </h5>
+			<div id="section_schedule" style="display: none">
+				<table>
+					<tr> <th></th>
+					{% for day in schedule_days %}
+						<th> {{ day }} </th>
+					{% endfor %}
+					</tr>
+					{% for period in periods %}
+						<tr>
+							<td> {{ period.name }} <br/> {{ period.start_time }} - {{ period.end_time }} </td>
+							{% for pday in period.days %}
+								<td> {{ pday.course.shortname }} <br/> {{ pday.location }} </td>
+							{% endfor %}
+						</tr>
+					{% endfor %}
+					</tr>
+				</table>
+			</div>
+		{% endif %}
+		
+		<h5 id="h5toggle_section_discipline" class="noprint">Discipline <a href="javascript:void(0)" class="noprint" id="toggle_section_discipline" onclick='options_toggle(id)'> + Show </a> </h5>
+		<div id="section_discipline" style="display: none">
+			<table>
+				<tr>
+					<th>Date</th>
+					<th>Incident</th>
+					<th>Teacher</th>
+					<th>Comments</th>
+				</tr>
+				{% for discipline in disciplines %}
+					<tr><td style="min-width:90px;"> {{ discipline.date }} </td><td> {{ discipline.infraction }} </td><td  style="min-width:92px;"> {{ discipline.teacher }} </td><td> {{ discipline.comments }} </td></tr>
+				{% endfor %}
+			</table>
+		</div>
+		
+		<h5 id="h5toggle_section_attendance" class="noprint">Attendance <a class="noprint" href="javascript:void(0)" id="toggle_section_attendance" onclick='options_toggle(id)'> + Show </a> </h5>
+		<div id="section_attendance" style="display: none">
+			<table>
+				<tr>
+					<th>Date</th>
+					<th>Status</th>
+					<th>Notes</th>
+				</tr>
+				{% for attendance in attendances %}
+					<tr><td> {{ attendance.date }} </td><td> {{ attendance.status }} </td><td> {{ attendance.notes }} </td></tr>
+				{% endfor %}
+			</table>
+		</div>
+		
+		{% if student_interactions %}
+			<h5 id="h5toggle_section_interactions" class="noprint">Student Interactions <a class="noprint" href="javascript:void(0)" id="toggle_section_interactions" onclick='options_toggle(id)'> + Show </a> </h5>
+			<div id="section_interactions" style="display: none">
+				{% for student_interaction in student_interactions %}
+					Type {{ student_interaction.type }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reported by: {{ student_interaction.reported_by }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date: {{ student_interaction.date }}
+					<p style="max-width: 800px;">
+						{{ student_interaction.comments }}
+					</p>
+				{% endfor %}
+			</div>
+		{% endif %}
+		
+		{% if alumni %}
+			<h5 id="h5toggle_section_alumni" class="noprint"> Alumni <a class="noprint" href="javascript:void(0)" id="toggle_section_alumni" onclick='options_toggle(id)'> + Show </a> </h5>
+			<div id="section_alumni" style="display: none">
+				Current college: {{ alumni.cache_college }} {% if alumni.cache_graduated %} (Graduated) {% endif %}
+			</div>
+		{% endif %}
+		
+		{% if 'ecwsp.work_study' in settings.INSTALLED_APPS %}
+			<h5 id="h5toggle_section_workvisit" class="noprint">Work Visits <a class="noprint" href="javascript:void(0)" id="toggle_section_workvisit" onclick='options_toggle(id)'> + Show </a> </h5>
+			<div id="section_workvisit" style="display: none">
+				{% for visit in clientvisits %}
+					{{ visit.company }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ visit.date }}
+					<p style="max-width: 800px;">
+						{{ visit.notes }}
+					</p>
+				{% endfor %}
+			</div>
+		
+			<h5 id="h5toggle_section_company" class="noprint">Company Placement <a class="noprint" href="javascript:void(0)" id="toggle_section_company" onclick='options_toggle(id)'> + Show </a> </h5>
+			<div id="section_company" style="display: none">
+				Current placement: {{ student.studentworker.placement }} <br/>
+				Supervisor contact infomation <br/>
+				{% for supervisor in supervisors %}
+					&nbsp;{{ supervisor }} - {{ supervisor.phone }} <br/>
+				{% endfor %}
+				{% if company_histories %}
+					<span stlye="font-weight: bold;"> History </span> <br/>
+					{% for history in company_histories %}
+						&nbsp;Left {{ history.placement }} on {{ history.date }} <br/>
+					{% endfor %}
+				{% endif %}
+			</div>
+		
+			{% if timesheets %}
+				<h5 id="h5toggle_section_workperformance" class="noprint">Work Performance <a class="noprint" href="javascript:void(0)" id="toggle_section_workperformance" onclick='options_toggle(id)'> + Show </a> </h5>
+				<div id="section_workperformance">
+					<div id='chart_div' style='width: 800px; height: 200px;'></div>
+				</div>
+			{% endif %}
+		{% endif %}
+		
+	{% endif %}
+{% endblock %}

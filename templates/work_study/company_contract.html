@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block css %}
+	textarea {
+		width:100%;
+		height:70px;
+	}
+	input[type=text] {
+		width:300px;
+	}
+{% endblock %}
+
+{% block content %}
+	<h1 style="text-align:center;"> Contract for {{ company }} </h1>
+	<br/>
+	<div class="contract">
+		<form action="" method="post">
+			{{ contract_text|linebreaksbr }}
+			<br/>
+			{% if contract_payment_text %}
+				<br/><br/>
+				<h2>Payment Schedule</h2>
+				{{ contract_payment_text|linebreaksbr }}
+				<br/><br/>
+				<table>
+					<tr>
+						<th>Payment Option</th>
+						<th>Details</th>
+					</tr>
+					{% for payment in payment_options %}
+					<tr>
+						<td style="min-width:350px;"> 
+							<input type="radio" id="id_payment_0" value="{{ payment.id }}" name="payment"> {{ payment.name }}
+						</td><td>
+							{{ payment.details}}
+						</td>
+					</tr>
+					{% endfor %}
+				</table>{{ form.payment.errors }}
+				<br/>
+			{% endif %}
+			<br/>
+			<br/>
+			<h2> Description of Work Study Position </h2>
+			<h3> Background Information of Position </h3>
+			<table>
+				<tr><td> {{ form.work_study_position_title.label }} </td><td> {{ form.work_study_position_title }} {{ form.work_study_position_title.errors }} </td></tr>
+				<tr><td> {{ form.primary_location.label }} </td><td>{{ form.primary_location }}   {{ form.primary_location.errors }} </td></tr>
+			</table>
+			<h3>Supervisor Information</h3>
+			<table>
+				<tr><td> {{ form.supervisor_name.label }} </td><td> {{ form.supervisor_name }}  {{ form.supervisor_name.errors }} </td></tr>
+				<tr><td> {{ form.supervisor_address.label }} </td><td> {{ form.supervisor_address }}  {{ form.supervisor_address.errors }} </td></tr>
+				<tr><td> {{ form.supervisor_work_phone.label }} </td><td> {{ form.supervisor_work_phone }}  {{ form.supervisor_work_phone.errors }} </td></tr>
+				<tr><td> {{ form.supervisor_cell_phone.label }} </td><td> {{ form.supervisor_cell_phone }} {{ form.supervisor_cell_phone.errors }} </td></tr>
+				<tr><td> {{ form.supervisor_email_address.label }} </td><td> {{ form.supervisor_email_address }}  {{ form.supervisor_email_address.errors }} </td></tr>
+			</table>
+			
+			<h3>Student Worker(s) Functional Responsibilities</h3>
+			{{ form.student_fuctional_respnsibilities }}
+			<br/>
+			Work Study Student's Desired Skills
+			<br/>
+			{{ form.student_desired_skills }} {{ form.student_desired_skills.errors }}
+			<br/>
+			Other? <br/> {{ form.student_desired_skills_other }} {{ form.student_desired_skills_other.errors }}
+			
+			<br/>
+			<br/>
+			Will Student Worker(s) be allowed to leave work at any time? {{ form.student_leave }} {{ form.student_leave.errors }}
+			<br/>
+			
+			<table style="width:100%">
+				<tr>
+					<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align:top"> If yes, Student Worker will leave for: </td>
+					<td>
+						{{ form.student_leave_lunch }} {{ form.student_leave_lunch.label }} {{ form.student_leave_lunch.errors }}
+						<br/>
+						{{ form.student_leave_other.label }} <br/> {{ form.student_leave_other }} {{ form.student_leave_other.errors }}
+					</td>
+				</tr>
+			</table>
+			
+			Client agrees to provide the students any applicable instructions regarding company rules, regulations or policies, including any applicable safety instructions.
+			
+			<br/><br/>
+			<table>
+				<tr>
+					<td>Name: </td><td>{{ form.name }} {{ form.name.errors }} </td><td>Date: </td><td>{{ form.date }} {{ form.date.errors }}</td>
+				</tr><tr>
+					<td>Title: </td><td>{{ form.title }} {{ form.title.errors }}</td>
+				</tr><tr>
+					
+				</tr><tr>
+					<td>Firm: </td><td>{{ form.firm }} {{ form.firm.errors }}</td>
+				</tr>
+			</table>
+			<br/>
+			{% for hidden in form.hidden_fields %}
+                {{ hidden }}
+            {% endfor %}
+			<input type="submit" value="I Agree" style="width:150px;"/>
+		</form>
+	</div>
+{% endblock %}
+

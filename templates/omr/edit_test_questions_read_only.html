@@ -1,0 +1,47 @@
+<div class="group tabular" id="question_{{ question.id }}">
+    <div class="row module">
+      <div class="row">
+        <h2 class="collapse-handler">
+          <table style="width:100%; ">
+            <tr>
+              <td>
+                {{ question.question|safe }}
+              </td>
+              <td class="qtable_right">
+                <div>
+                  {{ question.point_value }} Possible Point {{ question.point_value|pluralize }}
+                  <br/>
+                  {{ question.type }}
+                  {% if question.group %} <br/> Group: {{ question.group }} {% endif %}
+                  {% for benchmark in question.benchmarks.all %}
+                    {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Benchmarks </p> {% endif %}
+                    <p style="padding:0px;">{{ benchmark }}</p>
+                  {% endfor %}
+                  {% for theme in question.themes.all %}
+                    {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Themes </p> {% endif %}
+                    {{ theme }}
+                  {% endfor %}
+                </div>
+              </td>
+            </tr>
+          </table>
+        </h2>
+      </div>
+      {% for answer in question.answer_set.all %}
+        <div class="row">
+          <table style="width:99%; ">
+            <tr>
+              <td>
+                {{ answer.answer|safe }}
+              </td>
+              <td class="qtable_right">
+                {{ answer.point_value }} Point{{ answer.point_value|pluralize }}
+                {% if answer.error_type %} <br/> Error Type: {{ answer.error_type }} {% endif %}
+              </td>
+            </tr>
+          </table>
+        </div>
+      {% endfor %}
+    </div>
+    <button onclick="edit_question({{ question.id }})">Edit</button>
+</div>

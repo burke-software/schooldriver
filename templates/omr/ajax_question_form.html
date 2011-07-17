@@ -1,0 +1,83 @@
+{% if new %}
+    <div class="group tabular" id="question_{{ new }}">
+{% endif %}
+<form enctype="multipart/form-data" action="" method="post" id="question_form_{{ question_form.prefix }}">
+    {{ question_form.management_form }}
+    {{ answers_formset.management_form }}
+    {{ question_form.errors }}
+        <div class="row module">
+          <h2 class="collapse-handler">Question</h2>
+          {{ question_form.non_field_errors }}
+          
+                {% for hidden in question_form.hidden_fields %} {{ hidden }} {% endfor %}
+          <table>
+            <tr>
+              <td style="text-align: center;">
+                      {{ question_form.group.label }} {{ question_form.group.errors }} {{ question_form.group }} &nbsp;&nbsp;&nbsp;&nbsp;
+                      {{ question_form.type.label }} {{ question_form.type.errors }} {{ question_form.type }} &nbsp;&nbsp;&nbsp;&nbsp;
+                      {{ question_form.point_value.label }} {{ question_form.point_value.errors }} {{ question_form.point_value }} &nbsp;&nbsp;&nbsp;&nbsp;
+                  <br/>
+                      {{ question_form.question.errors }} {{ question_form.question }}
+              </td>
+              
+              <td>
+                {{ question_form.benchmarks.label }} {{ question_form.benchmarks.errors }} <br/> {{ question_form.benchmarks }}<br/>
+                {{ question_form.themes.label }} {{ question_form.themes.errors }} <br/> {{ question_form.themes }}
+              </td>
+            </tr>
+          </table>
+          </div>
+        <h2 class="collapse-handler">Answers</h2>
+        <span style="display:none">{{ answers_formset.empty_form }}</span>
+          {% for answer in answers_formset %}
+              <div class="row module answer_div_{{ question_form.prefix }}">
+                {{ answer.non_field_errors }}
+                {% for hidden in answer.hidden_fields %} {{ hidden }} {% endfor %}
+                <table>
+                    <tr>
+                        <td>
+                            {{ answer.answer }}
+                        </td>
+                        <td>
+                            {{ answer.point_value.label }} {{ answer.point_value }} {{ answer.point_value.errors }} <br/>
+                            {{ answer.error_type.label }}{{ answer.error_type }} {{ answer.error_type.errors }}<br/>
+                            {{ answer.delete }} <br/>
+                        </td>
+                    </tr>
+                </table>
+              </div>
+          {% endfor %}
+        
+        
+    <a href="javascript:;" id="add_more_{{ question_form.prefix }}">Add Another Question</a><br/>
+    <div class="module save_bar">
+        {% if not new %}
+            <button onclick="delete_question({{ question.id }}); return false;" class="delete-link">Delete</button>
+        {% endif %}
+        <button onclick="cancle_edit({{ question.id }}); return false;">Cancel, discard changes</button>
+        <span style="float: right;">
+            <button id="save_{{ question_form.prefix }}" onclick="return false;">Save</button>
+            <script>
+                $('#save_{{ question_form.prefix }}').click(function() {
+                  {% if new %}
+                    save_question("question_form_{{ question_form.prefix }}", '{{ new }}');
+                  {% else %}
+                    save_question("question_form_{{ question_form.prefix }}", {{ question.id }});
+                  {% endif %}
+                });
+            </script>
+        </span>
+    </div> 
+    <script>
+      $('#add_more_{{ question_form.prefix }}').click(function() {
+        {% if new %}
+          cloneMore('div.answer_div_{{ question_form.prefix }}:last', 'questionanswers_{{ new }}');
+        {% else %}
+          cloneMore('div.answer_div_{{ question_form.prefix }}:last', 'questionanswers_{{ question.id }}');
+        {% endif %}
+      });
+    </script>
+  </form>
+{% if new %}
+    </div>
+{% endif %}

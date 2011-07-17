@@ -1,0 +1,112 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+
+<style type="text/css">
+    table.grades tr:nth-child(2n) td {
+        background: #EDF3FE;
+    }
+    input.grade_form {
+        border: 1px dotted rgba(0,0,0,0.4);
+        background-color:rgba(255,255,255,0.6);
+        padding: 0px;
+        margin: 0px;
+        text-align:right;
+        width: 100%;
+        max-width: 45px;
+    }
+    td.comment {
+        text-align: center;
+    }
+	
+    .final_override {
+	    background-color:rgba(255,165,0,0.5) !important;
+    }
+</style>
+
+<script type="text/javascript">
+    function recalc_grade(course) {
+	final_input = $('input[id=id_coursefinalform_' + course + ']');
+	if (final_input.attr('class') != 'grade_form final_override') {
+	    grade = 0;
+	    num_mp_grades = 0;
+	    
+	    $('input[id^=id_grade_' + course + ']').each(
+		function(i){
+		    mp_grade = parseFloat($(this).val());
+		    if (!(isNaN(mp_grade))) {
+			    grade += mp_grade;
+			    num_mp_grades += 1;
+		    }
+		}
+	    )
+	    
+	    grade = grade / num_mp_grades;
+	    grade = Math.round(grade*100)/100;
+	    final_input.val(grade);
+	}
+    }
+</script>
+
+{% endblock %}
+
+{% block breadcrumbs %}{% if not is_popup %}
+<div class="breadcrumbs">
+     <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
+     <a href="{% url admin:sis_student_changelist %}"> Courses </a> &rsaquo; 
+     <a href="{% url admin:sis_student_change student.id %}"> {{ student }}  </a> &rsaquo; 
+     Student Gradesheet
+</div>
+{% endif %}{% endblock %}
+
+{% block content %}
+	<h2> Grades - {{ student }} - {{ school_year }} </h2>
+	Select school year:
+	{% for year in school_years %}
+	    {% if not forloop.first %} &nbsp;&nbsp; &middot; {% endif %} &nbsp;&nbsp; <a href="{{ year.id }}"> {{ year }} </a>
+	{% endfor %}
+    
+    <form action="" method="post">
+        <table class="grades">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">Course</th>
+                    <th>Marking Period Grades</th>
+                    <th>Final</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                    <tr>
+                        <td> {{ course }} </td>
+			<td>
+			    <table>
+				<tr>
+				    {% for grade in course.grades %}
+				    <td>
+					{{ grade.marking_period }} <br/>
+					<input class="grade_form" id="id_grade_{{ course.id }}_{{ grade.id }}" onchange="recalc_grade({{ course.id }})" name="grade_{{ grade.id }}" value="{{ grade.get_grade }}"/> <br/>
+					<input value="{{ grade.comment }}" name="comment_{{ grade.id }}" placeholder="Comment"/>
+				    </td>
+				    {% endfor %}
+				</tr>
+			    </table>
+			</td>
+			<td>
+			    <input class="grade_form {% if course.final_override %}final_override{% endif %}"
+				id="id_coursefinalform_{{ course.id }}"
+				name="coursefinalform_{{ course.id }}_{{ student.id }}"
+				value="{{ course.final }}"
+			     />
+			</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br/>
+        <input type="submit" name="edit" value="Save grades"/> 
+        Enter "None" or leave blank to delete grade (thus grade will be calculated instead) <br/> <span class="final_override"> * color indicates final grade has been manually changed. </span>
+    </form>
+    <script>$(".comment").hide();</script>
+{% endblock %}

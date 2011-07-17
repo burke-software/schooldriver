@@ -1,0 +1,14 @@
+{% extends "grappelli/templates/admin/change_form.html" %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript" charset="utf-8">
+        function get_map(){
+            var address = document.getElementById("id_address").value;
+            var city = document.getElementById("id_city").value;
+            var state = document.getElementById("id_state").value;
+            var zip = document.getElementById("id_zip").value;
+            parent.mapframe.location="http://maps.google.com/maps/api/staticmap?sensor=false&size=400x400&markers=size:mid|color:red|" + address + "," + city + "," + state + "," + zip;
+        }
+    </script>
+{% endblock %}

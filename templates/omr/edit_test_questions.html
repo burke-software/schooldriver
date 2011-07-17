@@ -1,0 +1,249 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+    <div id="breadcrumbs">
+      <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
+      &rsaquo; <a href="{% url ecwsp.omr.views.my_tests %}">{% trans 'My Tests' %}</a>
+      &rsaquo; <a href="{% url ecwsp.omr.views.edit_test test.id %}">{{ test }}</a>  
+      &rsaquo; {{ test }} Questions
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+    {% load adminmedia %}
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    {{ question_form.media }}
+    <style type="text/css">
+      .content-grid {
+        min-width: 800px !important;
+      }
+      .group h2, .module h2, .group div {
+        padding: 1px;
+      }
+      .row {
+        margin: 0px;
+      }
+      .module:first-child {
+        margin-top: 0 !important;
+      }
+    </style>
+{% endblock %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <style type="text/css">
+    tbody th, tbody td {
+      border-top: 0px solid white;
+      border-bottom: 0px solid #E0E0E0;
+    }
+    .group ul, .group li {
+      list-style-type: inherit;
+    }
+    .group div {
+      font-weight: normal;
+      padding: 3px 5px;
+    }
+    .qtable_right {
+      float: right;
+      width: 130px;
+    }
+    button.delete-link {
+      color: white;
+      border: 1px solid #992626;
+      background: #BF3030;
+      background: -moz-linear-gradient(top, #D93636, #BF3030);
+      background: -webkit-gradient(linear, left top, left bottom, from(#D93636), to(#BF3030));
+      background: -o-linear-gradient(top, #D93636, #BF3030);
+    }
+    
+    .save_bar {
+      border: 0;
+      border-top: 1px solid #BDBDBD;
+      border-radius: 0;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+      background: #333;
+      background: -moz-linear-gradient(top, #444, #333);
+      background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#333));
+      background: -o-linear-gradient(top, #444, #333);
+    }
+    form {
+      margin-top: -2px;
+    }
+    
+    disabled {
+      background: #808080;
+    }
+  </style>
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script type="text/javascript">
+    function cloneMore(selector, type) {
+      var newElement = $(selector).clone(true);
+      var total = $('#id_' + type + '-TOTAL_FORMS').val();
+      newElement.find(':input').each(function() {
+        var name = $(this).attr('name').replace('-' + (total-1) + '-','-' + total + '-');
+        var id = 'id_' + name;
+        $(this).attr({'name': name, 'id': id}).val('').removeAttr('checked');
+      });
+      newElement.find('label').each(function() {
+          var newFor = $(this).attr('for').replace('-' + (total-1) + '-','-' + total + '-');
+          $(this).attr('for', newFor);
+      });
+      total++;
+      $('#id_' + type + '-TOTAL_FORMS').val(total);
+      $(selector).after(newElement);
+      
+      var config = {"filebrowserWindowWidth": 940, "disableNativeSpellChecker": false, "filebrowserUploadUrl": "/ckeditor/upload/", "height": 100, "width": 550, "resize_enabled": false, "removePlugins": "scayt,menubutton,contextmenu,elementspath", "filebrowserBrowseUrl": "/ckeditor/browse/", "skin": "v2", "filebrowserWindowHeight": 747, "toolbar": [["Bold", "Italic", "Underline", "-", "Image", "Link", "Unlink", "-", "Format", "-", "Maximize", "-", "Table", "-", "BulletedList", "NumberedList", "-", "PasteText", "PasteFromWord"]]};
+      var elementId = "id_" + type + "-" + (total - 1) + "-answer";
+      var dumbElementId = "cke_editor_id_" + type + "-" + (total - 2) + "-answer";
+      alert(dumbElementId);
+      $('.' + dumbElementId).last().remove();
+      CKEDITOR.replace(elementId, config);
+    }
+    
+    function clean_ckeditor(question_id) {
+      var instances = CKEDITOR.instances;
+      re = "id_questionanswers_" + question_id + "-.*-answer";
+      instances["id_question_" + question_id + "-question"].destroy();
+      $.each(instances, function(key, value) { 
+        if ( key.match(re) ) {
+          instances[key].destroy();
+        }
+      });
+    }
+    
+    function edit_question(id) {
+      // Change read only question into editable
+      $.post(  
+        "ajax_question_form/" + id + "/",
+        function(data){
+          $("#question_" + id).html(data);
+        }  
+      );
+    }
+    
+    function cancle_edit(id){
+    // Cancle changes and bring back read only form.
+      var confirmed = confirm("Cancle changes?");
+      if ( confirmed ) {
+        clean_ckeditor(id);
+        $.post(  
+          "ajax_read_only_question/" + id + "/",
+          function(data){
+            $("#question_" + id).html(data);
+          }  
+        );
+      }
+    }
+    
+    function delete_question(id) {
+      // Delete selected question completly.
+      var confirmed = confirm("Are you sure you want to permanently delete this question?");
+      if ( confirmed ) {
+        clean_ckeditor(id);
+        $.post(  
+          "ajax_delete_question/" + id + "/",
+          function(data){
+            // Remove element only on successful ajax call
+            if (data == "SUCCESS") {
+              $("#question_" + id).remove();
+            }
+          }  
+        );
+      }
+    }
+    
+    function add_question() {
+      // Add new question
+      $.post(
+        "ajax_question_form/new/",
+        function(data){
+            //data.insertBefore( '#question_new' );
+          $("#new_question_div").prepend(data);
+        }  
+      );
+    }
+    
+    function save_question(form_id, question_id) {
+      // Ajax save a form
+      for ( instance in CKEDITOR.instances ) {
+        CKEDITOR.instances[instance].updateElement();
+      }
+      form_data = $("#" + form_id).serialize();
+      
+      clean_ckeditor(question_id);
+      
+      $("#question_" + question_id).hide();
+      
+      $.post(  
+        "ajax_question_form/" + question_id + "/",
+        form_data,
+        function(data){  
+          $("#question_" + question_id).html(data);
+          $("#question_" + question_id).fadeIn();
+        }  
+      );
+    }
+  </script>
+{% endblock %}
+
+{% block content %}
+  <h1> Open Metric Recognition </h1>
+  
+  <h2>{{ test }} Questions </h2>
+  {% for question in questions %}
+    <div class="group tabular" id="question_{{ question.id }}">
+      <div class="row module">
+        <div class="row">
+          <h2 class="collapse-handler">
+            <table style="width:100%; ">
+              <tr>
+                <td>
+                  {{ question.question|safe }}
+                </td>
+                <td class="qtable_right">
+                  <div>
+                    {{ question.point_value }} Possible Point {{ question.point_value|pluralize }}
+                    <br/>
+                    {{ question.type }}
+                    {% if question.group %} <br/> Group: {{ question.group }} {% endif %}
+                    {% for benchmark in question.benchmarks.all %}
+                      {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Benchmarks </p> {% endif %}
+                      <p style="padding:0px;">{{ benchmark }}</p>
+                    {% endfor %}
+                    {% for theme in question.themes.all %}
+                      {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Themes </p> {% endif %}
+                      {{ theme }}
+                    {% endfor %}
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </h2>
+        </div>
+        {% for answer in question.answer_set.all %}
+          <div class="row">
+            <table style="width:99%; ">
+              <tr>
+                <td>
+                  {{ answer.answer|safe }}
+                </td>
+                <td class="qtable_right">
+                  {{ answer.point_value }} Point{{ answer.point_value|pluralize }}
+                  {% if answer.error_type %} <br/> Error Type: {{ answer.error_type }} {% endif %}
+                </td>
+              </tr>
+            </table>
+          </div>
+        {% endfor %}
+      </div>
+      <button onclick="edit_question({{ question.id }});">Edit</button>
+    </div>
+  {% endfor %}
+  <div id="new_question_div"></div>
+  <button onclick="add_question();">Add Question</button> <button>Add Question from Question Bank</button>
+{% endblock %}

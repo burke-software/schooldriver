@@ -1,0 +1,32 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+
+{% block extrahead %}
+    {% load adminmedia %}
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    {{ form.media }}
+{% endblock %}
+
+{% block breadcrumbs %}{% if not is_popup %}
+<div class="breadcrumbs">
+     <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
+     <a href="{% url admin:schedule_course_changelist %}"> Courses </a> &rsaquo; 
+     <a href="{% url admin:schedule_course_change course.id %}"> {{ course }}  </a> &rsaquo; 
+     Enroll Students
+</div>
+{% endif %}{% endblock %}
+
+{% block content %}
+    <h2> Enroll Students </h2>
+    <h3>Select students individually or an entire cohort</h3>
+    <form action="" name="form" method="post">
+	<input type="submit" name="refresh" value="Save and continue editing"/> <input type="submit" name="save" value="Save"/><br/>
+	{{ form.errors }}<br/>
+	Add by cohort:<br/>
+	{{ form.cohorts }}<br/><br/><br/>
+	Add individual students:
+        {{ form.students }}
+    </form>   
+    
+{% endblock %}

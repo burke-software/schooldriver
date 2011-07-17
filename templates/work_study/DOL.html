@@ -1,0 +1,131 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style type="text/css">
+    td.pad {
+	    padding: 3px;
+    }
+    .grey {
+        background-color: #DEDEDE;
+    }
+    .title {
+        color: blue;
+        font-weight:bold;
+        font-size: 110%;
+    }
+    table {
+        border: 1px solid black;
+    }
+    label {
+        
+    }
+    textarea {
+        width: 99%;
+        height: 60px;
+    }
+    .submit-row {
+        width: 730px;
+        padding:5px 7px;
+        text-align:right;
+    }
+    span label {
+        font-size: 0px;
+    }
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}{% if not is_popup %}
+<div class="breadcrumbs">
+    <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
+    <a href="{% url admin:app_list 'work_study' %}">{% trans "Work Study" %}</a> &rsaquo;
+    <a href="{% url admin:work_study_clientvisit_changelist %}"> Client Visit </a> &rsaquo; 
+    DOL
+</div>
+{% endif %}{% endblock %}
+
+{% block content %}
+<form action="" method="post">
+<table class="default" style="width: 750px;">
+    <tr>
+	<td colspan="2" class="grey title"> Site Visit Report </td>
+    </tr>
+    <tr>
+	<td class="grey">Visit Date: {{ form.date }} {{ form.date.errors }} </td>
+	<td class="grey">{{ form.student_worker.label }}: {{ form.student_worker }} {{ form.student_worker.errors }} </td>
+    </tr>
+    <tr>
+	<td class="grey">CRA Name: {{ form.cra }} {{ form.cra.errors }} </td>
+	<td class="grey">Client Company: {{ form.company }} {{ form.company.errors }} </td>
+    </tr>
+    <tr>
+	<td class="grey">This is a follow-up of: {{ form.follow_up_of }} {{ form.follow_up_of.errors }}</td>
+	<td class="grey">Supervisor Name: {{ form.supervisor }} {{ form.supervisor.errors }}</td>
+    </tr>
+    <tr><td colspan="2">
+    <table style="border-style: none;">
+	<tr>
+	    <td class="none"></td><td class="none">&nbsp;&nbsp;4</td><td class="none">&nbsp;&nbsp;3</td><td class="none">&nbsp;&nbsp;2</td><td class="none">&nbsp;&nbsp;1</td><td class="none"></td>
+	</tr>
+	<tr>
+	    {{ form.attendance_and_punctuality }} <td class="none">{{ form.attendance_and_punctuality.label }} {{ form.attendance_and_punctuality.errors }}</td>
+	</tr>
+	<tr>
+	    {{ form.attitude_and_motivation }} <td class="none">{{ form.attitude_and_motivation.label }} {{ form.attitude_and_motivation.errors }}</td>
+	</tr>
+	<tr>
+	    {{ form.productivity_and_time_management }} <td class="none">{{ form.productivity_and_time_management.label }} {{ form.productivity_and_time_management.errors }}</td>
+	</tr>
+	<tr>
+	    {{ form.ability_to_learn_new_tasks }} <td class="none">{{ form.ability_to_learn_new_tasks.label }} {{ form.ability_to_learn_new_tasks.errors }}</td>
+	</tr>
+	<tr>
+	    {{ form.professional_appearance }} <td class="none">{{ form.professional_appearance.label }} {{ form.professional_appearance.errors }}</td>
+	</tr>
+	<tr>
+	    {{ form.interaction_with_coworkers }} <td class="none">{{ form.interaction_with_coworkers.label }} {{ form.interaction_with_coworkers.errors }}</td>
+	</tr>
+	<tr>
+	    {{ form.initiative_and_self_direction }} <td class="none">{{ form.initiative_and_self_direction.label }} {{ form.initiative_and_self_direction.errors }}</td>
+	</tr>
+	<tr>
+	    {{ form.accuracy_and_attention_to_detail }} <td class="none">{{ form.accuracy_and_attention_to_detail.label }} {{ form.accuracy_and_attention_to_detail.errors }}</td>
+	</tr>
+	<tr>
+	    {{ form.organizational_skills }} <td class="none">{{ form.organizational_skills.label }} {{ form.organizational_skills.errors }}</td>
+	</tr>
+	
+    </table>
+    4- Above and Beyond, 3- Represents Level of Proficiency, 2-On the Way with some help, 1-Need Immediate Intervention
+    </td></tr>
+    <tr>
+	<td colspan="2" class="grey title"> Details/Notes </td>
+    </tr>
+    <tr>
+    <td colspan="2">{{ form.observations.label }} <br/> {{ form.observations }} {{ form.observations.errors }} </td>
+    </tr>
+    <tr>
+    <td colspan="2">{{ form.supervisor_comments.label }} <br/> {{ form.supervisor_comments }} {{ form.supervisor_comments.errors }}</td>
+    </tr>
+    <tr>
+    <td colspan="2">{{ form.student_comments.label }} <br/> {{ form.student_comments }} {{ form.student_comments.errors }}</td>
+    </tr>
+    <tr>
+    <td colspan="2">{{ form.job_description.label }} <br/> {{ form.job_description }} {{ form.job_description.errors }}</td>
+    </tr>
+    <tr>
+    <td  colspan="2">Work Environment: {{ form.work_environment }}  </td>
+    </tr>
+</table>
+{{ form.dol }}
+<div class="submit-row noprint">
+<input type="submit" name="_save" class="default" value="Save">&nbsp;&nbsp;
+<input type="submit" name="_addanother" value="Save and add another">
+</div>
+</form>
+<script type="text/javascript">
+    document.getElementById("id_work_environment_0").style.display='none';
+</script>
+{% endblock %}
+

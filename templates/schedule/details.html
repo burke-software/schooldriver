@@ -1,0 +1,22 @@
+<table>
+    <tr>
+        {{ top|safe }}
+    </tr>
+    {% for related_model in related_models %}
+        <tr>
+            <td>
+                {{ related_model.name|capfirst }}
+            </td>
+            <td>
+                <table>
+                    {% for item in related_model.items %}
+                        <tr>
+                            <td>{{ item }}</td> <td>{{ item.details}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+    {% endfor %}
+     
+</table>

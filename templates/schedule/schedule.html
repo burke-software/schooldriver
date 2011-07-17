@@ -1,0 +1,233 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+    <style type="text/css">
+        #right {
+            margin-left:310px;
+        }
+        #left {
+            float:left;
+            width:300px;
+            margin-left:-100%
+        }
+        div#wrapper{
+            float:left;
+            width:100%
+        }
+        .dashboard #content {
+            width:95%;
+        }
+        body {
+            font-size: 110%;
+        }
+        .add {
+            font-size: 90%;
+            font-style: italic;
+        }
+        .sub {
+            padding-left: 10px;
+            font-size: 80%;
+        }
+        .recent {
+            font-style: italic;
+        }
+        td {
+            padding-right: 20px;
+            padding-left: 20px;
+        }
+        
+        span.ajax {
+            color: #C11B17;
+        }
+        span.ajax:hover {
+            text-decoration:underline;
+            cursor:pointer;
+            color: #951F21;
+        }
+    </style>
+    
+    <script type="text/javascript">
+        function ajax_related(model, id){
+            var span = $(document.getElementById('ajax'));
+            $.ajax({
+               type: "POST",
+               url: "{% url ecwsp.schedule.views.schedule_ajax %}",
+               data: 'model=' + model + '&id=' + id,
+               success: function(msg){
+                    span.fadeOut("fast", function() {
+                        span.html(msg).fadeIn("medium");
+                    });
+               }
+             });
+            
+        }
+        
+        function mps_more() {
+            $('.mps_more').hide().slideDown();
+            $('#mps_more').fadeOut();
+        }
+        function p_more() {
+            $('.p_more').hide().slideDown();
+            $('#p_more').fadeOut();
+        }
+        function c_more() {
+            $('.c_more').hide().slideDown();
+            $('#c_more').fadeOut();
+        }
+        
+    </script>
+{% endblock %}
+
+{% block content %}
+	<h1> Scheduling </h1>
+    <table>
+        <tr>
+            <td> <a href=""> Download .xls </a> </td> <td> <a href=""> Import .xls </a> </td>
+        </tr>
+    </table>
+    <br/>
+    
+    <div id=wrapper>
+    <div id="right">
+        
+        <div id="ajax">
+            Click on items of<span style="color: #C11B17;"> this color</span> to view details and related objects&nbsp;
+        </div>
+    </div>
+    </div>
+    
+    <div id="left">
+        School Year - <a href="{% url admin:schedule_schoolyear_add %}" class="add">(Add year)</a>
+        <div class="sub">
+            <span class="recent">Recent years</span>
+            <table>            
+                {% for year in years %} 
+                    <tr>
+                        <td>
+                            <span class="ajax" onclick='ajax_related("SchoolYear", "{{ year.id }}")'>{{ year }}</span>
+                        </td> 
+                        <td>
+                            <a href="{% url admin:schedule_schoolyear_change year.id %}">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if years.more %}
+                    <tr>
+                        <td>
+                            <a href="{% url admin:schedule_markingperiod_changelist %}">Search</a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+        
+        <br/>
+        Marking Periods - <a href="{% url admin:schedule_markingperiod_add %}" class="add">(Add MP)</a>
+        <div class="sub">
+            <span class="recent">Recent marking periods</span>
+            <table>            
+                {% for mp in mps|slice:":3" %}
+                    <tr>
+                        <td>
+                            <span class="ajax" onclick='ajax_related("MarkingPeriod", "{{ mp.id }}")'>{{ mp }}</span>
+                        </td> 
+                        <td>
+                            <a href="{% url admin:schedule_markingperiod_change mp.id %}">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% for mp in mps|slice:"3:" %}
+                    <tr style="display:none;" class="mps_more">
+                        <td>
+                            <span class="ajax" onclick='ajax_related("MarkingPeriod", "{{ mp.id }}")'>{{ mp }}</span>
+                        </td> 
+                        <td>
+                            <a href="{% url admin:schedule_markingperiod_change mp.id %}">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if mps.more %}
+                    <tr>
+                        <td>
+                            <a id="mps_more" href="javascript:mps_more()" style="padding-right: 20px;">...More </a> <a href="{% url admin:schedule_markingperiod_changelist %}"> Search </a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+        
+        <br/>
+        Periods - <a href="{% url admin:schedule_period_add %}" class="add">(Add Period)</a>
+        <div class="sub">
+            <span class="recent">Recent periods</span>
+            <table>         
+                {% for period in periods|slice:":6" %}
+                    <tr>
+                        <td>
+                            <span class="ajax" onclick='ajax_related("Period", "{{ period.id }}")'>{{ period }}</span>
+                        </td> 
+                        <td>
+                            <a href="{% url admin:schedule_period_change period.id %}">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% for period in periods|slice:"6:" %}
+                    <tr style="display:none;" class="p_more">
+                        <td>
+                            <span class="ajax" onclick='ajax_related("Period", "{{ period.id }}")'>{{ period }}</span>
+                        </td> 
+                        <td>
+                            <a href="{% url admin:schedule_period_change period.id %}">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if periods.more %}
+                    <tr>
+                        <td>
+                            <a id="p_more" href="javascript:p_more()" style="padding-right: 20px;">...More <a href="{% url admin:schedule_period_changelist %}">Search</a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+        
+        <br/>
+        Courses - <a href="{% url admin:schedule_course_add %}" class="add">(Add Course)</a>
+        <div class="sub">
+            <span class="recent">Recent courses</span>
+            <table>            
+                {% for course in courses|slice:":6" %}
+                    <tr>
+                        <td>
+                            <span class="ajax" onclick='ajax_related("Course", "{{ course.id }}")'>{{ course }}</span>
+                        </td> 
+                        <td>
+                            <a href="{% url admin:schedule_course_change course.id %}">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                 {% for course in courses|slice:"6:" %}
+                    <tr style="display:none;" class="c_more">
+                        <td>
+                            <span class="ajax" onclick='ajax_related("Course", "{{ course.id }}")'>{{ course }}</span>
+                        </td> 
+                        <td>
+                            <a href="{% url admin:schedule_course_change course.id %}">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if courses.more %}
+                    <tr>
+                        <td>
+                            <a id="c_more" href="javascript:c_more()" style="padding-right: 20px;">...More<a href="{% url admin:schedule_course_changelist %}">.Search</a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+
+    </div>
+    
+{% endblock %}
+

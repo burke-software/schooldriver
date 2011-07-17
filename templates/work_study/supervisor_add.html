@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+	<h3> Add a new primary supervisor for {{ student }} at {{ company }}</h3>
+	<form action="" method="post">
+		<table>
+			<tr>
+				<td>First Name </td><td> {{ form.fname }} {{ form.fname.errors }}</td>
+			</tr>	
+			<tr>
+				<td>Last Name </td><td> {{ form.lname }} {{ form.lname.errors }} </td>
+			</tr>
+			<tr>
+				<td>Phone</td><td>{{ form.phone }}{{ form.phone.errors }}</td>
+			</tr>
+			<tr>
+				<td>Cell Phone</td><td>{{ form.phone_cell }}{{ form.phone_cell.errors }}</td>
+			</tr>
+			<tr>
+				<td>Email</td><td>{{ form.email }}{{ form.email.errors }}</td>
+			</tr>
+		</table>
+			
+
+		<input type="submit" name="add_complete" value="Add new supervisor" />
+	</form>
+{% endblock %}
+

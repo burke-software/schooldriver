@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block nav %}
+	
+{% endblock %}
+
+{% block head %}
+	    <script type="text/javascript" src="/static/js/jquery.js"/>
+
+	<script type="text/javascript" src="/static/js/jquery.dimensions.min.js"></script>
+	
+	<link rel="stylesheet" type="text/css" href="/static/css/ptTimeSelect/ui.core.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="/static/css/ptTimeSelect/ui.theme.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="/static/css/ptTimeSelect/jquery.ptTimeSelect.css" />
+	<script type="text/javascript" language="JavaScript" src="/static/js/jquery.ptTimeSelect.js"></script>
+	
+	{% load adminmedia %}
+	<script type="text/javascript" src="/static/js/admin/jsi18n.js/"></script>
+	<script type="text/javascript" src="/static/grappelli/js/core.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/grappelli/css/widgets.css" media="screen" />
+    <script type="text/javascript">
+		window.__admin_media_prefix__ = "{% filter escapejs %}{% admin_media_prefix %}{% endfilter %}";
+	</script>
+    {{ form.media }}
+    
+    <script language="JavaScript">
+	    //when the document is ready, it runs a function that runs on each piece of code that will evaluate this html file
+		$(document).ready(
+			function () {
+				$('code').each(
+					function() {
+						eval($(this).html());
+					}
+				)
+			}
+		);
+	</script>
+    
+    <script type="text/javascript">
+        
+        function check_date() {
+	//date hack that fixes an identical bug in iE9 and Firefox that has problems with dashes and slashes in dates
+			date = new Date(document.timesheet_form.date.value.replace('-', '/').replace('-', '/'));
+			return true;
+		}
+    </script>
+    
+    <head> 
+                <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<!-- php username -->
+                <title>CRNYHS Christian Service - Hours Record Sheet <!--(<?php echo($_SESSION['username']) ?>) --></title> 
+                <link rel="stylesheet" type="text/css" href="include/style.css"> 
+                <style type="text/css"> 
+                        h1 {text-align: center; font-size: 18pt;} 
+                        .fixed-width {width: 600px; margin: 0px auto; height: 9in;} 
+                        .faux-underline {border-bottom: 1px solid black; padding-bottom: 1px;} 
+                        .faux-underline input {border: 1px solid white;} 
+                        .faux-underline input:hover {border: 1px dotted black;} 
+                        .text-aligned-right {text-align: right;} 
+                        .spaced-to-right {position: relative; left: 40px;} 
+                        .leftbox input {width: 232px} 
+                        li input {width: 100%} 
+                        .leftcontainer {width: 232px; height 3in; float: left;} 
+/*                      .leftbox {width: 232px; height: 2.5in; border: 1px solid black; float: left; padding: 12px;} */ 
+                        .leftbox {border: 1px solid black; padding: 12px;} 
+                        .rightbox {width: 300px; float: right;} 
+                        .rightbox table {width: 100%; border-spacing: 5px} 
+                        .rightbox input {width: 100%} 
+                        .date {width: 0.85in} 
+                        @media screen 
+                        { 
+                                .footer {visibility: hidden;} 
+                        } 
+                        @media print 
+                        { 
+                                .footer {font-size: 8pt; margin: 0px auto; text-align: center; width: 6.75in} 
+                        } 
+                        .faux-input {font-family: sans-serif; font-size: 10pt; text-decoration: underline}
+                </style> 
+        </head> 
+{% endblock %}
+
+{% block css %}
+	span.hidden{
+		visibility:hidden;
+	}
+    
+    .spacer{
+        height: 10px;
+    }
+    
+	input.button {
+		background:url('/static/images/gradient_light.jpg') repeat-x 50% 50% #f8f8f8;
+		border-radius:10px;
+		color: #444;
+		padding: 2px; /* sliding doors padding */
+		font-size:1.1em;
+	}
+
+	input.button:active {
+		background-position: bottom right;
+		color: #000;
+		outline: none; /* hide dotted outline in Firefox */
+	}
+	border
+	textarea {
+		width: 99.9%;
+		height: 90px;
+	}
+	
+	code {
+		position: absolute;
+		visibility:hidden;
+	}
+	table.border{
+	    width: 100%; 
+	    margin:auto; 
+	    border: 3px solid #666666;
+	    }
+	
+{% endblock %}
+
+
+{% block content %}        
+                <div class="fixed-width"> 
+                        <h1><img src="images/header.jpg" alt="Cristo Rey New York High School"><br>Christian Service 2010-11<br>Hours Record Sheet</h1> <br />
+                         <p class="instructions"><b><u>INSTRUCTIONS:</u></b> Please fill in all the hours you have completed.
+			 Note the date and number of hours you completed on that date to the best of your ability.  You DO NOT need to print this form.</p>
+                        <form action="" name = "volunteer form" onsubmit="" method="post"> 
+                                <table width="100%"> 
+                                <tr> 
+                                <td align="center"> 
+                                        Student name: 
+                                        <span class="faux-input"> 
+                                               <!-- <?php echo("$givenname $sn"); ?> replace with: {{ studentName }}-->
+                                        </span> 
+                                </td> 
+                                <td width="30%" align="center"> 
+                                                Cohort: <span class="faux-input"> 
+                                              <!--  <?php echo($stRow['cohort']); ?> replace with {{cohort}}-->
+                                                </span> 
+                                </td> 
+                                </tr> 
+                                </table> 
+                                <br> 
+                                <div class="leftcontainer"> 
+                                <div class="leftbox"> 
+                                        <p>Service site:</p> 
+                                        <p class="faux-input"> 
+                                       <!-- <?php echo($stRow['siName']); ?> replace with: {{siteName}}-->
+                                        </p> 
+                                        <p>Supervisor:</p> 
+                                        <p class="faux-input"> 
+                                       <!-- <?php echo($stRow['siName']); ?> replace with: {{supName}}-->
+                                        </p> 
+                                        <p>Hours required: 
+                                        <span class="faux-input"> 
+                                        <!-- <?php echo($stRow['hours-required']); ?> replace with: {{hoursReq}} -->
+                                        </span> 
+                                        </p> 
+                                        <p>Hours completed: 
+                                        <span class="faux-input"> 
+                                        <!-- <?php if(isset($hrRow['SUM(`hours`)'])) echo($hrRow['SUM(`hours`)']); else echo('0'); ?>  replace with: {{hoursComplete}} -->
+                                        </span> 
+                                        </p> 
+                                </div> 
+                                <p style="color: red"> 
+                                <!-- <?php if(isset($_SESSION['hours_errors'])) echo('Your hours record was not saved! Please correct any problems listed and save again.');$
+				if hours and date not filled out
+				    error
+				-->
+                                </p> 
+                                <p align="center"> 
+                                <!-- <?php if($teacher) echo('<a href="teacher.php">Click here to return to the list</a>'); else echo('<input type="submit" value="CLICK HERE TO SAVE YOUR WORK!">'); ?> -->
+				<br />
+				    {% if student %}
+						<input class="button" type="submit" value="Click Here to Save Your Work"/>
+				    {% else %}
+						<input class="button" type="submit" value="Click here to return to the list"/>
+				    {% endif %}
+				<!-- -->
+                                </p> 
+                                </div>
+				    <table>
+						{{ form }}
+				    </table>
+				
+                               <!-- <div class="rightbox">
+				    
+				    <tr>
+				<td colspan="2">
+					<table class="border">
+						<tr>
+							    {{ form.student }}
+							<td class="border"> Date: {{ form.date.errors }}</td>
+							<td class="border"> Number of Hours: {{ form.date.errors }}</td>
+						</tr>
+						<tr>
+							<td class="border">    {{ form.date }} </td>
+							<td class="border"> {{ form.hours }} </td>
+						</tr>
+					</table>
+				</td>
+				    </tr
+			</div>  -->
+                        </form> 
+                </div> 
+
+{% endblock %}

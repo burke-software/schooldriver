@@ -1,0 +1,133 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+    {% load adminmedia %}
+    
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/grappelli/js/core.js"></script>
+    {{ form.media }}
+	
+    <script>
+	
+	function options_toggle(id) {
+            /*id must follow convenction toggle_model_action
+             Ex id = toggle_student_filter */
+            if ($('#' + id.split("_")[1] + '_' + id.split("_")[2]).is(':visible')) {
+                $('#' + id).html('Show ' + id.split("_").slice(-2) );
+            } else {
+                $('#' + id).html('Hide ' + id.split("_").slice(-2));
+            }
+            $('#' + id.split("_")[1] + '_' + id.split("_")[2]).toggle('fast');
+        }
+	
+    function toggle_custom(title, details) {
+     if( document.getElementById(details).style.display=='none' ){
+       document.getElementById(details).style.display = '';
+       document.getElementById(title).style.backgroundColor = '#3B6C84';
+       document.getElementById(title).style.color = 'white';
+     }else{
+       document.getElementById(details).style.display = 'none';
+       document.getElementById(title).style.backgroundColor = '#EEEEEE';
+       document.getElementById(title).style.color = 'black';
+     }
+    }
+    </script>
+{% endblock %}
+
+{% block content %}
+    <h2> Report Builder </h2>
+    <form action="" method="post">
+	    {{ form.errors }}
+	 <fieldset style="padding:5px;">
+	<legend>Pre-made Reports </legend>
+	<table>
+	    <tr>
+		<td style="vertical-align: top;">
+		    FTE<br/>
+		    <input class="preport" type="submit" name="fteInd" value="FTE by Industry" /> <br/>
+		    <input class="preport" type="submit" name="fteDay" value="FTE by Day" /><br/>
+		    <input class="preport" type="submit" name="ftePay" value="FTE by Paying status" />
+		</td>
+		<td style="vertical-align: top;">
+		    Misc <br/>
+		    <input class="preport" type="submit" name="history" value="Company History" />
+		    <br/>
+		    <input class="preport" type="submit" name="master" value="Master contact list" />
+		    <br/>
+                    <input class="preport" type="submit" name="all_timesheets" value="All Time Sheets" />
+		     <br/>
+		     <input class="preport" type="submit" name="contracts" value="Contracts report" />
+		</td>
+		<td style="vertical-align: top;">
+		    Attendance <br/>
+		    <input class="preport" type="submit" name="attnMonday" value="Monday" />
+		    <br/>
+		    <input class="preport" type="submit" name="attnTuesday" value="Tuesday" />
+		    <br/>
+		    <input class="preport" type="submit" name="attnWednesday" value="Wednesday" />
+		    <br/>
+		    <input class="preport" type="submit" name="attnThursday" value="Thursday" />
+		    <br/>
+		    <input class="preport" type="submit" name="attnFriday" value="Friday" />
+		</td>
+	    </tr>
+	</table>
+	</fieldset>
+	<br/>
+    
+    <fieldset style="padding:5px;">
+	<legend>Date based reports</legend>
+	<table>
+	    <tr>
+		<td> From: {{ form.custom_billing_begin }} {{ form.custom_billing_begin.errors }} <br/>
+		    Until: {{ form.custom_billing_end }} {{ form.custom_billing_end.errors }}</td>
+	    </tr>
+	    <tr>
+		<td>
+		    <input style="text-align: left; width: 100%;" type="submit" name="attendance" value="Attendance and missed day report" />
+		    <br/>
+		    <input style="text-align: left; width: 100%;" type="submit" name="billing" value="Billing and timesheet report" />
+		    <br/>
+		    <input style="text-align: left; width: 100%;" type="submit" name="student_timesheet" value="Students who submitted timesheets" />
+		    <br/>
+		    <input class="preport" type="submit" name="dols" value="DOL report" />
+		</td>
+	    </tr>
+	</table>
+    </fieldset>
+    </form>
+    
+    <br/>
+    
+    <form action="" method="post" enctype="multipart/form-data">
+	<fieldset style="padding:5px;">
+	    <legend> Template based report </legend>
+	    {{ template_form.non_field_errors  }}
+	    {{ template_form.errors }}
+		<table>
+		    <tr>
+		    <td> 
+			{{ template_form.include_deleted.label }} {{ template_form.include_deleted }} {{ template_form.include_deleted.errors }}
+		    </td></tr><tr><td>
+			{{ template_form.all_students.label }} {{ template_form.all_students }} {{ template_form.all_students.errors }}
+			<br/>{{ template_form.student.label }} {{ template_form.student }} {{ template_form.student.errors }}
+		    </td></tr><tr><td>
+			<a href="javascript:void(0)" id="toggle_filter_options" onclick='options_toggle(id)'>Show filter and sort options</a>
+			<div id="filter_options" style="display: none">
+			    {{ template_form.sort_by.label }}  {{ template_form.sort_by }} {{ template_form.sort_by.errors }}
+			    <br/> {{ template_form.filter_year.label }}  {{ template_form.filter_year }} {{ template_form.filter_year.errors }}
+			</div>
+		    </td></tr><tr><td>
+			{{ template_form.template.label }} {{ template_form.template }} {{ template_form.template.errors }}
+			<br/>
+			{{ template_form.upload_template.label }} {{ template_form.upload_template }} {{ template_form.upload_template.help_text }} {{ template_form.upload_template.errors }}
+			<br/>
+			{{ template_form.format.label }} {{ template_form.format }} {{ template_form.format.errors }}
+		    </td>
+		    </tr>
+		</table>
+	    <input type="submit" name="pod_report"/>
+	</fieldset>
+    </form>
+{% endblock %}

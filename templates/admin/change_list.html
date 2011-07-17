@@ -1,0 +1,57 @@
+{% extends "grappelli/templates/admin/change_list.html" %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    <style type="text/css">
+        .modal {
+          background-color:#fbfdfd;
+          display:none;
+          width:550px;
+          padding:20px;
+          text-align:center;
+          border:3px solid #333;
+          
+          opacity:0.98;
+          border-radius:12px;
+          -moz-border-radius:12px;
+          -webkit-border-radius:12px;
+          box-shadow: 20px 20px 200px black;
+          -moz-box-shadow: 20px 20px 200px black;
+          -webkit-box-shadow: 20px 20px 200px black;
+          z-index: 999;
+        }
+  </style>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="/static/js/jquery.tools.min.js" type="text/javascript"></script>
+    {{ block.super }}
+    <!-- Edited grappelli/js/actions.min.js to show overlaw when needed -->
+    <script type="text/javascript"> 
+        $(document).ready(function() {
+            $("select[name=action]").change(function() {
+                if ( $("option[value=export_simple_selected_objects]:selected").length ) {
+                    $.post(  
+                        "",  
+                        $("#changelist-form").serialize(),  
+                        function(data){  
+                            $("#export_xls_form").html(data);
+                        }  
+                    ); 
+                    $("#export_xls_form").overlay({
+                            top: '3',
+                            fixed: false
+                        });
+                    $("#export_xls_form").overlay().load();
+                    return false;
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    <!-- Overlay -->
+    <div class="modal" id="export_xls_form"><button class="close"> Close </button></div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "grappelli/templates/admin/change_form.html" %}
+{% load i18n admin_modify adminmedia grp_tags %}
+
+<!-- OBJECT TOOLS -->
+{% block object-tools %}
+    {% if change %}
+        {% if not is_popup %}
+            <ul class="tools">
+                <li><a href="/schedule/student_gradesheet/{{ object_id }}" class="historylink">{% trans "Gradesheet" %}</a></li>
+                <li><a href="history/">{% trans "History" %}</a></li>
+                {% if has_absolute_url %}<li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/" class="focus" target="_blank">{% trans "View on site" %}</a></li>{% endif%}
+            </ul>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+<!-- CONTENT -->
+{% block content %}
+    <div class="container-flexible">
+        <div class="form-container">
+            <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.module_name }}_form">{% csrf_token %}{% block form_top %}{% endblock %} 
+                <div>
+                    <!-- Popup Hidden Field -->
+                    {% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
+                    
+                    <!-- Submit-Row -->
+                    {% if save_on_top %}{% submit_row %}{% endif %}
+                    
+                    <!-- Errors -->
+                    {% if errors %}
+                        <p class="errornote">{% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}</p>
+                        <ul class="errorlist">{% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                    
+                    <!-- Fieldsets -->
+                    {% for fieldset in adminform %}
+                        {% include "admin/includes/fieldset.html" %}
+                        <fieldset class="module aligned ">
+                            <h2>Courses</h2>
+                            <div class="form-row checklist">
+                                 <table>
+                                      {% for course in courses %}
+                                           <tr>
+                                                <td><a href="/admin/schedule/course/{{ course.id }}">{{ course }}</a></td>
+                                                <td><a href="/admin/schedule/courseenrollment/{{ course.enroll }}"> Enrollment </a></td>
+                                                <td><a href="/schedule/teacher_grade/upload/{{ course.id }}"> Grades </a></td>
+                                           </tr>
+                                      {% endfor %}
+                                 </table>
+                                 {% if other_courses %}
+                                 <br/>
+                                 <a href="javascript:void(0)" onclick="$('#all_courses').toggle('fast');"> See all courses </a>
+                                 <div id="all_courses" style="display: none">
+                                      <table>
+                                      {% for course in other_courses %}
+                                           <tr>
+                                                <td><a href="/admin/schedule/course/{{ course.id }}">{{ course }}</a></td>
+                                                <td><a href="/admin/schedule/courseenrollment/{{ course.enroll }}"> Enrollment </a></td>
+                                                <td><a href="/schedule/teacher_grade/upload/{{ course.id }}"> Grades </a></td>
+                                           </tr>
+                                      {% endfor %}
+                                 {% endif %}
+                                 </table>
+                                 </div>
+                           </div>
+                         </fieldset>
+                    {% endfor %}
+                    
+                    {% block after_field_sets %}{% endblock %}
+                    
+                    <!-- Inlines -->
+                    {% for inline_admin_formset in inline_admin_formsets %}
+                        {% include inline_admin_formset.opts.template %}
+                    {% endfor %}
+                    
+                    {% block after_related_objects %}{% endblock %}
+                    
+                    <!-- Submit-Row -->
+                    {% submit_row %}
+                    
+                    {% if adminform and add %}
+                        {% block extrahead %}
+                            <script type="text/javascript">
+                                (function($){
+                                    $(function(){
+                                        try {
+                                            // focus on first form-field
+                                            $("#{{ adminform.first_field.auto_id }}, #{{ adminform.first_field.auto_id }}_0")
+                                            .eq(0).focus();
+                                        } catch(e) {}
+                                    });
+                                }(django.jQuery));
+                            </script>
+                        {% endblock %}
+                    {% endif %}
+                    
+                    <!-- JS for prepopulated fields -->
+                    {% prepopulated_fields_js %}
+                    
+                </div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var alertbox = $('#id_alert').val();
+        if (alertbox.length > 0) {
+            alert(alertbox);
+        }
+    </script>
+{% endblock %}

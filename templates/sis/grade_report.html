@@ -1,0 +1,69 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+    {% load adminmedia %}
+    
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/grappelli/js/core.js"></script>
+    {{ form.media }}
+    
+    <script type="text/javascript">
+	function options_toggle(id) {
+            /*id must follow convenction toggle_model_action
+             Ex id = toggle_student_filter */
+            if ($('#' + id.split("_")[1] + '_' + id.split("_")[2]).is(':visible')) {
+                $('#' + id).html('Show ' + id.split("_").slice(-2) );
+            } else {
+                $('#' + id).html('Hide ' + id.split("_").slice(-2));
+            }
+            $('#' + id.split("_")[1] + '_' + id.split("_")[2]).toggle('fast');
+        }
+    </script>
+{% endblock %}
+
+{% block content %}
+<h2> Grade Reports </h2>
+<form action="" method="post" enctype="multipart/form-data">
+    <fieldset style="padding:5px;">
+	<legend> Template based report </legend>
+	{{ form.non_field_errors  }}
+	<table>
+	    <tr><td>
+		{{ form.date.label }} {{ form.date }} {{ form.date.errors }} <br/>
+		{{ form.include_deleted.label }} {{ form.include_deleted }} {{ form.include_deleted.errors }}
+	    </td></tr><tr><td>
+		{{ form.all_students.label }} {{ form.all_students }} {{ form.all_students.errors }}
+		<br/>{{ form.student.label }} {{ form.student }} {{ form.student.errors }}
+	    </td></tr><tr><td>
+		<a href="#" id="toggle_filter_options" onclick='options_toggle(id)'>Show filter and sort options</a>
+		<div id="filter_options" style="display: none">
+		    {{ form.sort_by.label }}  {{ form.sort_by }} {{ form.sort_by.errors }}
+		    <br/> {{ form.filter_year.label }}  {{ form.filter_year }} {{ form.filter_year.errors }}
+			<br/> {{ form.filter_cohort.label }} {{ form.filter_cohort }} {{ form.filter_cohort.errors }}
+		</div>
+	    </td></tr><tr><td>
+		{{ form.template.label }} {{ form.template }} {{ form.template.errors }}
+		<br/>
+		{{ form.upload_template.label }} {{ form.upload_template }} {{ form.upload_template.help_text }} {{ form.upload_template.errors }}
+	    <br/>
+	    {{ form.format.label }} {{ form.format }} {{ form.format.errors }}
+	    </td>
+	    </tr>
+	</table>
+	<input type="submit" name="student_grade"/>
+    </fieldset>
+</form>
+<br/>
+
+<form action="" method="post" enctype="multipart/form-data">
+    <fieldset style="padding:5px;">
+	<legend> Grade Aggregate </legend>
+	Aggreated data on teachers and year.<br/>
+	{{ mp_form }}
+	<br/>
+	<input type="submit" name="aggregate_grade_report"/>
+    </fieldset>
+</form>
+{% endblock %}
+

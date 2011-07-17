@@ -1,0 +1,22 @@
+<table>
+  {% for field in fields %}
+    <tr class="export_table">
+      <td class="export_table">
+        <input type="checkbox" class="check_field" checked="checked" name="field__{{ model }}__{{ previous_fields }}__{{ field.name }}"/>
+      </td>
+      <td class="export_table">
+        {{ field.verbose_name }}
+      </td>
+    </tr>
+    {% if field.related %}{% if field.perm %}
+      <tr class="export_table">
+        <td class="export_table"></td>
+        <td class="export_table">
+          <div id="field_{{ previous_fields }}__{{ field.name }}">
+            <a href="javascript:void(0)" onclick="get_related('{{ previous_fields }}__{{ field.name }}')"> >> Expand {{ field.verbose_name }}</a>
+          </div>
+        </td>
+      </tr>
+    {% endif %}{% endif %}
+  {% endfor %}
+</table>

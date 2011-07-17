@@ -1,0 +1,17 @@
+{% extends "faculty.html" %}
+
+{% block head %}
+	<meta http-equiv="Refresh" content="1;url=/files/{{ file }}"/>
+	<script type="text/javascript">
+		function goBack()
+		{
+			window.history.back()
+		}
+	</script>
+{% endblock %}
+
+{% block content %}
+	The download should start automatically.  If not click <a href="/media/{{ file }}">Here</a>
+    <br/>
+    <input type="button" value="Back" onclick="goBack()" />
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "grappelli/templates/admin/change_form.html" %}
+
+{% block content %}
+    {{ block.super }}
+    {% if add %}
+        <script type="text/javascript">
+             $("#id_user").val('{{ request.user.id }}');
+        </script>
+    {% endif %}
+{% endblock %}

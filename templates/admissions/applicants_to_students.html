@@ -1,0 +1,11 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+    <h2> Import applicants to students </h2>
+    {{ msg|safe }}
+    <form method="post">
+        <input type="submit" name="import" value="Import Applicants"/>
+    </form>
+{% endblock %}
+

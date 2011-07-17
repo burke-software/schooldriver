@@ -1,0 +1,124 @@
+/*css for admin widgets*/
+
+/*for FilteredSelectMultiple*/
+.selector {
+width: 580px;
+float: left;
+}
+
+.selector select {
+width: 270px;
+height: 8em;
+}
+
+.selector-available, .selector-chosen {
+float: left;
+width: 270px;
+text-align: center;
+margin-bottom: 5px;
+}
+
+.selector-available h2, .selector-chosen h2 {
+border: 1px solid #ccc;
+font-family:"Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+font-size:11px;
+}
+
+.selector .selector-available h2 {
+
+background: #a6a077 url(/images/admin/nav-bg.gif) bottom left repeat-x;
+color: white;
+}
+.selector .selector-chosen h2 {
+background: #A29A63 url(/images/admin/default-bg.gif) repeat-x scroll left top;
+color: white;
+}
+
+
+.selector .selector-filter {
+background: white;
+border: 1px solid #ccc;
+border-width: 0 1px;
+padding: 3px;
+color: #999;
+font-size: 10px;
+margin: 0;
+text-align: left;
+}
+
+.selector .selector-chosen .selector-filter {
+padding: 4px 5px;
+}
+
+.selector .selector-available input {
+width: 230px;
+}
+
+.selector ul.selector-chooser {
+float: left;
+width: 22px;
+height: 50px;
+background: url(/admin/chooser-bg.gif) top center no-repeat;
+margin: 8em 3px 0 3px;
+padding: 0;
+}
+
+.selector-chooser li {
+margin: 0;
+padding: 3px;
+list-style-type: none;
+}
+
+.selector select {
+margin-bottom: 5px;
+margin-top: 0;
+}
+
+.selector-add, .selector-remove {
+width: 16px;
+height: 16px;
+display: block;
+text-indent: -3000px;
+}
+
+.selector-add {
+background: url(/images/admin/selector-add.gif) top center no-repeat;
+margin-bottom: 2px;
+}
+
+.selector-remove {
+background: url(/images/admin/selector-remove.gif) top center no-repeat;
+}
+
+a.selector-chooseall, a.selector-clearall {
+display: block;
+width: 6em;
+text-align: left;
+margin-left: auto;
+margin-right: auto;
+font-weight: bold;
+color: #666;
+padding: 3px 0 3px 18px;
+}
+
+a.selector-chooseall:hover, a.selector-clearall:hover {
+color: #036;
+}
+
+a.selector-chooseall {
+width: 7em;
+background: url(/images/admin/selector-addall.gif) left center no-repeat;
+}
+
+a.selector-clearall {
+background: url(/images/admin/selector-removeall.gif) left center no-repeat;
+}
+
+.selector select {
+font-family:"Lucida Grande",Verdana,Arial,sans-serif;
+font-size:11px;
+font-weight:normal;
+}
+.selector h2 {
+margin-bottom:0; /*override dojo style*/
+}

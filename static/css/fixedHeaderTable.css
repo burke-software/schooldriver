@@ -1,0 +1,185 @@
+/*!
+* jquery.fixedHeaderTable. The jQuery fixedHeaderTable plugin
+*
+* Copyright (c) 2009 Mark Malek
+* http://fixedheadertable.mmalek.com
+*
+* Licensed under MIT
+* http://www.opensource.org/licenses/mit-license.php
+*
+* Launch  : October 2009
+* Version : beta 0.1
+* Released: TBA
+*/
+
+/******************************/
+/* Reset Styles DO NOT MODIFY */
+/******************************/
+
+.fht_parent h1, .fht_parent h2, .fht_parent h3, .fht_parent h4, .fht_parent h5, .fht_parent h6, .fht_parent p, .fht_parent blockquote, .fht_parent pre,
+.fht_parent a, .fht_parent abbr, .fht_parent acronym, .fht_parent address, .fht_parent big, .fht_parent cite, .fht_parent code,
+.fht_parent img, .fht_parent strong, .fht_parent ol, .fht_parent ul, .fht_parent li,
+.fht_parent table, .fht_parent tbody, .fht_parent tfoot, .fht_parent thead, .fht_parent tr, .fht_parent th, .fht_parent td {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+	background: transparent;
+}
+
+.fht_parent ol, .fht_parent ul {
+	list-style: none;
+}
+
+/* tables still need 'cellspacing="0"' in the markup */
+.fht_parent table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/********************/
+/* END Reset Styles */
+/********************/
+
+/***********/
+/* CONTENT */
+/***********/
+
+.fht_parent table thead tr th div.tableHeader a, .fht_parent table tbody tr td div.tableData, .fht_parent p {
+	font-size:14px;
+	color:#222;
+	font-weight:normal;
+	text-decoration:none;
+	font-family:Helvetica, Arial, "sans-sarif";
+}
+
+/***************/
+/* END CONTENT */
+/***************/
+
+
+/**********/
+/* LAYOUT */
+/**********/
+
+.fht_loader {
+	display:block;
+	position:absolute;
+	width:100%;
+	height:100%;
+	background:#fff url('images/loadingdata.png') no-repeat center center;
+	z-index:1;
+	top:0;
+	left:0;
+	border:1px solid #333;
+}
+
+.fht_table_block {
+	position:relative;
+	float:left;
+	overflow:hidden;
+}
+
+.fht_parent div.fht_parent {
+	margin:0 auto;
+}
+
+.fht_fixed_header_table_parent, .fht_fixed_col_fixed_header {
+	width:100%;
+	overflow-x:hidden;
+}
+
+.fht_parent div.fht_table_body {
+	overflow-y:auto;
+	overflow-x:auto;
+	border:1px solid #999;
+	border-bottom:none;
+	border-top:none;
+	background:#dfe9f4;
+}
+
+.fht_parent div.fht_fixed_header_table_parent, .fht_parent div.fht_fixed_col_fixed_header {
+	border:1px solid #999;
+	position:relative;
+	-webkit-border-top-left-radius:3px;
+	-webkit-border-top-right-radius:3px;
+	-moz-border-radius-topleft:3px;
+	-moz-border-radius-topright:3px;
+	border-radius-topleft:3px;
+	border-radius-topright:3px;
+	background:#ccc;
+}
+
+.fht_fixed_footer_border {
+	padding:0;
+}
+
+.fht_parent table thead tr th {
+	padding:10px 0;
+}
+
+.fht_parent .even {
+	background:#dfe9f4;
+}
+
+.fht_parent table tbody tr td, .fht_parent table tbody tr.even td, .fht_parent table tbody tr.odd td, .fht_parent table thead tr th {
+	padding:0;
+}
+
+.fht_parent table thead tr th div.tableHeader, .fht_parent table tbody tr td div.tableData {
+	padding:1px 0;
+	width:auto;
+	height:auto;
+}
+
+.fht_parent table thead tr th div.tableHeader p, .fht_parent table tbody tr td div.tableData {
+	word-wrap:break-word;
+}
+
+.fht_parent .borderRight {
+	border-right: 1px dotted #fff;
+}
+
+.fht_parent p.tableData, .fht_parent p.tableHeader {
+	margin-top:0;
+	margin-bottom:0;
+	padding:0 5px;
+}
+
+div.fht_fixed_col {
+	position:relative;
+	float:left;
+	margin:0;
+	padding:0;
+}
+
+div.fht_fixed_col, div.fht_fixed_col_fulltable, div.fht_fixed_col_body, div.fht_fixed_col_fixed_header {
+	display:block;
+	position:relative;
+	float:left;
+}
+
+div.fht_fixed_col_body {
+	overflow:hidden;
+}
+
+/* FOOTER */
+
+.fht_parent div.fht_cloned_footer {
+	border:1px solid #999;
+	position:relative;
+	-webkit-border-bottom-left-radius:3px;
+	-webkit-border-bottom-right-radius:3px;
+	-moz-border-radius-bottomleft:3px;
+	-moz-border-radius-bottomright:3px;
+	border-radius-bottomleft:3px;
+	border-radius-bottomright:3px;
+	background:#ccc;
+	overflow:hidden;
+}
+
+/**************/
+/* END LAYOUT */
+/**************/
