@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 blah
 
 
@@ -6,4 +5,4 @@ blah
 
 Added up this shit
 eyyo
->>>>>>> b4b6536e0623359c69eeb45b3d2960d13e446792
+operator?
