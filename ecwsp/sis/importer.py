@@ -1252,7 +1252,7 @@ class Importer:
                                     created = True
                         elif name == "username":
                             if model:
-                                models.username = value
+                                model.username = value
                             else:
                                 students = Student.objects.filter(username=value)
                                 if students:
