@@ -106,6 +106,10 @@ class Importer:
         This function should always find a name and never fail except in
         absurd scenarios with many users and limited varchar space
         """
+	# We have to kill blanks now; consider a stupid case like fname=" Joe" lname="Student"
+	# username would end up being just "student", which is no bueno
+	fname = "".join(fname.split());
+	lname = "".join(lname.split());
         try:
             i = 1
             username = unicode(fname[:i]) + unicode(lname)
