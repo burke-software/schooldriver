@@ -1,7 +1,7 @@
+from django.shortcuts import get_object_or_404
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
-
 from ajax_select import make_ajax_form
 from ajax_select.fields import autoselect_fields_check_can_add
 
@@ -83,7 +83,7 @@ class ApplicantAdmin(admin.ModelAdmin):
                 level.checks.append(check)
                 level.max += 1
                 if object_id:
-                    if check in Applicant.objects.get(id=object_id).checklist.all():
+                    if check in get_object_or_404(Applicant,id=object_id).checklist.all():
                         check.checked = True
                     else:
                         check.checked = False
