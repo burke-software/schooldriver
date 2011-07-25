@@ -64,7 +64,7 @@
 	{% if student %}
 		<h4>{{ student }}</h4>
 		{{ student.year }} <br/>
-		<span class="noprint"> Currestaticnt Location: {{ location }}</span><br/>
+		<span class="noprint"> Current Location: {{ location }}</span><br/>
 		<a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a>
 		<h5 id="h5toggle_section_infomation" class="noprint">General Information <a class="noprint" href="javascript:void(0)" id="toggle_section_infomation" onclick='options_toggle(id)'> + Show </a> </h5>
 		<div id="section_infomation" style="display: none">
