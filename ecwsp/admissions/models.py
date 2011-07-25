@@ -174,7 +174,7 @@ class Applicant(models.Model):
                     self.level = level
                     
         # create contact log entry on application decision
-        if self.application_decision:
+        if self.application_decision and self.id:
             old = Applicant.objects.get(id=self.id)
             if not old.application_decision:
                 contact_log = ContactLog(

@@ -19,6 +19,8 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
+from django.utils import simplejson
+from django.db import transaction
 from django.forms.models import modelformset_factory
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
@@ -30,7 +32,7 @@ from ecwsp.sis.models import Faculty
 from ecwsp.sis.helper_functions import *
 from ecwsp.schedule.models import Course
 
-from elementtree.SimpleXMLWriter import XMLWriter
+from elementtree.SimpleXMLWriter import XMLWriter    
 
 @permission_required('omr.change_test')
 def my_tests(request):
@@ -117,6 +119,7 @@ def edit_test(request, id=None):
 @login_required
 def edit_test_questions(request, id):
     test = get_object_or_404(Test, id=id)
+    test.reindex_question_order()
     questions = test.question_set.all()
     
     # for media
@@ -129,31 +132,26 @@ def edit_test_questions(request, id):
     }, RequestContext(request, {}),)
 
 @login_required
-def ajax_new_question_form(request, test_id):
-    test = Test.objects.get(id=test_id)
+@transaction.commit_on_success
+def ajax_reorder_question(request, test_id):
+    question_up_id = request.POST['question_up_id'][9:]
+    question_down_id = request.POST['question_down_id'][9:]
+    question_up = Question.objects.get(id=question_up_id)
+    question_down =  Question.objects.get(id=question_down_id)
     
-    if request.POST:
-        question_answer_form = AnswerFormSet(request.POST, prefix="questionanswers_new")
-        question_form = TestQuestionForm(request.POST, prefix="question_new")
-        if question_answer_form.is_valid() and question_form.is_valid():
-            q_instance = question_form.save()
-            for qa_form in question_answer_form.forms:
-                qa_instance = qa_form.save(commit=False)
-                qa_instance.question = q_instance
-                qa_instance.save()
-            return render_to_response('omr/edit_test_questions_read_only.html', {
-                'question': q_instance,
-            }, RequestContext(request, {}),)
-    else:
-        question_answer_form = NewAnswerFormSet(prefix="questionanswers_new")
-        question_form = TestQuestionForm(prefix="question_new", initial={'test': test})
+    if question_up.order and question_up.order > 1:
+        question_up.order -= 1
+        question_up.save()
+    if question_down.order:
+        question_down.order += 1
+        question_down.save()
     
-    return render_to_response('omr/ajax_question_form.html', {
-        'new': 'new',
-        'question_form.prefix': 'new',
-        'question_form': question_form,
-        'answers_formset': question_answer_form,
-    }, RequestContext(request, {}),)
+    data = {
+        question_up_id: question_up.order,
+        question_down_id: question_down.order,
+    }
+    data = simplejson.dumps(data)
+    return HttpResponse(data,'application/javascript')
 
 @login_required
 def ajax_read_only_question(request, test_id, question_id):
@@ -169,21 +167,51 @@ def ajax_delete_question(request, test_id, question_id):
     return HttpResponse('SUCCESS');
 
 @login_required
+def ajax_new_question_form(request, test_id):
+    test = Test.objects.get(id=test_id)
+    
+    if request.POST:
+        question_answer_form = AnswerFormSet(request.POST, prefix="questionanswers_new")
+        question_form = TestQuestionForm(request.POST, prefix="question_new")
+        if question_form.is_valid():
+            q_instance = question_form.save()
+            for qa_form in question_answer_form.forms:
+                if qa_form.is_valid():
+                    qa_instance = qa_form.save(commit=False)
+                    if str(qa_instance.answer).replace("<br />\n", ''): # Firefox hack
+                        qa_instance.question = q_instance
+                        qa_instance.save()
+                # what if it isn't valid? Well fuck you! Django doesn't do validation on inline formsets with blank forms. It thinks they are all invalide even if fucking delete is checked.
+            return render_to_response('omr/edit_test_questions_read_only.html', {
+                'question': q_instance,
+            }, RequestContext(request, {}),)
+    else:
+        question_answer_form = NewAnswerFormSet(prefix="questionanswers_new")
+        question_form = TestQuestionForm(prefix="question_new", initial={'test': test})
+    
+    return render_to_response('omr/ajax_question_form.html', {
+        'new': 'new',
+        'question_form.prefix': 'new',
+        'question_form': question_form,
+        'answers_formset': question_answer_form,
+    }, RequestContext(request, {}),)
+
+@login_required
 def ajax_question_form(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     if request.POST:
         question_answer_form = AnswerFormSet(request.POST, instance=question, prefix="questionanswers_" + str(question_id))
         question_form = TestQuestionForm(request.POST, instance=question, prefix="question_" + str(question_id))
-        if question_answer_form.is_valid() and question_form.is_valid():
-            question_answer_form.save()
+        
+        if question_form.is_valid() and question_answer_form.is_valid():
             question_form.save()
+            question_answer_form.save()
             return render_to_response('omr/edit_test_questions_read_only.html', {
                 'question': question,
             }, RequestContext(request, {}),)
     else:
         question_answer_form = AnswerFormSet(instance=question, prefix="questionanswers_" + str(question_id))
         question_form = TestQuestionForm(instance=question, prefix="question_" + str(question_id))
-    
     return render_to_response('omr/ajax_question_form.html', {
         'question': question,
         'question_form': question_form,

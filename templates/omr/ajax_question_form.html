@@ -6,7 +6,7 @@
     {{ answers_formset.management_form }}
     {{ question_form.errors }}
         <div class="row module">
-          <h2 class="collapse-handler">Question</h2>
+          <h2 class="collapse-handler question_header">Question {{ question_form.order }} </h2>
           {{ question_form.non_field_errors }}
           
                 {% for hidden in question_form.hidden_fields %} {{ hidden }} {% endfor %}
@@ -28,28 +28,16 @@
           </table>
           </div>
         <h2 class="collapse-handler">Answers</h2>
-        <span style="display:none">{{ answers_formset.empty_form }}</span>
+        <div id="answers_div_{{ question_form.prefix }}">
           {% for answer in answers_formset %}
-              <div class="row module answer_div_{{ question_form.prefix }}">
-                {{ answer.non_field_errors }}
-                {% for hidden in answer.hidden_fields %} {{ hidden }} {% endfor %}
-                <table>
-                    <tr>
-                        <td>
-                            {{ answer.answer }}
-                        </td>
-                        <td>
-                            {{ answer.point_value.label }} {{ answer.point_value }} {{ answer.point_value.errors }} <br/>
-                            {{ answer.error_type.label }}{{ answer.error_type }} {{ answer.error_type.errors }}<br/>
-                            {{ answer.delete }} <br/>
-                        </td>
-                    </tr>
-                </table>
+              <div class="row module answer_div answer_div_{{ question_form.prefix }}">
+                {% include "omr/answer_form.html" with answer=answer %}
               </div>
           {% endfor %}
+        </div>
         
         
-    <a href="javascript:;" id="add_more_{{ question_form.prefix }}">Add Another Question</a><br/>
+    <a href="javascript:;" id="add_more_{{ question_form.prefix }}">Add Another Answer</a><br/>
     <div class="module save_bar">
         {% if not new %}
             <button onclick="delete_question({{ question.id }}); return false;" class="delete-link">Delete</button>
@@ -67,15 +55,16 @@
                 });
             </script>
         </span>
-    </div> 
+    </div>
+    
     <script>
-      $('#add_more_{{ question_form.prefix }}').click(function() {
-        {% if new %}
-          cloneMore('div.answer_div_{{ question_form.prefix }}:last', 'questionanswers_{{ new }}');
-        {% else %}
-          cloneMore('div.answer_div_{{ question_form.prefix }}:last', 'questionanswers_{{ question.id }}');
-        {% endif %}
-      });
+      var form_count_{{ question_form.prefix }} = {{ answers_formset.total_form_count }};
+        $('#add_more_{{ question_form.prefix }}').click(function() {
+            var form = '{{answers_formset.empty_form.as_custom|escapejs}}'.replace(/__prefix__/g, form_count_{{ question_form.prefix }});
+            $('#answers_div_{{ question_form.prefix }}').append(form);
+            form_count_{{ question_form.prefix }}++;
+            $('#id_{{ answers_formset.prefix }}-TOTAL_FORMS').val(form_count_{{ question_form.prefix }});
+        });
     </script>
   </form>
 {% if new %}

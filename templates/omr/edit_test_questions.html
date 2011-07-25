@@ -21,6 +21,13 @@
       .group h2, .module h2, .group div {
         padding: 1px;
       }
+      .question_header input[type="text"]{
+        padding: 0px;
+        border-style: dotted;
+        height: inherit;
+        background: transparent;
+        width: 35px;
+      }
       .row {
         margin: 0px;
       }
@@ -39,6 +46,10 @@
     }
     .group ul, .group li {
       list-style-type: inherit;
+      margin-left: 6px;
+    }
+    .group ol {
+      margin-left: 6px;
     }
     .group div {
       font-weight: normal;
@@ -75,13 +86,17 @@
     disabled {
       background: #808080;
     }
+    
+    .tools a.icon {
+      height: 6px;
+    }
   </style>
 {% endblock %}
 
 {% block javascripts %}
   {{ block.super }}
   <script type="text/javascript">
-    function cloneMore(selector, type) {
+    /*function cloneMore(selector, type) {
       var newElement = $(selector).clone(true);
       var total = $('#id_' + type + '-TOTAL_FORMS').val();
       newElement.find(':input').each(function() {
@@ -89,6 +104,7 @@
         var id = 'id_' + name;
         $(this).attr({'name': name, 'id': id}).val('').removeAttr('checked');
       });
+      newElement.find('.point_value_span').find('input').val('0');  // Hack to make point value default to 0
       newElement.find('label').each(function() {
           var newFor = $(this).attr('for').replace('-' + (total-1) + '-','-' + total + '-');
           $(this).attr('for', newFor);
@@ -100,10 +116,9 @@
       var config = {"filebrowserWindowWidth": 940, "disableNativeSpellChecker": false, "filebrowserUploadUrl": "/ckeditor/upload/", "height": 100, "width": 550, "resize_enabled": false, "removePlugins": "scayt,menubutton,contextmenu,elementspath", "filebrowserBrowseUrl": "/ckeditor/browse/", "skin": "v2", "filebrowserWindowHeight": 747, "toolbar": [["Bold", "Italic", "Underline", "-", "Image", "Link", "Unlink", "-", "Format", "-", "Maximize", "-", "Table", "-", "BulletedList", "NumberedList", "-", "PasteText", "PasteFromWord"]]};
       var elementId = "id_" + type + "-" + (total - 1) + "-answer";
       var dumbElementId = "cke_editor_id_" + type + "-" + (total - 2) + "-answer";
-      alert(dumbElementId);
       $('.' + dumbElementId).last().remove();
       CKEDITOR.replace(elementId, config);
-    }
+    }*/
     
     function clean_ckeditor(question_id) {
       var instances = CKEDITOR.instances;
@@ -159,11 +174,18 @@
     
     function add_question() {
       // Add new question
+      if ( $('#question_new').length ) {
+        var submit_new = confirm('You must save previous question first. Would you like to save now?');
+        if ( submit_new ) {
+          $('#question_new').find('#save_question_new').click()
+        }
+        return false;
+      }
+      
       $.post(
         "ajax_question_form/new/",
         function(data){
-            //data.insertBefore( '#question_new' );
-          $("#new_question_div").prepend(data);
+          $('#new_question_div').before(data);
         }  
       );
     }
@@ -173,21 +195,88 @@
       for ( instance in CKEDITOR.instances ) {
         CKEDITOR.instances[instance].updateElement();
       }
+      
+      $("#" + form_id).find('.answer_div').each( function(i, answer_div) {
+        // in the answer div, find the answer span, then find the text area and get it's ID. Use that to find the CKEDITOR instance.
+        // The replace br is due to some oddity in firefox where by default there is a br unless clicked on.
+        if ( CKEDITOR.instances[$(answer_div).find('.answer_span').find('textarea').attr('id')].getData().replace('<br />\n', '').length <= 0 ) {
+          $(answer_div).find('input:checkbox').prop("checked", true);
+          $(answer_div).find('input:checkbox').val("on");
+          $(answer_div).find('input:checkbox').attr("checked", "checked");
+        }
+      });
+      
       form_data = $("#" + form_id).serialize();
       
       clean_ckeditor(question_id);
       
-      $("#question_" + question_id).hide();
-      
       $.post(  
         "ajax_question_form/" + question_id + "/",
         form_data,
-        function(data){  
-          $("#question_" + question_id).html(data);
-          $("#question_" + question_id).fadeIn();
+        function(data){
+          if ( question_id == "new" ){
+            $('#new_question_div').before(data);
+            $('#question_new').remove();
+          } else {
+            $("#question_" + question_id).html(data);
+          }
         }  
       );
     }
+    
+    function move_question(direction, question_id) {
+      var question_div = $('#question_' + question_id);
+      if ( direction == "up" ) {
+        var prev_div = question_div.prev();
+        var question_up_id = question_div.attr('id');
+        var question_down_id = prev_div.attr('id');
+        question_div.css("position", "relative");
+        prev_div.css("position", "relative");
+        question_div.animate({top: -prev_div.height()},500);
+        prev_div.animate({top: question_div.height()},500, function() {
+          setTimeout(function() {
+            question_div.css('position', 'static');
+            prev_div.css('position', 'static');
+            question_div.css('top', '0px');
+            prev_div.css('top', '0px');
+            question_div.removeAttr("style");
+            prev_div.removeAttr("style");
+            question_div.insertBefore(prev_div);
+          }, 50);
+        });
+      } else {
+        var prev_div = question_div.next();
+        var question_up_id = prev_div.attr('id');
+        var question_down_id = question_div.attr('id');
+        question_div.css("position", "relative");
+        prev_div.css("position", "relative");
+        question_div.animate({top: prev_div.height()},500);
+        prev_div.animate({top: -question_div.height()},500, function() {
+          setTimeout(function() {
+            question_div.css('position', 'static');
+            prev_div.css('position', 'static');
+            question_div.css('top', '0px');
+            prev_div.css('top', '0px');
+            question_div.removeAttr("style");
+            prev_div.removeAttr("style");
+            prev_div.insertBefore(question_div);
+          }, 50);
+        });
+      }
+        
+      $.post(  
+        "ajax_reorder_question/",
+        {'question_up_id': question_up_id, 'question_down_id': question_down_id},
+        function(data){
+          $.each(data, function(key, value) {
+            $('#question_' + key).find('.question_order').html(value);
+          });
+        },
+        "json"
+      );
+
+    }
+    
   </script>
 {% endblock %}
 
@@ -196,35 +285,42 @@
   
   <h2>{{ test }} Questions </h2>
   {% for question in questions %}
-    <div class="group tabular" id="question_{{ question.id }}">
+    <div class="group tabular question_div" id="question_{{ question.id }}">
       <div class="row module">
         <div class="row">
           <h2 class="collapse-handler">
-            <table style="width:100%; ">
-              <tr>
-                <td>
-                  {{ question.question|safe }}
-                </td>
-                <td class="qtable_right">
-                  <div>
-                    {{ question.point_value }} Possible Point {{ question.point_value|pluralize }}
-                    <br/>
-                    {{ question.type }}
-                    {% if question.group %} <br/> Group: {{ question.group }} {% endif %}
-                    {% for benchmark in question.benchmarks.all %}
-                      {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Benchmarks </p> {% endif %}
-                      <p style="padding:0px;">{{ benchmark }}</p>
-                    {% endfor %}
-                    {% for theme in question.themes.all %}
-                      {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Themes </p> {% endif %}
-                      {{ theme }}
-                    {% endfor %}
-                  </div>
-                </td>
-              </tr>
-            </table>
+            Question <span class="question_order">{{ question.order }}</span>
+            <ul class="tools">
+              <li class="open-handler-container"><a href="javascript://" onclick="move_question('down', {{ question.id }})" class="icon open-handler" title="Move Down"></a></li>
+              <li class="close-handler-container"><a href="javascript://" onclick="move_question('up', {{ question.id }})" class="icon close-handler" title="Move Up"></a></li>
+            </ul>
           </h2>
+          <table style="width:100%; ">
+            <tr>
+              <td>
+                {{ question.question|safe }}
+              </td>
+              <td class="qtable_right">
+                <div>
+                  {{ question.point_value }} Possible Point {{ question.point_value|pluralize }}
+                  <br/>
+                  {{ question.type }}
+                  {% if question.group %} <br/> Group: {{ question.group }} {% endif %}
+                  {% for benchmark in question.benchmarks.all %}
+                    {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Benchmarks </p> {% endif %}
+                    <p style="padding:0px;">{{ benchmark }}</p>
+                  {% endfor %}
+                  {% for theme in question.themes.all %}
+                    {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Themes </p> {% endif %}
+                    {{ theme }}
+                  {% endfor %}
+                </div>
+              </td>
+            </tr>
+          </table>
         </div>
+      </div>
+      <div class="row module">
         {% for answer in question.answer_set.all %}
           <div class="row">
             <table style="width:99%; ">

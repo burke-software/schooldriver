@@ -45,6 +45,8 @@ elif LDAP:
 else:
     AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
+LOGIN_REDIRECT_URL = "/"
+
 # Google Apps Settings
 GAPPS = False
 if GAPPS:

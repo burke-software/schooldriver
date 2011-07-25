@@ -2,6 +2,8 @@ from django import forms
 from django.forms.models import inlineformset_factory, BaseInlineFormSet
 from django.forms.formsets import DELETION_FIELD_NAME
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django import template
+from django.template import Context
 
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 
@@ -29,8 +31,16 @@ class TestQuestionForm(forms.ModelForm):
     benchmarks = AutoCompleteSelectMultipleField('benchmark', required=False)
     themes = AutoCompleteSelectMultipleField('theme', required=False)
         
-AnswerFormSet = inlineformset_factory(Question, Answer, extra=0)
-NewAnswerFormSet = inlineformset_factory(Question, Answer, extra=2)
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        
+    def as_custom(self):
+        t = template.loader.get_template('omr/answer_form.html')
+        return t.render(Context({'answer': self},))
+        
+AnswerFormSet = inlineformset_factory(Question, Answer, extra=0, form=AnswerForm)
+NewAnswerFormSet = inlineformset_factory(Question, Answer, extra=2, form=AnswerForm)
 
 #class BaseQuestionFormset(BaseInlineFormSet):
 #    """ http://yergler.net/blog/2009/09/27/nested-formsets-with-django/ """

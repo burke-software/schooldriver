@@ -23,6 +23,13 @@
   <string id="userEnvironment"></string>
 </preference-set>
 </preference-set>
+  <string id="currentInvocationLanguage">Python</string>
+  <string relative="path" id="import_dirname"></string>
+  <string id="import_exclude_matches">*.*~;*.bak;*.tmp;CVS;.#*;*.pyo;*.pyc;.svn;.git;.hg;.bzr;*%*;tmp*.html;.DS_Store;*.swp;*.kpf;*.komodoproject;.komodotools</string>
+  <string id="import_include_matches"></string>
+  <string id="javascriptExtraPaths"></string>
+  <string id="language">Python</string>
   <string id="lastInvocation">default</string>
+  <string id="mappedPaths"></string>
 </preference-set>
 </project>

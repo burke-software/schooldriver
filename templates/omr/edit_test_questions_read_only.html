@@ -1,7 +1,13 @@
 <div class="group tabular" id="question_{{ question.id }}">
-    <div class="row module">
-      <div class="row">
-        <h2 class="collapse-handler">
+      <div class="row module">
+        <div class="row">
+          <h2 class="collapse-handler">
+            Question <span class="question_order">{{ question.order }}</span>
+            <ul class="tools">
+              <li class="open-handler-container"><a href="javascript://" onclick="move_question('down', {{ question.id }})" class="icon open-handler" title="Move Down"></a></li>
+              <li class="close-handler-container"><a href="javascript://" onclick="move_question('up', {{ question.id }})" class="icon close-handler" title="Move Up"></a></li>
+            </ul>
+          </h2>
           <table style="width:100%; ">
             <tr>
               <td>
@@ -25,8 +31,9 @@
               </td>
             </tr>
           </table>
-        </h2>
+        </div>
       </div>
+      <div class="row module">
       {% for answer in question.answer_set.all %}
         <div class="row">
           <table style="width:99%; ">
@@ -42,6 +49,6 @@
           </table>
         </div>
       {% endfor %}
-    </div>
-    <button onclick="edit_question({{ question.id }})">Edit</button>
+      </div>
+      <button onclick="edit_question({{ question.id }})">Edit</button>
 </div>

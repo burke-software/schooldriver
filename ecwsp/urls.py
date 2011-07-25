@@ -13,7 +13,6 @@ urlpatterns = patterns('',
 
     (r'^sis/', include('ecwsp.sis.urls')),
     
-    (r'^accounts/login/$', 'django.contrib.auth.views.login'),
     (r'^accounts/password_change/$', 'django.contrib.auth.views.password_change'),
     (r'^accounts/password_change_done/$', 'django.contrib.auth.views.password_change_done'),
     (r'^logout/$', logout_view),
@@ -24,6 +23,11 @@ urlpatterns = patterns('',
     (r'^ldap_grp/', include('ldap_groups.urls')),
     (r'^ajax_select/', include('ajax_select.urls')),
 )
+
+if settings.GAPPS:
+    urlpatterns += patterns('', (r'^accounts/login/$', 'ecwsp.google_auth.views.login'), )
+else:
+    urlpatterns += patterns('', (r'^accounts/login/$', 'django.contrib.auth.views.login'), )
 
 if 'ecwsp.schedule' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^schedule/', include('ecwsp.schedule.urls')), )

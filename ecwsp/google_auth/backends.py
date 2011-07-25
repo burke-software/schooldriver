@@ -5,6 +5,7 @@ from django.conf import settings
 from gdata.apps.service import AppsService, AppsForYourDomainException
 from gdata.docs.service import DocsService
 from gdata.service import BadAuthentication
+from gdata.apps.groups.service import GroupsService
 
 
 logging.debug('GoogleAppsBackend')
@@ -14,6 +15,7 @@ class GoogleAppsBackend:
  """ Authenticate against Google Apps """
 
  def authenticate(self, username=None, password=None):
+     import gdata
      logging.debug('GoogleAppsBackend.authenticate: %s - %s' % (username, '*' * len(password)))
      admin_email = '%s@%s' % (settings.GAPPS_USERNAME, settings.GAPPS_DOMAIN)
      email = '%s@%s' % (username, settings.GAPPS_DOMAIN)
@@ -42,8 +44,11 @@ class GoogleAppsBackend:
              user.first_name = guser.name.given_name
              user.is_active = not guser.login.suspended == 'true'
              user.is_superuser = guser.login.admin == 'true'
-             user.is_staff = True
+             user.is_staff = False
              user.save()
+             
+             #gapps = GroupsService(email=admin_email, password=settings.GAPPS_PASSWORD, domain=settings.GAPPS_DOMAIN)
+             #groups.Service.RetrieveGroups(member_id, direct_only)
 
      except BadAuthentication:
          logging.debug('GoogleAppsBackend.authenticate: BadAuthentication')
@@ -52,12 +57,6 @@ class GoogleAppsBackend:
      except AppsForYourDomainException:
          logging.debug('GoogleAppsBackend.authenticate: AppsForYourDomainException')
          return None
-    
-     except gdata.service.CaptchaRequired:
-        import gdata.apps.service
-        captcha_token = service._GetCaptchaToken()
-        url = service._GetCaptchaURL()
-        return redirect(url)
 
      return user
 

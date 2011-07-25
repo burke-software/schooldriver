@@ -28,6 +28,7 @@ from django.contrib.contenttypes.models import ContentType
 from django import forms
 from ecwsp.work_study.forms import StudentForm, WorkTeamForm
 from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
+from ecwsp.administration.models import Configuration
 from django.contrib.auth.models import User
 from django.db.models import Q
 from ajax_select import make_ajax_form
@@ -224,6 +225,12 @@ class StudentAdmin(ReadPermissionModelAdmin):
             'classes': ['collapse']}),
         ('Personality', {'fields': ['personality_type', 'handout33'], 'classes': ['collapse']}),
     ]
+    
+    def get_readonly_fields(self, request, obj=None):
+        edit_all = Configuration.get_or_default("Edit all Student Worker Fields", "False")
+        if edit_all.value == "True":
+            return ['parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']
+        return super(StudentAdmin, self).get_readonly_fields(request, obj=obj)
 
     inlines = [StudentNumberInline, StudentFileInline, CompanyHistoryInline]
     list_filter = ['day', 'year', 'inactive']

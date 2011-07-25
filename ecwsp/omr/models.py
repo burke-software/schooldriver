@@ -69,7 +69,17 @@ class Test(models.Model):
     def students_in_queue(self):
         return self.testinstance_set.filter(results_recieved=False).count()
         
-    
+    def reindex_question_order(self):
+        """Test questions should always be 1, 2, 3, etc
+        This will set it straight with respect to current order """
+        questions = self.question_set.order_by('order')
+        i = 1
+        for question in questions:
+            if question.order != i:
+                question.order = i
+                question.save()
+            i += 1
+        
     def enroll_students(self, students):
         """ Enroll these students, delete those not in this list!! """
         if students:
@@ -133,6 +143,11 @@ class QuestionBank(QuestionAbstract):
     
 class Question(QuestionAbstract):
     test = models.ForeignKey(Test)
+    order = models.IntegerField(blank=True,null=True)
+    
+    class Meta:
+        ordering = ['order']
+    
     def copy_to_bank(self):
         """ Copy question and answer to bank unless a question with the exact same wording already exists."""
         if not QuestionBank.objects.filter(question=self.question).count():
@@ -155,6 +170,11 @@ class Question(QuestionAbstract):
                 )
                 ab.save()
                 qb.answerbank_set.add(ab)
+                
+    def save(self, *args, **kwargs):
+        if not self.order:
+            self.order = self.test.question_set.filter(order__isnull=False).count() + 1 
+        super(Question, self).save(*args, **kwargs)
     
     
 class ErrorType(models.Model):
@@ -191,7 +211,7 @@ class TestInstance(models.Model):
     results_recieved = models.BooleanField()
     def __unicode__(self):
         return '%s %s' % (self.student, self.test)
-        
+    
     @property
     def points_possible(self):
         data = self.test.question_set.aggregate(points_possible=Sum('point_value'))

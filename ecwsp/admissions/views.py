@@ -11,6 +11,7 @@ from ecwsp.sis.importer import *
 from ecwsp.admissions.reports import *
 from ecwsp.admissions.models import *
 from ecwsp.admissions.forms import *
+from ecwsp.administration.models import Configuration
 
 @user_passes_test(lambda u: u.has_perm("admissions.view_applicant"), login_url='/')   
 def reports(request):
@@ -56,6 +57,11 @@ def applicants_to_students(request, year_id):
             if not student.username:
                 student.username = imp.gen_username(student.fname, student.lname)
             student.save()
+            
+            add_worker = Configuration.get_or_default("Admissions to student also makes student worker", "False")
+            if add_worker.value == "True":
+                student.promote_to_worker()
+            
             appl.sis_student = student
             appl.save()
             for sib in appl.siblings.all():

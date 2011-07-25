@@ -1,0 +1,17 @@
+{{ answer.non_field_errors }}
+{% for hidden in answer.hidden_fields %} {{ hidden }} {% endfor %}
+<table>
+    <tr>
+        <td>
+            <span class="answer_span">{{ answer.answer }} {{ answer.answer.errors }}</span>
+        </td>
+        <td>
+            {{ answer.point_value.label }} <span class="point_value_span">{{ answer.point_value }}</span> {{ answer.point_value.errors }} <br/>
+            {{ answer.error_type.label }}{{ answer.error_type }} {{ answer.error_type.errors }}<br/>
+            {{ answer.delete }} <br/>
+        </td>
+        <td style="text-align: right;">
+            {{ answer.DELETE }} Delete? 
+        </td>
+    </tr>
+</table>
