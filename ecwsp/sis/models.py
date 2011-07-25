@@ -458,6 +458,14 @@ class Student(MdlUser):
             user.groups.add(group)
             user.save()
     
+    def graduate_and_create_alumni(self):
+        self.inactive = True
+        self.reason_left = ReasonLeft.objects.get_or_create(reason="Graduated")[0]
+        if 'ecwsp.alumni' in settings.INSTALLED_APPS:
+            from ecwsp.alumni.models import Alumni
+            Alumni.objects.get_or_create(student=self)
+        self.save()
+    
     def promote_to_worker(self):
         """ Promote student object to a student worker keeping all fields, does nothing on duplicate. """
         try:

@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 
@@ -60,6 +61,20 @@ def promote_to_sis(modeladmin, request, queryset):
                     action_flag     = CHANGE
                 )
         
+
+def graduate_and_create_alumni(modeladmin, request, queryset):
+    i = 0
+    for object in queryset:
+        object.graduate_and_create_alumni()
+        LogEntry.objects.log_action(
+            user_id         = request.user.pk, 
+            content_type_id = ContentType.objects.get_for_model(object).pk,
+            object_id       = object.pk,
+            object_repr     = unicode(object), 
+            action_flag     = CHANGE
+        )
+        i += 1
+    messages.success(request, "%s students were set as graduated, marked inactive, and if installed created in the alumni app." % (i,))
 
 def mark_inactive(modeladmin, request, queryset):
     for object in queryset:
@@ -174,7 +189,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin):
     form = StudentForm
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline, ASPHistoryInline]
-    actions = [promote_to_worker, mark_inactive, bulk_change]
+    actions = [promote_to_worker, mark_inactive, graduate_and_create_alumni, bulk_change]
     list_filter = ['inactive','year']
     list_display = ['__unicode__','year']
 admin.site.register(Student, StudentAdmin)
