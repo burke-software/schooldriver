@@ -219,141 +219,115 @@ def ajax_question_form(request, test_id, question_id):
     }, RequestContext(request, {}),)
 
 @login_required
-def generate_quexml(request):
-    from elementtree.SimpleXMLWriter import XMLWriter
-    global priorType
-    priorType = None
-    def generate_response():
-        answers = []
-        if priorType == "Multiple Choice":
-            ct=0
-            alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-            while ct < priorCt:
-                answers.append((alphabet[ct],ct+1))
-                ct=ct+1
-        elif priorType == "True/False":
-            answers = (("True",1), ("False",2))
-        w.start("response")
-        w.start("fixed")
-        for label, value in answers:
-            w.start("category")
-            w.element("label", label)
-            w.element("value", str(value))
-            w.end("category")  
-        w.end("fixed")
-        w.end("response")
-        w.end("question")
-        global priorType
-        priorType = question.type
-        global answerCt
-        answerCt=-1        
-      
+def generate_xml(request):
+    from xml.dom import minidom
     
-    response = HttpResponse(mimetype="application/ms-excel")
-    response['Content-Disposition'] = 'attachment; filename=%s' % 'test.xml'
-                
     test = TestInstance.objects.get(id=id)
-    essays = None
-    w = XMLWriter(response)
-    questionnaire = w.start("questionnaire", {
-        'xmlns:xsi':"http://www.w3.org/2001/XMLSchema-instance",
-        'xsi:noNamespaceSchemaLocation':"quexml.xsd",
-        'id':str(test.id),
-    })
-    w.start("questionnaireInfo")
-    w.element("position","before")
-    w.element("text",test.test.name) #name of test design
-    w.element("administration","self")
-    w.end("questionnaireInfo")
-    w.start("section")
-    w.start("sectionInfo")
-    w.element("position","title")
-    w.element("text",str(test.student)) #student assigned to test instance
-    w.element("administration","self")
-    w.end("sectionInfo")
+    teacher_section_required = False
+    
+    doc = minidom.Document()
+    testtag = doc.createElement("test")
+    doc.appendChild(testtag)
+    id = doc.createElement("id")
+    testtag.appendChild(id)
+    idtext = doc.createTextNode(str(test.id))
+    id.appendChild(idtext)
+    titletag = doc.createElement("title")
+    testtag.appendChild(titletag)
+    titletext = doc.createTextNode(test.test.name)
+    titletag.appendChild(titletext)
+    studentsection = doc.createElement("section")
+    testtag.appendChild(studentsection)
+    studentnametag = doc.createElement("name")
+    studentsection.appendChild(studentnametag)
+    studentname = doc.createTextNode(str(test.student.fname + " " + test.student.lname))
+    studentnametag.appendChild(studentname)
+
     questions = test.test.question_set.order_by('group')
     groups = []
+    essays = []
     for q in questions:
         if q.group not in groups:
             groups.append(q.group)
     
     for group in groups:
-        w.start("question")
-        w.element("text",str(group))
+        grouptag = doc.createElement("group")
+        studentsection.appendChild(grouptag)
+        groupname = doc.createElement("text")
+        grouptag.appendChild(groupname)
+        groupnametext = doc.createTextNode(str(group.name))
+        groupname.appendChild(groupnametext)
+        
         groupedQuestions = questions.filter(group=group)
         i = 1 # Question number for human use only
         priorType = None
-        essays = []
-        answerCt = -1
-        for question in groupedQuestions:
-            if priorType:
-                if priorType != question.type and priorType != "Essay":
-                    priorCt = answerCt
-                    generate_response()
-                    w.start("question")
-                elif priorType=="Multiple Choice":
-                    priorCt=answerCt
-                    answerCt = Answer.objects.filter(question=question).count()
-                    if priorCt > -1 and answerCt != priorCt:
-                        generate_response()
-                        w.start("question")
-            if question.type != "Essay":
-                w.start("subQuestion", varName=str(question.id))
-                w.element("text", str(i))
-                w.end("subQuestion")
-            else:
-                essays.append((question,i))
-            priorType = question.type
-            i += 1
-        priorCt = Answer.objects.filter(question=question).count()
-        generate_response()
         
-    w.end("section")
-    w.start("section")
-    w.start("sectionInfo")
-    w.element("position", "title")
-    w.element("text","For teacher use only!")
-    w.element("administration","self")
-    w.end("sectionInfo")
-    w.start("question")
-    value = -1
-    for essay in essays:
-        question, i = essay
-        priorVal = value
-        value = question.point_value
-        print value
-        if priorVal > -1 and value != priorValue:
-            w.start("response")
-            w.start("fixed")
-            ct=0
-            while ct<=value:
-                w.start("category")
-                w.element("label",str(ct))
-                w.element("value",str(ct+1))
-                w.end("category")
-                ct += 1
-            w.end("fixed")
-            w.end("response")
-            w.end("question")
-            w.start("question")
-        w.start("subQuestion")
-        w.element("text",str(i))
-        w.end("subQuestion")
-    w.start("response")
-    w.start("fixed")
-    value = question.point_value
-    ct=0
-    while ct<=value:
-        w.start("category")
-        w.element("label",str(ct))
-        w.element("value",str(ct+1))
-        w.end("category")
-        ct += 1
-    w.end("fixed")
-    w.end("response")    
-    w.end("question")
-    w.end("section")
+        for q in groupedQuestions:
+            questiontag = doc.createElement("question")
+            questiontag.setAttribute("varName",str(q.id))
+            grouptag.appendChild(questiontag)
+            question_number = doc.createElement("text")
+            questiontag.appendChild(question_number)
+            if q.type == "Essay":
+                essays.append([q,i])
+                teacher_section_required = True
+                text = str(i) + ".  Essay Question"
+            else:
+                text = str(i) + ". "
+                answers = []
+                if q.type == "Multiple Choice":
+                    ct=0
+                    alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+                    while ct < q.answer_set.count():
+                        answers.append(alphabet[ct])
+                        ct=ct+1
+                elif q.type == "True/False":
+                    answers = ("True","False")
+                for choice in answers:
+                    choicetag = doc.createElement("choice")
+                    questiontag.appendChild(choicetag)
+                    choicetagtext = doc.createTextNode(str(choice))
+                    choicetag.appendChild(choicetagtext) 
+                
+            question_numbertext = doc.createTextNode(text)
+            question_number.appendChild(question_numbertext)
+            i=i+1
     
-    
-    w.close(questionnaire)
+    if teacher_section_required:
+        teachersection = doc.createElement("section")
+        testtag.appendChild(teachersection)
+        teachertexttag = doc.createElement("name")
+        teachersection.appendChild(teachertexttag)
+        teachertext = doc.createTextNode("For Teacher Use Only")
+        teachertexttag.appendChild(teachertext)
+        priorGroup = None
+        for q,number in essays:
+            if priorGroup!= q.group or priorGroup == None:
+                teacher_grouptag = doc.createElement("group")
+                teachersection.appendChild(teacher_grouptag)
+                teacher_groupname = doc.createElement("text")
+                teacher_grouptag.appendChild(teacher_groupname)
+                teacher_groupnametext = doc.createTextNode(str(group.name))
+                teacher_groupname.appendChild(teacher_groupnametext)
+                priorGroup = q.group
+                
+            teacher_question = doc.createElement("question")
+            teacher_question.setAttribute("varName",str(q.id))
+            teacher_grouptag.appendChild(teacher_question)
+            teacher_question_number = doc.createElement("text")
+            teacher_question.appendChild(teacher_question_number)
+            teacher_question_numbertext = doc.createTextNode(str(number) + ". ")
+            teacher_question_number.appendChild(teacher_question_numbertext)
+            options = Answer.objects.filter(question=q)
+            for choice in options:
+                choicetag = doc.createElement("choice")
+                teacher_question.appendChild(choicetag)
+                choicetagtext = doc.createTextNode(str(choice.point_value))
+                choicetag.appendChild(choicetagtext)
+                
+    #need to create a zip file of banding files and pdf files - currently sets up pdf to download and creates xml.            
+    response = HttpResponse(mimetype="application/pdf")
+    #xmlresponse = HttpResponse(mimetype="text/xml")    
+    pdf = createpdf(doc.toxml(),response)
+    response['Content-Disposition'] = "attachment; filename=" + pdf
     return response
