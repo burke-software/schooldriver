@@ -13,5 +13,5 @@ urlpatterns = patterns('',
     (r'^test_questions/(?P<test_id>\d+)/ajax_read_only_question/(?P<question_id>\d+)/$',ajax_read_only_question),
     (r'^test_questions/(?P<test_id>\d+)/ajax_question_form/new/$', ajax_new_question_form),
     (r'^test/(?P<test_id>\d+)/copy/$', test_copy),
-    (r'^generatexml', generate_quexml),
+    (r'^generatexml', generate_xml),
 )
