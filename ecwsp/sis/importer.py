@@ -1724,12 +1724,16 @@ class Importer:
                             login = User.objects.get_or_create(username=value)[0]
                             group = Group.objects.get_or_create(name="Company")[0]
                             login.groups.add(group)
+                            model.login.add(login)
+                            login.save()
+                        elif name == "password":
+                            login.set_password(value)
                             login.save()
                         elif name == "paying":
                             if value == "Paying": model.paying = "P"
                             elif value == "None-Paying": model.paying = "N"
                             elif value == "Funded": model.paying = "F"
-                            else: company_model.paying = value
+                            else: model.paying = value
                         elif name == "funded_by" or name =="funded by":
                             model.funded_by = value
                         elif name == "cra":

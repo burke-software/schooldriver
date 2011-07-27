@@ -20,5 +20,5 @@ urlpatterns = patterns('',
     (r'^question_bank/$', QuestionBankListView.as_view(
         model=QuestionBank,
     )),
-    (r'^generatexml', generate_quexml),
+    (r'^generatexml', generate_xml),
 )
