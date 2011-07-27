@@ -13,7 +13,9 @@
           <table>
             <tr>
               <td style="text-align: center;">
-                      {{ question_form.group.label }} {{ question_form.group.errors }} {{ question_form.group }} &nbsp;&nbsp;&nbsp;&nbsp;
+                      {{ question_form.group.label }} {{ question_form.group.errors }} {{ question_form.group }}
+                      <a href="/admin/omr/questiongroup/add/" class="add-another" id="add_id_{{question_form.group.html_name}}" onclick="return showAddAnotherPopup(this);"><img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"></a>
+                      &nbsp;&nbsp;&nbsp;&nbsp;
                       {{ question_form.type.label }} {{ question_form.type.errors }} {{ question_form.type }} &nbsp;&nbsp;&nbsp;&nbsp;
                       {{ question_form.point_value.label }} {{ question_form.point_value.errors }} {{ question_form.point_value }} &nbsp;&nbsp;&nbsp;&nbsp;
                   <br/>
@@ -22,7 +24,10 @@
               
               <td>
                 {{ question_form.benchmarks.label }} {{ question_form.benchmarks.errors }} <br/> {{ question_form.benchmarks }}<br/>
-                {{ question_form.themes.label }} {{ question_form.themes.errors }} <br/> {{ question_form.themes }}
+                {{ question_form.themes.label }} {{ question_form.themes.errors }}
+                <a href="/admin/omr/theme/add/" class="add-another" id="add_id_{{question_form.themes.html_name}}" onclick="return showAddAnotherPopup(this);"><img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"></a>
+                <br/>
+                {{ question_form.themes }}
               </td>
             </tr>
           </table>

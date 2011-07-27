@@ -183,11 +183,12 @@ INSTALLED_APPS = (
     'ecwsp.admissions',
     'ecwsp.engrade_sync',
     'ecwsp.alumni',
-    #'ecwsp.omr',
+    'ecwsp.omr',
     'reversion',
     'ldap_groups',
     'django.contrib.webdesign',
     'django_extensions',
+    'django_filters',
     #'debug_toolbar',
 )
 
@@ -238,8 +239,8 @@ CKEDITOR_UPLOAD_PATH = MEDIA_ROOT + "uploads"
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': [
-            [ 'Bold', 'Italic', 'Underline',
-              '-', 'Image', 'Link', 'Unlink',
+            [ 'Bold', 'Italic', 'Underline', 'Subscript','Superscript',
+              '-', 'Image', 'Link', 'Unlink', 'SpecialChar',
               '-', 'Format',
               '-', 'Maximize',
               '-', 'Table',
@@ -247,8 +248,8 @@ CKEDITOR_CONFIGS = {
               '-', 'PasteText','PasteFromWord',
             ]
         ],
-        'height': 100,
-        'width': 550,
+        'height': 80,
+        'width': 600,
         'disableNativeSpellChecker': False,
         'removePlugins': 'scayt,menubutton,contextmenu,elementspath',
         'resize_enabled': False,

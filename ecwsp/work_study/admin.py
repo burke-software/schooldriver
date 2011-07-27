@@ -350,4 +350,5 @@ admin.site.register(StudentFunctionalResponsibility)
 class CompContractAdmin(admin.ModelAdmin):
     list_display = ('company', 'name', 'signed', 'date', 'number_students')
     list_filter = ('signed','date',)
+    search_fields = ('company__name', 'name')
 admin.site.register(CompContract, CompContractAdmin)

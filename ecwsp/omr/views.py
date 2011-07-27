@@ -22,6 +22,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test, per
 from django.utils import simplejson
 from django.db import transaction
 from django.forms.models import modelformset_factory
+from django.views.generic import ListView
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
@@ -32,7 +33,30 @@ from ecwsp.sis.models import Faculty
 from ecwsp.sis.helper_functions import *
 from ecwsp.schedule.models import Course
 
-from elementtree.SimpleXMLWriter import XMLWriter    
+from elementtree.SimpleXMLWriter import XMLWriter
+import django_filters
+
+class QuestionBankFilter(django_filters.FilterSet):
+    def __init__(self, *args, **kwargs):
+        super(QuestionBankFilter, self).__init__(*args, **kwargs)
+        for name, field in self.filters.iteritems():
+            if isinstance(field, django_filters.ChoiceFilter):
+                # Add "Any" entry to choice fields.
+                field.extra['choices'] = tuple([("", "Any"), ] + list(field.extra['choices']))
+    
+    class Meta:
+        model = QuestionBank
+        fields = ['type', 'benchmarks', 'themes',]
+
+class QuestionBankListView(ListView):
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super(QuestionBankListView, self).get_context_data(**kwargs)
+        # Add in a QuerySet of all the books
+        f = QuestionBankFilter(self.request.GET, queryset=QuestionBank.objects.all())
+        context['is_popup'] = True
+        context['filter'] = f
+        return context
 
 @permission_required('omr.change_test')
 def my_tests(request):
@@ -152,6 +176,32 @@ def ajax_reorder_question(request, test_id):
     }
     data = simplejson.dumps(data)
     return HttpResponse(data,'application/javascript')
+
+@login_required
+def ajax_question_bank_to_question(request, test_id, question_bank_id):
+    test = get_object_or_404(Test, id=test_id)
+    bank = get_object_or_404(QuestionBank, id=question_bank_id)
+    new_question = Question(
+        question=bank.question,
+        group=bank.group,
+        type=bank.type,
+        point_value=bank.point_value,
+        test=test,
+    )
+    new_question.save()
+    new_question.benchmarks = bank.benchmarks.all()
+    new_question.themes = bank.themes.all()
+    new_question.save()
+    for bank_answer in bank.answerbank_set.all():
+        new_answer = Answer(
+            question=new_question,
+            answer=bank_answer.answer,
+            error_type=bank_answer.error_type,
+            point_value=bank_answer.point_value,
+        )
+        new_answer.save()
+        new_question.answer_set.add(new_answer)
+    return ajax_read_only_question(request, test_id, new_question.id)
 
 @login_required
 def ajax_read_only_question(request, test_id, question_id):

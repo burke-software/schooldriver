@@ -95,31 +95,9 @@
 
 {% block javascripts %}
   {{ block.super }}
+  <script type="text/javascript" src="/admin/jsi18n/"></script>
+  <script type="text/javascript" src="/static/grappelli/js/admin/RelatedObjectLookups.js"></script> 
   <script type="text/javascript">
-    /*function cloneMore(selector, type) {
-      var newElement = $(selector).clone(true);
-      var total = $('#id_' + type + '-TOTAL_FORMS').val();
-      newElement.find(':input').each(function() {
-        var name = $(this).attr('name').replace('-' + (total-1) + '-','-' + total + '-');
-        var id = 'id_' + name;
-        $(this).attr({'name': name, 'id': id}).val('').removeAttr('checked');
-      });
-      newElement.find('.point_value_span').find('input').val('0');  // Hack to make point value default to 0
-      newElement.find('label').each(function() {
-          var newFor = $(this).attr('for').replace('-' + (total-1) + '-','-' + total + '-');
-          $(this).attr('for', newFor);
-      });
-      total++;
-      $('#id_' + type + '-TOTAL_FORMS').val(total);
-      $(selector).after(newElement);
-      
-      var config = {"filebrowserWindowWidth": 940, "disableNativeSpellChecker": false, "filebrowserUploadUrl": "/ckeditor/upload/", "height": 100, "width": 550, "resize_enabled": false, "removePlugins": "scayt,menubutton,contextmenu,elementspath", "filebrowserBrowseUrl": "/ckeditor/browse/", "skin": "v2", "filebrowserWindowHeight": 747, "toolbar": [["Bold", "Italic", "Underline", "-", "Image", "Link", "Unlink", "-", "Format", "-", "Maximize", "-", "Table", "-", "BulletedList", "NumberedList", "-", "PasteText", "PasteFromWord"]]};
-      var elementId = "id_" + type + "-" + (total - 1) + "-answer";
-      var dumbElementId = "cke_editor_id_" + type + "-" + (total - 2) + "-answer";
-      $('.' + dumbElementId).last().remove();
-      CKEDITOR.replace(elementId, config);
-    }*/
-    
     function clean_ckeditor(question_id) {
       var instances = CKEDITOR.instances;
       re = "id_questionanswers_" + question_id + "-.*-answer";
@@ -130,6 +108,17 @@
         }
       });
     }
+    
+    function dismissQuestionBankPopup(window, question_bank_id) {
+      $.post(  
+        "ajax_question_bank_to_question/" + question_bank_id + "/",
+        function(data){
+          $('#new_question_div').before(data);
+        }  
+      );
+      window.close();
+    }
+    
     
     function edit_question(id) {
       // Change read only question into editable
@@ -341,5 +330,5 @@
     </div>
   {% endfor %}
   <div id="new_question_div"></div>
-  <button onclick="add_question();">Add Question</button> <button>Add Question from Question Bank</button>
+  <button onclick="add_question();">Add Question</button> <a onclick="return showAddAnotherPopup(this);" href="/omr/question_bank/"> <button>Add Question from Question Bank</button> </a>
 {% endblock %}
