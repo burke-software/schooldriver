@@ -34,6 +34,9 @@
       .module:first-child {
         margin-top: 0 !important;
       }
+      #content {
+        margin: 0px;
+      }
     </style>
 {% endblock %}
 
@@ -331,4 +334,13 @@
   {% endfor %}
   <div id="new_question_div"></div>
   <button onclick="add_question();">Add Question</button> <a onclick="return showAddAnotherPopup(this);" href="/omr/question_bank/"> <button>Add Question from Question Bank</button> </a>
+  <br/><br/>
+  <div class="module save_bar">
+    <a href="download_test" target="_blank"> <button> View Test </button> </a>
+    
+    <span style="float: right;">
+        <button onclick="return false;">Finalize</button>
+    </span>
+  </div>
+  
 {% endblock %}

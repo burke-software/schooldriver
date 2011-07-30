@@ -28,6 +28,7 @@ class TestQuestionForm(forms.ModelForm):
         widgets = {
             'test': forms.HiddenInput,
         }
+    is_true = forms.ChoiceField(widget=forms.Select, choices=((True,"True"),(False,"False")))
     benchmarks = AutoCompleteSelectMultipleField('benchmark', required=False)
     themes = AutoCompleteSelectMultipleField('theme', required=False)
         

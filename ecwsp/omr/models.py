@@ -129,6 +129,7 @@ class QuestionAbstract(models.Model):
     )
     type = models.CharField(max_length=25, choices=type_choices, default='Multiple Choice')
     point_value = models.IntegerField(default=1)
+    is_true = models.BooleanField(verbose_name="True or False")
     
     class Meta:
         abstract = True
@@ -170,7 +171,49 @@ class Question(QuestionAbstract):
                 )
                 ab.save()
                 qb.answerbank_set.add(ab)
-                
+    
+    def check_type(self):
+        """ Check question type, force answers to make sense. True/False should have
+        A True and False answer. """
+        if self.type == "True/False":
+            answers = self.answer_set.all()
+            if answers.count() == 2:
+                answer = Answer.objects.get(id=answers[0].id)
+                answer.answer = "True"
+                if self.is_true:
+                    answer.point_value = self.point_value
+                else:
+                    answer.point_value = 0
+                answer.save()
+                answer = Answer.objects.get(id=answers[1].id)
+                answer.answer = "False"
+                if self.is_true:
+                    answer.point_value = 0
+                else:
+                    answer.point_value = self.point_value
+                answer.save()
+            else:
+                for answer in answers:
+                    answer.delete()
+                answer = Answer(
+                    answer="False",
+                    question=self
+                )
+                if self.is_true:
+                    answer.point_value = 0
+                else:
+                    answer.point_value = self.point_value
+                answer.save()
+                answer = Answer(
+                    answer="True",
+                    question=self
+                )
+                if self.is_true:
+                    answer.point_value = self.point_value
+                else:
+                    answer.point_value = 0
+                answer.save()
+    
     def save(self, *args, **kwargs):
         if not self.order:
             self.order = self.test.question_set.filter(order__isnull=False).count() + 1 

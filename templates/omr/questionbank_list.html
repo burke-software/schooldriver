@@ -1,11 +1,18 @@
 {% extends "admin/index.html" %}
-{% load adminmedia admin_list i18n grp_tags %}
+{% load adminmedia admin_list i18n grp_tags pagination_tags %}
 
 {% block extrahead %}
   {{ block.super }}
   <style type="text/css">
       .content-grid {
-        min-width: 900px !important;
+        min-width: 800px !important;
+      }
+      .hang_indent {
+        text-indent: -1.5em;
+        margin-left: 1.5em;
+      }
+      .search {
+        width: 100% !important;
       }
   </style>
   <script type="text/javascript">
@@ -15,6 +22,7 @@
 
 {% block javascripts %}
   {{ block.super }}
+  <script type="text/javascript" src="/static/js/jquery.truncate.min.js"></script>
   <script type="text/javascript">
     function filter_toggle() {
       $('.filter-pulldown').toggle();
@@ -23,20 +31,39 @@
     function choose_question(id) {
       opener.dismissQuestionBankPopup(window, id);
     }
+    
+    $(document).ready(function() {
+      $('.limit').truncate({
+        width: 350,
+        after: '&hellip;',
+        center: false,
+        addtitle: true // adds title attribute with original content
+      });
+    });
   </script>
 {% endblock %}
 
 {% block content %}
   <h2>Question Bank</h2>
-  
+  {% autopaginate filter.qs 50 as filter_list %}
   <div class="module changelist-filters">
     <!-- PAGINATION TOP -->
-    <div class="module pagination"><ul class="pagination"><li class="results"><span> total</span></li></ul><br clear="all"></div>
+    <div class="module pagination">
+      <ul class="pagination">
+        <li class="results">
+          <span> {{ filter.qs.count }} total </span>
+        </li>
+        <li>
+          {% paginate %}
+        </li>
+      </ul>
+      
+    </div>
     <!-- FILTERS -->
     <div id="filters" class="module filter span-6">
       <div class="pulldown-container" >
         <a href="javascript://" class="button toggle-filters" onclick="filter_toggle()">Filter</a>
-        <div class="filter-pulldown" style="width: 342px;">
+        <div class="filter-pulldown" style="width: 325px;">
           <form action="" method="get">
             {{ filter.form.as_p }}
             <input type="submit" />
@@ -61,17 +88,36 @@
         </tr>
       </thead> 
       <tbody>
-        {% for obj in filter %}
+        {% for obj in filter_list %}
           <tr class="{% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
             <td> <a href="javascript://" onclick="choose_question({{ obj.id }});"> {{ obj }} </a> </td>
             <td> {{ obj.type }} </td>
-            <td> {{ obj.benchmarks.count }} </td>
-            <td> {{ obj.themes.count }} </td>
-            <td> {{ obj.answer_set.count }} </td>
-            <td> {{ obj.benchmarks.count }} </td>
+            <td style="min-width: 130px;">
+              {% for bench in obj.benchmarks.all %}
+                <div class="hang_indent limit">
+                  {{ bench }}
+                </div>
+              {% endfor %}
+            </td>
+            <td style="min-width: 130px;">
+              {% for theme in obj.themes.all %}
+                <div class="hang_indent limit">
+                  - {{ theme }}
+                </div>
+              {% endfor %}
+            </td>
+            <td style="min-width: 200px;">
+              {% for answer in obj.answerbank_set.all %}
+                <div class="hang_indent limit">
+                  ({{ answer.point_value }}) {{ answer }}
+                </div>
+              {% endfor %}
+              {{ obj.answer_set.count }}
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+  Tip: {{ tip|random }}
 {% endblock %}

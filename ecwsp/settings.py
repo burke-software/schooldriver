@@ -149,19 +149,6 @@ TEMPLATE_LOADERS = (
 #    'django.template.loaders.eggs.load_template_source',
 )
 
-MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    #'debug_toolbar.middleware.DebugToolbarMiddleware',
-   
-)
-if CAS:
-    MIDDLEWARE_CLASSES += (
-        'django_cas.middleware.CASMiddleware',
-        'django.middleware.doc.XViewMiddleware',
-    )
-
 ROOT_URLCONF = 'ecwsp.urls'
 
 INSTALLED_APPS = (
@@ -189,8 +176,23 @@ INSTALLED_APPS = (
     'django.contrib.webdesign',
     'django_extensions',
     'django_filters',
+    'pagination',
     #'debug_toolbar',
 )
+
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'pagination.middleware.PaginationMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
+   
+)
+if CAS:
+    MIDDLEWARE_CLASSES += (
+        'django_cas.middleware.CASMiddleware',
+        'django.middleware.doc.XViewMiddleware',
+    )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     # default template context processors
