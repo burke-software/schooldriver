@@ -269,6 +269,16 @@
 
     }
     
+    function check_type(question_id) {
+      var question_type = $('#id_question_' + question_id + '-type');
+      if ( question_type.val() == "True/False" ) {
+        $('#question_' + question_id + '_answers_div').hide();
+        $('#question_' + question_id + '_is_true_div').show();
+      } else {
+        $('#question_' + question_id + '_answers_div').show();
+        $('#question_' + question_id + '_is_true_div').hide();
+      }
+    }
   </script>
 {% endblock %}
 
