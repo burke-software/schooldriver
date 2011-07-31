@@ -7,7 +7,9 @@
         </td>
         <td>
             {{ answer.point_value.label }} <span class="point_value_span">{{ answer.point_value }}</span> {{ answer.point_value.errors }} <br/>
-            {{ answer.error_type.label }}{{ answer.error_type }} {{ answer.error_type.errors }}<br/>
+            {{ answer.error_type.label }}{{ answer.error_type }} {{ answer.error_type.errors }}
+            <a href="/admin/omr/errortype/add/" class="add-another" id="add_id_{{answer.error_type.html_name}}" onclick="return showAddAnotherPopup(this);"><img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"></a>
+            <br/>
             {{ answer.delete }} <br/>
         </td>
         <td style="text-align: right;">

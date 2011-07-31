@@ -22,6 +22,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test, per
 from django.utils import simplejson
 from django.db import transaction
 from django.forms.models import modelformset_factory
+from django.forms.widgets import TextInput
+from django.views.generic import ListView
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
@@ -32,7 +34,32 @@ from ecwsp.sis.models import Faculty
 from ecwsp.sis.helper_functions import *
 from ecwsp.schedule.models import Course
 
-from elementtree.SimpleXMLWriter import XMLWriter    
+from elementtree.SimpleXMLWriter import XMLWriter
+import django_filters
+
+class QuestionBankFilter(django_filters.FilterSet):
+    def __init__(self, *args, **kwargs):
+        super(QuestionBankFilter, self).__init__(*args, **kwargs)
+        for name, field in self.filters.iteritems():
+            if isinstance(field, django_filters.ChoiceFilter):
+                # Add "Any" entry to choice fields.
+                field.extra['choices'] = tuple([("", "Any"), ] + list(field.extra['choices']))
+    
+    class Meta:
+        model = QuestionBank
+        fields = ['question', 'type', 'benchmarks', 'themes',]
+    question = django_filters.CharFilter(name='question', lookup_type='icontains', widget=TextInput(attrs={'class':'search',}))
+
+class QuestionBankListView(ListView):
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super(QuestionBankListView, self).get_context_data(**kwargs)
+        # Add in a QuerySet of all the books
+        f = QuestionBankFilter(self.request.GET, queryset=QuestionBank.objects.all())
+        context['is_popup'] = True
+        context['filter'] = f
+        context['tip'] = ['Hover over truncated information to view all.', 'Images and formatting are not shown here. They will appear when you select a question.']
+        return context
 
 @permission_required('omr.change_test')
 def my_tests(request):
@@ -77,6 +104,14 @@ def test_copy(request, test_id):
         return HttpResponseRedirect(reverse(edit_test, args=[new_test.id]))
     else:
         return HttpResponseRedirect(reverse('admin:test_change_form', args=[new_test.id]))
+
+@login_required
+def download_test(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    test.reindex_question_order()
+    return render_to_response('omr/test.html', {
+        'test': test,
+    }, RequestContext(request, {}),)
 
 @login_required
 def edit_test(request, id=None):
@@ -154,6 +189,32 @@ def ajax_reorder_question(request, test_id):
     return HttpResponse(data,'application/javascript')
 
 @login_required
+def ajax_question_bank_to_question(request, test_id, question_bank_id):
+    test = get_object_or_404(Test, id=test_id)
+    bank = get_object_or_404(QuestionBank, id=question_bank_id)
+    new_question = Question(
+        question=bank.question,
+        group=bank.group,
+        type=bank.type,
+        point_value=bank.point_value,
+        test=test,
+    )
+    new_question.save()
+    new_question.benchmarks = bank.benchmarks.all()
+    new_question.themes = bank.themes.all()
+    new_question.save()
+    for bank_answer in bank.answerbank_set.all():
+        new_answer = Answer(
+            question=new_question,
+            answer=bank_answer.answer,
+            error_type=bank_answer.error_type,
+            point_value=bank_answer.point_value,
+        )
+        new_answer.save()
+        new_question.answer_set.add(new_answer)
+    return ajax_read_only_question(request, test_id, new_question.id)
+
+@login_required
 def ajax_read_only_question(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     return render_to_response('omr/edit_test_questions_read_only.html', {
@@ -181,7 +242,7 @@ def ajax_new_question_form(request, test_id):
                     if str(qa_instance.answer).replace("<br />\n", ''): # Firefox hack
                         qa_instance.question = q_instance
                         qa_instance.save()
-                # what if it isn't valid? Well fuck you! Django doesn't do validation on inline formsets with blank forms. It thinks they are all invalide even if fucking delete is checked.
+            q_instance.check_type()
             return render_to_response('omr/edit_test_questions_read_only.html', {
                 'question': q_instance,
             }, RequestContext(request, {}),)
@@ -206,6 +267,7 @@ def ajax_question_form(request, test_id, question_id):
         if question_form.is_valid() and question_answer_form.is_valid():
             question_form.save()
             question_answer_form.save()
+            question.check_type()
             return render_to_response('omr/edit_test_questions_read_only.html', {
                 'question': question,
             }, RequestContext(request, {}),)

@@ -26,6 +26,7 @@ from django.contrib.auth.models import User, Group
 from django.core import urlresolvers
 from django.core.files import File
 from django.conf import settings
+from django.http import Http404
 from django.dispatch import dispatcher
 from django.db.models import signals
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -111,6 +112,7 @@ class Company(models.Model):
     
     class Meta:
         verbose_name_plural = 'Companies'
+        ordering = ('name',)
     
 
 class WorkTeam(models.Model):
@@ -287,16 +289,19 @@ class CompContract(models.Model):
         from ecwsp.sis.uno_report import uno_open, save_to_response
         """ Returns contract as a pdf file
         ie: Is the browser a piece of shit? Defaults to False"""
-        document = uno_open(self.contract_file.path)
-        response = save_to_response(document, self.contract_file.name.split('.')[0], "pdf")
-        if ie:
-            response['Pragma'] = 'public'
-            response['Expires'] = '0'
-            response['Cache-Control'] = 'must-revalidate, post-check=0, pre-check=0'
-            response['Content-type'] = 'application-download'
-            response['Content-Disposition'] = 'attachment; filename="contract.pdf"'
-            response['Content-Transfer-Encoding'] = 'binary'
-        return response
+        if self.contract_file:
+            document = uno_open(self.contract_file.path)
+            response = save_to_response(document, self.contract_file.name.split('.')[0], "pdf")
+            if ie:
+                response['Pragma'] = 'public'
+                response['Expires'] = '0'
+                response['Cache-Control'] = 'must-revalidate, post-check=0, pre-check=0'
+                response['Content-type'] = 'application-download'
+                response['Content-Disposition'] = 'attachment; filename="contract.pdf"'
+                response['Content-Transfer-Encoding'] = 'binary'
+            return response
+        else:
+            raise Http404
 
 class Personality(models.Model):
     type = models.CharField(max_length=4, unique=True)

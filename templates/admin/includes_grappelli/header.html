@@ -111,7 +111,7 @@
                 </li>
             {% endif %}
             <!-- OMR -->
-            {% if perms.sis.reports and 'ecwsp.omr' in settings.INSTALLED_APPS %}
+            {% if perms.omr.change_test and 'ecwsp.omr' in settings.INSTALLED_APPS %}
                 <li class="user-options-container collapse closed">
                     <a href="javascript://" class="user-options-handler collapse-handler"> OMR </a>
                     <ul class="user-options">
