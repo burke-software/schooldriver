@@ -13,27 +13,35 @@
           <table>
             <tr>
               <td style="text-align: center;">
-                      {{ question_form.group.label }} {{ question_form.group.errors }} {{ question_form.group }} &nbsp;&nbsp;&nbsp;&nbsp;
+                      {{ question_form.group.label }} {{ question_form.group.errors }} {{ question_form.group }}
+                      <a href="/admin/omr/questiongroup/add/" class="add-another" id="add_id_{{question_form.group.html_name}}" onclick="return showAddAnotherPopup(this);"><img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"></a>
+                      &nbsp;&nbsp;&nbsp;&nbsp;
                       {{ question_form.type.label }} {{ question_form.type.errors }} {{ question_form.type }} &nbsp;&nbsp;&nbsp;&nbsp;
                       {{ question_form.point_value.label }} {{ question_form.point_value.errors }} {{ question_form.point_value }} &nbsp;&nbsp;&nbsp;&nbsp;
                   <br/>
                       {{ question_form.question.errors }} {{ question_form.question }}
+                      <div id="question_{{ question.id }}_is_true_div" style="{% if question.type != "True/False" %}display: none;{% endif %}"> Answer: {{ question_form.is_true }} {{ question_form.is_true.errors }} </div>
               </td>
               
               <td>
                 {{ question_form.benchmarks.label }} {{ question_form.benchmarks.errors }} <br/> {{ question_form.benchmarks }}<br/>
-                {{ question_form.themes.label }} {{ question_form.themes.errors }} <br/> {{ question_form.themes }}
+                {{ question_form.themes.label }} {{ question_form.themes.errors }}
+                <a href="/admin/omr/theme/add/" class="add-another" id="add_id_{{question_form.themes.html_name}}" onclick="return showAddAnotherPopup(this);"><img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"></a>
+                <br/>
+                {{ question_form.themes }}
               </td>
             </tr>
           </table>
           </div>
-        <h2 class="collapse-handler">Answers</h2>
-        <div id="answers_div_{{ question_form.prefix }}">
-          {% for answer in answers_formset %}
-              <div class="row module answer_div answer_div_{{ question_form.prefix }}">
-                {% include "omr/answer_form.html" with answer=answer %}
-              </div>
-          {% endfor %}
+        <div id="question_{{ question.id }}_answers_div" style="{% if question.type == "True/False" %}display: none;{% endif %}>
+            <h2 class="collapse-handler">Answers</h2>
+            <div id="answers_div_{{ question_form.prefix }}">
+              {% for answer in answers_formset %}
+                  <div class="row module answer_div answer_div_{{ question_form.prefix }}">
+                    {% include "omr/answer_form.html" with answer=answer %}
+                  </div>
+              {% endfor %}
+            </div>
         </div>
         
         
@@ -59,12 +67,16 @@
     
     <script>
       var form_count_{{ question_form.prefix }} = {{ answers_formset.total_form_count }};
-        $('#add_more_{{ question_form.prefix }}').click(function() {
-            var form = '{{answers_formset.empty_form.as_custom|escapejs}}'.replace(/__prefix__/g, form_count_{{ question_form.prefix }});
-            $('#answers_div_{{ question_form.prefix }}').append(form);
-            form_count_{{ question_form.prefix }}++;
-            $('#id_{{ answers_formset.prefix }}-TOTAL_FORMS').val(form_count_{{ question_form.prefix }});
-        });
+      $('#add_more_{{ question_form.prefix }}').click(function() {
+        var form = '{{answers_formset.empty_form.as_custom|escapejs}}'.replace(/__prefix__/g, form_count_{{ question_form.prefix }});
+        $('#answers_div_{{ question_form.prefix }}').append(form);
+        form_count_{{ question_form.prefix }}++;
+        $('#id_{{ answers_formset.prefix }}-TOTAL_FORMS').val(form_count_{{ question_form.prefix }});
+      });
+    
+      $('#id_question_' + {{ question.id }} + '-type').change(function() {
+        check_type({{ question.id }});
+      });
     </script>
   </form>
 {% if new %}

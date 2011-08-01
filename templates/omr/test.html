@@ -1,0 +1,30 @@
+<html>
+  <body>
+    {{ test.name }}
+    <ol>
+      {% for question in test.question_set.all %}
+        <li>
+          <div>
+            {{ question.question|safe }}
+          </div>
+          
+          {% if question.type == "Multiple Choice" or question.type == "True/False" %}
+            <div>
+              <ol type="A">
+              {% for answer in question.answer_set.all %}
+                <li>
+                  {{ answer|safe }}
+                </li>
+              {% endfor %}
+              </ol>
+            </div>
+          {% else %} {% if question.type == "Essay" %}
+            <div>
+              Essay Question
+            </div>
+          {% endif %}{% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  </body>
+</html>

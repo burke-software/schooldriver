@@ -92,7 +92,7 @@ def save_to_response(document, filename, type):
     type - choices are doc, pdf, ods, xls, and odt"""
     # create temporariy file to store document in
     tmp, filename, content = uno_save(document, filename, type)
-    
+    print filename
     # create http response out of temporariy file.
     wrapper = FileWrapper(file(tmp.name))
     response = HttpResponse(wrapper, content_type=content)

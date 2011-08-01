@@ -149,19 +149,6 @@ TEMPLATE_LOADERS = (
 #    'django.template.loaders.eggs.load_template_source',
 )
 
-MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    #'debug_toolbar.middleware.DebugToolbarMiddleware',
-   
-)
-if CAS:
-    MIDDLEWARE_CLASSES += (
-        'django_cas.middleware.CASMiddleware',
-        'django.middleware.doc.XViewMiddleware',
-    )
-
 ROOT_URLCONF = 'ecwsp.urls'
 
 INSTALLED_APPS = (
@@ -183,13 +170,29 @@ INSTALLED_APPS = (
     'ecwsp.admissions',
     'ecwsp.engrade_sync',
     'ecwsp.alumni',
-    #'ecwsp.omr',
+    'ecwsp.omr',
     'reversion',
     'ldap_groups',
     'django.contrib.webdesign',
     'django_extensions',
+    'django_filters',
+    'pagination',
     #'debug_toolbar',
 )
+
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'pagination.middleware.PaginationMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
+   
+)
+if CAS:
+    MIDDLEWARE_CLASSES += (
+        'django_cas.middleware.CASMiddleware',
+        'django.middleware.doc.XViewMiddleware',
+    )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     # default template context processors
@@ -238,8 +241,8 @@ CKEDITOR_UPLOAD_PATH = MEDIA_ROOT + "uploads"
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': [
-            [ 'Bold', 'Italic', 'Underline',
-              '-', 'Image', 'Link', 'Unlink',
+            [ 'Bold', 'Italic', 'Underline', 'Subscript','Superscript',
+              '-', 'Image', 'Link', 'Unlink', 'SpecialChar',
               '-', 'Format',
               '-', 'Maximize',
               '-', 'Table',
@@ -247,8 +250,8 @@ CKEDITOR_CONFIGS = {
               '-', 'PasteText','PasteFromWord',
             ]
         ],
-        'height': 100,
-        'width': 550,
+        'height': 80,
+        'width': 600,
         'disableNativeSpellChecker': False,
         'removePlugins': 'scayt,menubutton,contextmenu,elementspath',
         'resize_enabled': False,

@@ -1230,6 +1230,8 @@ class Importer:
         while x < sheet.nrows:
             try:
                 name = None
+                p_fname = p_mname = p_lname = p_relationship_to_student = p_street = p_city = None
+                p_state = p_zip = p_email = home = cell = work = other = None
                 row = sheet.row(x)
                 items = zip(header, row)
                 created = False
@@ -1305,6 +1307,35 @@ class Importer:
                             model.ssn = value
                         elif name == "deleted":
                             model.deleted = self.determine_truth(value)
+                        
+                        # Import emergency contact shortcut
+                        elif name in ["parent first name", 'parent 1 first name']:
+                            p_fname = value
+                        elif name in ["parent middle name", 'parent 1 middle name']:
+                            p_mname = value
+                        elif name in ['parent last name', 'parent 1 last name']:
+                            p_lname = value
+                        elif name in ['parent relationship to student', 'parent 1 relationship to student']:
+                            p_relationship_to_student = value
+                        elif name in ['parent street', 'parent 1 street']:
+                            p_street = value
+                        elif name in ['parent city', 'parent 1 city']:
+                            p_city = value
+                        elif name in ['parent state', 'parent 1 state']:
+                            p_state = value
+                        elif name in ['parent zip', 'parent 1 zip']:
+                            p_zip = value
+                        elif name in ["parent e-mail", "parent email", "parentemail", "parent__email", 'parent 1 email', 'parent 1 e-mail']:
+                            p_email = value
+                        elif name in ['parent home number', 'parent 1 home number', 'parent home phone', 'parent 1 home phone']:
+                            home = value
+                        elif name in ['parent cell number', 'parent 1 cell number', 'parent cell phone', 'parent 1 cell phone']:
+                            cell = value
+                        elif name in ['parent work number', 'parent 1 work number', 'parent work phone', 'parent 1 work phone']:
+                            work = value
+                        elif name in ['parent number', 'parent 1 number', 'parent other number', 'parent 1 other number', 'parent phone', 'parent 1 phone', 'parent other phone', 'parent 1 other phone']:
+                            other = value
+                            
                 if model: 
                     if not model.username and model.fname and model.lname:
                         model.username = self.gen_username(model.fname, model.lname)
@@ -1333,6 +1364,46 @@ class Importer:
                                 student_cohort = StudentCohort.objects.get_or_create(student=model, cohort=cohort)[0]
                                 student_cohort.primary = True
                                 student_cohort.save()
+                    # add emergency contacts (parents)
+                if p_lname and p_fname:
+                    ecs = EmergencyContact.objects.filter(fname=p_fname, lname=p_lname, street=p_street)
+                    if ecs.count():
+                        model.emergency_contacts.add(ecs[0])
+                    else:
+                        ec = EmergencyContact(
+                            fname = p_fname,
+                            mname = p_mname,
+                            lname = p_lname,
+                            relationship_to_student = p_relationship_to_student,
+                            street = p_street,
+                            city = p_city,
+                            state = p_state,
+                            zip = p_zip,
+                            email=  p_email,
+                            primary_contact = True,
+                        )
+                        ec.save()
+                        if other:
+                            number, extension = self.import_number(other)
+                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="" , contact=ec)
+                            ecNumber.contact = ec
+                            ecNumber.save()
+                        if home:    
+                            number, extension = self.import_number(home)
+                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="H" , contact=ec)
+                            ecNumber.contact = ec
+                            ecNumber.save()
+                        if cell:    
+                            number, extension = self.import_number(cell)
+                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="C" , contact=ec)
+                            ecNumber.contact = ec
+                            ecNumber.save()
+                        if work:    
+                            number, extension = self.import_number(work)
+                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="W" , contact=ec)
+                            ecNumber.contact = ec
+                            ecNumber.save()
+                        model.emergency_contacts.add(ec)
                     if created:
                         self.log_and_commit(model, addition=True)
                         inserted += 1
