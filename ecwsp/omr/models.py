@@ -44,6 +44,11 @@ class Test(models.Model):
     courses = models.ManyToManyField('schedule.Course', blank=True, null=True, help_text="Enroll an entire course, students will not show until saving.")
     students = models.ManyToManyField('sis.Student', blank=True, null=True, through='TestInstance')
     
+    class Meta:
+        permissions = (
+            ('teacher_test', 'Teacher can make edit tests'),
+        )
+    
     def __unicode__(self):
         return self.name
     
