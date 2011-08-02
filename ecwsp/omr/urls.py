@@ -18,12 +18,8 @@ urlpatterns = patterns('',
     (r'^test_questions/(?P<test_id>\d+)/ajax_question_form/new/$', ajax_new_question_form),
     (r'^test_questions/(?P<test_id>\d+)/ajax_question_bank_to_question/(?P<question_bank_id>\d+)/$',ajax_question_bank_to_question),
     (r'^test/(?P<test_id>\d+)/copy/$', test_copy),
-<<<<<<< HEAD
-    (r'^generatexml/(?P<test_id>\d+)', generate_xml),
-=======
     (r'^question_bank/$', QuestionBankListView.as_view(
         model=QuestionBank,
     )),
     (r'^generatexml', generate_xml),
->>>>>>> a5e8589946ccdc06318e2a1e23bd3ffb02ae41fc
 )
