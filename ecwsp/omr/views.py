@@ -28,6 +28,8 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 
+from ecwsp.omr.createpdf import *
+from ecwsp.omr.queXF import queXF
 from ecwsp.omr.models import *
 from ecwsp.omr.forms import *
 from ecwsp.sis.models import Faculty
@@ -282,53 +284,42 @@ def ajax_question_form(request, test_id, question_id):
     }, RequestContext(request, {}),)
 
 @login_required
-def generate_xml(request):
+def generate_xml(request,test_id):
     from xml.dom import minidom
+    test = Test.objects.get(id=test_id)
+    entiredoc = minidom.Document()
+    entire_testtag = entiredoc.createElement("test")
+    entiredoc.appendChild(entire_testtag)
+    instances = TestInstance.objects.filter(test=test.id)
+    for instance in instances:
+        teacher_section_required = False
+            
+        doc = minidom.Document()
+        testtag = doc.createElement("test")
+        id = doc.createElement("id")
+        testtag.appendChild(id)
+        idtext = doc.createTextNode(str(instance.id))
+        id.appendChild(idtext)
+        titletag = doc.createElement("title")
+        id.appendChild(titletag)
+        titletext = doc.createTextNode(test.name)
+        titletag.appendChild(titletext)        
+        studentsection = doc.createElement("section")
+        id.appendChild(studentsection)
+        studentnametag = doc.createElement("name")
+        studentsection.appendChild(studentnametag)
+        studentname = doc.createTextNode(str(instance.student.fname + " " + instance.student.lname))
+        studentnametag.appendChild(studentname)
     
-    test = TestInstance.objects.get(id=id)
-    teacher_section_required = False
-    
-    doc = minidom.Document()
-    testtag = doc.createElement("test")
-    doc.appendChild(testtag)
-    id = doc.createElement("id")
-    testtag.appendChild(id)
-    idtext = doc.createTextNode(str(test.id))
-    id.appendChild(idtext)
-    titletag = doc.createElement("title")
-    testtag.appendChild(titletag)
-    titletext = doc.createTextNode(test.test.name)
-    titletag.appendChild(titletext)
-    studentsection = doc.createElement("section")
-    testtag.appendChild(studentsection)
-    studentnametag = doc.createElement("name")
-    studentsection.appendChild(studentnametag)
-    studentname = doc.createTextNode(str(test.student.fname + " " + test.student.lname))
-    studentnametag.appendChild(studentname)
-
-    questions = test.test.question_set.order_by('group')
-    groups = []
-    essays = []
-    for q in questions:
-        if q.group not in groups:
-            groups.append(q.group)
-    
-    for group in groups:
-        grouptag = doc.createElement("group")
-        studentsection.appendChild(grouptag)
-        groupname = doc.createElement("text")
-        grouptag.appendChild(groupname)
-        groupnametext = doc.createTextNode(str(group.name))
-        groupname.appendChild(groupnametext)
-        
-        groupedQuestions = questions.filter(group=group)
+        questions = test.question_set.order_by('order')
+        essays = []
+            
         i = 1 # Question number for human use only
         priorType = None
-        
-        for q in groupedQuestions:
+        for q in questions:
             questiontag = doc.createElement("question")
             questiontag.setAttribute("varName",str(q.id))
-            grouptag.appendChild(questiontag)
+            studentsection.appendChild(questiontag)
             question_number = doc.createElement("text")
             questiontag.appendChild(question_number)
             if q.type == "Essay":
@@ -350,47 +341,39 @@ def generate_xml(request):
                     choicetag = doc.createElement("choice")
                     questiontag.appendChild(choicetag)
                     choicetagtext = doc.createTextNode(str(choice))
-                    choicetag.appendChild(choicetagtext) 
+                    choicetag.appendChild(choicetagtext)
                 
             question_numbertext = doc.createTextNode(text)
             question_number.appendChild(question_numbertext)
             i=i+1
+        if teacher_section_required:
+            teachersection = doc.createElement("section")
+            id.appendChild(teachersection)
+            teachertexttag = doc.createElement("name")
+            teachersection.appendChild(teachertexttag)
+            teachertext = doc.createTextNode("For Teacher Use Only")
+            teachertexttag.appendChild(teachertext)
+            for q,number in essays:
+                teacher_question = doc.createElement("question")
+                teacher_question.setAttribute("varName",str(q.id))
+                teachersection.appendChild(teacher_question)
+                teacher_question_number = doc.createElement("text")
+                teacher_question.appendChild(teacher_question_number)
+                teacher_question_numbertext = doc.createTextNode(str(number) + ". ")
+                teacher_question_number.appendChild(teacher_question_numbertext)
+                options = Answer.objects.filter(question=q)
+                for choice in options:
+                    choicetag = doc.createElement("choice")
+                    teacher_question.appendChild(choicetag)
+                    choicetagtext = doc.createTextNode(str(choice.point_value))
+                    choicetag.appendChild(choicetagtext)
+        
+        entire_testtag.appendChild(id.cloneNode(True))
+
     
-    if teacher_section_required:
-        teachersection = doc.createElement("section")
-        testtag.appendChild(teachersection)
-        teachertexttag = doc.createElement("name")
-        teachersection.appendChild(teachertexttag)
-        teachertext = doc.createTextNode("For Teacher Use Only")
-        teachertexttag.appendChild(teachertext)
-        priorGroup = None
-        for q,number in essays:
-            if priorGroup!= q.group or priorGroup == None:
-                teacher_grouptag = doc.createElement("group")
-                teachersection.appendChild(teacher_grouptag)
-                teacher_groupname = doc.createElement("text")
-                teacher_grouptag.appendChild(teacher_groupname)
-                teacher_groupnametext = doc.createTextNode(str(group.name))
-                teacher_groupname.appendChild(teacher_groupnametext)
-                priorGroup = q.group
-                
-            teacher_question = doc.createElement("question")
-            teacher_question.setAttribute("varName",str(q.id))
-            teacher_grouptag.appendChild(teacher_question)
-            teacher_question_number = doc.createElement("text")
-            teacher_question.appendChild(teacher_question_number)
-            teacher_question_numbertext = doc.createTextNode(str(number) + ". ")
-            teacher_question_number.appendChild(teacher_question_numbertext)
-            options = Answer.objects.filter(question=q)
-            for choice in options:
-                choicetag = doc.createElement("choice")
-                teacher_question.appendChild(choicetag)
-                choicetagtext = doc.createTextNode(str(choice.point_value))
-                choicetag.appendChild(choicetagtext)
-                
-    #need to create a zip file of banding files and pdf files - currently sets up pdf to download and creates xml.            
-    response = HttpResponse(mimetype="application/pdf")
-    #xmlresponse = HttpResponse(mimetype="text/xml")    
-    pdf = createpdf(doc.toxml(),response)
-    response['Content-Disposition'] = "attachment; filename=" + pdf
+    pdf, pdf_location, banding = createpdf(entiredoc.toxml())
+    response = HttpResponse(pdf, mimetype="application/pdf")
+    filename = "Test_" + test_id + ".pdf"
+    response['Content-Disposition'] = "filename=" + str(filename)
+    queXF(pdf_location, banding)
     return response
