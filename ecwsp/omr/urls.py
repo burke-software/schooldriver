@@ -1,10 +1,7 @@
 from django.conf.urls.defaults import *
+#from django.views.generic import ListView
 from views import *
-from django.views.generic import ListView
 from ecwsp.omr.models import QuestionBank
-
-
-
 
 urlpatterns = patterns('',
     (r'^test/$', my_tests),
@@ -24,6 +21,4 @@ urlpatterns = patterns('',
     (r'^question_bank/$', QuestionBankListView.as_view(
         model=QuestionBank,
     )),
-    (r'^generatexml', generate_xml),
-
 )

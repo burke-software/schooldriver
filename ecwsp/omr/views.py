@@ -63,7 +63,7 @@ class QuestionBankListView(ListView):
         context['tip'] = ['Hover over truncated information to view all.', 'Images and formatting are not shown here. They will appear when you select a question.']
         return context
 
-@permission_required('omr.change_test')
+@permission_required('omr.teacher_test')
 def my_tests(request):
     try:
         teacher = Faculty.objects.get(username=request.user.username)
@@ -75,6 +75,7 @@ def my_tests(request):
         'tests': tests
     }, RequestContext(request, {}),)
 
+@permission_required('omr.teacher_test')
 def my_tests_show_queue(request):
     id = request.POST['id']
     test = Test.objects.get(id=id)
@@ -83,7 +84,7 @@ def my_tests_show_queue(request):
         html += '%s <br/>' % (result.student,)
     return HttpResponse(html)
 
-@permission_required('omr.change_test')
+@user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.change_test"))
 def test_copy(request, test_id):
     """ Copy test with a copy of all questions and answers. """
     old_test = Test.objects.get(id=test_id)
@@ -107,7 +108,7 @@ def test_copy(request, test_id):
     else:
         return HttpResponseRedirect(reverse('admin:test_change_form', args=[new_test.id]))
 
-@login_required
+@user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
 def download_test(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     test.reindex_question_order()
@@ -115,7 +116,7 @@ def download_test(request, test_id):
         'test': test,
     }, RequestContext(request, {}),)
 
-@login_required
+@permission_required('omr.teacher_test')
 def edit_test(request, id=None):
     teacher = Faculty.objects.get(username=request.user.username)
     teacher_courses = Course.objects.filter(teacher=teacher)
@@ -153,7 +154,7 @@ def edit_test(request, id=None):
         'add': add,
     }, RequestContext(request, {}),)
     
-@login_required
+@permission_required('omr.teacher_test')
 def edit_test_questions(request, id):
     test = get_object_or_404(Test, id=id)
     test.reindex_question_order()
@@ -168,7 +169,7 @@ def edit_test_questions(request, id):
         'question_form': question_form,
     }, RequestContext(request, {}),)
 
-@login_required
+@permission_required('omr.teacher_test')
 @transaction.commit_on_success
 def ajax_reorder_question(request, test_id):
     question_up_id = request.POST['question_up_id'][9:]
@@ -190,7 +191,7 @@ def ajax_reorder_question(request, test_id):
     data = simplejson.dumps(data)
     return HttpResponse(data,'application/javascript')
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_question_bank_to_question(request, test_id, question_bank_id):
     test = get_object_or_404(Test, id=test_id)
     bank = get_object_or_404(QuestionBank, id=question_bank_id)
@@ -216,20 +217,20 @@ def ajax_question_bank_to_question(request, test_id, question_bank_id):
         new_question.answer_set.add(new_answer)
     return ajax_read_only_question(request, test_id, new_question.id)
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_read_only_question(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     return render_to_response('omr/edit_test_questions_read_only.html', {
         'question': question,
     }, RequestContext(request, {}),)
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_delete_question(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     question.delete()
     return HttpResponse('SUCCESS');
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_new_question_form(request, test_id):
     test = Test.objects.get(id=test_id)
     
@@ -259,7 +260,7 @@ def ajax_new_question_form(request, test_id):
         'answers_formset': question_answer_form,
     }, RequestContext(request, {}),)
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_question_form(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     if request.POST:

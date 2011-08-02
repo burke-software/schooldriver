@@ -24,6 +24,7 @@ easy_install django-grappelli
 easy_install django-ckeditor
 easy_install elementtree
 easy_install django-filter
+easy_install poster
 
 #prepare mysql
 echo "enter mysql root password"
