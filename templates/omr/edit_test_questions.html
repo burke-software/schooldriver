@@ -99,7 +99,8 @@
 {% block javascripts %}
   {{ block.super }}
   <script type="text/javascript" src="/admin/jsi18n/"></script>
-  <script type="text/javascript" src="/static/grappelli/js/admin/RelatedObjectLookups.js"></script> 
+  <script type="text/javascript" src="/static/grappelli/js/admin/RelatedObjectLookups.js"></script>
+  <script type="text/javascript" src="/static/js/jquery.blockUI.js"></script>
   <script type="text/javascript">
     function clean_ckeditor(question_id) {
       var instances = CKEDITOR.instances;
@@ -133,17 +134,21 @@
       );
     }
     
-    function cancle_edit(id){
-    // Cancle changes and bring back read only form.
-      var confirmed = confirm("Cancle changes?");
+    function cancel_edit(id){
+    // cancel changes and bring back read only form.
+      var confirmed = confirm("Cancel changes?");
       if ( confirmed ) {
         clean_ckeditor(id);
-        $.post(  
-          "ajax_read_only_question/" + id + "/",
-          function(data){
-            $("#question_" + id).html(data);
-          }  
-        );
+        if (id == 'new') {
+          $("#question_" + id).remove();
+        } else {
+          $.post(  
+            "ajax_read_only_question/" + id + "/",
+            function(data){
+              $("#question_" + id).html(data);
+            }  
+          );
+        }
       }
     }
     
@@ -279,6 +284,32 @@
         $('#question_' + question_id + '_is_true_div').hide();
       }
     }
+    
+    function finalize_test() {
+      var confirmed = confirm("Are you sure you want to finalize this test?\nYou will no longer be able to make changes to this test.");
+      if ( confirmed ) {
+        $.blockUI({
+          overlayCSS: { backgroundColor: '#00f' },
+          message: '<h1>Sending tests to QueXF...please wait. This may take up to a minute. You will be notified in case or errors or thermo-nuclear warfare.</h1>', 
+        });
+        
+        $.post(  
+          "ajax_finalize_test/",
+          function(data){
+            if (data == "SUCCESS") {
+              document.location.href = '/omr/test_result/{{ test.id }}';
+            } else {
+            // Error, let user know they should panic!
+              $.blockUI({
+                overlayCSS: { backgroundColor: '#ff0009' },
+                message: '<h1>Error! Click outside this box to dismiss.</h1>' + data, 
+              });
+              $('.blockOverlay').attr('title','Click to unblock').click($.unblockUI); 
+            }
+          }
+        );
+      }
+    }
   </script>
 {% endblock %}
 
@@ -293,8 +324,10 @@
           <h2 class="collapse-handler">
             Question <span class="question_order">{{ question.order }}</span>
             <ul class="tools">
-              <li class="open-handler-container"><a href="javascript://" onclick="move_question('down', {{ question.id }})" class="icon open-handler" title="Move Down"></a></li>
-              <li class="close-handler-container"><a href="javascript://" onclick="move_question('up', {{ question.id }})" class="icon close-handler" title="Move Up"></a></li>
+              {% if not test.finalized %}
+                <li class="open-handler-container"><a href="javascript://" onclick="move_question('down', {{ question.id }})" class="icon open-handler" title="Move Down"></a></li>
+                <li class="close-handler-container"><a href="javascript://" onclick="move_question('up', {{ question.id }})" class="icon close-handler" title="Move Up"></a></li>
+              {% endif %}
             </ul>
           </h2>
           <table style="width:100%; ">
@@ -339,17 +372,26 @@
           </div>
         {% endfor %}
       </div>
-      <button onclick="edit_question({{ question.id }});">Edit</button>
+      {% if not test.finalized %}
+        <button onclick="edit_question({{ question.id }});">Edit</button>
+      {% endif %}
     </div>
   {% endfor %}
   <div id="new_question_div"></div>
-  <button onclick="add_question();">Add Question</button> <a onclick="return showAddAnotherPopup(this);" href="/omr/question_bank/"> <button>Add Question from Question Bank</button> </a>
+  
+  {% if not test.finalized %}
+    <button onclick="add_question();">Add Question</button>
+    <a onclick="return showAddAnotherPopup(this);" href="/omr/question_bank/">
+      <button>Add Question from Question Bank</button>
+    </a>
+  {% endif %}
+  
   <br/><br/>
   <div class="module save_bar">
     <a href="download_test" target="_blank"> <button> View Test </button> </a>
     
     <span style="float: right;">
-        <button onclick="return false;">Finalize</button>
+        <button onclick="finalize_test();">Finalize</button>
     </span>
   </div>
   

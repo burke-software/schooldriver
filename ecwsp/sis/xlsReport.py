@@ -42,14 +42,14 @@ class xlsReport:
         self.dataStyle.borders.bottom = 0x01
         self.dataStyle.borders.top = 0x01
     
-    def __init__(self, data, titles, fileName, heading=""):
+    def __init__(self, data, titles=None, fileName="report", heading="", heading_top=True):
         """ data: data to be included in rows. ex [['this', 'is', 'row 1'], ['row2', 'column2', 'column3']]
         titles: header array
         fileName:
         heading: Optionally add header above data"""
         self.prepareStyles()
         self.fileName = fileName
-        self.addSheet(data, titles, heading)
+        self.addSheet(data, titles, heading, heading_top=heading_top)
 
     def addSheet(self, data, titles=None, heading="", addtional_fields_user=None, heading_top=True):
         """ Used to create additional sheet.
@@ -68,7 +68,7 @@ class xlsReport:
             for title in titles:
                 ws.write(y,x,str(title), self.titleStyle)
                 x += 1
-        y += 1
+            y += 1
         for row in data:
             x=0
             for cell in row:
