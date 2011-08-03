@@ -1,5 +1,6 @@
 #   Copyright 2011 David M Burke
 #   Author David M Burke <dburke@cristoreyny.org>
+#   Co-Author Callista Goss <calli@burkesoftware.com>
 #   
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -375,5 +376,5 @@ def generate_xml(request,test_id):
     response = HttpResponse(pdf, mimetype="application/pdf")
     filename = "Test_" + test_id + ".pdf"
     response['Content-Disposition'] = "filename=" + str(filename)
-    queXF(pdf_location, banding)
+    queXF(pdf_location, banding, test_id)
     return response

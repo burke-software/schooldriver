@@ -1,3 +1,21 @@
+#   Copyright 2011 Burke Software and Consulting LLC
+#   Author Callista Goss <calli@burkesoftware.com>
+#   
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+
 from reportlab.pdfgen import canvas
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.graphics.barcode.common import *
@@ -27,6 +45,7 @@ def createpdf(xml_test):
     banding = open(temp_banding_file, 'w')
     doc.writexml(banding)
     banding.close()
+    
     return download, temp_pdf_file, temp_banding_file
     
 def newPage(c):
@@ -54,16 +73,15 @@ def drawLines(c):
     
 def barcode(c):
     global code
-    code = str(id) + str(page)
-    code = code.zfill(8)
+    code = "A" + str(id).zfill(6) + (str(page).zfill(3)) + "A"
     barcode = Codabar(code, barWidth = inch*0.02)
-    x = width - (3*inch)
+    x = width - (3.2*inch)
     y = height - (.5*inch)
     barcode.drawOn(c,x,y)
     
 def createTest(c):
     #need to do it for multiple tests -tests[id]:questions and -teacher_tests[id]:teacher_questions
-    global indent, questions, choices, column, sort, next_line, width, height, next_line,left_margin,right_margin,bottom_margin,top_margin, id
+    global indent, questions, choices, column, sort, next_line, width, height, next_line,left_margin,right_margin,bottom_margin,top_margin, id, newbox
     indent = 0
     column = 0
     
@@ -79,6 +97,8 @@ def createTest(c):
     first_line = (height) - (top_margin + bottom_margin + font_size)
     ct = 1
     for test, questions in tests.iteritems():
+        newbox = False
+        newbox_trigger = False
         page = 1
         id = test
         newPage(c)
@@ -89,16 +109,17 @@ def createTest(c):
         next_line = first_line - (line_space)
         c.drawString(indent,next_line,names[id])
         next_line = next_line - (line_space)
-        sort = 1
         
         def createSections(questions,choices):
-            global indent, column, sort, next_line, newbox, oldindent, lastline
+            global indent, column, sort, next_line, oldindent, lastline
             lines = 0
+            sort = 1
             for question in questions:
                 if next_line + font_size <=0:
-                    newbox = True
-                    oldindent = indent
-                    lastline = next_line
+                    if newbox_trigger:
+                        lastline = next_line
+                        oldindent = indent
+                        newbox = True
                     column +=1
                     if column == 3:
                         column=0
@@ -132,11 +153,11 @@ def createTest(c):
     
         createSections(questions,choices)
         if teacherNode:
-            global newbox, oldindent,lastline
+            global oldindent,lastline
             newbox = False
+            newbox_trigger = True
             next_line = next_line - line_space*4
             if next_line + font_size <= 0:
-                newbox = True
                 oldindent = indent
                 lastline = next_line
                 column +=1
@@ -149,7 +170,8 @@ def createTest(c):
             #draw a box
             c.drawString(indent,next_line,teacher_section)
             beginy = next_line+line_space
-            c.line(indent-20,beginy,150,beginy)
+            
+            c.line(indent-20,beginy,150+indent,beginy)
             next_line = next_line - (line_space)
             createSections(teacher_questions,teacher_choices)
             
@@ -159,19 +181,23 @@ def createTest(c):
                 c.line(indent-5,first_line - line_space,indent-5,next_line)
                 c.line(150+indent,first_line - line_space,150+indent,next_line)
                 c.line(oldindent-20,beginy,oldindent-20,lastline)
-                c.line(150,beginy,150,lastline)
+                c.line(150,beginy,150+indent,lastline)
                 c.line(indent-5,next_line,150+indent,next_line)
             else:
-                c.line(indent-20,next_line,150,next_line)
+                c.line(indent-20,next_line,150+indent,next_line)
                 c.line(indent-20,beginy,indent-20,next_line)
-                c.line(150,beginy,150,next_line)
+                c.line(150+indent,beginy,150+indent,next_line)
         
         if ct < tests.__len__():
+            column = 0
+            indent = 0
+            page = 1
             c.showPage()
         ct+=1
 
 def xml(test_xml):
     global tests, teacher_tests
+    global title, names, questions, choices, id,teacher_questions, teacher_choices, teacher_section
     xmldoc = minidom.parseString(test_xml)
     #xmldoc = xml
     test = xmldoc.firstChild
@@ -183,7 +209,6 @@ def xml(test_xml):
     names = OrderedDict()
     #put student_names in a dict to match tests
     for singleid in ids:
-        global title, names, questions, choices, id,teacher_questions, teacher_choices, teacher_section
         id = singleid.firstChild.nodeValue
         title = singleid.getElementsByTagName('title')[0].firstChild.data
         sections = singleid.getElementsByTagName('section')
@@ -234,7 +259,6 @@ def xml(test_xml):
                 teacher_questions[questiontemp] = teacher_choices
             
         teacher_tests[id] = teacher_questions    
-        
 
 def createBanding():
     global doc, questionnaire
@@ -320,7 +344,10 @@ def choiceBanding(topx,topy,botx,boty,choice):
     box.appendChild(bry)
     brynum = doc.createTextNode(str(boty))
     bry.appendChild(brynum)
-    #value = doc.createElement("value")
+    value = doc.createElement("value")
+    box.appendChild(value)
+    #value
+    #valuetext = doc.createTextNode('')
     boxlabel = doc.createElement("label")
     box.appendChild(boxlabel)
     boxlabeltext = doc.createTextNode(choice)
