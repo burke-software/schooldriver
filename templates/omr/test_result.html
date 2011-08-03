@@ -1,0 +1,43 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+    <div id="breadcrumbs">
+      <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
+      &rsaquo; <a href="{% url ecwsp.omr.views.my_tests %}">{% trans 'My Tests' %}</a>
+      &rsaquo; <a href="{% url ecwsp.omr.views.edit_test test.id %}">{{ test }}</a>  
+      &rsaquo; {{ test }} Results
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+    {% load adminmedia %}
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    
+    <style type="text/css">
+      .content-grid {
+        min-width: 800px !important;
+      }
+    </style>
+{% endblock %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <style type="text/css">
+    
+  </style>
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script type="text/javascript" src="/admin/jsi18n/"></script>
+{% endblock %}
+
+{% block content %}
+  <h1> Open Metric Recognition </h1>
+  
+  <h2>{{ test }} Results </h2>
+  {{ test.students_test_results }} of {{ test.testinstance_set.count }} scanned tests recieved. Need <a href="https://sites.google.com/a/cristoreyny.org/sword-wiki/openmetricrecognition">help</a>?
+  <br/>
+  <a href="download_xls">Download results (xls)</a> 
+{% endblock %}

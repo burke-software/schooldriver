@@ -59,6 +59,7 @@
           <th> Students </th>
           <th> Student Queue </th>
           <th> Test Results </th>
+          <th> Points Possible </th>
         </tr>
       </thead> 
       <tbody>
@@ -69,7 +70,13 @@
             <td><a href="{% url ecwsp.omr.views.edit_test_questions test.id %}"> {{ test.question_set.count }} </a></td>
             <td> {{ test.testinstance_set.count }} </td>
             <td> <a href="javascript:;" onclick="show_queue({{ test.id }});">{{ test.students_in_queue }}</a> </td>
-            <td> <a href="" > {{ test.students_test_results }} </a> </td>
+            <td>
+              {% if test.finalized %}
+                <a href="../test_result/{{ test.id }}" > {{ test.students_test_results }} </a>
+              {% else %}
+                {{ test.students_test_results }}
+              {% endif %}
+            </td>
             <td> {{ test.points_possible }} </td>
           </tr>
         {% endfor %}

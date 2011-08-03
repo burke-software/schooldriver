@@ -1,20 +1,18 @@
-#   Copyright 2011 David M Burke
-#   Author David M Burke <dburke@cristoreyny.org>
+#   Copyright 2011 Burke Software and Consulting LLC
+#   Author David M Burke <david@burkesoftware.com>
 #   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
@@ -32,6 +30,7 @@ from ecwsp.omr.createpdf import *
 from ecwsp.omr.queXF import queXF
 from ecwsp.omr.models import *
 from ecwsp.omr.forms import *
+from ecwsp.omr.reports import *
 from ecwsp.sis.models import Faculty
 from ecwsp.sis.helper_functions import *
 from ecwsp.schedule.models import Course
@@ -282,6 +281,32 @@ def ajax_question_form(request, test_id, question_id):
         'question_form': question_form,
         'answers_formset': question_answer_form,
     }, RequestContext(request, {}),)
+
+@permission_required('omr.teacher_test')
+def ajax_finalize_test(request, test_id):
+    try:
+        test = Test.objects.get(id=test_id)
+        
+        # Send shit to QueXF
+        
+        test.finalized = True
+        test.save()
+        
+        return HttpResponse('SUCCESS');
+    except:
+        return HttpResponse('Unexpected Error');
+
+@permission_required('omr.teacher_test')
+def test_result(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    return render_to_response('omr/test_result.html', {
+        'test': test,
+    }, RequestContext(request, {}),)
+
+@user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
+def download_test_results(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    return report.download_results(test)
 
 @login_required
 def generate_xml(request,test_id):

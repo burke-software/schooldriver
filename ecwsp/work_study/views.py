@@ -1,7 +1,7 @@
 #       views.py
 #       
 #       Copyright 2010 Cristo Rey New York High School
-#        Author David M Burke <dburke@cristoreyny.org>
+#        Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
