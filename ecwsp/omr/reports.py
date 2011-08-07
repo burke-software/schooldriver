@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+from django.utils.html import strip_tags
+
 from ecwsp.sis.xlsReport import *
 from ecwsp.omr.models import *
 
@@ -21,6 +23,9 @@ import xlwt
 
 class ReportManager(object):
     def download_results(self, test):
+        """ Create basic xls report for OMR. Includes summary and details """
+        
+        # Summary sheet
         data = [[test.name]]
         data.append(["Points Possible:", test.points_possible])
         data.append(["Results collected: %s" % (test.students_test_results,)])
@@ -33,6 +38,60 @@ class ReportManager(object):
             i += 1
         #xlwt.Formula("B2")
         report = xlsReport(data, fileName="OMR report.xls", heading="Summary", heading_top=False)
+        
+        # Detail sheets
+        data_points = []
+        data_answers = []
+        row_points = ["Student"]
+        row_answers = ["Student"]
+        for question in test.question_set.all():
+            row_points.append("%s %s" % (question.order, strip_tags(question.question).strip()))
+            row_answers.append("%s %s" % (question.order, strip_tags(question.question).strip()))
+        data_points.append(row_points)
+        data_answers.append(row_answers)
+        
+        for test_instance in test.testinstance_set.all():
+            row_points = []
+            row_answers = []
+            row_points.append(test_instance.student)
+            row_answers.append(test_instance.student)
+            for question in test.question_set.all():
+                try:
+                    answer = test_instance.answerinstance_set.get(question=question)
+                    row_points.append(answer.points_earned)
+                    row_answers.append(strip_tags(answer.answer).strip())
+                except:
+                    row_points.append('')
+                    row_answers.append('')
+            data_points.append(row_points)
+            data_answers.append(row_answers)
+        
+        report.addSheet(data_points, heading="Detail Points", heading_top=False)
+        report.addSheet(data_answers, heading="Detail Answers", heading_top=False)
+        
+        # Benchmark sheet
+        data = []
+        row = ['Benchmark']
+        row2 = ['Points Possible']
+        for benchmark in Benchmark.objects.filter(question__test=test).distinct():
+            row.append(benchmark)
+            row.append('%')
+            row2.append(test.question_set.filter(benchmarks=benchmark).aggregate(Sum('point_value'))['point_value__sum'])
+            row2.append('')
+        data.append(row)
+        data.append(row2)
+        i = 3 # 3 for third row on spreadsheet
+        for test_instance in test.testinstance_set.all():
+            row = [test_instance.student]
+            a = 98 # the letter c or column c in spreadsheet
+            for benchmark in Benchmark.objects.filter(question__test=test).distinct():
+                row.append(test_instance.answerinstance_set.filter(question__benchmarks=benchmark).aggregate(Sum('points_earned'))['points_earned__sum'])
+                row.append(xlwt.Formula(chr(a)+str(i)+'/'+chr(a)+'$2'))
+                a += 2 # skip ahead 2 columns
+            i += 1
+            data.append(row)
+        report.addSheet(data, heading="Benchmark", heading_top=False)
+        
         return report.finish()
 
 report = ReportManager()
