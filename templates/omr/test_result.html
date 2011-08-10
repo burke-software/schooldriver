@@ -31,12 +31,21 @@
 {% block javascripts %}
   {{ block.super }}
   <script type="text/javascript" src="/admin/jsi18n/"></script>
+  <script type="text/javascript" src="/static/js/jquery.progressbar.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var percent = {{ test.students_test_results }} / {{ test.testinstance_set.count }}
+      $("#progress_recieved").progressBar(percent, {  showText: false, barImage: '/static/images/progressbg_green.gif'});
+    });
+  </script>
 {% endblock %}
 
 {% block content %}
   <h1> Open Metric Recognition </h1>
   
   <h2>{{ test }} Results </h2>
+  <br/>
+  <p id="progress_recieved"></p>
   {{ test.students_test_results }} of {{ test.testinstance_set.count }} scanned tests recieved. Need <a href="https://sites.google.com/a/cristoreyny.org/sword-wiki/openmetricrecognition">help</a>?
   <br/>
   <a href="download_xls">Download results (xls)</a> 
