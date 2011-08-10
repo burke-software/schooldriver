@@ -28,14 +28,11 @@ def queXF(pdf,banding,test_id):
         
         values = {'form':open(pdf, 'r'),
                   'bandingxml':open(banding, 'r'),
-                  'description':description
+                  'desc':description
                   }
         data, headers = multipart_encode(values)
-        print data
-        print headers
         headers['User-Agent'] = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
         request = urllib2.Request(url, data, headers)
         request.unverifiable = True
         response = urllib2.urlopen(request)
         the_page = response.read()
-        print response.read()

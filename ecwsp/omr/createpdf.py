@@ -20,7 +20,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.graphics.barcode.common import *
 from reportlab.lib.units import inch
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import letter
 from reportlab.graphics.barcode import getCodes, createBarcodeDrawing, getCodeNames, createBarcodeDrawing, createBarcodeImageInMemory
 from reportlab.platypus.frames import Frame
 from reportlab.platypus.paragraph import Paragraph
@@ -59,10 +59,10 @@ def newPage(c):
     
 def drawLines(c):
     #bottom left
-    c.line(.5*inch,.5*inch,1.25*inch,.5*inch)
-    c.line(.5*inch,.5*inch,.5*inch,1.25*inch)
+    c.line(.5*inch,.5*inch,1.5*inch,.5*inch)
+    c.line(.5*inch,.5*inch,.5*inch,1.5*inch)
     #bottom right
-    c.line(width - .75*inch,.5*inch,width - 1.5*inch,.5*inch)
+    c.line(width - .75*inch,.5*inch,width - 1.75*inch,.5*inch)
     c.line(width - .75*inch,.5*inch,width - .75*inch,1.5*inch)
     #top left
     c.line(.5*inch,height - .75*inch,1.25*inch,height - .75*inch)
@@ -73,7 +73,9 @@ def drawLines(c):
     
 def barcode(c):
     global code
-    code = "A" + str(id).zfill(6) + (str(page).zfill(3)) + "A"
+    code_stopped = "A" + str(id).zfill(6) + (str(page).zfill(3)) + "A"
+    code = str(id).zfill(6) + (str(page).zfill(3))
+    code = (str(id) + str(page)).zfill(8)
     barcode = Codabar(code, barWidth = inch*0.02)
     x = width - (3.2*inch)
     y = height - (.5*inch)
@@ -81,7 +83,8 @@ def barcode(c):
     
 def createTest(c):
     #need to do it for multiple tests -tests[id]:questions and -teacher_tests[id]:teacher_questions
-    global indent, questions, choices, column, sort, next_line, width, height, next_line,left_margin,right_margin,bottom_margin,top_margin, id, newbox
+    global indent, questions, choices, column, sort, next_line, width, height, next_line,left_margin,right_margin,bottom_margin,top_margin
+    global id, newbox, var_names, teacher_varnames
     indent = 0
     column = 0
     
@@ -96,25 +99,28 @@ def createTest(c):
     width, height = letter
     first_line = (height) - (top_margin + bottom_margin + font_size)
     ct = 1
-    for test, questions in tests.iteritems():
+    sort = 1
+    test_count = 1
+    for test, [questions, var_names] in tests.iteritems():
         newbox = False
         newbox_trigger = False
         page = 1
         id = test
+        testBanding(test_count)
+        test_count+=1
         newPage(c)
         c.setFont(default_font,font_size)
-        testBanding()
+        
         
         c.drawString(indent,first_line, title)
         next_line = first_line - (line_space)
         c.drawString(indent,next_line,names[id])
         next_line = next_line - (line_space)
         
-        def createSections(questions,choices):
+        def createSections(questions,choices, varnames):
             global indent, column, sort, next_line, oldindent, lastline
             lines = 0
-            sort = 1
-            for question in questions:
+            for question, varname in zip(questions,varnames.values()):
                 if next_line + font_size <=0:
                     if newbox_trigger:
                         lastline = next_line
@@ -133,25 +139,26 @@ def createTest(c):
                 if choice_number ==2:
                     extra_indent=45
                 elif choice_number <= 5:
-                    extra_indent = 25
+                    extra_indent = 30
                 else:
-                    extra_indent = 18
+                    extra_indent = 25
                     
                 c.drawString(indent,next_line,question)
-                questionBanding(question)
+                if choice_number !=0:
+                    questionBanding(question,varname)
                 sort+=1
                 choice_indent = indent + extra_indent
-                for choice in questions[question]:
-                    c.drawString(choice_indent,next_line+line_space,choice)
+                for choice, value in questions[question]:
+                    c.drawString(choice_indent,next_line+line_space,str(choice))
                     c.rect(choice_indent,next_line,12,12,fill=0)
-                    choiceBanding(choice_indent,next_line+13,choice_indent+13,next_line+26,choice)
+                    choiceBanding(choice_indent,next_line+13,choice_indent+13,next_line,choice,value)
                     choice_indent+=extra_indent;
                 next_line = next_line - line_space
                 lines+=1
     
     
     
-        createSections(questions,choices)
+        createSections(questions,choices,var_names)
         if teacherNode:
             global oldindent,lastline
             newbox = False
@@ -173,33 +180,33 @@ def createTest(c):
             
             c.line(indent-20,beginy,150+indent,beginy)
             next_line = next_line - (line_space)
-            createSections(teacher_questions,teacher_choices)
+            [teacher_questions,teacher_varnames] = teacher_tests[test]
+            createSections(teacher_questions,teacher_choices,teacher_varnames)
             
-            if newbox == True:
-                c.line(oldindent-20,lastline,oldindent+150,lastline)
-                c.line(indent-5,first_line - line_space,150+indent,first_line - line_space)
-                c.line(indent-5,first_line - line_space,indent-5,next_line)
-                c.line(150+indent,first_line - line_space,150+indent,next_line)
-                c.line(oldindent-20,beginy,oldindent-20,lastline)
-                c.line(150,beginy,150+indent,lastline)
-                c.line(indent-5,next_line,150+indent,next_line)
-            else:
-                c.line(indent-20,next_line,150+indent,next_line)
-                c.line(indent-20,beginy,indent-20,next_line)
-                c.line(150+indent,beginy,150+indent,next_line)
-        
+            #if newbox == True:
+            #    c.line(oldindent-20,lastline,oldindent+150,lastline)
+            #    c.line(indent-5,first_line - line_space,150+indent,first_line - line_space)
+            #    c.line(indent-5,first_line - line_space,indent-5,next_line)
+            #    c.line(150+indent,first_line - line_space,150+indent,next_line)
+            #    c.line(oldindent-20,beginy,oldindent-20,lastline)
+            #    c.line(150,beginy,150+indent,lastline)
+            #    c.line(indent-5,next_line,150+indent,next_line)
+            #else:
+            #    c.line(indent-20,next_line,150+indent,next_line)
+            #    c.line(indent-20,beginy,indent-20,next_line)
+            #    c.line(150+indent,beginy,150+indent,next_line)
+            #
         if ct < tests.__len__():
             column = 0
             indent = 0
-            page = 1
+            #page = 1
             c.showPage()
         ct+=1
 
 def xml(test_xml):
-    global tests, teacher_tests
+    global tests, teacher_tests, var_names,teacher_varnames
     global title, names, questions, choices, id,teacher_questions, teacher_choices, teacher_section
     xmldoc = minidom.parseString(test_xml)
-    #xmldoc = xml
     test = xmldoc.firstChild
     global teacherNode
     teacherNode = None
@@ -218,14 +225,17 @@ def xml(test_xml):
             teacherNode = sections[1]
         #student = {dict of tests:{dict of questions:[list of choices]}{}}
         questions = OrderedDict()
+        var_names = OrderedDict()
         questionNodes = studentNode.getElementsByTagName('question')
         for question in questionNodes:
             questiontemp = question.getElementsByTagName('text')[0].firstChild.wholeText
+            varname = question.getAttribute('varName')
             choicesNodes = question.getElementsByTagName('choice')
             choices = []
             for choice in choicesNodes:
-                choicetemp = [choice.firstChild.nodeValue]
-                choices.extend(choicetemp)
+                choicetemp = choice.firstChild.data
+                value = choice.getElementsByTagName('value')[0].firstChild.wholeText
+                choices.append((choicetemp,value))
             counter = 0
             temp = questiontemp
             while temp in questions:
@@ -234,21 +244,25 @@ def xml(test_xml):
             if counter != 0:
                 questiontemp += `counter` + '.'
             questions[questiontemp] = choices
+            var_names[questiontemp] = varname
         
-        tests[id] = questions
+        tests[id] = [questions,var_names]
             
         #teacher = {{dict of essay questions:[list of point values]}{}}
         if teacherNode!=None:
             teacher_section = teacherNode.getElementsByTagName('name')[0].firstChild.data
             teacher_questions = OrderedDict()
+            teacher_varnames = OrderedDict()
             teacher_questionNodes = teacherNode.getElementsByTagName('question')
             for teacher_question in teacher_questionNodes:
                 questiontemp = teacher_question.getElementsByTagName('text')[0].firstChild.wholeText
+                varname = teacher_question.getAttribute('varName')
                 choicesNodes = teacher_question.getElementsByTagName('choice')
                 teacher_choices = []
                 for choice in choicesNodes:
-                    choicetemp = [choice.firstChild.nodeValue]
-                    teacher_choices.extend(choicetemp)
+                    choicetemp = choice.firstChild.data
+                    value = choice.getElementsByTagName('value')[0].firstChild.wholeText
+                    teacher_choices.append((choicetemp,value))
                 counter = 0
                 temp = questiontemp
                 while temp in teacher_questions:
@@ -257,8 +271,9 @@ def xml(test_xml):
                 if counter != 0:
                     questiontemp += `counter` + '.'
                 teacher_questions[questiontemp] = teacher_choices
+                teacher_varnames[questiontemp] = varname
             
-        teacher_tests[id] = teacher_questions    
+        teacher_tests[id] = [teacher_questions,teacher_varnames]
 
 def createBanding():
     global doc, questionnaire
@@ -268,16 +283,16 @@ def createBanding():
     questionnaire = doc.createElement("questionnaire")
     quexf.appendChild(questionnaire)
 
-def testBanding():
+def testBanding(number):
     global doc, questionnaire
-    idtag = doc.createElement("id")
-    questionnaire.appendChild(idtag)
-    idtext = doc.createTextNode(str(id))
-    idtag.appendChild(idtext)
     
     sectiontag = doc.createElement("section")
-    sectiontag.setAttribute("id","1")
+    sectiontag.setAttribute("id",str(number))
     questionnaire.appendChild(sectiontag)
+    titletag = doc.createElement("title")
+    sectiontag.appendChild(titletag)
+    titletext = doc.createTextNode(" ")
+    titletag.appendChild(titletext)
     label = doc.createElement("label")
     sectiontag.appendChild(label)
     labeltext = doc.createTextNode(str(names[id]))
@@ -297,7 +312,7 @@ def pageBanding():
     rotationText = doc.createTextNode("0")
     rotationtag.appendChild(rotationText)
 
-def questionBanding(question):
+def questionBanding(question, variable_name):
     global boxgroup
     boxgroup = doc.createElement("boxgroup")
     pagetag.appendChild(boxgroup)
@@ -309,6 +324,10 @@ def questionBanding(question):
     boxgroup.appendChild(widthtag)
     widthtext = doc.createTextNode("1")
     widthtag.appendChild(widthtext)
+    varnametag = doc.createElement("varname")
+    boxgroup.appendChild(varnametag)
+    varnametext = doc.createTextNode(variable_name)
+    varnametag.appendChild(varnametext)
     sorttag = doc.createElement("sortorder")
     boxgroup.appendChild(sorttag)
     sorttext = doc.createTextNode(str(sort))
@@ -321,13 +340,17 @@ def questionBanding(question):
     groupsectiontag.setAttribute("idref","1")
     boxgroup.appendChild(groupsectiontag)
         
-def choiceBanding(topx,topy,botx,boty,choice):
+def choiceBanding(topx,topy,botx,boty,choice,value):
     topx = (topx+inch)*300/72
     botx = (botx+inch)*300/72
     topy = (height - topy-top_margin)*300/72
     boty = (height - boty-top_margin)*300/72
     box = doc.createElement("box")
     boxgroup.appendChild(box)
+    boxid = doc.createElement("id")
+    boxidtext = doc.createTextNode(str(value))
+    box.appendChild(boxid)
+    boxid.appendChild(boxidtext)
     tlx = doc.createElement("tlx")
     box.appendChild(tlx)
     tlxnum = doc.createTextNode(str(topx))
@@ -344,11 +367,11 @@ def choiceBanding(topx,topy,botx,boty,choice):
     box.appendChild(bry)
     brynum = doc.createTextNode(str(boty))
     bry.appendChild(brynum)
-    value = doc.createElement("value")
-    box.appendChild(value)
-    #value
-    #valuetext = doc.createTextNode('')
+    valuetag = doc.createElement("value")
+    box.appendChild(valuetag)
+    valuetext = doc.createTextNode(str(value))
+    valuetag.appendChild(valuetext)
     boxlabel = doc.createElement("label")
     box.appendChild(boxlabel)
-    boxlabeltext = doc.createTextNode(choice)
+    boxlabeltext = doc.createTextNode(str(choice))
     boxlabel.appendChild(boxlabeltext)
