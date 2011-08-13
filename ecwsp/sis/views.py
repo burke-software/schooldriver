@@ -347,7 +347,7 @@ def student_thumbnail(request, year):
     for stu in students:
         try:    
             if stu.pic:
-                c.drawImage(unicode(settings.MEDIA_ROOT[:-7] + unicode(stu.pic.url_530x400)), x, paper_height - (y-.4*cm), xsize, ysize)
+                c.drawImage(unicode(settings.MEDIA_ROOT[:-7] + unicode(stu.pic.url_530x400)), x, paper_height - (y-.4*cm), xsize, ysize, preserveAspectRatio=True)
             else:
                 c.drawString(x, paper_height - (y+.5*cm), "No Image")
             c.drawString(x, paper_height - y, unicode(stu))
