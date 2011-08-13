@@ -7,7 +7,7 @@ from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
 
-from appy.pod.renderer import Renderer
+from ecwsp.appy.pod.renderer import Renderer
 import tempfile
 import os
 import uno

@@ -1,0 +1,2 @@
+old = 'OLD'
+new = 'NEW'

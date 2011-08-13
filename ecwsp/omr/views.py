@@ -299,6 +299,7 @@ def ajax_finalize_test(request, test_id):
 @permission_required('omr.teacher_test')
 def test_result(request, test_id):
     test = get_object_or_404(Test, id=test_id)
+    
     return render_to_response('omr/test_result.html', {
         'test': test,
     }, RequestContext(request, {}),)

@@ -281,7 +281,10 @@ class TestInstance(models.Model):
     @property
     def points_earned(self):
         data = self.answerinstance_set.aggregate(points_earned=Sum('points_earned'))
-        return data['points_earned']
+        if data['points_earned']: 
+            return data['points_earned']
+        else:
+            return 0
     @property
     def grade(self):
         try:

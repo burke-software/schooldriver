@@ -229,7 +229,7 @@ def import_standardtestresult(request):
     return render_to_response('upload.html', {'form': form, 'request': request,}, RequestContext(request, {}))
     
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
+@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')    
 def photo_flash_card(request, year=None):
     students = Student.objects.filter(inactive=False)
     grade_levels = GradeLevel.objects.all()
@@ -1132,10 +1132,6 @@ def view_student(request, id=None):
         siblings = student.siblings.all()
         cohorts = student.cohorts.all()
         numbers = student.studentnumber_set.all()
-        if request.user.has_perm("sis.view_ssn_student"):
-            ssn = student.ssn
-        else:
-            ssn = None
         
         # Schedule
         cal = Calendar()
@@ -1196,7 +1192,7 @@ def view_student(request, id=None):
                         course.grade_html += '<td> </td>'
                 course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
                 
-        return render_to_response('sis/view_student.html', {'form':form, 'show_grades':show_grades, 'date':today, 'student':student, 'ssn':ssn, 'emergency_contacts': emergency_contacts,
+        return render_to_response('sis/view_student.html', {'form':form, 'show_grades':show_grades, 'date':today, 'student':student, 'emergency_contacts': emergency_contacts,
                                                         'siblings': siblings, 'numbers':numbers, 'location':location, 'disciplines':disciplines, 'attendances':attendances,
                                                         'student_interactions': student_interactions, 'clientvisits':clientvisits, 'supervisors':supervisors,
                                                         'company_histories':company_histories, 'timesheets':timesheets, 'years': years,

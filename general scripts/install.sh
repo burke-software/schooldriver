@@ -30,5 +30,5 @@ easy_install poster
 echo "enter mysql root password"
 mysql -uroot -p -e "create database sword"
 
-echo "Done, you still need to install appyframework, django, run python manage.py syncdb, and set up a web server"
+echo "Done, you still need to run python manage.py syncdb, and set up a web server"
 exit
