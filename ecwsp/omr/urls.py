@@ -1,7 +1,6 @@
 from django.conf.urls.defaults import *
 #from django.views.generic import ListView
 from views import *
-
 from ecwsp.omr.models import QuestionBank
 
 urlpatterns = patterns('',
@@ -17,9 +16,12 @@ urlpatterns = patterns('',
     (r'^test_questions/(?P<test_id>\d+)/ajax_read_only_question/(?P<question_id>\d+)/$',ajax_read_only_question),
     (r'^test_questions/(?P<test_id>\d+)/ajax_question_form/new/$', ajax_new_question_form),
     (r'^test_questions/(?P<test_id>\d+)/ajax_question_bank_to_question/(?P<question_bank_id>\d+)/$',ajax_question_bank_to_question),
+    (r'^test_questions/(?P<test_id>\d+)/ajax_finalize_test/$', ajax_finalize_test),
     (r'^test/(?P<test_id>\d+)/copy/$', test_copy),
+    (r'^test_result/(?P<test_id>\d+)/$', test_result),
+    (r'^test_result/(?P<test_id>\d+)/download_xls/$', download_test_results),
+    (r'^generatexml/(?P<test_id>\d+)', generate_xml),
     (r'^question_bank/$', QuestionBankListView.as_view(
         model=QuestionBank,
     )),
-    (r'^generatexml', generate_xml),
 )

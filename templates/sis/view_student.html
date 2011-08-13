@@ -62,7 +62,7 @@
 		<input type="submit" value="Get Record"/>
 	</form>
 	{% if student %}
-		<h4>{{ student }}</h4>
+		<h4>{{ student }} {% if perms.sis.change_student %} <a href="{% url admin:sis_student_change student.id %}"> Edit </a> {% endif %}</h4>
 		{{ student.year }} <br/>
 		<span class="noprint"> Current Location: {{ location }}</span><br/>
 		<a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a>
@@ -76,7 +76,7 @@
 				<tr><td> Sex </td><td> {{ student.sex }} </td></tr>
 				<tr><td> Alert </td><td> {{ student.alert }} </td></tr>
 				<tr><td> Birthday </td><td> {{ student.bday }} </td></tr>
-				{% if ssn %} <tr><td> SSN </td><td> {{ student.ssn }} {% endif %}
+				{% if perms.sis.view_ssn_student %} <tr><td> SSN </td><td> {{ student.ssn }} {% endif %}
 				<tr><td> Parent/guardian </td><td> {{ student.parent_guardian }} </td></tr>
 				<tr><td> Street </td><td> {{ student.street }} </td></tr>
 				<tr><td> State </td><td> {{ student.state }} </td></tr>

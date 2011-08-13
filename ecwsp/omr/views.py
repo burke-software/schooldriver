@@ -1,20 +1,19 @@
 #   Copyright 2011 David M Burke
 #   Author David M Burke <dburke@cristoreyny.org>
+#   Co-Author Callista Goss <calli@burkesoftware.com>
 #   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
@@ -28,8 +27,11 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 
+from ecwsp.omr.createpdf import *
+from ecwsp.omr.queXF import queXF
 from ecwsp.omr.models import *
 from ecwsp.omr.forms import *
+from ecwsp.omr.reports import *
 from ecwsp.sis.models import Faculty
 from ecwsp.sis.helper_functions import *
 from ecwsp.schedule.models import Course
@@ -61,7 +63,7 @@ class QuestionBankListView(ListView):
         context['tip'] = ['Hover over truncated information to view all.', 'Images and formatting are not shown here. They will appear when you select a question.']
         return context
 
-@permission_required('omr.change_test')
+@permission_required('omr.teacher_test')
 def my_tests(request):
     try:
         teacher = Faculty.objects.get(username=request.user.username)
@@ -73,6 +75,7 @@ def my_tests(request):
         'tests': tests
     }, RequestContext(request, {}),)
 
+@permission_required('omr.teacher_test')
 def my_tests_show_queue(request):
     id = request.POST['id']
     test = Test.objects.get(id=id)
@@ -81,7 +84,7 @@ def my_tests_show_queue(request):
         html += '%s <br/>' % (result.student,)
     return HttpResponse(html)
 
-@permission_required('omr.change_test')
+@user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.change_test"))
 def test_copy(request, test_id):
     """ Copy test with a copy of all questions and answers. """
     old_test = Test.objects.get(id=test_id)
@@ -105,7 +108,7 @@ def test_copy(request, test_id):
     else:
         return HttpResponseRedirect(reverse('admin:test_change_form', args=[new_test.id]))
 
-@login_required
+@user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
 def download_test(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     test.reindex_question_order()
@@ -113,7 +116,7 @@ def download_test(request, test_id):
         'test': test,
     }, RequestContext(request, {}),)
 
-@login_required
+@permission_required('omr.teacher_test')
 def edit_test(request, id=None):
     teacher = Faculty.objects.get(username=request.user.username)
     teacher_courses = Course.objects.filter(teacher=teacher)
@@ -151,7 +154,7 @@ def edit_test(request, id=None):
         'add': add,
     }, RequestContext(request, {}),)
     
-@login_required
+@permission_required('omr.teacher_test')
 def edit_test_questions(request, id):
     test = get_object_or_404(Test, id=id)
     test.reindex_question_order()
@@ -166,7 +169,7 @@ def edit_test_questions(request, id):
         'question_form': question_form,
     }, RequestContext(request, {}),)
 
-@login_required
+@permission_required('omr.teacher_test')
 @transaction.commit_on_success
 def ajax_reorder_question(request, test_id):
     question_up_id = request.POST['question_up_id'][9:]
@@ -188,7 +191,7 @@ def ajax_reorder_question(request, test_id):
     data = simplejson.dumps(data)
     return HttpResponse(data,'application/javascript')
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_question_bank_to_question(request, test_id, question_bank_id):
     test = get_object_or_404(Test, id=test_id)
     bank = get_object_or_404(QuestionBank, id=question_bank_id)
@@ -214,20 +217,20 @@ def ajax_question_bank_to_question(request, test_id, question_bank_id):
         new_question.answer_set.add(new_answer)
     return ajax_read_only_question(request, test_id, new_question.id)
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_read_only_question(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     return render_to_response('omr/edit_test_questions_read_only.html', {
         'question': question,
     }, RequestContext(request, {}),)
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_delete_question(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     question.delete()
     return HttpResponse('SUCCESS');
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_new_question_form(request, test_id):
     test = Test.objects.get(id=test_id)
     
@@ -257,7 +260,7 @@ def ajax_new_question_form(request, test_id):
         'answers_formset': question_answer_form,
     }, RequestContext(request, {}),)
 
-@login_required
+@permission_required('omr.teacher_test')
 def ajax_question_form(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     if request.POST:
@@ -280,58 +283,74 @@ def ajax_question_form(request, test_id, question_id):
         'answers_formset': question_answer_form,
     }, RequestContext(request, {}),)
 
-@login_required
-def generate_xml(request):
-    from xml.dom import minidom
-    
-    test = TestInstance.objects.get(id=id)
-    teacher_section_required = False
-    
-    doc = minidom.Document()
-    testtag = doc.createElement("test")
-    doc.appendChild(testtag)
-    id = doc.createElement("id")
-    testtag.appendChild(id)
-    idtext = doc.createTextNode(str(test.id))
-    id.appendChild(idtext)
-    titletag = doc.createElement("title")
-    testtag.appendChild(titletag)
-    titletext = doc.createTextNode(test.test.name)
-    titletag.appendChild(titletext)
-    studentsection = doc.createElement("section")
-    testtag.appendChild(studentsection)
-    studentnametag = doc.createElement("name")
-    studentsection.appendChild(studentnametag)
-    studentname = doc.createTextNode(str(test.student.fname + " " + test.student.lname))
-    studentnametag.appendChild(studentname)
-
-    questions = test.test.question_set.order_by('group')
-    groups = []
-    essays = []
-    for q in questions:
-        if q.group not in groups:
-            groups.append(q.group)
-    
-    for group in groups:
-        grouptag = doc.createElement("group")
-        studentsection.appendChild(grouptag)
-        groupname = doc.createElement("text")
-        grouptag.appendChild(groupname)
-        groupnametext = doc.createTextNode(str(group.name))
-        groupname.appendChild(groupnametext)
+@permission_required('omr.teacher_test')
+def ajax_finalize_test(request, test_id):
+    try:
+        test = Test.objects.get(id=test_id)
         
-        groupedQuestions = questions.filter(group=group)
+        # Send shit to QueXF
+        
+        test.finalized = True
+        test.save()
+        
+        return HttpResponse('SUCCESS');
+    except:
+        return HttpResponse('Unexpected Error');
+
+@permission_required('omr.teacher_test')
+def test_result(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    
+    return render_to_response('omr/test_result.html', {
+        'test': test,
+    }, RequestContext(request, {}),)
+
+@user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
+def download_test_results(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    return report.download_results(test)
+
+@login_required
+def generate_xml(request,test_id):
+    from xml.dom import minidom
+    test = Test.objects.get(id=test_id)
+    entiredoc = minidom.Document()
+    entire_testtag = entiredoc.createElement("test")
+    entiredoc.appendChild(entire_testtag)
+    instances = TestInstance.objects.filter(test=test.id)
+    for instance in instances:
+        teacher_section_required = False
+            
+        doc = minidom.Document()
+        testtag = doc.createElement("test")
+        id = doc.createElement("id")
+        testtag.appendChild(id)
+        idtext = doc.createTextNode(str(instance.id))
+        id.appendChild(idtext)
+        titletag = doc.createElement("title")
+        id.appendChild(titletag)
+        titletext = doc.createTextNode(test.name)
+        titletag.appendChild(titletext)        
+        studentsection = doc.createElement("section")
+        id.appendChild(studentsection)
+        studentnametag = doc.createElement("name")
+        studentsection.appendChild(studentnametag)
+        studentname = doc.createTextNode(str(instance.student.fname + " " + instance.student.lname))
+        studentnametag.appendChild(studentname)
+    
+        questions = test.question_set.order_by('order')
+        essays = []
+            
         i = 1 # Question number for human use only
         priorType = None
-        
-        for q in groupedQuestions:
+        for q in questions:
             questiontag = doc.createElement("question")
-            questiontag.setAttribute("varName",str(q.id))
-            grouptag.appendChild(questiontag)
+            questiontag.setAttribute("varName",str(instance.id) + "_" + str(q.id))
+            studentsection.appendChild(questiontag)
             question_number = doc.createElement("text")
             questiontag.appendChild(question_number)
             if q.type == "Essay":
-                essays.append([q,i])
+                essays.append([q,q.id,i])
                 teacher_section_required = True
                 text = str(i) + ".  Essay Question"
             else:
@@ -340,56 +359,62 @@ def generate_xml(request):
                 if q.type == "Multiple Choice":
                     ct=0
                     alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-                    while ct < q.answer_set.count():
-                        answers.append(alphabet[ct])
+                    choices = q.answer_set.order_by('id')
+                    for answer in choices:
+                        answers.append((answer.id,str(alphabet[ct])))
                         ct=ct+1
                 elif q.type == "True/False":
-                    answers = ("True","False")
-                for choice in answers:
+                    idlist = []
+                    for answer in choices:
+                        idlist.append(answer.id)
+                    answers.append((idlist[0],"True"))
+                    answers.append((idlist[1],"False"))
+                    
+                for answer_id, choice in answers:
                     choicetag = doc.createElement("choice")
                     questiontag.appendChild(choicetag)
                     choicetagtext = doc.createTextNode(str(choice))
-                    choicetag.appendChild(choicetagtext) 
+                    choicetag.appendChild(choicetagtext)
+                    choicevaluetag = doc.createElement("value")
+                    choicevalue = doc.createTextNode(str(answer_id))
+                    choicetag.appendChild(choicevaluetag)
+                    choicevaluetag.appendChild(choicevalue)
                 
             question_numbertext = doc.createTextNode(text)
             question_number.appendChild(question_numbertext)
             i=i+1
+        if teacher_section_required:
+            teachersection = doc.createElement("section")
+            id.appendChild(teachersection)
+            teachertexttag = doc.createElement("name")
+            teachersection.appendChild(teachertexttag)
+            teachertext = doc.createTextNode("For Teacher Use Only")
+            teachertexttag.appendChild(teachertext)
+            for q,qid,number in essays:
+                teacher_question = doc.createElement("question")
+                teacher_question.setAttribute("varName",str(instance.id) + "_" + str(qid))
+                teachersection.appendChild(teacher_question)
+                teacher_question_number = doc.createElement("text")
+                teacher_question.appendChild(teacher_question_number)
+                teacher_question_numbertext = doc.createTextNode(str(number) + ". ")
+                teacher_question_number.appendChild(teacher_question_numbertext)
+                options = Answer.objects.filter(question=q)
+                for choice in options:
+                    choicetag = doc.createElement("choice")
+                    teacher_question.appendChild(choicetag)
+                    choicetagtext = doc.createTextNode(str(choice.point_value))
+                    choicetag.appendChild(choicetagtext)
+                    choicevaluetag = doc.createElement("value")
+                    choicevalue = doc.createTextNode(str(choice.id))
+                    choicetag.appendChild(choicevaluetag)
+                    choicevaluetag.appendChild(choicevalue)
+        
+        entire_testtag.appendChild(id.cloneNode(True))
+
     
-    if teacher_section_required:
-        teachersection = doc.createElement("section")
-        testtag.appendChild(teachersection)
-        teachertexttag = doc.createElement("name")
-        teachersection.appendChild(teachertexttag)
-        teachertext = doc.createTextNode("For Teacher Use Only")
-        teachertexttag.appendChild(teachertext)
-        priorGroup = None
-        for q,number in essays:
-            if priorGroup!= q.group or priorGroup == None:
-                teacher_grouptag = doc.createElement("group")
-                teachersection.appendChild(teacher_grouptag)
-                teacher_groupname = doc.createElement("text")
-                teacher_grouptag.appendChild(teacher_groupname)
-                teacher_groupnametext = doc.createTextNode(str(group.name))
-                teacher_groupname.appendChild(teacher_groupnametext)
-                priorGroup = q.group
-                
-            teacher_question = doc.createElement("question")
-            teacher_question.setAttribute("varName",str(q.id))
-            teacher_grouptag.appendChild(teacher_question)
-            teacher_question_number = doc.createElement("text")
-            teacher_question.appendChild(teacher_question_number)
-            teacher_question_numbertext = doc.createTextNode(str(number) + ". ")
-            teacher_question_number.appendChild(teacher_question_numbertext)
-            options = Answer.objects.filter(question=q)
-            for choice in options:
-                choicetag = doc.createElement("choice")
-                teacher_question.appendChild(choicetag)
-                choicetagtext = doc.createTextNode(str(choice.point_value))
-                choicetag.appendChild(choicetagtext)
-                
-    #need to create a zip file of banding files and pdf files - currently sets up pdf to download and creates xml.            
-    response = HttpResponse(mimetype="application/pdf")
-    #xmlresponse = HttpResponse(mimetype="text/xml")    
-    pdf = createpdf(doc.toxml(),response)
-    response['Content-Disposition'] = "attachment; filename=" + pdf
+    pdf, pdf_location, banding = createpdf(entiredoc.toxml())
+    response = HttpResponse(pdf, mimetype="application/pdf")
+    filename = "Test_" + test_id + ".pdf"
+    response['Content-Disposition'] = "filename=" + str(filename)
+    queXF(pdf_location, banding, test_id)
     return response

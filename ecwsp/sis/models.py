@@ -1,5 +1,5 @@
 #   Copyright 2010 Cristo Rey New York High School
-#   Author David M Burke <dburke@cristoreyny.org>
+#   Author David M Burke <david@burkesoftware.com>
 #   
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -222,8 +222,11 @@ class EmergencyContact(models.Model):
     
     def save(self, *args, **kwargs):
         super(EmergencyContact, self).save(*args, **kwargs)
+        self.cache_student_addresses()
+    
+    def cache_student_addresses(self):
+        """cache these for the student for primary contact only"""
         if self.primary_contact:
-            # cache these for the student
             for student in self.student_set.all():
                 student.parent_guardian = self.fname + " " + self.lname
                 student.street = self.street

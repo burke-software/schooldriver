@@ -1,0 +1,6 @@
+<@style@:style @style@:name="podNumberStyle" @style@:display-name="POD Numbering Symbols" @style@:family="text"/>
+<@style@:style @style@:name="podBulletStyle" @style@:display-name="POD Bullet Symbols" @style@:family="text">
+  <@style@:text-properties @style@:font-name="PodStarSymbol" @fo@:font-size="9pt"
+                           @style@:font-name-asian="PodStarSymbol" @style@:font-size-asian="9pt"
+                           @style@:font-name-complex="PodStarSymbol" @style@:font-size-complex="9pt"/>
+</@style@:style>

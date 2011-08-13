@@ -1,5 +1,5 @@
 #       Copyright 2010 Cristo Rey New York High School
-#       Author David M Burke <dburke@cristoreyny.org>
+#       Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
@@ -19,13 +19,27 @@
 from django import forms
 from django.contrib.localflavor.us.forms import *
 from django.contrib.admin import widgets as adminwidgets
+from django.conf import settings
 
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 from tempfile import mkstemp
+from ajax_filtered_fields.forms import ManyToManyByRelatedField
 
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
 from ecwsp.administration.models import * 
+
+class CohortForm(forms.ModelForm):
+    class Meta:
+        model = Cohort
+    class Media:
+        js = (
+            settings.ADMIN_MEDIA_PREFIX + "js/SelectBox.js",
+            settings.ADMIN_MEDIA_PREFIX + "js/SelectFilter2.js",
+            '/static/js/jquery.js',
+            '/static/js/ajax_filtered_fields.js',
+        )
+    students = ManyToManyByRelatedField(Student, 'year', include_blank=False)
 
 class StudentForm(forms.ModelForm):
     class Meta:

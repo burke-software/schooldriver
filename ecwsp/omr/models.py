@@ -43,6 +43,12 @@ class Test(models.Model):
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     courses = models.ManyToManyField('schedule.Course', blank=True, null=True, help_text="Enroll an entire course, students will not show until saving.")
     students = models.ManyToManyField('sis.Student', blank=True, null=True, through='TestInstance')
+    finalized = models.BooleanField(help_text="This test is finished and should no longer be edited!")
+    
+    class Meta:
+        permissions = (
+            ('teacher_test', 'Teacher can make and edit tests'),
+        )
     
     def __unicode__(self):
         return self.name
@@ -68,7 +74,20 @@ class Test(models.Model):
     @property
     def students_in_queue(self):
         return self.testinstance_set.filter(results_recieved=False).count()
+    
+    @property
+    def points_possible(self):
+        data = self.question_set.aggregate(points_possible=Sum('point_value'))
+        return data['points_possible']
         
+    @property
+    def points_average(self):
+        try:
+            total_points = self.question_set.aggregate(total_points=Sum('answerinstance__points_earned'))['total_points']
+            return float(total_points) / (float(self.points_possible) * float(self.students_test_results))
+        except ZeroDivisionError:
+            return "N/A"
+    
     def reindex_question_order(self):
         """Test questions should always be 1, 2, 3, etc
         This will set it straight with respect to current order """
@@ -262,7 +281,10 @@ class TestInstance(models.Model):
     @property
     def points_earned(self):
         data = self.answerinstance_set.aggregate(points_earned=Sum('points_earned'))
-        return data['points_earned']
+        if data['points_earned']: 
+            return data['points_earned']
+        else:
+            return 0
     @property
     def grade(self):
         try:
@@ -282,7 +304,3 @@ class AnswerInstance(models.Model):
     points_possible = models.IntegerField()
     def __unicode__(self):
         return '%s %s' % (self.test_instance, self.answer)
-    
-    def clean(self):
-        if not self.test_instance.test.question_set.filter(question=self.question).count():
-            raise ValidationError('Test instance contains answers that are not part of the test!.')

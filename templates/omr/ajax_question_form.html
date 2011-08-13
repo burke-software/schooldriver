@@ -20,7 +20,7 @@
                       {{ question_form.point_value.label }} {{ question_form.point_value.errors }} {{ question_form.point_value }} &nbsp;&nbsp;&nbsp;&nbsp;
                   <br/>
                       {{ question_form.question.errors }} {{ question_form.question }}
-                      <div id="question_{{ question.id }}_is_true_div" style="{% if question.type != "True/False" %}display: none;{% endif %}"> Answer: {{ question_form.is_true }} {{ question_form.is_true.errors }} </div>
+                      <div id="question_{% if new %}{{ new }}{% else %}{{ question.id }}{% endif %}_is_true_div" style="{% if question.type != "True/False" %}display: none;{% endif %}"> Answer: {{ question_form.is_true }} {{ question_form.is_true.errors }} </div>
               </td>
               
               <td>
@@ -33,7 +33,7 @@
             </tr>
           </table>
           </div>
-        <div id="question_{{ question.id }}_answers_div" style="{% if question.type == "True/False" %}display: none;{% endif %}>
+        <div id="question_{% if new %}{{ new }}{% else %}{{ question.id }}{% endif %}_answers_div" style="{% if question.type == "True/False" %}display: none;{% endif %}>
             <h2 class="collapse-handler">Answers</h2>
             <div id="answers_div_{{ question_form.prefix }}">
               {% for answer in answers_formset %}
@@ -50,7 +50,7 @@
         {% if not new %}
             <button onclick="delete_question({{ question.id }}); return false;" class="delete-link">Delete</button>
         {% endif %}
-        <button onclick="cancle_edit({{ question.id }}); return false;">Cancel, discard changes</button>
+        <button onclick="cancel_edit({% if new %}'{{ new }}'{% else %}{{ question.id }}{% endif %}); return false;">Cancel, discard changes</button>
         <span style="float: right;">
             <button id="save_{{ question_form.prefix }}" onclick="return false;">Save</button>
             <script>
@@ -74,9 +74,15 @@
         $('#id_{{ answers_formset.prefix }}-TOTAL_FORMS').val(form_count_{{ question_form.prefix }});
       });
     
-      $('#id_question_' + {{ question.id }} + '-type').change(function() {
-        check_type({{ question.id }});
-      });
+      {% if new %}
+        $('#id_question_{{ new }}-type').change(function() {
+          check_type('{{ new }}');
+        });
+      {% else %}
+        $('#id_question_' + {{ question.id }} + '-type').change(function() {
+          check_type({{ question.id }});
+        });
+      {% endif %}
     </script>
   </form>
 {% if new %}
