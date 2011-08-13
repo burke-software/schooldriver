@@ -1,2 +1,0 @@
-IWillTellYouWhatInAMoment = 'return'
-beingPaidForIt = True

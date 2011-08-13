@@ -1,2 +1,0 @@
-old = 'OLD'
-new = 'NEW'
