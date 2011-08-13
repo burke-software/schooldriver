@@ -25,6 +25,7 @@ easy_install django-ckeditor
 easy_install elementtree
 easy_install django-filter
 easy_install poster
+easy_install django-ajax-filtered-fields
 
 #prepare mysql
 echo "enter mysql root password"

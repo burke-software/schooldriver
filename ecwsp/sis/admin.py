@@ -220,6 +220,7 @@ admin.site.register(StudentDiscipline, StudentDisciplineAdmin)
 admin.site.register(DisciplineAction)
 
 class CohortAdmin(admin.ModelAdmin):
+    form = CohortForm
     filter_horizontal = ('students',)
     
     def save_model(self, request, obj, form, change):
