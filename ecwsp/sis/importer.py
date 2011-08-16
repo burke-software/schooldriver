@@ -802,6 +802,11 @@ class Importer:
                         elif name == "location":
                             location, c = Location.objects.get_or_create(name=value)
                             if c: location.save()
+                        elif name == "level":
+                            try:
+                                model.level = GradeLevel.objects.get(name=value)
+                            except:
+                                model.level = GradeLevel.objects.get(id=value)
                         elif name == "homeroom":
                             model.homeroom = value
                         elif name == "asp":
