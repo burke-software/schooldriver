@@ -313,6 +313,9 @@ class GradeLevel(models.Model):
     id = models.IntegerField(unique=True, primary_key=True, verbose_name="Grade")
     name = models.CharField(max_length=150, unique=True)
     
+    class Meta:
+        ordering = ('id',)
+    
     def __unicode__(self):
         return unicode(self.name)
         
