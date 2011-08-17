@@ -20,6 +20,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import connection
 from django.db.models import Max
+from django.db.models.signals import post_save, m2m_changed
 from django.contrib.localflavor.us.models import *
 from django.contrib.auth.models import User, Group
 from django.conf import settings
@@ -31,6 +32,26 @@ from decimal import *
 import types
 
 logger = logging.getLogger(__name__)
+
+def create_faculty(instance):
+    faculty, created = Faculty.objects.get_or_create(username=instance.username)
+    if created:
+        faculty.fname=instance.first_name
+        faculty.lname=instance.last_name
+        faculty.email=instance.email
+        faculty.teacher=True
+        faculty.save()
+
+def create_faculty_profile(sender, instance, created, **kwargs):
+    if instance.groups.filter(name="teacher").count():
+        create_faculty(instance)
+
+def create_faculty_profile_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
+    if action == 'post_add' and instance.groups.filter(name="teacher").count():
+        create_faculty(instance)
+
+post_save.connect(create_faculty_profile, sender=User)
+m2m_changed.connect(create_faculty_profile_m2m, sender=User.groups.through)
 
 class UserPreference(models.Model):
     """ User Preferences """

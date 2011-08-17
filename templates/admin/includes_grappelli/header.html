@@ -90,7 +90,7 @@
                         {% if perms.admissions.change_applicant %}
                             <li><a href="{% url admin:admissions_applicant_changelist %}">{% trans 'Applicants' %}</a></li>
                         {% endif %}
-                        {% if perms.admissions.change_applicant and perms.sis.change_student %}
+                        {% if perms.admissions.change_applicant %}
                             <li><a href="{% url ecwsp.admissions.views.reports %}">{% trans 'Reports' %}</a></li>
                         {% endif %}
                     </ul>
