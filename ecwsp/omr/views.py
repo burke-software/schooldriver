@@ -28,7 +28,7 @@ from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 
 from ecwsp.omr.createpdf import *
-from ecwsp.omr.queXF import queXF
+from ecwsp.omr.queXF import import_queXF
 from ecwsp.omr.models import *
 from ecwsp.omr.forms import *
 from ecwsp.omr.reports import *
@@ -311,31 +311,42 @@ def download_test_results(request, test_id):
 
 @login_required
 def generate_xml(request,test_id):
+    global entire_testtag
     from xml.dom import minidom
     test = Test.objects.get(id=test_id)
-    entiredoc = minidom.Document()
-    entire_testtag = entiredoc.createElement("test")
-    entiredoc.appendChild(entire_testtag)
-    instances = TestInstance.objects.filter(test=test.id)
-    for instance in instances:
+    
+
+    def make_pdf(instance):
+        global entire_testtag, id
         teacher_section_required = False
             
         doc = minidom.Document()
         testtag = doc.createElement("test")
         id = doc.createElement("id")
         testtag.appendChild(id)
-        idtext = doc.createTextNode(str(instance.id))
+        if instance:
+            idtext = doc.createTextNode(str(instance.id))
+        else:
+            idtext = doc.createTextNode(str(test.id))
+        id.setAttribute("testid",str(test.id))
         id.appendChild(idtext)
         titletag = doc.createElement("title")
         id.appendChild(titletag)
         titletext = doc.createTextNode(test.name)
         titletag.appendChild(titletext)        
         studentsection = doc.createElement("section")
+        studentsection.setAttribute("type","student")
         id.appendChild(studentsection)
         studentnametag = doc.createElement("name")
         studentsection.appendChild(studentnametag)
-        studentname = doc.createTextNode(str(instance.student.fname + " " + instance.student.lname))
-        studentnametag.appendChild(studentname)
+        if instance:
+            studentsection.setAttribute("studentid",str(instance.id))
+            studentname = doc.createTextNode(str(instance.student.fname + " " + instance.student.lname))
+            studentnametag.appendChild(studentname)
+        else:
+            studentsection.setAttribute("studentid","0")
+            studentname = doc.createTextNode(" ")
+            studentnametag.appendChild(studentname)
     
         questions = test.question_set.order_by('order')
         essays = []
@@ -344,7 +355,7 @@ def generate_xml(request,test_id):
         priorType = None
         for q in questions:
             questiontag = doc.createElement("question")
-            questiontag.setAttribute("varName",str(instance.id) + "_" + str(q.id))
+            questiontag.setAttribute("varName",str(q.id))
             studentsection.appendChild(questiontag)
             question_number = doc.createElement("text")
             questiontag.appendChild(question_number)
@@ -355,10 +366,10 @@ def generate_xml(request,test_id):
             else:
                 text = str(i) + ". "
                 answers = []
+                choices = q.answer_set.order_by('id')
                 if q.type == "Multiple Choice":
                     ct=0
                     alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-                    choices = q.answer_set.order_by('id')
                     for answer in choices:
                         answers.append((answer.id,str(alphabet[ct])))
                         ct=ct+1
@@ -366,10 +377,12 @@ def generate_xml(request,test_id):
                     idlist = []
                     for answer in choices:
                         idlist.append(answer.id)
+                    print idlist
                     answers.append((idlist[0],"True"))
                     answers.append((idlist[1],"False"))
                     
                 for answer_id, choice in answers:
+                    print answer_id
                     choicetag = doc.createElement("choice")
                     questiontag.appendChild(choicetag)
                     choicetagtext = doc.createTextNode(str(choice))
@@ -384,6 +397,7 @@ def generate_xml(request,test_id):
             i=i+1
         if teacher_section_required:
             teachersection = doc.createElement("section")
+            teachersection.setAttribute("type","teacher")
             id.appendChild(teachersection)
             teachertexttag = doc.createElement("name")
             teachersection.appendChild(teachertexttag)
@@ -391,7 +405,7 @@ def generate_xml(request,test_id):
             teachertexttag.appendChild(teachertext)
             for q,qid,number in essays:
                 teacher_question = doc.createElement("question")
-                teacher_question.setAttribute("varName",str(instance.id) + "_" + str(qid))
+                teacher_question.setAttribute("varName",str(qid))
                 teachersection.appendChild(teacher_question)
                 teacher_question_number = doc.createElement("text")
                 teacher_question.appendChild(teacher_question_number)
@@ -409,11 +423,34 @@ def generate_xml(request,test_id):
                     choicevaluetag.appendChild(choicevalue)
         
         entire_testtag.appendChild(id.cloneNode(True))
+        
 
+
+
+    entiredoc = minidom.Document()
+    entire_testtag = entiredoc.createElement("test")
+    entiredoc.appendChild(entire_testtag)
+    make_pdf(False)
+    first_pdf, first_pdf_location, first_banding = createpdf(entiredoc.toxml())
+    import_queXF(first_pdf_location, first_banding, test_id)
     
+    entiredoc = minidom.Document()
+    entire_testtag = entiredoc.createElement("test")
+    
+    entiredoc.appendChild(entire_testtag)
+    instances = TestInstance.objects.filter(test=test.id)
+    
+    for instance in instances:
+        make_pdf(instance)
+            
+        
+        
     pdf, pdf_location, banding = createpdf(entiredoc.toxml())
     response = HttpResponse(pdf, mimetype="application/pdf")
     filename = "Test_" + test_id + ".pdf"
     response['Content-Disposition'] = "filename=" + str(filename)
-    queXF(pdf_location, banding, test_id)
     return response
+
+
+
+
