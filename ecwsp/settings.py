@@ -267,6 +267,9 @@ ENGRADE_PASSWORD = ''
 # School UID (admin must be connected to school)
 ENGRADE_SCHOOLID = ''
 
+# The "new" url path for quexf.
+QUEXF_URL = "http://quexf.cristoreyny.org/admin/new.php"
+
 # this will load additional settings from the file settings_local.py
 # this is useful when managing multiple sites with different configurations
 from settings_local import *
