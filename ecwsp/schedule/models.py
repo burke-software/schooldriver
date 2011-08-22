@@ -157,6 +157,7 @@ class Course(models.Model):
     marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
     periods = models.ManyToManyField(Period, blank=True, through=CourseMeet)
     teacher = models.ForeignKey('sis.Faculty', blank=True, null=True, related_name="ateacher")
+    secondary_teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True, related_name="secondary_teachers")
     homeroom = models.BooleanField(help_text="Homerooms can be used for attendance")
     asp = models.BooleanField(help_text="ASP, requires seperate attendance")
     enrollments = models.ManyToManyField('sis.MdlUser', through=CourseEnrollment, blank=True, null=True)

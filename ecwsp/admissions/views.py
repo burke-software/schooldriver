@@ -68,8 +68,9 @@ def applicants_to_students(request, year_id):
                 student.siblings.add()
             for par in appl.parent_guardians.all():
                 student.emergency_contacts.add(par)
-            
             student.save()
+            for contact in student.emergency_contacts.filter(primary_contact=True):
+                contact.cache_student_addresses()
             msg += "Imported <a href='/admin/sis/student/%s'>%s</a>, %s<br/>" % (student.id, student, student.username)
         msg += "<br/>Maybe you want to save this list to add students to Active Dictory or Google Apps?<br/><br/>"
     

@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls) ),
     (r'^ldap_grp/', include('ldap_groups.urls')),
     (r'^ajax_select/', include('ajax_select.urls')),
+    (r'^ajax_filtered_fields/', include('ajax_filtered_fields.urls')),
 )
 
 if settings.GAPPS:

@@ -45,6 +45,7 @@ from reportlab.lib.pagesizes import letter
 from ecwsp.administration.models import Configuration
 from ecwsp.sis.models import Student
 from ecwsp.sis.report import *
+from ecwsp.sis.helper_functions import CharNullField
 
 class CraContact(models.Model):
     name = models.ForeignKey(User)
@@ -332,7 +333,7 @@ class StudentWorker(Student):
     ]
     day = models.CharField(max_length=2, choices=dayOfWeek, blank=True, null=True, verbose_name="Working Day")
     fax = models.BooleanField(help_text="Check if student may fax time sheet instead of going to check-in, shows up on attendance", verbose_name="Text Time Sheet")
-    work_permit_no = models.CharField(max_length=10, blank=True)
+    work_permit_no = CharNullField(max_length=10, blank=True, null=True, unique=True)
     placement = models.ForeignKey(WorkTeam, blank=True, null=True, )
     school_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
     student_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)

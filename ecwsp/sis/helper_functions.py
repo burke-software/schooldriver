@@ -1,4 +1,5 @@
 from django.db.models import AutoField
+from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.contrib import admin
 
@@ -13,6 +14,21 @@ def copy_model_instance(obj):
                     if not isinstance(f, AutoField) and\
                        not f in obj._meta.parents.values()])
     return obj.__class__(**initial)
+
+class CharNullField(models.CharField):
+    description = "CharField that stores NULL but returns ''"
+    def to_python(self, value):  #this is the value right out of the db, or an instance
+       if isinstance(value, models.CharField): #if an instance, just return the instance
+              return value 
+       if value==None:   #if the db has a NULL (==None in Python)
+              return ""  #convert it into the Django-friendly '' string
+       else:
+              return value #otherwise, return just the value
+    def get_db_prep_value(self, value):  #catches value right before sending to db
+       if value=="":     #if Django tries to save '' string, send the db None (NULL)
+            return None
+       else:
+            return value #otherwise, just pass the value
     
 class ReadPermissionModelAdmin(admin.ModelAdmin):
     """ based on http://gremu.net/blog/2010/django-admin-read-only-permission/

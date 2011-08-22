@@ -25,10 +25,11 @@ easy_install django-ckeditor
 easy_install elementtree
 easy_install django-filter
 easy_install poster
+easy_install django-ajax-filtered-fields
 
 #prepare mysql
 echo "enter mysql root password"
 mysql -uroot -p -e "create database sword"
 
-echo "Done, you still need to install appyframework, django, run python manage.py syncdb, and set up a web server"
+echo "Done, you still need to run python manage.py syncdb, and set up a web server"
 exit

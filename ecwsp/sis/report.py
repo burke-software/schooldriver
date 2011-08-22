@@ -7,7 +7,7 @@ from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
 
-from appy.pod.renderer import Renderer
+from ecwsp.appy.pod.renderer import Renderer
 import tempfile
 import os
 import uno
@@ -193,8 +193,9 @@ def pod_report_all(template, options=None, students=None, format="odt"):
 def pod_report_work_study(template, students, format="odt"):
     """ options is from StudentReportWriterForm, it includes the time range
     and some other options """
+    from ecwsp.work_study.models import WorkTeam
     data = get_default_data()
-
+    data['workteams'] = WorkTeam.objects.all()
     data['students'] = students
     
     filename = 'Work Study Report'
