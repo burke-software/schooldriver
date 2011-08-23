@@ -378,12 +378,10 @@ def generate_xml(request,test_id):
                     idlist = []
                     for answer in choices:
                         idlist.append(answer.id)
-                    print idlist
                     answers.append((idlist[0],"True"))
                     answers.append((idlist[1],"False"))
                     
                 for answer_id, choice in answers:
-                    print answer_id
                     choicetag = doc.createElement("choice")
                     questiontag.appendChild(choicetag)
                     choicetagtext = doc.createTextNode(str(choice))
