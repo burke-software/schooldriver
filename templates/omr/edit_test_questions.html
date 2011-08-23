@@ -123,6 +123,25 @@
       window.close();
     }
     
+    function check_correct_answer(question_id) {
+      possible = $("#id_question_" + question_id + "-point_value").val();
+      
+      // Clear green
+      $('input')
+        .filter(function() {
+          return this.id.match("id_questionanswers_" + question_id + "-.*-point_value");
+        })
+        .removeAttr("style")
+      ;
+      // Set green for correct answer
+      $('input')
+        .filter(function() {
+          return this.id.match("id_questionanswers_" + question_id + "-.*-point_value");
+        })
+        .filter(function() { return $(this).val() == possible; })
+        .css('background-color', '#a6ffa8')
+      ;
+    }
     
     function edit_question(id) {
       // Change read only question into editable
@@ -357,7 +376,7 @@
       </div>
       <div class="row module">
         {% for answer in question.answer_set.all %}
-          <div class="row">
+          <div class="row" {% if answer.point_value == question.point_value %} style="background: #a6ffa8;" {% endif %}>
             <table style="width:99%; ">
               <tr>
                 <td>

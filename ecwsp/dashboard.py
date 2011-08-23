@@ -64,16 +64,16 @@ class CustomIndexDashboard(Dashboard):
             ),
         ))
 
-	self.children.append(modules.ModelList(
-	    title=('Volunteer Tracking'),
-	    column=1,
-	    models=('ecwsp.volunteer_track.models.Site',
-		'ecwsp.volunteer_track.models.SiteSupervisor',
-		'ecwsp.volunteer_track.models.Hours',
-		'ecwsp.volunteer_track.models.Volunteer',
-	    ),
-	))
-        
+        self.children.append(modules.ModelList(
+            title=('Volunteer Tracking'),
+            column=1,
+            models=('ecwsp.volunteer_track.models.Site',
+                'ecwsp.volunteer_track.models.SiteSupervisor',
+                'ecwsp.volunteer_track.models.Hours',
+                'ecwsp.volunteer_track.models.Volunteer',
+            ),
+        ))
+
         self.children.append(modules.ModelList(
             title=_('Attendance'),
             column=1,
@@ -125,6 +125,7 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.sis.models.ReportField',
                 'ecwsp.administration.*',
                 'ecwsp.engrade_sync.*',
+                'ldap_groups.*',
             )
         ))
         

@@ -94,6 +94,8 @@ class Contact(models.Model):
             self.guid = hashlib.sha1(str(random.random())).hexdigest()[:-4]
         super(Contact, self).save(*args, **kwargs)
         if settings.SYNC_SUGAR:
+            import warnings
+            warnings.filterwarnings("ignore", "No data .*")
             cursor = connection.cursor()
             cursor.execute("call sync_contact_to_sugar(\"" + str(self.guid) + "\");")
     

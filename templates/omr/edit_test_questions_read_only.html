@@ -35,7 +35,7 @@
       </div>
       <div class="row module">
       {% for answer in question.answer_set.all %}
-        <div class="row">
+        <div class="row" {% if answer.point_value == question.point_value %} style="background: #a6ffa8;" {% endif %}>
           <table style="width:99%; ">
             <tr>
               <td>
