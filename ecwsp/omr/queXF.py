@@ -24,7 +24,7 @@ import MySQLdb
 
 def import_queXF(pdf,banding,test_id):
         register_openers()
-        url = "http://localhost/newquexf/admin/new.php"
+        url = settings.QUEXF_URL
         description = str(test_id)
         
         values = {'form':open(pdf, 'r'),

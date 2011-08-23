@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-
+#settings required in settings_local.py: DB_USER, DB_PASS, QXF_DB
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.styles import getSampleStyleSheet
@@ -28,13 +28,17 @@ from xml.dom import minidom
 from orderedDict import OrderedDict
 from tempfile import gettempdir
 import MySQLdb
+from django.conf import settings
+from django.core.files import File
+from django.core.files.base import ContentFile
+from omr.models import Test
 
 def createpdf(xml_test):
     global page
     page = 1
     xml(xml_test)
     createBanding()
-    pdf = "/test.pdf"
+    pdf = "/test_" + testid + ".pdf"
     temp = gettempdir()
     temp_pdf_file = temp + pdf
     
@@ -45,9 +49,11 @@ def createpdf(xml_test):
     download = c.getpdfdata()
     if student_id[id]=="0":
         temp_banding_file = temp + "/banding.xml"
-        banding = open(temp_banding_file, 'w')
-        doc.writexml(banding)
-        banding.close()
+        band_file = open(temp_banding_file, 'w')
+        doc.writexml(band_file)
+        band_file.close()
+        testmodel = Test.objects.get(id=testid)
+        testmodel.banding.save("test_" + testid + ".pdf", File(download))
         return download, temp_pdf_file, temp_banding_file
         
     else:
@@ -387,9 +393,9 @@ def barcodeBanding():
     box.appendChild(boxlabel)
     
 def barcodeBoxgroup():
-    """hacks on QueXF's database
+    """hacks on QueXF's database to insert the banding for the student barcode into the database
     """
-    db = MySQLdb.Connect(user="root", passwd="r00tpass",db="quexf")
+    db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
     db_cursor = db.cursor()        
     db_cursor.execute("INSERT INTO boxgroupstype SET btid=5,width=7,pid=" + str(page) + ",varname='barcode_" + str(page) + "',sortorder=0")
     db_cursor.execute("INSERT INTO boxes SET tlx=210,tly=185,brx=1175,bry=450,pid=" + str(page) +

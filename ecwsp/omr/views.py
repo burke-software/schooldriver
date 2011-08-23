@@ -289,6 +289,7 @@ def ajax_finalize_test(request, test_id):
         test = Test.objects.get(id=test_id)
         
         # Send shit to QueXF
+        generate_xml(request,test_id)
         
         test.finalized = True
         test.save()
