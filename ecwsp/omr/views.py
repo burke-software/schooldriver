@@ -27,8 +27,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 
-from ecwsp.omr.createpdf import *
-from ecwsp.omr.queXF import import_queXF
+from ecwsp.omr.createpdf import createpdf,generate_xml
 from ecwsp.omr.models import *
 from ecwsp.omr.forms import *
 from ecwsp.omr.reports import *
@@ -286,12 +285,11 @@ def ajax_question_form(request, test_id, question_id):
 @permission_required('omr.teacher_test')
 def ajax_finalize_test(request, test_id):
     try:
-        test = Test.objects.get(id=test_id)
         
         # Send shit to QueXF
+        generate_xml(test_id)
+        #import_queXF(first_pdf_location, first_banding, test_id)
         
-        test.finalized = True
-        test.save()
         
         return HttpResponse('SUCCESS');
     except:
@@ -309,142 +307,19 @@ def test_result(request, test_id):
 def download_test_results(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     return report.download_results(test)
+    
+@user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
+def download_answer_sheets(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    
+    response = HttpResponse(test.answer_sheet_pdf, mimetype="application/pdf")
+    filename = "Answer_Sheets.pdf"
+    response['Content-Disposition'] = "filename=" + str(filename)
+    return response
 
 @login_required
-def generate_xml(request,test_id):
-    global entire_testtag
-    from xml.dom import minidom
-    test = Test.objects.get(id=test_id)
-    
-
-    def make_pdf(instance):
-        global entire_testtag, id
-        teacher_section_required = False
-            
-        doc = minidom.Document()
-        testtag = doc.createElement("test")
-        id = doc.createElement("id")
-        testtag.appendChild(id)
-        if instance:
-            idtext = doc.createTextNode(str(instance.id))
-        else:
-            idtext = doc.createTextNode(str(test.id))
-        id.setAttribute("testid",str(test.id))
-        id.appendChild(idtext)
-        titletag = doc.createElement("title")
-        id.appendChild(titletag)
-        titletext = doc.createTextNode(test.name)
-        titletag.appendChild(titletext)        
-        studentsection = doc.createElement("section")
-        studentsection.setAttribute("type","student")
-        id.appendChild(studentsection)
-        studentnametag = doc.createElement("name")
-        studentsection.appendChild(studentnametag)
-        if instance:
-            studentsection.setAttribute("studentid",str(instance.id))
-            studentname = doc.createTextNode(str(instance.student.fname + " " + instance.student.lname))
-            studentnametag.appendChild(studentname)
-        else:
-            studentsection.setAttribute("studentid","0")
-            studentname = doc.createTextNode(" ")
-            studentnametag.appendChild(studentname)
-    
-        questions = test.question_set.order_by('order')
-        essays = []
-            
-        i = 1 # Question number for human use only
-        priorType = None
-        for q in questions:
-            questiontag = doc.createElement("question")
-            questiontag.setAttribute("varName",str(q.id))
-            studentsection.appendChild(questiontag)
-            question_number = doc.createElement("text")
-            questiontag.appendChild(question_number)
-            if q.type == "Essay":
-                essays.append([q,q.id,i])
-                teacher_section_required = True
-                text = str(i) + ".  Essay Question"
-            else:
-                text = str(i) + ". "
-                answers = []
-                choices = q.answer_set.order_by('id')
-                if q.type == "Multiple Choice":
-                    ct=0
-                    alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-                    for answer in choices:
-                        answers.append((answer.id,str(alphabet[ct])))
-                        ct=ct+1
-                elif q.type == "True/False":
-                    idlist = []
-                    for answer in choices:
-                        idlist.append(answer.id)
-                    answers.append((idlist[0],"True"))
-                    answers.append((idlist[1],"False"))
-                    
-                for answer_id, choice in answers:
-                    choicetag = doc.createElement("choice")
-                    questiontag.appendChild(choicetag)
-                    choicetagtext = doc.createTextNode(str(choice))
-                    choicetag.appendChild(choicetagtext)
-                    choicevaluetag = doc.createElement("value")
-                    choicevalue = doc.createTextNode(str(answer_id))
-                    choicetag.appendChild(choicevaluetag)
-                    choicevaluetag.appendChild(choicevalue)
-                
-            question_numbertext = doc.createTextNode(text)
-            question_number.appendChild(question_numbertext)
-            i=i+1
-        if teacher_section_required:
-            teachersection = doc.createElement("section")
-            teachersection.setAttribute("type","teacher")
-            id.appendChild(teachersection)
-            teachertexttag = doc.createElement("name")
-            teachersection.appendChild(teachertexttag)
-            teachertext = doc.createTextNode("For Teacher Use Only")
-            teachertexttag.appendChild(teachertext)
-            for q,qid,number in essays:
-                teacher_question = doc.createElement("question")
-                teacher_question.setAttribute("varName",str(qid))
-                teachersection.appendChild(teacher_question)
-                teacher_question_number = doc.createElement("text")
-                teacher_question.appendChild(teacher_question_number)
-                teacher_question_numbertext = doc.createTextNode(str(number) + ". ")
-                teacher_question_number.appendChild(teacher_question_numbertext)
-                options = Answer.objects.filter(question=q)
-                for choice in options:
-                    choicetag = doc.createElement("choice")
-                    teacher_question.appendChild(choicetag)
-                    choicetagtext = doc.createTextNode(str(choice.point_value))
-                    choicetag.appendChild(choicetagtext)
-                    choicevaluetag = doc.createElement("value")
-                    choicevalue = doc.createTextNode(str(choice.id))
-                    choicetag.appendChild(choicevaluetag)
-                    choicevaluetag.appendChild(choicevalue)
-        
-        entire_testtag.appendChild(id.cloneNode(True))
-        
-
-
-
-    entiredoc = minidom.Document()
-    entire_testtag = entiredoc.createElement("test")
-    entiredoc.appendChild(entire_testtag)
-    make_pdf(False)
-    first_pdf, first_pdf_location, first_banding = createpdf(entiredoc.toxml())
-    import_queXF(first_pdf_location, first_banding, test_id)
-    
-    entiredoc = minidom.Document()
-    entire_testtag = entiredoc.createElement("test")
-    
-    entiredoc.appendChild(entire_testtag)
-    instances = TestInstance.objects.filter(test=test.id)
-    
-    for instance in instances:
-        make_pdf(instance)
-            
-        
-        
-    pdf, pdf_location, banding = createpdf(entiredoc.toxml())
+def queXF_answer_sheets(request,test_id):
+    pdf = generate_xml(test_id)
     response = HttpResponse(pdf, mimetype="application/pdf")
     filename = "Test_" + test_id + ".pdf"
     response['Content-Disposition'] = "filename=" + str(filename)
