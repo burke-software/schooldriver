@@ -52,17 +52,5 @@ class GradeFilterForm(TimeBasedForm):
     filter_attn = forms.ChoiceField(choices=filter_choices, required=False)
     filter_attn_times = forms.CharField(max_length=2, required=False, widget=forms.TextInput(attrs={'style':'width:20px;'}))
     
-    
-class CourseBulkChangeForm(forms.Form):
-    active = forms.NullBooleanField(required=False)
-    teacher = forms.ModelChoiceField(queryset=Faculty.objects.filter(teacher=True), required=False)
-    homeroom = forms.NullBooleanField(required=False)
-    asp = forms.NullBooleanField(required=False)
-    active = forms.NullBooleanField(required=False)
-    credits = forms.DecimalField(required=False, max_digits=5, decimal_places=2)
-    department = forms.ModelChoiceField(queryset=Department.objects.all(), required=False)
-    level = forms.ModelChoiceField(queryset=GradeLevel.objects.all(), required=False)
-    marking_period = forms.ModelMultipleChoiceField(queryset=MarkingPeriod.objects.all(), required=False)
-    
 class CourseSelectionForm(forms.Form):
     course = forms.ModelChoiceField(queryset=Course.objects.filter(marking_period__school_year__active_year=True).distinct(), required=False)

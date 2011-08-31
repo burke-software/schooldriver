@@ -1,0 +1,54 @@
+{% load i18n %}
+
+<fieldset class="module aligned {{ fieldset.classes }}">
+  {% if fieldset.name %}<h2>{{ fieldset.name }} Mass Edit</h2>{% endif %}
+  {% if fieldset.description %}<div class="description">{{ fieldset.description|safe }}</div>{% endif %}
+  
+  {% if general_error %}
+    <div class="errornote"> {{ general_error}} </div>
+  {% endif %}
+  
+  <div class="row module">
+    <h2>
+      <div class="column span-3"> {% trans "Mass Update" %} </div>
+      <div class="column span-flexible"> {% trans "Field" %} </div>
+    </h2>
+  </div>
+  
+  {% for line in fieldset %}
+    <div class="form-row{% if line.errors %} errors{% endif %} {% for field in line %}{{ field.field.name }} {% endfor %} ">
+      {{ line.errors }}
+      {% for field in line %}
+        {% if field.field.name in adminform.readonly_fields %}
+          <div class="row module {% if not line.fields|length_is:"1" %}field-box{% endif %}">
+            <div class="column span-3"> </div>
+            <div class="column span-flexible">
+              {{ field.field.name }} {% trans "is read only." %}
+            </div>
+          </div>
+        {% else %} {% if field.field.name in unique_fields %}
+          <div class="row module {% if not line.fields|length_is:"1" %}field-box{% endif %}">
+            <div class="column span-3"> </div>
+            <div class="column span-flexible">
+              {{ field.field.name }} {% trans "must be unique." %}
+            </div>
+          </div>
+        {% else %}
+          <div class="row module {% if not line.fields|length_is:"1" %}field-box{% endif %}">
+            <div class="column span-3">
+              <input type="checkbox" name="_mass_change_{{ field.field.name }}" />
+            </div>
+            <div class="column span-flexible">
+              {% if field.is_checkbox %}
+                {{ field.field }}{{ field.label_tag }}
+              {% else %}
+                {{ field.label_tag }}{{ field.field }}
+              {% endif %}
+              {% if field.field.field.help_text %}<p class="help">{{ field.field.field.help_text|safe }}</p>{% endif %}
+            </div>
+          </div>
+        {% endif %}{% endif %}
+      {% endfor %}
+    </div>
+  {% endfor %}
+</fieldset>

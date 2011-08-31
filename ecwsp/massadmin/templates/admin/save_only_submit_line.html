@@ -1,0 +1,4 @@
+{% load i18n %}
+<div class="submit-row" {% if is_popup %}style="overflow: auto;"{% endif %}>
+<input type="submit" value="{% trans 'Save' %}" class="default" name="_save" {{ onclick_attrib }}/>
+</div>
