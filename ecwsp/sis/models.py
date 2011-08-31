@@ -481,10 +481,8 @@ class Student(MdlUser):
         super(Student, self).save(*args, **kwargs)
         user, created = User.objects.get_or_create(username=self.username)
         group, gcreated = Group.objects.get_or_create(name="students")
-        if created or gcreated:
-            user.groups.add(group)
-            user.save()
-    
+        user.groups.add(group)
+        
     def graduate_and_create_alumni(self):
         self.inactive = True
         self.reason_left = ReasonLeft.objects.get_or_create(reason="Graduated")[0]

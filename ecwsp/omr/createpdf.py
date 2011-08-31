@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-
+#settings required in settings_local.py: DB_USER, DB_PASS, QXF_DB
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.styles import getSampleStyleSheet
@@ -28,13 +28,175 @@ from xml.dom import minidom
 from orderedDict import OrderedDict
 from tempfile import gettempdir
 import MySQLdb
+from django.conf import settings
+from django.core.files import File
+from omr.models import Test
+from ecwsp.omr.queXF import import_queXF
+from ecwsp.omr.models import *
+
+def generate_xml(test_id):
+    global entire_testtag
+    from xml.dom import minidom
+    test = Test.objects.get(id=test_id)
+    
+
+    def make_pdf(instance):
+        global entire_testtag, id
+        teacher_section_required = False
+            
+        doc = minidom.Document()
+        testtag = doc.createElement("test")
+        id = doc.createElement("id")
+        testtag.appendChild(id)
+        if instance:
+            idtext = doc.createTextNode(str(instance.id))
+        else:
+            idtext = doc.createTextNode(str(test.id))
+        id.setAttribute("testid",str(test.id))
+        id.appendChild(idtext)
+        titletag = doc.createElement("title")
+        id.appendChild(titletag)
+        titletext = doc.createTextNode(test.name)
+        titletag.appendChild(titletext)        
+        studentsection = doc.createElement("section")
+        studentsection.setAttribute("type","student")
+        id.appendChild(studentsection)
+        studentnametag = doc.createElement("name")
+        studentsection.appendChild(studentnametag)
+        if instance:
+            studentsection.setAttribute("studentid",str(instance.id))
+            studentname = doc.createTextNode(str(instance.student.fname + " " + instance.student.lname))
+            studentnametag.appendChild(studentname)
+        else:
+            studentsection.setAttribute("studentid","0")
+            studentname = doc.createTextNode(" ")
+            studentnametag.appendChild(studentname)
+    
+        questions = test.question_set.order_by('order')
+        essays = []
+            
+        i = 1 # Question number for human use only
+        priorType = None
+        for q in questions:
+            questiontag = doc.createElement("question")
+            questiontag.setAttribute("varName",str(q.id))
+            studentsection.appendChild(questiontag)
+            question_number = doc.createElement("text")
+            questiontag.appendChild(question_number)
+            if q.type == "Essay":
+                essays.append([q,q.id,i])
+                teacher_section_required = True
+                text = str(i) + ".  Essay Question"
+            else:
+                text = str(i) + ". "
+                answers = []
+                choices = q.answer_set.order_by('id')
+                if q.type == "Multiple Choice":
+                    ct=0
+                    alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+                    for answer in choices:
+                        answers.append((answer.id,str(alphabet[ct])))
+                        ct=ct+1
+                elif q.type == "True/False":
+                    idlist = []
+                    for answer in choices:
+                        idlist.append(answer.id)
+                    answers.append((idlist[0],"True"))
+                    answers.append((idlist[1],"False"))
+                    
+                for answer_id, choice in answers:
+                    choicetag = doc.createElement("choice")
+                    questiontag.appendChild(choicetag)
+                    choicetagtext = doc.createTextNode(str(choice))
+                    choicetag.appendChild(choicetagtext)
+                    choicevaluetag = doc.createElement("value")
+                    choicevalue = doc.createTextNode(str(answer_id))
+                    choicetag.appendChild(choicevaluetag)
+                    choicevaluetag.appendChild(choicevalue)
+                
+            question_numbertext = doc.createTextNode(text)
+            question_number.appendChild(question_numbertext)
+            i=i+1
+        if teacher_section_required:
+            teachersection = doc.createElement("section")
+            teachersection.setAttribute("type","teacher")
+            id.appendChild(teachersection)
+            teachertexttag = doc.createElement("name")
+            teachersection.appendChild(teachertexttag)
+            teachertext = doc.createTextNode("For Teacher Use Only")
+            teachertexttag.appendChild(teachertext)
+            for q,qid,number in essays:
+                teacher_question = doc.createElement("question")
+                teacher_question.setAttribute("varName",str(qid))
+                teachersection.appendChild(teacher_question)
+                teacher_question_number = doc.createElement("text")
+                teacher_question.appendChild(teacher_question_number)
+                teacher_question_numbertext = doc.createTextNode(str(number) + ". ")
+                teacher_question_number.appendChild(teacher_question_numbertext)
+                options = Answer.objects.filter(question=q)
+                for choice in options:
+                    choicetag = doc.createElement("choice")
+                    teacher_question.appendChild(choicetag)
+                    choicetagtext = doc.createTextNode(str(choice.point_value))
+                    choicetag.appendChild(choicetagtext)
+                    choicevaluetag = doc.createElement("value")
+                    choicevalue = doc.createTextNode(str(choice.id))
+                    choicetag.appendChild(choicevaluetag)
+                    choicevaluetag.appendChild(choicevalue)
+        
+        entire_testtag.appendChild(id.cloneNode(True))
+        
+
+
+
+    entiredoc = minidom.Document()
+    entire_testtag = entiredoc.createElement("test")
+    entiredoc.appendChild(entire_testtag)
+    make_pdf(False)
+    first_pdf, first_pdf_location, first_banding = createpdf(entiredoc.toxml())
+    
+    pdfFile = File(open(first_pdf_location,'r'))
+    bandFile = open(first_banding,'r')
+    bandName = "banding_" + testid + ".xml"
+    test.banding.save(bandName,File(bandFile))
+    
+    pdfName = "QueXF_Test_" + testid + ".pdf"
+    test.queXF_pdf.save(pdfName,pdfFile)
+    pdfFile.close()
+    
+    
+    
+    
+    import_queXF(first_pdf_location, first_banding, test_id)
+    
+    entiredoc = minidom.Document()
+    entire_testtag = entiredoc.createElement("test")
+    
+    entiredoc.appendChild(entire_testtag)
+    instances = TestInstance.objects.filter(test=test.id)
+    
+    for instance in instances:
+        make_pdf(instance)
+        
+    pdf, pdf_location, banding = createpdf(entiredoc.toxml())
+    pdfFile = File(open(pdf_location,'r'))
+    pdfName = "Answer_Sheets_Test_" + testid + ".pdf"
+    test.answer_sheet_pdf.save(pdfName,pdfFile)
+    pdfFile.close()
+    
+    test.finalized = True
+    test.save()
+    return pdf
+
+
+
 
 def createpdf(xml_test):
     global page
     page = 1
     xml(xml_test)
     createBanding()
-    pdf = "/test.pdf"
+    pdf = "/test_" + testid + ".pdf"
     temp = gettempdir()
     temp_pdf_file = temp + pdf
     
@@ -43,22 +205,36 @@ def createpdf(xml_test):
     c.showPage()
     c.save()
     download = c.getpdfdata()
+    #pdfFile = File(open(temp_pdf_file,'r'))
     if student_id[id]=="0":
         temp_banding_file = temp + "/banding.xml"
         banding = open(temp_banding_file, 'w')
         doc.writexml(banding)
         banding.close()
+        #banding file to FileField
+        #bandFile = open(temp_banding_file,'r')
+        #bandName = "banding_" + testid + ".xml"
+        #test.banding.save(bandName,File(bandFile))
+        #bandFile.close()
+        #queXF_pdf file to FileField
+        #pdfName = "QueXF_Test_" + testid + ".pdf"
+        #test.queXF_pdf.save(pdfName,pdfFile)
+        #pdfFile.close()
         return download, temp_pdf_file, temp_banding_file
         
     else:
-        return download, False, False
+        #answer_sheet_pdf to FileField
+        #pdfName = "Answer_Sheets_Test_" + testid + ".pdf"
+        #test.answer_sheet_pdf.save(pdfName,pdfFile)
+        #pdfFile.close()
+        return download, temp_pdf_file, False
     
 def newPage(c):
     global page
     c.translate(0,0)
     barcode(c)
-    #if student_id[id]!="0":
-    student_barcode(c)
+    if student_id[id]!="0":
+        student_barcode(c)
     drawLines(c)
     c.translate(left_margin,bottom_margin)
     
@@ -126,7 +302,7 @@ def createTest(c):
         c.setFont(default_font,font_size)
         
         title_length = title.__len__() * font_size
-        c.drawString(width - indent - title_length - right_margin,first_line+10, title)
+        c.drawString(width - title_length*2 - right_margin,first_line+10, title)
         next_line = first_line - (line_space)
         name_length = (names[id]).__len__() * font_size
         c.drawString(width - indent - name_length - right_margin,next_line+10,names[id])
@@ -387,9 +563,9 @@ def barcodeBanding():
     box.appendChild(boxlabel)
     
 def barcodeBoxgroup():
-    """hacks on QueXF's database
+    """hacks on QueXF's database to insert the banding for the student barcode into the database
     """
-    db = MySQLdb.Connect(user="root", passwd="r00tpass",db="quexf")
+    db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
     db_cursor = db.cursor()        
     db_cursor.execute("INSERT INTO boxgroupstype SET btid=5,width=7,pid=" + str(page) + ",varname='barcode_" + str(page) + "',sortorder=0")
     db_cursor.execute("INSERT INTO boxes SET tlx=210,tly=185,brx=1175,bry=450,pid=" + str(page) +

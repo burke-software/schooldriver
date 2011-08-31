@@ -1792,7 +1792,10 @@ class Importer:
                 for (name, value) in items:
                     is_ok, name, value = self.sanitize_item(name, value)
                     if is_ok:
-                        if name == "workteam" or name == "work team" or name == "name":
+                        if name == "id" or name == "workteam id":
+                            model = WorkTeam.objects.get(id=value)
+                            created = False
+                        elif name == "workteam" or name == "work team" or name == "name":
                             model, created = WorkTeam.objects.get_or_create(team_name=value)
                         if name == "company":
                             model.company = Company.objects.get_or_create(name=value)[0]

@@ -7,6 +7,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    (r'^admin/', include("massadmin.urls")),
     (r'^ckeditor/', include('ckeditor.urls')),
     (r'^grappelli/', include('grappelli.urls')),
     (r'^$', 'ecwsp.sis.views.index'),
@@ -23,6 +24,7 @@ urlpatterns = patterns('',
     (r'^ldap_grp/', include('ldap_groups.urls')),
     (r'^ajax_select/', include('ajax_select.urls')),
     (r'^ajax_filtered_fields/', include('ajax_filtered_fields.urls')),
+    
 )
 
 if settings.GAPPS:

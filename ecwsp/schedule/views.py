@@ -8,11 +8,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.db.models import Count
+from django.views.generic.simple import redirect_to
 from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
 
 from ecwsp.sis.models import *
-from ecwsp.sis.views import student_bulk_change
 from ecwsp.sis.uno_report import *
 from ecwsp.sis.xlsReport import *
 from ecwsp.schedule.models import *
@@ -68,52 +68,6 @@ def schedule_enroll(request, id):
     students = Student.objects.filter(courseenrollment__course=course)
     form = EnrollForm(initial={'students': students})
     return render_to_response('schedule/enroll.html', {'request': request, 'form': form, 'course': course})
-
-@user_passes_test(lambda u: u.has_perm('sis.change_studentattendance'))
-def course_bulk_change(request):
-    form = CourseBulkChangeForm()
-    if request.method == 'POST':
-        form = CourseBulkChangeForm(request.POST)
-        if form.is_valid():
-            ids = request.GET.get('ids', '')
-            data = form.cleaned_data
-            
-            ids = ids.split(',')
-            
-            for course in Course.objects.filter(id__in=ids):
-                if data['active']:
-                    course.active = data['active']
-                if data['teacher']:
-                    course.teacher = data['teacher']
-                if data['homeroom']:
-                    course.homeroom = data['homeroom']
-                if data['asp']:
-                    course.asp = data['asp']
-                if data['active']:
-                    course.active = data['active']
-                if data['credits']:
-                    course.credits = data['credits']
-                if data['department']:
-                    course.department = data['department']
-                if data['level']:
-                    course.level = data['level']
-                if data['marking_period']:
-                    course.marking_period = data['marking_period']
-               
-                course.save()
-                
-                LogEntry.objects.log_action(
-                    user_id         = request.user.pk, 
-                    content_type_id = ContentType.objects.get_for_model(course).pk,
-                    object_id       = course.pk,
-                    object_repr     = unicode(course), 
-                    action_flag     = CHANGE
-                )
-            messages.success(request, 'Course bulk change successful')
-            return HttpResponseRedirect(reverse('admin:schedule_course_changelist'))
-    msg = 'Leaving field blank will not make changes to that field. It will not save the field as blank.'
-    return render_to_response('sis/generic_form.html', {'request': request, 'form': form, \
-        'title': 'Bulk Course Change', 'msg': msg})
 
 @user_passes_test(lambda u: u.groups.filter(name='teacher').count() > 0 or u.is_superuser, login_url='/')   
 def teacher_grade(request):
@@ -442,9 +396,8 @@ def grade_analytics(request):
         if 'bulk' in request.POST:
             selected = request.POST.getlist('selected')
             queryset = Student.objects.filter(id__in=selected)
-            request.method = None
-            request.POST = None
-            return student_bulk_change(request, queryset)
+            return redirect_to(request, url = '/admin/sis/%s-masschange/%s' % ('student', ','.join(selected)))
+            
         form = GradeFilterForm(request.POST)
         if form.is_valid():
             # Add to course
@@ -509,7 +462,7 @@ def grade_analytics(request):
             else: # all of time
                 date_begin = date(1980, 1, 1)
                 date_end = date(2980, 1, 1)
-                
+            print date_begin
             # Pre load Discipline data
             if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
                 student_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end), studentdiscipline__action=data['filter_disc_action']).annotate(action_count=Count('studentdiscipline__action'))

@@ -32,12 +32,6 @@ from ecwsp.administration.models import Configuration
 from django.contrib.auth.models import User
 from django.db.models import Q
 from ajax_select import make_ajax_form
-
-def bulk_change(modeladmin, request, queryset):
-    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-    ct = ContentType.objects.get_for_model(queryset.model)
-    if ct.name == "student worker":
-        return HttpResponseRedirect("/work_study/studentworker/bulk_change/?ct=%s&ids=%s" % (ct.pk, ",".join(selected)))
     
 class StudentNumberInline(admin.TabularInline):
     model = StudentNumber
@@ -237,9 +231,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
     list_display = ('fname', 'lname', 'day', 'company', 'pickUp', 'cra', 'primary_contact')
     filter_horizontal = ('handout33',)
     search_fields = ['fname', 'lname', 'unique_id', 'placement__team_name', 'username', 'id']
-    readonly_fields = ['inactive', 'fname', 'lname', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']
-    actions = [bulk_change]
-    
+    readonly_fields = ['inactive', 'fname', 'lname', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']    
 admin.site.register(StudentWorker, StudentAdmin)
 
 admin.site.register(PresetComment)

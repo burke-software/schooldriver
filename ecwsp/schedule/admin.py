@@ -25,11 +25,6 @@ class CourseMeetInline(admin.TabularInline):
     model = CourseMeet
     extra = 1
 
-def course_bulk_change(modeladmin, request, queryset):
-    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-    ct = ContentType.objects.get_for_model(queryset.model)
-    return HttpResponseRedirect("/schedule/course/bulk_change/?ct=%s&ids=%s" % (ct.pk, ",".join(selected)))
-
 class CourseAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
         try:
@@ -51,7 +46,7 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ['fullname', 'shortname', 'description', 'teacher__username']
     list_filter = ['homeroom', 'asp']
     inlines = [CourseMeetInline]
-    actions = [course_bulk_change, copy, delete_courses]
+    actions = [copy, delete_courses]
     
     def save_model(self, request, obj, form, change):
         """Override save_model because django doesn't have a better way to access m2m fields"""
@@ -86,6 +81,8 @@ admin.site.register(Period)
 admin.site.register(Faculty)
 
 admin.site.register(GradeComment)
+
+admin.site.register(Location)
 
 admin.site.register(OmitCourseGPA)
 

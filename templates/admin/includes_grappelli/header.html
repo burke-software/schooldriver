@@ -33,7 +33,7 @@
             <!-- Attendance  -->
             {% if perms.sis.reports or perms.sis.change_studentattendance or perms.sis.take_studentattendance %}
                 <li class="user-options-container collapse closed">
-                    <a href="javascript://" class="user-options-handler collapse-handler"> Attendance </a>
+                    <a href="javascript://" class="user-options-handler collapse-handler"> {% trans 'Attendance' %} </a>
                     <ul class="user-options">
                         {% if perms.sis.take_studentattendance %}
                             <li><a href="{% url ecwsp.sis.views.teacher_attendance %}">{% trans 'Take Homeroom Attendance' %}</a>
@@ -50,7 +50,7 @@
             <!-- Discipline  -->
             {% if perms.sis.change_studentdiscipline %}
                 <li class="user-options-container collapse closed">
-                    <a href="javascript://" class="user-options-handler collapse-handler"> Discipline </a>
+                    <a href="javascript://" class="user-options-handler collapse-handler"> {% trans 'Discipline' %} </a>
                     <ul class="user-options">
                         {% if perms.sis.change_studentdiscipline %}
                             <li><a href="{% url ecwsp.sis.views.view_discipline %}">{% trans 'View' %}</a>
