@@ -88,14 +88,6 @@ def mark_inactive(modeladmin, request, queryset):
                 )
         object.save()
 
-def bulk_change(modeladmin, request, queryset):
-    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-    ct = ContentType.objects.get_for_model(queryset.model)
-    if ct.name == "student":
-        return HttpResponseRedirect("/sis/student/bulk_change/?ct=%s&ids=%s" % (ct.pk, ",".join(selected)))
-    elif ct.name == "studentattendance":
-        return HttpResponseRedirect("/sis/studentattendance/bulk_change/?ct=%s&ids=%s" % (ct.pk, ",".join(selected)))
-
 class StudentNumberInline(admin.TabularInline):
     model = StudentNumber
     extra = 1
@@ -189,7 +181,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin):
     form = StudentForm
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline, ASPHistoryInline]
-    actions = [promote_to_worker, mark_inactive, graduate_and_create_alumni, bulk_change]
+    actions = [promote_to_worker, mark_inactive, graduate_and_create_alumni]
     list_filter = ['inactive','year']
     list_display = ['__unicode__','year']
 admin.site.register(Student, StudentAdmin)
@@ -250,7 +242,6 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
     list_filter = ['date', 'status']
     list_editable = ['status', 'notes']
     search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
-    actions = [bulk_change]
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 
 class AttendanceStatusAdmin(admin.ModelAdmin):

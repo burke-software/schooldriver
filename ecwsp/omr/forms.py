@@ -35,7 +35,6 @@ class TestQuestionForm(forms.ModelForm):
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
-        
     def as_custom(self):
         t = template.loader.get_template('omr/answer_form.html')
         return t.render(Context({'answer': self},))

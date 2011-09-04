@@ -19,6 +19,7 @@
 from django.contrib import admin
 
 from ecwsp.omr.models import *
+from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
 
 class AnswerInline(admin.TabularInline):
     model = Answer
@@ -33,7 +34,13 @@ class AnswerInstanceInline(admin.TabularInline):
     extra = 0
 
 admin.site.register(MeasurementTopic)
-admin.site.register(Benchmark)
+
+class BenchmarkAdmin(ReadPermissionModelAdmin):
+    list_display = ['number', 'name']
+    list_filter = ['measurement_topics',]
+    search_fields = ['number', 'name','measurement_topics__name' ]
+
+admin.site.register(Benchmark, BenchmarkAdmin)
 
 class TestAdmin(admin.ModelAdmin):
     list_display = ['name', 'link_copy']

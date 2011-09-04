@@ -1,3 +1,4 @@
+from django.db.models import FileField
 from django.db import models
 from django.db.models import Sum
 from django.db.models import signals
@@ -7,6 +8,8 @@ from django.dispatch import dispatcher
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from ckeditor.fields import RichTextField
+from django.contrib.localflavor.us.models import *
+
 
 from ecwsp.sis.models import SchoolYear, Student
 
@@ -44,6 +47,9 @@ class Test(models.Model):
     courses = models.ManyToManyField('schedule.Course', blank=True, null=True, help_text="Enroll an entire course, students will not show until saving.")
     students = models.ManyToManyField('sis.Student', blank=True, null=True, through='TestInstance')
     finalized = models.BooleanField(help_text="This test is finished and should no longer be edited!")
+    answer_sheet_pdf = FileField(upload_to="student_tests")
+    queXF_pdf = FileField(upload_to="student_tests")
+    banding = FileField(upload_to="student_tests")
     
     class Meta:
         permissions = (

@@ -11,5 +11,4 @@ urlpatterns = patterns('',
     (r'^student_gradesheet/(?P<id>\d+)/(?P<year_id>\d+)$', student_gradesheet),
     (r'^grade_analytics/$', grade_analytics),
     (r'^view_comment_codes/$', view_comment_codes),
-    (r'^course/bulk_change/$', course_bulk_change),
 )

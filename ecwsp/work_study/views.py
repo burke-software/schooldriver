@@ -82,45 +82,6 @@ def fte_by_day(request):
     report = xlsReport(names, titles, fileName, heading="FTE by Day of Week")
     report.addSheet(student_company_day_report(), heading="Detail")
     return report.finish()
-
-@user_passes_test(lambda u: u.has_perm('work_study.change_studentworker'))
-def studentworker_bulk_change(request, queryset=None):
-    if request.method == 'POST':
-        form = StudentWorkerBulkChangeForm(request.POST)
-        if form.is_valid():
-            if queryset:
-                students = queryset
-            else:
-                ids = request.GET.get('ids', '')
-                ids = ids.split(',')
-                students = StudentWorker.objects.filter(id__in=ids)
-            data = form.cleaned_data
-            for student in students:
-                if data['day']:
-                    student.day = data['day']
-                if data['placement']:
-                    student.placement = data['placement']
-                if data['clear_placement']:
-                    student.placement = None
-                if data['school_pay_rate']:
-                    student.school_pay_rate = data['school_pay_rate']
-                if data['student_pay_rate']:
-                    student.student_pay_rate = data['student_pay_rate']
-                student.save()
-                LogEntry.objects.log_action(
-                    user_id         = request.user.pk, 
-                    content_type_id = ContentType.objects.get_for_model(student).pk,
-                    object_id       = student.pk,
-                    object_repr     = unicode(student), 
-                    action_flag     = CHANGE
-                )
-            messages.success(request, 'Student Worker bulk change successful')
-            return HttpResponseRedirect(reverse('admin:work_study_studentworker_changelist'))
-    else:
-        form = StudentWorkerBulkChangeForm()
-    msg = 'Leaving field blank will not make changes to that field.'
-    return render_to_response('sis/generic_form.html', {'request': request, 'form': form, \
-        'title': 'Bulk Student Worker Change', 'msg': msg})
     
 def student_company_day_report(industry_type=False, paying=False):
     data = []

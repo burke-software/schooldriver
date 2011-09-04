@@ -89,6 +89,24 @@ class PythonEngrade:
         self.__check_error(element)
         return element.find('values/clid').text
         
+    def class_students_edit(self, clid, students):
+        """
+        
+        clid = Engrade Class ID
+        students = list of students, one per line in format FirstName LastName IDNumber
+        """
+        values = {
+            'apitask': 'class-students-edit',
+            'apikey': self.apikey,
+            'ses': self.ses,
+            'students': students,
+            'clid': clid,
+        }
+        if code:
+            values['code'] = code
+        element = self.__dict_to_element(values)
+        self.__check_error(element)
+        
     def school_teacher_new(self, usr, name, email, pwd):
         """
         usr = Account username, must be a-z and 0-9 only

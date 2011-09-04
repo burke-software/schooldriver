@@ -45,6 +45,7 @@ from reportlab.lib.pagesizes import letter
 from ecwsp.administration.models import Configuration
 from ecwsp.sis.models import Student
 from ecwsp.sis.report import *
+from ecwsp.sis.helper_functions import CharNullField
 
 class CraContact(models.Model):
     name = models.ForeignKey(User)
@@ -93,6 +94,8 @@ class Contact(models.Model):
             self.guid = hashlib.sha1(str(random.random())).hexdigest()[:-4]
         super(Contact, self).save(*args, **kwargs)
         if settings.SYNC_SUGAR:
+            import warnings
+            warnings.filterwarnings("ignore", "No data .*")
             cursor = connection.cursor()
             cursor.execute("call sync_contact_to_sugar(\"" + str(self.guid) + "\");")
     
@@ -332,7 +335,7 @@ class StudentWorker(Student):
     ]
     day = models.CharField(max_length=2, choices=dayOfWeek, blank=True, null=True, verbose_name="Working Day")
     fax = models.BooleanField(help_text="Check if student may fax time sheet instead of going to check-in, shows up on attendance", verbose_name="Text Time Sheet")
-    work_permit_no = models.CharField(max_length=10, blank=True)
+    work_permit_no = CharNullField(max_length=10, blank=True, null=True, unique=True)
     placement = models.ForeignKey(WorkTeam, blank=True, null=True, )
     school_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
     student_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
@@ -478,7 +481,8 @@ class StudentInteraction(models.Model):
                 msg = msg[:-2] + " had a mentor meeting on " + unicode(self.date) + "\n" + unicode(self.comments) + "\n"
                 for com in self.preset_comment.all():
                     msg += unicode(com) + "\n"
-                send_mail(subject, msg, "donotreply@cristoreyny.org", [unicode(stu.placement.cra.name.email)])
+                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org")
+                send_mail(subject, msg, from_addr, [unicode(stu.placement.cra.name.email)])
             except:
                 print >> sys.stderr, "warning: could not email CRA"
     
@@ -586,7 +590,8 @@ class TimeSheet(models.Model):
                     + unicode(self.supervisor_comment) + "\""
             else:
                 msg = "Hello " + unicode(self.student) + ",\nYour time card was approved."
-            send_mail(subject, msg, "donotreply@cristoreyny.org", [str(sendTo)])
+            from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org")
+            send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
             print >> sys.stderr, "Could not email " + unicode(self)
         
@@ -643,7 +648,8 @@ class TimeSheet(models.Model):
                 subject = "Time Sheet for " + str(stu)
                 msg = "Hello " + unicode(stu.primary_contact.fname) + ",\nPlease click on the link below to approve the time sheet\n" + \
                     settings.BASE_URL + "/work_study/approve?key=" + str(self.supervisor_key)
-                send_mail(subject, msg, "donotreply@cristoreyny.org", [sendTo])
+                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org")
+                send_mail(subject, msg, from_addr, [sendTo])
             except:
                 print >> sys.stderr, "warning: student timesheet entered without supervisor"
 
@@ -737,6 +743,7 @@ class ClientVisit(models.Model):
                     sendTo.append(user.email)
                 subject = "CRA visit at " + unicode(self.company)
                 msg = "A CRA report has been entered for " + unicode(self.company) + " on " + unicode(self.date) + ".\n" + unicode(self.notes)
-                send_mail(subject, msg, "donotreply@cristoreyny.org", sendTo)
+                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org")
+                send_mail(subject, msg, from_addr, sendTo)
             except:
                 print >> sys.stderr, "warning: could not email mentors"

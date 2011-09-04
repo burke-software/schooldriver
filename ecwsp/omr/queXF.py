@@ -20,11 +20,12 @@ from django.conf import settings
 import urllib, urllib2
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
+import MySQLdb
 
-def queXF(pdf,banding,test_id):
+def import_queXF(pdf,banding,test_id):
         register_openers()
-        url = "http://localhost/trunk/admin/new.php"
-        description = "Test_" + str(test_id)
+        url = settings.QUEXF_URL
+        description = str(test_id)
         
         values = {'form':open(pdf, 'r'),
                   'bandingxml':open(banding, 'r'),
