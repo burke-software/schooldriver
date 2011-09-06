@@ -190,6 +190,15 @@ def pod_report_all(template, options=None, students=None, format="odt"):
     filename = 'output'
     return pod_save(filename, "." + str(format), data, template)
 
+def pod_report_paper_attendance(day, format="odt"):
+    """ Print paper attendance. Monday = 1, etc """
+    template = Template.objects.get_or_create(name="Paper Attendance")[0].file
+    cm = CourseMeet.objects.filter(day=day)
+    courses = Course.objects.filter(coursemeet__in=cm, homeroom=True).distinct()
+    data = get_default_data()
+    data['courses'] = courses
+    return pod_save("Paper Attendance", "." + str(format), data, template)
+
 def pod_report_work_study(template, students, format="odt"):
     """ options is from StudentReportWriterForm, it includes the time range
     and some other options """
