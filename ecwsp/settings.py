@@ -177,6 +177,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'django_filters',
     'pagination',
+    'massadmin',
     #'debug_toolbar',
 )
 

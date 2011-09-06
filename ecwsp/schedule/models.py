@@ -89,6 +89,7 @@ class CourseMeet(models.Model):
     day = models.CharField(max_length=1, choices=day_choice)
     location = models.ForeignKey('Location', blank=True, null=True)
 
+
 class Location(models.Model):
     name = models.CharField(max_length=255)
     

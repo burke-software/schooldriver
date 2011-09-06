@@ -301,6 +301,19 @@ def school_report_builder_view(request, report=None):
             return student_thumbnail(request, GradeLevel.objects.get(id=11))
         elif 'thumbs_sen' in request.POST:
             return student_thumbnail(request, GradeLevel.objects.get(id=12))
+        elif 'p_attendance' in request.POST:
+            format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
+            if request.POST['p_attendance'] == "Monday":
+                day = "1"
+            if request.POST['p_attendance'] == "Tuesday":
+                day = "2"
+            if request.POST['p_attendance'] == "Wednesday":
+                day = "3"
+            if request.POST['p_attendance'] == "Thursday":
+                day = "4"
+            if request.POST['p_attendance'] == "Friday":
+                day = "5"
+            return pod_report_paper_attendance(day, format=format)
         elif 'pod_report' in request.POST:
             form = StudentReportWriterForm(request.POST, request.FILES)
             if form.is_valid():
