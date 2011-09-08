@@ -107,27 +107,34 @@ class PythonEngrade:
         element = self.__dict_to_element(values)
         self.__check_error(element)
         
-    def school_teacher_new(self, usr, name, email, pwd):
+    def school_teacher_new(self, teachers):
         """
-        usr = Account username, must be a-z and 0-9 only
-        name = Name of teacher as students will see it
-        email = Email address of teacher
-        pwd = Account password
-        Returns teacher's engrade id.
+        teachers = [['name1', 'email1'],['name2','email2']]
+        Returns [[uid1,usr1,pwd1], etc]  // Engrade User ID, username, password
         """
         values = {
-            'apitask': 'school-teacher-new',
+            'apitask': 'school-teacher-bulk',
             'apikey': self.apikey,
             'ses': self.ses,
-            'usr': usr,
-            'name': name,
-            'email': email,
-            'pwd': pwd,
             'schoolid': self.schoolid,
         }
+        i = 1
+        for teacher in teachers:
+            values['name' + str(i)] = teacher[0]
+            values['email' + str(i)] = teacher[1]
+            i += 1 
         element = self.__dict_to_element(values)
         self.__check_error(element)
-        return element.find('values/uid').text
+        en_teachers = []
+        i = 0
+        for teacher in teachers:
+            en_teacher = []
+            en_teacher.append(element.find('values/uid' + str(i)).text)
+            en_teacher.append(element.find('values/usr' + str(i)).text)
+            en_teacher.append(element.find('values/pwd' + str(i)).text)
+            en_teachers.append(en_teacher)
+            i += 1
+        return en_teachers
         
     def school_teacher_email(self, emails):
         """

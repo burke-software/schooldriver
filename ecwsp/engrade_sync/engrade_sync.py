@@ -24,13 +24,16 @@ class EngradeSync:
         """ Login and get session from Engrade """
         self.api = PythonEngrade()
         
-    def get_engrade_teacher(self, teacher):
+    def get_engrade_teacher(self, teacher, create=False, create_prefix=""):
         """ Get an engrade teacher id, create if non existant
         teacher: sis.models.Faculty
+        create: Create user if they don't exist. Send them an email.
+        create_prefix: Prefix to add to teacher usernames
         returns teacher's engrade id """
         teacher_sync = TeacherSync.objects.filter(teacher=teacher)
-        if not teacher_sync.count():
-            pass # Must figure out user creation first
+        if not teacher_sync.count() and create:
+            # Create new users and email them
+            self.api.school_teacher_new(usr, name, email, pwd)
         return teacher_sync[0].engrade_teacher_id 
         
     def get_engrade_course(self, course, marking_period):
