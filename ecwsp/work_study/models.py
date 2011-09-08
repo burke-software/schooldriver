@@ -72,6 +72,7 @@ class Contact(models.Model):
     lname = models.CharField(max_length=150, blank=True, null=True)
     phone = models.CharField(max_length=17, blank=True, null=True)
     phone_cell = models.CharField(max_length=17, blank=True, null=True)
+    fax = models.CharField(max_length=17,blank=True, null=True)
     email = models.EmailField (max_length=75, blank=True, null=True)
     
     def __unicode__(self):
