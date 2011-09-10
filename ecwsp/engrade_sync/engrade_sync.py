@@ -23,17 +23,39 @@ class EngradeSync:
     def __init__(self):
         """ Login and get session from Engrade """
         self.api = PythonEngrade()
+    
+    def generate_all_teachers(self):
+        """ Generates all teachers engrade accounts. Does not includes those who
+        already have engrade accounts. Stores their engrade ID in teacher sync.
+        returns number of new accounts """
+        en_teachers = TeacherSync.objects.all()
+        teachers = Faculty.objects.filter(teacher=True).exclude(id__in=en_teachers.values('teacher'))
+        new_teachers = []
+        for teacher in teachers:
+            new_teachers.append([teacher.fname + " " + teacher.lname, teacher.email])
+        en_teachers = self.api.school_teacher_new(teachers)
+        i = 0
+        for teacher in teachers:
+            TeacherSync.objects.create(
+                teacher=teacher,
+                engrade_teacher_id = en_teachers[i][0]
+            )
+            i += 1
+        return i
         
-    def get_engrade_teacher(self, teacher, create=False, create_prefix=""):
+    def get_engrade_teacher(self, teacher, create=False):
         """ Get an engrade teacher id, create if non existant
         teacher: sis.models.Faculty
         create: Create user if they don't exist. Send them an email.
-        create_prefix: Prefix to add to teacher usernames
         returns teacher's engrade id """
         teacher_sync = TeacherSync.objects.filter(teacher=teacher)
         if not teacher_sync.count() and create:
-            # Create new users and email them
-            self.api.school_teacher_new(usr, name, email, pwd)
+            teachers = [[teacher.fname + " " + teacher.lname, teacher.email]]
+            en_teachers = self.api.school_teacher_new(teachers)
+            TeacherSync.objects.create(
+                teacher=teacher,
+                engrade_teacher_id = en_teachers[0][0]
+            )
         return teacher_sync[0].engrade_teacher_id 
         
     def get_engrade_course(self, course, marking_period):

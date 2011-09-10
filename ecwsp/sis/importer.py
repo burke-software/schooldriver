@@ -1901,6 +1901,8 @@ class Importer:
                                 model.phone = number
                         elif name == "email":
                             model.email = value
+                        elif name == "fax":
+                            model.fax = value
                         elif name == "work team":
                             model.save()
                             workteam = WorkTeam.objects.get(team_name=value)
