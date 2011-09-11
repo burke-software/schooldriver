@@ -10,19 +10,20 @@ from django.core.urlresolvers import reverse
 from ckeditor.fields import RichTextField
 from django.contrib.localflavor.us.models import *
 
-
 from ecwsp.sis.models import SchoolYear, Student
 
 class MeasurementTopic(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True)
     def __unicode__(self):
         return self.name
     
-    
 class Benchmark(models.Model):
-    name = models.CharField(max_length=255, unique=True)
     measurement_topics = models.ManyToManyField(MeasurementTopic)
     number = models.CharField(max_length=10, blank=True, null=True)
+    name = models.CharField(max_length=255, unique=True)
+    year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
+    
     def __unicode__(self):
         return '%s %s' % (self.number, self.name)
         
@@ -30,6 +31,7 @@ class Benchmark(models.Model):
 class Theme(models.Model):
     """ Used by teachers, not an official benchmark """
     name = models.CharField(max_length=255, unique=True)
+    
     def __unicode__(self):
         return self.name
     

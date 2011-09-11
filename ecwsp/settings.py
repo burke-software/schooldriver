@@ -177,6 +177,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'django_filters',
     'pagination',
+    'massadmin',
     #'debug_toolbar',
 )
 
@@ -207,6 +208,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     
     'ecwsp.sis.context_processors.global_stuff',
 )
+
 
 AJAX_LOOKUP_CHANNELS = {
     # the simplest case, pass a DICT with the model and field to search against :

@@ -1663,6 +1663,16 @@
         "general_student": false
     }
 }, {
+    "pk": 11,
+    "model": "administration.template",
+    "fields": {
+        "report_card": false,
+        "transcript": false,
+        "name": "Paper Attendance",
+        "file": "templates/paper_attendance.odt",
+        "general_student": false
+    }
+}, {
     "pk": 1,
     "model": "admissions.admissionlevel",
     "fields": {

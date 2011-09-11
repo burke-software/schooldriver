@@ -72,6 +72,7 @@ class Contact(models.Model):
     lname = models.CharField(max_length=150, blank=True, null=True)
     phone = models.CharField(max_length=17, blank=True, null=True)
     phone_cell = models.CharField(max_length=17, blank=True, null=True)
+    fax = models.CharField(max_length=17, blank=True, null=True)
     email = models.EmailField (max_length=75, blank=True, null=True)
     
     def __unicode__(self):
@@ -481,7 +482,7 @@ class StudentInteraction(models.Model):
                 msg = msg[:-2] + " had a mentor meeting on " + unicode(self.date) + "\n" + unicode(self.comments) + "\n"
                 for com in self.preset_comment.all():
                     msg += unicode(com) + "\n"
-                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org")
+                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 send_mail(subject, msg, from_addr, [unicode(stu.placement.cra.name.email)])
             except:
                 print >> sys.stderr, "warning: could not email CRA"
@@ -590,7 +591,7 @@ class TimeSheet(models.Model):
                     + unicode(self.supervisor_comment) + "\""
             else:
                 msg = "Hello " + unicode(self.student) + ",\nYour time card was approved."
-            from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org")
+            from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
             send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
             print >> sys.stderr, "Could not email " + unicode(self)
@@ -607,14 +608,6 @@ class TimeSheet(models.Model):
             else:
                 self.genKey()
                 email = True
-        
-        
-        # if old version was not approved but new save is.
-        #try:
-            #if self.approved and not TimeSheet.objects.get(pk=self.id).approved:
-                #self.emailStudent()
-        #except:
-            #print >> sys.stderr, "new student entered sheet"
         
         # set hours
         hours = self.time_lunch.hour - self.time_in.hour
@@ -640,18 +633,16 @@ class TimeSheet(models.Model):
         
         super(TimeSheet, self).save(*args, **kwargs)
         
-        if email:
+        if email and self.student.primary_contact:
             try:
-                stu = StudentWorker.objects.get(id = self.student.id)
-                sendTo = Contact.objects.get(id = stu.primary_contact.id)
-                sendTo = sendTo.email
-                subject = "Time Sheet for " + str(stu)
-                msg = "Hello " + unicode(stu.primary_contact.fname) + ",\nPlease click on the link below to approve the time sheet\n" + \
+                sendTo = self.student.primary_contact.email
+                subject = "Time Sheet for " + str(self.student)
+                msg = "Hello " + unicode(self.student.primary_contact.fname) + ",\nPlease click on the link below to approve the time sheet\n" + \
                     settings.BASE_URL + "/work_study/approve?key=" + str(self.supervisor_key)
-                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org")
+                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 send_mail(subject, msg, from_addr, [sendTo])
             except:
-                print >> sys.stderr, "warning: student timesheet entered without supervisor"
+                print >> sys.stderr, "Unable to send email to supervisor! %s" % (self,)
 
 class AttendanceFee(models.Model):
     name = models.CharField(max_length=255)
@@ -743,7 +734,7 @@ class ClientVisit(models.Model):
                     sendTo.append(user.email)
                 subject = "CRA visit at " + unicode(self.company)
                 msg = "A CRA report has been entered for " + unicode(self.company) + " on " + unicode(self.date) + ".\n" + unicode(self.notes)
-                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org")
+                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 send_mail(subject, msg, from_addr, sendTo)
             except:
                 print >> sys.stderr, "warning: could not email mentors"
