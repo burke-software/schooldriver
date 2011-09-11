@@ -80,7 +80,7 @@ class EngradeSync:
             for student in course.get_enrolled_students():
                 students += "%s %s %s\n" % (student.fname, student.lname, student.id)
             priteach = self.get_engrade_teacher(course.teacher)
-            engrade_id = self.api.schoolclassnew(name, syr, gp, students, priteach)
+            engrade_id = self.api.school_class_new(name, syr, gp, students, priteach)
             course_sync = CourseSync(course=course, marking_period=marking_period, engrade_course_id=engrade_id)
             course_sync.save()
         else:
