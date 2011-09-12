@@ -145,9 +145,6 @@ def generate_xml(test_id):
                     choicevaluetag.appendChild(choicevalue)
         
         entire_testtag.appendChild(id.cloneNode(True))
-        
-
-
 
     entiredoc = minidom.Document()
     entire_testtag = entiredoc.createElement("test")
@@ -167,7 +164,7 @@ def generate_xml(test_id):
     
     
     
-    import_queXF(first_pdf_location, first_banding, test_id)
+    import_queXF(test.queXF_pdf.path, first_banding, test_id)
     
     entiredoc = minidom.Document()
     entire_testtag = entiredoc.createElement("test")
@@ -205,28 +202,14 @@ def createpdf(xml_test):
     c.showPage()
     c.save()
     download = c.getpdfdata()
-    #pdfFile = File(open(temp_pdf_file,'r'))
     if student_id[id]=="0":
         temp_banding_file = temp + "/banding.xml"
         banding = open(temp_banding_file, 'w')
         doc.writexml(banding)
         banding.close()
-        #banding file to FileField
-        #bandFile = open(temp_banding_file,'r')
-        #bandName = "banding_" + testid + ".xml"
-        #test.banding.save(bandName,File(bandFile))
-        #bandFile.close()
-        #queXF_pdf file to FileField
-        #pdfName = "QueXF_Test_" + testid + ".pdf"
-        #test.queXF_pdf.save(pdfName,pdfFile)
-        #pdfFile.close()
         return download, temp_pdf_file, temp_banding_file
         
     else:
-        #answer_sheet_pdf to FileField
-        #pdfName = "Answer_Sheets_Test_" + testid + ".pdf"
-        #test.answer_sheet_pdf.save(pdfName,pdfFile)
-        #pdfFile.close()
         return download, temp_pdf_file, False
     
 def newPage(c):

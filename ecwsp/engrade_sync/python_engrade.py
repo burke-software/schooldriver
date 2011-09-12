@@ -126,7 +126,7 @@ class PythonEngrade:
         element = self.__dict_to_element(values)
         self.__check_error(element)
         en_teachers = []
-        i = 0
+        i = 1
         for teacher in teachers:
             en_teacher = []
             en_teacher.append(element.find('values/uid' + str(i)).text)

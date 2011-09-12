@@ -287,9 +287,7 @@ def ajax_finalize_test(request, test_id):
     try:
         
         # Send shit to QueXF
-        generate_xml(test_id)
-        #import_queXF(first_pdf_location, first_banding, test_id)
-        
+        generate_xml(test_id)        
         
         return HttpResponse('SUCCESS');
     except:
