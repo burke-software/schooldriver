@@ -519,6 +519,9 @@ class StudentCohort(models.Model):
     cohort = models.ForeignKey(Cohort)
     primary = models.BooleanField()
     
+    class Meta:
+        managed = False
+    
     def save(self, *args, **kwargs):
         if self.primary:
             for cohort in StudentCohort.objects.filter(student=self.student).exclude(id=self.id):
