@@ -633,6 +633,7 @@ class TimeSheet(models.Model):
         
         super(TimeSheet, self).save(*args, **kwargs)
         
+        self.student = StudentWorker.objects.get(id=self.student.id) # refresh data for p contact
         if email and self.student.primary_contact:
             try:
                 sendTo = self.student.primary_contact.email
