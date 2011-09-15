@@ -817,7 +817,7 @@ def report_builder_view(request):
                 elif 'student_timesheet' in request.POST:
                     data = []
                     titles = ["Student", "Work Day", "Placement", "Number of time sheets submitted", "Dates"]
-                    students = StudentWorker.objects
+                    students = StudentWorker.objects.filter(inactive=False)
                     for student in students:
                         ts = TimeSheet.objects.filter(student=student).filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end']))
                         dates = ""
