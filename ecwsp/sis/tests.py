@@ -105,11 +105,14 @@ class AttendanceTest(TestCase):
         response = c.get('/sis/teacher_attendance/', follow=True)
         self.assertEqual(response.status_code, 200)
         print response.content
+        
+        #should test if attendance can be submitted
     
     def test_grade(self):
         """
         Tests grade calculations
         """
+        #testing that GPA actually calculates
         self.setup()
         
         courseneroll = CourseEnrollment(
