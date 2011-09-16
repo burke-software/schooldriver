@@ -314,6 +314,7 @@ admin.site.register(Personality)
 admin.site.register(Handout33)
 
 class ClientVisitAdmin(admin.ModelAdmin):
+    form = make_ajax_form(ClientVisit, dict(student_worker='studentworker', supervisor='company_contact'))
     fieldsets = [
         (None, {'fields': ['date', 'company', 'notify_mentors', 'notes',]}),
         ("DOL", {'fields': ['dol', 'follow_up_of', 'cra', 'student_worker', 'supervisor',
@@ -326,7 +327,7 @@ class ClientVisitAdmin(admin.ModelAdmin):
             'classes': ['collapse']}),
     ]
     search_fields = ['company__team_name', 'notes']
-    list_display = ('company', 'date', 'comment_brief', 'student')
+    list_display = ('company', 'date', 'comment_brief', 'student_worker')
     list_filter = ['date', 'company']
 admin.site.register(ClientVisit, ClientVisitAdmin)
 

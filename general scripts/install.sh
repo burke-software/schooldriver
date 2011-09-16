@@ -25,6 +25,7 @@ easy_install django-filter
 easy_install poster
 easy_install django-ajax-filtered-fields
 easy_install django-mass-edit
+easy_install django-pagination
 
 #prepare mysql
 echo "enter mysql root password"
