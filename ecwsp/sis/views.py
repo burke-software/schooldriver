@@ -153,7 +153,7 @@ def admin_export_xls(request):
         resp = fh.read()
         fh.close()
         response = HttpResponse(resp, mimetype='application/ms-excel')
-        response['Content-Disposition'] = 'attachment; filename=%s.xls' % \
+        response['Content-Disposition'] = 'attachment; filename="%s.xls"' % \
               (unicode(model_class._meta.verbose_name_plural),)
         return response
     

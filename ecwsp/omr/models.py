@@ -49,9 +49,9 @@ class Test(models.Model):
     courses = models.ManyToManyField('schedule.Course', blank=True, null=True, help_text="Enroll an entire course, students will not show until saving.")
     students = models.ManyToManyField('sis.Student', blank=True, null=True, through='TestInstance')
     finalized = models.BooleanField(help_text="This test is finished and should no longer be edited!")
-    answer_sheet_pdf = FileField(upload_to="student_tests")
-    queXF_pdf = FileField(upload_to="student_tests")
-    banding = FileField(upload_to="student_tests")
+    answer_sheet_pdf = FileField(upload_to="student_tests", blank=True)
+    queXF_pdf = FileField(upload_to="student_tests", blank=True)
+    banding = FileField(upload_to="student_tests", blank=True)
     
     class Meta:
         permissions = (

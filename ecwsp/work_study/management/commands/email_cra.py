@@ -43,7 +43,11 @@ class Command(BaseCommand):
                         msg += unicode(timesheet.student) + ": " + unicode(timesheet.performance) + "\nsupervisor: " + \
                             unicode(timesheet.company) + " - " + unicode(timesheet.student.primary_contact) + "\n" + \
                             unicode(timesheet.supervisor_comment) + "\nstudent: " + unicode(timesheet.student_accomplishment) + \
-                            showtxt + "\n\n"
+                            showtxt + "\n"
+                        if timesheet.approved:
+                            msg += "Timesheet approved by supervisor\n\n"
+                        else:
+                            msg += "Timesheet not yet approved by supervisor\n\n"
                 send_mail(subject, msg, from_email, [unicode(cra.name.email)])
         cras = CraContact.objects.filter(email_all=True)
         for cra in cras:
@@ -57,5 +61,9 @@ class Command(BaseCommand):
                         send = True
                         msg += unicode(timesheet.student) + ": " + unicode(timesheet.performance) + "\nsupervisor: " + \
                             unicode(timesheet.company) + " - " + unicode(timesheet.student.primary_contact) + "\n" + \
-                            unicode(timesheet.supervisor_comment) + "\nstudent: " + unicode(timesheet.student_accomplishment) + "\n\n"
+                            unicode(timesheet.supervisor_comment) + "\nstudent: " + unicode(timesheet.student_accomplishment) + "\n"
+                        if timesheet.approved:
+                            msg += "Timesheet approved by supervisor\n\n"
+                        else:
+                            msg += "Timesheet not yet approved by supervisor\n\n"
                 send_mail(subject, msg, from_email, [unicode(cra.name.email)])
