@@ -237,9 +237,14 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     #elif options['this_year']:
     #    marking_periods = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True))
     #else:
-    marking_periods = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True))
-    marking_periods = marking_periods.filter(show_reports=True)
     for_date = options['date'] # In case we want a transcript from a future date
+    marking_periods = MarkingPeriod.objects.filter(
+        school_year=SchoolYear.objects.filter(
+            start_date__lt=for_date
+        ).order_by(
+            '-start_date'
+        )[0]
+    ).filter(show_reports=True)
     
     for student in students:
         # for report_card

@@ -91,6 +91,7 @@ def test_copy(request, test_id):
     new_test.name = old_test.name + " (copy)"
     new_test.save()
     new_test.teachers = old_test.teachers.all()
+    new_test.finalized = False
     new_test.save()
     for old_question in old_test.question_set.all():
         new_question = copy_model_instance(old_question)
@@ -245,6 +246,8 @@ def ajax_new_question_form(request, test_id):
                         qa_instance.question = q_instance
                         qa_instance.save()
             q_instance.check_type()
+            if question_form.cleaned_data['save_to_bank']:
+                q_instance.copy_to_bank()
             return render_to_response('omr/edit_test_questions_read_only.html', {
                 'question': q_instance,
             }, RequestContext(request, {}),)
