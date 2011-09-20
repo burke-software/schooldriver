@@ -259,7 +259,7 @@ def student_barcode(c):
 def createTest(c):
     #need to do it for multiple tests -tests[id]:questions and -teacher_tests[id]:teacher_questions
     global indent, questions, choices, column, sort, next_line, width, height, next_line,left_margin,right_margin,bottom_margin,top_margin
-    global id, var_names, teacher_varnames, page
+    global id, var_names, teacher_varnames, page, title
     indent = 0
     column = 0
     
@@ -285,10 +285,23 @@ def createTest(c):
         c.setFont(default_font,font_size)
         
         title_length = title.__len__() * font_size
-        c.drawString(width - title_length*2 - right_margin,first_line+10, title)
+        #title_indent = width - indent - title_length*2 - right_margin
+        #if title_indent < 250:
+        #    title_indent = 250
+        if title_length > 245:
+            title = title[:245/font_size]
+        c.drawString(250,first_line+10, title)
+        print "title indent: ",width - indent - title_length*2 - right_margin
         next_line = first_line - (line_space)
         name_length = (names[id]).__len__() * font_size
-        c.drawString(width - indent - name_length - right_margin,next_line+10,names[id])
+        #name_indent = width - indent - name_length - right_margin
+        #if name_indent <300:
+        #    name_indent = 300
+        if name_length > 295:
+            name = names[id][:295/font_size]
+        else: name = names[id]
+        c.drawString(250,next_line+10,name)
+        print "name indent", width-indent-name_length-right_margin
         next_line = next_line - (line_space*2)
         
         def createSections(questions,choices, varnames):
