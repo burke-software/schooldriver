@@ -250,6 +250,7 @@ class EmergencyContact(models.Model):
         if self.primary_contact:
             for student in self.student_set.all():
                 student.parent_guardian = self.fname + " " + self.lname
+                student.city = self.city
                 student.street = self.street
                 student.state = self.state
                 student.zip = self.zip
