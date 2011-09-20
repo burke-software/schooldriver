@@ -77,10 +77,10 @@ def teacher_grade(request):
         messages.info(request, 'You do not have any courses.')
         return HttpResponseRedirect(reverse('admin:index'))
     courses = Course.objects.filter(
-        homeroom=False,
-        teacher=teacher, 
-        marking_period__school_year__active_year=True
-    ).distinct()
+            homeroom=False,
+            marking_period__school_year__active_year=True,
+        ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+
     if "ecwsp.engrade_sync" in settings.INSTALLED_APPS:
         if request.method == 'POST':
             form = EngradeSyncForm(request.POST)
@@ -89,7 +89,10 @@ def teacher_grade(request):
                     from ecwsp.engrade_sync.engrade_sync import EngradeSync
                     marking_period = form.cleaned_data['marking_period']
                     include_comments = form.cleaned_data['include_comments']
-                    courses = teacher.course_set.filter(marking_period=marking_period, homeroom=False).distinct()
+                    courses = teacher.course_set.filter(marking_period=marking_period, homeroom=False)
+                    sec_courses = teacher.secondary_course_set.filter(marking_period=marking_period, homeroom=False)
+                    courses = courses | sec_courses
+                    courses = courses.distinct()
                     es = EngradeSync()
                     for course in courses:
                         es.sync_course_grades(course, marking_period, include_comments)

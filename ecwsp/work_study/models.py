@@ -70,6 +70,7 @@ class Contact(models.Model):
     guid = models.CharField(unique=True, max_length=36, blank=True)
     fname = models.CharField(max_length=150, blank=True, null=True)
     lname = models.CharField(max_length=150, blank=True, null=True)
+    title = models.CharField(max_length=150, blank=True, null=True)
     phone = models.CharField(max_length=17, blank=True, null=True)
     phone_cell = models.CharField(max_length=17, blank=True, null=True)
     fax = models.CharField(max_length=17, blank=True, null=True)
@@ -81,14 +82,6 @@ class Contact(models.Model):
     class Meta:
         ordering = ('lname',)
         verbose_name = 'Contact Supervisor'
-    
-    def delete(self):
-        """Null out primary contacts instead of deleting"""
-        students = StudentWorker.objects.filter(primary_contact=self)
-        for student in students:
-            student.primary_contact = None
-            student.save()
-        super(Contact, self).delete()
         
     def save(self, *args, **kwargs):
         if not self.guid:
@@ -385,7 +378,10 @@ class StudentWorker(Student):
                 if previous.primary_contact == self.primary_contact:
                     self.primary_contact = None
         except:
-            x=2 # do nothing
+            pass
+        
+        if self.primary_contact and self.placement:
+            self.placement.contacts.add(self.primary_contact)
         
          # set pay rates
         if not self.school_pay_rate and not self.student_pay_rate:

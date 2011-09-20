@@ -84,7 +84,7 @@ SWORD override -->
                         <!--SWORD added check list-->
                         {% if fieldset.name == None %}
                                 <fieldset class="module aligned ">
-                                 <h2>Process Status</h2>
+                                 <h2>Process Status - {{ current_level }}</h2>
                                  <div class="form-row checklist">
                                        <div>
                                            {% for level in levels %}

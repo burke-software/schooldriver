@@ -24,11 +24,11 @@ class CharNullField(models.CharField):
               return ""  #convert it into the Django-friendly '' string
        else:
               return value #otherwise, return just the value
-    def get_db_prep_value(self, value):  #catches value right before sending to db
+    def get_db_prep_value(self, value, connection, prepared):  #catches value right before sending to db
        if value=="":     #if Django tries to save '' string, send the db None (NULL)
             return None
        else:
-            return value #otherwise, just pass the value
+            return super(CharNullField, self).get_db_prep_value(value, connection, prepared)
     
 class ReadPermissionModelAdmin(admin.ModelAdmin):
     """ based on http://gremu.net/blog/2010/django-admin-read-only-permission/
