@@ -1,0 +1,11 @@
+{% extends "grappelli/templates/admin/change_form.html" %}
+{% load i18n admin_modify adminmedia grp_tags %}
+
+{% block stylesheets %}
+   {{ block.super }}
+   <style type="text/css">
+   div > a {
+    padding: 3px;
+   }
+   </style>
+{% endblock %}

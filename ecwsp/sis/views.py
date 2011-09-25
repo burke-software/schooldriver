@@ -18,7 +18,7 @@
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.core.urlresolvers import reverse
@@ -290,7 +290,7 @@ def transcript_nonofficial(request, id):
     return pod_report_grade(template, transcript=transcript, options=data, students=form.get_students(data), format=format)
 
 
-@user_passes_test(lambda u: u.groups.filter(name='registrar').count() > 0 or u.is_superuser, login_url='/')    
+@permission_required('sis.reports') 
 def school_report_builder_view(request, report=None):
     if request.method == 'POST':
         if 'thumbs_fresh' in request.POST:
@@ -388,76 +388,45 @@ def logout_view(request):
     logout(request)
     return render_to_response('base.html', {'msg': "You have been logged out.",}, RequestContext(request, {}))
 
-
-def teacher_attendance_which(request, type):
-    teacher = Faculty.objects.get(username=request.user.username)
-    if type == "homeroom":
-        today = date.today()
-        courses = Course.objects.filter(homeroom=True, teacher=teacher, marking_period__start_date__lte=today, marking_period__end_date__gte=today)
-    elif type == "asp":
-        courses = Course.objects.filter(asp=True, teacher=teacher)
-    return render_to_response('sis/teacher_attendance_which.html', {'request': request, 'type':type, 'courses': courses}, RequestContext(request, {}))
-
-
-@user_passes_test(lambda u: u.groups.filter(name='teacher').count() > 0 or u.is_superuser, login_url='/')    
+@user_passes_test(lambda u: u.groups.filter(name='teacher').count() or u.is_superuser, login_url='/')   
 def teacher_attendance(request, course=None, type="homeroom"):
-    """ Take attendance.
-    course: if known. If teacher only has one course then this will be selected automatically
-    type: homeroom (default) or asp """
+    """ Take attendance. show course selection if there is more than one course
+    """
     try:
         teacher = Faculty.objects.get(username=request.user.username)
     except:
         messages.info(request, 'You do not exists as a Teacher. Tell an administrator to create a teacher with your username. Ensure "teacher" is checked off.')
         return HttpResponseRedirect(reverse('admin:index'))
-    if not course:
-        today = date.today()
+    today = date.today()
+    
+    if course:
+        course = Course.objects.get(id=course)
+    else:
         if type == "homeroom":
             courses = Course.objects.filter(homeroom=True, teacher=teacher, marking_period__start_date__lte=today, marking_period__end_date__gte=today)
-            if courses.count() > 1:
-                return teacher_attendance_which(request, type)
-            elif courses.count() == 1:
-                course = courses[0]
-            else:
-                messages.info(request, 'You are a teacher, but have no courses with attendance. This may also occur if the course is not set to the current marking period.')
-                return HttpResponseRedirect(reverse('admin:index'))
-        elif type == "asp":
-            if Course.objects.filter(asp=True, teacher=teacher).count() > 1:
-                return teacher_attendance_which(request, type)
-            elif Course.objects.filter(asp=True, teacher=teacher).count() == 0:
-                messages.info(request, 'You are a teacher, but have no ASP courses with attendance.')
-                return HttpResponseRedirect(reverse('admin:index'))
-            course = Course.objects.get(asp=True, teacher=teacher)
-    else:
-        course = Course.objects.get(id=course)
-        if course.teacher != teacher:
-            messages.info(request, 'You are not the teacher of this course!')
+            sec_courses = Course.objects.filter(homeroom=True, secondary_teachers=teacher, marking_period__start_date__lte=today, marking_period__end_date__gte=today)
+        courses = courses | sec_courses
+        if courses.count() > 1:
+            return render_to_response('sis/teacher_attendance_which.html', {'request': request, 'type':type, 'courses': courses}, RequestContext(request, {}))
+        elif courses.count() == 0:
+            messages.info(request, 'You are a teacher, but have no courses with attendance. This may also occur if the course is not set to the current marking period.')
             return HttpResponseRedirect(reverse('admin:index'))
+        course = courses[0]
     students = course.get_attendance_students()
     
+    readonly = False
+    asp = False
+    msg = ""
     if type == "homeroom":
-        asp = False
-    elif type == "asp":
-        asp = True
-    if AttendanceLog.objects.filter(date=date.today(), user=request.user, course=course, asp=asp).count() > 0:
-        readonly = True
-    else:
-        readonly = False
-    
-    if type == "homeroom":
+        if AttendanceLog.objects.filter(date=date.today(), user=request.user, course=course, asp=asp).count() > 0:
+            readonly = True
         AttendanceFormset = modelformset_factory(StudentAttendance, form=StudentAttendanceForm, extra=students.exclude(student_attn__date=date.today()).count())
-    elif type == "asp":
-        AttendanceFormset = modelformset_factory(ASPAttendance, form=ASPAttendanceForm, extra=students.exclude(aspattendance__date=date.today()).count())
+    
     if request.method == 'POST':
         formset = AttendanceFormset(request.POST)
         if formset.is_valid():
             for form in formset.forms:
                 object = form.save()
-                if type == "asp":
-                    if object.status == "P":
-                        object.delete()
-                    else:
-                        object.course = course
-                        object.save()
                 LogEntry.objects.log_action(
                     user_id         = request.user.pk, 
                     content_type_id = ContentType.objects.get_for_model(object).pk,
@@ -469,65 +438,43 @@ def teacher_attendance(request, course=None, type="homeroom"):
             messages.success(request, 'Attendance recorded')
             return HttpResponseRedirect(reverse('admin:index'))
         else:
-            initial = []
-            enroll_notes = []
-            msg = ""
-            for student in students:
-                if type == "homeroom":
-                    attendances = StudentAttendance.objects.filter(date=date.today(), student=student)
-                else:
-                    attendances = ASPAttendance.objects.filter(date=date.today(), student=student)
-                if attendances.count():
-                    # already exists, just make read only
-                    msg += '<br/>%s is already marked %s %s.' % (student, attendances[0].status, attendances[0].notes)
-                else:
-                    status = None
-                    if type == "asp":
-                        # check for school attendance data
-                        if student.student_attn.filter(date=date.today(), status__absent=True).count():
-                            status = "S"
-                    initial.append({'student': student.id, 'status': status, 'notes': None, 'date': date.today() })
-                    note = student.courseenrollment_set.filter(course=course)[0].attendance_note
-                    if note: enroll_notes.append(unicode(note))
-                    else: enroll_notes.append("") 
-    else:
-        initial = []
-        enroll_notes = []
-        msg = ""
-        for student in students:
-            if type == "homeroom":
-                attendances = StudentAttendance.objects.filter(date=date.today(), student=student)
-            else:
-                attendances = ASPAttendance.objects.filter(date=date.today(), student=student)
-            if attendances.count():
-                # already exists, just make read only
-                try:
-                    msg += '<br/>%s is already marked %s %s.' % (student, attendances[0].status, attendances[0].notes)
-                except: pass
-            else:
-                status = None
-                if type == "asp":
-                    # check for school attendance data
-                    if student.student_attn.filter(date=date.today(), status__absent=True).count():
-                        status = "S"
-                initial.append({'student': student.id, 'status': status, 'notes': None, 'date': date.today() })
-                note = student.courseenrollment_set.filter(course=course)[0].attendance_note
-                if note: enroll_notes.append(unicode(note))
-                else: enroll_notes.append("")
-        formset = AttendanceFormset(initial=initial, queryset=StudentAttendance.objects.none())
+            msg = "\nDuplicate entry detected! It's possible someone else is entering attendance for these students at the same time. Please confirm attendance. If problems persist contact an administrator."
     
+    initial = []
+    enroll_notes = []
+    for student in students:
+        attendances = StudentAttendance.objects.filter(date=date.today(), student=student)
+        if attendances.count():
+            student.marked = True
+            student.status = attendances[0].status
+            student.notes = attendances[0].notes
+        else:
+            student.marked = False
+            initial.append({'student': student.id, 'status': None, 'notes': None, 'date': date.today() })
+            note = student.courseenrollment_set.filter(course=course)[0].attendance_note
+            if note: enroll_notes.append(unicode(note))
+            else: enroll_notes.append("")
+    formset = AttendanceFormset(initial=initial, queryset=StudentAttendance.objects.none())
+    
+    # add notes to each form
     i = 0
     number = []
-    if type == "homeroom":
-        students = students.exclude(student_attn__date=date.today())
-    else:
-        students = students.exclude(aspattendance__date=date.today())
+    form_students = students.exclude(student_attn__date=date.today())
     for form in formset.forms:
         form.enroll_note = enroll_notes[i]
-        form.student_display = students[i]
+        form.student_display = form_students[i]
         number.append(i)
         i += 1
-    return render_to_response('sis/teacher_attendance.html', {'request': request, 'msg': msg, 'readonly': readonly, 'formset': formset, 'number': number})
+    
+    # add form to each student, so we can use for student in students in the template
+    i = 0
+    forms = formset.forms
+    for student in students:
+        if not student.marked:
+            student.form = forms[i]
+            i += 1
+    
+    return render_to_response('sis/teacher_attendance.html', {'request': request, 'readonly': readonly, 'msg': msg, 'formset': formset, 'students': students, 'number': number}, RequestContext(request, {}))
 
 
 @user_passes_test(lambda u: u.has_perm('sis.change_studentattendance')) 
@@ -1116,7 +1063,7 @@ def view_student(request, id=None):
         years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct()
         for year in years:
             year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year).distinct().order_by("start_date")
-            year.courses = Course.objects.filter(courseenrollment__user=student, homeroom=False, marking_period__school_year=year).distinct()
+            year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year).distinct()
             for course in year.courses:
                 # Too much logic for the template here, so just generate html.
                 course.grade_html = ""

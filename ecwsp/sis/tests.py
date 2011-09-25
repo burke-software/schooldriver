@@ -91,8 +91,7 @@ class AttendanceTest(TestCase):
         self.setup()
         
         user = User.objects.get(username='dburke')
-        # WTF is this needed?
-        user.set_password('aa')
+        user.set_password('aa') # Why is this needed?
         user.save()
         
         c = Client()
@@ -102,9 +101,10 @@ class AttendanceTest(TestCase):
         response = c.get('/admin/')
         self.assertEqual(response.status_code, 200)
         
-        response = c.get('/sis/teacher_attendance/', follow=True)
+        course = Course.objects.get(fullname="Homeroom FX 2010")
+        
+        response = c.get('/sis/teacher_attendance/homeroom/' + str(course.id), follow=True)
         self.assertEqual(response.status_code, 200)
-        print response.content
         
         #should test if attendance can be submitted
     
@@ -139,5 +139,5 @@ class AttendanceTest(TestCase):
         grade.set_grade('89.09')
         grade.save()
         
-        self.failUnlessEqual(self.student.gpa, '69.55')
+        self.failUnlessEqual(self.student.gpa, Decimal('69.55'))
 

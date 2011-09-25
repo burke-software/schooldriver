@@ -244,6 +244,8 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
     search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 
+admin.site.register(AttendanceLog)
+
 class AttendanceStatusAdmin(admin.ModelAdmin):
     list_display = ['name', 'code', 'excused', 'absent', 'tardy']
 admin.site.register(AttendanceStatus,AttendanceStatusAdmin)

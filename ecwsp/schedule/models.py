@@ -7,7 +7,7 @@ from django.conf import settings
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 import copy
 
@@ -47,6 +47,7 @@ class MarkingPeriod(models.Model):
     friday = models.BooleanField(default=True)
     saturday = models.BooleanField()
     sunday = models.BooleanField()
+    school_days = models.IntegerField(blank=True, null=True, help_text="If set, this will be the number of days school is in session. If unset, the value is calculated by the days off.")
     
     class Meta:
         ordering = ('-start_date',)
@@ -54,6 +55,35 @@ class MarkingPeriod(models.Model):
     def __unicode__(self):
         return unicode(self.name)
         
+    def get_number_days(self, date):
+        """ Get number of days in a marking period"""
+        if self.school_days and date >= self.end_date:
+            return self.school_days
+        day = 0
+        current_day = self.start_date
+        while current_day <= date:
+            is_day = False
+            if current_day >= self.start_date and current_day <= self.end_date:
+                days_off = []
+                for d in self.daysoff_set.all().values_list('date'): days_off.append(d[0])
+                if not current_day in days_off:
+                    if self.monday and current_day.isoweekday() == 1:
+                        is_day = True
+                    elif self.tuesday and current_day.isoweekday() == 2:
+                        is_day = True
+                    elif self.wednesday and current_day.isoweekday() == 3:
+                        is_day = True
+                    elif self.thursday and current_day.isoweekday() == 4:
+                        is_day = True
+                    elif self.friday and current_day.isoweekday() == 5:
+                        is_day = True
+                    elif self.saturday and current_day.isoweekday() == 6:
+                        is_day = True
+                    elif self.sunday and current_day.isoweekday() == 7:
+                        is_day = True
+            if is_day: day += 1
+            current_day += timedelta(days=1)
+        return day
         
 class DaysOff(models.Model):
     date = models.DateField()
@@ -152,7 +182,7 @@ class Department(models.Model):
         ordering = ('order_rank', 'name',)
 
 class Course(models.Model):
-    active = models.BooleanField(help_text="If active, course will show in Moodle.")
+    active = models.BooleanField(default=True, help_text="If active, course will show in Moodle.")
     fullname = models.CharField(max_length=255, unique=True)
     shortname = models.CharField(max_length=255)
     marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
@@ -160,7 +190,8 @@ class Course(models.Model):
     teacher = models.ForeignKey('sis.Faculty', blank=True, null=True, related_name="ateacher")
     secondary_teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True, related_name="secondary_teachers")
     homeroom = models.BooleanField(help_text="Homerooms can be used for attendance")
-    asp = models.BooleanField(help_text="ASP, requires seperate attendance")
+    asp = models.BooleanField()
+    graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
     enrollments = models.ManyToManyField('sis.MdlUser', through=CourseEnrollment, blank=True, null=True)
     description = models.TextField(blank=True)
     credits = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Credits effect gpa.")
@@ -285,11 +316,6 @@ class Course(models.Model):
             new.coursemeet_set.create(location=cm.location,day=cm.day,period=cm.period)
         new.save()
         messages.success(request, 'Copy successful!')
-        
-    def clean(self):
-        from django.core.exceptions import ValidationError
-        if settings.ASP and self.homeroom and self.asp:
-            raise ValidationError('Cannot be both homeroom and asp.')
     
     def generate_moodle_events(self):
         pass

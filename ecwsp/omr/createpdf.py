@@ -291,7 +291,6 @@ def createTest(c):
         if title_length > 245:
             title = title[:245/font_size]
         c.drawString(250,first_line+10, title)
-        print "title indent: ",width - indent - title_length*2 - right_margin
         next_line = first_line - (line_space)
         name_length = (names[id]).__len__() * font_size
         #name_indent = width - indent - name_length - right_margin
@@ -301,7 +300,6 @@ def createTest(c):
             name = names[id][:295/font_size]
         else: name = names[id]
         c.drawString(250,next_line+10,name)
-        print "name indent", width-indent-name_length-right_margin
         next_line = next_line - (line_space*2)
         
         def createSections(questions,choices, varnames):

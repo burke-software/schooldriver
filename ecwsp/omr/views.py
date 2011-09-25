@@ -20,6 +20,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.utils import simplejson
 from django.db import transaction
+from django.db.models import Q
 from django.forms.models import modelformset_factory
 from django.forms.widgets import TextInput
 from django.views.generic import ListView
@@ -119,7 +120,7 @@ def download_test(request, test_id):
 @permission_required('omr.teacher_test')
 def edit_test(request, id=None):
     teacher = Faculty.objects.get(username=request.user.username)
-    teacher_courses = Course.objects.filter(teacher=teacher)
+    teacher_courses = Course.objects.filter(Q(teacher=teacher) | Q(secondary_teachers=teacher))
     if id:
         add = False
         test = Test.objects.get(id=id)

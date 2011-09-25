@@ -77,10 +77,10 @@ def teacher_grade(request):
         messages.info(request, 'You do not have any courses.')
         return HttpResponseRedirect(reverse('admin:index'))
     courses = Course.objects.filter(
-        homeroom=False,
-        teacher=teacher, 
-        marking_period__school_year__active_year=True
-    ).distinct()
+            graded=True,
+            marking_period__school_year__active_year=True,
+        ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+
     if "ecwsp.engrade_sync" in settings.INSTALLED_APPS:
         if request.method == 'POST':
             form = EngradeSyncForm(request.POST)
@@ -89,7 +89,10 @@ def teacher_grade(request):
                     from ecwsp.engrade_sync.engrade_sync import EngradeSync
                     marking_period = form.cleaned_data['marking_period']
                     include_comments = form.cleaned_data['include_comments']
-                    courses = teacher.course_set.filter(marking_period=marking_period, homeroom=False).distinct()
+                    courses = teacher.course_set.filter(marking_period=marking_period, graded=True)
+                    sec_courses = teacher.secondary_course_set.filter(marking_period=marking_period, graded=True)
+                    courses = courses | sec_courses
+                    courses = courses.distinct()
                     es = EngradeSync()
                     for course in courses:
                         es.sync_course_grades(course, marking_period, include_comments)
@@ -247,7 +250,7 @@ def student_gradesheet(request, id, year_id=None):
     student = Student.objects.get(id=id)
     if request.POST:
         handle_grade_save(request)
-    courses = student.course_set.filter(homeroom=False)
+    courses = student.course_set.filter(graded=True)
     school_years = SchoolYear.objects.filter(markingperiod__course__enrollments__student=student).distinct()
     if year_id:
         school_year = SchoolYear.objects.get(id=year_id)
@@ -255,6 +258,8 @@ def student_gradesheet(request, id, year_id=None):
         school_year = SchoolYear.objects.get(active_year=True)
     courses = courses.filter(marking_period__school_year=school_year).distinct()
     for course in courses:
+        for mp in school_year.markingperiod_set.all():
+            grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp, final=True)
         course.grades = student.grade_set.filter(course=course, final=True, override_final=False)
         
         try:
@@ -427,7 +432,7 @@ def grade_analytics(request):
             if data['in_individual_education_program']:
                 students = students.filter(individual_education_program=True)
             
-            courses = Course.objects.filter(courseenrollment__user__in=students, homeroom=False, asp=False)
+            courses = Course.objects.filter(courseenrollment__user__in=students, graded=True)
             if data['this_year']:
                 courses = courses.filter(marking_period__school_year=SchoolYear.objects.get(active_year=True))
             elif not data['all_years']:
