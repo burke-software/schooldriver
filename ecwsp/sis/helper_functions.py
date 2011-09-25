@@ -24,7 +24,7 @@ class CharNullField(models.CharField):
               return ""  #convert it into the Django-friendly '' string
        else:
               return value #otherwise, return just the value
-    def get_db_prep_value(self, value, connection, prepared):  #catches value right before sending to db
+    def get_db_prep_value(self, value, connection, prepared=False):  #catches value right before sending to db
        if value=="":     #if Django tries to save '' string, send the db None (NULL)
             return None
        else:

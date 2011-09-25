@@ -2,136 +2,196 @@
 {% load i18n admin_modify adminmedia %}
 
 {% block stylesheets %}
-    {{ block.super }}
-     <style type="text/css">
-          .level {
-               background-color:#eeeeee;
-               font-size:120%;
-               border:1px solid;
-               padding: 2px;
-               margin: 2px;
-               line-height: 23px;
-          }
-          
-          .level_complete {
-               background-color:rgb(0,255,0);
-          }
-          textarea {
-               height: 30px !important;
-          }
-          .original {
-               font-size:0px;
-          }
-          .inline-group .tabular tr.has_original td {
-               padding-top: 1em !important;
-          }
-     </style>
+  {{ block.super }}
+   <style type="text/css">
+      .level {
+         background-color:#eeeeee;
+         font-size:120%;
+         border:1px solid;
+         padding: 2px;
+         margin: 2px;
+         line-height: 23px;
+      }
+      
+      .level_complete {
+         background-color:rgb(0,255,0);
+      }
+      textarea {
+         height: 30px !important;
+         width: 500px !important;
+      }
+      .original {
+         font-size:0px;
+      }
+      .inline-group .tabular tr.has_original td {
+         padding-top: 1em !important;
+      }
+      .form-container .module {
+         min-width: 300px;
+      }
+
+      .row .vTextField, 
+      .row .vURLField, 
+      .row .vFileBrowseField, 
+      .row textarea, 
+      .row .vLargeTextField, 
+      .row .vXMLLargeTextField, 
+      div.autocomplete-wrapper-m2m {
+        max-width: 450px;
+      }
+      
+      .duplicate_p {
+         border-style: solid;
+         border: 1px solid #000000;
+         border-radius: 10px;
+         padding: 5px;
+         background-color: #ffc6cb;
+         display: none;
+      }
+   </style>
 {% endblock %}
 
 {% block javascripts %}
-    {{ block.super }}
-     <script type="text/javascript">
-          function check_levels() {
-               checks = $('input').filter(function() {
-                        return this.name.match(/check_.*/) 
-                    });
-               
-               {% for level in levels %}
-                    i = 0;
-                    checks.each(function(index){
-                    /* For each checkbox in all checkboxes*/
-                         if ($(this).attr('checked') && $(this).attr('name').match(/check_{{ level|cut:" " }}_.*/) ) {
-                              i = i + 1;
-                         }
-                    });
-                    if ( i >= {{ level.max }} ) {
-                         $('#level_{{ level|cut:" " }}').addClass('level_complete');
-                    } else {
-                         $('#level_{{ level|cut:" " }}').removeClass('level_complete');
-                    }
-               {% endfor %}
-          }
-          
-          $(document).ready(function() {
-               check_levels();
+  {{ block.super }}
+   <script type="text/javascript">
+      function check_levels() {
+         checks = $('input').filter(function() {
+            return this.name.match(/check_.*/) 
           });
-     </script>
+         
+         {% for level in levels %}
+          i = 0;
+          checks.each(function(index){
+          /* For each checkbox in all checkboxes*/
+             if ($(this).attr('checked') && $(this).attr('name').match(/check_{{ level|cut:" " }}_.*/) ) {
+                i = i + 1;
+             }
+          });
+          if ( i >= {{ level.max }} ) {
+             $('#level_{{ level|cut:" " }}').addClass('level_complete');
+          } else {
+             $('#level_{{ level|cut:" " }}').removeClass('level_complete');
+          }
+         {% endfor %}
+      }
+      
+      $(document).ready(function() {
+         check_levels();
+         $('#foo').bind('click', function() {
+          alert($(this).text());
+          });
+      });
+   </script>
+   
+   {% if add %}
+   <script type="text/javascript">
+      $(document).ready(function() {
+         $('#id_lname').bind('change', function() {
+            var first = $('#id_fname').val();
+            var last = $('#id_lname').val();
+            $.post(  
+               "/admissions/ajax_check_duplicate_applicant/" + first + "/" + last + "/",
+               function(data){
+                  if (data != "") {
+                     $('#duplicate_p').show('fast');
+                     $('#insert_point').html(data);
+                  }
+               }  
+             );
+         });
+      });
+   </script>    
+   {% endif %}
+   
 {% endblock %}
 
 
 <!-- CONTENT
 SWORD override -->
 {% block content %}
-    <div class="container-flexible">
-        <div class="form-container">
-            <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.module_name }}_form">{% csrf_token %}{% block form_top %}{% endblock %} 
-                <div>
-                    <!-- Popup Hidden Field -->
-                    {% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
-                    
-                    <!-- Submit-Row -->
-                    {% if save_on_top %}{% submit_row %}{% endif %}
-                    
-                    <!-- Errors -->
-                    {% if errors %}
-                        <p class="errornote">{% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}</p>
-                        <ul class="errorlist">{% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
-                    {% endif %}
-                    
-                    <!-- Fieldsets -->
-                    {% for fieldset in adminform %}
-                        {% include "admin/includes/fieldset.html" %}
-                        <!--SWORD added check list-->
-                        {% if fieldset.name == None %}
-                                <fieldset class="module aligned ">
-                                 <h2>Process Status - {{ current_level }}</h2>
-                                 <div class="form-row checklist">
-                                       <div>
-                                           {% for level in levels %}
-                                                {% for check in level.checks %}
-                                                     <input type="checkbox" name="check_{{ level|cut:" " }}_{{ check }}_{{ check.id }}" {% if check.checked %} checked="checked" {% endif %} onclick="check_levels()"/> {{ check }} <br/>
-                                                {% endfor %}
-                                                <span id="level_{{ level|cut:" " }}" class="level" name="level_{{ level|cut:" " }}"> {{ level }} </span> <br/>
-                                           {% endfor %}
-                                       </div>
-                                </div>
-                                </fieldset>
-                         {% endif %}
-                    {% endfor %}
-                    
-                    {% block after_field_sets %}{% endblock %}
-                    
-                    <!-- Inlines -->
-                    {% for inline_admin_formset in inline_admin_formsets %}
-                        {% include inline_admin_formset.opts.template %}
-                    {% endfor %}
-                    
-                    {% block after_related_objects %}{% endblock %}
-                    
-                    <!-- Submit-Row -->
-                    {% submit_row %}
-                    
-                    {% if adminform and add %}
-                        {% block extrahead %}
-                            <script type="text/javascript">
-                                (function($){
-                                    $(function(){
-                                        try {
-                                            // focus on first form-field
-                                            $("#{{ adminform.first_field.auto_id }}, #{{ adminform.first_field.auto_id }}_0")
-                                            .eq(0).focus();
-                                        } catch(e) {}
-                                    });
-                                }(django.jQuery));
-                            </script>
-                        {% endblock %}
-                    {% endif %}
-                    
-                    <!-- JS for prepopulated fields -->
-                    {% prepopulated_fields_js %}
-                    
+  <div class="container-flexible">
+    <div class="form-container">
+      <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.module_name }}_form">{% csrf_token %}{% block form_top %}{% endblock %} 
+        <div>
+          <!-- Popup Hidden Field -->
+          {% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
+          
+          <!-- Submit-Row -->
+          {% if save_on_top %}{% submit_row %}{% endif %}
+          
+          <!-- Errors -->
+          {% if errors %}
+            <p class="errornote">{% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}</p>
+            <ul class="errorlist">{% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+          {% endif %}
+          
+         <p id="duplicate_p" class="duplicate_p">
+            Possible Duplicates<br/>
+            <span id="insert_point"/>
+         </p>
+          
+          <!-- Fieldsets -->
+          {% for fieldset in adminform %}
+             {% if forloop.first %}
+                <div style="float:left;">
+                   {% include "admin/includes/fieldset.html" %}
                 </div>
-            </form>
+                <!--SWORD added check list-->
+                <div style="float:left; margin-left: 10px;">
+                   <fieldset class="module aligned">
+                  <h2>Process Status - {{ current_level }}</h2>
+                  <div class="form-row checklist">
+                      <div>
+                        {% for level in levels %}
+                           {% for check in level.checks %}
+                            <input type="checkbox" name="check_{{ level|cut:" " }}_{{ check }}_{{ check.id }}" {% if check.checked %} checked="checked" {% endif %} onclick="check_levels()"/> {{ check }} <br/>
+                           {% endfor %}
+                           <span id="level_{{ level|cut:" " }}" class="level" name="level_{{ level|cut:" " }}"> {{ level }} </span> <br/>
+                        {% endfor %}
+                      </div>
+                  </div>
+                   </fieldset>
+                </div>
+             {% else %}
+                <div style="clear:both;">
+                {% include "admin/includes/fieldset.html" %}
+                </div>
+             {% endif %}
+          {% endfor %}
+          
+          {% block after_field_sets %}{% endblock %}
+          
+          <!-- Inlines -->
+          {% for inline_admin_formset in inline_admin_formsets %}
+            {% include inline_admin_formset.opts.template %}
+          {% endfor %}
+          
+          {% block after_related_objects %}{% endblock %}
+          
+          <!-- Submit-Row -->
+          {% submit_row %}
+          
+          {% if adminform and add %}
+            {% block extrahead %}
+              <script type="text/javascript">
+                (function($){
+                  $(function(){
+                    try {
+                      // focus on first form-field
+                      $("#{{ adminform.first_field.auto_id }}, #{{ adminform.first_field.auto_id }}_0")
+                      .eq(0).focus();
+                    } catch(e) {}
+                  });
+                }(django.jQuery));
+              </script>
+            {% endblock %}
+          {% endif %}
+          
+          <!-- JS for prepopulated fields -->
+          {% prepopulated_fields_js %}
+          
         </div>
+      </form>
     </div>
+  </div>
 {% endblock %}

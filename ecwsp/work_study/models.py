@@ -57,7 +57,10 @@ class CraContact(models.Model):
         verbose_name = "Contact CRA"
 
 class PickupLocation(models.Model):
-    location = models.CharField(max_length=20, unique=True)
+    import re
+    from django.core.validators import RegexValidator
+    namespace_regex = re.compile(r'^[A-z\-]+$')
+    location = models.CharField(max_length=20, unique=True, validators=[RegexValidator(regex=namespace_regex)])
     long_name = models.CharField(max_length=255, blank=True)
     directions = models.TextField(blank=True)
     def __unicode__(self):

@@ -18,7 +18,7 @@
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.core.urlresolvers import reverse
@@ -290,7 +290,7 @@ def transcript_nonofficial(request, id):
     return pod_report_grade(template, transcript=transcript, options=data, students=form.get_students(data), format=format)
 
 
-@user_passes_test(lambda u: u.groups.filter(name='registrar').count() > 0 or u.is_superuser, login_url='/')    
+@permission_required('sis.reports') 
 def school_report_builder_view(request, report=None):
     if request.method == 'POST':
         if 'thumbs_fresh' in request.POST:
@@ -454,7 +454,7 @@ def teacher_attendance(request, course=None, type="homeroom"):
             note = student.courseenrollment_set.filter(course=course)[0].attendance_note
             if note: enroll_notes.append(unicode(note))
             else: enroll_notes.append("")
-        formset = AttendanceFormset(initial=initial, queryset=StudentAttendance.objects.none())
+    formset = AttendanceFormset(initial=initial, queryset=StudentAttendance.objects.none())
     
     # add notes to each form
     i = 0
@@ -1063,7 +1063,7 @@ def view_student(request, id=None):
         years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct()
         for year in years:
             year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year).distinct().order_by("start_date")
-            year.courses = Course.objects.filter(courseenrollment__user=student, homeroom=False, marking_period__school_year=year).distinct()
+            year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year).distinct()
             for course in year.courses:
                 # Too much logic for the template here, so just generate html.
                 course.grade_html = ""
