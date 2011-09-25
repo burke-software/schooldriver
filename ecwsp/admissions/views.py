@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.contenttypes.models import ContentType
@@ -28,7 +28,16 @@ def reports(request):
             'report_form': report_form,
         },
         RequestContext(request, {}),
-    ) 
+    )
+
+@permission_required('admissions.change_applicant')
+def ajax_check_duplicate_applicant(request, fname, lname):
+    applicants = Applicant.objects.filter(fname=fname, lname=lname)
+    data = ""
+    for applicant in applicants:
+        data += '<a href="%s" target="_blank">%s %s %s - %s</a><br/>' % (reverse('admin:admissions_applicant_change', args=(applicant.id,)), applicant.fname, applicant.mname, applicant.lname, applicant.bday)
+    return HttpResponse(data)
+
 
 @transaction.commit_on_success
 @user_passes_test(lambda u: u.has_perm("sis.change_student") and u.has_perm("admissions.change_applicant"), login_url='/')   

@@ -3,9 +3,11 @@
 
 
 {% block extrahead %}
+     {{ form.media }}
     {% load adminmedia %}
     <script type="text/javascript" src="/admin/jsi18n/"></script>
-    {{ form.media }}
+     <script type="text/javascript" src="{% admin_media_prefix %}js/core.js"></script>
+    
 {% endblock %}
 
 {% block breadcrumbs %}{% if not is_popup %}

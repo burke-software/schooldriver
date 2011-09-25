@@ -155,6 +155,39 @@ class PythonEngrade:
         self.__check_error(element)
         # Currently returns nothing, doesn't work.
         #return element.find('values/tid').text
+    
+    def school_students_register(self, syr, gp, emails):
+        """
+        syr = The school year in which students have classes
+        gp = The grading period in which students have classes
+        email = 
+        email_STUID1 = The email address of the student with the student id STUID1
+        email_STUID2 = The email address of the student with the student id STUID2
+        ...
+        
+        Return Fields
+        uid_STUID1 = The Engrade User ID for the student with the student id STUID1
+        usr_STUID1 = The username for the student with the student id STUID1
+        pwd_STUID1 = The password for the student with the student id STUID1
+        ...
+        
+        This API call will create accounts for ALL students who DO have a class
+        in the given grading period, but who do NOT yet have an account. Sending
+        this call will create accounts for ALL such students whether you specify
+        their email address or not. The email field is optional and, if specified,
+        will allow Engrade to email the student the username and password that Engrade
+        automatically generated for him/her.
+        """
+        values = {
+            'apitask': 'sschool-students-register',
+            'apikey': self.apikey,
+            'ses': self.ses,
+            'schoolid': self.schoolid,
+            'emails': emails,
+        }
+        element = self.__dict_to_element(values)
+        self.__check_error(element)
+        
         
     def gradebook(self, clid):
         """

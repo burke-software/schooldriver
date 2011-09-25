@@ -1,6 +1,6 @@
 #       views.py
 #       
-#       Copyright 2010 Cristo Rey New York High School
+#       Copyright 2011 Burke Software and Consulting LLC
 #        Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@ def fte_by_ind(request):
 def fte_by_day(request):
     fileName = "report_fteByDay.xls"
     cursor = connection.cursor()
-    fte = int(Configuration.object.get_or_create(name="Students per FTE")[0].value)
+    fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
     cursor.execute("select day, count(*)/" + str(fte) + " from work_study_student left join work_study_workteam on work_study_workteam.id = "+\
         "work_study_student.placement_id group by day;")
     names = cursor.fetchall()

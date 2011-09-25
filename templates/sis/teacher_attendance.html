@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block extrahead %}
+    
     {% load adminmedia %}
     {{ formset.media }}
     
@@ -51,14 +52,23 @@
                     <tr>
                         <th>Student</th>
                         <th>Attendance</th>
+			<th>Note</th>
                     </tr>
-                    {% for form in formset.forms %}
+                    {% for student in students %}
                     <tr>
-                        <td style="vertical-align:middle;" class="student"> {{ form.non_field_errors }} {{ form.student_display }} {{ form.student }} </td>
-                        <td> {{ form.status }} {{ form.status.errors }} {{ form.date }} </td>
-                        <td> {{ form.notes }} {{ form.notes.errors }} {{ form.enroll_note }}
-                        {% for hid in form.hidden_fields %} {{hid}}{% endfor %}
-                        </td>
+			{% if not student.marked and not readonly %}
+			    <td style="vertical-align:middle;" class="student"> {{ student.form.non_field_errors }} {{ student.form.student_display }} {{ student.form.student }} </td>
+			    <td> {{ student.form.status }} {{ student.form.status.errors }} {{ student.form.date }} </td>
+			    <td> {{ student.form.notes }} {{ student.form.notes.errors }} {{ student.form.enroll_note }}
+			    {% for hid in student.form.hidden_fields %} {{hid}}{% endfor %}
+			    </td>
+			{% else %}
+			    <td style="vertical-align:middle;" class="student"> {{ student }} </td>
+			    <td> {{ student.status }} </td>
+			    <td> {{ student.notes }}
+			    {% for hid in student.form.hidden_fields %} {{hid}}{% endfor %}
+			    </td>
+			{% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>

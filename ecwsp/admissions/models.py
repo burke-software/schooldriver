@@ -13,14 +13,16 @@ class AdmissionLevel(models.Model):
         return unicode(self.name)
     class Meta:
         ordering = ('order',)
+        
     
 class AdmissionCheck(models.Model):
     name = models.CharField(max_length=255)
     level = models.ForeignKey(AdmissionLevel)
-    def __unicode__(self):
-        return unicode(self.name)
+    required = models.BooleanField(default=True, help_text="When true, applicant cannot meet any level beyond this. When false, applicant can leapfrog check items.")
     class Meta:
         ordering = ('level','name')
+    def __unicode__(self):
+        return unicode(self.name)
     
 class AdmissionChoice(models.Model):
     name = models.CharField(max_length=255)
@@ -57,10 +59,11 @@ class FirstContactOption(models.Model):
 
 class ApplicationDecisionOption(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    level = models.ForeignKey(AdmissionLevel, blank=True, null=True, help_text="Optional, allows us to sort rejections by level")
     def __unicode__(self):
         return unicode(self.name)
     class Meta:
-        ordering = ['name']
+        ordering = ['level','name']
 
 class BoroughOption(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -108,6 +111,8 @@ class Applicant(models.Model):
     city = models.CharField(max_length=360, blank=True)
     state = USStateField(blank=True)
     zip = models.CharField(max_length=10, blank=True)
+    single_parent = models.BooleanField()
+    qualify_for_reduced_lunch = models.BooleanField()
     ssn = models.CharField(max_length=11, blank=True)
     parent_email = models.EmailField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
@@ -171,7 +176,14 @@ class Applicant(models.Model):
                     if check in self.checklist.all():
                         i += 1
                 if i >= checks.count():
-                    self.level = level
+                    # verefy required checks are in
+                    req_checks = AdmissionCheck.objects.filter(required=True, level__order__lte=level.order)
+                    set_level = True
+                    for req_check in req_checks:
+                        if not req_check in self.checklist.all():
+                            set_level = False
+                    if set_level:
+                        self.level = level
                     
         # create contact log entry on application decision
         if self.application_decision and self.id:

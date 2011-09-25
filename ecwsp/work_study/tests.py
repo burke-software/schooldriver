@@ -157,3 +157,5 @@ class TimeSheetTest(TestCase):
         self.test_student_no_super(supervisor=True)
         self.assertEquals(mail.outbox[0].subject, "Time Sheet for " + unicode(self.student))
         self.assertEquals(mail.outbox[0].to[0], cont.email)
+    
+    def test_student_email(self):

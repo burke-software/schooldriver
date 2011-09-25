@@ -34,24 +34,18 @@ class ContactLogInline(admin.TabularInline):
     extra = 1
     readonly_fields = ('user','date')
 
-def mark_ready_for_export(modeladmin, request, queryset):
-    for object in queryset:
-        object.ready_for_export=True
-        object.save()
-
 class ApplicantAdmin(admin.ModelAdmin):
     form = ApplicantForm
     list_display = ('lname', 'fname', 'present_school', 'city', 'level', 'application_decision', 'school_year', 'ready_for_export',)
     list_filter = ['school_year', 'level', 'checklist', 'ready_for_export', 'application_decision']
     search_fields = ['lname', 'fname', 'present_school__name']
     inlines = [ContactLogInline]
-    actions = [mark_ready_for_export]
     fieldsets = [
         (None, {'fields': ['fname', 'lname', 'mname', 'present_school', 'heard_about_us', 'first_contact',
                            'ready_for_export', 'application_decision', 'application_decision_by', 'withdrawn', 'withdrawn_note']}),
-        ('About student', {'fields': ['ssn', 'sex', 'borough', 'bday', 'year', 'school_year', 'ethnicity', 'hs_grad_yr',
-                                      'elem_grad_yr', 'religion', 'email', 'notes', 'siblings', 
-                                      'parent_guardians', 'open_house_attended'],
+        ('About student', {'fields': [('single_parent', 'qualify_for_reduced_lunch'), ('ssn', 'sex'), ('email', 'bday'), ('year', 'school_year'), ('hs_grad_yr',
+                                      'elem_grad_yr'), ('ethnicity', 'religion'), 'notes', 'siblings', 
+                                      'borough', 'parent_guardians', 'open_house_attended'],
             'classes': ['collapse']}),
     ]
     
@@ -71,11 +65,13 @@ class ApplicantAdmin(admin.ModelAdmin):
             levels.append(level)
         my_context = {
             'levels': levels,
+            'current_level': None
         }
         return super(ApplicantAdmin, self).add_view(request, form_url, extra_context=my_context)
     
     def change_view(self, request, object_id, extra_context=None):
         levels = []
+        applicant = get_object_or_404(Applicant,id=object_id)
         for level in AdmissionLevel.objects.all():
             level.checks = []
             level.max = 0
@@ -83,13 +79,14 @@ class ApplicantAdmin(admin.ModelAdmin):
                 level.checks.append(check)
                 level.max += 1
                 if object_id:
-                    if check in get_object_or_404(Applicant,id=object_id).checklist.all():
+                    if check in applicant.checklist.all():
                         check.checked = True
                     else:
                         check.checked = False
             levels.append(level)
         my_context = {
             'levels': levels,
+            'current_level': applicant.level,
         }
         return super(ApplicantAdmin, self).change_view(request, object_id, extra_context=my_context)
     
@@ -113,6 +110,11 @@ class ApplicantAdmin(admin.ModelAdmin):
         for check in obj.checklist.all():
             if not check in input_checks:
                 obj.checklist.remove(check)
+                contact_log = ContactLog(
+                    user = request.user,
+                    applicant = obj,
+                    note = "%s removed" % (check,)
+                )
                 contact_log = ContactLog(
                     user = request.user,
                     applicant = obj,

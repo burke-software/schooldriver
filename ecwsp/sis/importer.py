@@ -817,8 +817,8 @@ class Importer:
                                 model.level = GradeLevel.objects.get(id=value)
                         elif name == "homeroom":
                             model.homeroom = value
-                        elif name == "asp":
-                            model.asp = value
+                        elif name == "graded":
+                            model.graded = value
                         elif name == "department":
                             model.department, created = Department.objects.get_or_create(name=value)
                         elif name[:14] == "marking period":

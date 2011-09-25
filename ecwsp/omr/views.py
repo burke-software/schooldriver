@@ -20,6 +20,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.utils import simplejson
 from django.db import transaction
+from django.db.models import Q
 from django.forms.models import modelformset_factory
 from django.forms.widgets import TextInput
 from django.views.generic import ListView
@@ -91,6 +92,7 @@ def test_copy(request, test_id):
     new_test.name = old_test.name + " (copy)"
     new_test.save()
     new_test.teachers = old_test.teachers.all()
+    new_test.finalized = False
     new_test.save()
     for old_question in old_test.question_set.all():
         new_question = copy_model_instance(old_question)
@@ -118,7 +120,7 @@ def download_test(request, test_id):
 @permission_required('omr.teacher_test')
 def edit_test(request, id=None):
     teacher = Faculty.objects.get(username=request.user.username)
-    teacher_courses = Course.objects.filter(teacher=teacher)
+    teacher_courses = Course.objects.filter(Q(teacher=teacher) | Q(secondary_teachers=teacher))
     if id:
         add = False
         test = Test.objects.get(id=id)
@@ -245,6 +247,8 @@ def ajax_new_question_form(request, test_id):
                         qa_instance.question = q_instance
                         qa_instance.save()
             q_instance.check_type()
+            if question_form.cleaned_data['save_to_bank']:
+                q_instance.copy_to_bank()
             return render_to_response('omr/edit_test_questions_read_only.html', {
                 'question': q_instance,
             }, RequestContext(request, {}),)

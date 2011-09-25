@@ -65,7 +65,7 @@
                 </li>
             {% endif %}
             <!-- Grades  -->
-            {% if perms.schedule.change_course or perms.schedule.change_own_grade or perms.sis.reports %}
+            {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %} {% if perms.schedule.change_course or perms.schedule.change_own_grade or perms.sis.reports %}
                 <li class="user-options-container collapse closed">
                     <a href="javascript://" class="user-options-handler collapse-handler"> Grades </a>
                     <ul class="user-options">
@@ -81,7 +81,7 @@
                         {% endif %}
                     </ul>
                 </li>
-            {% endif %}
+            {% endif %}{% endif %}
             <!-- Admissions  -->
             {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
                 <li class="user-options-container collapse closed">
@@ -97,7 +97,7 @@
                 </li>
             {% endif %}
             <!-- CWSP -->
-            {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports and 'ecwsp.work_study' in settings.INSTALLED_APPS %}
+            {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
                 <li class="user-options-container collapse closed">
                     <a href="javascript://" class="user-options-handler collapse-handler"> CWSP </a>
                     <ul class="user-options">
@@ -109,7 +109,7 @@
                         {% endif %}
                     </ul>
                 </li>
-            {% endif %}
+            {% endif %}{% endif %}
             <!-- OMR -->
             {% if perms.omr.change_test and 'ecwsp.omr' in settings.INSTALLED_APPS %}
                 <li class="user-options-container collapse closed">

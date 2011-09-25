@@ -31,6 +31,7 @@ class TestQuestionForm(forms.ModelForm):
     is_true = forms.ChoiceField(widget=forms.Select, choices=((True,"True"),(False,"False")))
     benchmarks = AutoCompleteSelectMultipleField('benchmark', required=False)
     themes = AutoCompleteSelectMultipleField('theme', required=False)
+    save_to_bank = forms.BooleanField(required=False, initial=True)
         
 class AnswerForm(forms.ModelForm):
     class Meta:

@@ -250,6 +250,7 @@ class EmergencyContact(models.Model):
         if self.primary_contact:
             for student in self.student_set.all():
                 student.parent_guardian = self.fname + " " + self.lname
+                student.city = self.city
                 student.street = self.street
                 student.state = self.state
                 student.zip = self.zip
@@ -426,7 +427,7 @@ class Student(MdlUser):
         date_report: Date for calculation (which effects credit value) defaults to today """
         if date_report == None:
             date_report = date.today()
-        courses = self.course_set.filter(homeroom=False, asp=False, marking_period__show_reports=True).exclude(omitcoursegpa__student=self).distinct()
+        courses = self.course_set.filter(graded=True, marking_period__show_reports=True).exclude(omitcoursegpa__student=self).distinct()
         return self.__calculate_grade_for_courses(courses, date_report=date_report)
         
     
@@ -436,14 +437,14 @@ class Student(MdlUser):
         date_report: Date for calculation (which effects credit value) defaults to today """
         if not date_report:
             date_report = date.today()
-        courses = self.course_set.filter(homeroom=False, asp=False, marking_period__school_year=year)
+        courses = self.course_set.filter(graded=True, marking_period__school_year=year)
         x = self.__calculate_grade_for_courses(courses, date_report=date_report)
         return x
     
     def calculate_gpa_mp(self, marking_period):
         """ Calculate students gpa for one marking periods
         mp: Marking Periods to calculate for."""
-        courses = self.course_set.filter(homeroom=False, asp=False, omitcoursegpa=None, marking_period=marking_period)
+        courses = self.course_set.filter(graded=True, omitcoursegpa=None, marking_period=marking_period)
         return self.__calculate_grade_for_courses(courses, marking_period=marking_period)
         
     @property
@@ -757,31 +758,9 @@ class SchoolYear(models.Model):
         each marking period of the year.
         date: Defaults to today, date to count towards. Used to get days up to a certain date"""
         mps = self.markingperiod_set.all().order_by('start_date')
-        current_day = mps[0].start_date
         day = 0
-        while current_day <= date:
-            is_day = False
-            for mp in mps:
-                if current_day >= mp.start_date and current_day <= mp.end_date:
-                    days_off = []
-                    for d in mp.daysoff_set.all().values_list('date'): days_off.append(d[0])
-                    if not current_day in days_off:
-                        if mp.monday and current_day.isoweekday() == 1:
-                            is_day = True
-                        elif mp.tuesday and current_day.isoweekday() == 2:
-                            is_day = True
-                        elif mp.wednesday and current_day.isoweekday() == 3:
-                            is_day = True
-                        elif mp.thursday and current_day.isoweekday() == 4:
-                            is_day = True
-                        elif mp.friday and current_day.isoweekday() == 5:
-                            is_day = True
-                        elif mp.saturday and current_day.isoweekday() == 6:
-                            is_day = True
-                        elif mp.sunday and current_day.isoweekday() == 7:
-                            is_day = True
-            if is_day: day += 1
-            current_day += timedelta(days=1)
+        for mp in mps:
+            day += mp.get_number_days(date)
         return day
     
     def save(self, *args, **kwargs):
