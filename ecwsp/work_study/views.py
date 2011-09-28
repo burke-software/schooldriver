@@ -63,7 +63,7 @@ def fte_by_ind(request):
     fileName = "report_fteByInd.xls"
     cursor = connection.cursor()
     fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
-    cursor.execute("select industry_type, count(*)/" + str(fte) + " from eworker left join work_study_workteam on work_study_workteam.id = "+\
+    cursor.execute("select industry_type, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
         "work_study_studentworker.placement_id group by industry_type;")
     names = cursor.fetchall()
     titles = (["Industry", "FTE"])
