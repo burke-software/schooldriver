@@ -1318,6 +1318,9 @@ class Importer:
                             model.home_room = value
                         elif name == "ssn" or name == "social security":
                             model.ssn = value
+                        elif name in ['preferred language', 'language', 'family preferred language']:
+                            language = LanguageChoice.objects.get_or_create(name=value)[0]
+                            model.name = language
                         elif name == "deleted":
                             model.deleted = self.determine_truth(value)
                         
@@ -1834,6 +1837,8 @@ class Importer:
                             model.industry_type = value
                         elif name == "stop_location" or name == "stop location":
                             model.stop_location = value
+                        elif name == "dropoff_location" or name == "dropoff location":
+                            model.dropoff_location = PickupLocation.objects.get_or_create(location=value)[0]
                         elif name == "pickup_location" or name == "pickup location":
                             model.pickup_location = PickupLocation.objects.get_or_create(location=value)[0]
                         elif name == "address":
@@ -1875,38 +1880,65 @@ class Importer:
                 items = zip(header, row)
                 model = Contact()
                 created = True
+                fname = None
+                lname = None
+                phone = None
+                phone_cell = None
+                fax = None
+                email = None
+                workteam = None
                 for (name, value) in items:
                     is_ok, name, value = self.sanitize_item(name, value)
                     if is_ok:
                         if name == "id":
                             model = Contact.objects.get(id=value)
-                            crated = False
+                            created = False
                         elif name == "guid":
                             model.guid = value
                         elif name == "fname" or name == "first name":
-                            model.fname = value
+                            fname = value
                         elif name == "lname" or name == "last name":
-                            model.lname = value
+                            lname = value
                         elif name == "phone":
                             number, ext = self.import_number(value)
                             if ext:
-                                model.phone = number + " " + ext
+                                phone = number + " " + ext
                             else:
-                                model.phone = number
+                                phone = number
                         elif name == "phone_cell" or name == "phone cell":
                             number, ext = self.import_number(value)
                             if ext:
-                                model.phone = number + " " + ext
+                                phone_cell = number + " " + ext
                             else:
-                                model.phone = number
+                                phone_cell = number
                         elif name == "email":
-                            model.email = value
+                            email = value
                         elif name == "fax":
-                            model.fax = value
+                            fax = value
                         elif name == "work team":
-                            model.save()
                             workteam = WorkTeam.objects.get(team_name=value)
-                            model.workteam_set.add(workteam)
+                existing_contacts = Contact.objects.filter(fname=fname,lname=lname)
+                if existing_contacts.count()==1:
+                    model = Contact.objects.get(id = existing_contacts[0].id)
+                    created = False
+                elif existing_contacts.count() >1:
+                    exist_filter_by_workteam = existing_contacts.workteam_set.filter(workteam)
+                    if exist_filter_by_workteam.count()==1:
+                        model = Contact.objects.get(id = exist_filter_by_workteam[0].id)
+                        created = False
+                    else:
+                        model.fname =fname
+                        model.lanem = lname
+                else:
+                    model.fname = fname
+                    model.lname = lname
+                if phone: model.phone = phone
+                if phone_cell: model.phone_cell = phone_cell
+                if fax: model.fax = fax
+                if email: model.email = email
+                model.save()
+                if workteam: model.workteam_set.add(workteam)
+                    
                 model.save()
                 if created:
                     self.log_and_commit(model, addition=True)

@@ -62,9 +62,9 @@ class struct(object): pass
 def fte_by_ind(request):
     fileName = "report_fteByInd.xls"
     cursor = connection.cursor()
-    fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
-    cursor.execute("select industry_type, count(*)/" + str(fte) + " from work_study_student left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_student.placement_id group by industry_type;")
+    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
+    cursor.execute("select industry_type, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id group by industry_type;")
     names = cursor.fetchall()
     titles = (["Industry", "FTE"])
     report = xlsReport(names, titles, fileName, heading="FTE by Industry Type")
@@ -74,9 +74,9 @@ def fte_by_ind(request):
 def fte_by_day(request):
     fileName = "report_fteByDay.xls"
     cursor = connection.cursor()
-    fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
-    cursor.execute("select day, count(*)/" + str(fte) + " from work_study_student left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_student.placement_id group by day;")
+    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
+    cursor.execute("select day, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id group by day;")
     names = cursor.fetchall()
     titles = (["Day", "FTE"])
     report = xlsReport(names, titles, fileName, heading="FTE by Day of Week")
@@ -194,16 +194,16 @@ def gen_attendance_report_day(day):
 def fte_by_pay(request):
     fileName = "report_fteByPay.xls"
     xls = customXls(fileName) 
-    student_fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
+    student_fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     
     cursor = connection.cursor()
-    cursor.execute("select paying, count(*)/" + str(student_fte) + " from work_study_student left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_student.placement_id group by paying;")
+    cursor.execute("select paying, count(*)/" + str(student_fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id group by paying;")
     totals = cursor.fetchall()
     
     cursor = connection.cursor()
-    cursor.execute("select team_name, paying, count(*)/" + str(student_fte) + ", funded_by as fte from work_study_student left join work_study_workteam on "+\
-        "work_study_workteam.id = work_study_student.placement_id group by team_name order by paying, team_name;")
+    cursor.execute("select team_name, paying, count(*)/" + str(student_fte) + ", funded_by as fte from work_study_studentworker left join work_study_workteam on "+\
+        "work_study_workteam.id = work_study_studentworker.placement_id group by team_name order by paying, team_name;")
     company = cursor.fetchall()
 
     titles = (["Paying?","FTE"])

@@ -8,7 +8,7 @@
             var city = document.getElementById("id_city").value;
             var state = document.getElementById("id_state").value;
             var zip = document.getElementById("id_zip").value;
-            parent.mapframe.location="http://maps.google.com/maps/api/staticmap?sensor=false&size=400x400&markers=size:mid|color:red|" + address + "," + city + "," + state + "," + zip;
+            parent.mapframe.src="http://maps.google.com/maps/api/staticmap?sensor=false&size=400x400&markers=size:mid|color:red|" + address + "," + city + "," + state + "," + zip;
         }
     </script>
 {% endblock %}
