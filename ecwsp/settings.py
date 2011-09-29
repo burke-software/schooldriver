@@ -178,7 +178,7 @@ INSTALLED_APPS = (
     'django_filters',
     'pagination',
     'massadmin',
-    #'debug_toolbar',
+    'admin_export',
 )
 
 MIDDLEWARE_CLASSES = (

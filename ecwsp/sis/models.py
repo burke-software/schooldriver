@@ -271,9 +271,9 @@ class EmergencyContactNumber(PhoneNumber):
     contact = models.ForeignKey(EmergencyContact)
     def __unicode__(self):
         if self.ext:
-            return self.number + " x" + self.ext + " " + self.get_type_display()
+            return self.get_type_display() + ":" + self.number + "x" + self.ext
         else:
-            return self.number + " " + self.get_type_display()
+            return self.get_type_display() + ":" + self.number
 
 
 class Faculty(MdlUser):
@@ -297,7 +297,7 @@ class Faculty(MdlUser):
 
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
-    students = models.ManyToManyField('Student', blank=True, db_table="sis_studentcohort")
+    students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
     
     def __unicode__(self):
         return unicode(self.name)
@@ -324,6 +324,23 @@ class GradeLevel(models.Model):
     def grade(self):
         return self.id
 
+class LanguageChoice(models.Model):
+    name = models.CharField(unique=True, max_length=255)
+    iso_code = models.CharField(blank=True, max_length=2, help_text="ISO 639-1 Language code http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes")
+    default = models.BooleanField()
+    def __unicode__(self):
+        return unicode(self.name)
+    
+    def save(self, *args, **kwargs):
+        if self.default:
+            for language in LanguageChoice.objects.filter(default=True):
+                language.default = False
+                language.save()
+        super(LanguageChoice, self).save(*args, **kwargs)
+
+def get_default_language():
+    if LanguageChoice.objects.filter(default=True).count():
+        return LanguageChoice.objects.filter(default=True)[0]
 class Student(MdlUser):
     """student based on a Moodle user"""
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
@@ -345,6 +362,7 @@ class Student(MdlUser):
     zip = models.CharField(max_length=10, blank=True, editable=False)
     parent_email = models.EmailField(blank=True, editable=False)
     
+    family_preferred_language = models.ForeignKey(LanguageChoice, blank=True, null=True, default=get_default_language)
     alt_email = models.EmailField(blank=True, help_text="Alternative student email that is not their school email.")
     notes = models.TextField(blank=True)
     emergency_contacts = models.ManyToManyField(EmergencyContact, blank=True)
@@ -353,7 +371,6 @@ class Student(MdlUser):
     cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, help_text="Cached primary cohort.", related_name="cache_cohorts")
     individual_education_program = models.BooleanField()
     cache_gpa = models.DecimalField(editable=False, max_digits=5, decimal_places=2, blank=True, null=True)
-    
     
     class Meta:
         permissions = (

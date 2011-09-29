@@ -1318,6 +1318,9 @@ class Importer:
                             model.home_room = value
                         elif name == "ssn" or name == "social security":
                             model.ssn = value
+                        elif name in ['preferred language', 'language', 'family preferred language']:
+                            language = LanguageChoice.objects.get_or_create(name=value)[0]
+                            model.name = language
                         elif name == "deleted":
                             model.deleted = self.determine_truth(value)
                         
@@ -1834,6 +1837,8 @@ class Importer:
                             model.industry_type = value
                         elif name == "stop_location" or name == "stop location":
                             model.stop_location = value
+                        elif name == "dropoff_location" or name == "dropoff location":
+                            model.dropoff_location = PickupLocation.objects.get_or_create(location=value)[0]
                         elif name == "pickup_location" or name == "pickup location":
                             model.pickup_location = PickupLocation.objects.get_or_create(location=value)[0]
                         elif name == "address":

@@ -114,8 +114,8 @@ class WorkTeamAdmin(VersionAdmin):
     search_fields = ['company__name', 'team_name', 'address', 'cra__name__first_name', 'cra__name__last_name']
     list_filter = ['inactive', 'pickup_location', 'train_line', 'industry_type', 'paying',]
     fieldsets = [
-        (None, {'fields': [('company', 'inactive'), 'team_name', 'job_description', 'company_description', 'login', ('paying', 'funded_by'), 'industry_type', 'cra', 'pickup_location', 'contacts']}),
-        ("Location", {'fields': ['address', 'city', 'state', 'zip','train_line', 'stop_location', 'map', 'use_google_maps', 'directions_to', 'directions_pickup'], 'classes': ['collapse']}),
+        (None, {'fields': [('company', 'inactive'), 'team_name', 'job_description', 'company_description', 'login', ('paying', 'funded_by'), 'industry_type', 'cra', ('dropoff_location', 'pickup_location'), 'contacts']}),
+        ("Location", {'fields': ['address', ('city', 'state'), 'zip',('train_line', 'stop_location'), ('map', 'use_google_maps'), 'directions_to', 'directions_pickup'], 'classes': ['collapse']}),
     ]
     filter_horizontal = ('contacts', 'login')
     list_display = ('team_name', 'company', 'stop_location', 'pickup_location', 'fte', 'paying', 'cra')

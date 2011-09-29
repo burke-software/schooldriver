@@ -48,8 +48,9 @@ def get_school_day_number(date):
 
 
 def pod_save(filename, ext, data, template, get_tmp_file=False):
-    tmp = tempfile.NamedTemporaryFile()
-    renderer = Renderer(template, data, tmp.name + ext)
+    import time
+    file_name = tempfile.gettempdir() + '/appy' + str(time.time()) + ext
+    renderer = Renderer(template, data, file_name)
     renderer.run()
     
     if ext == ".doc":
@@ -62,15 +63,12 @@ def pod_save(filename, ext, data, template, get_tmp_file=False):
         content = "application/rtf"
     else: # odt, prefered
         content = "application/vnd.oasis.opendocument.text"
-    
-    if get_tmp_file:
-        return tmp.name + ext
-    else:
-        wrapper = FileWrapper(file(tmp.name + ext)) # notice not using the tmp file! Not ideal.
-        response = HttpResponse(wrapper, content_type=content)
-        response['Content-Length'] = os.path.getsize(tmp.name + ext)
-        response['Content-Disposition'] = 'attachment; filename=' + filename + ext
-    try: os.remove(tmp.name + ext)
+
+    wrapper = FileWrapper(file(file_name)) # notice not using the tmp file! Not ideal.
+    response = HttpResponse(wrapper, content_type=content)
+    response['Content-Length'] = os.path.getsize(file_name)
+    response['Content-Disposition'] = 'attachment; filename=' + filename + ext
+    try: os.remove(file_name)
     except: pass # this sucks. But Ubuntu can't run ooo as www-data
     
     return response

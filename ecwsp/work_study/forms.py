@@ -112,7 +112,7 @@ class MapImageWidget(forms.CheckboxInput):
     def render(self, name, value, attrs=None):
         output = []
         output.append(super(MapImageWidget, self).render(name, value, attrs))
-        output.append("If checked, the above map file will be overwritten with Google Maps. <table><tr><td><a href=\"javascript:get_map()\">Preview Google Maps</a></td></tr><tr><td> <iframe width=\"400px\" height=\"400px\" name=\"mapframe\"></iframe> </td></tr></table>")
+        output.append("If checked, the above map file will be overwritten with Google Maps. <table><tr><td><a href=\"javascript:get_map()\">Preview Google Maps</a></td></tr><tr><td> <img width=\"400px\" height=\"400px\" name=\"mapframe\"></iframe> </td></tr></table>")
         return mark_safe(u''.join(output))
         
             

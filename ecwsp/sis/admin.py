@@ -18,27 +18,6 @@ from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
 from ecwsp.schedule.models import *
 
 # Global actions
-def export_simple_selected_objects(modeladmin, request, queryset):
-    selected_int = queryset.values_list('id', flat=True)
-    selected = []
-    for s in selected_int:
-        selected.append(str(s))
-    ct = ContentType.objects.get_for_model(queryset.model)
-    return HttpResponseRedirect("/sis/export_to_xls/?ct=%s&ids=%s" % (ct.pk, ",".join(selected)))
-#    app = queryset[0]._meta.app_label
-#    model = queryset[0]._meta.module_name
-#    return admin_export_xls(request, app, model, queryset)
-export_simple_selected_objects.short_description = "Export selected items to XLS"
-admin.site.add_action(export_simple_selected_objects)
-
-#def export_m2m_selected_objects(modeladmin, request, queryset):
-#    app = queryset[0]._meta.app_label
-#    model = queryset[0]._meta.module_name
-#    return admin_export_xls(request, app, model, queryset, m2m=True)
-#export_m2m_selected_objects.short_description = "Export selected items to XLS (extra)"
-#admin.site.add_action(export_m2m_selected_objects)
-
-
 def promote_to_worker(modeladmin, request, queryset):
     for object in queryset:
         object.promote_to_worker()
@@ -210,6 +189,7 @@ class StudentDisciplineAdmin(admin.ModelAdmin):
 
 admin.site.register(StudentDiscipline, StudentDisciplineAdmin)
 admin.site.register(DisciplineAction)
+admin.site.register(LanguageChoice)
 
 class CohortAdmin(admin.ModelAdmin):
     form = CohortForm
