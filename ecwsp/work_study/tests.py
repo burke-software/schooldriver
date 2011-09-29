@@ -24,6 +24,7 @@ import unittest
 from django.core import mail
 from django.test import TestCase
 from django.test.client import Client
+from django.core.management import call_command
 
 from ecwsp.work_study.forms import *
 from ecwsp.work_study.models import *
@@ -42,12 +43,22 @@ class TimeSheetTest(TestCase):
         supUser = User.objects.create_user("super", "dburke@cristoreyny.org", "test")
         supUser.groups.add(group)
         supUser.save()
+        
+        facGroup = Group.objects.create(name="faculty")
+        craUser = User.objects.create_user("craUser","test@none.net")
+        craUser.groups.add(facGroup)
+        craUser.save()
+        self.craContact = CraContact.objects.create(name=craUser,email=True,email_all=True)
+        self.craContact.save()
+        
         user = User.objects.create_user("studentlog", "jstudent@cristoreyny.org", "test")
         user.groups.add(stuGroup)
         user.save()
         self.comp = WorkTeam.objects.create(team_name="fsdaf3aq3fa3fsc")
         self.comp.save()
         self.comp.login.add(supUser)
+        self.comp.save()
+        self.comp.cra = self.craContact
         self.comp.save()
         self.student = StudentWorker.objects.create(fname="studentaaaaa", lname="fjlkdsjfl321kev", placement=self.comp, username="jstudent")
         self.student.save()
@@ -143,8 +154,8 @@ class TimeSheetTest(TestCase):
         
     def test_supervisor_email(self):
         """
-        Test a student submitting a timesheet and the supervisor getting the link
-        following through on the link is already done in test_supervisor_approve
+        Test a student submitting a timesheet and the supervisor getting the link.
+        Following through on the link is already done in test_supervisor_approve
         """
         cont = Contact.objects.create(fname="tesrfdsf", email="test@contacts.com")
         cont.save()
@@ -159,3 +170,48 @@ class TimeSheetTest(TestCase):
         self.assertEquals(mail.outbox[0].to[0], cont.email)
     
     def test_student_email(self):
+        """
+        Tests a student being emailed aftr a supervisor approves a timesheet.
+        """
+        
+        self.test_supervisor_approve()
+        self.assertEquals(mail.outbox[0].subject, "Time Sheet approved for " + unicode(self.student))
+        self.assertEquals(mail.outbox[0].to[0],student.email)
+        
+    def test_cra_email(self):
+        """
+        Tests that an email gets sent to the CRA
+        """
+        
+        call_command('email_cra')
+        self.assertEqual(mail.outbox[0].subject,"SWORD student interactions")
+        self.assertEqual(mail.outbox[0].to[0],self.craContact.name.email)
+        
+    def test_supervisor_email_on_student_change(self):
+        """
+        Tests that an email gets sent to a supervisor if a student changes the primary supervisor when submitting a timesheet
+        """
+        # student logs in, goes to student_timesheet
+        setUp()
+        response = self.client.post('/accounts/login/?next=/', {'username':'studentlog', 'password':'test'}, follow=True)
+        self.assertContains(response, self.student.lname, msg_prefix="Something wrong with student_timesheet")
+        self.assertContains(response, "Not yet submitted by student", msg_prefix="Something wrong with student_timesheet")
+                
+        new_sup = User.objects.create_user("super2", "dburke@cristoreyny.org", "test")
+        new_sup.groups.add(group)
+        new_sup.save()
+        self.comp.contacts.add(new_sup)
+        self.comp.login.add(new_sup)
+        self.comp.save()
+        
+        
+        response = self.client.post("/", \
+            {'student': 1, 'company':1, 'date': '2010-06-15', 'time_in': '9:30 AM', 'time_lunch': "12:00 PM", \
+            'time_lunch_return': '1:00 PM', 'time_out': '5:00 PM', 'student_accomplishment': 'stuacomptext', \
+            'my_supervisor': new_sup})
+        
+        self.assertEquals(mail.outbox[0].subject, "Time Sheet for " + unicode(self.student))
+        self.assertEquals(mail.outbox[0].to[0], new_sup.email)
+
+        
+        
