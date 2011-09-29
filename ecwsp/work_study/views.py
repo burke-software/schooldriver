@@ -62,7 +62,7 @@ class struct(object): pass
 def fte_by_ind(request):
     fileName = "report_fteByInd.xls"
     cursor = connection.cursor()
-    fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
+    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     cursor.execute("select industry_type, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
         "work_study_studentworker.placement_id group by industry_type;")
     names = cursor.fetchall()
@@ -74,7 +74,7 @@ def fte_by_ind(request):
 def fte_by_day(request):
     fileName = "report_fteByDay.xls"
     cursor = connection.cursor()
-    fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
+    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     cursor.execute("select day, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
         "work_study_studentworker.placement_id group by day;")
     names = cursor.fetchall()
@@ -194,7 +194,7 @@ def gen_attendance_report_day(day):
 def fte_by_pay(request):
     fileName = "report_fteByPay.xls"
     xls = customXls(fileName) 
-    student_fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
+    student_fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     
     cursor = connection.cursor()
     cursor.execute("select paying, count(*)/" + str(student_fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
