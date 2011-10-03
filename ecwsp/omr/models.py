@@ -8,6 +8,7 @@ from django.dispatch import dispatcher
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from ckeditor.fields import RichTextField
+from django.conf import settings
 from django.contrib.localflavor.us.models import *
 
 from ecwsp.sis.models import SchoolYear, Student
@@ -166,7 +167,12 @@ class QuestionAbstract(models.Model):
 
 
 class QuestionBank(QuestionAbstract):
-    pass
+    master_id = models.IntegerField(editable=False, help_text="ID from the master question bank", unique=True)
+
+if settings.OMR_IS_MASTER_SERVER:
+    class MasterQuestionBank(QuestionAbstract):
+        """ Stores global questions for multiple SWORD instances """
+        school = models.TextField(max_length=1000, blank=True, help_text="School that submitted this question")
     
     
 class Question(QuestionAbstract):

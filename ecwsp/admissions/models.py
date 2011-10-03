@@ -113,7 +113,7 @@ class Applicant(models.Model):
     zip = models.CharField(max_length=10, blank=True)
     single_parent = models.BooleanField()
     qualify_for_reduced_lunch = models.BooleanField()
-    ssn = models.CharField(max_length=11, blank=True)
+    ssn = models.CharField(max_length=11, blank=True, verbose_name="SSN")
     parent_email = models.EmailField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     notes = models.TextField(blank=True)
@@ -146,7 +146,7 @@ class Applicant(models.Model):
     withdrawn_note = models.CharField(max_length=500, blank=True)
     
     class Meta:
-        ordering = ('fname','lname')
+        ordering = ('lname','fname',)
     
     def __unicode__(self):
         return "%s %s %s" % (self.fname, self.mname, self.lname)

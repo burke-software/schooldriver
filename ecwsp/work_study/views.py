@@ -117,7 +117,12 @@ def student_company_day_report(industry_type=False, paying=False):
 #    return render_to_response('work_study/attendance.html', {'pickup': pickups, 'days': tuple(x[0] for x in days)})
     
 # Generate attendance by day    
-def gen_attendance_report_day(day):
+def gen_attendance_report_day(day, is_pickup=False):
+    """
+    Generates a spreadsheet for a student worker based on their pickup or dropoff location.
+    day: day of week
+    is_pickup: Is this a pickup? If false it's a dropoff
+    """
     wb = pycel.Workbook()
     
     # convert to stupid way to storing days.
@@ -168,7 +173,11 @@ def gen_attendance_report_day(day):
         myFontStyle.borders.bottom = 0x01
         
         y=2
-        for stu in StudentWorker.objects.filter(day=day[1], placement__pickup_location__location=pickup).filter(inactive=False):
+        if is_pickup == True:
+            students = StudentWorker.objects.filter(day=day[1], placement__pickup_location__location=pickup).filter(inactive=False)
+        else:
+            students = StudentWorker.objects.filter(day=day[1], placement__dropoff_location__location=pickup).filter(inactive=False)
+        for stu in students:
             if stu.fax:
                 ws.write(y,0,"txt", myFontStyle)                            #Small font fax.
             else:
@@ -664,6 +673,17 @@ def report_builder_view(request):
             return gen_attendance_report_day('TH')
         elif 'attnFriday' in request.POST:
             return gen_attendance_report_day('F')
+            
+        elif 'attnPMonday' in request.POST:
+            return gen_attendance_report_day('M', is_pickup=True)
+        elif 'attnPTuesday' in request.POST:
+            return gen_attendance_report_day('T', is_pickup=True)
+        elif 'attnPWednesday' in request.POST:
+            return gen_attendance_report_day('W', is_pickup=True)
+        elif 'attnPThursday' in request.POST:
+            return gen_attendance_report_day('TH', is_pickup=True)
+        elif 'attnPFriday' in request.POST:
+            return gen_attendance_report_day('F', is_pickup=True)
         
         elif 'pod_report' in request.POST:
             template_form = ReportTemplateForm(request.POST, request.FILES)

@@ -8,7 +8,6 @@ begin
     set @test_instance_id = (
         SELECT `val` *1 from quexf_crny.formboxverifytext where quexf_crny.formboxverifytext.fid = NEW.fid
     );
-    if 
     set @question_id = (
         SELECT DISTINCT boxgroupstype.varname from quexf_crny.boxgroupstype JOIN quexf_crny.boxes
             ON quexf_crny.boxgroupstype.bgid=quexf_crny.boxes.bgid 

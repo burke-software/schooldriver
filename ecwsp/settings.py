@@ -270,6 +270,11 @@ ENGRADE_PASSWORD = ''
 # School UID (admin must be connected to school)
 ENGRADE_SCHOOLID = ''
 
+# URL of master server that stores questions
+OMR_MASTER_SERVER='localhost'
+# If this instance the master server?
+OMR_IS_MASTER_SERVER=True
+
 # The "new" url path for quexf.
 QUEXF_URL = "http://quexf.cristoreyny.org/admin/new.php"
 

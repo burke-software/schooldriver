@@ -19,7 +19,7 @@ class ApplicantForm(forms.ModelForm):
     class Meta:
         model = Applicant
     
-    ssn = USSocialSecurityNumberField(required=False)
+    ssn = USSocialSecurityNumberField(required=False, label="SSN")
     siblings = AutoCompleteSelectMultipleField('all_student', required=False)
     parent_guardians = AutoCompleteSelectMultipleField('emergency_contact', required=False)
     
