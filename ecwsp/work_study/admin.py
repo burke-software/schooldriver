@@ -46,7 +46,6 @@ class CompanyHistoryInline(admin.TabularInline):
     model = CompanyHistory
     extra = 0
     max_num = 0
-    exclude = ('placement',)
 
 class CompanyAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
