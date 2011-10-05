@@ -8,7 +8,6 @@ begin
     set @test_instance_id = (
         SELECT `val` *1 from quexf_crny.formboxverifytext where quexf_crny.formboxverifytext.fid = NEW.fid
     );
-    if 
     set @question_id = (
         SELECT DISTINCT boxgroupstype.varname from quexf_crny.boxgroupstype JOIN quexf_crny.boxes
             ON quexf_crny.boxgroupstype.bgid=quexf_crny.boxes.bgid 
@@ -38,6 +37,9 @@ begin
     );
     INSERT INTO crny.omr_answerinstance(test_instance_id,question_id,answer_id, points_earned, points_possible)
     values (@test_instance_id, @question_id, @answer_id, @points_earned, @points_possible);
+    
+    UPDATE crny.omr_testinstance SET crny.omr_testinstance.results_recieved= True
+    WHERE crny.omr_testinstance.id = @test_instance_id;
 end;
 end if;
 //
