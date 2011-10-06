@@ -15,8 +15,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from django.utils.html import strip_tags
+from django.db.models import F
 
 from ecwsp.sis.xlsReport import *
+from ecwsp.sis.report import *
+from ecwsp.sis.helper_functions import Struct
+from ecwsp.administration.models import Template
 from ecwsp.omr.models import *
 
 import xlwt
@@ -93,5 +97,40 @@ class ReportManager(object):
         report.addSheet(data, heading="Benchmark", heading_top=False)
         
         return report.finish()
+        
+    def download_student_results(self, test, format):
+        """ Make appy based report showing results for each student """
+        data = get_default_data()
+        
+        test_instances = test.testinstance_set.all()
+        benchmarks = Benchmark.objects.filter(question__test=test)
+        
+        for benchmark in benchmarks:
+            benchmark.points_possible = test.question_set.filter(benchmarks=benchmark).aggregate(Sum('point_value'))['point_value__sum']
+        
+        for test_instance in test_instances:
+            benchmark_instances = []
+            for benchmark in benchmarks:
+                benchmark_instance = Struct()
+                benchmark_instance.benchmark = benchmark
+                benchmark_instance.points_possible = benchmark.points_possible
+                benchmark_instance.points_earned = test_instance.answerinstance_set.filter(question__benchmarks=benchmark).aggregate(Sum('points_earned'))['points_earned__sum']
+                benchmark_instances.append(benchmark_instance)
+            test_instance.benchmarks = benchmark_instances
+        
+            test_instance.incorrects = test_instance.answerinstance_set.filter(points_earned__lt=F('points_possible'))
+            for incorrect in test_instance.incorrects:
+                try:
+                    incorrect.right_answer = incorrect.question.answer_set.order_by('points_possible')[0]
+                except:
+                    incorrect.right_answer = "No correct answer"
+            
+        
+        template = Template.objects.get_or_create(name="OMR Student Test Result")[0].file
+        data['test'] = test
+        data['tests'] = test_instances
+        
+        filename = 'Student Results for ' + unicode(test)
+        return pod_save(filename, "." + str(format), data, template)  
 
 report = ReportManager()

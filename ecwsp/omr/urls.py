@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     (r'^test/(?P<test_id>\d+)/copy/$', test_copy),
     (r'^test_result/(?P<test_id>\d+)/$', test_result),
     (r'^test_result/(?P<test_id>\d+)/download_xls/$', download_test_results),
+    (r'^test_result/(?P<test_id>\d+)/download_student_results/$', download_student_results),
     (r'^test_result/(?P<test_id>\d+)/download_answer_sheets/$', download_answer_sheets),
     (r'^generatexml/(?P<test_id>\d+)', queXF_answer_sheets),
     (r'^question_bank/$', QuestionBankListView.as_view(

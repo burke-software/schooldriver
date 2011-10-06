@@ -49,15 +49,21 @@ class QuestionBankFilter(django_filters.FilterSet):
     
     class Meta:
         model = QuestionBank
-        fields = ['question', 'type', 'benchmarks', 'themes',]
+        fields = ['question', 'type', 'benchmarks', 'themes']
     question = django_filters.CharFilter(name='question', lookup_type='icontains', widget=TextInput(attrs={'class':'search',}))
 
 class QuestionBankListView(ListView):
     def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
         context = super(QuestionBankListView, self).get_context_data(**kwargs)
-        # Add in a QuerySet of all the books
-        f = QuestionBankFilter(self.request.GET, queryset=QuestionBank.objects.all())
+        
+        questions = QuestionBank.objects.all()
+        if self.request.session['omr_test_id']:
+            test = Test.objects.get(id=self.request.session['omr_test_id'])
+            context['test'] = test
+            if test.department:
+                questions = questions.filter(benchmarks__measurement_topics__department=test.department)
+        f = QuestionBankFilter(self.request.GET, queryset=questions)
+        
         context['is_popup'] = True
         context['filter'] = f
         context['tip'] = ['Hover over truncated information to view all.', 'Images and formatting are not shown here. They will appear when you select a question.']
@@ -160,6 +166,9 @@ def edit_test_questions(request, id):
     test = get_object_or_404(Test, id=id)
     test.reindex_question_order()
     questions = test.question_set.all()
+    
+    # Ugly way to see which test is on, currently only used for filtering benchmarks
+    request.session['omr_test_id'] = str(id)
     
     # for media
     question_form = TestQuestionForm(prefix="not_real")
@@ -289,7 +298,6 @@ def ajax_question_form(request, test_id, question_id):
 @permission_required('omr.teacher_test')
 def ajax_finalize_test(request, test_id):
     try:
-        
         # Send shit to QueXF
         generate_xml(test_id)        
         
@@ -309,6 +317,12 @@ def test_result(request, test_id):
 def download_test_results(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     return report.download_results(test)
+    
+@user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
+def download_student_results(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
+    return report.download_student_results(test, format)
     
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
 def download_answer_sheets(request, test_id):

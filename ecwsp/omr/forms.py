@@ -13,7 +13,7 @@ from ecwsp.sis.models import Student
 class TestForm(forms.ModelForm):
     class Meta:
         model = Test
-        fields = ('name', 'school_year', 'teachers', 'marking_period', 'courses')
+        fields = ('name', 'school_year', 'teachers', 'department', 'marking_period', 'courses')
     teachers = AutoCompleteSelectMultipleField('faculty', required=True)
     students = forms.ModelMultipleChoiceField(queryset=Student.objects.filter(inactive=False), widget=FilteredSelectMultiple("Students",False,attrs={'rows':'10'}), required=False)
     

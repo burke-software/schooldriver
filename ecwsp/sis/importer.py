@@ -368,11 +368,11 @@ class Importer:
             inserted, updated = self.import_college_enrollment(sheet)
             msg += "%s college enrollments inserted, %s college enrollments updated. <br/>" % (inserted, updated)
         except: pass
-        try:
-            sheet = self.book.sheet_by_name("benchmarks")
-            inserted, updated = self.import_benchmarks(sheet)
-            msg += "%s benchmarks inserted, %s benchmarks updated <br/>" % (inserted, updated)
-        except: pass
+        #try:
+        sheet = self.book.sheet_by_name("benchmarks")
+        inserted, updated = self.import_benchmarks(sheet)
+        msg += "%s benchmarks inserted, %s benchmarks updated <br/>" % (inserted, updated)
+        #except: pass
         
         
         if msg == "":
@@ -428,13 +428,14 @@ class Importer:
         """Import Standardized tests. Does not allow updates.
         test: if the test named is already known. """
         from ecwsp.omr.models import Benchmark, MeasurementTopic
+        from ecwsp.omr.models import Department as omrDepartment
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             try:
                 row = sheet.row(x)
                 items = zip(header, row)
                 created = False
-                topic = b_name = number = year = measurement_topic_description = None
+                topic = b_name = number = year = measurement_topic_description = measurement_topic_department = None
                 for (name, value) in items:
                     is_ok, name, value = self.sanitize_item(name, value)
                     if is_ok:
@@ -445,11 +446,16 @@ class Importer:
                         elif name == "year":
                             year = value
                         elif name in ["measurement_topics", "measurement topic", "measurement topics"]:
-                            topic = Measurement.objects.get_or_create(name=value)[0]
+                            topic = MeasurementTopic.objects.get_or_create(name=value)[0]
                         elif name in ["measurement_topics description", "measurement topic description", "measurement topics description"]:
                             measurement_topic_description = value
+                        elif name in ["measurement_topics department", "measurement topic department", "measurement topics department"]:
+                            measurement_topic_department = value
                 if measurement_topic_description and topic:
                     topic.description = measurement_topic_description
+                    topic.save()
+                if measurement_topic_department and topic:
+                    topic.department = omrDepartment.objects.get_or_create(name=measurement_topic_department)[0]
                     topic.save()
                 if number and Benchmark.objects.filter(number=number).count():
                     model = Benchmark.objects.filter(number=number)[0]
@@ -457,7 +463,10 @@ class Importer:
                     model = Benchmark(number=number)
                     created = True
                 model.name = b_name
-                model.year = year
+                try:
+                    model.year = GradeLevel.objects.get(name=year)
+                except:
+                    model.year = GradeLevel.objects.get(id=year)
                 model.full_clean()
                 model.save()
                 model.measurement_topics.add(topic)

@@ -63,7 +63,10 @@ def pod_save(filename, ext, data, template, get_tmp_file=False):
         content = "application/rtf"
     else: # odt, prefered
         content = "application/vnd.oasis.opendocument.text"
-
+        
+    if get_tmp_file:
+        return file_name
+    
     wrapper = FileWrapper(file(file_name)) # notice not using the tmp file! Not ideal.
     response = HttpResponse(wrapper, content_type=content)
     response['Content-Length'] = os.path.getsize(file_name)

@@ -34,6 +34,8 @@ class AnswerInstanceInline(admin.TabularInline):
     extra = 0
 
 admin.site.register(MeasurementTopic)
+admin.site.register(Department)
+admin.site.register(NetworkQuestionBank)
 
 class BenchmarkAdmin(ReadPermissionModelAdmin):
     list_display = ['number', 'name']

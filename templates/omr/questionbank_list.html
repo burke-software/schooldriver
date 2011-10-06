@@ -44,7 +44,7 @@
 {% endblock %}
 
 {% block content %}
-  <h2>Question Bank</h2>
+  <h2>Question Bank {% if test %} for {{ test.department }} {% endif %}</h2>
   {% autopaginate filter.qs 50 as filter_list %}
   <div class="module changelist-filters">
     <!-- PAGINATION TOP -->

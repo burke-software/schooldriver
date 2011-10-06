@@ -14,6 +14,10 @@ def copy_model_instance(obj):
                     if not isinstance(f, AutoField) and\
                        not f in obj._meta.parents.values()])
     return obj.__class__(**initial)
+    
+class Struct(object):
+    def __unicode__(self):
+        return ""
 
 class CharNullField(models.CharField):
     description = "CharField that stores NULL but returns ''"
