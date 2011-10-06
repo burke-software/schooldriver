@@ -37,6 +37,9 @@ begin
     );
     INSERT INTO crny.omr_answerinstance(test_instance_id,question_id,answer_id, points_earned, points_possible)
     values (@test_instance_id, @question_id, @answer_id, @points_earned, @points_possible);
+    
+    UPDATE crny.omr_testinstance SET crny.omr_testinstance.results_recieved= True
+    WHERE crny.omr_testinstance.id = @test_instance_id;
 end;
 end if;
 //
