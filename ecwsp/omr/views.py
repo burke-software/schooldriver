@@ -293,6 +293,7 @@ def ajax_question_form(request, test_id, question_id):
         'question': question,
         'question_form': question_form,
         'answers_formset': question_answer_form,
+        'new': False,
     }, RequestContext(request, {}),)
 
 @permission_required('omr.teacher_test')
