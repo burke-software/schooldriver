@@ -3,7 +3,12 @@ from ecwsp.omr.models import *
 
 class BenchmarkLookup(object):
     def get_query(self,q,request):
-        result = Benchmark.objects.filter(Q(name__contains=q) | Q(number__contains=q))
+        result = Benchmark.objects.all()
+        if request.session['omr_test_id']:
+            test = Test.objects.get(id=request.session['omr_test_id'])
+            if test.department:
+                result = result.filter(measurement_topics__department=test.department)
+        result = result.filter(Q(name__icontains=q) | Q(number__icontains=q))
         return result
 
     def format_result(self, object):

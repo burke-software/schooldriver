@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
 
 from ecwsp.sis.models import *
@@ -9,6 +10,9 @@ from datetime import date
 class StudentLookup(object):
     def get_query(self,q,request):
         """ return a query set.  you also have access to request.user if needed """
+        if not request.user.has_perm('sis.view_student'):
+            return Student.objects.none()  # Rather than 500 error, just return nothing.
+        
         words = q.split()
         # if there is a space
         if (len(words) == 2):

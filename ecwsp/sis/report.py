@@ -63,7 +63,10 @@ def pod_save(filename, ext, data, template, get_tmp_file=False):
         content = "application/rtf"
     else: # odt, prefered
         content = "application/vnd.oasis.opendocument.text"
-
+        
+    if get_tmp_file:
+        return file_name
+    
     wrapper = FileWrapper(file(file_name)) # notice not using the tmp file! Not ideal.
     response = HttpResponse(wrapper, content_type=content)
     response['Content-Length'] = os.path.getsize(file_name)
@@ -299,7 +302,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                     i += 1
                 while i <= 6:
                     setattr(year, "mp" + str(i), "")
-                    i += 1  
+                    i += 1
                 year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year, marking_period__show_reports=True).distinct().order_by('department')
                 year_grades = student.grade_set.filter(final=True, marking_period__show_reports=True, marking_period__end_date__lte=for_date)
                 # course grades
