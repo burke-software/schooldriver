@@ -28,11 +28,14 @@ class MeasurementTopic(models.Model):
 class Benchmark(models.Model):
     measurement_topics = models.ManyToManyField(MeasurementTopic)
     number = models.CharField(max_length=10, blank=True, null=True)
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=512)
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     
     def __unicode__(self):
         return '%s %s' % (self.number, self.name)
+        
+    class Meta:
+        unique_together = ('number','name')
         
         
 class Theme(models.Model):
