@@ -464,12 +464,12 @@ class Importer:
                 if measurement_topic_department and topic:
                     topic.department = measurement_topic_department
                     topic.save()
-                if number and Benchmark.objects.filter(number=number).count():
-                    model = Benchmark.objects.filter(number=number)[0]
-                else:
-                    model = Benchmark(number=number)
-                    created = True
-                model.name = b_name
+                model, created = Benchmark.objects.get_or_create(number=number, name=b_name)
+                #if number and Benchmark.objects.filter(number=number).count():
+                #    model = Benchmark.objects.filter(number=number)[0]
+                #else:
+                #    model = Benchmark(number=number)
+                #    created = True
                 if year:
                     try:
                         model.year = GradeLevel.objects.get(name=year)
