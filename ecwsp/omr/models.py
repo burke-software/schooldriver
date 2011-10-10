@@ -19,16 +19,18 @@ class Department(models.Model):
         return self.name
     
 class MeasurementTopic(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=700)
     description = models.TextField(blank=True)
     department = models.ForeignKey(Department, blank=True, null=True)
     def __unicode__(self):
         return self.name
+    class Meta:
+        unique_together = ('name', 'department')
     
 class Benchmark(models.Model):
     measurement_topics = models.ManyToManyField(MeasurementTopic)
     number = models.CharField(max_length=10, blank=True, null=True)
-    name = models.CharField(max_length=512)
+    name = models.CharField(max_length=700)
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     
     def __unicode__(self):
