@@ -446,11 +446,16 @@ class Importer:
                         elif name == "year":
                             year = value
                         elif name in ["measurement_topics", "measurement topic", "measurement topics"]:
-                            topic = MeasurementTopic.objects.get_or_create(name=value)[0]
+                            topic = value
                         elif name in ["measurement_topics description", "measurement topic description", "measurement topics description"]:
                             measurement_topic_description = value
                         elif name in ["measurement_topics department", "measurement topic department", "measurement topics department"]:
                             measurement_topic_department = value
+                if measurement_topic:
+                    # Secondary key for measurement topic is department + name.
+                    if measurement_topic_department == "":
+                        measurement_topic_department = None
+                    topic = MeasurementTopic.objects.get_or_create(name=topic, department=measurement_topic_department)[0]
                 if measurement_topic_description and topic:
                     topic.description = measurement_topic_description
                     topic.save()

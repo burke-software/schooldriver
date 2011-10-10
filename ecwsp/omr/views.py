@@ -343,5 +343,11 @@ def queXF_answer_sheets(request,test_id):
     return response
 
 
-
-
+@permission_required('omr.teacher_test')
+def manual_edit(request, test_id):
+    #make an http request to the php script to get the image
+    test = get_object_or_404(TestInstance, id=test_id)
+    
+    return render_to_response('omr/manually_edit.html', {
+        'test': test
+    }, RequestContext(request, {}),)

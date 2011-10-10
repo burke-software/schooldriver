@@ -19,16 +19,18 @@ class Department(models.Model):
         return self.name
     
 class MeasurementTopic(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=700)
     description = models.TextField(blank=True)
     department = models.ForeignKey(Department, blank=True, null=True)
     def __unicode__(self):
         return self.name
+    class Meta:
+        unique_together = ('name', 'department')
     
 class Benchmark(models.Model):
     measurement_topics = models.ManyToManyField(MeasurementTopic)
     number = models.CharField(max_length=10, blank=True, null=True)
-    name = models.CharField(max_length=512)
+    name = models.CharField(max_length=700)
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     
     def __unicode__(self):
@@ -104,7 +106,7 @@ class Test(models.Model):
         try:
             total_points = self.question_set.aggregate(total_points=Sum('answerinstance__points_earned'))['total_points']
             return float(total_points) / (float(self.points_possible) * float(self.students_test_results))
-        except ZeroDivisionError:
+        except:
             return "N/A"
     
     def reindex_question_order(self):
@@ -353,3 +355,5 @@ class AnswerInstance(models.Model):
     points_possible = models.IntegerField()
     def __unicode__(self):
         return '%s %s' % (self.test_instance, self.answer)
+    class Meta:
+        unique_together = ('test_instance', 'question')
