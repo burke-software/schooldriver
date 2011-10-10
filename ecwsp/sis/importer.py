@@ -368,11 +368,11 @@ class Importer:
             inserted, updated = self.import_college_enrollment(sheet)
             msg += "%s college enrollments inserted, %s college enrollments updated. <br/>" % (inserted, updated)
         except: pass
-        #try:
-        sheet = self.book.sheet_by_name("benchmarks")
-        inserted, updated = self.import_benchmarks(sheet)
-        msg += "%s benchmarks inserted, %s benchmarks updated <br/>" % (inserted, updated)
-        #except: pass
+        try:
+            sheet = self.book.sheet_by_name("benchmarks")
+            inserted, updated = self.import_benchmarks(sheet)
+            msg += "%s benchmarks inserted, %s benchmarks updated <br/>" % (inserted, updated)
+        except: pass
         
         
         if msg == "":
@@ -463,10 +463,11 @@ class Importer:
                     model = Benchmark(number=number)
                     created = True
                 model.name = b_name
-                try:
-                    model.year = GradeLevel.objects.get(name=year)
-                except:
-                    model.year = GradeLevel.objects.get(id=year)
+                if year:
+                    try:
+                        model.year = GradeLevel.objects.get(name=year)
+                    except:
+                        model.year = GradeLevel.objects.get(id=year)
                 model.full_clean()
                 model.save()
                 model.measurement_topics.add(topic)
@@ -474,7 +475,7 @@ class Importer:
                 if created:
                     inserted += 1
                 else:
-                    update += 1
+                    updated += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
