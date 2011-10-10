@@ -38,7 +38,7 @@ class ApplicantAdmin(admin.ModelAdmin):
     inlines = [ContactLogInline]
     ordering = ('-id',)
     fieldsets = [
-        (None, {'fields': ['lname', ('fname', 'mname'), 'present_school', 'heard_about_us', 'first_contact',
+        (None, {'fields': ['lname', 'fname', 'mname', 'present_school', 'heard_about_us', 'first_contact',
                            'ready_for_export', 'application_decision', 'application_decision_by', 'withdrawn', 'withdrawn_note']}),
         ('About applicant', {'fields': [('single_parent', 'qualify_for_reduced_lunch'), ('ssn', 'sex'), ('ethnicity', 'religion'), ('email', 'bday'), ('year', 'school_year'), ('hs_grad_yr',
                                       'elem_grad_yr'), 'notes', 'siblings', 
