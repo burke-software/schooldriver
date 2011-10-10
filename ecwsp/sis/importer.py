@@ -451,7 +451,7 @@ class Importer:
                             measurement_topic_description = value
                         elif name in ["measurement_topics department", "measurement topic department", "measurement topics department"]:
                             measurement_topic_department = value
-                if measurement_topic:
+                if topic:
                     # Secondary key for measurement topic is department + name.
                     if measurement_topic_department == "":
                         measurement_topic_department = None
