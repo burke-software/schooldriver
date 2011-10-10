@@ -353,3 +353,5 @@ class AnswerInstance(models.Model):
     points_possible = models.IntegerField()
     def __unicode__(self):
         return '%s %s' % (self.test_instance, self.answer)
+    class Meta:
+        unique_together = ('test_instance', 'question')
