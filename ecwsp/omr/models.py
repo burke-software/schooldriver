@@ -106,7 +106,7 @@ class Test(models.Model):
         try:
             total_points = self.question_set.aggregate(total_points=Sum('answerinstance__points_earned'))['total_points']
             return float(total_points) / (float(self.points_possible) * float(self.students_test_results))
-        except ZeroDivisionError:
+        except:
             return "N/A"
     
     def reindex_question_order(self):
@@ -355,3 +355,5 @@ class AnswerInstance(models.Model):
     points_possible = models.IntegerField()
     def __unicode__(self):
         return '%s %s' % (self.test_instance, self.answer)
+    class Meta:
+        unique_together = ('test_instance', 'question')

@@ -26,4 +26,5 @@ urlpatterns = patterns('',
     (r'^question_bank/$', QuestionBankListView.as_view(
         model=QuestionBank,
     )),
+    (r'^manual_edit/(?P<test_id>\d+)/$', manual_edit),
 )
