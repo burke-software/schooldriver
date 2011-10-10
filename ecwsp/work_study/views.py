@@ -945,10 +945,10 @@ def report_builder_view(request):
                     data = []
                     for worker in workers:
                         try:
-                            number = StudentNumber.objects.filter(student=worker).filter(type='Cell')
+                            number = (StudentNumber.objects.filter(student=worker)).filter(type='C')[0]
                         except:
                             try:
-                                number = (StudentNumber.object.filter(student=worker))[0]
+                                number = (StudentNumber.objects.filter(student=worker))[0]
                             except:
                                 number = "none"
                         try:
