@@ -23,10 +23,6 @@ admin.site.register(FirstContactOption)
 admin.site.register(ApplicationDecisionOption)
 admin.site.register(WithdrawnChoices)
 admin.site.register(BoroughOption)
-    
-#class ParentPhoneInline(admin.TabularInline):
-#    model = ParentPhone
-#    extra = 0
 
 class ContactLogInline(admin.TabularInline):
     model = ContactLog
@@ -40,11 +36,12 @@ class ApplicantAdmin(admin.ModelAdmin):
     list_filter = ['school_year', 'level', 'checklist', 'ready_for_export', 'application_decision']
     search_fields = ['lname', 'fname', 'present_school__name']
     inlines = [ContactLogInline]
+    ordering = ('-id',)
     fieldsets = [
-        (None, {'fields': ['fname', 'lname', 'mname', 'present_school', 'heard_about_us', 'first_contact',
+        (None, {'fields': ['lname', 'fname', 'mname', 'present_school', 'heard_about_us', 'first_contact',
                            'ready_for_export', 'application_decision', 'application_decision_by', 'withdrawn', 'withdrawn_note']}),
-        ('About student', {'fields': [('single_parent', 'qualify_for_reduced_lunch'), ('ssn', 'sex'), ('email', 'bday'), ('year', 'school_year'), ('hs_grad_yr',
-                                      'elem_grad_yr'), ('ethnicity', 'religion'), 'notes', 'siblings', 
+        ('About applicant', {'fields': [('single_parent', 'qualify_for_reduced_lunch'), ('ssn', 'sex'), ('ethnicity', 'religion'), ('email', 'bday'), ('year', 'school_year'), ('hs_grad_yr',
+                                      'elem_grad_yr'), 'notes', 'siblings', 
                                       'borough', 'parent_guardians', 'open_house_attended'],
             'classes': ['collapse']}),
     ]

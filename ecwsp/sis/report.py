@@ -48,8 +48,9 @@ def get_school_day_number(date):
 
 
 def pod_save(filename, ext, data, template, get_tmp_file=False):
-    tmp = tempfile.NamedTemporaryFile()
-    renderer = Renderer(template, data, tmp.name + ext)
+    import time
+    file_name = tempfile.gettempdir() + '/appy' + str(time.time()) + ext
+    renderer = Renderer(template, data, file_name)
     renderer.run()
     
     if ext == ".doc":
@@ -62,15 +63,15 @@ def pod_save(filename, ext, data, template, get_tmp_file=False):
         content = "application/rtf"
     else: # odt, prefered
         content = "application/vnd.oasis.opendocument.text"
-    
+        
     if get_tmp_file:
-        return tmp.name + ext
-    else:
-        wrapper = FileWrapper(file(tmp.name + ext)) # notice not using the tmp file! Not ideal.
-        response = HttpResponse(wrapper, content_type=content)
-        response['Content-Length'] = os.path.getsize(tmp.name + ext)
-        response['Content-Disposition'] = 'attachment; filename=' + filename + ext
-    try: os.remove(tmp.name + ext)
+        return file_name
+    
+    wrapper = FileWrapper(file(file_name)) # notice not using the tmp file! Not ideal.
+    response = HttpResponse(wrapper, content_type=content)
+    response['Content-Length'] = os.path.getsize(file_name)
+    response['Content-Disposition'] = 'attachment; filename=' + filename + ext
+    try: os.remove(file_name)
     except: pass # this sucks. But Ubuntu can't run ooo as www-data
     
     return response
@@ -227,6 +228,13 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     students.years.dismissed - Dismissed for year
     studnets.years.credits  - Total credits for year
     """
+    
+    # to do: stop being so lazy. eventually people will need to access both pod_report_grade and pod_benchmark_report_grade.
+    if ("ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
+        str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"):
+        from ecwsp.benchmark_grade.report import pod_benchmark_report_grade
+        return pod_benchmark_report_grade(template, options, students, format, transcript, report_card)
+    
     data = get_default_data()
     
     blank_grade = struct()
@@ -301,7 +309,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                     i += 1
                 while i <= 6:
                     setattr(year, "mp" + str(i), "")
-                    i += 1  
+                    i += 1
                 year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year, marking_period__show_reports=True).distinct().order_by('department')
                 year_grades = student.grade_set.filter(final=True, marking_period__show_reports=True, marking_period__end_date__lte=for_date)
                 # course grades
