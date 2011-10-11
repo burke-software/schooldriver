@@ -8,24 +8,36 @@ from django.dispatch import dispatcher
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from ckeditor.fields import RichTextField
+from django.conf import settings
 from django.contrib.localflavor.us.models import *
 
 from ecwsp.sis.models import SchoolYear, Student
 
-class MeasurementTopic(models.Model):
+class Department(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    description = models.TextField(blank=True)
     def __unicode__(self):
         return self.name
+    
+class MeasurementTopic(models.Model):
+    name = models.CharField(max_length=700)
+    description = models.TextField(blank=True)
+    department = models.ForeignKey(Department, blank=True, null=True)
+    def __unicode__(self):
+        return self.name
+    class Meta:
+        unique_together = ('name', 'department')
     
 class Benchmark(models.Model):
     measurement_topics = models.ManyToManyField(MeasurementTopic)
     number = models.CharField(max_length=10, blank=True, null=True)
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=700)
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     
     def __unicode__(self):
         return '%s %s' % (self.number, self.name)
+        
+    class Meta:
+        unique_together = ('number','name')
         
         
 class Theme(models.Model):
@@ -46,6 +58,7 @@ class Test(models.Model):
     teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True)
     school_year = models.ForeignKey('sis.SchoolYear', default=get_active_year, blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
+    department = models.ForeignKey(Department, blank=True, null=True)
     courses = models.ManyToManyField('schedule.Course', blank=True, null=True, help_text="Enroll an entire course, students will not show until saving.")
     students = models.ManyToManyField('sis.Student', blank=True, null=True, through='TestInstance')
     finalized = models.BooleanField(help_text="This test is finished and should no longer be edited!")
@@ -93,7 +106,7 @@ class Test(models.Model):
         try:
             total_points = self.question_set.aggregate(total_points=Sum('answerinstance__points_earned'))['total_points']
             return float(total_points) / (float(self.points_possible) * float(self.students_test_results))
-        except ZeroDivisionError:
+        except:
             return "N/A"
     
     def reindex_question_order(self):
@@ -166,7 +179,37 @@ class QuestionAbstract(models.Model):
 
 
 class QuestionBank(QuestionAbstract):
-    pass
+    network_question = models.ForeignKey('NetworkQuestionBank', editable=False, unique=True, blank=True, null=True)
+
+
+class NetworkQuestionBank(QuestionAbstract):
+    """ Stores questions for multiple SWORD instances """
+    school = models.TextField(max_length=1000, blank=True, help_text="School that submitted this question")
+    group = None
+    themes = None
+    
+    def copy_local(self):
+        """ Copy to the school wide question bank, if exists, update """
+        if QuestionBank.objects.filter(network_question=self).count():
+            local = QuestionBank.objects.get(network_question=self)
+        else:
+            local = QuestionBank(network_question=self)
+        local.question = self.question
+        local.group = self.group
+        local.type = self.type
+        local.point_value = self.point_value
+        local.save()
+        local.benchmarks = self.benchmarks.all()
+        local.save()
+        local.answerbank_set.clear()
+        for answer in self.answer_set.all():
+            local_answer = AnswerBank.get_or_create(
+                question = local,
+                answer = answer.answer,
+                error_type = answer.error_type,
+                point_value = answer.point_value,
+            )[0]
+            local.answerbank_set.add(local_answer)
     
     
 class Question(QuestionAbstract):
@@ -312,3 +355,5 @@ class AnswerInstance(models.Model):
     points_possible = models.IntegerField()
     def __unicode__(self):
         return '%s %s' % (self.test_instance, self.answer)
+    class Meta:
+        unique_together = ('test_instance', 'question')

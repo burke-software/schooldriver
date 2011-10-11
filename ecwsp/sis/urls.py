@@ -27,6 +27,4 @@ urlpatterns = patterns('',
     (r'^preferences/$', user_preferences),
     (r'^view_student/$', view_student),
     (r'^view_student/(?P<id>\d+)/$', view_student),
-    (r'^export_to_xls/$', admin_export_xls),
-    (r'^export_to_xls_related/$', get_fields_for_model),
 )

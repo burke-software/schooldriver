@@ -62,9 +62,9 @@ class struct(object): pass
 def fte_by_ind(request):
     fileName = "report_fteByInd.xls"
     cursor = connection.cursor()
-    fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
-    cursor.execute("select industry_type, count(*)/" + str(fte) + " from work_study_student left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_student.placement_id group by industry_type;")
+    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
+    cursor.execute("select industry_type, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id group by industry_type;")
     names = cursor.fetchall()
     titles = (["Industry", "FTE"])
     report = xlsReport(names, titles, fileName, heading="FTE by Industry Type")
@@ -74,9 +74,9 @@ def fte_by_ind(request):
 def fte_by_day(request):
     fileName = "report_fteByDay.xls"
     cursor = connection.cursor()
-    fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
-    cursor.execute("select day, count(*)/" + str(fte) + " from work_study_student left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_student.placement_id group by day;")
+    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
+    cursor.execute("select day, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id group by day;")
     names = cursor.fetchall()
     titles = (["Day", "FTE"])
     report = xlsReport(names, titles, fileName, heading="FTE by Day of Week")
@@ -117,7 +117,12 @@ def student_company_day_report(industry_type=False, paying=False):
 #    return render_to_response('work_study/attendance.html', {'pickup': pickups, 'days': tuple(x[0] for x in days)})
     
 # Generate attendance by day    
-def gen_attendance_report_day(day):
+def gen_attendance_report_day(day, is_pickup=False):
+    """
+    Generates a spreadsheet for a student worker based on their pickup or dropoff location.
+    day: day of week
+    is_pickup: Is this a pickup? If false it's a dropoff
+    """
     wb = pycel.Workbook()
     
     # convert to stupid way to storing days.
@@ -168,7 +173,11 @@ def gen_attendance_report_day(day):
         myFontStyle.borders.bottom = 0x01
         
         y=2
-        for stu in StudentWorker.objects.filter(day=day[1], placement__pickup_location__location=pickup).filter(inactive=False):
+        if is_pickup == True:
+            students = StudentWorker.objects.filter(day=day[1], placement__pickup_location__location=pickup).filter(inactive=False)
+        else:
+            students = StudentWorker.objects.filter(day=day[1], placement__dropoff_location__location=pickup).filter(inactive=False)
+        for stu in students:
             if stu.fax:
                 ws.write(y,0,"txt", myFontStyle)                            #Small font fax.
             else:
@@ -194,16 +203,16 @@ def gen_attendance_report_day(day):
 def fte_by_pay(request):
     fileName = "report_fteByPay.xls"
     xls = customXls(fileName) 
-    student_fte = int(Configuration.objects.get_or_create(name="Students per FTE")[0].value)
+    student_fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     
     cursor = connection.cursor()
-    cursor.execute("select paying, count(*)/" + str(student_fte) + " from work_study_student left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_student.placement_id group by paying;")
+    cursor.execute("select paying, count(*)/" + str(student_fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id group by paying;")
     totals = cursor.fetchall()
     
     cursor = connection.cursor()
-    cursor.execute("select team_name, paying, count(*)/" + str(student_fte) + ", funded_by as fte from work_study_student left join work_study_workteam on "+\
-        "work_study_workteam.id = work_study_student.placement_id group by team_name order by paying, team_name;")
+    cursor.execute("select team_name, paying, count(*)/" + str(student_fte) + ", funded_by as fte from work_study_studentworker left join work_study_workteam on "+\
+        "work_study_workteam.id = work_study_studentworker.placement_id group by team_name order by paying, team_name;")
     company = cursor.fetchall()
 
     titles = (["Paying?","FTE"])
@@ -664,6 +673,17 @@ def report_builder_view(request):
             return gen_attendance_report_day('TH')
         elif 'attnFriday' in request.POST:
             return gen_attendance_report_day('F')
+            
+        elif 'attnPMonday' in request.POST:
+            return gen_attendance_report_day('M', is_pickup=True)
+        elif 'attnPTuesday' in request.POST:
+            return gen_attendance_report_day('T', is_pickup=True)
+        elif 'attnPWednesday' in request.POST:
+            return gen_attendance_report_day('W', is_pickup=True)
+        elif 'attnPThursday' in request.POST:
+            return gen_attendance_report_day('TH', is_pickup=True)
+        elif 'attnPFriday' in request.POST:
+            return gen_attendance_report_day('F', is_pickup=True)
         
         elif 'pod_report' in request.POST:
             template_form = ReportTemplateForm(request.POST, request.FILES)
@@ -925,10 +945,10 @@ def report_builder_view(request):
                     data = []
                     for worker in workers:
                         try:
-                            number = StudentNumber.objects.filter(student=worker).filter(type='Cell')
+                            number = (StudentNumber.objects.filter(student=worker)).filter(type='C')[0]
                         except:
                             try:
-                                number = (StudentNumber.object.filter(student=worker))[0]
+                                number = (StudentNumber.objects.filter(student=worker))[0]
                             except:
                                 number = "none"
                         try:

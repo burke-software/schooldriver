@@ -86,7 +86,7 @@ class xlsReport:
     
     def finish(self, type="xls"):
         response = HttpResponse(mimetype="application/ms-excel")
-        response['Content-Disposition'] = 'attachment; filename=%s' % self.fileName
+        response['Content-Disposition'] = 'attachment; filename="%s"' % self.fileName
         self.wb.save(response)
         return response
     

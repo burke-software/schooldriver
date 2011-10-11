@@ -8,6 +8,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^admin/', include("massadmin.urls")),
+    (r'^admin_export/', include("admin_export.urls")),
     (r'^ckeditor/', include('ckeditor.urls')),
     (r'^grappelli/', include('grappelli.urls')),
     (r'^$', 'ecwsp.sis.views.index'),

@@ -14,6 +14,10 @@ def copy_model_instance(obj):
                     if not isinstance(f, AutoField) and\
                        not f in obj._meta.parents.values()])
     return obj.__class__(**initial)
+    
+class Struct(object):
+    def __unicode__(self):
+        return ""
 
 class CharNullField(models.CharField):
     description = "CharField that stores NULL but returns ''"
@@ -24,11 +28,11 @@ class CharNullField(models.CharField):
               return ""  #convert it into the Django-friendly '' string
        else:
               return value #otherwise, return just the value
-    def get_db_prep_value(self, value, connection, prepared=False):  #catches value right before sending to db
+    def get_db_prep_value(self, value, *args, **kwargs):  #catches value right before sending to db
        if value=="":     #if Django tries to save '' string, send the db None (NULL)
             return None
        else:
-            return super(CharNullField, self).get_db_prep_value(value, connection, prepared)
+            return super(CharNullField, self).get_db_prep_value(value, *args, **kwargs)
     
 class ReadPermissionModelAdmin(admin.ModelAdmin):
     """ based on http://gremu.net/blog/2010/django-admin-read-only-permission/
