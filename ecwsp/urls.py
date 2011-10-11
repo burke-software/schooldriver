@@ -42,6 +42,8 @@ if 'ecwsp.omr' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^omr/', include('ecwsp.omr.urls')), )
 if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^volunteer_track/', include('ecwsp.volunteer_track.urls')), )
+if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^benchmark_grade/', include('ecwsp.benchmark_grade.urls')), )
 
 if settings.DEBUG:
     urlpatterns += patterns('',

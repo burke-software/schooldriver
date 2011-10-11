@@ -279,6 +279,12 @@ def student_gradesheet(request, id, year_id=None):
 
 @user_passes_test(lambda u: u.groups.filter(Q(name='teacher') | Q(name="registrar")).count() > 0 or u.is_superuser, login_url='/')
 def teacher_grade_upload(request, id):
+    # to do: stop being so lazy. eventually people will need to access both teacher_grade_upload and benchmark_grade_upload.
+    if ("ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
+        str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"):
+        from ecwsp.benchmark_grade.views import benchmark_grade_upload
+        return benchmark_grade_upload(request, id)
+
     """ This view is for inputing grades. It usually is done by uploading a spreadsheet.
     However it can also be done by manually overriding grades. This requires
     registrar level access. """
