@@ -23,7 +23,7 @@ class MeasurementTopic(models.Model):
     description = models.TextField(blank=True)
     department = models.ForeignKey(Department, blank=True, null=True)
     def __unicode__(self):
-        return self.name
+        return unicode(self.name) + " " + unicode(self.department)
     class Meta:
         unique_together = ('name', 'department')
         ordering  = ('name',)
