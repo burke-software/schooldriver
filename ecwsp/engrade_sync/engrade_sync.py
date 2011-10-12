@@ -33,7 +33,7 @@ class EngradeSync:
         new_teachers = []
         for teacher in teachers:
             new_teachers.append([teacher.fname + " " + teacher.lname, teacher.email])
-        en_teachers = self.api.school_teacher_new(teachers)
+        en_teachers = self.api.school_teacher_new(new_teachers)
         i = 0
         for teacher in teachers:
             TeacherSync.objects.create(

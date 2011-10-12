@@ -26,6 +26,7 @@ class MeasurementTopic(models.Model):
         return self.name
     class Meta:
         unique_together = ('name', 'department')
+        ordering  = ('name',)
     
 class Benchmark(models.Model):
     measurement_topics = models.ManyToManyField(MeasurementTopic)
@@ -38,6 +39,7 @@ class Benchmark(models.Model):
         
     class Meta:
         unique_together = ('number','name')
+        ordering = ('number', 'name',)
         
         
 class Theme(models.Model):

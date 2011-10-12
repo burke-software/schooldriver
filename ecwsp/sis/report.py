@@ -350,7 +350,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             student.departments_text = ""
             for dept in student.departments:
                 c = 0
-                for course in student.course_set.filter(department=dept, marking_period__school_year__end_date__lt=for_date).distinct():
+                for course in student.course_set.filter(department=dept, marking_period__school_year__end_date__lt=for_date, graded=True).distinct():
                     if course.is_passing(student):
                         c += course.credits
                 dept.credits = c

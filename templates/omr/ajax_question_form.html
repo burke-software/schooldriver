@@ -53,9 +53,9 @@
         {% if not new %}
             <button onclick="delete_question({{ question.id }}); return false;" class="delete-link">Delete</button>
         {% endif %}
-        <button onclick="cancel_edit({% if new %}'{{ new }}'{% else %}{{ question.id }}{% endif %}); return false;">Cancel, discard changes</button>
+        
         <span style="float: right;">
-            <button id="save_{{ question_form.prefix }}" onclick="return false;">Save!!!!</button>
+            <button id="save_{{ question_form.prefix }}" onclick="return false;">Save</button>
             <script>
                 $('#save_{{ question_form.prefix }}').click(function() {
                   {% if new %}
@@ -65,7 +65,7 @@
                   {% endif %}
                 });
             </script>
-        </span>
+        </span><button onclick="cancel_edit({% if new %}'{{ new }}'{% else %}{{ question.id }}{% endif %}); return false;">Cancel, discard changes</button>
     </div>
     
     <script>
