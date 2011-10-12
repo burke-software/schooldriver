@@ -228,6 +228,13 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     students.years.dismissed - Dismissed for year
     studnets.years.credits  - Total credits for year
     """
+    
+    # to do: stop being so lazy. eventually people will need to access both pod_report_grade and pod_benchmark_report_grade.
+    if ("ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
+        str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"):
+        from ecwsp.benchmark_grade.report import pod_benchmark_report_grade
+        return pod_benchmark_report_grade(template, options, students, format, transcript, report_card)
+    
     data = get_default_data()
     
     blank_grade = struct()
@@ -350,7 +357,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             student.departments_text = ""
             for dept in student.departments:
                 c = 0
-                for course in student.course_set.filter(department=dept, marking_period__school_year__end_date__lt=for_date).distinct():
+                for course in student.course_set.filter(department=dept, marking_period__school_year__end_date__lt=for_date, graded=True).distinct():
                     if course.is_passing(student):
                         c += course.credits
                 dept.credits = c

@@ -482,6 +482,7 @@ class Importer:
                 if created:
                     inserted += 1
                 else:
+                    print model.id
                     updated += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)

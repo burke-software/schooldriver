@@ -34,6 +34,7 @@ class AnswerInstanceInline(admin.TabularInline):
     extra = 0
 
 class MeasurementTopicAdmin(admin.ModelAdmin):
+    list_display = ['name', 'department']
     list_filter = ['department']
     search_fields = ['department__name', 'name']
 admin.site.register(MeasurementTopic,MeasurementTopicAdmin)
