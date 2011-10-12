@@ -40,7 +40,7 @@ class Benchmark(models.Model):
     def display_measurement_topics(self):
         txt = ""
         for topic in self.measurement_topics.all():
-            txt += topic + ", "
+            txt += unicode(topic) + ", "
         if txt:
             return txt[:-2]
     
