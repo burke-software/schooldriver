@@ -43,7 +43,7 @@ admin.site.register(Department)
 admin.site.register(NetworkQuestionBank)
 
 class BenchmarkAdmin(ReadPermissionModelAdmin):
-    list_display = ['number', 'name']
+    list_display = ['number', 'name', 'display_measurement_topics']
     list_filter = ['measurement_topics','measurement_topics__department']
     search_fields = ['number', 'name','measurement_topics__name' ]
 
