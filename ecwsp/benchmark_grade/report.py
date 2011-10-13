@@ -80,18 +80,25 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
                             course.average += aggregate.manualMark
                             denominator += 1
                     setattr(course, aggName, aggregate.manualMark)
-                course.average = round(course.average / denominator, 2)
+                if denominator > 0:
+                    course.average = round(course.average / denominator, 2)
+                else:
+                    course.average = None
                 items = []
                 for item in Item.objects.filter(course=course):
                     markItem = struct()
                     markItem.name = item.name
-                    markItem.mark = item.mark_set.get(student=student).mark
+                    try:
+                        markItem.mark = item.mark_set.get(student=student).mark
+                    except:
+                        continue
                     items.append(markItem)
                 course.items = items
             student.courses = courses
-            for a in averages:
-                averages[a] /= len(courses)
-            student.averages = averages
+            if len(courses) > 0:
+                for a in averages:
+                    averages[a] /= len(courses)
+                student.averages = averages
             #Attendance for marking period
             i = 1
             student.absent_total = 0
