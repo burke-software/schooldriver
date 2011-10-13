@@ -90,7 +90,7 @@ def teacher_grade(request):
                     marking_period = form.cleaned_data['marking_period']
                     include_comments = form.cleaned_data['include_comments']
                     courses = teacher.course_set.filter(marking_period=marking_period, graded=True)
-                    sec_courses = teacher.secondary_course_set.filter(marking_period=marking_period, graded=True)
+                    sec_courses = teacher.secondary_teachers.filter(marking_period=marking_period, graded=True)
                     courses = courses | sec_courses
                     courses = courses.distinct()
                     es = EngradeSync()
