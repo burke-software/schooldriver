@@ -23,9 +23,13 @@ class MeasurementTopic(models.Model):
     description = models.TextField(blank=True)
     department = models.ForeignKey(Department, blank=True, null=True)
     def __unicode__(self):
-        return self.name
+        if self.department:
+            return unicode(self.department) + " - " + unicode(self.name)
+        else:
+            return unicode(self.name)
     class Meta:
         unique_together = ('name', 'department')
+        ordering  = ('department','name')
     
 class Benchmark(models.Model):
     measurement_topics = models.ManyToManyField(MeasurementTopic)
@@ -33,11 +37,19 @@ class Benchmark(models.Model):
     name = models.CharField(max_length=700)
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     
+    def display_measurement_topics(self):
+        txt = ""
+        for topic in self.measurement_topics.all():
+            txt += unicode(topic) + ", "
+        if txt:
+            return txt[:-2]
+    
     def __unicode__(self):
         return '%s %s' % (self.number, self.name)
         
     class Meta:
         unique_together = ('number','name')
+        ordering = ('number', 'name',)
         
         
 class Theme(models.Model):
