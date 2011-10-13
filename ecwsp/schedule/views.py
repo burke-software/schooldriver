@@ -89,10 +89,7 @@ def teacher_grade(request):
                     from ecwsp.engrade_sync.engrade_sync import EngradeSync
                     marking_period = form.cleaned_data['marking_period']
                     include_comments = form.cleaned_data['include_comments']
-                    courses = teacher.course_set.filter(marking_period=marking_period, graded=True)
-                    sec_courses = teacher.secondary_teachers.filter(marking_period=marking_period, graded=True)
-                    courses = courses | sec_courses
-                    courses = courses.distinct()
+                    courses = courses.filter(marking_period=marking_period)
                     es = EngradeSync()
                     for course in courses:
                         es.sync_course_grades(course, marking_period, include_comments)
