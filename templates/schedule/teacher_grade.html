@@ -63,13 +63,13 @@
 		<div class="modal" id="engrade_sync_form">
 			<form action="" method="post">
 				<h4>Select marking period.</h4>
-				This will create Engrade classes for the selected marking period. You will still need to
-				submit and verify grades one at a time by clicking on a class on the behind page.
+				This will sync Engrade grades for the selected marking period. You will still need to
+				verify grades one at a time by clicking on a class on the behind page.
 				{{ form.as_p }}
 				<input type="submit"/>
 			</form>
 		</div>
 		<br/>
-		<input type="button" class="modalInput" value="Sync all courses to Engrade" rel="#engrade_sync_form"/>
+		<input type="button" class="modalInput" value="Sync all grades from Engrade" rel="#engrade_sync_form"/>
 	{% endif %}
 {% endblock %}
