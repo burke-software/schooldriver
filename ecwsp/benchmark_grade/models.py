@@ -104,7 +104,7 @@ class Mark(models.Model):
     excused = models.BooleanField(default=False)
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def __unicode__(self):
-        return str(self.mark) + " - " + str(self.student) + "; " + str(self.item)
+        return unicode(self.mark) + u' - ' + unicode(self.student) + u'; ' + unicode(self.item)
     
 class Aggregate(models.Model):
     # come back interwebs,
