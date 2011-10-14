@@ -19,6 +19,8 @@ from ecwsp.engrade_sync.python_engrade import *
 from ecwsp.engrade_sync.models import *
 from ecwsp.schedule.models import *
 
+import sys
+
 class EngradeSync:
     def __init__(self):
         """ Login and get session from Engrade """
