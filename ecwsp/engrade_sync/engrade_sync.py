@@ -108,7 +108,7 @@ class EngradeSync:
                     errors += '%s\'s grade not set! ' % (student,)
                 else:
                     errors += "Student doesn't exist! "
-                print >> sys.stderr, "ENGRADE_SYNC:" + unicode(exc[0]) + unicode(exc[1])
+                print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
         if include_comments:
             students = self.api.class_comments(engrade_course.engrade_course_id)
             for engrade_student in students:
@@ -124,5 +124,5 @@ class EngradeSync:
                         errors += '%s\'s comment not set! ' % (student,)
                     else:
                         errors += "Student doesn't exist! "
-                    print >> sys.stderr, "ENGRADE_SYNC:" + unicode(exc[0]) + unicode(exc[1])
+                    print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
         return errors
