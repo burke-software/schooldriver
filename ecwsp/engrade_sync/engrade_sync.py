@@ -31,7 +31,7 @@ class EngradeSync:
         already have engrade accounts. Stores their engrade ID in teacher sync.
         returns number of new accounts """
         en_teachers = TeacherSync.objects.all()
-        teachers = Faculty.objects.filter(teacher=True).exclude(id__in=en_teachers.values('teacher'))
+        teachers = Faculty.objects.filter(teacher=True).exclude(id__in=en_teachers.values('teacher')).exclude(email="").exclude(fname="")
         new_teachers = []
         for teacher in teachers:
             new_teachers.append([teacher.fname + " " + teacher.lname, teacher.email])
