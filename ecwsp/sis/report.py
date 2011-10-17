@@ -299,7 +299,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
         
         ## for transcripts
         if transcript:
-            student.years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct().order_by('start_date')
+            student.years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).exclude(omityeargpa__student=student).distinct().order_by('start_date')
             for year in student.years:
                 year.credits = 0
                 year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year, show_reports=True).distinct().order_by("start_date")

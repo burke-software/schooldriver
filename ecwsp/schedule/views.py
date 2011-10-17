@@ -298,7 +298,9 @@ def teacher_grade_upload(request, id):
         if import_form.is_valid():
             from sis.importer import *
             importer = Importer(request.FILES['file'], request.user)
-            importer.import_grades(course, import_form.cleaned_data['marking_period'])
+            error = importer.import_grades(course, import_form.cleaned_data['marking_period'])
+            if error:
+                messages.warning(request, error)
     else:
         import_form = GradeUpload()
         
