@@ -22,6 +22,11 @@ from ecwsp.benchmark_grade.models import *
 class BenchmarkGradeImporter(Importer):
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
+        # as requested, drop all old marks before importing
+        Aggregate.objects.filter(singleCourse=course).delete()
+        for oldItem in Item.objects.filter(course=course):
+            Mark.objects.filter(item=oldItem).delete()
+            oldItem.delete()
         # the sheet is protected; let's not worry about being tolerant of whitespace, capitalization, etc.
         sheet = self.book.sheet_by_name(u'SUMMARY')
         # some error handling here?
@@ -41,19 +46,6 @@ class BenchmarkGradeImporter(Importer):
                     continue
                 y = 2
                 while y < sheet.ncols:
-    # print "Looking at (" + str(x), ", " + str(y) + ")"
-                    mark = str(sheet.cell(x, y).value).strip()
-                    # unlike the username column, it seems like blanks in the grade columns are always text:u''
-                    # this is scary, but we'll assume that number:0.0 is a legitimate zero mark
-                    if len(mark) == 0:
-                        y += 1
-                        continue
-    # print username + " got a " + mark + " on " + header[y].value
-                    # there should be a model for these types of substitutions.
-                    if mark == "YTD":
-                        mark = 0
-                    else:
-                        mark = Decimal(mark)
                     '''
                     0  text:u'Last Name'
                     1  text:u'First Name'
@@ -63,6 +55,24 @@ class BenchmarkGradeImporter(Importer):
                     5  text:u'Daily Practice'
                     6- Individual Standards
                     '''
+#                    print >> sys.stderr, "Looking at (" + str(x), ", " + str(y) + "): " + unicode(sheet.cell(x, y))
+                    mark = str(sheet.cell(x, y).value).strip()
+                    # formulas that evaluate to nothing unpredictably return text:u'' or number:0.0
+                    if len(mark) == 0:
+                        y += 1
+                        continue
+                    # a standard would never appear as zero, so these are empty cells.
+                    # who knows about the other categories?
+                    if (y == 2 or y >= 6) and str(sheet.cell(x, y)) == 'number:0.0':
+#                        print >> sys.stderr, "Discarding impossible zero value in Standards column " + str(y)
+                        y += 1
+                        continue
+#                    print >> sys.stderr, username + " got a " + mark + " on " + header[y].value
+                    # there should be a model for these types of substitutions.
+                    if mark == "YTD":
+                        mark = 0
+                    else:
+                        mark = Decimal(mark)
                     category = name = scale = None
                     # really, 2-5 should be aggregates, but this is all hackery anyway.
                     if y == 2:
@@ -75,11 +85,15 @@ class BenchmarkGradeImporter(Importer):
                         category = name = "Organization"
                         scale = Scale.objects.get(name="Four-Oh")
                     if y == 5:
-                        category = name = "Daily Practice"
-                        scale = Scale.objects.get(name="Percent")
-                        # 0 <= % <= 1 formatting seems undetectable by xlrd
-                        # https://secure.simplistix.co.uk/svn/xlrd/trunk/xlrd/doc/xlrd.html#formatting.Format.type-attribute
-                        mark *= 100 # BADNESS
+                        if course.department.name == "Hire4Ed":
+                            category = name = "Precision & Accuracy"
+                            scale = Scale.objects.get(name="Four-Oh")
+                        else:
+                            category = name = "Daily Practice"
+                            scale = Scale.objects.get(name="Percent")
+                            # 0 <= % <= 1 formatting seems undetectable by xlrd
+                            # https://secure.simplistix.co.uk/svn/xlrd/trunk/xlrd/doc/xlrd.html#formatting.Format.type-attribute
+                            mark *= 100 # BADNESS
                     if y >= 6:
                         category = "Standards"
                         name = str(header[y].value).strip()

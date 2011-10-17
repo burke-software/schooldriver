@@ -89,7 +89,10 @@ def benchmark_grade_upload(request, id):
     tableHeaders = []
     x = 0
     y = 0
-    for aggName in "Standards", "Engagement", "Organization", "Daily Practice":
+    aggNames = "Standards", "Engagement", "Organization", "Daily Practice"
+    if course.department.name == "Hire4Ed":
+        aggNames = "Standards", "Engagement", "Organization", "Precision & Accuracy"
+    for aggName in aggNames:
         scale = None
         if aggName == "Standards":
             scale = Scale.objects.get(name="Four-Oh with YTD")
@@ -104,7 +107,7 @@ def benchmark_grade_upload(request, id):
                                                                 singleCourse=course,
                                                                 singleCategory=Category.objects.get(name=aggName))
             grade_struct = struct()
-            grade_struct.grade = aggModel.manualMark
+            grade_struct.grade = aggModel.scale.spruce(aggModel.manualMark)
             grade_struct.id = aggModel.id
             grade_struct.x = x
             grade_struct.y = y
@@ -121,7 +124,7 @@ def benchmark_grade_upload(request, id):
         for student in students:
             mark, created = Mark.objects.get_or_create(item=item, student=student)
             grade_struct = struct()
-            grade_struct.grade = mark.mark
+            grade_struct.grade = item.scale.spruce(mark.mark)
             grade_struct.id = mark.id
             grade_struct.x = x
             grade_struct.y = y

@@ -13,11 +13,23 @@ from ecwsp.appy.pod.renderer import Renderer
 import tempfile
 import os
 import uno
+import re
 from decimal import *
+from datetime import date
 
 class struct(object):
     def __unicode__(self):
         return ""
+
+def credits_hack_thing(student):
+    credits = 0
+    courses = student.course_set.filter(graded=True, marking_period__show_reports=True).exclude(omitcoursegpa__student=student).distinct()
+    for c in courses:
+        try:
+            credits += float(c.get_credits_earned(date_report=date(2011, 6, 30)))
+        except:
+            pass
+    return credits
 
 def pod_benchmark_report_grade(template, options, students, format="odt", transcript=True, report_card=True):
     """ Generate report card and transcript grades via appy
@@ -65,40 +77,96 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
             )
             courses = courses.filter(marking_period__in=marking_periods).distinct().order_by('department')
             averages = {}
-            courseAverageAggs = "Standards", "Engagement", "Organization"
+            denominators = {}
+            student.courses = []
             for course in courses:
-                course.average = 0
-                denominator = 0
+                Hire4Ed = course.department.name == "Hire4Ed" # this seems expensive
                 for aggregate in Aggregate.objects.filter(singleStudent=student, singleCourse=course):
-                    aggName = "".join(aggregate.name.split())
+                    aggName = re.sub("[^A-Za-z]", "", aggregate.name)
+                    # we'll pass the real name now, because I'm going to call "Precision & Accuracy" DailyPractice
+                    aggStruct = struct()
+                    aggStruct.name = aggregate.name
+                    aggStruct.mark = aggregate.scale.spruce(aggregate.manualMark)
+                    # Hire4Ed hack
+                    if aggregate.name == "Precision & Accuracy":
+                        aggName = "DailyPractice"
+                    setattr(course, aggName, aggStruct)
+                    # Hire4Ed does not count toward student averages across academic classes
                     if aggregate.manualMark is not None:
+                        # don't double-count standards
+                        if Hire4Ed and aggregate.name != "Standards":
+                            try:
+                                course.average += aggregate.manualMark
+                                course.averageDenom += 1
+                            except AttributeError:
+                                course.average = aggregate.manualMark
+                                course.averageDenom = 1                                
                         try:
                             averages[aggName] += aggregate.manualMark
+                            denominators[aggName] += 1
                         except KeyError:
                             averages[aggName] = aggregate.manualMark
-                        if aggName in courseAverageAggs:
-                            course.average += aggregate.manualMark
-                            denominator += 1
-                    setattr(course, aggName, aggregate.manualMark)
-                if denominator > 0:
-                    course.average = round(course.average / denominator, 2)
-                else:
-                    course.average = None
+                            denominators[aggName] = 1
+                if not Hire4Ed:
+                    courseAverageAgg = Aggregate.objects.get(name="Standards", singleStudent=student, singleCourse=course)
+                    course.average = courseAverageAgg.scale.spruce(courseAverageAgg.manualMark)
+                    #GAHH ALL SPRUCING AT THE END
+                    course.usAverage = courseAverageAgg.manualMark
                 items = []
                 for item in Item.objects.filter(course=course):
                     markItem = struct()
                     markItem.name = item.name
+                    markItem.range = item.scale.range()
                     try:
                         markItem.mark = item.mark_set.get(student=student).mark
                     except:
                         continue
-                    items.append(markItem)
+                    if markItem.mark is not None:
+                        items.append(markItem)
+                        if Hire4Ed:
+                            course.average += markItem.mark
+                            course.averageDenom += 1
+                            try:
+                                averages["Hire4Ed"] += markItem.mark
+                                denominators["Hire4Ed"] += 1
+                            except KeyError:
+                                averages["Hire4Ed"] = markItem.mark
+                                denominators["Hire4Ed"] = 1
+                    markItem.mark = item.scale.spruce(markItem.mark)
                 course.items = items
-            student.courses = courses
-            if len(courses) > 0:
-                for a in averages:
-                    averages[a] /= len(courses)
-                student.averages = averages
+                if Hire4Ed and course.averageDenom > 0:
+                    course.average /= course.averageDenom
+                if Hire4Ed:
+                    student.hire4ed = course
+                else:
+                    student.courses.append(course)
+            for a in averages:
+                if denominators[a] > 0:
+                    averages[a] =  Decimal(str(averages[a] / denominators[a])).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
+            student.averages = averages
+            # calculate gpas
+            i = 0
+            session_gpa = 0
+            for course in student.courses: # at this point omits Hire4Ed
+                if course.usAverage is not None:
+                    session_gpa += course.usAverage
+                    i += 1
+            gpaAverages = "Engagement", "Organization", "Hire4Ed"
+            for gA in gpaAverages:
+                if averages[gA] is not None:
+                    session_gpa += averages[gA]
+                    i += 1
+            student.cumulative_gpa = float(student.cache_gpa)
+            student.credits = credits_hack_thing(student)
+            if i > 0:
+                student.session_gpa = Decimal(str(session_gpa / i)).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
+                student.cumulative_gpa *= student.credits
+                student.cumulative_gpa += float(i) / float(6) * float(student.session_gpa)
+                student.credits += float(i) / float(6) # one-sixth for the first session
+                student.cumulative_gpa /= student.credits
+                student.cumulative_gpa = Decimal(str(student.cumulative_gpa)).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
+                print >> sys.stderr, str(student), student.credits
+                
             #Attendance for marking period
             i = 1
             student.absent_total = 0
@@ -127,4 +195,5 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
     
     data['students'] = students
     filename = 'output'
+    # return pod_save(filename, ".pdf", data, template)
     return pod_save(filename, "." + str(format), data, template)
