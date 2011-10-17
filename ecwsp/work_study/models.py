@@ -673,6 +673,8 @@ class Attendance(models.Model):
     reason = models.ForeignKey(AttendanceReason, blank=True, null=True)
     half_day = models.BooleanField(help_text="Missed only half day")
     waive = models.BooleanField(help_text="Does not need to make up day at work.")
+    notes = models.CharField(max_length=255, blank=True)
+    
     def __unicode__(self):
         return unicode(self.student) + " absent on " + unicode(self.absence_date)
         

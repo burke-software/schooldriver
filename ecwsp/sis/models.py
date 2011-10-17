@@ -444,7 +444,7 @@ class Student(MdlUser):
         date_report: Date for calculation (which effects credit value) defaults to today """
         if date_report == None:
             date_report = date.today()
-        courses = self.course_set.filter(graded=True, marking_period__show_reports=True).exclude(omitcoursegpa__student=self).distinct()
+        courses = self.course_set.filter(graded=True, marking_period__show_reports=True).exclude(omitcoursegpa__student=self).exclude(marking_period__school_year__omityeargpa__student=self).distinct()
         return self.__calculate_grade_for_courses(courses, date_report=date_report)
         
     
