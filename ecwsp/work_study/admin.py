@@ -328,7 +328,7 @@ class ClientVisitAdmin(admin.ModelAdmin):
     ]
     search_fields = ['company__team_name', 'notes']
     list_display = ('company', 'date', 'comment_brief', 'student_worker')
-    list_filter = ['date', 'company']
+    list_filter = ['date', 'company', 'cra']
 admin.site.register(ClientVisit, ClientVisitAdmin)
 
 class SurveyAdmin(admin.ModelAdmin):

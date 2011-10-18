@@ -23,6 +23,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
 
+import sys
+
 MINOPERATOR_CHOICES = (
     (u'>', u'Greater than'),
     (u'>=', u'Greater than or equal to')
@@ -40,14 +42,16 @@ class Scale(models.Model):
     symbol = models.CharField(max_length=7, blank=True, null=True)
     def spruce(self, grade):
         try:
-            decGrade = Decimal(str(grade)).quantize(10**(-1 * decimalPlaces), ROUND_HALF_UP)
+            decGrade = Decimal(str(grade)).quantize(Decimal(str(10**(-1 * self.decimalPlaces))), ROUND_HALF_UP)
         except InvalidOperation:
             # it's not a number, so leave it alone
             return grade
         for mapping in self.mapping_set.all():
             if mapping.applies(decGrade):
                 return mapping.name
-        return grade
+        return str(decGrade) + self.symbol
+    def range(self):
+        return str(self.minimum) + "-" + str(self.maximum) + self.symbol
     def __unicode__(self):
         return self.name
 
@@ -104,7 +108,7 @@ class Mark(models.Model):
     excused = models.BooleanField(default=False)
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def __unicode__(self):
-        return str(self.mark) + " - " + str(self.student) + "; " + str(self.item)
+        return unicode(self.mark) + u' - ' + unicode(self.student) + u'; ' + unicode(self.item)
     
 class Aggregate(models.Model):
     # come back interwebs,

@@ -482,7 +482,6 @@ class Importer:
                 if created:
                     inserted += 1
                 else:
-                    print model.id
                     updated += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
@@ -1758,7 +1757,12 @@ class Importer:
     
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
-        sheet = self.book.sheet_by_name(marking_period.name)
+        """ Special import for teachers to upload grades
+        Returns Error Message """ 
+        try:
+            sheet = self.book.sheet_by_name(marking_period.name)
+        except:
+            return "Could not find a sheet named %s" % (marking_period,)
         x = 0
         header = sheet.row(x)
         x += 2 # skip second row

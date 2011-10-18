@@ -5,7 +5,8 @@
 
 <link rel="stylesheet" type="text/css" href="/static/css/fixedHeaderTable.css" />
 <style type="text/css">
-    table.grades tr:nth-child(4n+1) td, table.grades tr:nth-child(4n+2) td {
+    /*table.grades tr:nth-child(4n+1) td, table.grades tr:nth-child(4n+2) td {*/
+    table.grades tr:nth-child(odd) td {
         background: #EDF3FE;
     }
     input.grade_form {
@@ -108,11 +109,11 @@
     <form action="" method="post" enctype="multipart/form-data">
         {{ import_form }} 
         <input type="submit" value="Upload Grades" name="upload"/>
-        <div>
+        <!--div>
             <a href="#" id="toggle_comments" class="toggle_comments" onclick='toggle_comments()'>Show Comments</a>
             <a href="#" id="toggle_comments" class="toggle_comments" style="display: none" onclick='toggle_comments()'>Hide Comments</a>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/schedule/view_comment_codes" target="_blank"> View Comment Codes</a>
-        </div>
+        </div-->
     </form>
     
     <form action="" method="post">
@@ -129,7 +130,7 @@
             <tbody>
                 {% for student in students %}
                     <tr>
-                        <td style="text-align: left; vertical-align:middle;" rowspan="2"> {{ student }} </td> 
+                        <td style="text-align: left; vertical-align:middle;"> <!-- rowspan="2"--> {{ student }} </td> 
                         {% for grade in student.display_grades %}
                             <td onclick='document.getElementById("grade_{{ grade.x }}_{{ grade.y }}").focus()' style="text-align: right;">
 				{% if edit %}
@@ -140,12 +141,12 @@
 			    </td>
                         {% endfor %}
                     </tr>
-                    <tr>
+                    <!--tr>
                         {% for comment in student.comments %}
                             <td class="comment"> {{ comment }} </td>
                         {% endfor %}
                         <td></td>
-                    </tr>
+                    </tr-->
                 {% endfor %}
             </tbody>
         </table>

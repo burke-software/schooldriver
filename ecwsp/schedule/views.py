@@ -91,9 +91,13 @@ def teacher_grade(request):
                     include_comments = form.cleaned_data['include_comments']
                     courses = courses.filter(marking_period=marking_period)
                     es = EngradeSync()
+                    errors = ""
                     for course in courses:
-                        es.sync_course_grades(course, marking_period, include_comments)
-                    messages.success(request, 'Engrade Sync successful. Please verify each course!')
+                        errors += es.sync_course_grades(course, marking_period, include_comments)
+                    if errors:
+                        messages.success(request, 'Engrade Sync attempted, but has some issues: ' + errors)
+                    else:
+                        messages.success(request, 'Engrade Sync successful. Please verify each course!')
                 except:
                     messages.info(request, 'Engrade Sync unsuccessful. Contact an administrator.')
                     print >> sys.stderr, str(sys.exc_info()[1].message)
@@ -294,7 +298,9 @@ def teacher_grade_upload(request, id):
         if import_form.is_valid():
             from sis.importer import *
             importer = Importer(request.FILES['file'], request.user)
-            importer.import_grades(course, import_form.cleaned_data['marking_period'])
+            error = importer.import_grades(course, import_form.cleaned_data['marking_period'])
+            if error:
+                messages.warning(request, error)
     else:
         import_form = GradeUpload()
         
