@@ -57,7 +57,7 @@ class MarkingPeriod(models.Model):
         
     def get_number_days(self, date):
         """ Get number of days in a marking period"""
-        if self.school_days and date >= self.end_date:
+        if (self.school_days or self.school_days == 0) and date >= self.end_date:
             return self.school_days
         day = 0
         current_day = self.start_date
@@ -337,6 +337,13 @@ class OmitCourseGPA(models.Model):
     course = models.ForeignKey(Course)
     def __unicode__(self):
         return "%s %s" % (self.student, self.course)
+        
+class OmitYearGPA(models.Model):
+    """ Used to keep repeated or invalid years from affecting GPA and transcripts """
+    student = models.ForeignKey('sis.Student')
+    year = models.ForeignKey('sis.SchoolYear', help_text="Omit this year from GPA calculations and transcripts")
+    def __unicode__(self):
+        return "%s %s" % (self.student, self.year)
 
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')

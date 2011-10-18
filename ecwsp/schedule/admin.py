@@ -86,6 +86,8 @@ admin.site.register(Location)
 
 admin.site.register(OmitCourseGPA)
 
+admin.site.register(OmitYearGPA)
+
 class GradeAdmin(admin.ModelAdmin):
     list_display = ['grade', 'course', 'student', 'marking_period', 'final', 'override_final']
     list_filter = ['date', 'final', 'override_final']
