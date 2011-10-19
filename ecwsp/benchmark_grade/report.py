@@ -222,5 +222,5 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
 
     data['students'] = students
     filename = 'output'
-    #return pod_save(filename, ".pdf", data, template)
-    return pod_save(filename, "." + str(format), data, template)
+    return pod_save(filename, ".pdf", data, template)
+    #return pod_save(filename, "." + str(format), data, template)
