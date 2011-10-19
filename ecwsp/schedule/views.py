@@ -476,7 +476,7 @@ def grade_analytics(request):
             else: # all of time
                 date_begin = date(1980, 1, 1)
                 date_end = date(2980, 1, 1)
-            print date_begin
+            
             # Pre load Discipline data
             if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
                 student_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end), studentdiscipline__action=data['filter_disc_action']).annotate(action_count=Count('studentdiscipline__action'))
