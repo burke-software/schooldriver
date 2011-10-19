@@ -59,6 +59,7 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
     #elif options['this_year']:
     #    marking_periods = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True))
     #else:
+    '''
     for_date = options['date'] # In case we want a transcript from a future date
     marking_periods = MarkingPeriod.objects.filter(
         school_year=SchoolYear.objects.filter(
@@ -67,7 +68,8 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
             '-start_date'
         )[0]
     ).filter(show_reports=True)
-    
+    '''
+    marking_periods = MarkingPeriod.objects.filter(name="Session 1")    
     for student in students:
         # for report_card
         if report_card:
@@ -80,8 +82,10 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
             denominators = {}
             student.courses = []
             for course in courses:
-                Hire4Ed = course.department.name == "Hire4Ed" # this seems expensive
-                for aggregate in Aggregate.objects.filter(singleStudent=student, singleCourse=course):
+	        Hire4Ed = False
+                if course.department is not None:
+                    Hire4Ed = course.department.name == "Hire4Ed" # this seems expensive
+		for aggregate in Aggregate.objects.filter(singleStudent=student, singleCourse=course):
                     aggName = re.sub("[^A-Za-z]", "", aggregate.name)
                     # we'll pass the real name now, because I'm going to call "Precision & Accuracy" DailyPractice
                     aggStruct = struct()
@@ -108,10 +112,13 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
                             averages[aggName] = aggregate.manualMark
                             denominators[aggName] = 1
                 if not Hire4Ed:
-                    courseAverageAgg = Aggregate.objects.get(name="Standards", singleStudent=student, singleCourse=course)
-                    course.average = courseAverageAgg.scale.spruce(courseAverageAgg.manualMark)
-                    #GAHH ALL SPRUCING AT THE END
-                    course.usAverage = courseAverageAgg.manualMark
+                    try:
+		        courseAverageAgg = Aggregate.objects.get(name="Standards", singleStudent=student, singleCourse=course)
+                        course.average = courseAverageAgg.scale.spruce(courseAverageAgg.manualMark)
+                        #GAHH ALL SPRUCING AT THE END
+                        course.usAverage = courseAverageAgg.manualMark
+		    except:
+		        pass
                 items = []
                 for item in Item.objects.filter(course=course):
                     markItem = struct()
@@ -134,9 +141,12 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
                                 denominators["Hire4Ed"] = 1
                     markItem.mark = item.scale.spruce(markItem.mark)
                 course.items = items
-                if Hire4Ed and course.averageDenom > 0:
-                    course.average /= course.averageDenom
-                if Hire4Ed:
+                try:
+                    if Hire4Ed and course.averageDenom > 0:
+                        course.average /= course.averageDenom
+                except:
+		    pass
+		if Hire4Ed:
                     student.hire4ed = course
                 else:
                     student.courses.append(course)
@@ -148,24 +158,35 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
             i = 0
             session_gpa = 0
             for course in student.courses: # at this point omits Hire4Ed
-                if course.usAverage is not None:
-                    session_gpa += course.usAverage
-                    i += 1
+                try:
+                   if course.usAverage is not None:
+                        session_gpa += course.usAverage
+                        i += 1
+                except:
+                    pass
             gpaAverages = "Engagement", "Organization", "Hire4Ed"
             for gA in gpaAverages:
-                if averages[gA] is not None:
-                    session_gpa += averages[gA]
-                    i += 1
-            student.cumulative_gpa = float(student.cache_gpa)
-            student.credits = credits_hack_thing(student)
-            if i > 0:
+	        try:
+                    if averages[gA] is not None:
+                        session_gpa += averages[gA]
+                        i += 1
+		except:
+		    pass
+            if student.cache_gpa is None:
+	        student.cache_gpa = student.calculate_gpa()		
+	    try:
+	        student.cumulative_gpa = float(student.cache_gpa)
+                student.credits = credits_hack_thing(student)
+            except:
+	        student.cumulative_gpa = 0
+		student.credits = 0
+	    if i > 0:
                 student.session_gpa = Decimal(str(session_gpa / i)).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
                 student.cumulative_gpa *= student.credits
                 student.cumulative_gpa += float(i) / float(6) * float(student.session_gpa)
                 student.credits += float(i) / float(6) # one-sixth for the first session
                 student.cumulative_gpa /= student.credits
                 student.cumulative_gpa = Decimal(str(student.cumulative_gpa)).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
-                print >> sys.stderr, str(student), student.credits
                 
             #Attendance for marking period
             i = 1
@@ -195,5 +216,5 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
     
     data['students'] = students
     filename = 'output'
-    # return pod_save(filename, ".pdf", data, template)
-    return pod_save(filename, "." + str(format), data, template)
+    return pod_save(filename, ".pdf", data, template)
+    #return pod_save(filename, "." + str(format), data, template)
