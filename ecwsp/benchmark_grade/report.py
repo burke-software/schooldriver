@@ -155,7 +155,6 @@ def pod_benchmark_report_grade(template, options, students, format="odt", transc
                     student.hire4ed = course
                 else:
                     student.courses.append(course)
-                print >> sys.stderr, unicode(student), str(type(student.hire4ed))
             for a in averages:
                 if denominators[a] > 0:
                     averages[a] =  Decimal(str(averages[a] / denominators[a])).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
