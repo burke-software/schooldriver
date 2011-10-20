@@ -83,6 +83,7 @@ def get_default_data():
     data['school_name'] = unicode(school_name.value)
     data['school_year'] = unicode(SchoolYear.objects.get(active_year=True))
     data['date'] = unicode(date.today().strftime('%b %d, %Y'))
+    data['long_date'] = unicode(date.today().strftime('%B %d, %Y'))
     return data
 
 
@@ -230,7 +231,8 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     """
     
     # to do: stop being so lazy. eventually people will need to access both pod_report_grade and pod_benchmark_report_grade.
-    if ("ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
+    if (not transcript and
+        "ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
         str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"):
         from ecwsp.benchmark_grade.report import pod_benchmark_report_grade
         return pod_benchmark_report_grade(template, options, students, format, transcript, report_card)
