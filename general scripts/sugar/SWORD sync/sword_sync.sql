@@ -32,9 +32,6 @@ begin
   values (new.id, new.first_name, new.last_name, new.title, new.phone_fax, new.phone_work, new.phone_mobile, @email)
   on duplicate key update
   fname=new.first_name, lname=new.last_name, title=new.title, fax=new.phone_fax, phone=new.phone_work, phone_cell=new.phone_mobile, email=@email;
- else
-  delete from crny.work_study_contact
-  where guid=new.id;
  end if;
 end;
 //
