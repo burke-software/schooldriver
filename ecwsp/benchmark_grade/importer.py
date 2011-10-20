@@ -85,7 +85,7 @@ class BenchmarkGradeImporter(Importer):
                         category = name = "Organization"
                         scale = Scale.objects.get(name="Four-Oh")
                     if y == 5:
-                        if course.department.name == "Hire4Ed":
+                        if course.department is not None and course.department.name == "Hire4Ed":
                             category = name = "Precision & Accuracy"
                             scale = Scale.objects.get(name="Four-Oh")
                         else:
