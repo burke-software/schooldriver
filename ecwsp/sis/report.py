@@ -83,6 +83,7 @@ def get_default_data():
     data['school_name'] = unicode(school_name.value)
     data['school_year'] = unicode(SchoolYear.objects.get(active_year=True))
     data['date'] = unicode(date.today().strftime('%b %d, %Y'))
+    data['long_date'] = unicode(date.today().strftime('%B %d, %Y'))
     return data
 
 
