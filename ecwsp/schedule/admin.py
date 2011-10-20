@@ -14,13 +14,6 @@ def copy(modeladmin, request, queryset):
 	for object in queryset:
 		object.copy_instance(request)
 
-def delete_courses(modeladmin, request, queryset):
-	""" call model's delete method """
-	for course in queryset:
-		for enroll in course.courseenrollment_set.all():
-			enroll.delete()
-	queryset.delete()
-
 class CourseMeetInline(admin.TabularInline):
     model = CourseMeet
     extra = 1
@@ -37,16 +30,11 @@ class CourseAdmin(admin.ModelAdmin):
             pass
         return super(CourseAdmin, self).render_change_form(request, context, args, kwargs)
     
-    def get_actions(self, request):
-        actions = super(CourseAdmin, self).get_actions(request)
-        del actions['delete_selected']
-        return actions
-    
     list_display = ['__unicode__', 'teacher', 'grades_link']
     search_fields = ['fullname', 'shortname', 'description', 'teacher__username']
     list_filter = ['homeroom', 'graded', 'teacher', 'marking_period']
     inlines = [CourseMeetInline]
-    actions = [copy, delete_courses]
+    actions = [copy]
     
     def save_model(self, request, obj, form, change):
         """Override save_model because django doesn't have a better way to access m2m fields"""

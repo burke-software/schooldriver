@@ -533,7 +533,7 @@ def create_time_card(request, studentId):
                 return supervisor_dash(request, "Timesheet submitted for " + thisStudent.fname)
             else:
                 form.set_supers(compContacts)
-                if thisStudent.primary_contact:
+                if hasattr(thisStudent,"primary_contact") and thisStudent.primary_contact:
                     supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
                 else:
                     supervisorName = comp.team_name
@@ -541,7 +541,7 @@ def create_time_card(request, studentId):
                     thisStudent, 'supervisorName': supervisorName,}, RequestContext(request, {}))
         else:
             # if student 
-            if thisStudent.primary_contact:
+            if hasattr(thisStudent,"primary_contact") and thisStudent.primary_contact:
                 supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
             else:
                 supervisorName = comp.team_name
