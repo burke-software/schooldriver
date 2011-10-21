@@ -254,6 +254,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             '-start_date'
         )[0]
     ).filter(show_reports=True)
+    data['marking_periods'] = marking_periods
     
     for student in students:
         # for report_card
@@ -332,7 +333,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                         i += 1
                     course.final = course.get_final_grade(student, date_report=for_date)
                     
-                    if mp.end_date < for_date and course.is_passing(student):
+                    if mp.end_date < for_date and course.is_passing(student) and course.credits:
                         year.credits += course.credits
                 
                 # Averages per marking period
