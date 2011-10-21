@@ -231,7 +231,8 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     """
     
     # to do: stop being so lazy. eventually people will need to access both pod_report_grade and pod_benchmark_report_grade.
-    if ("ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
+    if (not transcript and
+        "ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
         str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"):
         from ecwsp.benchmark_grade.report import pod_benchmark_report_grade
         return pod_benchmark_report_grade(template, options, students, format, transcript, report_card)
@@ -254,6 +255,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             '-start_date'
         )[0]
     ).filter(show_reports=True)
+    data['marking_periods'] = marking_periods
     
     for student in students:
         # for report_card
@@ -332,7 +334,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                         i += 1
                     course.final = course.get_final_grade(student, date_report=for_date)
                     
-                    if mp.end_date < for_date and course.is_passing(student):
+                    if mp.end_date < for_date and course.is_passing(student) and course.credits:
                         year.credits += course.credits
                 
                 # Averages per marking period
@@ -359,7 +361,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             for dept in student.departments:
                 c = 0
                 for course in student.course_set.filter(department=dept, marking_period__school_year__end_date__lt=for_date, graded=True).distinct():
-                    if course.is_passing(student):
+                    if course.credits and course.is_passing(student):
                         c += course.credits
                 dept.credits = c
                 student.departments_text += "| %s: %s " % (dept, dept.credits)
