@@ -64,6 +64,7 @@ class Configuration(models.Model):
             object.save()
         return object
     get_or_default = Callable(get_or_default)
+    
         
 class Template(models.Model):
     name = models.CharField(max_length=100, unique=True)
