@@ -59,10 +59,12 @@ def user_preferences(request):
             form.cleaned_data['user'] = request.user
             form.save()
             messages.info(request, 'Successfully updated preferences')
+            if request.GET['refer']:
+                return HttpResponseRedirect(request.GET['refer'])
             return HttpResponseRedirect(reverse('admin:index'))
     else:
         form = UserPreferenceForm(instance=profile)
-    return render_to_response('sis/generic_form.html', {
+    return render_to_response('sis/user_preferences.html', {
         'form': form,
     }, RequestContext(request, {}),)
 
@@ -534,7 +536,7 @@ def discipline_report_view(request):
                 
                 pref = UserPreference.objects.get_or_create(user=request.user)[0]
                 for student in students:
-                    disciplines = student.get_disciplines()
+                    disciplines = student.studentdiscipline_set.all()
                     disciplines = disciplines.filter(date__range=(start, end))
                     stats = [unicode(student),]
                     

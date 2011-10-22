@@ -32,7 +32,7 @@ from ecwsp.omr.createpdf import createpdf,generate_xml
 from ecwsp.omr.models import *
 from ecwsp.omr.forms import *
 from ecwsp.omr.reports import *
-from ecwsp.sis.models import Faculty
+from ecwsp.sis.models import Faculty, UserPreference
 from ecwsp.sis.helper_functions import *
 from ecwsp.schedule.models import Course
 
@@ -262,8 +262,12 @@ def ajax_new_question_form(request, test_id):
                 'question': q_instance,
             }, RequestContext(request, {}),)
     else:
+        extra_answers = UserPreference.objects.get(user=request.user).omr_default_number_answers
+        NewAnswerFormSet = inlineformset_factory(Question, Answer, extra=extra_answers, form=AnswerForm)
         question_answer_form = NewAnswerFormSet(prefix="questionanswers_new")
-        question_form = TestQuestionForm(prefix="question_new", initial={'test': test})
+        points = UserPreference.objects.get(user=request.user).omr_default_point_value
+        save_to_bank = UserPreference.objects.get(user=request.user).omr_default_save_question_to_bank
+        question_form = TestQuestionForm(prefix="question_new", initial={'test': test, 'point_value': points, 'save_to_bank': save_to_bank})
     
     return render_to_response('omr/ajax_question_form.html', {
         'new': 'new',

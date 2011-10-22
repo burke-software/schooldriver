@@ -63,6 +63,9 @@ class UserPreference(models.Model):
     prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
     include_deleted_students = models.BooleanField(help_text="When searching for students, include deleted (previous) students.")
     additional_report_fields = models.ManyToManyField('ReportField', blank=True, null=True, help_text="These fields will be added to spreadsheet reports. WARNING adding fields with multiple results will GREATLY increase the time it takes to generate reports")
+    omr_default_point_value = models.IntegerField(default=1, help_text="How many points a new question is worth by default")
+    omr_default_save_question_to_bank = models.BooleanField(default=True)
+    omr_default_number_answers = models.IntegerField(default=2)
     user = models.ForeignKey(User, unique=True, editable=False)
     names = None    # extra field names. (Attempt to speed up reports so these don't get called up over and over)
     first = True
@@ -415,6 +418,12 @@ class Student(MdlUser):
         """ returns "son" or "daughter" """
         return self.gender_to_word("son", "daughter")
     
+    def get_disciplines(self, mp, action_name=None):
+        """ Shortcut to look up discipline records
+        mp: Marking Period
+        action_name: Discipline action name """
+        return self.studentdiscipline_set.filter(date__range=(mp.start_date,mp.end_date),action__name=action_name).count()
+    
     def __calculate_grade_for_courses(self, courses, marking_period=None, date_report=None):
         gpa = float(0)
         credits = float(0)
@@ -516,9 +525,6 @@ class Student(MdlUser):
             cursor.execute("insert into work_study_studentworker (student_ptr_id, fax) values (" + str(self.id) + ", 0);")
         except:
             return
-    
-    def get_disciplines(self):
-        return self.studentdiscipline_set.all()
 
 class ASPHistory(models.Model):
     student = models.ForeignKey(Student)
