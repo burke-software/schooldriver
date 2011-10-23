@@ -418,11 +418,23 @@ class Student(MdlUser):
         """ returns "son" or "daughter" """
         return self.gender_to_word("son", "daughter")
     
-    def get_disciplines(self, mp, action_name=None):
+    def get_disciplines(self, mps, action_name=None, count=True):
         """ Shortcut to look up discipline records
         mp: Marking Period
-        action_name: Discipline action name """
-        return self.studentdiscipline_set.filter(date__range=(mp.start_date,mp.end_date),action__name=action_name).count()
+        action_name: Discipline action name
+        count: Boolean - Just the count of them """
+        if hasattr(mps,'db'): # More than one?
+            start_date = mps.order_by('start_date')[0].start_date
+            end_date = mps.order_by('-end_date')[0].end_date
+            disc = self.studentdiscipline_set.filter(date__range=(start_date,end_date))
+        else:
+            disc = self.studentdiscipline_set.filter(date__range=(mp.start_date,mp.end_date))
+        if action_name:
+            disc = disc.filter(action__name=action_name)
+        if count:
+            return disc.count()
+        else:
+            return disc
     
     def __calculate_grade_for_courses(self, courses, marking_period=None, date_report=None):
         gpa = float(0)
