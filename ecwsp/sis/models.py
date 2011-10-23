@@ -424,11 +424,14 @@ class Student(MdlUser):
         action_name: Discipline action name
         count: Boolean - Just the count of them """
         if hasattr(mps,'db'): # More than one?
-            start_date = mps.order_by('start_date')[0].start_date
-            end_date = mps.order_by('-end_date')[0].end_date
-            disc = self.studentdiscipline_set.filter(date__range=(start_date,end_date))
+            if len(mps):
+                start_date = mps.order_by('start_date')[0].start_date
+                end_date = mps.order_by('-end_date')[0].end_date
+                disc = self.studentdiscipline_set.filter(date__range=(start_date,end_date))
+            else:
+                disc = self.studentdiscipline_set.none()
         else:
-            disc = self.studentdiscipline_set.filter(date__range=(mp.start_date,mp.end_date))
+            disc = self.studentdiscipline_set.filter(date__range=(mps.start_date,mps.end_date))
         if action_name:
             disc = disc.filter(action__name=action_name)
         if count:
