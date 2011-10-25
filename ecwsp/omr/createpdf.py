@@ -561,9 +561,9 @@ def barcodeBoxgroup():
     """
     db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
     db_cursor = db.cursor()
-    db_cursor.execute("SET @page_id =(SELECT pid from pages order by pid DESC limit 1)") 
-    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7,@page_id,'barcode_"
-                      + str(page) + "',0")
+    db_cursor.execute("SET @page_id =(SELECT pid from pages order by pid DESC limit 1)")
+    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7,SELECT IFNULL(@page_id,1),'barcode_"
+                      + str(page) + "',0)")
     db_cursor.execute("INSERT INTO boxes SET tlx=210,tly=185,brx=1175,bry=450,pid=" + str(page) +
                       ",bgid=LAST_INSERT_ID(),value=" + str(student_id[id]))
     db.commit()
