@@ -123,6 +123,20 @@
       window.close();
     }
     
+    function dismissBenchmarkPopup(window, benchmark_id, benchmark_text) {
+      $('#id_question_' + foo + '-benchmarks').val($('#id_question_' + foo + '-benchmarks').val() + benchmark_id + '|');
+      
+      $('#id_question_' + foo + '-benchmarks_on_deck').append('<div id="id_question_' + foo + '-benchmarks_on_deck_' + benchmark_id + '"><span class="iconic" id="kill_id_question_' + foo + '-benchmarks' + benchmark_id + '">X</span> ' + benchmark_text + ' </div>');
+      
+      window.close();
+    }
+    
+    foo = "";
+    function showBenchmarkPopup(page, question_id) {
+      foo = question_id;
+      return showAddAnotherPopup(page);
+    }
+    
     function check_correct_answer(question_id) {
       possible = $("#id_question_" + question_id + "-point_value").val();
       
@@ -413,5 +427,6 @@
         <button onclick="finalize_test();">Finalize</button>
     </span>
   </div>
+  <a href="/sis/preferences?refer={{ request.get_full_path }}">Remember you can change defaults in your preferences</a>
   
 {% endblock %}

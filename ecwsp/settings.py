@@ -245,7 +245,7 @@ CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': [
             [ 'Bold', 'Italic', 'Underline', 'Subscript','Superscript',
-              '-', 'Image', 'Link', 'Unlink', 'SpecialChar',
+              '-', 'Image', 'Link', 'Unlink', 'SpecialChar', 'equation',
               '-', 'Format',
               '-', 'Maximize',
               '-', 'Table',
@@ -254,10 +254,11 @@ CKEDITOR_CONFIGS = {
             ]
         ],
         'height': 80,
-        'width': 600,
+        'width': 640,
         'disableNativeSpellChecker': False,
         'removePlugins': 'scayt,menubutton,contextmenu,elementspath',
         'resize_enabled': False,
+        'extraPlugins': 'equation',
     },
 }
 

@@ -330,14 +330,13 @@ def student_timesheet(request):
             return render_to_response('work_study/student_timesheet.html', {'student': True, 'form': form, 
                 'studentName': thisStudent, 'supervisorName': supervisorName,}, RequestContext(request, {}))
     else:
-        try:
-            if thisStudent.primary_contact: initial_primary = thisStudent.primary_contact.id
-            else: initial_primary = None
-            form = TimeSheetForm(initial={'student':thisStudent.id, 'company':thisStudent.placement.id, 'my_supervisor':initial_primary,
-                'date': date.today, 'time_in': "9:30 AM", 'time_lunch': "12:00 PM", 'time_lunch_return': "1:00 PM", 'time_out': "5:00 PM"})
-            form.set_supers(compContacts)
-        except:
-            return render_to_response('base.html', {'msg': "Student or Company does not exist. Please notify a system admin if you believe this is a mistake."}, RequestContext(request, {}))
+        initial_primary = None
+        if hasattr(thisStudent,"primary_contact"):
+            if thisStudent.primary_contact:
+                initial_primary = thisStudent.primary_contact.id
+        form = TimeSheetForm(initial={'student':thisStudent.id, 'company':thisStudent.placement.id, 'my_supervisor':initial_primary,
+            'date': date.today, 'time_in': "9:30 AM", 'time_lunch': "12:00 PM", 'time_lunch_return': "1:00 PM", 'time_out': "5:00 PM"})
+        form.set_supers(compContacts)
         # Should for_pay be an option?
         pay, created = Configuration.objects.get_or_create(name="Allow for pay")
         if created: 
@@ -534,7 +533,7 @@ def create_time_card(request, studentId):
                 return supervisor_dash(request, "Timesheet submitted for " + thisStudent.fname)
             else:
                 form.set_supers(compContacts)
-                if thisStudent.primary_contact:
+                if hasattr(thisStudent,"primary_contact") and thisStudent.primary_contact:
                     supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
                 else:
                     supervisorName = comp.team_name
@@ -542,7 +541,7 @@ def create_time_card(request, studentId):
                     thisStudent, 'supervisorName': supervisorName,}, RequestContext(request, {}))
         else:
             # if student 
-            if thisStudent.primary_contact:
+            if hasattr(thisStudent,"primary_contact") and thisStudent.primary_contact:
                 supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
             else:
                 supervisorName = comp.team_name

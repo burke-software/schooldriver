@@ -594,7 +594,10 @@ class TimeSheet(models.Model):
             from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
             send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
-            print >> sys.stderr, "Could not email " + unicode(self)
+            try:
+                print >> sys.stderr, "Could not email " + unicode(self.student)
+            except:
+                pass
         
     def save(self, *args, **kwargs):
         email = False
@@ -670,6 +673,8 @@ class Attendance(models.Model):
     reason = models.ForeignKey(AttendanceReason, blank=True, null=True)
     half_day = models.BooleanField(help_text="Missed only half day")
     waive = models.BooleanField(help_text="Does not need to make up day at work.")
+    notes = models.CharField(max_length=255, blank=True)
+    
     def __unicode__(self):
         return unicode(self.student) + " absent on " + unicode(self.absence_date)
         

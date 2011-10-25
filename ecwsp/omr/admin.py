@@ -34,6 +34,7 @@ class AnswerInstanceInline(admin.TabularInline):
     extra = 0
 
 class MeasurementTopicAdmin(admin.ModelAdmin):
+    list_display = ['name', 'department']
     list_filter = ['department']
     search_fields = ['department__name', 'name']
 admin.site.register(MeasurementTopic,MeasurementTopicAdmin)
@@ -42,7 +43,7 @@ admin.site.register(Department)
 admin.site.register(NetworkQuestionBank)
 
 class BenchmarkAdmin(ReadPermissionModelAdmin):
-    list_display = ['number', 'name']
+    list_display = ['number', 'name', 'display_measurement_topics']
     list_filter = ['measurement_topics','measurement_topics__department']
     search_fields = ['number', 'name','measurement_topics__name' ]
 

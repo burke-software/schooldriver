@@ -4,7 +4,39 @@
 {% block content %}
     <h2>User Preferences</h2>
     <form action="" method="post">
-        {{ form.as_p }}
+        {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+        <table>
+            <tr>
+                <td> {{ form.prefered_file_format.label }} </td><td> {{ form.prefered_file_format }} {{ form.prefered_file_format.help_text }} {{ form.prefered_file_format.errors }}</td>
+            </tr>
+            <tr>
+                <td> {{ form.include_deleted_students.label }} </td><td> {{ form.include_deleted_students }} {{ form.include_deleted_students.help_text }} {{ form.include_deleted_students.errors }}</td>
+            </tr>
+            <tr>
+                <td> {{ form.additional_report_fields.label }} </td><td> {{ form.additional_report_fields }} {{ form.additional_report_fields.help_text }} {{ form.additional_report_fields.errors }}</td>
+            </tr>
+        </table>
+        {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
+            <h3> OMR </h3>
+            <table>
+                <tr>
+                    <td> {{ form.omr_default_point_value.label }} </td><td> {{ form.omr_default_point_value }} {{ form.omr_default_point_value.help_text }} {{ form.omr_default_point_value.errors }}</td>
+                </tr>
+                <tr>
+                    <td> {{ form.omr_default_save_question_to_bank.label }} </td><td> {{ form.omr_default_save_question_to_bank }} {{ form.omr_default_save_question_to_bank.help_text }} {{ form.omr_default_save_question_to_bank.errors }}</td>
+                </tr>
+                <tr>
+                    <td> {{ form.omr_default_number_answers.label }} </td><td> {{ form.omr_default_number_answers }} {{ form.omr_default_number_answers.help_text }} {{ form.omr_default_number_answers.errors }}</td>
+                </tr>
+            </table>
+        {% else %}
+            <span style="visibility:hidden">
+                {{ form.omr_default_point_value }}
+                {{ form.omr_default_save_question_to_bank }}
+            </span>
+        {% endif %}
         <input type="submit"/>
     </form>
 {% endblock %}

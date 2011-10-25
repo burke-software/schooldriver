@@ -94,6 +94,20 @@ class WithdrawnChoices(models.Model):
     class Meta:
         ordering = ['name']
         
+class CountryOption(models.Model):
+    name = models.CharField(max_length=500)
+    def __unicode__(self):
+        return unicode(self.name)
+    class Meta:
+        ordering = ['name']
+        
+class ImmigrationOption(models.Model):
+    name = models.CharField(max_length=500)
+    def __unicode__(self):
+        return unicode(self.name)
+    class Meta:
+        ordering = ['name']
+        
 def get_school_year():
     if SchoolYear.objects.all():
         return SchoolYear.objects.all()[0]  
@@ -133,7 +147,8 @@ class Applicant(models.Model):
     heard_about_us = models.ForeignKey(HeardAboutUsOption, blank=True, null=True)
     first_contact = models.ForeignKey(FirstContactOption, blank=True, null=True)
     borough = models.ForeignKey(BoroughOption, blank=True, null=True)
-    home_country = models.CharField(max_length=255, blank=True)
+    country_of_birth = models.ForeignKey(CountryOption, blank=True, null=True)
+    immigration_status = models.ForeignKey(ImmigrationOption, blank=True, null=True)
     ready_for_export = models.BooleanField()
     sis_student = models.ForeignKey('sis.Student', blank=True, null=True, related_name="appl_student", on_delete=models.SET_NULL)
     

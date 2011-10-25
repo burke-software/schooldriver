@@ -89,14 +89,15 @@ def teacher_grade(request):
                     from ecwsp.engrade_sync.engrade_sync import EngradeSync
                     marking_period = form.cleaned_data['marking_period']
                     include_comments = form.cleaned_data['include_comments']
-                    courses = teacher.course_set.filter(marking_period=marking_period, graded=True)
-                    sec_courses = teacher.secondary_course_set.filter(marking_period=marking_period, graded=True)
-                    courses = courses | sec_courses
-                    courses = courses.distinct()
+                    courses = courses.filter(marking_period=marking_period)
                     es = EngradeSync()
+                    errors = ""
                     for course in courses:
-                        es.sync_course_grades(course, marking_period, include_comments)
-                    messages.success(request, 'Engrade Sync successful. Please verify each course!')
+                        errors += es.sync_course_grades(course, marking_period, include_comments)
+                    if errors:
+                        messages.success(request, 'Engrade Sync attempted, but has some issues: ' + errors)
+                    else:
+                        messages.success(request, 'Engrade Sync successful. Please verify each course!')
                 except:
                     messages.info(request, 'Engrade Sync unsuccessful. Contact an administrator.')
                     print >> sys.stderr, str(sys.exc_info()[1].message)
@@ -279,6 +280,12 @@ def student_gradesheet(request, id, year_id=None):
 
 @user_passes_test(lambda u: u.groups.filter(Q(name='teacher') | Q(name="registrar")).count() > 0 or u.is_superuser, login_url='/')
 def teacher_grade_upload(request, id):
+    # to do: stop being so lazy. eventually people will need to access both teacher_grade_upload and benchmark_grade_upload.
+    if ("ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
+        str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"):
+        from ecwsp.benchmark_grade.views import benchmark_grade_upload
+        return benchmark_grade_upload(request, id)
+
     """ This view is for inputing grades. It usually is done by uploading a spreadsheet.
     However it can also be done by manually overriding grades. This requires
     registrar level access. """
@@ -291,7 +298,9 @@ def teacher_grade_upload(request, id):
         if import_form.is_valid():
             from sis.importer import *
             importer = Importer(request.FILES['file'], request.user)
-            importer.import_grades(course, import_form.cleaned_data['marking_period'])
+            error = importer.import_grades(course, import_form.cleaned_data['marking_period'])
+            if error:
+                messages.warning(request, error)
     else:
         import_form = GradeUpload()
         
@@ -467,7 +476,7 @@ def grade_analytics(request):
             else: # all of time
                 date_begin = date(1980, 1, 1)
                 date_end = date(2980, 1, 1)
-            print date_begin
+            
             # Pre load Discipline data
             if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
                 student_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end), studentdiscipline__action=data['filter_disc_action']).annotate(action_count=Count('studentdiscipline__action'))

@@ -83,6 +83,7 @@ def get_default_data():
     data['school_name'] = unicode(school_name.value)
     data['school_year'] = unicode(SchoolYear.objects.get(active_year=True))
     data['date'] = unicode(date.today().strftime('%b %d, %Y'))
+    data['long_date'] = unicode(date.today().strftime('%B %d, %Y'))
     return data
 
 
@@ -228,6 +229,14 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     students.years.dismissed - Dismissed for year
     studnets.years.credits  - Total credits for year
     """
+    
+    # to do: stop being so lazy. eventually people will need to access both pod_report_grade and pod_benchmark_report_grade.
+    if (not transcript and
+        "ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
+        str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"):
+        from ecwsp.benchmark_grade.report import pod_benchmark_report_grade
+        return pod_benchmark_report_grade(template, options, students, format, transcript, report_card)
+    
     data = get_default_data()
     
     blank_grade = struct()
@@ -246,6 +255,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             '-start_date'
         )[0]
     ).filter(show_reports=True)
+    data['marking_periods'] = marking_periods.order_by('start_date')
     
     for student in students:
         # for report_card
@@ -292,7 +302,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
         
         ## for transcripts
         if transcript:
-            student.years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct().order_by('start_date')
+            student.years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).exclude(omityeargpa__student=student).distinct().order_by('start_date')
             for year in student.years:
                 year.credits = 0
                 year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year, show_reports=True).distinct().order_by("start_date")
@@ -324,7 +334,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                         i += 1
                     course.final = course.get_final_grade(student, date_report=for_date)
                     
-                    if mp.end_date < for_date and course.is_passing(student):
+                    if mp.end_date < for_date and course.is_passing(student) and course.credits:
                         year.credits += course.credits
                 
                 # Averages per marking period
@@ -350,8 +360,8 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             student.departments_text = ""
             for dept in student.departments:
                 c = 0
-                for course in student.course_set.filter(department=dept, marking_period__school_year__end_date__lt=for_date).distinct():
-                    if course.is_passing(student):
+                for course in student.course_set.filter(department=dept, marking_period__school_year__end_date__lt=for_date, graded=True).distinct():
+                    if course.credits and course.is_passing(student):
                         c += course.credits
                 dept.credits = c
                 student.departments_text += "| %s: %s " % (dept, dept.credits)

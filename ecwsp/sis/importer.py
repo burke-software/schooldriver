@@ -464,12 +464,12 @@ class Importer:
                 if measurement_topic_department and topic:
                     topic.department = measurement_topic_department
                     topic.save()
-                if number and Benchmark.objects.filter(number=number).count():
-                    model = Benchmark.objects.filter(number=number)[0]
-                else:
-                    model = Benchmark(number=number)
-                    created = True
-                model.name = b_name
+                model, created = Benchmark.objects.get_or_create(number=number, name=b_name)
+                #if number and Benchmark.objects.filter(number=number).count():
+                #    model = Benchmark.objects.filter(number=number)[0]
+                #else:
+                #    model = Benchmark(number=number)
+                #    created = True
                 if year:
                     try:
                         model.year = GradeLevel.objects.get(name=year)
@@ -1757,7 +1757,12 @@ class Importer:
     
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
-        sheet = self.book.sheet_by_name(marking_period.name)
+        """ Special import for teachers to upload grades
+        Returns Error Message """ 
+        try:
+            sheet = self.book.sheet_by_name(marking_period.name)
+        except:
+            return "Could not find a sheet named %s" % (marking_period,)
         x = 0
         header = sheet.row(x)
         x += 2 # skip second row

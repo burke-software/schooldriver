@@ -63,6 +63,9 @@ class UserPreference(models.Model):
     prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
     include_deleted_students = models.BooleanField(help_text="When searching for students, include deleted (previous) students.")
     additional_report_fields = models.ManyToManyField('ReportField', blank=True, null=True, help_text="These fields will be added to spreadsheet reports. WARNING adding fields with multiple results will GREATLY increase the time it takes to generate reports")
+    omr_default_point_value = models.IntegerField(default=1, help_text="How many points a new question is worth by default")
+    omr_default_save_question_to_bank = models.BooleanField(default=True)
+    omr_default_number_answers = models.IntegerField(default=2)
     user = models.ForeignKey(User, unique=True, editable=False)
     names = None    # extra field names. (Attempt to speed up reports so these don't get called up over and over)
     first = True
@@ -415,6 +418,27 @@ class Student(MdlUser):
         """ returns "son" or "daughter" """
         return self.gender_to_word("son", "daughter")
     
+    def get_disciplines(self, mps, action_name=None, count=True):
+        """ Shortcut to look up discipline records
+        mp: Marking Period
+        action_name: Discipline action name
+        count: Boolean - Just the count of them """
+        if hasattr(mps,'db'): # More than one?
+            if len(mps):
+                start_date = mps.order_by('start_date')[0].start_date
+                end_date = mps.order_by('-end_date')[0].end_date
+                disc = self.studentdiscipline_set.filter(date__range=(start_date,end_date))
+            else:
+                disc = self.studentdiscipline_set.none()
+        else:
+            disc = self.studentdiscipline_set.filter(date__range=(mps.start_date,mps.end_date))
+        if action_name:
+            disc = disc.filter(action__name=action_name)
+        if count:
+            return disc.count()
+        else:
+            return disc
+    
     def __calculate_grade_for_courses(self, courses, marking_period=None, date_report=None):
         gpa = float(0)
         credits = float(0)
@@ -444,7 +468,7 @@ class Student(MdlUser):
         date_report: Date for calculation (which effects credit value) defaults to today """
         if date_report == None:
             date_report = date.today()
-        courses = self.course_set.filter(graded=True, marking_period__show_reports=True).exclude(omitcoursegpa__student=self).distinct()
+        courses = self.course_set.filter(graded=True, marking_period__show_reports=True).exclude(omitcoursegpa__student=self).exclude(marking_period__school_year__omityeargpa__student=self).distinct()
         return self.__calculate_grade_for_courses(courses, date_report=date_report)
         
     
@@ -516,9 +540,6 @@ class Student(MdlUser):
             cursor.execute("insert into work_study_studentworker (student_ptr_id, fax) values (" + str(self.id) + ", 0);")
         except:
             return
-    
-    def get_disciplines(self):
-        return self.studentdiscipline_set.all()
 
 class ASPHistory(models.Model):
     student = models.ForeignKey(Student)

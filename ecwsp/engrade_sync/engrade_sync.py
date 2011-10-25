@@ -19,6 +19,8 @@ from ecwsp.engrade_sync.python_engrade import *
 from ecwsp.engrade_sync.models import *
 from ecwsp.schedule.models import *
 
+import sys
+
 class EngradeSync:
     def __init__(self):
         """ Login and get session from Engrade """
@@ -29,11 +31,11 @@ class EngradeSync:
         already have engrade accounts. Stores their engrade ID in teacher sync.
         returns number of new accounts """
         en_teachers = TeacherSync.objects.all()
-        teachers = Faculty.objects.filter(teacher=True).exclude(id__in=en_teachers.values('teacher'))
+        teachers = Faculty.objects.filter(teacher=True).exclude(id__in=en_teachers.values('teacher')).exclude(email="").exclude(fname="")
         new_teachers = []
         for teacher in teachers:
             new_teachers.append([teacher.fname + " " + teacher.lname, teacher.email])
-        en_teachers = self.api.school_teacher_new(teachers)
+        en_teachers = self.api.school_teacher_new(new_teachers)
         i = 0
         for teacher in teachers:
             TeacherSync.objects.create(
@@ -88,20 +90,39 @@ class EngradeSync:
         return course_sync.engrade_course_id
     
     def sync_course_grades(self, course, marking_period, include_comments):
-        """ Loads grades from engrade into Course grades for particular marking period."""
+        """ Loads grades from engrade into Course grades for particular marking period.
+        Returns: list of errors """
         engrade_course = CourseSync.objects.get(course=course, marking_period=marking_period)
         students = self.api.gradebook(engrade_course.engrade_course_id)
+        errors = ""
         for engrade_student in students:
-            student = Student.objects.get(id=engrade_student['stuid'])
-            grade = engrade_student['percent']
-            model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
-            model.set_grade(grade)
-            model.save()
+            try:
+                student = None
+                student = Student.objects.get(id=engrade_student['stuid'])
+                grade = engrade_student['percent']
+                model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
+                model.set_grade(grade)
+                model.save()
+            except:
+                if student:
+                    errors += '%s\'s grade not set! ' % (student,)
+                else:
+                    errors += "Student doesn't exist! "
+                print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
         if include_comments:
             students = self.api.class_comments(engrade_course.engrade_course_id)
             for engrade_student in students:
-                student = Student.objects.get(id=engrade_student['stuid'])
-                comment = engrade_student['comment']
-                model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
-                model.comment = comment
-                model.save()
+                try:
+                    student = None
+                    student = Student.objects.get(id=engrade_student['stuid'])
+                    comment = engrade_student['comment']
+                    model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
+                    model.comment = comment
+                    model.save()
+                except:
+                    if student:
+                        errors += '%s\'s comment not set! ' % (student,)
+                    else:
+                        errors += "Student doesn't exist! "
+                    print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
+        return errors
