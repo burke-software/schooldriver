@@ -68,6 +68,39 @@ class QuestionBankListView(ListView):
         context['filter'] = f
         context['tip'] = ['Hover over truncated information to view all.', 'Images and formatting are not shown here. They will appear when you select a question.']
         return context
+    
+    
+class BenchmarkFilter(django_filters.FilterSet):
+    def __init__(self, *args, **kwargs):
+        super(BenchmarkFilter, self).__init__(*args, **kwargs)
+        for name, field in self.filters.iteritems():
+            if isinstance(field, django_filters.ChoiceFilter):
+                # Add "Any" entry to choice fields.
+                field.extra['choices'] = tuple([("", "Any"), ] + list(field.extra['choices']))
+    
+    class Meta:
+        model = Benchmark
+        fields = ['measurement_topics']
+    
+    number = django_filters.CharFilter(name='number', lookup_type='icontains', widget=TextInput(attrs={'class':'search',}))
+    benchmark = django_filters.CharFilter(name='name', lookup_type='icontains', widget=TextInput(attrs={'class':'search',}))
+
+class BenchmarkListView(ListView):
+    def get_context_data(self, **kwargs):
+        context = super(BenchmarkListView, self).get_context_data(**kwargs)
+        
+        benchmarks = Benchmark.objects.all()
+        if self.request.session['omr_test_id']:
+            test = Test.objects.get(id=self.request.session['omr_test_id'])
+            context['test'] = test
+            if test.department:
+                benchmarks = benchmarks.filter(measurement_topics__department=test.department)
+        f = BenchmarkFilter(self.request.GET, queryset=benchmarks)
+        
+        context['is_popup'] = True
+        context['filter'] = f
+        context['tip'] = ['Hover over truncated information to view all.']
+        return context
 
 @permission_required('omr.teacher_test')
 def my_tests(request):
