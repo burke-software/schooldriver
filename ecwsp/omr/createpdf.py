@@ -567,7 +567,7 @@ def barcodeBoxgroup():
                       + str(page) + "',0)")
     db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +
                       " values (210, 185, 1175, 450, @pageid,LAST_INSERT_ID(),"+
-                      str(student_id[id]))
+                      str(student_id[id]) + ")")
     db.commit()
     db.close()    
     
