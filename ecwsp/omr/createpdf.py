@@ -565,8 +565,9 @@ def barcodeBoxgroup():
     db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 1)")
     db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7,@pageid,'barcode_"
                       + str(page) + "',0)")
-    db_cursor.execute("INSERT INTO boxes SET tlx=210,tly=185,brx=1175,bry=450,pid=" + str(page) +
-                      ",bgid=LAST_INSERT_ID(),value=" + str(student_id[id]))
+    db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +
+                      " values (210, 185, 1175, 450, @pageid,LAST_INSERT_ID(),"+
+                      str(student_id[id]))
     db.commit()
     db.close()    
     
