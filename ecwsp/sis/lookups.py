@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
+from django.contrib.auth.models import User
 
 from ecwsp.sis.models import *
 from ecwsp.administration.models import *
@@ -194,7 +195,21 @@ class FacultyLookup(object):
 
     def get_objects(self,ids):
         return Faculty.objects.filter(pk__in=ids).order_by('lname')
-        
+
+class FacultyUserLookup(object):
+    def get_query(self,q,request):
+        words = q.split()
+        result = User.objects.filter(groups__name="faculty").filter(Q(first_name__istartswith=q) | Q(last_name__istartswith=q) | Q(username__istartswith=q))
+        return result
+
+    def format_result(self, faculty):
+        return "%s %s" % (faculty.first_name, faculty.last_name)
+
+    def format_item(self,faculty):
+        return "%s %s" % (faculty.first_name, faculty.last_name)
+
+    def get_objects(self,ids):
+        return User.objects.filter(pk__in=ids).order_by('last_name')
     
 class AttendanceStudentLookup(StudentLookup):
     def format_item(self,student):

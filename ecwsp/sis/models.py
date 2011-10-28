@@ -30,6 +30,7 @@ from thumbs import ImageWithThumbsField
 from datetime import date, timedelta, datetime
 from decimal import *
 import types
+from ecwsp.administration.models import Configuration
 
 logger = logging.getLogger(__name__)
 
@@ -220,14 +221,16 @@ class PhoneNumber(models.Model):
         else:
             return self.number
             
-
+    
+def get_city():
+    return Configuration.get_or_default("Default City", "").value
 class EmergencyContact(models.Model):
     fname = models.CharField(max_length=255, verbose_name="First Name")
     mname = models.CharField(max_length=255, blank=True, null=True, verbose_name="Middle Name")
     lname = models.CharField(max_length=255, verbose_name="Last Name")
     relationship_to_student = models.CharField(max_length=500, blank=True)
     street = models.CharField(max_length=255, blank=True, null=True)
-    city = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=255, blank=True, null=True, default=get_city)
     state = USStateField(blank=True, null=True)
     zip = models.CharField(max_length=10, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
@@ -236,7 +239,7 @@ class EmergencyContact(models.Model):
     
     class Meta:
         ordering = ('primary_contact', 'emergency_only', 'lname') 
-        verbose_name = "Student Contact"  
+        verbose_name = "Student Contact"
     
     def __unicode__(self):
         txt = self.fname + " " + self.lname
@@ -341,6 +344,7 @@ class LanguageChoice(models.Model):
                 language.save()
         super(LanguageChoice, self).save(*args, **kwargs)
 
+
 def get_default_language():
     if LanguageChoice.objects.filter(default=True).count():
         return LanguageChoice.objects.filter(default=True)[0]
@@ -371,7 +375,7 @@ class Student(MdlUser):
     emergency_contacts = models.ManyToManyField(EmergencyContact, blank=True)
     siblings = models.ManyToManyField('Student', blank=True)
     cohorts = models.ManyToManyField(Cohort, through='StudentCohort', blank=True)
-    cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, help_text="Cached primary cohort.", related_name="cache_cohorts")
+    cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
     individual_education_program = models.BooleanField()
     cache_gpa = models.DecimalField(editable=False, max_digits=5, decimal_places=2, blank=True, null=True)
     

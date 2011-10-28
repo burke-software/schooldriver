@@ -217,6 +217,7 @@ AJAX_LOOKUP_CHANNELS = {
     'dstudent' : ('ecwsp.sis.lookups', 'StudentLookupSmall'),
     'studentworker' : ('ecwsp.work_study.lookups', 'StudentLookup'),
     'faculty' : ('ecwsp.sis.lookups', 'FacultyLookup'),
+    'faculty_user' : ('ecwsp.sis.lookups', 'FacultyUserLookup'),
     'emergency_contact' : ('ecwsp.sis.lookups', 'EmergencyContactLookup'),
     'discstudent' : ('ecwsp.sis.lookups', 'StudentWithDisciplineLookup'),
     'discipline_view_student': ('ecwsp.sis.lookups', 'DisciplineViewStudentLookup'),
@@ -270,6 +271,8 @@ ENGRADE_LOGIN = ''
 ENGRADE_PASSWORD = ''
 # School UID (admin must be connected to school)
 ENGRADE_SCHOOLID = ''
+
+ADMISSIONS_DEFAULT_COUNTRY = "Unites States"
 
 # URL of master server that stores questions
 OMR_MASTER_SERVER='localhost'
