@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # install everything needed to run this application, start with deb files, should be run as root
-apt-get install mysql-server libapache2-mod-wsgi python-xlwt libreoffice python-reportlab python-mysqldb python-ldap python-setuptools python-feedparser python-xlrd python-mysqldb mysql-client
+apt-get install mysql-server libapache2-mod-wsgi python-xlwt python-reportlab python-mysqldb python-ldap python-setuptools python-feedparser python-xlrd python-mysqldb mysql-client
 
 # now install python libs that aren't in deb
 cd /var/tmp
@@ -26,6 +26,7 @@ easy_install poster
 easy_install django-ajax-filtered-fields
 easy_install django-mass-edit
 easy_install django-pagination
+easy_install django-admin-export
 
 #prepare mysql
 echo "enter mysql root password"
