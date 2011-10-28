@@ -278,7 +278,7 @@ class Question(QuestionAbstract):
                 for answer in answers:
                     answer.delete()
                 answer = Answer(
-                    answer="False",
+                    answer="True",
                     question=self
                 )
                 if self.is_true:
@@ -287,7 +287,7 @@ class Question(QuestionAbstract):
                     answer.point_value = self.point_value
                 answer.save()
                 answer = Answer(
-                    answer="True",
+                    answer="False",
                     question=self
                 )
                 if self.is_true:
