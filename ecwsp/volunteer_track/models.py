@@ -45,7 +45,7 @@ class Site(models.Model):
 
 class SiteSupervisor(models.Model):
     name = models.CharField(max_length=200, blank=True)
-    site = models.ManyToManyField('Site')
+    site = models.ForeignKey('Site',blank=True)
     phone = models.CharField(max_length=40, blank=True)
     email = models.EmailField(max_length=200, blank=True)
     def __unicode__(self):
@@ -53,7 +53,6 @@ class SiteSupervisor(models.Model):
 
 class Volunteer(models.Model):
     student = models.OneToOneField('sis.Student') #string so that it looks up sis.Student after the fact.
-    site = models.OneToOneField('Site', null=True, blank=True)
     site_approval = models.CharField(max_length=16, choices=(('Accepted','Accepted'),('Rejected', 'Rejected'),('Submitted', 'Submitted'),('Resubmitted', 'Resubmitted')), blank=True)
     site_supervisor = models.ForeignKey('SiteSupervisor', blank=True, null=True)
     attended_reflection = models.BooleanField(verbose_name = "Attended")
