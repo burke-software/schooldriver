@@ -96,6 +96,16 @@
                     </ul>
                 </li>
             {% endif %}
+            <!-- Alumni -->
+            {% if perms.alumni.change_alumni and 'ecwsp.alumni' in settings.INSTALLED_APPS %}
+                <li class="user-options-container collapse closed">
+                    <a href="javascript://" class="user-options-handler collapse-handler"> Alumni </a>
+                    <ul class="user-options">
+                        <li><a href="{% url admin:app_list 'alumni'%}">{% trans 'Alumni Admin' %}</a></li>
+                        <li><a href="{% url admin:alumni_alumni_changelist %}">{% trans 'Alumnus' %}</a></li>
+                    </ul>
+                </li>
+            {% endif %}
             <!-- CWSP -->
             {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
                 <li class="user-options-container collapse closed">

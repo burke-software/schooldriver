@@ -57,7 +57,7 @@ if GAPPS:
 
 # admins get emailed if there is an error
 ADMINS = (
-    ('Admin', 'dburke@cristoreyny.org'),
+    ('Admin', 'someone@example.com'),
 )
 
 DATABASES = {
@@ -217,6 +217,7 @@ AJAX_LOOKUP_CHANNELS = {
     'dstudent' : ('ecwsp.sis.lookups', 'StudentLookupSmall'),
     'studentworker' : ('ecwsp.work_study.lookups', 'StudentLookup'),
     'faculty' : ('ecwsp.sis.lookups', 'FacultyLookup'),
+    'faculty_user' : ('ecwsp.sis.lookups', 'FacultyUserLookup'),
     'emergency_contact' : ('ecwsp.sis.lookups', 'EmergencyContactLookup'),
     'discstudent' : ('ecwsp.sis.lookups', 'StudentWithDisciplineLookup'),
     'discipline_view_student': ('ecwsp.sis.lookups', 'DisciplineViewStudentLookup'),
@@ -245,7 +246,7 @@ CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': [
             [ 'Bold', 'Italic', 'Underline', 'Subscript','Superscript',
-              '-', 'Image', 'Link', 'Unlink', 'SpecialChar',
+              '-', 'Image', 'Link', 'Unlink', 'SpecialChar', 'equation',
               '-', 'Format',
               '-', 'Maximize',
               '-', 'Table',
@@ -254,10 +255,11 @@ CKEDITOR_CONFIGS = {
             ]
         ],
         'height': 80,
-        'width': 600,
+        'width': 640,
         'disableNativeSpellChecker': False,
         'removePlugins': 'scayt,menubutton,contextmenu,elementspath',
         'resize_enabled': False,
+        'extraPlugins': 'equation',
     },
 }
 
@@ -269,6 +271,8 @@ ENGRADE_LOGIN = ''
 ENGRADE_PASSWORD = ''
 # School UID (admin must be connected to school)
 ENGRADE_SCHOOLID = ''
+
+ADMISSIONS_DEFAULT_COUNTRY = "United States"
 
 # URL of master server that stores questions
 OMR_MASTER_SERVER='localhost'

@@ -24,7 +24,7 @@
               </td>
               
               <td>
-                {{ question_form.benchmarks.label }} <a href="{% url admin:omr_benchmark_changelist %}" target="_blank">View Benchmarks</a> {{ question_form.benchmarks.errors }} <br/> {{ question_form.benchmarks }} <br/> 
+                {{ question_form.benchmarks.label }} <a onclick="return showBenchmarkPopup(this, {% if new %}'{{ new }}'{% else %}{{ question.id }}{% endif %});" href="/omr/benchmark">View Benchmarks</a> {{ question_form.benchmarks.errors }} <br/> {{ question_form.benchmarks }} <br/> 
                 {{ question_form.themes.label }} {{ question_form.themes.errors }}
                 <a href="/admin/omr/theme/add/" class="add-another" id="add_id_{{question_form.themes.html_name}}" onclick="return showAddAnotherPopup(this);"><img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"></a>
                 <br/>

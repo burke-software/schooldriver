@@ -23,6 +23,8 @@ admin.site.register(FirstContactOption)
 admin.site.register(ApplicationDecisionOption)
 admin.site.register(WithdrawnChoices)
 admin.site.register(BoroughOption)
+admin.site.register(CountryOption)
+admin.site.register(ImmigrationOption)
 
 class ContactLogInline(admin.TabularInline):
     model = ContactLog
@@ -38,11 +40,11 @@ class ApplicantAdmin(admin.ModelAdmin):
     inlines = [ContactLogInline]
     ordering = ('-id',)
     fieldsets = [
-        (None, {'fields': ['lname', 'fname', 'mname', 'present_school', 'heard_about_us', 'first_contact',
-                           'ready_for_export', 'application_decision', 'application_decision_by', 'withdrawn', 'withdrawn_note']}),
-        ('About applicant', {'fields': [('single_parent', 'qualify_for_reduced_lunch'), ('ssn', 'sex'), ('ethnicity', 'religion'), ('email', 'bday'), ('year', 'school_year'), ('hs_grad_yr',
+        (None, {'fields': ['ready_for_export', 'lname', 'fname', 'mname', 'present_school', 'heard_about_us', 'first_contact',
+                           'application_decision', 'application_decision_by', 'withdrawn', 'withdrawn_note']}),
+        ('About applicant', {'fields': [('total_income', 'adjusted_available_income', 'calculated_payment') , ('ssn', 'sex'), ('ethnicity', 'religion'), ('email', 'bday'), ('year', 'school_year'), ('hs_grad_yr',
                                       'elem_grad_yr'), 'notes', 'siblings', 
-                                      'borough', 'parent_guardians', 'open_house_attended'],
+                                      'borough', ('country_of_birth','immigration_status'), 'parent_guardians', 'open_house_attended'],
             'classes': ['collapse']}),
     ]
     

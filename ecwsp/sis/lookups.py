@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
+from django.contrib.auth.models import User
 
 from ecwsp.sis.models import *
 from ecwsp.administration.models import *
@@ -166,8 +167,9 @@ class EmergencyContactLookup(object):
             result = "<table style=\"width: auto;\"><tr><td colspan=3><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\">%s %s - %s (Emergency only)</a></td></tr>" \
                 % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student)
         elif emergency_contact.primary_contact:
-            result = "<table style=\"width: auto;\"><tr><td colspan=3 style=\"font-weight: bold;\"><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\">%s %s - %s</a></td></tr>" \
-                % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student)
+            result = "<table style=\"width: auto;\"><tr><td colspan=3><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\"><span style=\"font-weight: bold;\">%s %s</span> - %s<br/>%s<br/>%s %s %s</a></td></tr>" \
+                % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student, emergency_contact.street, emergency_contact.city,
+                   emergency_contact.state, emergency_contact.zip)
         else:
             result = "<table style=\"width: auto;\"><tr><td colspan=3><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\">%s %s - %s</a></td></tr>" \
                 % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student)
@@ -194,7 +196,21 @@ class FacultyLookup(object):
 
     def get_objects(self,ids):
         return Faculty.objects.filter(pk__in=ids).order_by('lname')
-        
+
+class FacultyUserLookup(object):
+    def get_query(self,q,request):
+        words = q.split()
+        result = User.objects.filter(groups__name="faculty").filter(Q(first_name__istartswith=q) | Q(last_name__istartswith=q) | Q(username__istartswith=q))
+        return result
+
+    def format_result(self, faculty):
+        return "%s %s" % (faculty.first_name, faculty.last_name)
+
+    def format_item(self,faculty):
+        return "%s %s" % (faculty.first_name, faculty.last_name)
+
+    def get_objects(self,ids):
+        return User.objects.filter(pk__in=ids).order_by('last_name')
     
 class AttendanceStudentLookup(StudentLookup):
     def format_item(self,student):

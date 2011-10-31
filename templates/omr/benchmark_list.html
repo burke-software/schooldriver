@@ -1,0 +1,110 @@
+{% extends "admin/index.html" %}
+{% load adminmedia admin_list i18n grp_tags pagination_tags %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <style type="text/css">
+      .content-grid {
+        min-width: 800px !important;
+      }
+      .hang_indent {
+        text-indent: -1.5em;
+        margin-left: 1.5em;
+      }
+      .search {
+        width: 100% !important;
+      }
+  </style>
+  <script type="text/javascript">
+  grappelli.initFilter = function() {}
+  </script>
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script type="text/javascript" src="/static/js/jquery.truncate.min.js"></script>
+  <script type="text/javascript">
+    function filter_toggle() {
+      $('.filter-pulldown').toggle();
+    }
+    
+    function choose_benchmark(id, btext) {
+      opener.dismissBenchmarkPopup(window, id, btext);
+    }
+    
+    $(document).ready(function() {
+      $('.limit').truncate({
+        width: 350,
+        after: '&hellip;',
+        center: false,
+        addtitle: true // adds title attribute with original content
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+  <h2>Benchmark {% if test %} for {{ test.department }} {% endif %}</h2>
+  {% autopaginate filter.qs 50 as filter_list %}
+  <div class="module changelist-filters">
+    <!-- PAGINATION TOP -->
+    <div class="module pagination">
+      <ul class="pagination">
+        <li class="results">
+          <span> {{ filter.qs.count }} total </span>
+        </li>
+        <li>
+          {% paginate %}
+        </li>
+      </ul>
+      
+    </div>
+    <!-- FILTERS -->
+    <div id="filters" class="module filter span-6">
+      <div class="pulldown-container" >
+        <a href="javascript://" class="button toggle-filters" onclick="filter_toggle()">Filter</a>
+        <div class="filter-pulldown" style="width: 325px;">
+          <form action="" method="get">
+            {{ filter.form.as_p }}
+            <input type="submit" />
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- SEARCH -->
+    <br clear="all">
+  </div>
+  
+
+  <div class="module changelist-results">
+    <table cellspacing="0"> 
+      <thead> 
+        <tr> 
+          <th> Number </th>
+          <th> Benchmark </th>
+          <th> Measurement Topic </th>
+          <th> Year </th>
+        </tr>
+      </thead> 
+      <tbody>
+        {% for obj in filter_list %}
+          <tr class="{% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
+            <td> <a href="javascript://" onclick="choose_benchmark({{ obj.id }}, '{{ obj.number }} {{ obj.name }}');"> {{ obj.number }} </a> </td>
+            <td> {{ obj.name }} </td>
+            <td style="min-width: 130px;">
+              {% for mt in obj.measurement_topics.all %}
+                <div class="hang_indent limit">
+                  {{ mt }}
+                </div>
+              {% endfor %}
+            </td>
+            <td style="min-width: 200px;">
+              {{ obj.year }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  Tip: {{ tip|random }}
+{% endblock %}

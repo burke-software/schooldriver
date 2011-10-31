@@ -255,7 +255,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             '-start_date'
         )[0]
     ).filter(show_reports=True)
-    data['marking_periods'] = marking_periods
+    data['marking_periods'] = marking_periods.order_by('start_date')
     
     for student in students:
         # for report_card

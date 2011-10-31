@@ -94,9 +94,28 @@ class WithdrawnChoices(models.Model):
     class Meta:
         ordering = ['name']
         
+class CountryOption(models.Model):
+    name = models.CharField(max_length=500)
+    def __unicode__(self):
+        return unicode(self.name)
+    class Meta:
+        ordering = ['name']
+        
+class ImmigrationOption(models.Model):
+    name = models.CharField(max_length=500)
+    def __unicode__(self):
+        return unicode(self.name)
+    class Meta:
+        ordering = ['name']
+ 
+
+def get_default_country():
+    return CountryOption.objects.get_or_create(name=settings.ADMISSIONS_DEFAULT_COUNTRY)[0]
 def get_school_year():
-    if SchoolYear.objects.all():
-        return SchoolYear.objects.all()[0]  
+    try:
+        return SchoolYear.objects.get(active_year=True).get_next_by_end_date()
+    except:
+        return None
 def get_year():
     if GradeLevel.objects.count():
         return GradeLevel.objects.all()[0]
@@ -111,8 +130,8 @@ class Applicant(models.Model):
     city = models.CharField(max_length=360, blank=True)
     state = USStateField(blank=True)
     zip = models.CharField(max_length=10, blank=True)
-    single_parent = models.BooleanField()
-    qualify_for_reduced_lunch = models.BooleanField()
+    #single_parent = models.BooleanField()
+    #qualify_for_reduced_lunch = models.BooleanField()
     ssn = models.CharField(max_length=11, blank=True, verbose_name="SSN")
     parent_email = models.EmailField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
@@ -133,9 +152,14 @@ class Applicant(models.Model):
     heard_about_us = models.ForeignKey(HeardAboutUsOption, blank=True, null=True)
     first_contact = models.ForeignKey(FirstContactOption, blank=True, null=True)
     borough = models.ForeignKey(BoroughOption, blank=True, null=True)
-    home_country = models.CharField(max_length=255, blank=True)
+    country_of_birth = models.ForeignKey(CountryOption, blank=True, null=True, default=get_default_country)
+    immigration_status = models.ForeignKey(ImmigrationOption, blank=True, null=True)
     ready_for_export = models.BooleanField()
     sis_student = models.ForeignKey('sis.Student', blank=True, null=True, related_name="appl_student", on_delete=models.SET_NULL)
+    
+    total_income = models.DecimalField(max_digits=10, decimal_places=2, blank=True,null=True)
+    adjusted_available_income = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
+    calculated_payment = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
     
     date_added = models.DateField(auto_now_add=True, blank=True, null=True)
     level = models.ForeignKey(AdmissionLevel, blank=True, null=True)
@@ -196,7 +220,12 @@ class Applicant(models.Model):
                 )
                 contact_log.save()
         super(Applicant, self).save(*args, **kwargs)
-        
+def cache_applicant_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
+    for ec in instance.parent_guardians.filter(primary_contact=True):
+            ec.cache_student_addresses()
+
+m2m_changed.connect(cache_applicant_m2m, sender=Applicant.parent_guardians.through)
+
 class ContactLog(models.Model):
     applicant = models.ForeignKey(Applicant)
     date = models.DateField(editable=False)

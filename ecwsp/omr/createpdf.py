@@ -560,10 +560,14 @@ def barcodeBoxgroup():
     """hacks on QueXF's database to insert the banding for the student barcode into the database
     """
     db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
-    db_cursor = db.cursor()        
-    db_cursor.execute("INSERT INTO boxgroupstype SET btid=5,width=7,pid=" + str(page) + ",varname='barcode_" + str(page) + "',sortorder=0")
-    db_cursor.execute("INSERT INTO boxes SET tlx=210,tly=185,brx=1175,bry=450,pid=" + str(page) +
-                      ",bgid=LAST_INSERT_ID(),value=" + str(student_id[id]))
+    db_cursor = db.cursor()
+    db_cursor.execute("SET @page_id =(SELECT pid from pages order by pid DESC limit 1)")
+    db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 1)")
+    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7,@pageid,'barcode_"
+                      + str(page) + "',0)")
+    db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +
+                      " values (210, 185, 1175, 450, @pageid,LAST_INSERT_ID(),"+
+                      str(student_id[id]) + ")")
     db.commit()
     db.close()    
     

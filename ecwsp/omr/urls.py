@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import *
 #from django.views.generic import ListView
 from views import *
-from ecwsp.omr.models import QuestionBank
+from ecwsp.omr.models import QuestionBank, Benchmark
 
 urlpatterns = patterns('',
     (r'^test/$', my_tests),
@@ -25,6 +25,9 @@ urlpatterns = patterns('',
     (r'^generatexml/(?P<test_id>\d+)', queXF_answer_sheets),
     (r'^question_bank/$', QuestionBankListView.as_view(
         model=QuestionBank,
+    )),
+    (r'^benchmark/$', BenchmarkListView.as_view(
+        model=Benchmark,
     )),
     (r'^manual_edit/(?P<test_id>\d+)/$', manual_edit),
 )

@@ -278,7 +278,7 @@ class Question(QuestionAbstract):
                 for answer in answers:
                     answer.delete()
                 answer = Answer(
-                    answer="False",
+                    answer="True",
                     question=self
                 )
                 if self.is_true:
@@ -287,7 +287,7 @@ class Question(QuestionAbstract):
                     answer.point_value = self.point_value
                 answer.save()
                 answer = Answer(
-                    answer="True",
+                    answer="False",
                     question=self
                 )
                 if self.is_true:
@@ -368,4 +368,4 @@ class AnswerInstance(models.Model):
     def __unicode__(self):
         return '%s %s' % (self.test_instance, self.answer)
     class Meta:
-        unique_together = ('test_instance', 'question')
+        unique_together = (("test_instance", "question"),)

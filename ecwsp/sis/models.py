@@ -1,4 +1,4 @@
-#   Copyright 2010 Cristo Rey New York High School
+#   Copyright 2010-2011 Burke Software and Consulting LLC
 #   Author David M Burke <david@burkesoftware.com>
 #   
 #   This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@ from thumbs import ImageWithThumbsField
 from datetime import date, timedelta, datetime
 from decimal import *
 import types
+from ecwsp.administration.models import Configuration
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,9 @@ class UserPreference(models.Model):
     prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
     include_deleted_students = models.BooleanField(help_text="When searching for students, include deleted (previous) students.")
     additional_report_fields = models.ManyToManyField('ReportField', blank=True, null=True, help_text="These fields will be added to spreadsheet reports. WARNING adding fields with multiple results will GREATLY increase the time it takes to generate reports")
+    omr_default_point_value = models.IntegerField(default=1, help_text="How many points a new question is worth by default")
+    omr_default_save_question_to_bank = models.BooleanField(default=True)
+    omr_default_number_answers = models.IntegerField(default=2)
     user = models.ForeignKey(User, unique=True, editable=False)
     names = None    # extra field names. (Attempt to speed up reports so these don't get called up over and over)
     first = True
@@ -217,23 +221,25 @@ class PhoneNumber(models.Model):
         else:
             return self.number
             
-
+    
+def get_city():
+    return Configuration.get_or_default("Default City", "").value
 class EmergencyContact(models.Model):
     fname = models.CharField(max_length=255, verbose_name="First Name")
     mname = models.CharField(max_length=255, blank=True, null=True, verbose_name="Middle Name")
     lname = models.CharField(max_length=255, verbose_name="Last Name")
     relationship_to_student = models.CharField(max_length=500, blank=True)
-    street = models.CharField(max_length=255, blank=True, null=True)
-    city = models.CharField(max_length=255, blank=True, null=True)
+    street = models.CharField(max_length=255, blank=True, null=True, help_text="Include apt number")
+    city = models.CharField(max_length=255, blank=True, null=True, default=get_city)
     state = USStateField(blank=True, null=True)
     zip = models.CharField(max_length=10, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    primary_contact = models.BooleanField(default=True)
+    primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to.")
     emergency_only = models.BooleanField(help_text="Only contact in case of emergency")
     
     class Meta:
         ordering = ('primary_contact', 'emergency_only', 'lname') 
-        verbose_name = "Student Contact"  
+        verbose_name = "Student Contact"
     
     def __unicode__(self):
         txt = self.fname + " " + self.lname
@@ -246,7 +252,8 @@ class EmergencyContact(models.Model):
         self.cache_student_addresses()
     
     def cache_student_addresses(self):
-        """cache these for the student for primary contact only"""
+        """cache these for the student for primary contact only
+        There is another check on Student in case all contacts where deleted"""
         if self.primary_contact:
             for student in self.student_set.all():
                 student.parent_guardian = self.fname + " " + self.lname
@@ -338,6 +345,7 @@ class LanguageChoice(models.Model):
                 language.save()
         super(LanguageChoice, self).save(*args, **kwargs)
 
+
 def get_default_language():
     if LanguageChoice.objects.filter(default=True).count():
         return LanguageChoice.objects.filter(default=True)[0]
@@ -350,9 +358,9 @@ class Student(MdlUser):
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date")
     year = models.ForeignKey(GradeLevel, blank=True, null=True)
-    reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
     date_dismissed = models.DateField(blank=True, null=True)
-    unique_id = models.IntegerField(blank=True, null=True, unique=True)
+    reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
+    unique_id = models.IntegerField(blank=True, null=True, unique=True, help_text="For integration with outside databases")
     ssn = models.CharField(max_length=11, blank=True, null=True)
     
     # These fields are cached from emergency contacts
@@ -368,7 +376,7 @@ class Student(MdlUser):
     emergency_contacts = models.ManyToManyField(EmergencyContact, blank=True)
     siblings = models.ManyToManyField('Student', blank=True)
     cohorts = models.ManyToManyField(Cohort, through='StudentCohort', blank=True)
-    cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, help_text="Cached primary cohort.", related_name="cache_cohorts")
+    cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
     individual_education_program = models.BooleanField()
     cache_gpa = models.DecimalField(editable=False, max_digits=5, decimal_places=2, blank=True, null=True)
     
@@ -414,6 +422,27 @@ class Student(MdlUser):
     def son_daughter(self):
         """ returns "son" or "daughter" """
         return self.gender_to_word("son", "daughter")
+    
+    def get_disciplines(self, mps, action_name=None, count=True):
+        """ Shortcut to look up discipline records
+        mp: Marking Period
+        action_name: Discipline action name
+        count: Boolean - Just the count of them """
+        if hasattr(mps,'db'): # More than one?
+            if len(mps):
+                start_date = mps.order_by('start_date')[0].start_date
+                end_date = mps.order_by('-end_date')[0].end_date
+                disc = self.studentdiscipline_set.filter(date__range=(start_date,end_date))
+            else:
+                disc = self.studentdiscipline_set.none()
+        else:
+            disc = self.studentdiscipline_set.filter(date__range=(mps.start_date,mps.end_date))
+        if action_name:
+            disc = disc.filter(action__name=action_name)
+        if count:
+            return disc.count()
+        else:
+            return disc
     
     def __calculate_grade_for_courses(self, courses, marking_period=None, date_report=None):
         gpa = float(0)
@@ -516,9 +545,22 @@ class Student(MdlUser):
             cursor.execute("insert into work_study_studentworker (student_ptr_id, fax) values (" + str(self.id) + ", 0);")
         except:
             return
-    
-    def get_disciplines(self):
-        return self.studentdiscipline_set.all()
+def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
+    if not instance.emergency_contacts.filter(primary_contact=True).count():
+        # No contacts, set cache to None 
+        instance.parent_guardian = ""
+        instance.city = ""
+        instance.street = ""
+        instance.state = ""
+        instance.zip = ""
+        instance.parent_email = ""
+        #instance.save()
+    for ec in instance.emergency_contacts.filter(primary_contact=True):
+        ec.cache_student_addresses()
+        
+
+m2m_changed.connect(after_student_m2m, sender=Student.emergency_contacts.through)
+        
 
 class ASPHistory(models.Model):
     student = models.ForeignKey(Student)
