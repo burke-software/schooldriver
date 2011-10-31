@@ -88,11 +88,9 @@ def student_site_approval(request):
         site_form = siteForm()
     if request.method == 'POST':
         site_form = siteForm(request.POST)
-        print site_form.query
         job_description = jobDescriptionForm(request.POST, instance=volunteer)
         if site_form.is_valid():
             if job_description.is_valid():
-                print job_description.job_description
                 if volunteer.site_approval=='Rejected':
                     volunteer.site_approval = 'Resubmitted'
                 else:
