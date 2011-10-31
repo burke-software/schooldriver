@@ -167,8 +167,9 @@ class EmergencyContactLookup(object):
             result = "<table style=\"width: auto;\"><tr><td colspan=3><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\">%s %s - %s (Emergency only)</a></td></tr>" \
                 % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student)
         elif emergency_contact.primary_contact:
-            result = "<table style=\"width: auto;\"><tr><td colspan=3 style=\"font-weight: bold;\"><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\">%s %s - %s</a></td></tr>" \
-                % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student)
+            result = "<table style=\"width: auto;\"><tr><td colspan=3><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\"><span style=\"font-weight: bold;\">%s %s</span> - %s<br/>%s<br/>%s %s %s</a></td></tr>" \
+                % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student, emergency_contact.street, emergency_contact.city,
+                   emergency_contact.state, emergency_contact.zip)
         else:
             result = "<table style=\"width: auto;\"><tr><td colspan=3><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\">%s %s - %s</a></td></tr>" \
                 % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student)

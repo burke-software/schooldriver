@@ -1,4 +1,4 @@
-#   Copyright 2010 Cristo Rey New York High School
+#   Copyright 2010-2011 Burke Software and Consulting LLC
 #   Author David M Burke <david@burkesoftware.com>
 #   
 #   This program is free software; you can redistribute it and/or modify
@@ -229,12 +229,12 @@ class EmergencyContact(models.Model):
     mname = models.CharField(max_length=255, blank=True, null=True, verbose_name="Middle Name")
     lname = models.CharField(max_length=255, verbose_name="Last Name")
     relationship_to_student = models.CharField(max_length=500, blank=True)
-    street = models.CharField(max_length=255, blank=True, null=True)
+    street = models.CharField(max_length=255, blank=True, null=True, help_text="Include apt number")
     city = models.CharField(max_length=255, blank=True, null=True, default=get_city)
     state = USStateField(blank=True, null=True)
     zip = models.CharField(max_length=10, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    primary_contact = models.BooleanField(default=True)
+    primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to.")
     emergency_only = models.BooleanField(help_text="Only contact in case of emergency")
     
     class Meta:
@@ -252,7 +252,8 @@ class EmergencyContact(models.Model):
         self.cache_student_addresses()
     
     def cache_student_addresses(self):
-        """cache these for the student for primary contact only"""
+        """cache these for the student for primary contact only
+        There is another check on Student in case all contacts where deleted"""
         if self.primary_contact:
             for student in self.student_set.all():
                 student.parent_guardian = self.fname + " " + self.lname
@@ -357,9 +358,9 @@ class Student(MdlUser):
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date")
     year = models.ForeignKey(GradeLevel, blank=True, null=True)
-    reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
     date_dismissed = models.DateField(blank=True, null=True)
-    unique_id = models.IntegerField(blank=True, null=True, unique=True)
+    reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
+    unique_id = models.IntegerField(blank=True, null=True, unique=True, help_text="For integration with outside databases")
     ssn = models.CharField(max_length=11, blank=True, null=True)
     
     # These fields are cached from emergency contacts
@@ -544,6 +545,22 @@ class Student(MdlUser):
             cursor.execute("insert into work_study_studentworker (student_ptr_id, fax) values (" + str(self.id) + ", 0);")
         except:
             return
+def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
+    if not instance.emergency_contacts.filter(primary_contact=True).count():
+        # No contacts, set cache to None 
+        instance.parent_guardian = ""
+        instance.city = ""
+        instance.street = ""
+        instance.state = ""
+        instance.zip = ""
+        instance.parent_email = ""
+        #instance.save()
+    for ec in instance.emergency_contacts.filter(primary_contact=True):
+        ec.cache_student_addresses()
+        
+
+m2m_changed.connect(after_student_m2m, sender=Student.emergency_contacts.through)
+        
 
 class ASPHistory(models.Model):
     student = models.ForeignKey(Student)

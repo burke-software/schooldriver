@@ -35,8 +35,8 @@
                     <!-- Fieldsets -->
                     {% for fieldset in adminform %}
                         {% include "admin/includes/fieldset.html" %}
-                        <fieldset class="module aligned ">
-                            <h2>Courses</h2>
+                        
+                        <fieldset class="module collapse closed open"><h2 class="collapse-handler">Courses</h2>
                             <div class="form-row checklist">
                                  <table>
                                       {% for course in courses %}
@@ -62,8 +62,10 @@
                                  {% endif %}
                                  </table>
                                  </div>
-                           </div>
-                         </fieldset>
+                            </div>
+                        </fieldset>
+                        <br/>
+                        
                     {% endfor %}
                     
                     {% block after_field_sets %}{% endblock %}

@@ -57,7 +57,7 @@ if GAPPS:
 
 # admins get emailed if there is an error
 ADMINS = (
-    ('Admin', 'dburke@cristoreyny.org'),
+    ('Admin', 'someone@example.com'),
 )
 
 DATABASES = {

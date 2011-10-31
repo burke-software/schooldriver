@@ -69,7 +69,7 @@ def mark_inactive(modeladmin, request, queryset):
 
 class StudentNumberInline(admin.TabularInline):
     model = StudentNumber
-    extra = 1
+    extra = 0
     
     
 class EmergencyContactInline(admin.TabularInline):
@@ -78,16 +78,16 @@ class EmergencyContactInline(admin.TabularInline):
     
 class TranscriptNoteInline(admin.TabularInline):
     model = TranscriptNote
-    extra = 1
+    extra = 0
     
-class StudentFileInline(admin.StackedInline):
+class StudentFileInline(admin.TabularInline):
     model = StudentFile
-    extra = 1
+    extra = 0
 
 
-class StudentHealthRecordInline(admin.StackedInline):
+class StudentHealthRecordInline(admin.TabularInline):
     model = StudentHealthRecord
-    extra = 1
+    extra = 0
     
 class StudentAwardInline(admin.TabularInline):
     model = AwardStudent
@@ -99,13 +99,13 @@ class DisciplineActionInstanceInline(admin.TabularInline):
 
 class ASPHistoryInline(admin.TabularInline):
     model = ASPHistory
-    extra = 1
+    extra = 0
     
 class StudentCohortInline(admin.TabularInline):
     model = Student.cohorts.through
-    extra = 1
+    extra = 0
 
-class StudentECInline(admin.StackedInline):
+class StudentECInline(admin.TabularInline):
     model = Student.emergency_contacts.through
     extra = 1
 
@@ -156,7 +156,11 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin):
         if not request.user.has_perm('sis.view_ssn_student'):
             self.exclude = ("ssn",)
         return form
-        
+    
+    fieldsets = [
+        (None, {'fields': [('lname', 'fname'), 'mname', 'pic', 'alert', ('sex', 'bday'), 'year', ('date_dismissed','reason_left'),('unique_id','ssn'),
+            'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
+    ]
     form = StudentForm
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline, ASPHistoryInline]
@@ -167,6 +171,11 @@ admin.site.register(Student, StudentAdmin)
 
 
 class EmergencyContactAdmin(admin.ModelAdmin):
+    fieldsets = [
+        (None, {'fields': [('lname', 'fname'), 'mname', ('relationship_to_student','email'), ('primary_contact', 'emergency_only')]}),
+        ('Address', {'fields': ['street', ('city', 'state'), 'zip'],
+            'classes': ['collapse']}),
+    ]
     inlines = [EmergencyContactInline, StudentECInline]
     search_fields = ['fname', 'lname', 'email', 'student__fname', 'student__lname']
 admin.site.register(EmergencyContact, EmergencyContactAdmin)
