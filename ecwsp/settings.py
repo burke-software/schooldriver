@@ -272,7 +272,7 @@ ENGRADE_PASSWORD = ''
 # School UID (admin must be connected to school)
 ENGRADE_SCHOOLID = ''
 
-ADMISSIONS_DEFAULT_COUNTRY = "Unites States"
+ADMISSIONS_DEFAULT_COUNTRY = "United States"
 
 # URL of master server that stores questions
 OMR_MASTER_SERVER='localhost'
