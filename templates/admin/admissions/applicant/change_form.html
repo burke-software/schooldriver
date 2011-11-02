@@ -89,18 +89,20 @@
    {% if add %}
    <script type="text/javascript">
       $(document).ready(function() {
-         $('#id_lname').bind('change', function() {
+         $('#id_fname').bind('change', function() {
             var first = $('#id_fname').val();
             var last = $('#id_lname').val();
-            $.post(  
-               "/admissions/ajax_check_duplicate_applicant/" + first + "/" + last + "/",
-               function(data){
-                  if (data != "") {
-                     $('#duplicate_p').show('fast');
-                     $('#insert_point').html(data);
-                  }
-               }  
-             );
+            if (first && last) {
+               $.post(  
+                  "/admissions/ajax_check_duplicate_applicant/" + first + "/" + last + "/",
+                  function(data){
+                     if (data != "") {
+                        $('#duplicate_p').show('fast');
+                        $('#insert_point').html(data);
+                     }
+                  }  
+               );
+            }
          });
       });
    </script>    

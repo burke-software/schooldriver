@@ -152,16 +152,17 @@ TEMPLATE_LOADERS = (
 ROOT_URLCONF = 'ecwsp.urls'
 
 INSTALLED_APPS = (
+    'grappelli.dashboard',
+    'grappelli',
+    'django.contrib.admin',
     'ajax_select',
     'django.contrib.staticfiles',
     'django.contrib.auth',
     'django.contrib.admindocs',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'grappelli.dashboard',
-    'grappelli',
+    
     #'ckeditor',
-    'django.contrib.admin',
     'ecwsp.volunteer_track',
     'ecwsp.sis',
     'ecwsp.schedule',
@@ -196,15 +197,12 @@ if CAS:
     )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    # default template context processors
-    'django.core.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.request",
+    "django.core.context_processors.i18n",
     'django.contrib.messages.context_processors.messages',
-
-    # required by django-admin-tools
-    'django.core.context_processors.request',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.media',
     
     'ecwsp.sis.context_processors.global_stuff',
 )

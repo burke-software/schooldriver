@@ -161,6 +161,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin):
         (None, {'fields': [('lname', 'fname'), 'mname', 'pic', 'alert', ('sex', 'bday'), 'year', ('date_dismissed','reason_left'),('unique_id','ssn'),
             'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
     ]
+    change_list_template = "admin/sis/student/change_list.html"
     form = StudentForm
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline, ASPHistoryInline]

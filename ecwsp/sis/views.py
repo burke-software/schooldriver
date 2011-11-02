@@ -112,24 +112,6 @@ def import_everything(request):
             return render_to_response('upload.html', {'form': form, 'request': request,})
     form = UploadFileForm()
     return render_to_response('upload.html', {'form': form, 'request': request,}, RequestContext(request, {}))
-
-
-@user_passes_test(lambda u: u.groups.filter(name='registrar').count() > 0 or u.is_superuser, login_url='/')    
-def import_standardtestresult(request):
-    if request.POST:
-        form = UploadStandardTestResultForm(request.POST, request.FILES)
-        if form.is_valid():
-            from sis.importer import *
-            importer = Importer(request.FILES['file'], request.user)
-            msg = ""
-            msg_to_add, filename = importer.import_just_standard_test(form.cleaned_data['test'])
-            msg += msg_to_add
-            form = UploadStandardTestResultForm()
-            return render_to_response('upload.html', {'form': form, 'msg': msg, 'error_filename':filename, 'request': request,})
-        else:
-            return render_to_response('upload.html', {'form': form, 'request': request,})
-    form = UploadStandardTestResultForm()
-    return render_to_response('upload.html', {'form': form, 'request': request,}, RequestContext(request, {}))
     
 
 @user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')    
@@ -748,6 +730,22 @@ def student_page_redirect(request, id):
         return HttpResponseRedirect(reverse('admin:work_study_studentworker_change', args=(id,)))
     return HttpResponseRedirect(reverse('admin:sis_student_change', args=(id,)))
 
+@permission_required('sis.change_student')
+def import_naviance(request):
+    msg = 'Import a test directly from Naviance such as SAT and ACT. You must have unique id (SWORD) and hs_student_id (Naviance) be the same. You must have already set up the <a href="/admin/schedule/standardtest/"> tests </a> <br/>' +\
+        'In Naviance, click setup, then Import/Export then export the test you want. At this time only SAT and ACT is supported.'
+    if request.method == 'POST':
+        form = UploadNaviance(request.POST, request.FILES)
+        if form.is_valid():
+            test = form.cleaned_data['test']
+            from ecwsp.sis.importer import Importer
+            importer = Importer(file=form.cleaned_data['import_file'], user=request.user)
+            msg, filename = importer.import_just_standard_test(test)
+            msg += '<br/><a href="/media/import_error.xls">Download Errors</a>'
+    else:
+        form = UploadNaviance()
+    msg = mark_safe(msg)
+    return render_to_response('sis/generic_form.html', {'form':form,'msg':msg}, RequestContext(request, {}),)
 
 @user_passes_test(lambda u: u.groups.filter(name="registrar").count() or u.is_superuser, login_url='/')   
 def grade_report(request):
