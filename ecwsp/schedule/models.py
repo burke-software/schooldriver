@@ -479,6 +479,10 @@ class StandardTestResult(models.Model):
     date = models.DateField(default=date.today())
     student = models.ForeignKey('sis.Student')
     test = models.ForeignKey(StandardTest)
+    
+    class Meta:
+        unique_together = ('date', 'student', 'test')
+    
     def __unicode__(self):
         try:
             return '%s %s %s' % (unicode(self.student), unicode(self.test), self.date)

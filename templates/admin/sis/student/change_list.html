@@ -1,4 +1,4 @@
-{% extends "grappelli/templates/admin/change_list.html" %}
+{% extends "admin/change_list.html" %}
 
 <!-- LOADING -->
 {% load adminmedia admin_list i18n grp_tags %}
@@ -7,6 +7,9 @@
 {% block object-tools %}
     {% if has_add_permission %}
         <ul class="tools">
+            <li>
+                <a href="{% url sis.views.import_naviance %}"> Import Naviance Tests </a>
+            </li>  
             <li>
                 <a href="/admin/sis/student/recover/"> Recover deleted students </a>
             </li>

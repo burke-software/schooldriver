@@ -130,12 +130,17 @@ def test_copy(request, test_id):
     new_test = copy_model_instance(old_test)
     new_test.name = old_test.name + " (copy)"
     new_test.save()
-    new_test.teachers = old_test.teachers.all()
+    try:
+        new_test.teachers.add(Faculty.objects.get(username=request.user.username))
+    except:
+        new_test.teachers = old_test.teachers
     new_test.finalized = False
     new_test.save()
     for old_question in old_test.question_set.all():
         new_question = copy_model_instance(old_question)
         new_question.save()
+        for benchmark in old_question.benchmarks.all():
+            new_question.benchmarks.add(benchmark)
         new_test.question_set.add(new_question)
         for old_answer in old_question.answer_set.all():
             new_answer = copy_model_instance(old_answer)
