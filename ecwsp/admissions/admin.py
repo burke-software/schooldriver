@@ -98,53 +98,54 @@ class ApplicantAdmin(admin.ModelAdmin):
                 instance.save()
     
     def save_model(self, request, obj, form, change):
-        if not obj.id:
-            obj.save()
-        input_checks = []
-        for data in request.POST:
-            if re.match("check_", data):
-                id = data.split('_')[3]
-                check = AdmissionCheck.objects.get(id=id)
-                input_checks.append(check)
-        for check in obj.checklist.all():
-            if not check in input_checks:
-                obj.checklist.remove(check)
-                contact_log = ContactLog(
-                    user = request.user,
-                    applicant = obj,
-                    note = "%s removed" % (check,)
-                )
-                contact_log = ContactLog(
-                    user = request.user,
-                    applicant = obj,
-                    note = "%s removed" % (check,)
-                )
-                contact_log.save()
-                LogEntry.objects.log_action(
-                    user_id         = request.user.pk, 
-                    content_type_id = ContentType.objects.get_for_model(obj).pk,
-                    object_id       = obj.pk,
-                    object_repr     = unicode(obj), 
-                    action_flag     = CHANGE,
-                    change_message  = "Unchecked " + unicode(check)
-                )
-        for check in input_checks:
-            if not check in obj.checklist.all():
-                obj.checklist.add(check)
-                contact_log = ContactLog(
-                    user = request.user,
-                    applicant = obj,
-                    note = "%s completed" % (check,)
-                )
-                contact_log.save()
-                LogEntry.objects.log_action(
-                    user_id         = request.user.pk, 
-                    content_type_id = ContentType.objects.get_for_model(obj).pk,
-                    object_id       = obj.pk,
-                    object_repr     = unicode(obj), 
-                    action_flag     = CHANGE,
-                    change_message  = "Checked " + unicode(check)
-                )
+        if 'checkmark_data' in request.POST: # This confirms the checks are there, in case we call this from somewhere odd say mass-edit.
+            if not obj.id:
+                obj.save()
+            input_checks = []
+            for data in request.POST:
+                if re.match("check_", data):
+                    id = data.split('_')[3]
+                    check = AdmissionCheck.objects.get(id=id)
+                    input_checks.append(check)
+            for check in obj.checklist.all():
+                if not check in input_checks:
+                    obj.checklist.remove(check)
+                    contact_log = ContactLog(
+                        user = request.user,
+                        applicant = obj,
+                        note = "%s removed" % (check,)
+                    )
+                    contact_log = ContactLog(
+                        user = request.user,
+                        applicant = obj,
+                        note = "%s removed" % (check,)
+                    )
+                    contact_log.save()
+                    LogEntry.objects.log_action(
+                        user_id         = request.user.pk, 
+                        content_type_id = ContentType.objects.get_for_model(obj).pk,
+                        object_id       = obj.pk,
+                        object_repr     = unicode(obj), 
+                        action_flag     = CHANGE,
+                        change_message  = "Unchecked " + unicode(check)
+                    )
+            for check in input_checks:
+                if not check in obj.checklist.all():
+                    obj.checklist.add(check)
+                    contact_log = ContactLog(
+                        user = request.user,
+                        applicant = obj,
+                        note = "%s completed" % (check,)
+                    )
+                    contact_log.save()
+                    LogEntry.objects.log_action(
+                        user_id         = request.user.pk, 
+                        content_type_id = ContentType.objects.get_for_model(obj).pk,
+                        object_id       = obj.pk,
+                        object_repr     = unicode(obj), 
+                        action_flag     = CHANGE,
+                        change_message  = "Checked " + unicode(check)
+                    )
         obj.save()
     
 admin.site.register(Applicant, ApplicantAdmin)

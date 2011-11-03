@@ -144,7 +144,7 @@ SWORD override -->
                 <!--SWORD added check list-->
                 <div style="float:left; margin-left: 10px;">
                    <fieldset class="module aligned">
-                  <h2>Process Status - {{ current_level }}</h2>
+                  <h2>Process Status - {{ current_level }}</h2> <input type="hidden" name="checkmark_data" value="1"/>
                   <div class="form-row checklist">
                       <div>
                         {% for level in levels %}
