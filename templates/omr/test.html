@@ -13,7 +13,7 @@
               <ol type="A">
               {% for answer in question.answer_set.all %}
                 <li>
-                  {{ answer|safe }}
+                  {{ answer.answer|safe }}
                 </li>
               {% endfor %}
               </ol>
