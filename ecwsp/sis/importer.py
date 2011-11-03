@@ -1494,7 +1494,12 @@ class Importer:
                         elif name =="social security" or name == "ssn" or name == "social security number":
                             model.ssn = value
                         elif name == "gender" or name == "sex":
-                            model.sex = unicode.upper(value)
+                            if value == "Male":
+                                model.sex = "M"
+                            elif value == "Female":
+                                model.sex = "F"
+                            else:
+                                model.sex = unicode.upper(value)
                         elif name == "birth date" or name == "birthday" or name == "birth day" or name == "bday":
                             model.bday = self.convert_date(value)
                         elif name == "student street" or name == "street":
@@ -1508,10 +1513,10 @@ class Importer:
                         elif name == "notes":
                             model.notes = value
                         elif name == "year" or name == "grade level":
-                            try:
+                            #try:
                                 model.year = GradeLevel.objects.get(name=value)
-                            except: pass
-                            model.year = GradeLevel.objects.get(id=value)
+                            #except: pass
+                            #model.year = GradeLevel.objects.get(id=value)
                         elif name == "school year" or name == "school_year":
                             model.school_year = SchoolYear.objects.get(name=value)
                         elif name == "e-mail" or name == "email":
