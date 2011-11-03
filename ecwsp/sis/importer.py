@@ -156,6 +156,10 @@ class Importer:
         try:
             return datetime.strptime(str(value), "%Y%m%d")
         except: pass
+        try:
+            date_split = value.split("-")
+            return datetime.strptime(str(date_split[0] + "-" +date_split[1]), "%Y-%m")
+        except: pass
         return None
     
     def get_student(self, items, allow_none=False):
@@ -170,6 +174,11 @@ class Importer:
                     return Student.objects.get(id=value)
                 elif name == "student unique id":
                     return Student.objects.get(unique_id=value)
+                elif name == "hs_student_id": # Naviance
+                    try:
+                        return Student.objects.get(unique_id=value)
+                    except:
+                        return Student.objects.get(id=value)
                 elif name == "student username":
                     return Student.objects.get(username=value)
                 elif name == "ssn" or name == "social security number" or name == "student ssn":
@@ -399,7 +408,7 @@ class Importer:
         inserted = 0
         msg = ""
         try:
-            sheet = self.book.sheet_by_name("standard test")
+            sheet = self.book.sheet_by_index(0) # Just get the first one
             inserted = self.import_standard_test(sheet, test)
             msg += "%s standard tests inserted <br/>" % (inserted)
         except: pass
@@ -489,17 +498,22 @@ class Importer:
         return inserted, updated
     
     @transaction.commit_manually
-    def import_standard_test(self, sheet, test=None):
+    def import_standard_test(self, sheet, known_test=None):
         """Import Standardized tests. Does not allow updates.
         test: if the test named is already known. """
         x, header, inserted, updated = self.import_prep(sheet)
+        test = known_test
         while x < sheet.nrows:
             try:
                 row = sheet.row(x)
                 items = zip(header, row)
                 created = False
                 model = StandardTestResult()
+                is_plan = False
                 test = None
+                if known_test:
+                    test = known_test
+                    model.test = test
                 model.student = self.get_student(items)
                 for (name, value) in items:
                     is_ok, name, value = self.sanitize_item(name, value)
@@ -509,10 +523,19 @@ class Importer:
                             model.test = test
                         elif name == "date" or name == "test_date":
                             model.date = self.convert_date(value)
+                        elif name == "is_plan":
+                            is_plan = self.determine_truth(value)
+                            if is_plan:
+                                test = StandardTest.objects.get_or_create(name="PLAN")
+                                model.test = test
                         elif name[:9] == "category ":
                             model.save()
                             category, created = StandardCategory.objects.get_or_create(name=name[9:], test=test)
                             grade, created = StandardCategoryGrade.objects.get_or_create(category=category, result=model, grade=value)
+                        elif name in ["verbal", "math", "writing", "english", "reading", "science", "composite"]: # Naviance
+                            model.save()
+                            category = StandardCategory.objects.get_or_create(name=name, test=test)[0]
+                            grade = StandardCategoryGrade.objects.get_or_create(category=category, result=model, grade=value)[0]
                 model.full_clean()
                 model.save()
                 self.log_and_commit(model, addition=True)
@@ -1317,16 +1340,7 @@ class Importer:
                                 model.year = GradeLevel.objects.get(name=value)
                             except:
                                 model.year = GradeLevel.objects.get(id=value)
-                        elif name == "parent/guardian" or name == "parent" or name == "parent_guadian":
-                            model.parent_guardian = value
-                        elif name == "student street" or name == "street":
-                            model.street = value
-                        elif name == "student city" or name == "city":
-                            model.city = value
-                        elif name == "student state" or name == "state":
-                            model.state = value
-                        elif name == "student zip" or name == "zip":
-                            model.zip = value
+                        
                         elif name == "parent e-mail" or name == "parent email" or name == "parentemail" or name == "parent__email":
                             model.parent_email = value
                         elif name == "middle name" or name == "mname":
