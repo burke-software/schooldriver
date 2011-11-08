@@ -16,7 +16,7 @@
 {% block content %}
 	<h2> {{ subtitle }} </h2>
     {{ msg }}
-    <form method="post" action="">
+    <form method="post" enctype="multipart/form-data" action="">
 		<table>
         {{ form.as_table }}
 		</table>

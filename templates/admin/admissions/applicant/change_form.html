@@ -1,4 +1,4 @@
-{% extends "grappelli/templates/admin/change_form.html" %}
+{% extends "admin/change_form.html" %}
 {% load i18n admin_modify adminmedia %}
 
 {% block stylesheets %}
@@ -48,9 +48,6 @@
          background-color: #ffc6cb;
          display: none;
       }
-      
-      input[type=number]:invalid { background-color: red; }
-      
    </style>
 {% endblock %}
 
@@ -89,18 +86,20 @@
    {% if add %}
    <script type="text/javascript">
       $(document).ready(function() {
-         $('#id_lname').bind('change', function() {
+         $('#id_fname').bind('change', function() {
             var first = $('#id_fname').val();
             var last = $('#id_lname').val();
-            $.post(  
-               "/admissions/ajax_check_duplicate_applicant/" + first + "/" + last + "/",
-               function(data){
-                  if (data != "") {
-                     $('#duplicate_p').show('fast');
-                     $('#insert_point').html(data);
-                  }
-               }  
-             );
+            if (first && last) {
+               $.post(  
+                  "/admissions/ajax_check_duplicate_applicant/" + first + "/" + last + "/",
+                  function(data){
+                     if (data != "") {
+                        $('#duplicate_p').show('fast');
+                        $('#insert_point').html(data);
+                     }
+                  }  
+               );
+            }
          });
       });
    </script>    
@@ -109,8 +108,7 @@
 {% endblock %}
 
 
-<!-- CONTENT
-SWORD override -->
+<!-- CONTENT SWORD override -->
 {% block content %}
   <div class="container-flexible">
     <div class="form-container">
@@ -142,7 +140,7 @@ SWORD override -->
                 <!--SWORD added check list-->
                 <div style="float:left; margin-left: 10px;">
                    <fieldset class="module aligned">
-                  <h2>Process Status - {{ current_level }}</h2>
+                  <h2>Process Status - {{ current_level }}</h2> <input type="hidden" name="checkmark_data" value="1"/>
                   <div class="form-row checklist">
                       <div>
                         {% for level in levels %}

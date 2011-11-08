@@ -24,9 +24,7 @@ from django.contrib.auth.models import User
 from datetime import datetime
 import httpagentparser
 
-class Callable:
-    def __init__(self, anycallable):
-        self.__call__ = anycallable
+from ecwsp.sis.helper_functions import Callable
 
 class AccessLog(models.Model):
     login = models.ForeignKey(User)

@@ -68,9 +68,9 @@ def time_fulfilled(modeladmin, request, queryset):
 
 class VolunteerAdmin(admin.ModelAdmin):
     form = make_ajax_form(Volunteer, dict(student='student'))
-    list_display = ('student', 'site', 'site_supervisor', 'site_approval', 'contract', 'hours_required', 'hours_completed', 'hours_record')
-    list_filter = ['site', 'student', 'site_approval', 'contract', 'hours_record']
-    search_fields = ['comment', 'student__fname', 'student__lname', 'site__site_name', 'site_supervisor__name']
+    list_display = ('student', 'site_supervisor', 'site_approval', 'contract', 'hours_required', 'hours_completed', 'hours_record')
+    list_filter = ['site_supervisor__site', 'student', 'site_approval', 'contract', 'hours_record']
+    search_fields = ['comment', 'student__fname', 'student__lname', 'site_supervisor__site__site_name', 'site_supervisor__name']
     actions = [approve_site, reject_site, time_fulfilled]
     
 admin.site.register(Volunteer,VolunteerAdmin)

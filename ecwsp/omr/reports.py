@@ -121,7 +121,7 @@ class ReportManager(object):
             test_instance.incorrects = test_instance.answerinstance_set.filter(points_earned__lt=F('points_possible'))
             for incorrect in test_instance.incorrects:
                 try:
-                    incorrect.right_answer = incorrect.question.answer_set.order_by('points_possible')[0]
+                    incorrect.right_answer = incorrect.question.answer_set.order_by('point_value').reverse()[0]
                 except:
                     incorrect.right_answer = "No correct answer"
             
