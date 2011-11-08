@@ -1289,6 +1289,7 @@ class Importer:
                 items = zip(header, row)
                 created = False
                 model = None
+                custom_fields = []
                 for (name, value) in items:
                     is_ok, name, value = self.sanitize_item(name, value)
                     if is_ok:
@@ -1383,10 +1384,16 @@ class Importer:
                         elif name in ['parent number', 'parent 1 number', 'parent other number', 'parent 1 other number', 'parent phone', 'parent 1 phone', 'parent other phone', 'parent 1 other phone']:
                             other = value
                             
+                        # Custom
+                        elif name.split() and name.split()[0] == "custom":
+                            custom_fields.append([name.split()[1], value])
+                            
                 if model: 
                     if not model.username and model.fname and model.lname:
                         model.username = self.gen_username(model.fname, model.lname)
                     model.save()
+                    for (custom_field, value) in custom_fields:
+                        model.set_custom_value(custom_field, value)
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
@@ -1451,12 +1458,12 @@ class Importer:
                             ecNumber.contact = ec
                             ecNumber.save()
                         model.emergency_contacts.add(ec)
-                    if created:
-                        self.log_and_commit(model, addition=True)
-                        inserted += 1
-                    else:
-                        self.log_and_commit(model, addition=False)
-                        updated += 1
+                if created:
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
+                else:
+                    self.log_and_commit(model, addition=False)
+                    updated += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1

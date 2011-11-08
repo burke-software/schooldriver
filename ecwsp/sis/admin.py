@@ -15,6 +15,7 @@ from ecwsp.sis.models import *
 from ecwsp.sis.forms import *
 from ecwsp.sis.views import *
 from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
+from ecwsp.custom_field.custom_field import CustomFieldAdmin
 from ecwsp.schedule.models import *
 
 # Global actions
@@ -111,7 +112,7 @@ class StudentECInline(admin.TabularInline):
 
 admin.site.register(GradeLevel)
 
-class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin):
+class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     def changelist_view(self, request, extra_context=None):
         """override to hide inactive students by default"""
         try:
@@ -152,6 +153,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin):
         
     def get_form(self, request, obj=None, **kwargs):
         form = super(StudentAdmin,self).get_form(request,obj,**kwargs)
+        
         autoselect_fields_check_can_add(StudentForm, self.model ,request.user)
         if not request.user.has_perm('sis.view_ssn_student'):
             self.exclude = ("ssn",)

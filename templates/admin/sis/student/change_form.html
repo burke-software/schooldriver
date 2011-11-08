@@ -1,4 +1,4 @@
-{% extends "grappelli/templates/admin/change_form.html" %}
+{% extends "admin/change_form.html" %}
 {% load i18n admin_modify adminmedia grp_tags %}
 
 <!-- OBJECT TOOLS -->
@@ -35,38 +35,37 @@
                     <!-- Fieldsets -->
                     {% for fieldset in adminform %}
                         {% include "admin/includes/fieldset.html" %}
-                        
-                        <fieldset class="module collapse closed open"><h2 class="collapse-handler">Courses</h2>
-                            <div class="form-row checklist">
-                                 <table>
-                                      {% for course in courses %}
-                                           <tr>
-                                                <td><a href="/admin/schedule/course/{{ course.id }}">{{ course }}</a></td>
-                                                <td><a href="/admin/schedule/courseenrollment/{{ course.enroll }}"> Enrollment </a></td>
-                                                <td><a href="/schedule/teacher_grade/upload/{{ course.id }}"> Grades </a></td>
-                                           </tr>
-                                      {% endfor %}
-                                 </table>
-                                 {% if other_courses %}
-                                 <br/>
-                                 <a href="javascript:void(0)" onclick="$('#all_courses').toggle('fast');"> See all courses </a>
-                                 <div id="all_courses" style="display: none">
-                                      <table>
-                                      {% for course in other_courses %}
-                                           <tr>
-                                                <td><a href="/admin/schedule/course/{{ course.id }}">{{ course }}</a></td>
-                                                <td><a href="/admin/schedule/courseenrollment/{{ course.enroll }}"> Enrollment </a></td>
-                                                <td><a href="/schedule/teacher_grade/upload/{{ course.id }}"> Grades </a></td>
-                                           </tr>
-                                      {% endfor %}
-                                 {% endif %}
-                                 </table>
-                                 </div>
-                            </div>
-                        </fieldset>
-                        <br/>
-                        
                     {% endfor %}
+                    {% include "admin/includes/custom_field_fieldset.html" with custom_form=custom_form %}
+                    <fieldset class="module collapse closed open"><h2 class="collapse-handler">Courses</h2>
+                        <div class="form-row checklist">
+                             <table>
+                                  {% for course in courses %}
+                                       <tr>
+                                            <td><a href="/admin/schedule/course/{{ course.id }}">{{ course }}</a></td>
+                                            <td><a href="/admin/schedule/courseenrollment/{{ course.enroll }}"> Enrollment </a></td>
+                                            <td><a href="/schedule/teacher_grade/upload/{{ course.id }}"> Grades </a></td>
+                                       </tr>
+                                  {% endfor %}
+                             </table>
+                             {% if other_courses %}
+                             <br/>
+                             <a href="javascript:void(0)" onclick="$('#all_courses').toggle('fast');"> See all courses </a>
+                             <div id="all_courses" style="display: none">
+                                  <table>
+                                  {% for course in other_courses %}
+                                       <tr>
+                                            <td><a href="/admin/schedule/course/{{ course.id }}">{{ course }}</a></td>
+                                            <td><a href="/admin/schedule/courseenrollment/{{ course.enroll }}"> Enrollment </a></td>
+                                            <td><a href="/schedule/teacher_grade/upload/{{ course.id }}"> Grades </a></td>
+                                       </tr>
+                                  {% endfor %}
+                             {% endif %}
+                             </table>
+                             </div>
+                        </div>
+                    </fieldset>
+                    <br/>
                     
                     {% block after_field_sets %}{% endblock %}
                     
