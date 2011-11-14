@@ -222,7 +222,6 @@ def newPage(c):
     c.translate(left_margin,bottom_margin)
     
     pageBanding()
-    page = page +1
     
 def drawLines(c):
     #bottom left
@@ -492,6 +491,7 @@ def pageBanding():
     rotationtag.appendChild(rotationText)
     if student_id[id]=="0":
         barcodeBoxgroup()
+    page = page +1
     
 def barcodeBanding():
     #doesn't work - inquiry is into QueXF
