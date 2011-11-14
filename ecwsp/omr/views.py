@@ -38,6 +38,7 @@ from ecwsp.schedule.models import Course
 
 from elementtree.SimpleXMLWriter import XMLWriter
 import django_filters
+import MySQLdb
 
 class QuestionBankFilter(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
@@ -387,9 +388,25 @@ def queXF_answer_sheets(request,test_id):
 
 @permission_required('omr.teacher_test')
 def manual_edit(request, test_id):
-    #make an http request to the php script to get the image
+    #open the blob.
     test = get_object_or_404(TestInstance, id=test_id)
     
     return render_to_response('omr/manually_edit.html', {
         'test': test
+    }, RequestContext(request, {}),)
+    
+@permission_required('omr.teacher_test')
+def student_unknown(request, test_id):
+    #open files from quexf
+    test = get_object_or_404(TestInstance, id = test_id)
+    
+    #db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
+    #c = db.cursor()
+    #c.execute("SELECT ")
+    #c.fetchone()
+    #c.fetchmany(n)
+    #c.fetchall()
+    
+    return render_to_response('omr/student_unknown', {
+        
     }, RequestContext(request, {}),)
