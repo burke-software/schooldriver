@@ -565,7 +565,7 @@ def barcodeBoxgroup():
     db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
     db_cursor.execute("SHOW TABLE STATUS LIKE 'pages'")
     row = db_cursor.fetchone()
-    auto_increment = row["Auto_increment"]
+    auto_increment = row[10]
     pageid = auto_increment
     barcodename = "barcode_" + str(pageid) +"test"
     db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7," + str(pageid) + ",'"
