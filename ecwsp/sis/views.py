@@ -88,13 +88,20 @@ def index(request):
             pass    
         return HttpResponseRedirect('/admin')
     elif request.user.groups.filter(Q(name='students')).count() > 0:
-        from ecwsp.work_study.views import student_timesheet
-        return student_timesheet(request)
+        return student_redirect(request)
     elif request.user.groups.filter(Q(name='company')).count() > 0:
         from ecwsp.work_study.views import supervisor_dash
         return supervisor_dash(request)
     else:
         return render_to_response('base.html', {'msg': "Not authorized", 'request': request,}, RequestContext(request, {}))
+
+def student_redirect(request):
+    """ Redirects student to proper page based on what's installed and if it's possible to display the timesheet """
+    if 'ecwsp.work_study' in settings.INSTALLED_APPS:
+        from ecwsp.work_study.views import student_timesheet
+        if hasattr(student, 'placement') and student.placement:
+            return student_timesheet(request)
+    return render_to_response('base.html', {'msg': "Welcome!", 'student': 'student', 'request': request,}, RequestContext(request, {}))
 
 @user_passes_test(lambda u: u.groups.filter(name='registrar').count() > 0 or u.is_superuser, login_url='/')
 def import_everything(request):
@@ -206,7 +213,9 @@ def school_report_builder_view(request, report=None):
                 if data['template']:
                     # use selected template
                     template = data['template']
-                    template = template.file.path
+                    template = template.get_template_path(request)
+                    if not template:
+                        return render_to_response('sis/reportBuilder.html', {'request':request, 'form':form}, RequestContext(request, {}))
                 else:
                     # or use uploaded template, saving it to temp file
                     template = request.FILES['upload_template']
@@ -465,7 +474,11 @@ def discipline_report(request, student_id):
     data['student'] = student
     data['student_year'] = student.year
     
-    return pod_save("disc_report", ".odt", data, template.file.path)
+    template_path = template.get_template_path(request)
+    if not template_path:
+        return HttpResponseRedirect(reverse('admin:index')) 
+    
+    return pod_save("disc_report", ".odt", data, template_path)
     
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
@@ -670,7 +683,9 @@ def attendance_report(request):
                     if form.is_valid():
                         data = form.cleaned_data
                         template = Template.objects.get_or_create(name="Perfect attendance")[0]
-                        template = template.file.path
+                        template = template.get_template_path(request)
+                        if not template:
+                            return render_to_response('sis/attendance_report.html', {'form':form, 'daily_form': daily_form, 'lookup_form': lookup_form}, RequestContext(request, {}),)
                         
                         students = Student.objects.all()
                         perfect_students = []
@@ -718,7 +733,7 @@ def attendance_report(request):
                     
                     report = xlsReport(data, titles, "attendance_report.xls", heading="Attendance Report")
                 return report.finish()
-    return render_to_response('sis/attendance_report.html', {'form':form, 'daily_form': daily_form, 'lookup_form': lookup_form}, RequestContext(request, {}),);
+    return render_to_response('sis/attendance_report.html', {'form':form, 'daily_form': daily_form, 'lookup_form': lookup_form}, RequestContext(request, {}),)
 
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')
@@ -760,7 +775,10 @@ def grade_report(request):
                 if data['template']:
                     # use selected template
                     template = data['template']
-                    template_path = template.file.path
+                    template_path = template.get_template_path(request)
+                    if not template_path:
+                        form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
+                        return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
                     report_card = template.report_card
                     transcript = template.transcript
                 else:
