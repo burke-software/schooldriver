@@ -564,7 +564,7 @@ def barcodeBoxgroup():
     db_cursor = db.cursor()
     db_cursor.execute("SET @questionnaire_id =(SELECT qid from questionnaires where description = " + str(testid) + ")")
     db_cursor.execute("SET @page_id = (SELECT pid from pages where qid = @questionnaire_id order by pid DESC limit 1)")
-    db_cursor.execute("SET @pageidalt = ((SELECT pid from boxgroupstype where btid = 5 order by bgid DESC limit 1) +1)")
+    db_cursor.execute("SET @pageidalt = ((SELECT pid from pages order by pid DESC limit 1) +1)")
     db_cursor.execute("SET @pageid = (SELECT IFNULL (@page_id,@pageidalt))")  
     db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7,@pageid,'barcode_@pageid',0)")
     db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +
