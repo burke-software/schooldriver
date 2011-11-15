@@ -563,7 +563,7 @@ def barcodeBoxgroup():
     db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
     db_cursor = db.cursor()
     db_cursor.execute("SET @questionnaire_id =(SELECT qid from questionnaires where description = " + str(testid) + ")")
-    db_cursor.execute("SET @pageid = (SELECT pid from pages were qid = @questionnaire_id order by pid DESC limit 1)")
+    db_cursor.execute("SET @pageid = (SELECT pid from pages where qid = @questionnaire_id order by pid DESC limit 1)")
     #if page ==1:
     #    db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 1)")
         
