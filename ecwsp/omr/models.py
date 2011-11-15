@@ -282,7 +282,7 @@ class Question(QuestionAbstract):
                     question=self
                 )
                 if self.is_true:
-                    answer.point_value = 0
+                    answer.point_value = self.point_value
                 else:
                     answer.point_value = self.point_value
                 answer.save()
@@ -291,9 +291,9 @@ class Question(QuestionAbstract):
                     question=self
                 )
                 if self.is_true:
-                    answer.point_value = self.point_value
-                else:
                     answer.point_value = 0
+                else:
+                    answer.point_value = self.point_value
                 answer.save()
     
     def save(self, *args, **kwargs):
