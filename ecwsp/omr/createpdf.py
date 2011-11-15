@@ -563,11 +563,15 @@ def barcodeBoxgroup():
     db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
     db_cursor = db.cursor()
     db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
-    pageid = db_cursor.fetchone()
-    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7,@pageid,'barcode_" +
-                      str(pageid) + "',0)")
+    db_cursor.execute("SHOW TABLE STATUS LIKE 'pages'")
+    row = db_cursor.fetchone()
+    auto_increment = row["Auto_increment"]
+    pageid = auto_increment
+    barcodename = "barcode_" + str(pageid) +"test"
+    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7," + str(pageid) + ",'"
+                      + barcodename + "',0)")
     db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +
-                      " values (210, 185, 1175, 450, @pageid,LAST_INSERT_ID(),"+
+                      " values (210, 185, 1175, 450, " + str(pageid) + ",LAST_INSERT_ID(),"+
                       str(student_id[id]) + ")")
     db.commit()
     db.close()    
