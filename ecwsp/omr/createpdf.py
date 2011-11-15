@@ -562,23 +562,12 @@ def barcodeBoxgroup():
     """
     db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
     db_cursor = db.cursor()
-    db_cursor.execute("SET @page_id =(SELECT pid from pages order by pid DESC limit 1)")
-    if page ==1:
-        db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 1)")
-    elif page==2:
-        db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 2)")
-    elif page==3:
-        db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 3)")
-    elif page==4:
-        db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 4)")
-    elif page==5:
-        db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 5)")
-    elif page==6:
-        db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 6)")
-    else:
-        db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + " +str(page) +")")
-    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7,@pageid,'barcode_"
-                      + str(page) + "',0)")
+    db_cursor.execute("SET @questionnaire_id =(SELECT qid from questionnaires where description = " + str(testid) + ")")
+    db_cursor.execute("SET @pageid = (SELECT pid from pages were qid = @questionnaire_id order by pid DESC limit 1)")
+    #if page ==1:
+    #    db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 1)")
+        
+    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7,@pageid,'barcode_@pageid',0)")
     db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +
                       " values (210, 185, 1175, 450, @pageid,LAST_INSERT_ID(),"+
                       str(student_id[id]) + ")")
