@@ -477,7 +477,7 @@ def testBanding(number):
     label.appendChild(labeltext)
     
 def pageBanding():
-    global pagetag
+    global pagetag, page
     pagetag = doc.createElement("page")
     questionnaire.appendChild(pagetag)
     pgidtag = doc.createElement("id")
