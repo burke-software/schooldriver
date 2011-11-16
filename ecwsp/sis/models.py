@@ -31,6 +31,8 @@ from datetime import date, timedelta, datetime
 from decimal import *
 import types
 from ecwsp.administration.models import Configuration
+from ecwsp.custom_field.models import *
+from ecwsp.custom_field.custom_field import CustomFieldModel
 
 logger = logging.getLogger(__name__)
 
@@ -349,7 +351,7 @@ class LanguageChoice(models.Model):
 def get_default_language():
     if LanguageChoice.objects.filter(default=True).count():
         return LanguageChoice.objects.filter(default=True)[0]
-class Student(MdlUser):
+class Student(MdlUser, CustomFieldModel):
     """student based on a Moodle user"""
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
     grad_date = models.DateField(blank=True, null=True)
@@ -554,7 +556,7 @@ def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs
         instance.state = ""
         instance.zip = ""
         instance.parent_email = ""
-        #instance.save()
+        instance.save()
     for ec in instance.emergency_contacts.filter(primary_contact=True):
         ec.cache_student_addresses()
         

@@ -133,11 +133,14 @@ def teacher_grade_download(request, id, type=None):
     # Libreoffice crashes sometimes, maybe 5% of the time. So try it some more!
     for x in range(0,3):
         try:
-            return replace_spreadsheet(template.file.path, filename, data, type)
+            template_path = template.get_template_path(request)
+            if not template_path:
+                return HttpResponseRedirect(reverse('admin:index'))
+            return replace_spreadsheet(template_path, filename, data, type)
         except:
             logger.error('Libreoffice died, try one more time')
             time.sleep(3)
-    return replace_spreadsheet(template.file.path, filename, data, type)
+    return replace_spreadsheet(template_path, filename, data, type)
 
 def view_comment_codes(request):
     comments = GradeComment.objects.all()

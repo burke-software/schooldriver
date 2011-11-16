@@ -232,7 +232,7 @@ class Course(models.Model):
     
     def is_passing(self, student, date_report=None):
         """ Is student passing course? """
-        pass_score = Configuration.get_or_default("Passing Grade", '70').value
+        pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
         grade = self.get_final_grade(student, date_report=date_report)
         try:
             if grade >= int(pass_score):

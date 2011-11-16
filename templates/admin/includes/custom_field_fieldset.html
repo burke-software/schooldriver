@@ -1,0 +1,21 @@
+{% spaceless %}
+{% if custom_form.fields %}
+
+  <fieldset class="module">
+    <h2 class="collapse-handler">Custom Fields</h2>
+  
+    {% for field in custom_form %}
+      <div class="row cells-1 {{ custom_form.prefix }}-{{ field.name }}">
+        <div class="column span-4">
+          {{ field.label_tag }}
+        </div>
+        <div class="column span-flexible">
+          {{ field }}
+        </div>  
+      </div>
+    {% endfor %}
+  </fieldset>
+
+{% endif %}
+{% endspaceless %}
+

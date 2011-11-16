@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+<!-- looks like this never gets into the output -->
+{% endblock %}
+
+{% block content %}
+    <style type="text/css">
+    .course {
+	border: 1px solid black;
+	margin-left: 1em;
+	margin-top: 0.5em;
+	padding: 0.5em;
+    }
+    .course table td {
+	padding-top: 0;
+	padding-bottom: 0;
+	padding-left: 0;
+	padding-right: 0.25em;
+	font-size: 10pt;
+	vertical-align: top;
+    }
+    .markDescription {
+	font-style: italic;
+    }
+    .maximumPoints {
+	color: grey;
+    }
+    </style>
+    <h1>Grades for {{ student.fname }} {{ student.lname }} as of {{ today }}</h1>
+    {% for mp in mps %}
+	<h2>{{ mp.name }}</h2>
+	{% for course in mp.courses %}
+	    <div class="course">
+		<h3>{{ course.fullname }}</h3>
+		<table>
+		    <tr>
+			{% for category in course.categories %}
+			{% if category.marks %}
+			    <td>
+				<h4>{{ category.name }}</h4>
+				<table>
+				{% for mark in category.marks %}
+				    <tr>
+					<td>
+					    {{ mark.item.name }}
+					    {% if mark.description %}
+						<br /><span class="markDescription">{{ mark.description }}</span>
+					    {% endif %}
+					</td>
+					<td>{{ mark.mark }} <span class="maximumPoints">(of {{ mark.item.scale.maximum }})</span></td>
+				    </tr>
+				{% endfor %}
+				</table>
+			    </td>
+			{% endif %}
+			{% endfor %}
+		    </tr>
+		</table>
+	    </div>
+	{% endfor %}
+    {% endfor %}
+{% endblock %}

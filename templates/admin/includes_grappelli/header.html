@@ -133,7 +133,7 @@
                 </li>
             {% endif %}
             <!-- Administration -->
-            {% if perms.sis.reports or perms.administration.change_configuration %}
+            {% if perms.sis.reports or perms.administration.change_configuration or perms.custom_field.change_custom_field %}
                 <li class="user-options-container collapse closed">
                     <a href="javascript://" class="user-options-handler collapse-handler"> Admin </a>
                     <ul class="user-options">
@@ -142,6 +142,9 @@
                         {% endif %}
                         {% if perms.administration.change_configuration %}
                             <li><a href="{% url admin:administration_configuration_changelist %}">{% trans 'Configuration' %}</a></li>
+                        {% endif %}
+                        {% if perms.custom_field.change_custom_field %}
+                            <li><a href="{% url admin:custom_field_customfield_changelist %}">{% trans 'Custom Fields' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>

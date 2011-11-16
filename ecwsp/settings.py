@@ -180,6 +180,7 @@ INSTALLED_APPS = (
     'pagination',
     'massadmin',
     'admin_export',
+    'ecwsp.custom_field',
 )
 
 MIDDLEWARE_CLASSES = (

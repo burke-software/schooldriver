@@ -3,6 +3,10 @@ from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.contrib import admin
 
+class Callable:
+    def __init__(self, anycallable):
+        self.__call__ = anycallable
+
 def copy_model_instance(obj):
     """ Django snippit 1040
     Create a copy of a model instance.
