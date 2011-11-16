@@ -93,18 +93,19 @@ class Category(models.Model):
 class Item(models.Model):
     name = models.CharField(max_length=255)
     course = models.ForeignKey('schedule.Course')
-    date = models.DateField(auto_now=True)
+    date = models.DateField(null=True)
     markingPeriod = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     category = models.ForeignKey('Category')
     scale = models.ForeignKey('Scale')
     multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1)
     def __unicode__(self):
-        return self.name + " (" + self.course.fullname + ")"
+        return self.name + " - " + self.category.name + " (" + self.course.fullname + ")"
 
 class Mark(models.Model):
     item = models.ForeignKey('Item')
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    description = models.CharField(max_length=255)
     excused = models.BooleanField(default=False)
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def __unicode__(self):
@@ -114,7 +115,8 @@ class Aggregate(models.Model):
     # come back interwebs,
     # so i can find a less ugly way to do this
     name = models.CharField(max_length=255)
-    scale = models.ForeignKey('scale')
+    scale = models.ForeignKey('Scale')
+    manualMark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     singleStudent = models.ForeignKey('sis.Student', blank=True, null=True, related_name="single_student")
     student = models.ManyToManyField('sis.Student', blank=True, null=True)
     singleCourse = models.ForeignKey('schedule.Course', blank=True, null=True, related_name="single_course")
@@ -122,7 +124,51 @@ class Aggregate(models.Model):
     singleCategory = models.ForeignKey('Category', blank=True, null=True, related_name="single_category")
     category = models.ManyToManyField('Category', blank=True, null=True)
     aggregate = models.ManyToManyField('self', blank=True, null=True)
-    manualMark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    
+    # rudimentary for now
+    # no m2m, multipliers
+    # also untested
+    def max(self):
+        highest = 0
+        items = Item.objects.filter(course=singleCourse, category=singleCategory)
+        for item in items:
+            marks = Mark.objects.filter(item=item, student=student)
+            for mark in marks:
+                # score between 0 and 1
+                unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
+                if unscaled > highest:
+                    highest = unscaled
+        highest = highest * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
+        return Decimal(str(highest))
+    def min(self):
+        lowest = None
+        items = Item.objects.filter(course=singleCourse, category=singleCategory)
+        for item in items:
+            marks = Mark.objects.filter(item=item, student=student)
+            for mark in marks:
+                # score between 0 and 1
+                unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
+                if lowest is None or unscaled < lowest:
+                    lowest = unscaled
+        lowest = lowest * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
+        return Decimal(str(lowest))
+    def mean(self):
+        numerator = 0
+        denominator = 0
+        items = Item.objects.filter(course=singleCourse, category=singleCategory)
+        for item in items:
+            marks = Mark.objects.filter(item=item, student=student)
+            for mark in marks:
+                # score between 0 and 1
+                unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
+                numerator += unscaled
+                denominator += 1
+        if denominator == 0:
+            return None
+        result = numerator / denominator
+        result = result * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
+        return Decimal(str(result))
+        
     # to do: deal with squashing to zero marks below a threshold
     def __unicode__(self):
         return self.name # not useful
