@@ -4,6 +4,10 @@
 	
 {% endblock %}
 
+{% block css %}
+
+{% endblock %}
+
 {% block head %}
 	    
 {% endblock %}
@@ -11,8 +15,27 @@
 {% block content %}
 
 
+
+<form action="/volunteer_track/student/volunteer/" method="post">
 <table>
 {{ site_form }}
 </table>
+<table>
+{{ job_desc }}
+</table>
+<input type="submit" name="submit1" value="Get New Site Approval" />
+</form>
+
+<br/>
+<br/>
+
+<form action="/volunteer_track/student/volunteer/" method="post">
+<table>
+{{ site_form_two }}
+{{ job_desc }}
+</table>
+<input type="submit" name="submit2" value="Get Existing Site Approval" />
+</form>
+{{ redo }}
 
 {% endblock %}
