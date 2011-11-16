@@ -478,7 +478,7 @@ def testBanding(number):
     label.appendChild(labeltext)
     
 def pageBanding():
-    global pagetag
+    global pagetag, page
     pagetag = doc.createElement("page")
     questionnaire.appendChild(pagetag)
     pgidtag = doc.createElement("id")
@@ -492,6 +492,7 @@ def pageBanding():
     rotationtag.appendChild(rotationText)
     if student_id[id]=="0":
         barcodeBoxgroup()
+    
     
 def barcodeBanding():
     #doesn't work - inquiry is into QueXF
@@ -561,12 +562,16 @@ def barcodeBoxgroup():
     """
     db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
     db_cursor = db.cursor()
-    db_cursor.execute("SET @page_id =(SELECT pid from pages order by pid DESC limit 1)")
-    db_cursor.execute("SET @pageid = (SELECT IFNULL(@page_id,0) + 1)")
-    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7,@pageid,'barcode_"
-                      + str(page) + "',0)")
+    db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
+    db_cursor.execute("SHOW TABLE STATUS LIKE 'pages'")
+    row = db_cursor.fetchone()
+    auto_increment = row[10]
+    pageid = auto_increment + (page - 1)
+    barcodename = "barcode_" + str(pageid) +"test"
+    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7," + str(pageid) + ",'"
+                      + barcodename + "',0)")
     db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +
-                      " values (210, 185, 1175, 450, @pageid,LAST_INSERT_ID(),"+
+                      " values (210, 185, 1175, 450, " + str(pageid) + ",LAST_INSERT_ID(),"+
                       str(student_id[id]) + ")")
     db.commit()
     db.close()    
