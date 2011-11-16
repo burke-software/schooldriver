@@ -46,102 +46,56 @@ class struct(): pass
 
 @user_passes_test(lambda u: u.groups.filter(Q(name='teacher') | Q(name="registrar")).count() > 0 or u.is_superuser, login_url='/')
 def benchmark_grade_upload(request, id):
-    """ This view is for inputing grades. It usually is done by uploading a spreadsheet.
-    However it can also be done by manually overriding grades. This requires
-    registrar level access. """
+    """ Grades can only be entered/changed by spreadsheet upload. """
     course = Course.objects.get(id=id)
-    students = course.get_enrolled_students(show_deleted=True)
-    grades = course.grade_set.all()
-
+    message = ''
     if request.method == 'POST' and 'upload' in request.POST:
-        # no marking periods for now.
-        import_form = UploadFileForm(request.POST, request.FILES) # GradeUpload(request.POST, request.FILES)
+        import_form = GradeUpload(request.POST, request.FILES)
         if import_form.is_valid():
             from ecwsp.benchmark_grade.importer import BenchmarkGradeImporter
             importer = BenchmarkGradeImporter(request.FILES['file'], request.user)
-            # yep, still no marking periods.
-            importer.import_grades(course, None) # import_form.cleaned_data['marking_period'])
+            mark_count = importer.import_grades(course, import_form.cleaned_data['marking_period'])
+            message = str(mark_count) + " marks were imported."
     else:
-        # seriously, no marking periods. period.
-        import_form = UploadFileForm() # GradeUpload()
-    '''
-    if request.method == 'POST' and 'edit' in request.POST:
-        # save grades
-        handle_grade_save(request, course)
-    '''
-    for student in students:
-        student.grades = []
-        # display grades include mid marks and are not used for calculations
-        student.display_grades = []
-        student.comments = []
-        student.grade_id = []
-
-    '''
-    marking_periods = course.marking_period.all().order_by('start_date')
-
-    for mp in marking_periods:
-        if Grade.objects.filter(course=course, marking_period=mp, final=False).count():
-            mp.has_mid = True
-        else:
-            mp.has_mid = False
-    '''
-
-    tableHeaders = []
-    x = 0
-    y = 0
-    aggNames = "Standards", "Engagement", "Organization", "Daily Practice"
-    if course.department is not None and course.department.name == "Hire4Ed":
-        aggNames = "Standards", "Engagement", "Organization", "Precision & Accuracy"
-    for aggName in aggNames:
-        scale = None
-        if aggName == "Standards":
-            scale = Scale.objects.get(name="Four-Oh with YTD")
-        elif aggName == "Daily Practice":
-            scale = Scale.objects.get(name="Percent")
-        else:
-            scale = Scale.objects.get(name="Four-Oh")
-        tableHeaders.append(aggName)
-        y = 0
-        for student in students:
-            aggModel, created = Aggregate.objects.get_or_create(name=aggName, scale=scale, singleStudent=student,
-                                                                singleCourse=course,
-                                                                singleCategory=Category.objects.get(name=aggName))
-            grade_struct = struct()
-            grade_struct.grade = aggModel.scale.spruce(aggModel.manualMark)
-            grade_struct.id = aggModel.id
-            grade_struct.x = x
-            grade_struct.y = y
-            student.display_grades.append(grade_struct)
-            #student.comments.append(grade.comment)
-            y += 1
-        x += 1
-        last_y = y - 1
-        last_x = x
-
-    for item in Item.objects.filter(course=course):
-        tableHeaders.append(item.name)
-        y = 0
-        for student in students:
-            mark, created = Mark.objects.get_or_create(item=item, student=student)
-            grade_struct = struct()
-            grade_struct.grade = item.scale.spruce(mark.mark)
-            grade_struct.id = mark.id
-            grade_struct.x = x
-            grade_struct.y = y
-            student.display_grades.append(grade_struct)
-    '''
-    if request.user.is_superuser or request.user.has_perm('schedule.change_own_grade'):
-        edit = True
-    else:
-        edit = False
-    '''
+        import_form = GradeUpload()
+        
+    ''' basically the same as student_grade, except is per-student instead of per-course '''
+    mps = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True),
+                                       start_date__lte=date.today()).order_by('-start_date')
+    for mp in mps:
+        mp.students = course.get_enrolled_students(show_deleted=True)
+        for student in mp.students:
+            student.categories = Category.objects.all() # derp
+            for category in student.categories:
+                category.marks = Mark.objects.filter(student=student, item__course=course,
+                                                     item__category=category, item__markingPeriod=mp).order_by('-item__date', 'item__name',
+                                                                                                               'description')
+ 
     return render_to_response('benchmark_grade/upload.html', {
         'request': request,
         'course': course,
-        'th_list': tableHeaders,
-        'students': students,
         'import_form': import_form,
-        'edit': False, # edit,
-        'last_y': last_y,
-        'last_x': last_x,
+        'message': message,
+        'mps': mps
+    }, RequestContext(request, {}),)
+    
+def student_grade(request):
+    """ A view for students to see their own grades, in detail. """
+    mps = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True),
+                                       start_date__lte=date.today()).order_by('-start_date')
+    student = Student.objects.get(username=request.user.username)
+    for mp in mps:
+        mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
+        for course in mp.courses:
+            course.categories = Category.objects.all() # derp
+            for category in course.categories:
+                category.marks = Mark.objects.filter(student=student, item__course=course,
+                                                     item__category=category, item__markingPeriod=mp).order_by('-item__date', 'item__name',
+                                                                                                               'description')
+    
+    #return HttpResponse(s)
+    return render_to_response('benchmark_grade/student_grade.html', {
+        'student': student,
+        'today': date.today(),
+        'mps': mps
     }, RequestContext(request, {}),)
