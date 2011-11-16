@@ -99,6 +99,7 @@ def student_redirect(request):
     """ Redirects student to proper page based on what's installed and if it's possible to display the timesheet """
     if 'ecwsp.work_study' in settings.INSTALLED_APPS:
         from ecwsp.work_study.views import student_timesheet
+        student = Student.objects.get(username=request.user.username)
         if hasattr(student, 'placement') and student.placement:
             return student_timesheet(request)
     return render_to_response('base.html', {'msg': "Welcome!", 'student': 'student', 'request': request,}, RequestContext(request, {}))
