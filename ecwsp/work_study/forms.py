@@ -235,6 +235,10 @@ class ReportTemplateForm(StudentReportWriterForm):
     
     def clean(self):
         data = self.cleaned_data
+        if not data.get('student') and not data.get('all_students'):
+            raise forms.ValidationError("You must either check \"all students\" or select a student")
+        if not data.get('template') and not data.get('upload_template'):
+            raise forms.ValidationError("You must either select a template or upload one.")
         return data
 
 class DolForm(forms.ModelForm):

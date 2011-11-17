@@ -71,9 +71,9 @@
 				color:#565656;
 				display:block;
 				float:left;
-				font-size:1.25em;
+				font-size:1.1em;
 				font-weight:bold;
-				margin:5px 2px;
+				margin:5px 1px;
 				padding:7px 20px 4px;
 				text-shadow:0 1px 1px white;
 				text-transform:uppercase;
@@ -164,11 +164,16 @@
 						<li><a href="/accounts/password_change">Change Password</a></li>
 					{% endif %}
 					{% if student %}
+					    {% if "ecwsp.work_study" in settings.INSTALLED_APPS %}
 						<li><a href="{% url ecwsp.work_study.views.student_view %}">Submitted Cards</a></li>
 						<li><a href="/">Create Time Card</a></li>
-						{% if "ecwsp.volunteer_track" in settings.INSTALLED_APPS %}
-						    <li><a href="{% url ecwsp.volunteer_track.views.student_site_approval %}">Volunteer Tracking</a></li>
-						{% endif %}
+					    {% endif %}
+					    {% if "ecwsp.volunteer_track" in settings.INSTALLED_APPS %}
+						<li><a href="{% url ecwsp.volunteer_track.views.student_dash %}">Volunteer</a></li>
+					    {% endif %}
+					    {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
+						<li><a href="{% url ecwsp.benchmark_grade.views.student_grade %}">Grades</a></li>
+					    {% endif %}
 					{% endif %}
 					{% block nav %}
 					{% endblock %}

@@ -1,5 +1,6 @@
-#   Copyright 2011 David M Burke
+#   Copyright 2011 Burke Software and Consulting LLC
 #   Author Callista Goss <calli@burkesoftware.com>
+#   Author David Burke <david@burkesoftware.com>
 #   
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -17,9 +18,10 @@
 #   MA 02110-1301, USA.
 
 # Create your views here.
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import Context, loader, RequestContext
+from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
@@ -34,7 +36,7 @@ from ecwsp.sis.models import Student
 
 #staff: has_perm instead of filter
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')    
-def student_volunteer(request):
+def student_hours(request):
     #if site not approved/no contract/else all goes here.
     #send it StudentName, cohort, siteName, siteSup, hoursReq, hoursComplete <-see work_study.views.py
     
@@ -68,48 +70,82 @@ def student_volunteer(request):
                                                                                'hoursComplete':volunteer.hours_completed}, RequestContext(request, {}))
     
     
-@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')    
+@user_passes_test(lambda u: u.groups.filter(name='students'), login_url='/')    
 def student_site_approval(request):
+    """ This view allows a student to choose an existing site or create a new one """
     student = Student.objects.get(username=request.user.username)
     volunteer, created = Volunteer.objects.get_or_create(student=student)
     
-    job_description = jobDescriptionForm(instance=volunteer)
-    required = volunteer.hours_required
-    if(volunteer.site_approval=='Accepted'):
-        return student_contract(request)
-    elif(volunteer.site_approval=='Submitted' or volunteer.site_approval=='Resubmitted') :
-        return render_to_response('base.html', {'msg': "You have submitted your site for approval, but it has not been accepted or rejected yet.\
-                                                If this is a mistake, contact your volunteer director."}, RequestContext(request, {}))
-    elif volunteer.site_approval=='Rejected':
-        msg = 'Your last site request was rejected with the following comment: \"' + volunteer.comment + '.\"  Please adjust your request.'
-        site_form = siteForm(instance = volunteer)
-    else:
-        msg = ''
-        site_form = siteForm()
     if request.method == 'POST':
-        site_form = siteForm(request.POST)
-        job_description = jobDescriptionForm(request.POST, instance=volunteer)
-        if site_form.is_valid():
-            if job_description.is_valid():
-                if volunteer.site_approval=='Rejected':
-                    volunteer.site_approval = 'Resubmitted'
-                else:
-                    volunteer.site_approval = 'Submitted'
-                    volunteer.save()
-                    site_form.save()
-                    job_description.save()
-                    return render_to_response('base.html', {'student': True, 'msg': "Site request was successfully submitted."}, RequestContext(request, {}))
-    return render_to_response('volunteer_track/student_site_approval.html', {'site_form':site_form, 'job_desc':job_description,'hoursReq':required, 'redo':msg,\
-                                                                                 'studentName':volunteer, 'cohort':volunteer.student.cache_cohort,}, RequestContext(request, {}))
+        if 'existing_site_submit' in request.POST:
+            existing_site_form = ExistingSiteForm(request.POST, instance=volunteer)
+            if existing_site_form.is_valid():
+                existing_site_form.save()
+                volunteer.site_approval = "Submitted"
+                volunteer.save()
+                return HttpResponseRedirect(reverse(change_supervisor))
+                
+        elif 'new_site_submit' in request.POST:
+            new_site_form = NewSiteForm(request.POST, prefix="new")
+            supervisor_form = SupervisorForm(request.POST, prefix="super")
+            if new_site_form.is_valid() and supervisor_form.is_valid():
+                site = new_site_form.save() 
+                supervisor = supervisor_form.save()
+                supervisor.site = site
+                supervisor.save()
+                volunteer.site = site
+                volunteer.site_supervisor = supervisor
+                volunteer.job_description = new_site_form.cleaned_data['job_description']
+                volunteer.site_approval = "Submitted"
+                volunteer.save()
+                return HttpResponseRedirect(reverse(student_dash))
+                
+    if not 'existing_site_form' in locals():
+        existing_site_form = ExistingSiteForm(instance=volunteer)
+    if not 'new_site_form' in locals():
+        new_site_form = NewSiteForm(prefix="new")
+    if not 'supervisor_form' in locals():
+        supervisor_form = SupervisorForm(prefix="super")
+        
+    return render_to_response('volunteer_track/student_site_approval.html',
+                              {'student': volunteer, 'existing_site_form':existing_site_form, 'new_site_form':new_site_form, 'supervisor_form':supervisor_form}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
-def student_contract(request):
-    try:
-        student = Student.objects.get(username=request.user.username)
-        volunteer = Volunteer.objects.get(student=student)
-    except:
-        return render_to_response('base.html', {'msg': "Student is not set as a volunteer. Please notify a system admin if you believe this is a mistake."}, RequestContext(request, {}))
-    if(volunteer.contract):
-        return student_volunteer(request)
+
+@user_passes_test(lambda u: u.groups.filter(name='students'), login_url='/')    
+def student_dash(request):
+    student = Student.objects.get(username=request.user.username)
+    volunteer, created = Volunteer.objects.get_or_create(student=student)
+    
+    if not volunteer.site:
+        return HttpResponseRedirect(reverse(student_site_approval))
+    
+    return render_to_response('volunteer_track/dash.html', {'student': volunteer}, RequestContext(request, {}))
+    
+@user_passes_test(lambda u: u.groups.filter(name='students'), login_url='/')    
+def change_supervisor(request):
+    student = Student.objects.get(username=request.user.username)
+    volunteer, created = Volunteer.objects.get_or_create(student=student)
+    
+    if request.method == 'POST':
+        supervisor_form = SupervisorForm(request.POST)
+        select_supervisor_form = SelectSupervisorForm(request.POST)
+        if select_supervisor_form.is_valid() and select_supervisor_form.cleaned_data['select_existing']:
+            volunteer.site_supervisor = select_supervisor_form.cleaned_data['select_existing']
+            volunteer.save()
+            return HttpResponseRedirect(reverse(student_dash))
+        elif supervisor_form.is_valid():
+            supervisor = supervisor_form.save()
+            volunteer.site_supervisor = supervisor
+            volunteer.save()
+            if volunteer.site:
+                supervisor.site = volunteer.site
+                supervisor.save()
+            return HttpResponseRedirect(reverse(student_dash))
     else:
-        return render_to_response('base.html', {'msg': "site approval"}, RequestContext(request, {}))
+        supervisor_form = SupervisorForm()
+        select_supervisor_form = SelectSupervisorForm()
+        select_supervisor_form.fields['select_existing'].queryset = volunteer.site.sitesupervisor_set.all()
+    
+    return render_to_response('volunteer_track/student_change_supervisor.html', {'student': volunteer, 'supervisor_form':supervisor_form, 'select_supervisor_form': select_supervisor_form}, RequestContext(request, {}))
+    
+    
