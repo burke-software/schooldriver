@@ -86,20 +86,39 @@ def student_site_approval(request):
     else:
         msg = ''
         site_form = siteForm()
+        site_form_two = siteFormTwo()
+    
     if request.method == 'POST':
-        site_form = siteForm(request.POST)
-        job_description = jobDescriptionForm(request.POST, instance=volunteer)
-        if site_form.is_valid():
-            if job_description.is_valid():
-                if volunteer.site_approval=='Rejected':
-                    volunteer.site_approval = 'Resubmitted'
-                else:
-                    volunteer.site_approval = 'Submitted'
-                    volunteer.save()
-                    site_form.save()
-                    job_description.save()
-                    return render_to_response('base.html', {'student': True, 'msg': "Site request was successfully submitted."}, RequestContext(request, {}))
-    return render_to_response('volunteer_track/student_site_approval.html', {'site_form':site_form, 'job_desc':job_description,'hoursReq':required, 'redo':msg,\
+        if request.POST['submit1']:
+            site_form = siteForm(request.POST)
+            job_description = jobDescriptionForm(request.POST, instance=volunteer)
+            if site_form.is_valid():
+                if job_description.is_valid():
+                    if volunteer.site_approval=='Rejected':
+                        volunteer.site_approval = 'Resubmitted'
+                    else:
+                        volunteer.site_approval = 'Submitted'
+                        volunteer.save()
+                        site_form.save()
+                        job_description.save()
+                        return render_to_response('base.html', {'student': True, 'msg': "Site request was successfully submitted."}, RequestContext(request, {}))
+
+        if request.POST['submit2']:
+            site_form_two = siteForm_two(request.POST)
+            job_description = jobDescriptionForm(request.POST, instance=volunteer)
+            if site_form.is_valid():
+                if job_description.is_valid():
+                    if volunteer.site_approval=='Rejected':
+                        volunteer.site_approval = 'Resubmitted'
+                    else:
+                        volunteer.site_approval = 'Submitted'
+                        
+                        volunteer.save()
+                        site_form_two.save()
+                        job_description.save()
+                        return render_to_response('base.html', {'student': True, 'msg': "Site request was successfully submitted."}, RequestContext(request, {}))
+
+    return render_to_response('volunteer_track/student_site_approval.html', {'student': True, 'site_form':site_form, 'site_form_two': site_form_two, 'job_desc':job_description,'hoursReq':required, 'redo':msg,\
                                                                                  'studentName':volunteer, 'cohort':volunteer.student.cache_cohort,}, RequestContext(request, {}))
 
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')

@@ -59,8 +59,8 @@ class CraContact(models.Model):
 class PickupLocation(models.Model):
     import re
     from django.core.validators import RegexValidator
-    namespace_regex = re.compile(r'^[A-z\-]+$')
-    location = models.CharField(max_length=20, unique=True, validators=[RegexValidator(regex=namespace_regex)])
+    namespace_regex = re.compile(r'^[A-z\-_1234567890]+$')
+    location = models.CharField(max_length=20, unique=True, validators=[RegexValidator(regex=namespace_regex)], help_text="Must not contain spaces")
     long_name = models.CharField(max_length=255, blank=True)
     directions = models.TextField(blank=True)
     def __unicode__(self):

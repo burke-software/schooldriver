@@ -80,10 +80,15 @@ class HoursAdmin(admin.ModelAdmin):
     list_display = ('student', 'date', 'hours')
     search_fields = ['student__student__fname', 'student__student__lname']
 admin.site.register(Hours,HoursAdmin)
-    
+
+class SiteSupervisorInline(admin.TabularInline):
+    model = SiteSupervisor
+    extra = 0    
+
 class SiteAdmin(admin.ModelAdmin):
     list_display = ('site_name', 'site_address')
     search_fields = ['site_name', 'site_address', 'site_city', 'site_zip', 'site_state']
+    inlines = [SiteSupervisorInline]
     
 admin.site.register(Site, SiteAdmin)
 
@@ -91,8 +96,5 @@ class SiteSupervisorAdmin(admin.ModelAdmin):
     list_display = ('name', 'phone', 'email')
     search_fields = ['name', 'phone', 'email', 'site__site_name', 'site__site_address', 'site__site_city', 'site__site_zip', 'site__site_state']
 admin.site.register(SiteSupervisor,SiteSupervisorAdmin)
-
-
-
 
 

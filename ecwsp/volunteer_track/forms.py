@@ -19,7 +19,7 @@
 from django import forms
 from volunteer_track.models import *
 from ajax_select.fields import AutoCompleteSelectField
-from django.forms import HiddenInput
+from django.forms import HiddenInput, ChoiceField
 
 
 
@@ -27,7 +27,7 @@ class inputTimeForm(forms.ModelForm):
     class Meta:
         model = Hours
         widgets = {'student':HiddenInput}
-        exclude = ['student']
+        exclude = ['student', 'approved']
 
 class newSiteForm(forms.ModelForm):
     class Meta:
@@ -37,7 +37,17 @@ class siteForm(forms.ModelForm):
     class Meta:
         model = Site
         include = ['site_name']
-    query = AutoCompleteSelectField('site', required=True)
+
+class siteFormTwo(forms.ModelForm):
+    class Meta:
+        model = Site
+        exclude = ['site_name','site_address','site_city','site_state','site_zip']
+
+    def __init__(self, *args, **kwargs):
+        super(siteFormTwo, self).__init__(*args, **kwargs)
+        self.fields['Existing_Sites'].choices = [('',"Select Existing Site")] + [(site.id, site.site_name) for site in Site.objects.all()]
+    
+    Existing_Sites = forms.ChoiceField(choices=(), required=True)
 
 class jobDescriptionForm(forms.ModelForm):
     class Meta:
