@@ -22,36 +22,28 @@ from ajax_select.fields import AutoCompleteSelectField
 from django.forms import HiddenInput, ChoiceField
 
 
-
 class inputTimeForm(forms.ModelForm):
     class Meta:
         model = Hours
         widgets = {'student':HiddenInput}
-        exclude = ['student', 'approved']
-
-class newSiteForm(forms.ModelForm):
-    class Meta:
-        model = Site
+        exclude = ['student']
         
-class siteForm(forms.ModelForm):
+class NewSiteForm(forms.ModelForm):
     class Meta:
         model = Site
-        include = ['site_name']
+    job_description = forms.CharField(widget=forms.Textarea(attrs={'rows':3}), required=True)
 
-class siteFormTwo(forms.ModelForm):
-    class Meta:
-        model = Site
-        exclude = ['site_name','site_address','site_city','site_state','site_zip']
-
-    def __init__(self, *args, **kwargs):
-        super(siteFormTwo, self).__init__(*args, **kwargs)
-        self.fields['Existing_Sites'].choices = [('',"Select Existing Site")] + [(site.id, site.site_name) for site in Site.objects.all()]
-    
-    Existing_Sites = forms.ChoiceField(choices=(), required=True)
-
-class jobDescriptionForm(forms.ModelForm):
+class ExistingSiteForm(forms.ModelForm):
     class Meta:
         model = Volunteer
-        fields= ['job_description', 'student']
-        widgets = {'student':HiddenInput}
-        job_description = forms.CharField(widget=forms.Textarea, required=True)
+        fields= ['site', 'job_description', 'student']
+        widgets = {'student':HiddenInput, 'job_description':forms.Textarea(attrs={'rows':3})}
+        
+class SupervisorForm(forms.ModelForm):
+    class Meta:
+        model = SiteSupervisor
+        exclude = ['site']
+    
+class SelectSupervisorForm(forms.Form):    
+    select_existing = forms.ModelChoiceField(SiteSupervisor.objects.all(), required=False)
+    

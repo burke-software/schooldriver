@@ -19,6 +19,8 @@
 
 from django.db import models
 from django.db.models import Sum
+from django.contrib.localflavor.us.models import *
+
 from datetime import datetime
 
 class Hours(models.Model):
@@ -29,7 +31,6 @@ class Hours(models.Model):
     student = models.ForeignKey('Volunteer')
     date = models.DateField(blank = False, null = False)
     hours = models.FloatField()
-    approved = models.BooleanField(default=False)
     time_stamp = models.DateTimeField(auto_now=True)
     def __unicode__(self):
         return unicode(self.hours)
@@ -44,16 +45,17 @@ class Site(models.Model):
         return unicode(self.site_name)
 
 class SiteSupervisor(models.Model):
-    name = models.CharField(max_length=200, blank=True)
-    site = models.ForeignKey('Site',blank=True)
-    phone = models.CharField(max_length=40, blank=True)
+    name = models.CharField(max_length=200)
+    site = models.ForeignKey('Site',blank=True,null=True)
+    phone = PhoneNumberField(max_length=40, blank=True)
     email = models.EmailField(max_length=200, blank=True)
     def __unicode__(self):
         return unicode(self.name)
 
 class Volunteer(models.Model):
     student = models.OneToOneField('sis.Student') #string so that it looks up sis.Student after the fact.
-    site_approval = models.CharField(max_length=16, choices=(('Accepted','Accepted'),('Rejected', 'Rejected'),('Submitted', 'Submitted'),('Resubmitted', 'Resubmitted')), blank=True)
+    site = models.ForeignKey(Site,blank=True,null=True)
+    site_approval = models.CharField(max_length=16, choices=(('Accepted','Accepted'),('Rejected', 'Rejected'),('Submitted', 'Submitted')), blank=True)
     site_supervisor = models.ForeignKey('SiteSupervisor', blank=True, null=True)
     attended_reflection = models.BooleanField(verbose_name = "Attended")
     contract = models.BooleanField()

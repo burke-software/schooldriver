@@ -169,7 +169,7 @@
 						<li><a href="/">Create Time Card</a></li>
 					    {% endif %}
 					    {% if "ecwsp.volunteer_track" in settings.INSTALLED_APPS %}
-						<li><a href="{% url ecwsp.volunteer_track.views.student_site_approval %}">Volunteering</a></li>
+						<li><a href="{% url ecwsp.volunteer_track.views.student_dash %}">Volunteer</a></li>
 					    {% endif %}
 					    {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
 						<li><a href="{% url ecwsp.benchmark_grade.views.student_grade %}">Grades</a></li>

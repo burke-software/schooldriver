@@ -5,7 +5,11 @@
 {% endblock %}
 
 {% block css %}
-
+<style type="text/css">
+textarea {
+    height: 5em;
+}
+</style>
 {% endblock %}
 
 {% block head %}
@@ -14,28 +18,33 @@
 
 {% block content %}
 
-
-
-<form action="/volunteer_track/student/volunteer/" method="post">
+<h2> Choose Existing Site </h2>
+<form method="post">
 <table>
-{{ site_form }}
+{{ existing_site_form }}
 </table>
-<table>
-{{ job_desc }}
-</table>
-<input type="submit" name="submit1" value="Get New Site Approval" />
+<input type="submit" name="existing_site_submit" value="Get Existing Site Approval" />
 </form>
 
-<br/>
-<br/>
+<br/><br/><h2>OR</h2><br/><br/>
 
-<form action="/volunteer_track/student/volunteer/" method="post">
-<table>
-{{ site_form_two }}
-{{ job_desc }}
-</table>
-<input type="submit" name="submit2" value="Get Existing Site Approval" />
+<h2> Enter a new site </h2>
+<form method="post">
+<fieldset>
+    <legend>Volunteer Site</legend>
+    <table>
+    {{ new_site_form }}
+    {{ job_desc }}
+    </table>
+</fieldset>
+<fieldset>
+    <legend>Supervisor</legend>
+    <table>
+    {{ supervisor_form }}
+    </table>
+</fieldset>
+
+<input type="submit" name="new_site_submit" value="Get New Site Approval" />
 </form>
-{{ redo }}
 
 {% endblock %}
