@@ -240,19 +240,19 @@ def drawLines(c):
     
 def barcode(c):
     global code
-    code = str(testid).zfill(7) + (str(page).zfill(3))
+    code = str(testid).zfill(4) + (str(page).zfill(1))
     barcode = Codabar(code, barWidth = inch*0.028)
-    x = width - (4.8*inch)
+    x = width - (3.1*inch) 
     y = height - (.6*inch)
     barcode.drawOn(c,x,y)
     
 def student_barcode(c):
     global student_code
     #7 digits
-    student_code = student_id[id].zfill(7)
+    student_code = student_id[id].zfill(5)
     stopped_student_code = "A" + student_code + "A"
     student_barcode = Codabar(stopped_student_code,barWidth = inch*.03)
-    x = left_margin - (.3*inch)
+    x = left_margin - (.3*inch) 
     y= height - (1.25*inch)
     student_barcode.drawOn(c,x,y)
     
@@ -504,7 +504,7 @@ def barcodeBanding():
     typetag.appendChild(typetext)
     widthtag = doc.createElement("width")
     boxgroup.appendChild(widthtag)
-    widthtext = doc.createTextNode("7")
+    widthtext = doc.createTextNode("5")
     widthtag.appendChild(widthtext)
     varnametag = doc.createElement("varname")
     boxgroup.appendChild(varnametag)
@@ -568,7 +568,7 @@ def barcodeBoxgroup():
     auto_increment = row[10]
     pageid = auto_increment + (page - 1)
     barcodename = "barcode_" + str(pageid) +"test"
-    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,7," + str(pageid) + ",'"
+    db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,5," + str(pageid) + ",'"
                       + barcodename + "',0)")
     db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +
                       " values (210, 185, 1175, 450, " + str(pageid) + ",LAST_INSERT_ID(),"+
