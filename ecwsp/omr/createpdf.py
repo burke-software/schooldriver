@@ -251,7 +251,7 @@ def drawLines(c):
     
 def barcode(c):
     global code
-    code = str(testid).zfill(4) + (str(page).zfill(1))
+    code = str(testid).zfill(7) + (str(page).zfill(3))
     barcode = Codabar(code, barWidth = inch*0.028)
     x = width - (3.1*inch) 
     y = height - (.6*inch)
@@ -260,7 +260,7 @@ def barcode(c):
 def student_barcode(c):
     global student_code
     #7 digits
-    student_code = student_id[id].zfill(5)
+    student_code = student_id[id].zfill(7)
     stopped_student_code = "A" + student_code + "A"
     student_barcode = Codabar(stopped_student_code,barWidth = inch*.03)
     x = left_margin - (.3*inch) 
