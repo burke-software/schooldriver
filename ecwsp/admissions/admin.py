@@ -35,7 +35,7 @@ class ContactLogInline(admin.TabularInline):
 class ApplicantAdmin(admin.ModelAdmin):
     form = ApplicantForm
     list_display = ('lname', 'fname', 'present_school', 'city', 'level', 'application_decision', 'school_year', 'ready_for_export',)
-    list_filter = ['school_year', 'level', 'checklist', 'ready_for_export', 'application_decision']
+    list_filter = ['school_year', 'level', 'checklist', 'ready_for_export', 'application_decision','present_school','ethnicity']
     search_fields = ['lname', 'fname', 'present_school__name']
     inlines = [ContactLogInline]
     ordering = ('-id',)
