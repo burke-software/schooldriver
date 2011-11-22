@@ -21,7 +21,7 @@ from ecwsp.benchmark_grade.models import *
 
 class BenchmarkGradeImporter(Importer):
     def _is_empty(self, s):
-        return len(str(s).strip()) == 0
+        return len(unicode(s).strip()) == 0
         
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
@@ -38,21 +38,21 @@ class BenchmarkGradeImporter(Importer):
         sheet = self.book.sheet_by_name('Standards')
         nrow = 5
         while nrow < sheet.nrows:
-            username = str(sheet.cell_value(nrow, 1)).strip()
+            username = unicode(sheet.cell_value(nrow, 1)).strip()
             if len(username) == 0:
                 nrow += 1
                 continue
             current_standard = ''
             ncol = 4
             while ncol < sheet.ncols and ncol < 105: # stop before the hidden formulas
-                standard_name = str(sheet.cell_value(3, ncol)).strip()
+                standard_name = unicode(sheet.cell_value(3, ncol)).strip()
                 if len(standard_name) > 0:
                     current_standard = standard_name
                 if self._is_empty(sheet.cell_value(nrow, ncol)):
                     ncol += 1
                     continue
                 markVal = sheet.cell_value(nrow, ncol)
-                mark_desc = str(sheet.cell_value(4, ncol)).strip()
+                mark_desc = unicode(sheet.cell_value(4, ncol)).strip()
                 try:
                     category, trash = Category.objects.get_or_create(name="Standards")
                     item, trash = Item.objects.get_or_create(name=current_standard,
@@ -75,7 +75,7 @@ class BenchmarkGradeImporter(Importer):
         sheet = self.book.sheet_by_name('Engagement')
         nrow = 4
         while nrow < sheet.nrows:
-            username = str(sheet.cell_value(nrow, 1)).strip()
+            username = unicode(sheet.cell_value(nrow, 1)).strip()
             if len(username) == 0:
                 nrow += 1
                 continue
@@ -107,7 +107,7 @@ class BenchmarkGradeImporter(Importer):
         sheet = self.book.sheet_by_name('Organization')
         nrow = 4
         while nrow < sheet.nrows:
-            username = str(sheet.cell_value(nrow, 1)).strip()
+            username = unicode(sheet.cell_value(nrow, 1)).strip()
             if len(username) == 0:
                 nrow += 1
                 continue
@@ -139,7 +139,7 @@ class BenchmarkGradeImporter(Importer):
         sheet = self.book.sheet_by_name('Daily Practice')
         nrow = 5
         while nrow < sheet.nrows:
-            username = str(sheet.cell_value(nrow, 1)).strip()
+            username = unicode(sheet.cell_value(nrow, 1)).strip()
             if len(username) == 0:
                 nrow += 1
                 continue

@@ -213,11 +213,22 @@ def createpdf(xml_test):
         return download, temp_pdf_file, False
     
 def newPage(c):
-    global page
+    global page, title, name,next_line
     c.translate(0,0)
     barcode(c)
     if student_id[id]!="0":
         student_barcode(c)
+    title_length = title.__len__() * font_size
+    if title_length > 245:
+        title = title[:245/font_size]
+    c.drawString(250,first_line+10, title)
+    next_line = first_line - (line_space)
+    name_length = (names[id]).__len__() * font_size
+    if name_length > 295:
+        name = names[id][:295/font_size]
+    else: name = names[id]
+    c.drawString(250,next_line+10,name)
+    next_line = next_line - (line_space*2)
     drawLines(c)
     c.translate(left_margin,bottom_margin)
     
@@ -240,7 +251,7 @@ def drawLines(c):
     
 def barcode(c):
     global code
-    code = str(testid).zfill(4) + (str(page).zfill(1))
+    code = str(testid).zfill(7) + (str(page).zfill(3))
     barcode = Codabar(code, barWidth = inch*0.028)
     x = width - (3.1*inch) 
     y = height - (.6*inch)
@@ -249,7 +260,7 @@ def barcode(c):
 def student_barcode(c):
     global student_code
     #7 digits
-    student_code = student_id[id].zfill(5)
+    student_code = student_id[id].zfill(7)
     stopped_student_code = "A" + student_code + "A"
     student_barcode = Codabar(stopped_student_code,barWidth = inch*.03)
     x = left_margin - (.3*inch) 
@@ -259,7 +270,7 @@ def student_barcode(c):
 def createTest(c):
     #need to do it for multiple tests -tests[id]:questions and -teacher_tests[id]:teacher_questions
     global indent, questions, choices, column, sort, next_line, width, height, next_line,left_margin,right_margin,bottom_margin,top_margin
-    global id, var_names, teacher_varnames, page, title
+    global id, var_names, teacher_varnames, page, title, font_size, first_line, line_space
     indent = 0
     column = 0
     
@@ -284,23 +295,7 @@ def createTest(c):
         newPage(c)
         c.setFont(default_font,font_size)
         
-        title_length = title.__len__() * font_size
-        #title_indent = width - indent - title_length*2 - right_margin
-        #if title_indent < 250:
-        #    title_indent = 250
-        if title_length > 245:
-            title = title[:245/font_size]
-        c.drawString(250,first_line+10, title)
-        next_line = first_line - (line_space)
-        name_length = (names[id]).__len__() * font_size
-        #name_indent = width - indent - name_length - right_margin
-        #if name_indent <300:
-        #    name_indent = 300
-        if name_length > 295:
-            name = names[id][:295/font_size]
-        else: name = names[id]
-        c.drawString(250,next_line+10,name)
-        next_line = next_line - (line_space*2)
+        
         
         def createSections(questions,choices, varnames):
             global indent, column, sort, next_line
@@ -321,14 +316,16 @@ def createTest(c):
                         next_line = first_line - line_space*3
                     indent = ((width-left_margin-right_margin)/3)*column
                 choice_number = len(questions[question])
+                skip_row = False;
                 if choice_number > 0:
                     next_line=next_line - line_space
                 if choice_number ==2:
                     extra_indent=45
-                elif choice_number <= 5:
+                elif choice_number < 5:
                     extra_indent = 30
                 else:
                     extra_indent = 25
+                    skip_row = next_line;
                     
                 c.drawString(indent,next_line,question)
                 if choice_number !=0:
