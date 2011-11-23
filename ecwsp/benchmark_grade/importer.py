@@ -23,12 +23,42 @@ class BenchmarkGradeImporter(Importer):
     def _is_empty(self, s):
         return len(unicode(s).strip()) == 0
         
+    def _make_aggregates(self, course, marking_period):
+        # clear out schedule grades; they'll be copied from the standards averages
+        Grade.objects.filter(course=course, marking_period=marking_period).delete()
+        
+        category_scale = {'Standards': 'Four-Oh with YTD',
+                          'Engagement': 'Four-Oh',
+                          'Organization': 'Four-Oh',
+                          'Daily Practice': 'Percent'}
+        for student in course.get_enrolled_students(show_deleted=True):
+            for categoryName, scaleName in category_scale.iteritems():
+                a, garbage = Aggregate.objects.get_or_create(singleStudent=student,
+                                                             singleCourse=course,
+                                                             singleMarkingPeriod=marking_period,
+                                                             singleCategory=Category.objects.get(name=categoryName),
+                                                             scale=Scale.objects.get(name=scaleName))
+                if categoryName == 'Standards':
+                    weakest = a.min(markDescription='Session')
+                    if weakest is not None and weakest < 3: # A YTD for you if any of your standards are below 3.0
+                        a.cachedValue = 0 # better luck next time
+                    else:
+                        a.cachedValue = a.mean(markDescription='Session')
+                    # I'd like to avoid re-writing SWORD
+                    g, garbage = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True, override_final=False)
+                    g.set_grade(a.cachedValue)
+                    g.save() # recalculates a bogus GPA every time. ouch.
+                else:
+                    a.cachedValue = a.mean()
+                a.name = unicode(a.cachedValue) + u' - ' + unicode(student) + u' - ' + unicode(categoryName)  + u' (' + unicode(course.fullname) + u')'
+                a.save()
+        
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
         """ This is all completely hard-coded for the Twin Cities school. """
         mark_count = 0
         # as requested, drop all old marks before importing
-        Aggregate.objects.filter(singleCourse=course).delete()
+        Aggregate.objects.filter(singleCourse=course, singleMarkingPeriod=marking_period).delete()
         for oldItem in Item.objects.filter(course=course, markingPeriod=marking_period):
             Mark.objects.filter(item=oldItem).delete()
             oldItem.delete()
@@ -166,4 +196,8 @@ class BenchmarkGradeImporter(Importer):
                     print >> sys.stderr, str(sys.exc_info())
                 ncol += 1
             nrow += 1
+            
+        # make aggregates for this course
+        self._make_aggregates(course, marking_period)
+        
         return mark_count

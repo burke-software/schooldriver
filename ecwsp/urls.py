@@ -44,6 +44,8 @@ if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^volunteer_track/', include('ecwsp.volunteer_track.urls')), )
 if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^benchmark_grade/', include('ecwsp.benchmark_grade.urls')), )
+if 'ecwsp.inventory' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^inventory/', include('ecwsp.inventory.urls')), )
 
 if settings.DEBUG:
     urlpatterns += patterns('',

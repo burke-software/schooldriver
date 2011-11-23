@@ -181,6 +181,7 @@ INSTALLED_APPS = (
     'massadmin',
     'admin_export',
     'ecwsp.custom_field',
+#   'ecwsp.inventory',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -261,6 +262,13 @@ CKEDITOR_CONFIGS = {
         'extraPlugins': 'equation',
     },
 }
+
+#CACHES = {
+#    'default': {
+#        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#        'LOCATION': '127.0.0.1:11211',
+#    }
+#}
 
 # http://ww7.engrade.com/api/key.php
 ENGRADE_APITKEY = ''

@@ -6,6 +6,7 @@ from ecwsp.sis.uno_report import uno_save
 from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
+from ecwsp.benchmark_grade.models import *
 
 from ecwsp.appy.pod.renderer import Renderer
 import tempfile
@@ -229,14 +230,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     students.years.dismissed - Dismissed for year
     studnets.years.credits  - Total credits for year
     """
-    
-    # to do: stop being so lazy. eventually people will need to access both pod_report_grade and pod_benchmark_report_grade.
-    if (not transcript and
-        "ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
-        str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"):
-        from ecwsp.benchmark_grade.report import pod_benchmark_report_grade
-        return pod_benchmark_report_grade(template, options, students, format, transcript, report_card)
-    
+     
     data = get_default_data()
     
     blank_grade = struct()
@@ -248,6 +242,15 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     #    marking_periods = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True))
     #else:
     for_date = options['date'] # In case we want a transcript from a future date
+    
+    # if benchmark grading is installed and enabled for the current school year,
+    # and this is a report card, bail out to another function
+    if (report_card and
+        "ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
+        SchoolYear.objects.filter(start_date__lt=for_date).order_by('-start_date')[0].benchmark_grade):
+        from ecwsp.benchmark_grade.report import benchmark_report_card
+        return benchmark_report_card(template, options, students, format)
+        
     marking_periods = MarkingPeriod.objects.filter(
         school_year=SchoolYear.objects.filter(
             start_date__lt=for_date
@@ -319,18 +322,44 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                 for course in year.courses:
                     # Grades
                     course_grades = year_grades.filter(course=course).distinct()
+                    course_aggregates = None
+                    if year.benchmark_grade:
+                        course_aggregates = Aggregate.objects.filter(singleCourse=course, singleStudent=student)
                     i = 1
                     for mp in year.mps:
-                        # We can't overwrite cells, so we have to get seperate variables for each mp grade.
-                        try:
-                            grade = course_grades.get(marking_period=mp).get_grade()
-                            grade = "   " + str(grade) + "   "
-                        except:
-                            grade = ""
-                        setattr(course, "grade" + str(i), grade)
+                        if year.benchmark_grade:
+                            try:
+                                standards = course_aggregates.get(singleCategory=Category.objects.get(name='Standards'), singleMarkingPeriod=mp)
+                                standards = standards.scale.spruce(standards.cachedValue)
+                            except:
+                                standards = ""
+                            try:
+                                engagement = course_aggregates.get(singleCategory=Category.objects.get(name='Engagement'), singleMarkingPeriod=mp)
+                                engagement = engagement.scale.spruce(engagement.cachedValue)
+                            except:
+                                engagement = ""
+                            try:
+                                organization = course_aggregates.get(singleCategory=Category.objects.get(name='Organization'), singleMarkingPeriod=mp)
+                                organization = organization.scale.spruce(organization.cachedValue)
+                            except:
+                                organization = ""
+                            setattr(course, "grade" + str(i), standards)
+                            setattr(course, "engagement" + str(i), engagement)
+                            setattr(course, "organization" + str(i), organization)
+                        else:
+                            # We can't overwrite cells, so we have to get seperate variables for each mp grade.
+                            try:
+                                grade = course_grades.get(marking_period=mp).get_grade()
+                                grade = "   " + str(grade) + "   "
+                            except:
+                                grade = ""
+                            setattr(course, "grade" + str(i), grade)
                         i += 1
                     while i <= 6:
                         setattr(course, "grade" + str(i), "")
+                        if year.benchmark_grade:
+                            setattr(course, "engagement" + str(i), "")
+                            setattr(course, "organization" + str(i), "")
                         i += 1
                     course.final = course.get_final_grade(student, date_report=for_date)
                     

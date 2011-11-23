@@ -39,7 +39,7 @@ class Scale(models.Model):
     minimum = models.DecimalField(max_digits=8, decimal_places=2)
     maximum = models.DecimalField(max_digits=8, decimal_places=2)
     decimalPlaces = models.IntegerField(default=2)
-    symbol = models.CharField(max_length=7, blank=True, null=True)
+    symbol = models.CharField(max_length=7, blank=True)
     def spruce(self, grade):
         try:
             decGrade = Decimal(str(grade)).quantize(Decimal(str(10**(-1 * self.decimalPlaces))), ROUND_HALF_UP)
@@ -93,7 +93,7 @@ class Category(models.Model):
 class Item(models.Model):
     name = models.CharField(max_length=255)
     course = models.ForeignKey('schedule.Course')
-    date = models.DateField(null=True)
+    date = models.DateField(blank=True, null=True)
     markingPeriod = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     category = models.ForeignKey('Category')
     scale = models.ForeignKey('Scale')
@@ -117,6 +117,7 @@ class Aggregate(models.Model):
     name = models.CharField(max_length=255)
     scale = models.ForeignKey('Scale')
     manualMark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    cachedValue = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     singleStudent = models.ForeignKey('sis.Student', blank=True, null=True, related_name="single_student")
     student = models.ManyToManyField('sis.Student', blank=True, null=True)
     singleCourse = models.ForeignKey('schedule.Course', blank=True, null=True, related_name="single_course")
@@ -124,45 +125,75 @@ class Aggregate(models.Model):
     singleCategory = models.ForeignKey('Category', blank=True, null=True, related_name="single_category")
     category = models.ManyToManyField('Category', blank=True, null=True)
     aggregate = models.ManyToManyField('self', blank=True, null=True)
+    singleMarkingPeriod = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     
     # rudimentary for now
     # no m2m, multipliers
     # also untested
-    def max(self):
-        highest = 0
-        items = Item.objects.filter(course=singleCourse, category=singleCategory)
+    def max(self, normalize=False, markDescription=None):
+        highest = None
+        items = Item.objects.filter(course=self.singleCourse, category=self.singleCategory, markingPeriod=self.singleMarkingPeriod)
         for item in items:
-            marks = Mark.objects.filter(item=item, student=student)
+            if markDescription is not None:
+                marks = Mark.objects.filter(item=item, student=self.singleStudent, description=markDescription)
+            else:
+                marks = Mark.objects.filter(item=item, student=self.singleStudent)
             for mark in marks:
-                # score between 0 and 1
-                unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
-                if unscaled > highest:
-                    highest = unscaled
-        highest = highest * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
-        return Decimal(str(highest))
-    def min(self):
+                if normalize:
+                    # score between 0 and 1
+                    unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
+                    if highest is None or unscaled > highest:
+                        highest = unscaled
+                else:
+                    if highest is None or mark.mark > highest:
+                        highest = mark.mark
+        if normalize:
+            highest = highest * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
+        if highest is None:
+            return None
+        else:
+            return Decimal(str(highest))
+    def min(self, normalize=False, markDescription=None):
         lowest = None
-        items = Item.objects.filter(course=singleCourse, category=singleCategory)
+        items = Item.objects.filter(course=self.singleCourse, category=self.singleCategory, markingPeriod=self.singleMarkingPeriod)
         for item in items:
-            marks = Mark.objects.filter(item=item, student=student)
+            if markDescription is not None:
+                marks = Mark.objects.filter(item=item, student=self.singleStudent, description=markDescription)
+            else:
+                marks = Mark.objects.filter(item=item, student=self.singleStudent)
             for mark in marks:
-                # score between 0 and 1
-                unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
-                if lowest is None or unscaled < lowest:
-                    lowest = unscaled
-        lowest = lowest * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
-        return Decimal(str(lowest))
-    def mean(self):
+                if normalize:
+                    # score between 0 and 1
+                    unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
+                    if lowest is None or unscaled < lowest:
+                        lowest = unscaled
+                else:
+                    if lowest is None or mark.mark < lowest:
+                        lowest = mark.mark
+        if normalize:                        
+            lowest = lowest * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
+        if lowest is None:
+            return None
+        else:
+            return Decimal(str(lowest))
+    def mean(self, normalize=False, markDescription=None):
         numerator = 0
         denominator = 0
-        items = Item.objects.filter(course=singleCourse, category=singleCategory)
+        items = Item.objects.filter(course=self.singleCourse, category=self.singleCategory, markingPeriod=self.singleMarkingPeriod)
         for item in items:
-            marks = Mark.objects.filter(item=item, student=student)
+            if markDescription is not None:
+                marks = Mark.objects.filter(item=item, student=self.singleStudent, description=markDescription)
+            else:
+                marks = Mark.objects.filter(item=item, student=self.singleStudent)
             for mark in marks:
-                # score between 0 and 1
-                unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
-                numerator += unscaled
-                denominator += 1
+                if normalize:
+                    # score between 0 and 1
+                    unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
+                    numerator += unscaled
+                    denominator += 1
+                else:
+                    numerator += mark.mark
+                    denominator += mark.item.scale.maximum
         if denominator == 0:
             return None
         result = numerator / denominator
