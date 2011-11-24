@@ -78,7 +78,8 @@ def benchmark_grade_upload(request, id):
         'message': message,
         'mps': mps
     }, RequestContext(request, {}),)
-    
+
+@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
 def student_grade(request):
     """ A view for students to see their own grades, in detail. """
     mps = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True),
