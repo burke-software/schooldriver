@@ -65,11 +65,17 @@ def benchmark_grade_upload(request, id):
     for mp in mps:
         mp.students = course.get_enrolled_students(show_deleted=True)
         for student in mp.students:
-            student.categories = Category.objects.all() # derp
+            student.categories = Category.objects.all() # derp DERP
             for category in student.categories:
                 category.marks = Mark.objects.filter(student=student, item__course=course,
                                                      item__category=category, item__markingPeriod=mp).order_by('-item__date', 'item__name',
                                                                                                                'description')
+                try:
+                    agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
+                                                singleCategory=category, singleMarkingPeriod=mp)
+                    category.average = agg.scale.spruce(agg.cachedValue)
+                except:
+                    category.average = None
  
     return render_to_response('benchmark_grade/upload.html', {
         'request': request,
@@ -93,6 +99,15 @@ def student_grade(request):
                 category.marks = Mark.objects.filter(student=student, item__course=course,
                                                      item__category=category, item__markingPeriod=mp).order_by('-item__date', 'item__name',
                                                                                                                'description')
+                if category.name == 'Standards':
+                    category.marks = category.marks.filter(description='Session')
+                try:
+                    agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
+                                                singleCategory=category, singleMarkingPeriod=mp)
+                    category.average = agg.scale.spruce(agg.cachedValue)
+                    print agg, category.average
+                except:
+                    category.average = None
     
     #return HttpResponse(s)
     return render_to_response('benchmark_grade/student_grade.html', {

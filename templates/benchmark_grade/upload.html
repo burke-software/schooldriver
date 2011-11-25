@@ -21,6 +21,9 @@
 .maximumPoints {
     color: grey;
 }
+.categoryAverage {
+    font-weight: bold;
+}
 </style>
 {% endblock %}
 
@@ -47,7 +50,9 @@
 				{% for mark in category.marks %}
 				    <tr>
 					<td>
-					    {{ mark.item.name }}
+					    {% if mark.item.name != 'None' %}
+						{{ mark.item.name }}
+					    {% endif %}
 					    {% if mark.description %}
 						<br /><span class="markDescription">{{ mark.description }}</span>
 					    {% endif %}
@@ -56,6 +61,15 @@
 				    </tr>
 				{% endfor %}
 				</table>
+			    </td>
+			{% endif %}
+			{% endfor %}
+		    </tr>
+		    <tr>
+			{% for category in student.categories %}
+			{% if category.marks %}
+			    <td class="categoryAverage">
+				Average: {{ category.average }}
 			    </td>
 			{% endif %}
 			{% endfor %}
