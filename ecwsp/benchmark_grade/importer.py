@@ -29,8 +29,11 @@ class BenchmarkGradeImporter(Importer):
         
         category_scale = {'Standards': 'Four-Oh with YTD',
                           'Engagement': 'Four-Oh',
-                          'Organization': 'Four-Oh',
-                          'Daily Practice': 'Percent'}
+                          'Organization': 'Four-Oh'}
+        if course.department.name == "Hire4Ed":
+            category_scale['Precision and Accuracy'] = 'Four-Oh'
+        else:
+            category_scale['Daily Practice'] = 'Percent'
         for student in course.get_enrolled_students(show_deleted=True):
             for categoryName, scaleName in category_scale.iteritems():
                 a, garbage = Aggregate.objects.get_or_create(singleStudent=student,
@@ -65,6 +68,7 @@ class BenchmarkGradeImporter(Importer):
         
         # import all data from the Standards sheet
         # should probably discard "Session" columns and calculate ourselves
+        
         sheet = self.book.sheet_by_name('Standards')
         nrow = 5
         while nrow < sheet.nrows:
@@ -115,10 +119,13 @@ class BenchmarkGradeImporter(Importer):
                     ncol += 1
                     continue
                 markVal = sheet.cell_value(nrow, ncol)
-                item_date = self.convert_date(sheet.cell_value(3, ncol))
+                name = sheet.cell_value(3, ncol)
+                item_date = self.convert_date(name)
+                if item_date is not None:
+                    name = str(item_date) # why am I doing this? standardization?
                 try:
                     category, trash = Category.objects.get_or_create(name="Engagement")
-                    item, trash = Item.objects.get_or_create(name=str(item_date), date=item_date,
+                    item, trash = Item.objects.get_or_create(name=name, date=item_date,
                                                              course=course, markingPeriod=marking_period, category=category,
                                                              scale=Scale.objects.get(name="Four-Oh"))
                     mark = Mark()
@@ -147,10 +154,13 @@ class BenchmarkGradeImporter(Importer):
                     ncol += 1
                     continue
                 markVal = sheet.cell_value(nrow, ncol)
-                item_date = self.convert_date(sheet.cell_value(3, ncol))
+                name = sheet.cell_value(3, ncol)
+                item_date = self.convert_date(name)
+                if item_date is not None:
+                    name = str(item_date) # why am I doing this? standardization?
                 try:
                     category, trash = Category.objects.get_or_create(name="Organization")
-                    item, trash = Item.objects.get_or_create(name=str(item_date), date=item_date,
+                    item, trash = Item.objects.get_or_create(name=name, date=item_date,
                                                              course=course, markingPeriod=marking_period, category=category,
                                                              scale=Scale.objects.get(name="Four-Oh"))
                     mark = Mark()
@@ -165,37 +175,68 @@ class BenchmarkGradeImporter(Importer):
             nrow += 1
         
         # import all data from the Daily Practice sheet
-        
-        sheet = self.book.sheet_by_name('Daily Practice')
-        nrow = 5
-        while nrow < sheet.nrows:
-            username = unicode(sheet.cell_value(nrow, 1)).strip()
-            if len(username) == 0:
-                nrow += 1
-                continue
-            ncol = 5
-            while ncol < sheet.ncols and ncol < 37: # stop before "logic" cells
-                if self._is_empty(sheet.cell_value(nrow, ncol)):
-                    ncol += 1
+        if course.department.name != 'Hire4Ed':
+            sheet = self.book.sheet_by_name('Daily Practice')
+            nrow = 5
+            while nrow < sheet.nrows:
+                username = unicode(sheet.cell_value(nrow, 1)).strip()
+                if len(username) == 0:
+                    nrow += 1
                     continue
-                markVal = sheet.cell_value(nrow, ncol)
-                name = sheet.cell_value(3, ncol)
-                try:
-                    scale_max = Decimal(str(sheet.cell_value(4, ncol)))
-                    category, trash = Category.objects.get_or_create(name="Daily Practice")
-                    scale, trash = Scale.objects.get_or_create(name="Daily Practice " + str(scale_max), minimum=0, maximum=scale_max)
-                    item, trash = Item.objects.get_or_create(name=name, scale=scale,
-                                                             course=course, markingPeriod=marking_period, category=category)
-                    mark = Mark()
-                    mark.item = item
-                    mark.student = Student.objects.get(username=username)
-                    mark.mark = str(markVal) # then it will be happy to convert to Decimal
-                    mark.save()
-                    mark_count += 1
-                except:
-                    print >> sys.stderr, str(sys.exc_info())
-                ncol += 1
-            nrow += 1
+                ncol = 5
+                while ncol < sheet.ncols and ncol < 37: # stop before "logic" cells
+                    if self._is_empty(sheet.cell_value(nrow, ncol)):
+                        ncol += 1
+                        continue
+                    markVal = sheet.cell_value(nrow, ncol)
+                    name = sheet.cell_value(3, ncol)
+                    try:
+                        scale_max = Decimal(str(sheet.cell_value(4, ncol)))
+                        category, trash = Category.objects.get_or_create(name="Daily Practice")
+                        scale, trash = Scale.objects.get_or_create(name="Daily Practice " + str(scale_max), minimum=0, maximum=scale_max)
+                        item, trash = Item.objects.get_or_create(name=name, scale=scale,
+                                                                 course=course, markingPeriod=marking_period, category=category)
+                        mark = Mark()
+                        mark.item = item
+                        mark.student = Student.objects.get(username=username)
+                        mark.mark = str(markVal) # then it will be happy to convert to Decimal
+                        mark.save()
+                        mark_count += 1
+                    except:
+                        print >> sys.stderr, str(sys.exc_info())
+                    ncol += 1
+                nrow += 1
+        
+        #import all data from the Precision and Accuracy sheet
+        if course.department.name == 'Hire4Ed':
+            sheet = self.book.sheet_by_name('Precision and Accuracy')
+            nrow = 4
+            while nrow < sheet.nrows:
+                username = unicode(sheet.cell_value(nrow, 1)).strip()
+                if len(username) == 0:
+                    nrow += 1
+                    continue
+                ncol = 3
+                while ncol < sheet.ncols:
+                    if self._is_empty(sheet.cell_value(nrow, ncol)):
+                        ncol += 1
+                        continue
+                    markVal = sheet.cell_value(nrow, ncol)
+                    name = sheet.cell_value(3, ncol)
+                    try:
+                        category, trash = Category.objects.get_or_create(name="Precision and Accuracy")
+                        item, trash = Item.objects.get_or_create(name=name, course=course, markingPeriod=marking_period, category=category,
+                                                                 scale=Scale.objects.get(name="Four-Oh"))
+                        mark = Mark()
+                        mark.item = item
+                        mark.student = Student.objects.get(username=username)
+                        mark.mark = str(markVal) # then it will be happy to convert to Decimal
+                        mark.save()
+                        mark_count += 1
+                    except:
+                        print >> sys.stderr, str(sys.exc_info())
+                    ncol += 1
+                nrow += 1
             
         # make aggregates for this course
         self._make_aggregates(course, marking_period)
