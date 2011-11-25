@@ -49,9 +49,15 @@ class Scale(models.Model):
         for mapping in self.mapping_set.all():
             if mapping.applies(decGrade):
                 return mapping.name
-        return str(decGrade) + self.symbol
+        if self.symbol is not None:
+            return str(decGrade) + self.symbol
+        else:
+            return str(decGrade)
     def range(self):
-        return str(self.minimum) + "-" + str(self.maximum) + self.symbol
+        s = str(self.minimum) + "-" + str(self.maximum)
+        if self.symbol is not None:
+            s += self.symbol
+        return s
     def __unicode__(self):
         return self.name
 
