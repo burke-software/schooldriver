@@ -41,17 +41,16 @@ def benchmark_report_card(template, options, students, format="odt"):
     blank_grade.comment = ""
 
     for_date = options['date']
-    try:
-        marking_period = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.filter(start_date__lt=for_date)[0],
-                                                      start_date__lt=for_date)[0]
-    except:
-        # how do we really handle errors around here?
-        return HttpResponse("Could not find a marking period for the date " + str(for_date) + ".")
-        
-    # attendance still needs all marking periods to date for the current school year
+    #try:
     school_year=SchoolYear.objects.filter(start_date__lt=for_date).order_by('-start_date')[0]
-    attendance_marking_periods = MarkingPeriod.objects.filter(school_year=school_year).filter(show_reports=True)
-    
+    attendance_marking_periods = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.filter(start_date__lt=for_date)[0],
+                                                  start_date__lt=for_date,
+                                                  show_reports=True)
+    marking_period = attendance_marking_periods.order_by('-start_date')[0]
+    #except:
+        # how do we really handle errors around here?
+     #   return HttpResponse("Could not find a marking period for the date " + str(for_date) + ".")
+        
     # for GPA calculation, how far into the year are we?
     year_mps = attendance_marking_periods.count()
     this_mp = None
@@ -186,6 +185,7 @@ def benchmark_report_card(template, options, students, format="odt"):
         student.absent_total = 0
         student.tardy_total = 0
         student.dismissed_total = 0
+        student.attendance_marking_periods = []
         for mp in attendance_marking_periods.order_by('start_date'):
             absent = student.student_attn.filter(status__absent=True, date__range=(mp.start_date, mp.end_date)).count()
             tardy = student.student_attn.filter(status__tardy=True, date__range=(mp.start_date, mp.end_date)).count()
@@ -193,14 +193,12 @@ def benchmark_report_card(template, options, students, format="odt"):
             student.absent_total += absent
             student.tardy_total += tardy
             student.dismissed_total += dismissed
-            setattr(student, "absent" + str(i), absent)
-            setattr(student, "tardy" + str(i), tardy)
-            setattr(student, "dismissed" + str(i), dismissed)
-            i += 1
-        while i <= 6:
-            setattr(student, "absent" + str(i), "")
-            setattr(student, "tardy" + str(i), "")
-            setattr(student, "dismissed" + str(i), "")
+            amp = struct()
+            amp.absent = absent
+            amp.tardy = tardy
+            amp.dismissed = dismissed
+            amp.number = i
+            student.attendance_marking_periods.append(amp)
             i += 1
     try:
         if options['student'].count == 1:
@@ -211,5 +209,5 @@ def benchmark_report_card(template, options, students, format="odt"):
     data['school_year'] = school_year
     data['marking_period'] = marking_period.name # just passing object makes appy think it's undefined
     filename = 'output'
-    return pod_save(filename, ".odt", data, template)
+    return pod_save(filename, ".pdf", data, template)
     #return pod_save(filename, "." + str(format), data, template)
