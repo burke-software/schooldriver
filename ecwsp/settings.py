@@ -1,6 +1,6 @@
 #       settings.py
 #       
-#       Copyright 2010 Cristo Rey New York High School
+#       Copyright 2010-2011 Burke Software and Consulting LLC
 #		Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
@@ -17,11 +17,6 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
-
-# Django settings for ecwsp project.
-# This section is for editing
-
-# Django ldap groups example configuration.
 import os,sys
 
 LDAP = False
@@ -129,12 +124,11 @@ MEDIA_ROOT = os.path.join(mediaHead, 'media/')
 
 staticHead = os.path.dirname(os.path.abspath(''))
 STATICFILES_DIRS = ((''),
-    os.path.join(staticHead, 'static_files/'),
+    '/opt/sword/ecwsp/static_files/',
 )
 
 staticRootHead = os.path.dirname(os.path.abspath(''))
 STATIC_ROOT = os.path.join(staticRootHead, 'static/')
-#STATIC_ROOT = '/home/calli/sword/static/'
 STATIC_URL = '/static/'
 
 ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"

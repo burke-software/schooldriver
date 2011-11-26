@@ -121,17 +121,19 @@
                 </li>
             {% endif %}{% endif %}
             <!-- OMR -->
-            {% if perms.omr.change_test and 'ecwsp.omr' in settings.INSTALLED_APPS %}
+            {% if 'ecwsp.omr' in settings.INSTALLED_APPS %} {% if perms.omr.change_test or perms.omr.teacher_test %}
                 <li class="user-options-container collapse closed">
                     <a href="javascript://" class="user-options-handler collapse-handler"> OMR </a>
                     <ul class="user-options">
                         {% if perms.omr.change_test %}
                             <li><a href="{% url admin:app_list 'omr'%}">{% trans 'OMR Admin' %}</a></li>
+                        {% endif %}
+                        {% if perms.omr_teacher_test %}
                             <li><a href="{% url ecwsp.omr.views.my_tests %}"> {% trans 'My Tests' %}
                         {% endif %}
                     </ul>
                 </li>
-            {% endif %}
+            {% endif %}{% endif %}
             <!-- Administration -->
             {% if perms.sis.reports or perms.administration.change_configuration or perms.custom_field.change_custom_field %}
                 <li class="user-options-container collapse closed">
