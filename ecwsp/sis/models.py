@@ -807,6 +807,9 @@ class SchoolYear(models.Model):
     end_date = models.DateField()
     grad_date = models.DateField(blank=True, null=True)
     active_year = models.BooleanField(help_text="The active year is used for calculations such as student discipline records number of incidents")
+    # haha! default can be a callable object!
+    benchmark_grade = models.BooleanField(default=lambda: str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true",
+                                          help_text="The configuration option \"Benchmark-based grading\" sets the default for this field")
     
     class Meta:
         ordering = ('-start_date',)

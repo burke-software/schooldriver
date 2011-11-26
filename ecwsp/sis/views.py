@@ -59,7 +59,7 @@ def user_preferences(request):
             form.cleaned_data['user'] = request.user
             form.save()
             messages.info(request, 'Successfully updated preferences')
-            if request.GET['refer']:
+            if 'refer' in request.GET and request.GET['refer']:
                 return HttpResponseRedirect(request.GET['refer'])
             return HttpResponseRedirect(reverse('admin:index'))
     else:
@@ -798,7 +798,6 @@ def grade_report(request):
                     transcript = True
                 format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
                 return pod_report_grade(template_path, options=data, students=form.get_students(data), format=format, report_card=report_card, transcript=transcript)
-                
         elif 'aggregate_grade_report' in request.POST:
             form = MarkingPeriodForm(request.POST)
             if form.is_valid():
