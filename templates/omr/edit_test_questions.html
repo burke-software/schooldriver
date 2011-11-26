@@ -405,9 +405,7 @@
           </div>
         {% endfor %}
       </div>
-      {% if not test.finalized %}
         <button onclick="edit_question({{ question.id }});">Edit</button>
-      {% endif %}
     </div>
   {% endfor %}
   <div id="new_question_div"></div>
@@ -424,7 +422,7 @@
     <a href="download_test" target="_blank"> <button> View Test </button> </a>
     
     <span style="float: right;">
-        <button onclick="finalize_test();">Finalize</button>
+      <button onclick="finalize_test();">Finalize</button>
     </span>
   </div>
   <a href="/sis/preferences?refer={{ request.get_full_path }}">Remember you can change defaults in your preferences</a>

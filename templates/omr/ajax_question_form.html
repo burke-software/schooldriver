@@ -41,16 +41,17 @@
             <div id="answers_div_{{ question_form.prefix }}">
               {% for answer in answers_formset %}
                   <div class="row module answer_div answer_div_{{ question_form.prefix }}">
-                    {% include "omr/answer_form.html" with answer=answer %}
+                    {% include "omr/answer_form.html" with answer=answer finalized=finalized %}
                   </div>
               {% endfor %}
             </div>
         </div>
         
-        
-    <a href="javascript:;" id="add_more_{{ question_form.prefix }}">Add Another Answer</a><br/>
+    {% if not finalized %}    
+        <a href="javascript:;" id="add_more_{{ question_form.prefix }}">Add Another Answer</a><br/>
+    {% endif %}
     <div class="module save_bar">
-        {% if not new %}
+        {% if not new and not finalized %}
             <button onclick="delete_question({{ question.id }}); return false;" class="delete-link">Delete</button>
         {% endif %}
         

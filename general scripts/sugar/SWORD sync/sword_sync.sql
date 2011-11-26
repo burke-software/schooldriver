@@ -25,7 +25,7 @@ begin
  if new.deleted=0 then
   set @email = (
    select email_address from email_addresses where id = (
-    select email_address_id from email_addr_bean_rel where bean_id = new.id and deleted=0
+    select email_address_id from email_addr_bean_rel where bean_id = new.id and deleted=0 and primary_address=1
    )
   );
   insert into ndhslaw.work_study_contact (guid, fname, lname, title, fax, phone, phone_cell, email)

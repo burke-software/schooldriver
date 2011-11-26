@@ -38,6 +38,7 @@ class ExistingSiteForm(forms.ModelForm):
         model = Volunteer
         fields= ['site', 'job_description', 'student']
         widgets = {'student':HiddenInput, 'job_description':forms.Textarea(attrs={'rows':3})}
+    site = forms.ModelChoiceField(Site.objects.all(), required=True)
         
 class SupervisorForm(forms.ModelForm):
     class Meta:
