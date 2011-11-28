@@ -94,7 +94,9 @@ TEMPLATE_DIRS = os.path.join('/opt/sword/templates/')
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
-DATE_INPUT_FORMATS = ('%m-%d-%Y','%Y-%m-%d')
+DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
+'%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
+'%B %d, %Y', '%d %B %Y', '%d %B, %Y')
 
 ########################################################################
 # These settings should not normally be edited. Editing them is not
@@ -125,7 +127,7 @@ MEDIA_ROOT = os.path.join(mediaHead, 'media/')
 
 staticHead = os.path.dirname(os.path.abspath(''))
 STATICFILES_DIRS = ((''),
-    '/opt/sword/ecwsp/static_files/',
+    '/opt/sword/static_files/',
 )
 
 staticRootHead = os.path.dirname(os.path.abspath(''))
