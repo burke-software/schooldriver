@@ -61,7 +61,7 @@ def benchmark_grade_upload(request, id):
         
     ''' basically the same as student_grade, except is per-student instead of per-course '''
     mps = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True),
-                                       start_date__lte=date.today()).order_by('-start_date')
+                                       start_date__lte=date.today(), active=True).order_by('-start_date')
     for mp in mps:
         mp.students = course.get_enrolled_students(show_deleted=True)
         for student in mp.students:
