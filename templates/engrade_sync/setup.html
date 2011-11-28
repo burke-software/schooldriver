@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div id="breadcrumbs"> 
+ <a href="/admin"> Home </a> 
+ &rsaquo; 
+ <a href="/admin/engrade_sync/"> Engrade Sync </a> 
+ &rsaquo; 
+ Setup
+</div> 
+{% endblock %}
+
+{% block content %}    
+    <h2> Engrade Sync Setup </h2>
+    Courses synced: {{ course_count }} <br/>
+    Teachers synced: {{ teacher_count }} <br/>
+    Engrade School ID: {{ school_id }} <br/>
+    Engrade API status: {% if engrade_sync %} Online {% else %} Offline! Either Engrade is down or something is broken! {% endif %} <br/>
+    {{ msg }} <br/>
+    <form action="" method="post" style="width:850px;">
+        <fieldset style="padding: 10px;">
+            <legend>Generate Courses in Engrade for Marking Period</legend>
+            Be careful, this cannot be undone without manually deleting Engrade courses.<br/>
+            {{ course_form }} <br/>
+            <input type="submit" name="generate_course" value="Generate Courses"/>
+        </fieldset>
+		
+    </form>
+{% endblock %}

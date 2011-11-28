@@ -59,7 +59,18 @@ class EngradeSync:
                 engrade_teacher_id = en_teachers[0][0]
             )
         return teacher_sync[0].engrade_teacher_id 
-        
+    
+    def generate_courses(self, marking_period):
+        """
+        Genererate all courses in Engrade for a given marking period.
+        Returns list of engrade course id's
+        """
+        courses = Course.objects.filter(coursesync__isnull=False, marking_period=marking_period, teacher__teachersync__isnull=False)
+        course_ids = ""
+        for course in courses:
+            course_ids += self.get_engrade_course(course, marking_period)
+        return course_ids
+    
     def get_engrade_course(self, course, marking_period):
         """ Get an engrade course id, create if non existant. Creates teacher if
         non existant.
