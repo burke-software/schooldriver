@@ -453,7 +453,10 @@ def supervisor_view(request):
     
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
 def student_view(request):
-    thisStudent = StudentWorker.objects.get(username=request.user.username)
+    try:
+        thisStudent = StudentWorker.objects.get(username=request.user.username)
+    except model.DoesNotExist:
+        return render_to_response('base.html', {'msg': "Student does not exist or is not a Student Worker. Please notify a system admin if you believe this is a mistake."}, RequestContext(request, {}))
     timeSheets = TimeSheet.objects.filter(student=thisStudent).order_by('date').reverse()[:100]
     return render_to_response('work_study/student_view.html', {'timeSheets': timeSheets, 'student': thisStudent}, RequestContext(request, {}))
     

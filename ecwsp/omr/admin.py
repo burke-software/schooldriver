@@ -49,7 +49,7 @@ class BenchmarkAdmin(ReadPermissionModelAdmin):
 
 admin.site.register(Benchmark, BenchmarkAdmin)
 
-class TestAdmin(admin.ModelAdmin):
+class TestAdmin(ReadPermissionModelAdmin):
     list_display = ['name', 'link_copy']
     
 admin.site.register(Test, TestAdmin)

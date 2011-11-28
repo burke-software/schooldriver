@@ -51,7 +51,6 @@ class DaysOffInline(admin.TabularInline):
     extra = 1
     
 
-admin.site.register(SchoolYear)
 admin.site.register(Day)
 
     
