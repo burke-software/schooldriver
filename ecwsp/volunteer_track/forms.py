@@ -20,13 +20,14 @@ from django import forms
 from volunteer_track.models import *
 from ajax_select.fields import AutoCompleteSelectField
 from django.forms import HiddenInput, ChoiceField
+from django.contrib.admin import widgets as adminwidgets
 
 
 class inputTimeForm(forms.ModelForm):
     class Meta:
         model = Hours
-        widgets = {'student':HiddenInput}
-        exclude = ['student']
+        widgets = {'date':adminwidgets.AdminDateWidget()}
+        exclude = ['student','site']
         
 class NewSiteForm(forms.ModelForm):
     class Meta:
