@@ -27,6 +27,7 @@ from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from django.forms import ValidationError
 
 from datetime import datetime, date
 
@@ -37,36 +38,35 @@ from ecwsp.sis.models import Student
 #staff: has_perm instead of filter
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')    
 def student_hours(request):
-    #if site not approved/no contract/else all goes here.
-    #send it StudentName, cohort, siteName, siteSup, hoursReq, hoursComplete <-see work_study.views.py
-    
     try:
         student = Student.objects.get(username=request.user.username)
         volunteer = Volunteer.objects.get(student=student)
     except:
         return render_to_response('base.html', {'msg': "Student is not set as a volunteer. Please notify a system admin if you believe this is a mistake."}, RequestContext(request, {}))
     
+    if volunteer.site_approval != "Accepted":
+        return render_to_response('volunteer_track/dash.html', {'student': volunteer, 'msg': "Your site must be approved before you may submit hours."}, RequestContext(request, {}))
     
     VolFormSet = modelformset_factory(Hours, inputTimeForm, extra=3)
+    
     formset = VolFormSet(queryset=Hours.objects.filter(student=volunteer))
     if request.method == 'POST':
         formset = VolFormSet(request.POST)
         if formset.is_valid():
-            for form in formset.forms:
-                instance = form.save(commit=False)
-                if instance:
-                    if instance.date and instance.hours:
-                        instance.student = volunteer
-                        instance.timestamp = datetime.now
-                        instance.save()
-                    else:
-                        pass
-                else:
-                    pass
-            return render_to_response('base.html', {'student': True, 'msg': "Volunteer sheet has been successfully submitted."}, RequestContext(request, {}))
-    #send it StudentName, cohort, siteName, siteSup, hoursReq, hoursComplete <-see work_study.views.py
-    return render_to_response('volunteer_track/student_volunteer_hours.html', {'student': True, 'form': formset, 'studentName': volunteer, 'cohort':volunteer.student.cache_cohort,\
-                                                                               'siteName':volunteer.site,'supName':volunteer.site_supervisor,'hoursReq':volunteer.hours_required,\
+            msg = "Volunteer sheet has been successfully submitted. "
+            for form in formset:
+                hour_model = form.save(commit=False)
+                if hour_model.date and hour_model.hours:
+                    hour_model.student = volunteer
+                    hour_model.site = volunteer.site
+                    try:
+                        hour_model.full_clean()
+                        hour_model.save()
+                    except ValidationError, e:
+                        msg += " Duplicate date found %s. " % (hour_model.date,)
+            return render_to_response('volunteer_track/dash.html', {'student': volunteer, 'msg': msg}, RequestContext(request, {}))
+
+    return render_to_response('volunteer_track/student_volunteer_hours.html', {'student': volunteer, 'form': formset,'hoursReq':volunteer.hours_required,\
                                                                                'hoursComplete':volunteer.hours_completed}, RequestContext(request, {}))
     
     
@@ -131,11 +131,13 @@ def change_supervisor(request):
         select_supervisor_form = SelectSupervisorForm(request.POST)
         if select_supervisor_form.is_valid() and select_supervisor_form.cleaned_data['select_existing']:
             volunteer.site_supervisor = select_supervisor_form.cleaned_data['select_existing']
+            volunteer.site_approval = "Submitted"
             volunteer.save()
             return HttpResponseRedirect(reverse(student_dash))
         elif supervisor_form.is_valid():
             supervisor = supervisor_form.save()
             volunteer.site_supervisor = supervisor
+            volunteer.site_approval = "Submitted"
             volunteer.save()
             if volunteer.site:
                 supervisor.site = volunteer.site
@@ -148,4 +150,14 @@ def change_supervisor(request):
     
     return render_to_response('volunteer_track/student_change_supervisor.html', {'student': volunteer, 'supervisor_form':supervisor_form, 'select_supervisor_form': select_supervisor_form}, RequestContext(request, {}))
     
-    
+def approve(request):
+    try:
+        volunteer = Volunteer.objects.get(secret_key=request.GET['key'])
+    except:
+        volunteer = None
+    if request.POST and "approve" in request.POST:
+        volunteer.hours_record = True
+        volunteer.save()
+        return render_to_response('base.html', {'msg': 'Volunteer hours approved for %s' % (volunteer,) }, RequestContext(request, {}))
+        
+    return render_to_response('volunteer_track/approve.html', {'volunteer': volunteer, }, RequestContext(request, {}))

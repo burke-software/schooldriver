@@ -90,7 +90,14 @@ class ReportManager(object):
             a = 98 # the letter c or column c in spreadsheet
             for benchmark in Benchmark.objects.filter(question__test=test).distinct():
                 row.append(test_instance.answerinstance_set.filter(question__benchmarks=benchmark).aggregate(Sum('points_earned'))['points_earned__sum'])
-                row.append(xlwt.Formula(chr(a)+str(i)+'/'+chr(a)+'$2'))
+                if a <= 122: # 122 = z
+                    row.append(xlwt.Formula(chr(a)+str(i)+'/'+chr(a)+'$2'))
+                elif a <= 146:
+                    row.append(xlwt.Formula('A'+chr(a-26)+str(i)+'/'+'A'+chr(a-26)+'$2'))
+                elif a <= 170:
+                    row.append(xlwt.Formula('B'+chr(a-52)+str(i)+'/'+'B'+chr(a-52)+'$2'))
+                elif a <= 194:
+                    row.append(xlwt.Formula('C'+chr(a-78)+str(i)+'/'+'C'+chr(a-78)+'$2'))
                 a += 2 # skip ahead 2 columns
             i += 1
             data.append(row)

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<h2> Select Supervisor at {{ student.site }} </h2>
+You may choose an existing supervisor
+<form method="post">
+    <table>
+        {{ select_supervisor_form }}
+    </table>
+    Or add a new one
+    <table>
+        {{ supervisor_form }}
+    </table>
+    <input type="submit"/>
+</form>
+{% endblock %}

@@ -157,7 +157,7 @@ class StudentSelectForm(TimeBasedForm):
     """ Generic student selection form."""
     all_students = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':''}))
     student = AutoCompleteSelectMultipleField('student', required=False)
-    sort_by = forms.ChoiceField(choices=(('lname', 'Student last name'), ('year', 'School year'), ('cohort', 'Cohort (not available)')), initial=1)
+    sort_by = forms.ChoiceField(choices=(('lname', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
     filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
     filter_cohort = forms.ModelMultipleChoiceField(required=False, queryset=Cohort.objects.all())
     
@@ -196,8 +196,8 @@ class StudentSelectForm(TimeBasedForm):
             
         if options['sort_by'] == "year":
             students = students.order_by('year', 'lname', 'fname')
-        elif options['sort_by'] == "hoomroom":  
-            pass
+        elif options['sort_by'] == "cohort":  
+            students = students.order_by('cache_cohort', 'lname', 'fname')
         
         if options['filter_year']:
             students = students.filter(year__in=options['filter_year'])
@@ -272,7 +272,7 @@ class StudentGradeReportWriterForm(forms.Form):
     include_deleted = forms.BooleanField(required=False)
     all_students = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':''}))
     student = AutoCompleteSelectMultipleField('student', required=False)
-    sort_by = forms.ChoiceField(choices=(('lname', 'Student last name'), ('year', 'School year'), ('cohort', 'Cohort (not available)')), initial=1)
+    sort_by = forms.ChoiceField(choices=(('lname', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
     filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
     filter_cohort = forms.ModelMultipleChoiceField(required=False, queryset=Cohort.objects.all())
     

@@ -1,6 +1,6 @@
 #       settings.py
 #       
-#       Copyright 2010 Cristo Rey New York High School
+#       Copyright 2010-2011 Burke Software and Consulting LLC
 #		Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
@@ -17,11 +17,6 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
-
-# Django settings for ecwsp project.
-# This section is for editing
-
-# Django ldap groups example configuration.
 import os,sys
 
 LDAP = False
@@ -99,6 +94,7 @@ TEMPLATE_DIRS = os.path.join('/opt/sword/templates/')
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
+DATE_INPUT_FORMATS = ('%m-%d-%Y','%Y-%m-%d')
 
 ########################################################################
 # These settings should not normally be edited. Editing them is not
@@ -129,12 +125,11 @@ MEDIA_ROOT = os.path.join(mediaHead, 'media/')
 
 staticHead = os.path.dirname(os.path.abspath(''))
 STATICFILES_DIRS = ((''),
-    os.path.join(staticHead, 'static_files/'),
+    '/opt/sword/ecwsp/static_files/',
 )
 
 staticRootHead = os.path.dirname(os.path.abspath(''))
 STATIC_ROOT = os.path.join(staticRootHead, 'static/')
-#STATIC_ROOT = '/home/calli/sword/static/'
 STATIC_URL = '/static/'
 
 ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
@@ -181,6 +176,7 @@ INSTALLED_APPS = (
     'massadmin',
     'admin_export',
     'ecwsp.custom_field',
+#   'ecwsp.inventory',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -261,6 +257,13 @@ CKEDITOR_CONFIGS = {
         'extraPlugins': 'equation',
     },
 }
+
+#CACHES = {
+#    'default': {
+#        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#        'LOCATION': '127.0.0.1:11211',
+#    }
+#}
 
 # http://ww7.engrade.com/api/key.php
 ENGRADE_APITKEY = ''

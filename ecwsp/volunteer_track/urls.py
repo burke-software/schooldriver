@@ -6,4 +6,5 @@ urlpatterns = patterns('',
     (r'^volunteer/site$', student_site_approval),
     (r'^volunteer/hours$', student_hours),
     (r'^volunteer/change_supervisor$', change_supervisor),
+    (r'^approve$', approve),
 )

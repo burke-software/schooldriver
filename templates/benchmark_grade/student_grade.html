@@ -27,6 +27,9 @@
     .maximumPoints {
 	color: grey;
     }
+    .categoryAverage {
+        font-weight: bold;
+    }
     </style>
     <h1>Grades for {{ student.fname }} {{ student.lname }} as of {{ today }}</h1>
     {% for mp in mps %}
@@ -44,15 +47,28 @@
 				{% for mark in category.marks %}
 				    <tr>
 					<td>
-					    {{ mark.item.name }}
+					    {% if mark.item.name != 'None' %}
+						{{ mark.item.name }}
+					    {% endif %}
+					    <!-- Dillon only wants students to see Session marks
 					    {% if mark.description %}
 						<br /><span class="markDescription">{{ mark.description }}</span>
 					    {% endif %}
+					    -->
 					</td>
 					<td>{{ mark.mark }} <span class="maximumPoints">(of {{ mark.item.scale.maximum }})</span></td>
 				    </tr>
 				{% endfor %}
 				</table>
+			    </td>
+			{% endif %}
+			{% endfor %}
+		    </tr>
+		    <tr>
+			{% for category in course.categories %}
+			{% if category.marks %}
+			    <td class="categoryAverage">
+				Average: {{ category.average }}
 			    </td>
 			{% endif %}
 			{% endfor %}

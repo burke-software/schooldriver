@@ -318,6 +318,8 @@ def ajax_new_question_form(request, test_id):
 @permission_required('omr.teacher_test')
 def ajax_question_form(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
+    test = Test.objects.get(id=test_id)
+    
     if request.POST:
         question_answer_form = AnswerFormSet(request.POST, instance=question, prefix="questionanswers_" + str(question_id))
         question_form = TestQuestionForm(request.POST, instance=question, prefix="question_" + str(question_id))
@@ -332,11 +334,15 @@ def ajax_question_form(request, test_id, question_id):
     else:
         question_answer_form = AnswerFormSet(instance=question, prefix="questionanswers_" + str(question_id))
         question_form = TestQuestionForm(instance=question, prefix="question_" + str(question_id))
+    if test.finalized:
+        question_form.fields['type'].widget.attrs['readonly'] = True
+        question_form.fields['order'].widget.attrs['readonly'] = True
     return render_to_response('omr/ajax_question_form.html', {
         'question': question,
         'question_form': question_form,
         'answers_formset': question_answer_form,
         'new': False,
+        'finalized': test.finalized,
     }, RequestContext(request, {}),)
 
 @permission_required('omr.teacher_test')

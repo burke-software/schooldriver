@@ -250,3 +250,11 @@ if settings.ASP:
     class ASPAttendanceAdmin(admin.ModelAdmin):
         list_display = ['student', 'status', 'date', 'course', 'notes']
     admin.site.register(ASPAttendance, ASPAttendanceAdmin)
+
+class SchoolYearAdmin(admin.ModelAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(SchoolYearAdmin, self).get_form(request, obj, **kwargs)
+        if not 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+            self.exclude = ('benchmark_grade',)
+        return form
+admin.site.register(SchoolYear, SchoolYearAdmin)
