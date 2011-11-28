@@ -94,6 +94,7 @@ TEMPLATE_DIRS = os.path.join('/opt/sword/templates/')
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
+DATE_INPUT_FORMATS = ('%m-%d-%Y','%Y-%m-%d')
 
 ########################################################################
 # These settings should not normally be edited. Editing them is not

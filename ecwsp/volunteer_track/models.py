@@ -22,16 +22,20 @@ from django.db.models import Sum
 from django.contrib.localflavor.us.models import *
 
 from datetime import datetime
+import random
+
+from ecwsp.administration.models import Configuration
 
 class Hours(models.Model):
+    student = models.ForeignKey('Volunteer')
+    site = models.ForeignKey('Site')
+    date = models.DateField(blank = False, null = False)
+    hours = models.FloatField()
+    time_stamp = models.DateTimeField(auto_now_add=True)
     class Meta:
         verbose_name = "Hours"
         verbose_name_plural = "Hours"
         unique_together = ("student","date")
-    student = models.ForeignKey('Volunteer')
-    date = models.DateField(blank = False, null = False)
-    hours = models.FloatField()
-    time_stamp = models.DateTimeField(auto_now=True)
     def __unicode__(self):
         return unicode(self.hours)
 
@@ -52,6 +56,8 @@ class SiteSupervisor(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
+def get_hours_default():
+    return Configuration.get_or_default('Volunteer Track Required Hours', default=20).value
 class Volunteer(models.Model):
     student = models.OneToOneField('sis.Student') #string so that it looks up sis.Student after the fact.
     site = models.ForeignKey(Site,blank=True,null=True)
@@ -60,12 +66,38 @@ class Volunteer(models.Model):
     attended_reflection = models.BooleanField(verbose_name = "Attended")
     contract = models.BooleanField()
     hours_record = models.BooleanField(verbose_name = "Hours Confirmed")
-    hours_required = models.IntegerField(default=20, blank=True, null=True)
+    hours_required = models.IntegerField(default=get_hours_default, blank=True, null=True)
     comment = models.TextField(blank=True)
     notes = models.TextField(blank=True)
     last_updated = models.DateTimeField(default = datetime.now)
     job_description = models.TextField(blank=True)
+    secret_key = models.CharField(max_length=20, blank=True, editable=False)
     def __unicode__(self):
         return unicode(self.student)
+    def save(self, *args, **kwargs):
+        if not self.secret_key or self.secret_key == "":
+            self.genKey()
+        super(Volunteer, self).save(*args, **kwargs)
+    def send_email_approval(self):
+        """
+        Send email to supervisor for approval
+        """
+        if not self.site_supervisor or not self.site_supervisor.email:
+            return None
+        try:
+            sendTo = self.site_supervisor.email
+            subject = "Volunteer hours approval for " + unicode(self.student)
+            msg = "Hello " + unicode(self.site_supervisor.name) + ",\nPlease click on the link below to approve the time sheet\n" + \
+                settings.BASE_URL + "/volunteer_tracker/approve?key=" + str(self.secret_key)
+            from_addr = Configuration.get_or_default("From Email Address", "donotreply@example.org").value
+            send_mail(subject, msg, from_addr, [sendTo])
+        except:
+            print >> sys.stderr, "Unable to send email to volunteer's supervisor! %s" % (self,)
+    def genKey(self):
+        key = ''
+        alphabet = 'abcdefghijklmnopqrstuvwxyz1234567890_-'
+        for x in random.sample(alphabet,random.randint(19,20)):
+            key += x
+        self.secret_key = key
     def hours_completed(self):
         return self.hours_set.all().aggregate(Sum('hours'))['hours__sum']
