@@ -218,19 +218,21 @@ def newPage(c):
     barcode(c)
     if student_id[id]!="0":
         student_barcode(c)
+    drawLines(c)
+    c.translate(left_margin,bottom_margin)
+    
     title_length = title.__len__() * font_size
     if title_length > 245:
         title = title[:245/font_size]
     c.drawString(250,first_line+10, title)
-    next_line = first_line - (line_space)
+    next_line = first_line
     name_length = (names[id]).__len__() * font_size
     if name_length > 295:
         name = names[id][:295/font_size]
     else: name = names[id]
     c.drawString(250,next_line+10,name)
     next_line = next_line - (line_space*2)
-    drawLines(c)
-    c.translate(left_margin,bottom_margin)
+    
     
     pageBanding()
     page = page +1
@@ -253,7 +255,7 @@ def barcode(c):
     global code
     code = str(testid).zfill(7) + (str(page).zfill(3))
     barcode = Codabar(code, barWidth = inch*0.028)
-    x = width - (3.1*inch) 
+    x = width - (3.1*inch)  #4.8
     y = height - (.6*inch)
     barcode.drawOn(c,x,y)
     
@@ -306,11 +308,6 @@ def createTest(c):
                         column=0
                         c.showPage()
                         newPage(c)
-                        title_length = title.__len__() * font_size
-                        c.drawString(width - right_margin - title_length,first_line+10, title)
-                        next_line = first_line - (line_space)
-                        name_length = (names[id]).__len__() * font_size
-                        c.drawString(width - right_margin - name_length,next_line+10,names[id])
                         next_line = first_line - line_space*2
                     else:
                         next_line = first_line - line_space*3

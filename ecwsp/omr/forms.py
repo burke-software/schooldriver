@@ -4,6 +4,7 @@ from django.forms.formsets import DELETION_FIELD_NAME
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django import template
 from django.template import Context
+from django.forms.widgets import RadioSelect
 
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 
@@ -42,3 +43,12 @@ class AnswerForm(forms.ModelForm):
         
 AnswerFormSet = inlineformset_factory(Question, Answer, extra=0, form=AnswerForm)
 NewAnswerFormSet = inlineformset_factory(Question, Answer, extra=2, form=AnswerForm)
+
+#class EditAnswerForm(forms.ModelForm):
+#    class Meta:
+#        model = Question
+#        fields = ['Answer']
+#        
+
+
+#https://docs.djangoproject.com/en/dev/ref/forms/widgets/

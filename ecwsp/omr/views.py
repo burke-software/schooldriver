@@ -390,9 +390,30 @@ def queXF_answer_sheets(request,test_id):
 def manual_edit(request, test_id):
     #open the blob.
     test = get_object_or_404(TestInstance, id=test_id)
-    
+    letter = {}
+    for question in test.test.question_set.all(): #each question
+        for answer in question.answerinstance_set.all(): #student's answer to question
+            student_answer = answer.answer
+        count = 0
+        ascii_letter = 45
+        tf_response = "none"
+        if question.type == "True/False":
+            print "true/false"
+            ascii_letter = False
+            tf_response = student_answer.answer
+        else:
+            for possible in question.answer_set.all():
+                if student_answer == possible:
+                        ascii_letter = 65+count #'A', 'B', 'C', etc. in ASCII
+                else:
+                    count += 1
+        if ascii_letter:
+            letter[question]=chr(ascii_letter)
+        else:
+            letter[question] = tf_response
+            
     return render_to_response('omr/manually_edit.html', {
-        'test': test
+        'test': test, 'letter':letter, 'q':question
     }, RequestContext(request, {}),)
     
 @permission_required('omr.teacher_test')
