@@ -68,7 +68,10 @@ class EngradeSync:
         courses = Course.objects.filter(coursesync__isnull=False, marking_period=marking_period, teacher__teachersync__isnull=False)
         course_ids = ""
         for course in courses:
-            course_ids += self.get_engrade_course(course, marking_period)
+            try:
+                course_ids += unicode(self.get_engrade_course(course, marking_period)) + ", "
+            except:
+                course_ids += "Error creating %s, " % (course,)
         return course_ids
     
     def get_engrade_course(self, course, marking_period):
@@ -110,7 +113,7 @@ class EngradeSync:
             try:
                 student = None
                 student = Student.objects.get(id=engrade_student['stuid'])
-                grade = engrade_student['percent']
+                grade = engrade_student['grade']
                 model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
                 model.set_grade(grade)
                 model.save()
