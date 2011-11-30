@@ -194,7 +194,7 @@ class PythonEngrade:
         clid = Engrade Class ID
         
         Returns:
-        students = array of students ['stuid': student id, 'percent': grade percent']
+        students = array of students ['stuid': student id, 'percent': grade percent', 'grade': Final grade (either percent or letter)]
         """
         values = {
             'apitask': 'gradebook',
@@ -209,6 +209,7 @@ class PythonEngrade:
             student = {}
             student['stuid'] = elem_student.find('stuid').text
             student['percent'] = elem_student.find('percent').text
+            student['grade'] = elem_student.find('grade').text
             students.append(student)
         return students
     
