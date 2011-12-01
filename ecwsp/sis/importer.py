@@ -264,6 +264,7 @@ class Importer:
             if sheet_name.lower() == name.lower():
                 return self.book.sheet_by_index(i)
             i += 1
+        raise Exception('Couldn\'t find sheet %s' % (name,))
     
     def magic_import_everything(self):
         """Import a workbook using sheet names to determine what to import"""
@@ -1795,6 +1796,8 @@ class Importer:
         Returns Error Message """ 
         try:
             sheet = self.get_sheet_by_case_insensitive_name(marking_period.name)
+            print sheet
+            print "O RLY?"
         except:
             return "Could not find a sheet named %s" % (marking_period,)
         x = 0

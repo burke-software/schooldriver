@@ -61,7 +61,7 @@ def benchmark_grade_upload(request, id):
         
     ''' basically the same as student_grade, except is per-student instead of per-course '''
     mps = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True),
-                                       start_date__lte=date.today()).order_by('-start_date')
+                                       start_date__lte=date.today(), active=True).order_by('-start_date')
     for mp in mps:
         mp.students = course.get_enrolled_students(show_deleted=True)
         for student in mp.students:
@@ -90,7 +90,11 @@ def student_grade(request):
     """ A view for students to see their own grades, in detail. """
     mps = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True),
                                        start_date__lte=date.today()).order_by('-start_date')
-    student = Student.objects.get(username=request.user.username)
+    try:
+        student = Student.objects.get(username=request.user.username)
+    except:
+        print 'No student found for user "' + request.user.username + '"'
+        # don't actually fix anything; I still want it to 500 and email me when this happens
     for mp in mps:
         mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
         for course in mp.courses:
@@ -105,7 +109,6 @@ def student_grade(request):
                     agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
                                                 singleCategory=category, singleMarkingPeriod=mp)
                     category.average = agg.scale.spruce(agg.cachedValue)
-                    print agg, category.average
                 except:
                     category.average = None
     

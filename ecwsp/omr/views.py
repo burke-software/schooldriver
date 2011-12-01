@@ -337,6 +337,9 @@ def ajax_question_form(request, test_id, question_id):
     if test.finalized:
         question_form.fields['type'].widget.attrs['readonly'] = True
         question_form.fields['order'].widget.attrs['readonly'] = True
+        question_form.fields['point_value'].widget.attrs['readonly'] = True
+        for a_form in question_answer_form:
+            a_form.fields['point_value'].widget.attrs['readonly'] = True
     return render_to_response('omr/ajax_question_form.html', {
         'question': question,
         'question_form': question_form,

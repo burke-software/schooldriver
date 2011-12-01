@@ -380,6 +380,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                 
                 # Attendance for year
                 year.total_days = year.get_number_days()
+                year.nonmemb = student.student_attn.filter(status__code="nonmemb", date__range=(year.start_date, year.end_date)).count()
                 year.absent = student.student_attn.filter(status__absent=True, date__range=(year.start_date, year.end_date)).count()
                 year.tardy = student.student_attn.filter(status__tardy=True, date__range=(year.start_date, year.end_date)).count()
                 year.dismissed = student.student_attn.filter(status__code="D", date__range=(year.start_date, year.end_date)).count() 
