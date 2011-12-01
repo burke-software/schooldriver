@@ -531,10 +531,8 @@ class Student(MdlUser, CustomFieldModel):
         super(Student, self).save(*args, **kwargs)
         user, created = User.objects.get_or_create(username=self.username)
         group, gcreated = Group.objects.get_or_create(name="students")
-        #TODO: set StudentWorker.placement to none, set MdlUser.courseenrollment_set.all to None.
         if self.inactive == True:
-            self.studentworker.placement.delete()
-            self.save
+            self.studentworker.placement = None
             super(Student,self).save(*args, **kwargs)
             enrolls = self.courseenrollment_set.all()
             for enroll in enrolls:

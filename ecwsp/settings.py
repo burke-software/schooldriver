@@ -268,7 +268,7 @@ CKEDITOR_CONFIGS = {
 #}
 
 # http://ww7.engrade.com/api/key.php
-ENGRADE_APITKEY = ''
+ENGRADE_APIKEY = ''
 # Admin user login
 ENGRADE_LOGIN = ''
 # Engrade password
