@@ -25,6 +25,7 @@ from django.contrib.localflavor.us.models import *
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 
+#from ecwsp.schedule.models import CourseEnrollment
 import logging
 from thumbs import ImageWithThumbsField
 from datetime import date, timedelta, datetime
@@ -530,6 +531,14 @@ class Student(MdlUser, CustomFieldModel):
         super(Student, self).save(*args, **kwargs)
         user, created = User.objects.get_or_create(username=self.username)
         group, gcreated = Group.objects.get_or_create(name="students")
+        #TODO: set StudentWorker.placement to none, set MdlUser.courseenrollment_set.all to None.
+        if self.inactive == True:
+            self.studentworker.placement.delete()
+            self.save
+            super(Student,self).save(*args, **kwargs)
+            enrolls = self.courseenrollment_set.all()
+            for enroll in enrolls:
+                enroll.delete()
         user.groups.add(group)
         
     def graduate_and_create_alumni(self):
