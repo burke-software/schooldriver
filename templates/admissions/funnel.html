@@ -1,0 +1,68 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admission_extras %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style type="text/css">
+	p {
+	    text-align:center;
+	    width: 800px;
+	    margin:0px auto;
+	    padding:10px;
+	    border:1px dashed #333;
+	    background-color:#eee;
+	}
+	p.two {
+	    width: 750px;
+	}
+	p.three {
+	    width: 700px;
+	}
+	p.four {
+	    width: 650px;
+	}
+	p.five {
+	    width: 600px;
+	}
+	p.six {
+	    width: 550px;
+	}
+	#content {
+	    float: center;
+	}
+	h2 {
+	    text-align: center;
+	}
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <div id="breadcrumbs">
+      <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
+      &rsaquo; <a href="{% url admin:app_list 'admissions' %}">{% trans 'Admissions' %}</a>
+      &rsaquo; <a href="../">{% trans 'Reports' %}</a>
+      &rsaquo; Funnel
+    </div>
+{% endblock %}
+
+{% block content %}
+<h2> Admissions Funnel for year{{ years|pluralize }} {% for year in years %} {{ year }} {% endfor %} </h2>
+<br/>
+{% for level in levels %}
+    <p class="{{ level.css_class }}">
+	{{ level }}: {{ level.students }} Student{{ level.students|pluralize }} &nbsp;
+	Female: {{ level.female }}({{level.female_p|percentage }}) &nbsp;
+	Male: {{ level.male }}({{ level.male_p|percentage }}) 
+	
+	{% for decision in level.decisions %}
+	    <br/><br/>
+	    {{ decision }}: {{ decision.students }} Student{{ decision.students|pluralize }} <br/>
+	    {{ decision.female }} F = {{decision.female_p|percentage }} of female prospects <br/>
+	    {{ decision.male }} M = {{ decision.male_p|percentage }} of male prospects <br/>
+	    
+	{% endfor %}
+    </p>
+    <br/>
+{% endfor %}
+
+{% endblock %}

@@ -1796,8 +1796,6 @@ class Importer:
         Returns Error Message """ 
         try:
             sheet = self.get_sheet_by_case_insensitive_name(marking_period.name)
-            print sheet
-            print "O RLY?"
         except:
             return "Could not find a sheet named %s" % (marking_period,)
         x = 0

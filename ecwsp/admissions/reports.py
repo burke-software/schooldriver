@@ -12,7 +12,7 @@ def report_process_statistics(year):
     # active prospects
     data.append([])
     data.append(['Admissions Status', '# of prospects'])
-    applicants = Applicant.objects.filter(school_year=year)
+    applicants = Applicant.objects.filter(school_year__in=year)
     levels = AdmissionLevel.objects.all()
     for level in levels:
         lvl_applicants = applicants.filter(level=level).distinct()

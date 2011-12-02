@@ -25,6 +25,17 @@
             {{ course_form }} <br/>
             <input type="submit" name="generate_course" value="Generate Courses"/>
         </fieldset>
-		
+        <br/>
+		<fieldset style="padding: 10px;">
+            <legend>Generate All Teacher's Engrade Accounts</legend>
+            Requires teacher exists in Faculty and have email set.<br/>
+            <input type="submit" name="generate_teacher" value="Generate Teachers"/>
+        </fieldset>
+        <br/>
+		<fieldset style="padding: 10px;">
+            <legend>Generate All Student's Engrade Accounts</legend>
+            Will send an email to students, you should run this about once per year. Student's email highly recommended. Will only create accounts for students<br/>
+            <input type="submit" name="generate_student" disabled="disabled" value="Generate Students"/>
+        </fieldset>
     </form>
 {% endblock %}
