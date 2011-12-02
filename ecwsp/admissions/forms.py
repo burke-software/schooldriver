@@ -38,4 +38,4 @@ class ContactLogForm(forms.ModelForm):
         model = ContactLog
         
 class ReportForm(forms.Form):
-    school_year = forms.ModelChoiceField(SchoolYear.objects.all())
+    school_year = forms.ModelMultipleChoiceField(SchoolYear.objects.all())

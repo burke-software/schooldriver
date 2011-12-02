@@ -97,7 +97,7 @@ TIME_FORMAT = 'h:i A'
 DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y')
-
+#USE_L10N = True
 ########################################################################
 # These settings should not normally be edited. Editing them is not
 # tested.

@@ -32,10 +32,13 @@ class PythonEngrade:
     ############################################################################
     url = 'https://api.engrade.com/api/'
     
-    def __dict_to_element(self, values):
+    def __dict_to_element(self, values, debug=False):
         try:
             params = urllib.urlencode(values, True)
             feed = urllib.urlopen(self.url, params)
+            if debug:
+                print feed.read()
+                0/0
             return ET.parse(feed)
         except:
             raise Exception("Unknown error: Engrade API did not return a result.")
@@ -240,19 +243,37 @@ class PythonEngrade:
                 pass
         return students
     
-    def class_students_email(self, clid, students):
-        """ Get comments for one class
-        clid = Engrade Class ID
+    def school_students_register(self, syr, gp, students):
+        """ This API call will create accounts for ALL students who DO have a class in the given grading period,
+        but who do NOT yet have an account. Sending this call will create accounts for ALL such students whether
+        you specify their email address or not. The email field is optional and, if specified, will allow Engrade
+        to email the student the username and password that Engrade automatically generated for him/her.
+        syr = The school year in which students have classes
+        gp = The grading period in which students have classes
         students  = Dict of student ids with email like
-        {'1111': 'student@example.com,parent@example.com'}
+        {'1111': 'student@example.com'}
         """
         values = {
-            'apitask': 'class-students-email',
+            'apitask': 'school-students-register',
             'apikey': self.apikey,
             'ses': self.ses,
-            'clid': clid,
+            'schoolid': self.schoolid,
+            'syr': syr,
+            'gp': gp,
         }
-        for student, emails in students.iteritems():
-            values['email_' + str(student)] = emails
-        element = self.__dict_to_element(values)
+        for student, email in students.iteritems():
+            values['email_' + str(student)] = email
+        print values
+        element = self.__dict_to_element(values, debug=True)
         self.__check_error(element)
+        en_students = []
+        for elem_student in element.findall('comments/item'):
+            try:
+                student = {}
+                student['comment'] = elem_student.find('comment').text
+                student['stuid'] = elem_student.find('stuid').text
+                student['percent'] = elem_student.find('percent').text
+                students.append(student)
+            except:
+                pass
+        return en_students
