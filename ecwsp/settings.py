@@ -222,7 +222,7 @@ AJAX_LOOKUP_CHANNELS = {
     'attendance_quick_view_student': ('ecwsp.sis.lookups', 'AttendanceAddStudentLookup'),
     'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
     'site': ('ecwsp.volunteer_track.lookups', 'SiteLookup'),
-    'benchmark': ('ecwsp.omr.lookups', 'BenchmarkLookup'),
+    #'benchmark': ('ecwsp.omr.lookups', 'BenchmarkLookup'),
     'theme': ('ecwsp.omr.lookups', 'ThemeLookup'),
     'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
 }
@@ -268,7 +268,7 @@ CKEDITOR_CONFIGS = {
 #}
 
 # http://ww7.engrade.com/api/key.php
-ENGRADE_APITKEY = ''
+ENGRADE_APIKEY = ''
 # Admin user login
 ENGRADE_LOGIN = ''
 # Engrade password
