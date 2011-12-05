@@ -94,8 +94,10 @@ TEMPLATE_DIRS = os.path.join('/opt/sword/templates/')
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
-DATE_INPUT_FORMATS = ('%m-%d-%Y','%Y-%m-%d')
-
+DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
+'%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
+'%B %d, %Y', '%d %B %Y', '%d %B, %Y')
+#USE_L10N = True
 ########################################################################
 # These settings should not normally be edited. Editing them is not
 # tested.
@@ -125,7 +127,7 @@ MEDIA_ROOT = os.path.join(mediaHead, 'media/')
 
 staticHead = os.path.dirname(os.path.abspath(''))
 STATICFILES_DIRS = ((''),
-    '/opt/sword/ecwsp/static_files/',
+    '/opt/sword/static_files/',
 )
 
 staticRootHead = os.path.dirname(os.path.abspath(''))
@@ -220,7 +222,7 @@ AJAX_LOOKUP_CHANNELS = {
     'attendance_quick_view_student': ('ecwsp.sis.lookups', 'AttendanceAddStudentLookup'),
     'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
     'site': ('ecwsp.volunteer_track.lookups', 'SiteLookup'),
-    'benchmark': ('ecwsp.omr.lookups', 'BenchmarkLookup'),
+    #'benchmark': ('ecwsp.omr.lookups', 'BenchmarkLookup'),
     'theme': ('ecwsp.omr.lookups', 'ThemeLookup'),
     'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
 }
@@ -266,7 +268,7 @@ CKEDITOR_CONFIGS = {
 #}
 
 # http://ww7.engrade.com/api/key.php
-ENGRADE_APITKEY = ''
+ENGRADE_APIKEY = ''
 # Admin user login
 ENGRADE_LOGIN = ''
 # Engrade password

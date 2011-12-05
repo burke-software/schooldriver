@@ -46,6 +46,8 @@ if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^benchmark_grade/', include('ecwsp.benchmark_grade.urls')), )
 if 'ecwsp.inventory' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^inventory/', include('ecwsp.inventory.urls')), )
+if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^engrade_sync/', include('ecwsp.engrade_sync.urls')), )
 
 if settings.DEBUG:
     urlpatterns += patterns('',

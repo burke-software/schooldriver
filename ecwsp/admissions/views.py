@@ -13,7 +13,7 @@ from ecwsp.admissions.models import *
 from ecwsp.admissions.forms import *
 from ecwsp.administration.models import Configuration
 
-@user_passes_test(lambda u: u.has_perm("admissions.view_applicant"), login_url='/')   
+@permission_required('admissions.view_applicant') 
 def reports(request):
     report_form = ReportForm()
     if request.POST:
@@ -21,7 +21,14 @@ def reports(request):
         if report_form.is_valid():
             year = report_form.cleaned_data['school_year']
             if 'applicants_to_students' in request.POST:
-                return HttpResponseRedirect(reverse(applicants_to_students, args=[year.id]))
+                return HttpResponseRedirect(reverse(applicants_to_students, args=[year[0].id]))
+            elif 'funnel':
+                year_ids = ''
+                for year_item in year.values('id'):
+                    year_ids += str(year_item['id']) + ','
+                if year_ids:
+                    year_ids = year_ids[:-1]
+                return HttpResponseRedirect(reverse(funnel) + '?year_ids=%s' % (year_ids))
             return report_process_statistics(year)
     
     return render_to_response('admissions/report.html', {
@@ -29,6 +36,67 @@ def reports(request):
         },
         RequestContext(request, {}),
     )
+
+@permission_required('admissions.view_applicant')
+def funnel(request):
+    years = SchoolYear.objects.filter(id__in=request.GET['year_ids'].split(','))
+    levels = AdmissionLevel.objects.all().order_by('order')
+    applicants = Applicant.objects.filter(school_year__in=years).distinct()
+    
+    level_css_classes = ('one', 'two', 'three', 'four', 'five', 'six',)
+    i = 0
+    for level in levels:
+        try:
+            level.css_class = level_css_classes[i]
+        except:
+            level.css_class = 'six'
+        i += 1
+    
+    i = 0
+    running_total = 0
+    running_male = 0
+    running_female = 0
+    for level in reversed(levels): # don't use levels.reverse() it makes a copy not reference!
+        running_total += applicants.filter(level=level).count()
+        running_male += applicants.filter(level=level, sex='M').count()
+        running_female += applicants.filter(level=level, sex='F').count()
+        
+        level.students = running_total
+        level.male = running_male
+        try:
+            level.male_p = float(level.male) / float(level.students)
+        except ZeroDivisionError:
+            level.male_p = 0
+        level.female = running_female
+        try:
+            level.female_p = float(level.female) / float(level.students)
+        except ZeroDivisionError:
+            level.female_p = 0
+        i += 1
+        
+        level.decisions = ApplicationDecisionOption.objects.filter(level=level)
+        for decision in level.decisions:
+            
+            decision.students = applicants.filter(level=level,application_decision=decision).count()
+            decision.male = applicants.filter(level=level,application_decision=decision,sex='M').count()
+            try:
+                decision.male_p = float(decision.male) / float(level.students)
+            except ZeroDivisionError:
+                decision.male_p = 0
+            decision.female = applicants.filter(level=level,application_decision=decision,sex='F').count()
+            try:
+                decision.female_p = float(decision.female) / float(level.students)
+            except ZeroDivisionError:
+                decision.female_p = 0
+            
+        
+    return render_to_response('admissions/funnel.html', {
+            'years': years,
+            'levels': levels,
+        },
+        RequestContext(request, {}),
+    )
+    
 
 @permission_required('admissions.change_applicant')
 def ajax_check_duplicate_applicant(request, fname, lname):

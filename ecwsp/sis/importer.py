@@ -264,6 +264,7 @@ class Importer:
             if sheet_name.lower() == name.lower():
                 return self.book.sheet_by_index(i)
             i += 1
+        raise Exception('Couldn\'t find sheet %s' % (name,))
     
     def magic_import_everything(self):
         """Import a workbook using sheet names to determine what to import"""

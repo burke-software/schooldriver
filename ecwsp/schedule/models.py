@@ -362,8 +362,9 @@ class Grade(models.Model):
             ("B", "B"),
             ("C", "C"),
             ("D", "D"),
+            ("HP", "High Pass"),
         )
-    letter_grade = models.CharField(max_length=1, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
+    letter_grade = models.CharField(max_length=2, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
     
     class Meta:
         unique_together = (("student", "course", "marking_period", "final"),)
