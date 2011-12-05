@@ -107,6 +107,7 @@ class Item(models.Model):
     def __unicode__(self):
         return self.name + " - " + self.category.name + " (" + self.course.fullname + ")"
 
+
 class Mark(models.Model):
     item = models.ForeignKey('Item')
     student = models.ForeignKey('sis.Student')

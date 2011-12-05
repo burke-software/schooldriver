@@ -322,6 +322,7 @@ def student_timesheet(request):
             access.save()
             return render_to_response('base.html', {'student': True, 'msg': "Timesheet has be successfully submitted, your supervisor has been notified."}, RequestContext(request, {}))
         else:
+            print form.errors
             pay, created = Configuration.objects.get_or_create(name="Allow for pay")
             if created: 
                 pay.value = "True"
@@ -455,7 +456,7 @@ def supervisor_view(request):
 def student_view(request):
     try:
         thisStudent = StudentWorker.objects.get(username=request.user.username)
-    except model.DoesNotExist:
+    except StudentWorker.DoesNotExist:
         return render_to_response('base.html', {'msg': "Student does not exist or is not a Student Worker. Please notify a system admin if you believe this is a mistake."}, RequestContext(request, {}))
     timeSheets = TimeSheet.objects.filter(student=thisStudent).order_by('date').reverse()[:100]
     return render_to_response('work_study/student_view.html', {'timeSheets': timeSheets, 'student': thisStudent}, RequestContext(request, {}))
