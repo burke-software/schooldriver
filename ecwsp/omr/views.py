@@ -420,7 +420,8 @@ def manual_edit(request, test_id):
             letter[question]=chr(ascii_letter)
         else:
             letter[question] = tf_response
-            
+        #http://stackoverflow.com/questions/1294385/how-to-insert-retrieve-a-file-stored-as-a-blob-in-a-mysql-db-using-python
+        #render a blob image. probably going to have to play with this for a while.
     return render_to_response('omr/manually_edit.html', {
         'test': test, 'letter':letter, 'q':question
     }, RequestContext(request, {}),)
