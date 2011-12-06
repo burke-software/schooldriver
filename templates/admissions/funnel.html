@@ -4,7 +4,7 @@
 {% block extrastyle %}
     {{ block.super }}
     <style type="text/css">
-	p {
+	div.box {
 	    text-align:center;
 	    width: 800px;
 	    margin:0px auto;
@@ -12,19 +12,19 @@
 	    border:1px dashed #333;
 	    background-color:#eee;
 	}
-	p.two {
+	div.two {
 	    width: 750px;
 	}
-	p.three {
+	div.three {
 	    width: 700px;
 	}
-	p.four {
+	div.four {
 	    width: 650px;
 	}
-	p.five {
+	div.five {
 	    width: 600px;
 	}
-	p.six {
+	div.six {
 	    width: 550px;
 	}
 	#content {
@@ -32,6 +32,9 @@
 	}
 	h2 {
 	    text-align: center;
+	}
+	.level {
+	    font-weight: bold;
 	}
     </style>
 {% endblock %}
@@ -49,19 +52,27 @@
 <h2> Admissions Funnel for year{{ years|pluralize }} {% for year in years %} {{ year }} {% endfor %} </h2>
 <br/>
 {% for level in levels %}
-    <p class="{{ level.css_class }}">
-	{{ level }}: {{ level.students }} Student{{ level.students|pluralize }} &nbsp;
-	Female: {{ level.female }}({{level.female_p|percentage }}) &nbsp;
-	Male: {{ level.male }}({{ level.male_p|percentage }}) 
-	
-	{% for decision in level.decisions %}
-	    <br/><br/>
-	    {{ decision }}: {{ decision.students }} Student{{ decision.students|pluralize }} <br/>
-	    {{ decision.female }} F = {{decision.female_p|percentage }} of female prospects <br/>
-	    {{ decision.male }} M = {{ decision.male_p|percentage }} of male prospects <br/>
-	    
-	{% endfor %}
-    </p>
+    <div class="{{ level.css_class }} box">
+	<div class="level">
+	    {{ level }}: {{ level.students }} Student{{ level.students|pluralize }} &nbsp; &nbsp; &nbsp;
+	    {{ level.female }} Female{{ level.female|pluralize }} ({{level.female_p|percentage }}) &nbsp; &nbsp; &nbsp;
+	    {{ level.male }} Male{{ level.male|pluralize }} ({{ level.male_p|percentage }}) 
+	</div>
+	<table style="margin-left: auto;margin-right: auto;">
+	    <tr>
+	    {% for decision in level.decisions %}
+		{% if forloop.counter0|divisibleby:3 %}
+	    </tr><tr>
+		{% endif %}
+		<td style="border: 0;">
+		    {{ decision }}: {{ decision.students }} Student{{ decision.students|pluralize }} <br/>
+		    {{ decision.female }} F = {{decision.female_p|percentage }} of female prospects <br/>
+		    {{ decision.male }} M = {{ decision.male_p|percentage }} of male prospects <br/>
+		</td>
+	    {% endfor %}
+	    </tr>
+	</table>
+    </div>
     <br/>
 {% endfor %}
 
