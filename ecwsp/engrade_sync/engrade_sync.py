@@ -20,6 +20,7 @@ from ecwsp.engrade_sync.models import *
 from ecwsp.schedule.models import *
 
 import sys
+import datetime
 
 class EngradeSync:
     def __init__(self):
@@ -139,4 +140,6 @@ class EngradeSync:
                     else:
                         errors += "Student doesn't exist! "
                     print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
+        course.last_grade_submission = datetime.datetime.now()
+        course.save()
         return errors

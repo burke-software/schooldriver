@@ -390,11 +390,10 @@ class StudentWorker(Student):
          # set pay rates
         if not self.school_pay_rate and not self.student_pay_rate:
             try:
-                self.school_pay_rate = Decimal(Configuration.objects.get(name="school pay rate per hour").value)
-                self.student_pay_rate = Decimal(Configuration.objects.get(name="student pay rate per hour").value)
+                self.school_pay_rate = Decimal(Configuration.get_or_default("school pay rate per hour", default="13.00").value)
+                self.student_pay_rate = Decimal(Configuration.objects.get("student pay rate per hour", default="9").value)
             except:
-                print >> sys.stderr, "warning: pay rate configuration not set. Add \"school pay rate per hour\" " +\
-                    "and \"student pay rate per hour\" in configuration. Make sure they are numbers. Don't include $"
+                pass
         super(StudentWorker, self).save(*args, **kwargs)
     
     def pickUp(self):
