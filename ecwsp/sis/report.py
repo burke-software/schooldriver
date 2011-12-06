@@ -6,7 +6,6 @@ from ecwsp.sis.uno_report import uno_save
 from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
-from ecwsp.benchmark_grade.models import *
 
 from ecwsp.appy.pod.renderer import Renderer
 import tempfile
@@ -251,9 +250,12 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
         from ecwsp.benchmark_grade.report import benchmark_report_card
         return benchmark_report_card(template, options, students, format)
         
+    if (transcript and "ecwsp.benchmark_grade" in settings.INSTALLED_APPS):
+        from ecwsp.benchmark_grade.models import Aggregate, Category
+        
     marking_periods = MarkingPeriod.objects.filter(
         school_year=SchoolYear.objects.filter(
-            start_date__lt=for_date
+            start_date__lt=for_date, end_date__lt=for_date
         ).order_by(
             '-start_date'
         )[0]
@@ -305,7 +307,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
         
         ## for transcripts
         if transcript:
-            student.years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).exclude(omityeargpa__student=student).distinct().order_by('start_date')
+            student.years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student, end_date__lte=for_date).exclude(omityeargpa__student=student).distinct().order_by('start_date')
             for year in student.years:
                 year.credits = 0
                 year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year, show_reports=True).distinct().order_by("start_date")

@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
@@ -68,6 +68,20 @@ def schedule_enroll(request, id):
     students = Student.objects.filter(courseenrollment__course=course)
     form = EnrollForm(initial={'students': students})
     return render_to_response('schedule/enroll.html', {'request': request, 'form': form, 'course': course})
+
+@permission_required('schedule.change_grade')
+def teacher_grade_submissions(request):
+    teachers = Faculty.objects.filter(teacher=True, course__marking_period__school_year__active_year=True).distinct()
+    try:
+        marking_period = MarkingPeriod.objects.filter(active=True).order_by('-end_date')[0]
+    except:
+        marking_period = None
+    courses = Course.objects.filter(marking_period=marking_period)
+    
+    for teacher in teachers:
+        teacher.courses = courses.filter(teacher=teacher)
+    
+    return render_to_response('schedule/teacher_grade_submissions.html', {'teachers':teachers, 'marking_period':marking_period}, RequestContext(request, {}),)
 
 @user_passes_test(lambda u: u.groups.filter(name='teacher').count() > 0 or u.is_superuser, login_url='/')   
 def teacher_grade(request):
@@ -307,6 +321,10 @@ def teacher_grade_upload(request, id):
             error = importer.import_grades(course, import_form.cleaned_data['marking_period'])
             if error:
                 messages.warning(request, error)
+            else:
+                import datetime
+                course.last_grade_submission = datetime.datetime.now()
+                course.save()
     else:
         import_form = GradeUpload()
         

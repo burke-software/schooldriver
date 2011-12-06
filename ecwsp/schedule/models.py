@@ -197,6 +197,7 @@ class Course(models.Model):
     credits = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Credits effect gpa.")
     department = models.ForeignKey(Department, blank=True, null=True)
     level = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
+    last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False)
     
     def __unicode__(self):
         return self.fullname

@@ -136,7 +136,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         except:
             print >> sys.stderr, "Error in StudentAdmin render_change_form"
         
-        return super(StudentAdmin, self).render_change_form(request, context, args, kwargs)
+        return super(StudentAdmin, self).render_change_form(request, context,  *args, **kwargs)
     
     def change_view(self, request, object_id, extra_context=None):
         courses = Course.objects.filter(courseenrollment__user__id=object_id, marking_period__school_year__active_year=True).distinct()

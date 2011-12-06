@@ -158,8 +158,7 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    
-    #'ckeditor',
+
     'ecwsp.volunteer_track',
     'ecwsp.sis',
     'ecwsp.schedule',
@@ -222,10 +221,12 @@ AJAX_LOOKUP_CHANNELS = {
     'attendance_quick_view_student': ('ecwsp.sis.lookups', 'AttendanceAddStudentLookup'),
     'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
     'site': ('ecwsp.volunteer_track.lookups', 'SiteLookup'),
-    #'benchmark': ('ecwsp.omr.lookups', 'BenchmarkLookup'),
     'theme': ('ecwsp.omr.lookups', 'ThemeLookup'),
     'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
 }
+
+if 'ecwsp.omr' in INSTALLED_APPS:
+    AJAX_LOOKUP_CHANNELS['benchmark'] = ('ecwsp.omr.lookups', 'BenchmarkLookup')
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
