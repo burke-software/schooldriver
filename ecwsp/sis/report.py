@@ -6,6 +6,7 @@ from ecwsp.sis.uno_report import uno_save
 from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
+from ecwsp.benchmark_grade.models import *
 
 from ecwsp.appy.pod.renderer import Renderer
 import tempfile
@@ -250,12 +251,9 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
         from ecwsp.benchmark_grade.report import benchmark_report_card
         return benchmark_report_card(template, options, students, format)
         
-    if (transcript and "ecwsp.benchmark_grade" in settings.INSTALLED_APPS):
-        from ecwsp.benchmark_grade.models import Aggregate, Category
-        
     marking_periods = MarkingPeriod.objects.filter(
         school_year=SchoolYear.objects.filter(
-            start_date__lt=for_date, end_date__lt=for_date
+            start_date__lt=for_date
         ).order_by(
             '-start_date'
         )[0]
@@ -307,7 +305,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
         
         ## for transcripts
         if transcript:
-            student.years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student, end_date__lte=for_date).exclude(omityeargpa__student=student).distinct().order_by('start_date')
+            student.years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).exclude(omityeargpa__student=student).distinct().order_by('start_date')
             for year in student.years:
                 year.credits = 0
                 year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year, show_reports=True).distinct().order_by("start_date")
@@ -367,6 +365,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                     
                     if mp.end_date < for_date and course.is_passing(student) and course.credits:
                         year.credits += course.credits
+                    
                 
                 # Averages per marking period
                 i = 1
@@ -385,7 +384,10 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                 year.nonmemb = student.student_attn.filter(status__code="nonmemb", date__range=(year.start_date, year.end_date)).count()
                 year.absent = student.student_attn.filter(status__absent=True, date__range=(year.start_date, year.end_date)).count()
                 year.tardy = student.student_attn.filter(status__tardy=True, date__range=(year.start_date, year.end_date)).count()
-                year.dismissed = student.student_attn.filter(status__code="D", date__range=(year.start_date, year.end_date)).count() 
+                year.dismissed = student.student_attn.filter(status__code="D", date__range=(year.start_date, year.end_date)).count()
+                if year.mps.count() == 0 or year.courses.count() == 0:
+                    year.delete()
+                    year.mp.delete()
             
             # credits per dept    
             student.departments = Department.objects.filter(course__courseenrollment__user=student).distinct()
