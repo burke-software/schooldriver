@@ -11,6 +11,14 @@ class AdmissionLevel(models.Model):
     order = models.IntegerField(unique=True, help_text="Order in which level appears. 1 being first.")
     def __unicode__(self):
         return unicode(self.name)
+    def edit(self):
+        return "Edit"
+    def show_checks(self):
+        """Show checks needed for this level"""
+        msg = '|'
+        for check in self.admissioncheck_set.all():
+            msg += "%s | " % (check.name,)
+        return msg
     class Meta:
         ordering = ('order',)
         
@@ -21,11 +29,6 @@ class AdmissionCheck(models.Model):
     required = models.BooleanField(default=True, help_text="When true, applicant cannot meet any level beyond this. When false, applicant can leapfrog check items.")
     class Meta:
         ordering = ('level','name')
-    def __unicode__(self):
-        return unicode(self.name)
-    
-class AdmissionChoice(models.Model):
-    name = models.CharField(max_length=255)
     def __unicode__(self):
         return unicode(self.name)
 
@@ -162,7 +165,7 @@ class Applicant(models.Model):
     calculated_payment = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
     
     date_added = models.DateField(auto_now_add=True, blank=True, null=True)
-    level = models.ForeignKey(AdmissionLevel, blank=True, null=True)
+    level = models.ForeignKey(AdmissionLevel, blank=True, null=True, on_delete=models.SET_NULL)
     checklist = models.ManyToManyField(AdmissionCheck, blank=True, null=True)
     application_decision = models.ForeignKey(ApplicationDecisionOption, blank=True, null=True)
     application_decision_by = models.ForeignKey(User, blank=True, null=True)

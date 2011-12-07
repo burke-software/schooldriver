@@ -10,9 +10,6 @@ from ecwsp.admissions.forms import *
 
 import re
 
-admin.site.register(AdmissionLevel)
-admin.site.register(AdmissionCheck)
-admin.site.register(AdmissionChoice)
 admin.site.register(EthnicityChoice)
 admin.site.register(ReligionChoice)
 admin.site.register(FeederSchool)
@@ -25,6 +22,18 @@ admin.site.register(WithdrawnChoices)
 admin.site.register(BoroughOption)
 admin.site.register(CountryOption)
 admin.site.register(ImmigrationOption)
+
+class AdmissionCheckInline(admin.TabularInline):
+    model = AdmissionCheck
+    extra = 0
+    verbose_name_plural = "Items needed to be completed to attain this level in the process"
+
+class AdmissionLevelAdmin(admin.ModelAdmin):
+    list_display = ('edit','name', 'order','show_checks')
+    list_display_links = ('edit',)
+    list_editable = ('name','order',)
+    inlines = (AdmissionCheckInline,)
+admin.site.register(AdmissionLevel,AdmissionLevelAdmin)
 
 class ContactLogInline(admin.TabularInline):
     model = ContactLog
@@ -41,8 +50,8 @@ class ApplicantAdmin(admin.ModelAdmin):
     ordering = ('-id',)
     fieldsets = [
         (None, {'fields': ['ready_for_export', 'lname', 'fname', 'mname', 'present_school', 'heard_about_us', 'first_contact',
-                           'application_decision', 'application_decision_by', 'withdrawn', 'withdrawn_note']}),
-        ('About applicant', {'fields': [('total_income', 'adjusted_available_income', 'calculated_payment') , ('ssn', 'sex'), ('ethnicity', 'religion'), ('email', 'bday'), ('year', 'school_year'), ('hs_grad_yr',
+                    'application_decision', 'application_decision_by', 'withdrawn_note', 'total_income', 'adjusted_available_income', 'calculated_payment']}),
+        ('About applicant', {'fields': [('ssn', 'sex'), ('ethnicity', 'religion'), ('email', 'bday'), ('year', 'school_year'), ('hs_grad_yr',
                                       'elem_grad_yr'), 'notes', 'siblings', 
                                       'borough', ('country_of_birth','immigration_status'), 'parent_guardians', 'open_house_attended'],
             'classes': ['collapse']}),
