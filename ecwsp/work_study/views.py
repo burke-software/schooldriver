@@ -322,7 +322,6 @@ def student_timesheet(request):
             access.save()
             return render_to_response('base.html', {'student': True, 'msg': "Timesheet has be successfully submitted, your supervisor has been notified."}, RequestContext(request, {}))
         else:
-            print form.errors
             pay, created = Configuration.objects.get_or_create(name="Allow for pay")
             if created: 
                 pay.value = "True"
