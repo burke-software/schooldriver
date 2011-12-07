@@ -255,7 +255,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
         
     marking_periods = MarkingPeriod.objects.filter(
         school_year=SchoolYear.objects.filter(
-            start_date__lt=for_date, end_date__lt=for_date
+            start_date__lt=for_date
         ).order_by(
             '-start_date'
         )[0]
