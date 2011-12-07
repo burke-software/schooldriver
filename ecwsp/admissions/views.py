@@ -22,7 +22,7 @@ def reports(request):
             year = report_form.cleaned_data['school_year']
             if 'applicants_to_students' in request.POST:
                 return HttpResponseRedirect(reverse(applicants_to_students, args=[year[0].id]))
-            elif 'funnel':
+            elif 'funnel' in request.POST:
                 year_ids = ''
                 for year_item in year.values('id'):
                     year_ids += str(year_item['id']) + ','
