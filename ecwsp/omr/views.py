@@ -301,10 +301,20 @@ def ajax_new_question_form(request, test_id):
                 'question': q_instance,
             }, RequestContext(request, {}),)
     else:
-        extra_answers = UserPreference.objects.get(user=request.user).omr_default_number_answers
+        try:
+            extra_answers = UserPreference.objects.get(user=request.user).omr_default_number_answers
+        except:
+            extra_answers = 2
+        if not extra_answers:
+            extra_answers = 2
         NewAnswerFormSet = inlineformset_factory(Question, Answer, extra=extra_answers, form=AnswerForm)
         question_answer_form = NewAnswerFormSet(prefix="questionanswers_new")
-        points = UserPreference.objects.get(user=request.user).omr_default_point_value
+        try:
+            points = UserPreference.objects.get(user=request.user).omr_default_point_value
+        except:
+            points = 1
+        if not points:
+            points = 1
         save_to_bank = UserPreference.objects.get(user=request.user).omr_default_save_question_to_bank
         question_form = TestQuestionForm(prefix="question_new", initial={'test': test, 'point_value': points, 'save_to_bank': save_to_bank})
     
@@ -420,7 +430,8 @@ def manual_edit(request, test_id):
             letter[question]=chr(ascii_letter)
         else:
             letter[question] = tf_response
-            
+        #http://stackoverflow.com/questions/1294385/how-to-insert-retrieve-a-file-stored-as-a-blob-in-a-mysql-db-using-python
+        #render a blob image. probably going to have to play with this for a while.
     return render_to_response('omr/manually_edit.html', {
         'test': test, 'letter':letter, 'q':question
     }, RequestContext(request, {}),)

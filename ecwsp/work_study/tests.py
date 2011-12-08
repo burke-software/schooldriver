@@ -38,10 +38,10 @@ class TimeSheetTest(TestCase):
         """
         config = Configuration.objects.create(name="email", value="@cristoreyny.net")
         config.save
-        group = Group.objects.create(name="company")
+        self.c_group = Group.objects.create(name="company")
         stuGroup = Group.objects.create(name="students")
         supUser = User.objects.create_user("super", "dburke@cristoreyny.org", "test")
-        supUser.groups.add(group)
+        supUser.groups.add(self.c_group)
         supUser.save()
         
         facGroup = Group.objects.create(name="faculty")
@@ -51,7 +51,7 @@ class TimeSheetTest(TestCase):
         self.craContact = CraContact.objects.create(name=craUser,email=True,email_all=True)
         self.craContact.save()
         
-        user = User.objects.create_user("studentlog", "jstudent@cristoreyny.org", "test")
+        user = User.objects.create_user("jstudent", "jstudent@cristoreyny.org", "test")
         user.groups.add(stuGroup)
         user.save()
         self.comp = WorkTeam.objects.create(team_name="fsdaf3aq3fa3fsc")
@@ -105,7 +105,7 @@ class TimeSheetTest(TestCase):
         In this case the student has no primary supervisor, thus no email
         """
         # student logs in, goes to student_timesheet
-        response = self.client.post('/accounts/login/?next=/', {'username':'studentlog', 'password':'test'}, follow=True)
+        response = self.client.post('/accounts/login/?next=/', {'username':'jstudent', 'password':'test'}, follow=True)
         self.assertContains(response, self.student.lname, msg_prefix="Something wrong with student_timesheet")
         self.assertContains(response, "Not yet submitted by student", msg_prefix="Something wrong with student_timesheet")
         
@@ -171,20 +171,20 @@ class TimeSheetTest(TestCase):
     
     def test_student_email(self):
         """
-        Tests a student being emailed aftr a supervisor approves a timesheet.
+        Tests a student being emailed after a supervisor approves a timesheet.
         """
         
         self.test_supervisor_approve()
         self.assertEquals(mail.outbox[0].subject, "Time Sheet approved for " + unicode(self.student))
-        self.assertEquals(mail.outbox[0].to[0],student.email)
+        self.assertEquals(mail.outbox[0].to[0], 'jstudent@cristoreyny.net')
         
     def test_cra_email(self):
         """
         Tests that an email gets sent to the CRA
         """
-        
+        self.test_student_no_super() # An email must exists
         call_command('email_cra')
-        self.assertEqual(mail.outbox[0].subject,"SWORD student interactions")
+        self.assertEqual(mail.outbox[0].subject,"SWORD comments")
         self.assertEqual(mail.outbox[0].to[0],self.craContact.name.email)
         
     def test_supervisor_email_on_student_change(self):
@@ -192,26 +192,36 @@ class TimeSheetTest(TestCase):
         Tests that an email gets sent to a supervisor if a student changes the primary supervisor when submitting a timesheet
         """
         # student logs in, goes to student_timesheet
-        setUp()
-        response = self.client.post('/accounts/login/?next=/', {'username':'studentlog', 'password':'test'}, follow=True)
+        response = self.client.post('/accounts/login/?next=/', {'username':'jstudent', 'password':'test'}, follow=True)
+        
         self.assertContains(response, self.student.lname, msg_prefix="Something wrong with student_timesheet")
         self.assertContains(response, "Not yet submitted by student", msg_prefix="Something wrong with student_timesheet")
                 
-        new_sup = User.objects.create_user("super2", "dburke@cristoreyny.org", "test")
-        new_sup.groups.add(group)
-        new_sup.save()
-        self.comp.contacts.add(new_sup)
-        self.comp.login.add(new_sup)
-        self.comp.save()
-        
+        new_contact = Contact.objects.create(fname="Super",lname="Two", email="dburke@cristoreyny.org")
+        self.student.placement.contacts.add(new_contact)
         
         response = self.client.post("/", \
             {'student': 1, 'company':1, 'date': '2010-06-15', 'time_in': '9:30 AM', 'time_lunch': "12:00 PM", \
             'time_lunch_return': '1:00 PM', 'time_out': '5:00 PM', 'student_accomplishment': 'stuacomptext', \
-            'my_supervisor': new_sup})
+            'my_supervisor': new_contact.id}, follow=True)
         
         self.assertEquals(mail.outbox[0].subject, "Time Sheet for " + unicode(self.student))
-        self.assertEquals(mail.outbox[0].to[0], new_sup.email)
+        self.assertEquals(mail.outbox[0].to[0], new_contact.email)
 
-        
-        
+
+class ContractTest(TestCase):
+    """
+    Test the eletronic contract
+    """
+    def setUp(self):
+        self.company = Company.objects.create(name="some_work_team")
+    
+    def test_submit_contract(self):
+        """
+        A test that doesn't work
+        """
+        response = self.client.post('/work_study/company_contract/%s/' % (self.company.id), \
+            {u'number_students': [u'5'], u'title': [u'Software Engineer'], \
+            u'initial-date': [u'2011-12-04 23:12:30.124712'], u'company': [u'142'], \
+            u'company_name': [u'My Company'], u'date': [u'12/04/2011'], u'name': [u'David']}, follow=True)
+        self.assertEquals(CompContract.objects.get(company=self.company).company_name, 'My Company')

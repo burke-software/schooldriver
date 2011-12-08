@@ -104,7 +104,13 @@
       });
    </script>    
    {% endif %}
-   
+   <script type="text/javascript">
+      $(document).ready(function() {
+         // Move Application boxes to the Process Status box
+         $('div.application_decision').appendTo($('div.checklist'));
+         $('div.application_decision_by').appendTo($('div.checklist'));
+      });
+   </script>
 {% endblock %}
 
 
