@@ -534,9 +534,9 @@ class Student(MdlUser, CustomFieldModel):
         if self.inactive == True:
             self.studentworker.placement = None
             super(Student,self).save(*args, **kwargs)
-            enrolls = self.courseenrollment_set.all()
-            for enroll in enrolls:
-                enroll.delete()
+            #enrolls = self.courseenrollment_set.all()
+            #for enroll in enrolls:
+                #enroll.delete()
         user.groups.add(group)
         
     def graduate_and_create_alumni(self):
