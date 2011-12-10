@@ -386,8 +386,9 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                 year.tardy = student.student_attn.filter(status__tardy=True, date__range=(year.start_date, year.end_date)).count()
                 year.dismissed = student.student_attn.filter(status__code="D", date__range=(year.start_date, year.end_date)).count()
                 if year.mps.count() == 0 or year.courses.count() == 0:
-                    year.delete()
-                    year.mp.delete()
+                    print "nuke shit!"
+                    #year.delete()
+                    #year.mp.delete()
             
             # credits per dept    
             student.departments = Department.objects.filter(course__courseenrollment__user=student).distinct()
