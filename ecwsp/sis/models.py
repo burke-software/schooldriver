@@ -32,8 +32,8 @@ from datetime import date, timedelta, datetime
 from decimal import *
 import types
 from ecwsp.administration.models import Configuration
-from ecwsp.custom_field.models import *
-from ecwsp.custom_field.custom_field import CustomFieldModel
+from custom_field.models import *
+from custom_field.custom_field import CustomFieldModel
 
 logger = logging.getLogger(__name__)
 

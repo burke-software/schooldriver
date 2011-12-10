@@ -401,7 +401,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             
             student.tests = []
             student.highest_tests = []
-            for test_result in student.standardtestresult_set.filter(test__show_on_reports=True).order_by('test'):
+            for test_result in student.standardtestresult_set.filter(test__show_on_reports=True,show_on_reports=True).order_by('test'):
                 test_result.categories = ""
                 for cat in test_result.standardcategorygrade_set.filter(category__is_total=False):
                     test_result.categories += '%s: %s  |  ' % (cat.category.name, cat.grade)

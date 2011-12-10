@@ -545,6 +545,8 @@ class Importer:
                             model.save()
                             category = StandardCategory.objects.get_or_create(name=name, test=test)[0]
                             grade = StandardCategoryGrade.objects.get_or_create(category=category, result=model, grade=value)[0]
+                        elif name in ["show_on_reports","show on reports","show on report"]:
+                            model.show_on_reports = self.determine_truth(value)
                 model.full_clean()
                 model.save()
                 self.log_and_commit(model, addition=True)

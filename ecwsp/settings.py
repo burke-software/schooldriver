@@ -176,7 +176,7 @@ INSTALLED_APPS = (
     'pagination',
     'massadmin',
     'admin_export',
-    'ecwsp.custom_field',
+    'custom_field',
 #   'ecwsp.inventory',
 )
 
