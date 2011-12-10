@@ -338,7 +338,7 @@ def createTest(c):
                     c.drawString(choice_indent,next_line+line_space,str(choice))
                     c.setDash()
                     c.setLineWidth(.5)
-                    c.rect(choice_indent,next_line,13,13,fill=0)
+                    c.rect(choice_indent,next_line,9,9,fill=0)
                     choiceBanding(choice_indent+.5,next_line+13,choice_indent+13,next_line+.5,choice,value)
                     choice_indent+=extra_indent
                     current_choice_count+=1

@@ -830,7 +830,7 @@ class Importer:
                 else:
                     raise Exception('Requires student, course, and grade')
             except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                self.handle_error(row, header, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
