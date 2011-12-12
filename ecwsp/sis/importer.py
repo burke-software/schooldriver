@@ -1240,7 +1240,6 @@ class Importer:
                        model = EmergencyContact()
                 else:
                     model = EmergencyContact()
-                
                 if fname: model.fname = fname
                 if mname: model.mname = mname
                 if lname: model.lname = lname
@@ -1276,7 +1275,6 @@ class Importer:
                     ecNumber.contact = model
                     ecNumber.save()
                 model.save()
-                
                 if model.id:
                     self.log_and_commit(model, addition=False)
                     updated += 1
