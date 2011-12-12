@@ -139,7 +139,7 @@ class CustomIndexDashboard(Dashboard):
         self.children.append(modules.Feed(
             title='Latest SWORD News',
             column=2,
-            feed_url='https://sites.google.com/a/cristoreyny.org/sword-wiki/news/posts.xml',
+            feed_url='http://googleplusrss.nodester.com/112784955559393766110',
             limit=2
         ))
         

@@ -15,7 +15,7 @@ from ecwsp.sis.models import *
 from ecwsp.sis.forms import *
 from ecwsp.sis.views import *
 from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
-from ecwsp.custom_field.custom_field import CustomFieldAdmin
+from custom_field.custom_field import CustomFieldAdmin
 from ecwsp.schedule.models import *
 
 # Global actions

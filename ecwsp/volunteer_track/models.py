@@ -20,6 +20,7 @@
 from django.db import models
 from django.db.models import Sum
 from django.contrib.localflavor.us.models import *
+from django.contrib import messages
 
 from datetime import datetime
 import random
@@ -72,11 +73,33 @@ class Volunteer(models.Model):
     last_updated = models.DateTimeField(default = datetime.now)
     job_description = models.TextField(blank=True)
     secret_key = models.CharField(max_length=20, blank=True, editable=False)
+    email_queue = models.CharField(default="", max_length=1000, blank=True, editable=False, help_text="Used to store nightly notification emails")
     def __unicode__(self):
         return unicode(self.student)
+        
     def save(self, *args, **kwargs):
+        if self.id:
+            old_volunteer = Volunteer.objects.get(id=self.id)
+            if old_volunteer.site != self.site:
+                self.email_queue += "Changed site from %s to %s. " % (old_volunteer.site, self.site)
+            if old_volunteer.site_supervisor != self.site_supervisor:
+                self.email_queue += "Changed supervisor from %s to %s. " % (old_volunteer.site_supervisor, self.site_supervisor)
+            
+            if old_volunteer.site_approval == "Submitted" and self.site_approval == "Accepted":
+                try:
+                    from django.core.mail import send_mail
+                    from_email = Configuration.get_or_default("From Email Address",default="donotreply@change.me").value
+                    msg = "Hello %s,\nYour site %s has been approved!"
+                    emailEnd = Configuration.get_or_default("email", default="@change.me").value
+                    send_to = str(self.student.username) + emailEnd
+                    send_mail(subject, msg, from_email, [send_to])
+                except:
+                    if request.user.is_staff():
+                        messages.error(request, 'Could not email student about site approval!')
+                
         if not self.secret_key or self.secret_key == "":
             self.genKey()
+            
         super(Volunteer, self).save(*args, **kwargs)
     def send_email_approval(self):
         """

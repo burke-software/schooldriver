@@ -32,8 +32,8 @@ from datetime import date, timedelta, datetime
 from decimal import *
 import types
 from ecwsp.administration.models import Configuration
-from ecwsp.custom_field.models import *
-from ecwsp.custom_field.custom_field import CustomFieldModel
+from custom_field.models import *
+from custom_field.custom_field import CustomFieldModel
 
 logger = logging.getLogger(__name__)
 
@@ -528,15 +528,13 @@ class Student(MdlUser, CustomFieldModel):
     
     def save(self, *args, **kwargs):
         self.cache_cohorts()
+        if self.inactive == True:
+            try:
+                self.studentworker.placement = None
+            except: pass
         super(Student, self).save(*args, **kwargs)
         user, created = User.objects.get_or_create(username=self.username)
         group, gcreated = Group.objects.get_or_create(name="students")
-        if self.inactive == True:
-            self.studentworker.placement = None
-            super(Student,self).save(*args, **kwargs)
-            #enrolls = self.courseenrollment_set.all()
-            #for enroll in enrolls:
-                #enroll.delete()
         user.groups.add(group)
         
     def graduate_and_create_alumni(self):
