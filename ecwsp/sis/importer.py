@@ -1399,37 +1399,36 @@ class Importer:
                         elif name.split() and name.split()[0] == "custom":
                             custom_fields.append([name.split()[1], value])
                             
-                if model: 
-                    if not model.username and model.fname and model.lname:
-                        model.username = self.gen_username(model.fname, model.lname)
-                    model.save()
-                    for (custom_field, value) in custom_fields:
-                        model.set_custom_value(custom_field, value)
-                    for (name, value) in items:
-                        is_ok, name, value = self.sanitize_item(name, value)
-                        if is_ok:
-                            if name == "student phone":    
-                                number, extension = self.import_number(value)
-                                contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="H" , student=model)
-                                contactModel.save()
-                            elif name == "student cell ph" or name == "student cell" or name == "student cell phone":
-                                number, extension = self.import_number(value)
-                                contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="C" , student=model)
-                                contactModel.save()
-                            elif name == "student phone other":
-                                number, extension = self.import_number(value)
-                                contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="O" , student=model)
-                                contactModel.save()
-                            elif name == "student phone work":
-                                number, extension = self.import_number(value)
-                                contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="W" , student=model)
-                                contactModel.save()
-                            elif name == "primary cohort":
-                                cohort = Cohort.objects.get_or_create(name=value)[0]
-                                student_cohort = StudentCohort.objects.get_or_create(student=model, cohort=cohort)[0]
-                                student_cohort.primary = True
-                                student_cohort.save()
-                    # add emergency contacts (parents)
+                if not model.username and model.fname and model.lname:
+                    model.username = self.gen_username(model.fname, model.lname)
+                model.save()
+                for (custom_field, value) in custom_fields:
+                    model.set_custom_value(custom_field, value)
+                for (name, value) in items:
+                    is_ok, name, value = self.sanitize_item(name, value)
+                    if is_ok:
+                        if name == "student phone":    
+                            number, extension = self.import_number(value)
+                            contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="H" , student=model)
+                            contactModel.save()
+                        elif name == "student cell ph" or name == "student cell" or name == "student cell phone":
+                            number, extension = self.import_number(value)
+                            contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="C" , student=model)
+                            contactModel.save()
+                        elif name == "student phone other":
+                            number, extension = self.import_number(value)
+                            contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="O" , student=model)
+                            contactModel.save()
+                        elif name == "student phone work":
+                            number, extension = self.import_number(value)
+                            contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="W" , student=model)
+                            contactModel.save()
+                        elif name == "primary cohort":
+                            cohort = Cohort.objects.get_or_create(name=value)[0]
+                            student_cohort = StudentCohort.objects.get_or_create(student=model, cohort=cohort)[0]
+                            student_cohort.primary = True
+                            student_cohort.save()
+                # add emergency contacts (parents)
                 if p_lname and p_fname:
                     ecs = EmergencyContact.objects.filter(fname=p_fname, lname=p_lname, street=p_street)
                     if ecs.count():
@@ -1469,12 +1468,12 @@ class Importer:
                             ecNumber.contact = ec
                             ecNumber.save()
                         model.emergency_contacts.add(ec)
-                if created:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-                else:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1

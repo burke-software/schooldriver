@@ -27,6 +27,7 @@ easy_install django-ajax-filtered-fields
 easy_install django-mass-edit
 easy_install django-pagination
 easy_install django-admin-export
+easy_install django-custom-field
 
 #prepare mysql
 echo "enter mysql root password"
