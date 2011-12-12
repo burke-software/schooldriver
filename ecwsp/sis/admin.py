@@ -110,6 +110,10 @@ class StudentECInline(admin.TabularInline):
     model = Student.emergency_contacts.through
     extra = 1
 
+class MarkingPeriodInline(admin.StackedInline):
+    model = MarkingPeriod
+    extra = 0
+
 admin.site.register(GradeLevel)
 
 class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
@@ -257,4 +261,5 @@ class SchoolYearAdmin(admin.ModelAdmin):
         if not 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
             self.exclude = ('benchmark_grade',)
         return form
+    inlines = [MarkingPeriodInline]
 admin.site.register(SchoolYear, SchoolYearAdmin)
