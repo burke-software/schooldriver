@@ -36,6 +36,11 @@
 	.level {
 	    font-weight: bold;
 	}
+	.thin {
+	    padding-top: 5px;
+	    padding-bottom: 2px;
+	    border: 0;
+	}
     </style>
 {% endblock %}
 
@@ -54,9 +59,37 @@
 {% for level in levels %}
     <div class="{{ level.css_class }} box">
 	<div class="level">
-	    {{ level }}: {{ level.students }} Student{{ level.students|pluralize }} &nbsp; &nbsp; &nbsp;
-	    {{ level.female }} Female{{ level.female|pluralize }} ({{level.female_p|percentage }}) &nbsp; &nbsp; &nbsp;
-	    {{ level.male }} Male{{ level.male|pluralize }} ({{ level.male_p|percentage }}) 
+	    {{ level }}
+	    <table style="margin-left: auto;margin-right: auto;">
+		<tr>
+		    <td class="level thin"">
+			Total:
+		    </td>
+		    <td class="level thin">
+			{{ level.students }} Student{{ level.students|pluralize }}
+		    </td>
+		    <td class="level thin" >
+			{{ level.female }} Female{{ level.female|pluralize }} ({{level.female_p|percentage }}) 
+		    </td>
+		    <td class="level thin">
+			{{ level.male }} Male{{ level.male|pluralize }} ({{ level.male_p|percentage }})
+		    </td>
+		</tr>
+		<tr>
+		    <td class="level thin">
+			Current:
+		    </td>
+		    <td class="level thin">
+			{{ level.c_students }} Student{{ level.c_students|pluralize }}
+		    </td>
+		    <td class="level thin">
+			{{ level.c_female }} Female{{ level.c_female|pluralize }} ({{level.c_female_p|percentage }}) 
+		    </td>
+		    <td class="level thin">
+			{{ level.c_male }} Male{{ level.c_male|pluralize }} ({{ level.c_male_p|percentage }})
+		    </td>
+		</tr>
+	    </table> 
 	</div>
 	<table style="margin-left: auto;margin-right: auto;">
 	    <tr>
