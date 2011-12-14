@@ -167,7 +167,7 @@ class Applicant(models.Model):
     date_added = models.DateField(auto_now_add=True, blank=True, null=True)
     level = models.ForeignKey(AdmissionLevel, blank=True, null=True, on_delete=models.SET_NULL)
     checklist = models.ManyToManyField(AdmissionCheck, blank=True, null=True)
-    application_decision = models.ForeignKey(ApplicationDecisionOption, blank=True, null=True, on_delete=models.SET_NULL)
+    application_decision = models.ForeignKey(ApplicationDecisionOption, blank=True, null=True)
     application_decision_by = models.ForeignKey(User, blank=True, null=True)
     withdrawn = models.ForeignKey(WithdrawnChoices, blank=True, null=True)
     withdrawn_note = models.CharField(max_length=500, blank=True)
