@@ -245,7 +245,12 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
         SchoolYear.objects.filter(start_date__lt=for_date).order_by('-start_date')[0].benchmark_grade):
         from ecwsp.benchmark_grade.report import benchmark_report_card
         return benchmark_report_card(template, options, students, format)
-        
+    
+    # benchmark_grade transcripts aren't radically different,
+    # but they have some additional data
+    if (transcript and "ecwsp.benchmark_grade" in settings.INSTALLED_APPS):
+        from ecwsp.benchmark_grade.models import Aggregate, Category
+    
     marking_periods = MarkingPeriod.objects.filter(
         school_year=SchoolYear.objects.filter(
             start_date__lt=for_date
