@@ -6,7 +6,6 @@ from ecwsp.sis.uno_report import uno_save
 from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
-from ecwsp.benchmark_grade.models import *
 
 from ecwsp.appy.pod.renderer import Renderer
 import tempfile
