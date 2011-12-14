@@ -575,14 +575,7 @@ class TimeSheet(models.Model):
     
     def emailStudent(self, show_comment=True):
         try:
-            try:
-                emailEnd = Configuration.objects.get(name="email")
-            except:
-                # doesn't exist, so make it because we need it.
-                emailConfig = Configuration(name="email", value="")
-                emailConfig.save()
-                emailEnd = Configuration.objects.get(name="email")
-            emailEnd = emailEnd.value
+            emailEnd = Configuration.get_or_default("email", default="@change.me").value
             sendTo = str(self.student.username) + emailEnd
             subject = "Time Sheet approved for " + unicode(self.student)
             if show_comment:

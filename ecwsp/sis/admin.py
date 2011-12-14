@@ -15,7 +15,7 @@ from ecwsp.sis.models import *
 from ecwsp.sis.forms import *
 from ecwsp.sis.views import *
 from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
-from ecwsp.custom_field.custom_field import CustomFieldAdmin
+from custom_field.custom_field import CustomFieldAdmin
 from ecwsp.schedule.models import *
 
 # Global actions
@@ -109,6 +109,10 @@ class StudentCohortInline(admin.TabularInline):
 class StudentECInline(admin.TabularInline):
     model = Student.emergency_contacts.through
     extra = 1
+
+class MarkingPeriodInline(admin.StackedInline):
+    model = MarkingPeriod
+    extra = 0
 
 admin.site.register(GradeLevel)
 
@@ -257,4 +261,5 @@ class SchoolYearAdmin(admin.ModelAdmin):
         if not 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
             self.exclude = ('benchmark_grade',)
         return form
+    inlines = [MarkingPeriodInline]
 admin.site.register(SchoolYear, SchoolYearAdmin)

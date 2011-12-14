@@ -72,6 +72,20 @@ def funnel(request):
             level.female_p = float(level.female) / float(level.students)
         except ZeroDivisionError:
             level.female_p = 0
+            
+        # Current
+        level.c_students = applicants.filter(level=level).count()
+        level.c_male = applicants.filter(level=level, sex='M').count()
+        try:
+            level.c_male_p = float(level.c_male) / float(level.c_students)
+        except ZeroDivisionError:
+            level.c_male_p = 0
+        level.c_female = applicants.filter(level=level, sex='F').count()
+        try:
+            level.c_female_p = float(level.c_female) / float(level.c_students)
+        except ZeroDivisionError:
+            level.c_female_p = 0
+        
         i += 1
         
         level.decisions = ApplicationDecisionOption.objects.filter(level=level)

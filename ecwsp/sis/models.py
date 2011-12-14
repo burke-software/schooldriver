@@ -32,8 +32,8 @@ from datetime import date, timedelta, datetime
 from decimal import *
 import types
 from ecwsp.administration.models import Configuration
-from ecwsp.custom_field.models import *
-from ecwsp.custom_field.custom_field import CustomFieldModel
+from custom_field.models import *
+from custom_field.custom_field import CustomFieldModel
 
 logger = logging.getLogger(__name__)
 
@@ -369,7 +369,7 @@ class Student(MdlUser, CustomFieldModel):
     # These fields are cached from emergency contacts
     parent_guardian = models.CharField(max_length=150, blank=True, editable=False)
     street = models.CharField(max_length=150, blank=True, editable=False)
-    state = USStateField(blank=True, editable=False)
+    state = USStateField(blank=True, editable=False, null=True)
     zip = models.CharField(max_length=10, blank=True, editable=False)
     parent_email = models.EmailField(blank=True, editable=False)
     
@@ -553,17 +553,18 @@ class Student(MdlUser, CustomFieldModel):
         except:
             return
 def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
-    if not instance.emergency_contacts.filter(primary_contact=True).count():
-        # No contacts, set cache to None 
-        instance.parent_guardian = ""
-        instance.city = ""
-        instance.street = ""
-        instance.state = ""
-        instance.zip = ""
-        instance.parent_email = ""
-        instance.save()
-    for ec in instance.emergency_contacts.filter(primary_contact=True):
-        ec.cache_student_addresses()
+    if hasattr(instance, 'emergency_contacts'): # Apparently instance might be whatever the fuck it wants to be, not just student.
+        if not instance.emergency_contacts.filter(primary_contact=True).count():
+            # No contacts, set cache to None 
+            instance.parent_guardian = ""
+            instance.city = ""
+            instance.street = ""
+            instance.state = ""
+            instance.zip = ""
+            instance.parent_email = ""
+            instance.save()
+        for ec in instance.emergency_contacts.filter(primary_contact=True):
+            ec.cache_student_addresses()
         
 
 m2m_changed.connect(after_student_m2m, sender=Student.emergency_contacts.through)

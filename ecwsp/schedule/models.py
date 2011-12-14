@@ -481,6 +481,9 @@ class StandardTestResult(models.Model):
     date = models.DateField(default=date.today())
     student = models.ForeignKey('sis.Student')
     test = models.ForeignKey(StandardTest)
+    show_on_reports = models.BooleanField(default=True, help_text="If true, show this test result on a report such as a transcript. " + \
+        "Note entire test types can be marked as shown on report or not. This is useful if you have a test that is usually shown, but have a few instances where you don't want it to show.")
+    
     
     class Meta:
         unique_together = ('date', 'student', 'test')
@@ -506,7 +509,7 @@ class StandardTestResult(models.Model):
             if totals:
                 return totals[0].grade
         else:
-            return None
+            return 'N/A'
 
 class StandardCategoryGrade(models.Model):
     """ Grade for a category and result """
