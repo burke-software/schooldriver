@@ -767,7 +767,7 @@ def import_naviance(request):
     msg = mark_safe(msg)
     return render_to_response('sis/generic_form.html', {'form':form,'msg':msg}, RequestContext(request, {}),)
 
-@user_passes_test(lambda u: u.groups.filter(name="registrar").count() or u.is_superuser, login_url='/')   
+@user_passes_test(lambda u: u.groups.filter(name="registrar").count() or u.has_perm('schedule.grade_reports') or u.is_superuser, login_url='/')   
 def grade_report(request):
     form = StudentGradeReportWriterForm()
     mp_form = MarkingPeriodForm()
