@@ -136,12 +136,12 @@ class CustomIndexDashboard(Dashboard):
             limit=5
         ))
         
-        self.children.append(modules.Feed(
-            title='Latest SWORD News',
-            column=2,
-            feed_url='http://googleplusrss.nodester.com/112784955559393766110',
-            limit=2
-        ))
+        #self.children.append(modules.Feed(
+        #    title='Latest SWORD News',
+        #    column=2,
+        #    feed_url='http://googleplusrss.nodester.com/112784955559393766110',
+        #    limit=2
+        #))
         
         self.children.append(modules.LinkList(
             column=2,
