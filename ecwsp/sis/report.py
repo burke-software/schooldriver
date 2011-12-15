@@ -8,6 +8,7 @@ from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
 
 from ecwsp.appy.pod.renderer import Renderer
+from django.contrib.auth.decorators import user_passes_test
 import tempfile
 import os
 import uno
@@ -212,6 +213,7 @@ def pod_report_work_study(template, students, format="odt"):
     filename = 'Work Study Report'
     return pod_save(filename, "." + str(format), data, template)  
     
+@user_passes_test(lambda u: u.has_perm('schedule.grade_reports'))
 def pod_report_grade(template, options, students, format="odt", transcript=True, report_card=True):
     """ Generate report card and transcript grades via appy
     variables for apply:
