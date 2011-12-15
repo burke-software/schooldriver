@@ -371,7 +371,6 @@ class Grade(models.Model):
         unique_together = (("student", "course", "marking_period", "final"),)
         permissions = (
             ("change_own_grade", "Change grades for own class"),
-            ("grade_reports", "Create grade based reports"),
         )
         
     def display_grade(self):
