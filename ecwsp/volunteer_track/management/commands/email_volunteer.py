@@ -9,7 +9,7 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         # email student interactions
-        volunteers = Volunteer.objects.filter(email_queue__is_null=False).exclude(email_queue="")
+        volunteers = Volunteer.objects.filter(email_queue__isnull=False).exclude(email_queue="")
         if volunteers:
             from_email = Configuration.objects.get_or_create(name="From Email Address")[0].value
             to_emails = Configuration.get_or_default("Volunteer Track Manager Emails", default="").value
@@ -19,8 +19,13 @@ class Command(BaseCommand):
             for volunteer in volunteers:
                 msg += "%s - %s\n\n" % (volunteer, volunteer.email_queue)
             
-            send_mail(subject, msg, from_email, to_emails.split(','))
+            to_emails = to_emails.split(',')
+            sane_to_emails = []
+            for email in to_emails:
+                if email and email != " ":
+                    sane_to_emails.append(email.strip())
+            send_mail(subject, msg, from_email, sane_to_emails)
             
             for volunteer in volunteers:
                 volunteer.email_queue = ""
-                
+                volunteer.save()
