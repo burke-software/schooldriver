@@ -81,9 +81,9 @@ class Volunteer(models.Model):
         if self.id:
             old_volunteer = Volunteer.objects.get(id=self.id)
             if old_volunteer.site != self.site:
-                self.email_queue += "Changed site from %s to %s. " % (old_volunteer.site, self.site)
+                self.email_queue += "Changed site from %s to %s. " % (unicode(old_volunteer.site), unicode(self.site))
             if old_volunteer.site_supervisor != self.site_supervisor:
-                self.email_queue += "Changed supervisor from %s to %s. " % (old_volunteer.site_supervisor, self.site_supervisor)
+                self.email_queue += "Changed supervisor from %s to %s. " % (unicode(old_volunteer.site_supervisor), unicode(self.site_supervisor))
             
             if old_volunteer.site_approval == "Submitted" and self.site_approval == "Accepted":
                 try:
