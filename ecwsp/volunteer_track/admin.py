@@ -1,5 +1,6 @@
 #   Copyright 2011 David M Burke
-#   Author Callista Goss <calli@burkesoftware.com>
+#   Author Callista Goss <calli@burkesoftware.com>\
+#   Author David Burke <david@burkesoftware.com>
 #   
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -66,20 +67,27 @@ def time_fulfilled(modeladmin, request, queryset):
                     action_flag     = CHANGE
                 )        
 
+
+class HoursInline(admin.TabularInline):
+    model = Hours
+    extra = 1
+
 class VolunteerAdmin(admin.ModelAdmin):
     form = make_ajax_form(Volunteer, dict(student='student'))
     list_display = ('student', 'site_supervisor', 'site_approval', 'contract', 'hours_required', 'hours_completed', 'hours_record')
     list_filter = ['site_supervisor__site', 'student', 'site_approval', 'contract', 'hours_record']
     search_fields = ['comment', 'student__fname', 'student__lname', 'site_supervisor__site__site_name', 'site_supervisor__name']
     actions = [approve_site, reject_site, time_fulfilled]
-    
+    inlines = [HoursInline]
 admin.site.register(Volunteer,VolunteerAdmin)
     
-class HoursAdmin(admin.ModelAdmin):
-    form = make_ajax_form(Hours, dict(student='volunteer'))
-    list_display = ('student', 'date', 'hours')
-    search_fields = ['student__student__fname', 'student__student__lname']
-admin.site.register(Hours,HoursAdmin)
+#class HoursAdmin(admin.ModelAdmin):
+#    form = make_ajax_form(Hours, dict(student='volunteer'))
+#    list_display = ('student', 'date', 'hours')
+#    search_fields = ['student__student__fname', 'student__student__lname']
+#admin.site.register(Hours,HoursAdmin)
+
+
 
 class SiteSupervisorInline(admin.TabularInline):
     model = SiteSupervisor
