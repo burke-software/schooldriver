@@ -77,13 +77,14 @@ class Volunteer(models.Model):
     def __unicode__(self):
         return unicode(self.student)
         
-    def save(self, *args, **kwargs):
+    def save(self, saved_by_volunteer=False, *args, **kwargs):
         if self.id:
-            old_volunteer = Volunteer.objects.get(id=self.id)
-            if old_volunteer.site != self.site:
-                self.email_queue += "Changed site from %s to %s. " % (unicode(old_volunteer.site), unicode(self.site))
-            if old_volunteer.site_supervisor != self.site_supervisor:
-                self.email_queue += "Changed supervisor from %s to %s. " % (unicode(old_volunteer.site_supervisor), unicode(self.site_supervisor))
+            if saved_by_volunteer:
+                old_volunteer = Volunteer.objects.get(id=self.id)
+                if old_volunteer.site != self.site:
+                    self.email_queue += "Changed site from %s to %s. " % (unicode(old_volunteer.site), unicode(self.site))
+                if old_volunteer.site_supervisor != self.site_supervisor:
+                    self.email_queue += "Changed supervisor from %s to %s. " % (unicode(old_volunteer.site_supervisor), unicode(self.site_supervisor))
             
             if old_volunteer.site_approval == "Submitted" and self.site_approval == "Accepted":
                 try:
@@ -94,8 +95,7 @@ class Volunteer(models.Model):
                     send_to = str(self.student.username) + emailEnd
                     send_mail(subject, msg, from_email, [send_to])
                 except:
-                    if request.user.is_staff():
-                        messages.error(request, 'Could not email student about site approval!')
+                    print >> sys.stderr, "Unable to send email to volunteer about site approval! %s" % (self,)
                 
         if not self.secret_key or self.secret_key == "":
             self.genKey()

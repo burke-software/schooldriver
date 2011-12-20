@@ -80,9 +80,9 @@ def student_site_approval(request):
         if 'existing_site_submit' in request.POST:
             existing_site_form = ExistingSiteForm(request.POST, instance=volunteer)
             if existing_site_form.is_valid():
-                existing_site_form.save()
+                volunteer = existing_site_form.save(commit=False)
                 volunteer.site_approval = "Submitted"
-                volunteer.save()
+                volunteer.save(saved_by_volunteer=True)
                 return HttpResponseRedirect(reverse(change_supervisor))
                 
         elif 'new_site_submit' in request.POST:
@@ -97,7 +97,7 @@ def student_site_approval(request):
                 volunteer.site_supervisor = supervisor
                 volunteer.job_description = new_site_form.cleaned_data['job_description']
                 volunteer.site_approval = "Submitted"
-                volunteer.save()
+                volunteer.save(saved_by_volunteer=True)
                 return HttpResponseRedirect(reverse(student_dash))
                 
     if not 'existing_site_form' in locals():
