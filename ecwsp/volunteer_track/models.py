@@ -79,8 +79,8 @@ class Volunteer(models.Model):
         
     def save(self, saved_by_volunteer=False, *args, **kwargs):
         if self.id:
+            old_volunteer = Volunteer.objects.get(id=self.id)
             if saved_by_volunteer:
-                old_volunteer = Volunteer.objects.get(id=self.id)
                 if old_volunteer.site != self.site:
                     self.email_queue += "Changed site from %s to %s. " % (unicode(old_volunteer.site), unicode(self.site))
                 if old_volunteer.site_supervisor != self.site_supervisor:
