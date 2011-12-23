@@ -92,6 +92,7 @@ class ApplicantAdmin(admin.ModelAdmin):
                     else:
                         check.checked = False
             levels.append(level)
+           
         my_context = {
             'levels': levels,
             'current_level': applicant.level,
