@@ -55,31 +55,42 @@
   {{ block.super }}
    <script type="text/javascript">
       function check_levels() {
-         checks = $('input').filter(function() {
-            return this.name.match(/check_.*/) 
-          });
+        checks = $('input').filter(function() {
+          return this.name.match(/check_.*/) 
+        });
          
-         {% for level in levels %}
-          i = 0;
+        add_it = true;
+        last_level = false;
+        {% for level in levels %}
           checks.each(function(index){
           /* For each checkbox in all checkboxes*/
-             if ($(this).attr('checked') && $(this).attr('name').match(/check_{{ level|cut:" " }}_.*/) ) {
-                i = i + 1;
+             if ($(this).attr('check_required') == "True" && !($(this).attr('checked')) && $(this).attr('level') == "{{ level }}" ) {
+                add_it = false;
              }
           });
-          if ( i >= {{ level.max }} ) {
-             $('#level_{{ level|cut:" " }}').addClass('level_complete');
+          if ( add_it ) {
+            $('#level_{{ level|cut:" " }}').addClass('level_complete');
+            last_level = "{{ level }}";
           } else {
-             $('#level_{{ level|cut:" " }}').removeClass('level_complete');
+            $('#level_{{ level|cut:" " }}').removeClass('level_complete');
           }
-         {% endfor %}
+        {% endfor %}
+         
+        if ( last_level ) {
+          add_it = true;
+          checks.each(function(index){
+            if (!($(this).attr('checked')) && $(this).attr('level') == last_level ) {
+              add_it = false;
+            }
+          });
+          if ( ! add_it ) {
+            $('#level_' + last_level ).removeClass('level_complete');
+          }
+        }
       }
       
       $(document).ready(function() {
          check_levels();
-         $('#foo').bind('click', function() {
-          alert($(this).text());
-          });
       });
    </script>
    
@@ -151,7 +162,12 @@
                       <div>
                         {% for level in levels %}
                            {% for check in level.checks %}
-                            <input type="checkbox" name="check_{{ level|cut:" " }}_{{ check }}_{{ check.id }}" {% if check.checked %} checked="checked" {% endif %} onclick="check_levels()"/> {{ check }} <br/>
+                            <input type="checkbox" level="{{ level }}" check_required="{{ check.required }}" name="check_{{ level|cut:" " }}_{{ check }}_{{ check.id }}" {% if check.checked %} checked="checked" {% endif %} onclick="check_levels()"/>
+                            {{ check }}
+                            {% if check.required %}
+                              (R)
+                            {% endif %}
+                            <br/>
                            {% endfor %}
                            <span id="level_{{ level|cut:" " }}" class="level" name="level_{{ level|cut:" " }}"> {{ level }} </span> <br/>
                         {% endfor %}
