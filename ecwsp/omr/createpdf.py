@@ -557,7 +557,7 @@ def barcodeBoxgroup():
     """
     db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
     db_cursor = db.cursor()
-    db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
+    #db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
     db_cursor.execute("SHOW TABLE STATUS LIKE 'pages'")
     row = db_cursor.fetchone()
     auto_increment = row[10]
