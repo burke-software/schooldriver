@@ -357,12 +357,10 @@ def teacher_attendance(request, course=None, type="homeroom"):
     
     # add notes to each form
     i = 0
-    number = []
     form_students = students.exclude(student_attn__date=date.today())
     for form in formset.forms:
         form.enroll_note = enroll_notes[i]
         form.student_display = form_students[i]
-        number.append(i)
         i += 1
     
     # add form to each student, so we can use for student in students in the template
@@ -373,7 +371,7 @@ def teacher_attendance(request, course=None, type="homeroom"):
             student.form = forms[i]
             i += 1
     
-    return render_to_response('sis/teacher_attendance.html', {'request': request, 'readonly': readonly, 'msg': msg, 'formset': formset, 'students': students, 'number': number}, RequestContext(request, {}))
+    return render_to_response('sis/teacher_attendance.html', {'request': request, 'readonly': readonly, 'msg': msg, 'formset': formset, 'students': students,}, RequestContext(request, {}))
 
 
 @user_passes_test(lambda u: u.has_perm('sis.change_studentattendance')) 

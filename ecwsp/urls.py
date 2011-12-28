@@ -49,6 +49,9 @@ if 'ecwsp.inventory' in settings.INSTALLED_APPS:
 if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^engrade_sync/', include('ecwsp.engrade_sync.urls')), )
 
+if 'sentry' in settings.INSTALLED_APPS:    
+    urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)
+
 if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^static/(.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
