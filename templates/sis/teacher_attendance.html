@@ -28,9 +28,9 @@
         })
         
         function set_to_present() {
-	    {% for i in number %}
-		$('#id_form-{{ i }}-status option:nth-child(2)').attr("selected", "selected");
-	    {% endfor %}
+	    // Select by ID or word "Present". word takes preference
+	    $('.status option[value="2"]').attr("selected", "selected");
+	    $('.status option:contains("Present")').attr("selected", "selected");
         }
     </script>
 {% endblock %}

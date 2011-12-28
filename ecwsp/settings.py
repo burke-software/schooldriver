@@ -86,11 +86,7 @@ ASP = True
 PREFERED_FORMAT = 'o'
 templateHead = os.path.dirname(os.path.abspath(''))
 TEMPLATE_DIRS = os.path.join('/opt/sword/templates/')
-# Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
-# although not all choices may be available on all operating systems.
-# If running in a Windows environment this must be set to the same as your
-# system time zone.
+
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
@@ -98,10 +94,6 @@ DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y')
 #USE_L10N = True
-########################################################################
-# These settings should not normally be edited. Editing them is not
-# tested.
-########################################################################
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -177,22 +169,25 @@ INSTALLED_APPS = (
     'massadmin',
     'admin_export',
     'custom_field',
-#   'ecwsp.inventory',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = ()
+if 'sentry' in INSTALLED_APPS:
+    MIDDLEWARE_CLASSES += (
+        'raven.contrib.django.middleware.SentryResponseErrorIdMiddleware',
+        )
+MIDDLEWARE_CLASSES += (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'pagination.middleware.PaginationMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
-   
-)
+    )
 if CAS:
     MIDDLEWARE_CLASSES += (
         'django_cas.middleware.CASMiddleware',
         'django.middleware.doc.XViewMiddleware',
-    )
+        )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
@@ -229,7 +224,7 @@ if 'ecwsp.omr' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['benchmark'] = ('ecwsp.omr.lookups', 'BenchmarkLookup')
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
+TEMPLATE_DEBUG = True
 
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
@@ -267,6 +262,39 @@ CKEDITOR_CONFIGS = {
 #        'LOCATION': '127.0.0.1:11211',
 #    }
 #}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'root': {
+        'level': 'WARNING',
+        'handlers': ['sentry'],
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+    },
+    'handlers': {
+        'sentry': {
+            'level': 'DEBUG',
+            'class': 'raven.contrib.django.handlers.SentryHandler',
+            'formatter': 'verbose'
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        }
+    },
+    'loggers': {
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+    },
+}
 
 # http://ww7.engrade.com/api/key.php
 ENGRADE_APIKEY = ''
