@@ -17,7 +17,8 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
-import os,sys
+import os,sys, logging
+
 
 LDAP = False
 if LDAP:
@@ -172,10 +173,6 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = ()
-if 'sentry' in INSTALLED_APPS:
-    MIDDLEWARE_CLASSES += (
-        'raven.contrib.django.middleware.SentryResponseErrorIdMiddleware',
-        )
 MIDDLEWARE_CLASSES += (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -311,6 +308,8 @@ ADMISSIONS_DEFAULT_COUNTRY = "United States"
 OMR_MASTER_SERVER='localhost'
 # If this instance the master server?
 OMR_IS_MASTER_SERVER=True
+
+SENTRY_MAIL_LEVEL = logging.WARNING
 
 # The "new" url path for quexf.
 QUEXF_URL = "http://quexf.cristoreyny.org/admin/new.php"
