@@ -298,6 +298,7 @@ def student_timesheet(request):
         supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
     except:
         supervisorName = "No Supervisor"
+    performance_choices = TimeSheetPerformanceChoice.objects.all()
     if request.method == 'POST':
         form = TimeSheetForm(request.POST)
         # check to make sure hidden field POST data isn't tampered with
@@ -328,7 +329,7 @@ def student_timesheet(request):
                 pay.save()
             if pay.value != "True" and pay.value != "true": form.fields['for_pay'].widget = forms.HiddenInput()
             return render_to_response('work_study/student_timesheet.html', {'student': True, 'form': form, 
-                'studentName': thisStudent, 'supervisorName': supervisorName,}, RequestContext(request, {}))
+                'studentName': thisStudent, 'supervisorName': supervisorName,'performance_choices':performance_choices,}, RequestContext(request, {}))
     else:
         initial_primary = None
         if hasattr(thisStudent,"primary_contact"):
@@ -344,8 +345,13 @@ def student_timesheet(request):
             pay.save()
         if pay.value != "True" and pay.value != "true": form.fields['for_pay'].widget = forms.HiddenInput()
         
-        return render_to_response('work_study/student_timesheet.html', {'student': True, 'form': form, 'studentName': thisStudent, \
-            'supervisorName': supervisorName,}, RequestContext(request, {}))
+        return render_to_response('work_study/student_timesheet.html', {
+            'student': True,
+            'form': form,
+            'studentName': thisStudent,
+            'supervisorName': supervisorName,
+            'performance_choices': performance_choices,
+            },RequestContext(request, {}))
 
 def timesheet_delete(request):
     # first check if key is valid, this replaces the need for login.
