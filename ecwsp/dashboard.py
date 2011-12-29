@@ -38,6 +38,7 @@ class CustomIndexDashboard(Dashboard):
                         'ecwsp.work_study.models.Company',
                         'ecwsp.work_study.models.WorkTeam',
                         'ecwsp.work_study.models.TimeSheet',
+                        'ecwsp.work_study.models.TimeSheetPerformanceChoice',
                         'ecwsp.work_study.models.Contact',
                         'ecwsp.work_study.models.CompanyContract',
                         'ecwsp.work_study.models.CompanyHistory',
