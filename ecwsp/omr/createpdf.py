@@ -336,7 +336,7 @@ def createTest(c):
                     if current_choice_count != choice_number:
                         c.setDash([1,1,1,1],0)
                         c.setLineWidth(.5)
-                        c.line(choice_indent+13,next_line+6.5,choice_indent+extra_indent,next_line+6.5)
+                        c.line(choice_indent+box_size,next_line+(box_size/2),choice_indent+extra_indent,next_line+(box_size/2))
                     c.drawString(choice_indent,next_line+line_space,str(choice))
                     c.setDash()
                     c.setLineWidth(.5)
