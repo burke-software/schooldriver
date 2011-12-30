@@ -126,7 +126,7 @@ class TimeSheetForm(forms.ModelForm):
     time_lunch = forms.TimeField()
     time_lunch_return = forms.TimeField()
     time_out = forms.TimeField()
-    performance = forms.ModelChoiceField(queryset=TimeSheetPerformanceChoice.objects.all(), empty_label=None, widget=forms.RadioSelect(renderer=TdRadioRenderer))
+    performance = forms.ModelChoiceField(queryset=TimeSheetPerformanceChoice.objects.all(), required=False, empty_label=None, widget=forms.RadioSelect(renderer=TdRadioRenderer))
     edit = forms.BooleanField(required=False)
 
     def set_supers(self, qs):
