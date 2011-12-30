@@ -52,9 +52,11 @@ class GradeFilterForm(TimeBasedForm):
     currently_in_asp = forms.BooleanField(required=False)
     in_individual_education_program = forms.BooleanField(required=False)
     #disc
-    filter_disc_action = forms.ModelChoiceField(required=False, queryset=DisciplineAction.objects.all())
-    filter_disc = forms.ChoiceField(choices=filter_choices, required=False)
-    filter_disc_times = forms.CharField(max_length=2, required=False, widget=forms.TextInput(attrs={'style':'width:20px;'}))
+    if 'ecwsp.discipline' in settings.INSTALLED_APPS:
+        from ecwsp.discipline.models import DisciplineAction
+        filter_disc_action = forms.ModelChoiceField(required=False, queryset=DisciplineAction.objects.all())
+        filter_disc = forms.ChoiceField(choices=filter_choices, required=False)
+        filter_disc_times = forms.CharField(max_length=2, required=False, widget=forms.TextInput(attrs={'style':'width:20px;'}))
     #attn
     filter_attn = forms.ChoiceField(choices=filter_choices, required=False)
     filter_attn_times = forms.CharField(max_length=2, required=False, widget=forms.TextInput(attrs={'style':'width:20px;'}))

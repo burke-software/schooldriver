@@ -88,9 +88,9 @@ class CustomIndexDashboard(Dashboard):
             title = 'Discipline',
             column=1,
             models=(
-                'ecwsp.sis.models.StudentDiscipline',
-                'ecwsp.sis.models.DisciplineAction',
-                'ecwsp.sis.models.PresetComment',
+                'ecwsp.discipline.models.StudentDiscipline',
+                'ecwsp.discipline.models.DisciplineAction',
+                'ecwsp.discipline.models.PresetComment',
             ),
         ))
     

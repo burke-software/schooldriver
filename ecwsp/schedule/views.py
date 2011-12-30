@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test, per
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
@@ -502,8 +503,9 @@ def grade_analytics(request):
                 date_end = date(2980, 1, 1)
             
             # Pre load Discipline data
-            if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
-                student_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end), studentdiscipline__action=data['filter_disc_action']).annotate(action_count=Count('studentdiscipline__action'))
+            if 'ecwsp.discipline' in settings.INSTALLED_APPS:
+                if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
+                    student_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end), studentdiscipline__action=data['filter_disc_action']).annotate(action_count=Count('studentdiscipline__action'))
             # Pre load Attendance data
             if data['filter_attn'] and data['filter_attn_times']:
                 student_attendances = students.filter(student_attn__date__range=(date_begin, date_end), student_attn__status__absent=True).annotate(attn_count=Count('student_attn'))
@@ -594,19 +596,20 @@ def grade_analytics(request):
                         add_to_list = False
                     
                     # Check discipline
-                    if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
-                        try:
-                            student.action_count = student_disciplines.get(id=student.id).action_count
-                        except:
-                            student.action_count = 0
-                        if ((data['filter_disc'] == "lt" and not student.action_count < int(data['filter_disc_times'])) or 
-                            (data['filter_disc'] == "lte" and not student.action_count <= int(data['filter_disc_times'])) or 
-                            (data['filter_disc'] == "gt" and not student.action_count > int(data['filter_disc_times'])) or 
-                            (data['filter_disc'] == "gte" and not student.action_count >= int(data['filter_disc_times']))
-                        ):
-                            add_to_list = False
-                        else:
-                            student.courses.append('%s: %s' % (data['filter_disc_action'], student.action_count))
+                    if 'ecwsp.discipline' in settings.INSTALLED_APPS:
+                        if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
+                            try:
+                                student.action_count = student_disciplines.get(id=student.id).action_count
+                            except:
+                                student.action_count = 0
+                            if ((data['filter_disc'] == "lt" and not student.action_count < int(data['filter_disc_times'])) or 
+                                (data['filter_disc'] == "lte" and not student.action_count <= int(data['filter_disc_times'])) or 
+                                (data['filter_disc'] == "gt" and not student.action_count > int(data['filter_disc_times'])) or 
+                                (data['filter_disc'] == "gte" and not student.action_count >= int(data['filter_disc_times']))
+                            ):
+                                add_to_list = False
+                            else:
+                                student.courses.append('%s: %s' % (data['filter_disc_action'], student.action_count))
                     
                     # Check Attendance
                     if data['filter_attn'] and data['filter_attn_times']:

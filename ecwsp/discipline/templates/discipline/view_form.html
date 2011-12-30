@@ -1,6 +1,24 @@
 {% extends "admin/base_site.html" %}
 {% load i18n %}
 
+{% block breadcrumbs %}
+<div id="breadcrumbs"> 
+<a href="/admin"> 
+Home
+</a> 
+&rsaquo; 
+<a href="/admin/discipline/"> 
+ Discipline
+</a> 
+&rsaquo;
+<a href="/admin/discipline/studentdiscipline/"> 
+ Student disciplines
+</a> 
+&rsaquo; 
+View
+</div> 
+{% endblock %}
+
 {% block extrahead %}
     <script type="text/javascript" src="/static/js/jquery.autocomplete.js"></script> 
     <script type="text/javascript" src="/static/js/ajax_select.js"></script>
@@ -14,10 +32,7 @@
 {% endblock %}
 
 {% block content %}
-    {% if form.back %}
-        <a href="{{ form.back }}">Go back</a>
-    {% endif %}
-	<h2> View Student Discipline Records </h2>
+    <h2> View Student Discipline Records </h2>
     {{ form }}
 {% endblock %}
 

@@ -144,13 +144,13 @@ ROOT_URLCONF = 'ecwsp.urls'
 INSTALLED_APPS = (
     'grappelli.dashboard',
     'grappelli',
-    'django.contrib.admin',
-    'ajax_select',
+    'django.contrib.admin',    
     'django.contrib.staticfiles',
     'django.contrib.auth',
     'django.contrib.admindocs',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.webdesign',
 
     'ecwsp.volunteer_track',
     'ecwsp.sis',
@@ -161,9 +161,11 @@ INSTALLED_APPS = (
     'ecwsp.engrade_sync',
     'ecwsp.alumni',
     'ecwsp.omr',
+    'ecwsp.discipline',
+    
+    'ajax_select',
     'reversion',
     'ldap_groups',
-    'django.contrib.webdesign',
     'django_extensions',
     'django_filters',
     'pagination',
@@ -207,8 +209,8 @@ AJAX_LOOKUP_CHANNELS = {
     'faculty' : ('ecwsp.sis.lookups', 'FacultyLookup'),
     'faculty_user' : ('ecwsp.sis.lookups', 'FacultyUserLookup'),
     'emergency_contact' : ('ecwsp.sis.lookups', 'EmergencyContactLookup'),
-    'discstudent' : ('ecwsp.sis.lookups', 'StudentWithDisciplineLookup'),
-    'discipline_view_student': ('ecwsp.sis.lookups', 'DisciplineViewStudentLookup'),
+    'discstudent' : ('ecwsp.discipline.lookups', 'StudentWithDisciplineLookup'),
+    'discipline_view_student': ('ecwsp.discipline.lookups', 'DisciplineViewStudentLookup'),
     'attendance_view_student': ('ecwsp.sis.lookups', 'AttendanceStudentLookup'),
     'attendance_quick_view_student': ('ecwsp.sis.lookups', 'AttendanceAddStudentLookup'),
     'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
@@ -260,38 +262,39 @@ CKEDITOR_CONFIGS = {
 #    }
 #}
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'root': {
-        'level': 'WARNING',
-        'handlers': ['sentry'],
-    },
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+if not DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': True,
+        'root': {
+            'level': 'WARNING',
+            'handlers': ['sentry'],
         },
-    },
-    'handlers': {
-        'sentry': {
-            'level': 'DEBUG',
-            'class': 'raven.contrib.django.handlers.SentryHandler',
-            'formatter': 'verbose'
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
         },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
-        }
-    },
-    'loggers': {
-        'sentry.errors': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': False,
+        'handlers': {
+            'sentry': {
+                'level': 'DEBUG',
+                'class': 'raven.contrib.django.handlers.SentryHandler',
+                'formatter': 'verbose'
+            },
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose'
+            }
         },
-    },
-}
+        'loggers': {
+            'sentry.errors': {
+                'level': 'DEBUG',
+                'handlers': ['console'],
+                'propagate': False,
+            },
+        },
+    }
 
 # http://ww7.engrade.com/api/key.php
 ENGRADE_APIKEY = ''
