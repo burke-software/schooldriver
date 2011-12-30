@@ -255,9 +255,9 @@ def drawLines(c):
 def barcode(c):
     global code
     code = str(testid).zfill(4) + (str(page).zfill(1))
-    barcode = Codabar(code, barWidth = inch*0.028)
-    x = width - (3.1*inch)  #4.8, 3.1 for 4 & 1
-    y = height - (.6*inch)
+    barcode = Codabar(code, barWidth = inch*0.05)
+    x = width - (4.6*inch)  #4.8, 3.1 for 4 & 1
+    y = height - (.7*inch)
     barcode.drawOn(c,x,y)
     
 def student_barcode(c):
@@ -332,6 +332,7 @@ def createTest(c):
                 choice_indent = indent + extra_indent
                 current_choice_count = 1
                 for choice, value in questions[question]:
+                    box_size = 9 #13 works, 9 is being tested
                     if current_choice_count != choice_number:
                         c.setDash([1,1,1,1],0)
                         c.setLineWidth(.5)
@@ -339,8 +340,8 @@ def createTest(c):
                     c.drawString(choice_indent,next_line+line_space,str(choice))
                     c.setDash()
                     c.setLineWidth(.5)
-                    c.rect(choice_indent,next_line,13,13,fill=0) #test 9 and 9
-                    choiceBanding(choice_indent+.5,next_line+13,choice_indent+13,next_line+.5,choice,value)
+                    c.rect(choice_indent,next_line,box_size,box_size,fill=0)
+                    choiceBanding(choice_indent+.5,next_line+box_size,choice_indent+box_size,next_line+.5,choice,value)
                     choice_indent+=extra_indent
                     current_choice_count+=1
                 next_line = next_line - line_space
