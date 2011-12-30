@@ -101,8 +101,8 @@ def generate_xml(test_id):
                     idlist = []
                     for answer in choices:
                         idlist.append(answer.id)
-                    answers.append((idlist[0],"True"))
-                    answers.append((idlist[1],"False"))
+                    answers.append((idlist[0],"T"))
+                    answers.append((idlist[1],"F"))
                     
                 for answer_id, choice in answers:
                     choicetag = doc.createElement("choice")
@@ -318,11 +318,11 @@ def createTest(c):
                 if choice_number > 0:
                     next_line=next_line - line_space
                 if choice_number ==2:
-                    extra_indent=45
+                    extra_indent=30 #45 works
                 elif choice_number < 5:
-                    extra_indent = 30
+                    extra_indent = 20 #30  works
                 else:
-                    extra_indent = 25
+                    extra_indent = 20 #25 works
                     skip_row = next_line;
                     
                 c.drawString(indent,next_line,question)
@@ -336,7 +336,7 @@ def createTest(c):
                     if current_choice_count != choice_number:
                         c.setDash([1,1,1,1],0)
                         c.setLineWidth(.5)
-                        c.line(choice_indent+13,next_line+6.5,choice_indent+extra_indent,next_line+6.5)
+                        c.line(choice_indent+box_size,next_line+(box_size/2),choice_indent+extra_indent,next_line+(box_size/2))
                     c.drawString(choice_indent,next_line+line_space,str(choice))
                     c.setDash()
                     c.setLineWidth(.5)
