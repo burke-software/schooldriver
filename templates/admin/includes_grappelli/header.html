@@ -48,21 +48,23 @@
                 </li>
             {% endif %}
             <!-- Discipline  -->
-            {% if perms.sis.change_studentdiscipline %}
+            {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
+            {% if perms.discipline.change_studentdiscipline %}
                 <li class="user-options-container collapse closed">
                     <a href="javascript://" class="user-options-handler collapse-handler"> {% trans 'Discipline' %} </a>
                     <ul class="user-options">
-                        {% if perms.sis.change_studentdiscipline %}
-                            <li><a href="{% url ecwsp.sis.views.view_discipline %}">{% trans 'View' %}</a>
+                        {% if perms.discipline.change_studentdiscipline %}
+                            <li><a href="{% url ecwsp.discipline.views.view_discipline %}">{% trans 'View' %}</a>
                         {% endif %}
-                        {% if perms.sis.change_studentdiscipline %}
-                            <li><a href="{% url admin:sis_studentdiscipline_changelist %}">{% trans 'Edit' %}</a></li>
+                        {% if perms.discipline.change_studentdiscipline %}
+                            <li><a href="{% url admin:discipline_studentdiscipline_changelist %}">{% trans 'Edit' %}</a></li>
                         {% endif %}
                         {% if perms.sis.reports %}
-                            <li><a href="{% url ecwsp.sis.views.discipline_report_view %}">{% trans 'Reports' %}</a></li>
+                            <li><a href="{% url ecwsp.discipline.views.discipline_report_view %}">{% trans 'Reports' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>
+            {% endif %}
             {% endif %}
             <!-- Grades  -->
             {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %} {% if perms.schedule.change_course or perms.schedule.change_own_grade or perms.sis.reports %}

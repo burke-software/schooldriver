@@ -94,10 +94,6 @@ class StudentAwardInline(admin.TabularInline):
     model = AwardStudent
     extra = 0
 
-class DisciplineActionInstanceInline(admin.TabularInline):
-    model = DisciplineActionInstance
-    extra = 1
-
 class ASPHistoryInline(admin.TabularInline):
     model = ASPHistory
     extra = 0
@@ -192,19 +188,6 @@ class MdlUserAdmin(admin.ModelAdmin):
     actions = [promote_to_sis]
 admin.site.register(MdlUser, MdlUserAdmin)
 
-
-class StudentDisciplineAdmin(admin.ModelAdmin):
-    form = make_ajax_form(StudentDiscipline, dict(students='discstudent'))
-
-    list_per_page = 50
-    fields = ['date', 'students', 'teacher', 'infraction', 'comments']
-    list_display = ('show_students', 'date', 'comment_Brief', 'infraction')
-    list_filter = ['date', 'infraction', 'action',]
-    search_fields = ['comments', 'students__fname', 'students__lname']
-    inlines = [DisciplineActionInstanceInline]
-
-admin.site.register(StudentDiscipline, StudentDisciplineAdmin)
-admin.site.register(DisciplineAction)
 admin.site.register(LanguageChoice)
 
 class CohortAdmin(admin.ModelAdmin):

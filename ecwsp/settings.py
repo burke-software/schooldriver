@@ -144,13 +144,13 @@ ROOT_URLCONF = 'ecwsp.urls'
 INSTALLED_APPS = (
     'grappelli.dashboard',
     'grappelli',
-    'django.contrib.admin',
-    'ajax_select',
+    'django.contrib.admin',    
     'django.contrib.staticfiles',
     'django.contrib.auth',
     'django.contrib.admindocs',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.webdesign',
 
     'ecwsp.volunteer_track',
     'ecwsp.sis',
@@ -161,9 +161,11 @@ INSTALLED_APPS = (
     'ecwsp.engrade_sync',
     'ecwsp.alumni',
     'ecwsp.omr',
+    'ecwsp.discipline',
+    
+    'ajax_select',
     'reversion',
     'ldap_groups',
-    'django.contrib.webdesign',
     'django_extensions',
     'django_filters',
     'pagination',
@@ -207,8 +209,8 @@ AJAX_LOOKUP_CHANNELS = {
     'faculty' : ('ecwsp.sis.lookups', 'FacultyLookup'),
     'faculty_user' : ('ecwsp.sis.lookups', 'FacultyUserLookup'),
     'emergency_contact' : ('ecwsp.sis.lookups', 'EmergencyContactLookup'),
-    'discstudent' : ('ecwsp.sis.lookups', 'StudentWithDisciplineLookup'),
-    'discipline_view_student': ('ecwsp.sis.lookups', 'DisciplineViewStudentLookup'),
+    'discstudent' : ('ecwsp.discipline.lookups', 'StudentWithDisciplineLookup'),
+    'discipline_view_student': ('ecwsp.discipline.lookups', 'DisciplineViewStudentLookup'),
     'attendance_view_student': ('ecwsp.sis.lookups', 'AttendanceStudentLookup'),
     'attendance_quick_view_student': ('ecwsp.sis.lookups', 'AttendanceAddStudentLookup'),
     'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
@@ -259,7 +261,8 @@ CKEDITOR_CONFIGS = {
 #        'LOCATION': '127.0.0.1:11211',
 #    }
 #}
-if DEBUG == False:
+
+if not DEBUG:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,

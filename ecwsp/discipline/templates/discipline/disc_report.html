@@ -1,0 +1,111 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+ 
+    {% load adminmedia %}
+    
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+	<script type="text/javascript" src="/static/grappelli/js/core.js"></script>
+    <script type="text/javascript" src="/static/grappelli/js/calendar.js"></script>    
+    <script type="text/javascript" src="/static/grappelli/js/admin/DateTimeShortcuts.js"></script>
+    <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% admin_media_prefix %}{% endfilter %}";</script>
+    
+    <script type="text/javascript" src="/static/js/time_actions.js"></script>
+
+    <script type="text/javascript">
+        function options_toggle(id) {
+            if ($('#' + id.split("_")[1] + '_' + id.split("_")[2]).is(':visible')) {
+                $('#' + id).html('Show ' + id.split("_").slice(-2) );
+            } else {
+                $('#' + id).html('Hide ' + id.split("_").slice(-2));
+            }
+            $('#' + id.split("_")[1] + '_' + id.split("_")[2]).toggle('fast');
+        }
+        
+        
+        $(document).ready(function() {
+            grappelli.initDateAndTimePicker();
+        });
+    </script>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div id="breadcrumbs"> 
+<a href="/admin"> 
+Home
+</a> 
+&rsaquo; 
+<a href="/admin/sis/studentdiscipline/"> 
+ Student disciplines
+</a> 
+&rsaquo; 
+Student disciplines statistics
+</div> 
+{% endblock %}
+
+{% block content %}    
+    <h2> Discipline Statistics Report </h2>
+    <form action="" method="post" style="width:850px;">
+        <fieldset>
+            {{ form.non_field_errors  }}
+            <table>
+                <tr><td>
+                    <a href="#" id="toggle_time_options" onclick='options_toggle(id)'>Show time options</a>
+                    <div id="time_options" style="display: none">
+                        {{ form.this_year.label }} {{ form.this_year }} {{ form.this_year.errors }}
+                        <br/> {{ form.all_years.label }} {{ form.all_years }} {{ form.all_years.errors }}
+                        <br/> {{ form.date_begin.label }} {{ form.date_begin }} {{ form.date_begin.errors }}
+                        <br/> {{ form.date_end.label }} {{ form.date_end }} {{ form.date_end.errors }}
+                        <br/> {{ form.marking_period.label }} {{ form.marking_period }} {{ form.marking_period.errors }}
+                    </div>
+                </td></tr><tr><td>
+                    {{ form.include_deleted.label }} {{ form.include_deleted }} {{ form.include_deleted.errors }}
+                </td></tr><tr><td>
+                    {{ form.order_by.label }} {{ form.order_by }} {{ form.order_by.errors }}
+                </td></tr><tr><td>
+                    <span style="font-style: italic;"> Filter reports by students who have at least these many Actions or Infractions:</span>
+                    <br/>
+                    {{ form.action.label }} {{ form.action }} {{ form.action.errors }}
+                    Minimum: {{ form.minimum_action }} {{ form.minimum_action.errors }}
+                    <br/>
+                    {{ form.infraction.label }} {{ form.infraction }} {{ form.infraction.errors }}
+                    Minimum: {{ form.minimum_infraction }} {{ form.minimum_infraction.errors }}
+                </td></tr>
+            </table>
+            <input type="submit" name="student" value="By Student Report" /> 
+            <input type="submit" name="aggr" value="Aggregate Report" />
+        </fieldset>
+        <br/>
+        <fieldset>
+            <legend>Honor</legend>
+            &nbsp;
+            {{ honor_form.non_field_errors  }}
+            {{ honor_form.start_date.label }} {{ honor_form.start_date }} {{ honor_form.start_date.errors }} &nbsp;&nbsp;&nbsp;&nbsp&nbsp
+            {{ honor_form.end_date.label }} {{ honor_form.end_date }} {{ honor_form.end_date.errors }}
+            <table>
+                <tr>
+                    <th colspan="2">Honor levels - Number of Discipline issues for level </th>
+                </tr>
+                <tr>
+                    <td>{{ honor_form.level_one.label }}</td>
+                    <td>{{ honor_form.level_one }} {{ honor_form.level_one.errors }}</td>
+                </tr>
+                <tr>
+                    <td>{{ honor_form.level_two.label }}</td>
+                    <td>{{ honor_form.level_two }} {{ honor_form.level_two.errors }}</td>
+                </tr>
+                <tr>
+                    <td>{{ honor_form.level_three.label }}</td>
+                    <td>{{ honor_form.level_three }} {{ honor_form.level_three.errors }}</td>
+                </tr>
+                <tr>
+                    <td>{{ honor_form.level_four.label }}</td>
+                    <td>{{ honor_form.level_four }} {{ honor_form.level_four.errors }}</td>
+                </tr>
+            </table>
+            <input type="submit" name="honor"/>
+        </fieldset>
+	
+    </form>
+{% endblock %}

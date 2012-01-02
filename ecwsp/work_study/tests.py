@@ -86,7 +86,7 @@ class TimeSheetTest(TestCase):
         # supervisor submits new timesheet
         response = self.client.post('/work_study/supervisor/create_timesheet/' + str(self.student.id) + "/", \
             {'student': 1, 'company':1, 'date': '2010-06-15', 'time_in': '9:30 AM', 'time_lunch': "12:00 PM", \
-            'time_lunch_return': '1:00 PM', 'time_out': '5:00 PM', 'performance': 3, 'student_accomplishment': 'stuacomptext', \
+            'time_lunch_return': '1:00 PM', 'time_out': '5:00 PM', 'id_performance_2': 3, 'student_accomplishment': 'stuacomptext', \
             'supervisor_comment': 'supcmttest'})
         self.assertContains(response, "Timesheet submitted for " + str(self.student.fname), \
             msg_prefix="Not approved by student when supervisor creating")
@@ -145,8 +145,9 @@ class TimeSheetTest(TestCase):
         # approve timesheet
         response = self.client.post("/work_study/approve/?key=" + str(TimeSheet.objects.get(student=self.student).supervisor_key), \
             {'student': 1, 'company':1, 'date': '2010-06-15', 'time_in': '9:30 AM', 'time_lunch': "12:00 PM", \
-            'time_lunch_return': '1:00 PM', 'time_out': '5:00 PM', 'performance': 3, 'student_accomplishment': 'stuacomptext', \
+            'time_lunch_return': '1:00 PM', 'time_out': '5:00 PM', 'id_performance_2': 3, 'student_accomplishment': 'stuacomptext', \
             'supervisor_comment': 'supcmttest'})
+        
         self.assertContains(response, "Time Card Approved!", msg_prefix="Not approved.")
         self.assertEquals(TimeSheet.objects.get(student=self.student).supervisor_comment, 'supcmttest')
         self.assertEquals(TimeSheet.objects.get(student=self.student).student_accomplishment, 'stuacomptext')

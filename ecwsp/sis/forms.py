@@ -1,9 +1,9 @@
-#       Copyright 2010 Cristo Rey New York High School
+#       Copyright 2010-2011 Burke Software and Consulting LLC
 #       Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
+#       the Free Software Foundation; either version 3 of the License, or
 #       (at your option) any later version.
 #       
 #       This program is distributed in the hope that it will be useful,
@@ -58,10 +58,6 @@ class UserPreferenceForm(forms.ModelForm):
         widgets = {
             'additional_report_fields': forms.CheckboxSelectMultiple,
         }
-    
-
-class DisciplineViewForm(forms.Form):
-    student = AutoCompleteSelectField('discipline_view_student')
 
 
 class DeletedStudentLookupForm(forms.Form):
@@ -81,17 +77,6 @@ class UploadNaviance(forms.Form):
     
 class UploadStandardTestResultForm(UploadFileForm):
     test = forms.ModelChoiceField(queryset=StandardTest.objects.all())
-    
-        
-class DisciplineForm(forms.ModelForm):
-    class Meta:
-        model = StudentDiscipline
-        widgets = {
-            'comments': forms.TextInput(),
-        }
-    def add_fields(self, form, index):
-        super(DisciplineForm, self).add_fields(form, index)
-        form.fields["students"] = AutoCompleteSelectMultipleField('dstudent')
 
 
 class StudentAttendanceForm(forms.ModelForm):
@@ -206,15 +191,6 @@ class StudentSelectForm(TimeBasedForm):
             students = students.filter(cohorts__in=options['filter_cohort'])
         
         return students
-
-
-class DisciplineStudentStatistics(TimeBasedForm):
-    """Form to gather information to be used in a report of discipline issues"""
-    order_by = forms.ChoiceField(required=False, choices=(('Student','Student Name'),('Year','Year'),))
-    action = forms.ModelChoiceField(required=False, queryset=DisciplineAction.objects.all())
-    minimum_action = forms.IntegerField(initial=0, help_text="Minimal number of above action needed to show student in Student Report")
-    infraction = forms.ModelChoiceField(required=False, queryset=PresetComment.objects.all())
-    minimum_infraction = forms.IntegerField(initial=0, help_text="Minimal number of above infraction needed to show student in Student Report")
 
 
 class AttendanceReportForm(TimeBasedForm):
