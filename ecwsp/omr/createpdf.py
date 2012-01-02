@@ -97,11 +97,11 @@ def generate_xml(test_id):
                 if q.type == "Multiple Choice":
                     ct=0
                     alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-                    if len[choices] != old_num_choices and priorType != q.type:
-                        for answer in choices:
-                            answers.append((answer.id,str(alphabet[ct])))
-                            ct=ct+1
-                        old_num_choices = ct+1
+                    #if len[choices] != old_num_choices and priorType != q.type:
+                    for answer in choices:
+                        answers.append((answer.id,str(alphabet[ct])))
+                        ct=ct+1
+                    old_num_choices = ct+1
                 elif q.type == "True/False":
                     idlist = []
                     for answer in choices:
