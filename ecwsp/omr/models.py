@@ -252,7 +252,9 @@ class Question(QuestionAbstract):
                     point_value = answer.point_value,
                 )
                 ab.save()
+                self.save()
                 qb.answerbank_set.add(ab)
+                self.save()
     
     def check_type(self):
         """ Check question type, force answers to make sense. True/False should have
@@ -284,8 +286,9 @@ class Question(QuestionAbstract):
                 if self.is_true:
                     answer.point_value = self.point_value
                 else:
-                    answer.point_value = self.point_value
+                    answer.point_value = 0
                 answer.save()
+                self.save()
                 answer = Answer(
                     answer="False",
                     question=self
@@ -295,7 +298,6 @@ class Question(QuestionAbstract):
                 else:
                     answer.point_value = self.point_value
                 answer.save()
-    
     def save(self, *args, **kwargs):
         if not self.order:
             self.order = self.test.question_set.filter(order__isnull=False).count() + 1 

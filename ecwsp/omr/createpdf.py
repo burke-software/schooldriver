@@ -314,7 +314,7 @@ def createTest(c):
                         next_line = first_line - line_space*3
                     indent = ((width-left_margin-right_margin)/3)*column
                 choice_number = len(questions[question])
-                skip_row = False;
+                #skip_row = False;
                 if choice_number > 0:
                     next_line=next_line - line_space
                 if choice_number ==2:
@@ -323,7 +323,7 @@ def createTest(c):
                     extra_indent = 20 #30  works
                 else:
                     extra_indent = 20 #25 works
-                    skip_row = next_line;
+                    #skip_row = next_line;
                     
                 c.drawString(indent,next_line,question)
                 if choice_number !=0:
