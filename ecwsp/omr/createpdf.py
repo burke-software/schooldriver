@@ -101,7 +101,6 @@ def generate_xml(test_id):
                     idlist = []
                     for answer in choices:
                         idlist.append(answer.id)
-                    print idlist
                     answers.append((idlist[0],"T"))
                     answers.append((idlist[1],"F"))
                     
