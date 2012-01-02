@@ -77,7 +77,6 @@ def generate_xml(test_id):
             
         i = 1 # Question number for human use only
         priorType = None
-        old_num_choices = 0
         for q in questions:
             questiontag = doc.createElement("question")
             questiontag.setAttribute("varName",str(q.id))
@@ -87,9 +86,7 @@ def generate_xml(test_id):
             if q.type == "Essay":
                 essays.append([q,q.id,i])
                 teacher_section_required = True
-                if q.type != priorType:
-                    text = str(i) + ".  Essay Question"
-                old_num_choices = 0
+                text = str(i) + ".  Essay Question"
             else:
                 text = str(i) + ". "
                 answers = []
@@ -97,18 +94,16 @@ def generate_xml(test_id):
                 if q.type == "Multiple Choice":
                     ct=0
                     alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-                    #if len[choices] != old_num_choices and priorType != q.type:
                     for answer in choices:
                         answers.append((answer.id,str(alphabet[ct])))
                         ct=ct+1
-                    old_num_choices = ct+1
                 elif q.type == "True/False":
                     idlist = []
                     for answer in choices:
                         idlist.append(answer.id)
-                    if priorType != q.type:
-                        answers.append((idlist[0],"T"))
-                        answers.append((idlist[1],"F"))
+                    print idlist
+                    answers.append((idlist[0],"T"))
+                    answers.append((idlist[1],"F"))
                     
                 for answer_id, choice in answers:
                     choicetag = doc.createElement("choice")
@@ -119,7 +114,7 @@ def generate_xml(test_id):
                     choicevalue = doc.createTextNode(str(answer_id))
                     choicetag.appendChild(choicevaluetag)
                     choicevaluetag.appendChild(choicevalue)
-            priorType = q.type
+                
             question_numbertext = doc.createTextNode(text)
             question_number.appendChild(question_numbertext)
             i=i+1
