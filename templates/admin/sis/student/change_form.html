@@ -14,6 +14,25 @@
     {% endif %}
 {% endblock %}
 
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('div#studentcohort_set-group div.primary input').change(function() {
+                if ( $(this).prop("checked") ) {
+                    check_it = true;
+                } else {
+                    check_it = false;
+                }
+                $('div#studentcohort_set-group div.primary input').prop("checked", false);
+                if ( check_it ) {
+                    $(this).prop("checked", true);
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
 <!-- CONTENT -->
 {% block content %}
     <div class="container-flexible">

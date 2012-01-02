@@ -222,6 +222,6 @@ class ContractTest(TestCase):
         """
         response = self.client.post('/work_study/company_contract/%s/' % (self.company.id), \
             {u'number_students': [u'5'], u'title': [u'Software Engineer'], \
-            u'initial-date': [u'2011-12-04 23:12:30.124712'], u'company': [u'142'], \
+            u'initial-date': [u'2011-12-04 23:12:30.124712'], u'company': self.company.id, \
             u'company_name': [u'My Company'], u'date': [u'12/04/2011'], u'name': [u'David']}, follow=True)
         self.assertEquals(CompContract.objects.get(company=self.company).company_name, 'My Company')

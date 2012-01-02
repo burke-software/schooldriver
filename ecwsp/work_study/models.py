@@ -528,6 +528,22 @@ def set_stu_int_placement(sender, instance, action, reverse, model, pk_set, *arg
                 instance.companies.add(student.placement)
         instance.save()
 m2m_changed.connect(set_stu_int_placement, sender=StudentInteraction.student.through)
+
+def get_next_rank():
+    """ Return next ranking """
+    return TimeSheetPerformanceChoice.objects.order_by('-rank')[0].id + 1
+class TimeSheetPerformanceChoice(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    rank = models.IntegerField(unique=True, default=get_next_rank, help_text="Must be unique. Convention is that higher numbers are better.")
+    
+    class Meta:
+        ordering = ('rank',)
+    
+    def edit(self):
+        return "Edit"
+    
+    def __unicode__(self):
+        return self.name
     
 class TimeSheet(models.Model):
     student = models.ForeignKey(StudentWorker)
@@ -547,10 +563,11 @@ class TimeSheet(models.Model):
     student_net = models.DecimalField(blank=True, max_digits=6, decimal_places=2, null=True)
     approved = models.BooleanField(verbose_name="approve")
     student_accomplishment = models.TextField(blank=True)
-    performance_choices = (
-        ('1', 'Unacceptable'), ('2', 'Expectations Not Met'), ('3', 'Meets Expectations'), 
-        ('4', 'Exceeds Expectations'), ('5', 'Far Exceeds Expectations'))
-    performance =  models.CharField(max_length=1, choices=performance_choices, blank=True)
+    #performance_choices = (
+    #    ('1', 'Unacceptable'), ('2', 'Expectations Not Met'), ('3', 'Meets Expectations'), 
+    #    ('4', 'Exceeds Expectations'), ('5', 'Far Exceeds Expectations'))
+    #performance =  models.CharField(max_length=1, choices=performance_choices, blank=True)
+    performance = models.ForeignKey(TimeSheetPerformanceChoice, blank=True,null=True)
     supervisor_comment = models.TextField(blank=True)
     show_student_comments = models.BooleanField(default=True)
     supervisor_key = models.CharField(max_length=20, blank=True)

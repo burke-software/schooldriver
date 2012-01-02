@@ -32,6 +32,8 @@ if settings.GAPPS:
 else:
     urlpatterns += patterns('', (r'^accounts/login/$', 'django.contrib.auth.views.login'), )
 
+if 'ecwsp.discipline' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^discipline/', include('ecwsp.discipline.urls')), )
 if 'ecwsp.schedule' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^schedule/', include('ecwsp.schedule.urls')), )
 if 'ecwsp.work_study' in settings.INSTALLED_APPS:
@@ -49,6 +51,9 @@ if 'ecwsp.inventory' in settings.INSTALLED_APPS:
 if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^engrade_sync/', include('ecwsp.engrade_sync.urls')), )
 
+if 'sentry' in settings.INSTALLED_APPS:    
+    urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)
+
 if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^static/(.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
@@ -60,3 +65,18 @@ if settings.CAS:
         (r'^accounts/login/$', 'django_cas.views.login'),
         (r'^accounts/logout/$', 'django_cas.views.logout'),
     )
+
+def handler500(request):
+    """
+    500 error handler which includes ``request`` in the context.
+
+    Templates: `500.html`
+    Context: None
+    """
+    from django.template import Context, loader
+    from django.http import HttpResponseServerError
+
+    t = loader.get_template('500.html') # You need to create a 500.html template.
+    return HttpResponseServerError(t.render(Context({
+        'request': request,
+    })))

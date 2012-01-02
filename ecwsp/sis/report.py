@@ -8,6 +8,7 @@ from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
 
 from ecwsp.appy.pod.renderer import Renderer
+from django.contrib.auth.decorators import user_passes_test
 import tempfile
 import os
 import uno
@@ -408,7 +409,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                 test_result.categories = test_result.categories [:-3]
                 student.tests.append(test_result)
                 
-            for test in StandardTest.objects.filter(standardtestresult__student=student, show_on_reports=True).distinct():
+            for test in StandardTest.objects.filter(standardtestresult__student=student, show_on_reports=True, standardtestresult__show_on_reports=True).distinct():
                 test.total = test.get_cherry_pick_total(student)
                 student.highest_tests.append(test)
 

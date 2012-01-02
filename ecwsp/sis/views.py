@@ -357,12 +357,10 @@ def teacher_attendance(request, course=None, type="homeroom"):
     
     # add notes to each form
     i = 0
-    number = []
     form_students = students.exclude(student_attn__date=date.today())
     for form in formset.forms:
         form.enroll_note = enroll_notes[i]
         form.student_display = form_students[i]
-        number.append(i)
         i += 1
     
     # add form to each student, so we can use for student in students in the template
@@ -373,7 +371,7 @@ def teacher_attendance(request, course=None, type="homeroom"):
             student.form = forms[i]
             i += 1
     
-    return render_to_response('sis/teacher_attendance.html', {'request': request, 'readonly': readonly, 'msg': msg, 'formset': formset, 'students': students, 'number': number}, RequestContext(request, {}))
+    return render_to_response('sis/teacher_attendance.html', {'request': request, 'readonly': readonly, 'msg': msg, 'formset': formset, 'students': students,}, RequestContext(request, {}))
 
 
 @user_passes_test(lambda u: u.has_perm('sis.change_studentattendance')) 
@@ -426,189 +424,7 @@ def asp_submissions(request):
     return render_to_response('sis/asp_submissions.html', {'request': request, 'submissions': submissions, 'courses': courses})
 
 
-class BaseDisciplineFormSet(BaseModelFormSet):
-    def add_fields(self, form, index):
-        super(BaseDisciplineFormSet, self).add_fields(form, index)
-        form.fields["students"] = AutoCompleteSelectMultipleField('dstudent')
-        form.fields['comments'].widget = forms.TextInput(attrs={'size':'50'})
-        form.fields['date'].widget = adminwidgets.AdminDateWidget()
-                
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
-def enter_discipline(request):
-    DisciplineFormSet = modelformset_factory(StudentDiscipline, extra=5, formset=BaseDisciplineFormSet)
-    if request.method == 'POST':
-        formset = DisciplineFormSet(request.POST)
-        if formset.is_valid():
-            formset.save()
-            messages.success(request, 'Discipline records added')
-            if 'addmore' in request.POST:
-                formset = DisciplineFormSet(queryset=StudentDiscipline.objects.none())
-                return render_to_response('sis/enter_discipline.html', {'request': request, 'formset': formset, 'messages': messages.get_messages(request)})
-            else:
-                return HttpResponseRedirect(reverse('admin:sis_studentdiscipline_changelist'))
-        else:
-            return render_to_response('sis/enter_discipline.html', {'request': request, 'formset': formset})
-    else:
-        formset = DisciplineFormSet(queryset=StudentDiscipline.objects.none())
-    return render_to_response('sis/enter_discipline.html', {'request': request, 'formset': formset})
-
-
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/') 
-def view_discipline(request):
-    form = DisciplineViewForm()
-    form.back = "/admin/sis/studentdiscipline/"
-    return render_to_response('sis/view_form.html', {'request': request, 'form': form})
-
-
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/') 
-def discipline_report(request, student_id):
-    """Generate a complete report of a student's discipline history
-    """
-    template, created = Template.objects.get_or_create(name="Discipline Report")
-    
-    school_name, created = Configuration.objects.get_or_create(name="School Name")
-    school_name = school_name.value
-    
-    student = Student.objects.get(id=student_id)
-    disc = StudentDiscipline.objects.filter(students=student)
-    
-    data = get_default_data()
-    data['disciplines'] = disc
-    data['school_year'] = SchoolYear.objects.get(active_year=True)
-    data['student'] = student
-    data['student_year'] = student.year
-    
-    template_path = template.get_template_path(request)
-    if not template_path:
-        return HttpResponseRedirect(reverse('admin:index')) 
-    
-    return pod_save("disc_report", ".odt", data, template_path)
-    
-
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
-def discipline_list(request, type="doc", start_date=False, end_date=False):
-    template = Template.objects.get_or_create(name="Discipline Daily List")[0].get_template_path(request)
-    if not template:
-        return HttpResponseRedirect(reverse('admin:index'))
-    
-    data={}
-    if start_date:
-        discs = StudentDiscipline.objects.filter(date__range=(start_date, end_date))
-    else:
-        discs = StudentDiscipline.objects.filter(date=date.today())
-    
-    data['disciplines'] = []
-    for disc in discs:
-        for student in disc.students.all():
-            data['disciplines'].append(student)
-    
-    return pod_report(template, data, "Discipline List")
-
-
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
-def discipline_report_view(request):
-    form = DisciplineStudentStatistics()
-    if request.method == 'POST':
-        form = DisciplineStudentStatistics(request.POST)
-        if form.is_valid():
-            data = []
-            start, end = form.get_dates()
-            if 'student' in request.POST:
-                students = Student.objects.all()
-                if not form.cleaned_data['include_deleted'] :
-                    students = students.exclude(inactive=True)
-                if form.cleaned_data['order_by'] == "Year":
-                    students = students.order_by('year')
-                subtitles = ["Student",]
-                titles = ["","Infractions",]
-                for infr in PresetComment.objects.all():
-                    titles.append("")
-                titles.pop()
-                titles.append("Actions")
-                for infr in PresetComment.objects.all():
-                    subtitles.append(unicode(infr))
-                for action in DisciplineAction.objects.all():
-                    subtitles.append(unicode(action))
-                    titles.append("")
-                titles.pop()
-                data.append(subtitles)
-                
-                pref = UserPreference.objects.get_or_create(user=request.user)[0]
-                for student in students:
-                    disciplines = student.studentdiscipline_set.all()
-                    disciplines = disciplines.filter(date__range=(start, end))
-                    stats = [unicode(student),]
-                    
-                    add = True
-                    for infr in PresetComment.objects.all():
-                        number = disciplines.filter(infraction=infr, students=student).count()
-                        stats.append(number)
-                        # check for filter
-                        if form.cleaned_data['infraction'] == infr:
-                            infraction_discipline = disciplines.filter(infraction=form.cleaned_data['infraction'])
-                            if number < form.cleaned_data['minimum_infraction']:
-                                add = False
-                    for action in DisciplineAction.objects.all():
-                        actions = disciplines.filter(disciplineactioninstance__action=action, students=student).count()
-                        stats.append(actions)
-                        # check for filter
-                        if form.cleaned_data['action'] == action:
-                            if actions < form.cleaned_data['minimum_action']:
-                                add = False
-                         
-                    pref.get_additional_student_fields(stats, student, students, titles)
-                    if add: data.append(stats)
-                
-                report = xlsReport(data, titles, "disc_stats.xls", heading="Discipline Stats")
-                
-                # By Teacher
-                data = []
-                titles = ['teacher']
-                for action in DisciplineAction.objects.all():
-                    titles.append(action)
-                
-                teachers = Faculty.objects.filter(studentdiscipline__isnull=False).distinct()
-                disciplines = StudentDiscipline.objects.filter(date__range=(start, end))
-                
-                for teacher in teachers:
-                    row = [teacher]
-                    for action in DisciplineAction.objects.all():
-                        row.append(disciplines.filter(teacher=teacher, action=action).count())
-                    data.append(row)
-                
-                report.addSheet(data, titles=titles, heading="By Teachers")
-                return report.finish()
-                
-            elif 'aggr' in request.POST:
-                disciplines = StudentDiscipline.objects.filter(date__range=(start, end))
-                if form.cleaned_data['this_year']:
-                    school_start = SchoolYear.objects.get(active_year=True).start_date
-                    school_end = SchoolYear.objects.get(active_year=True).end_date
-                    disciplines = disciplines.filter(date__range=(school_start, school_end))
-                elif not form.cleaned_data['this_year'] and not form.cleaned_data['all_years']:
-                    disciplines = disciplines.filter(date__range=(form.cleaned_data['date_begin'], form.cleaned_data['date_end']))
-                
-                stats = []
-                titles = []
-                for infr in PresetComment.objects.all():
-                    titles.append(infr)
-                    number = disciplines.filter(infraction=infr).count()
-                    stats.append(number)
-                
-                for action in DisciplineAction.objects.all():
-                    titles.append(action)
-                    number = 0
-                    for a in DisciplineActionInstance.objects.filter(action=action):
-                        number += a.quantity
-                    stats.append(number)
-                    
-                data.append(stats)
-                report = xlsReport(data, titles, "disc_stats.xls", heading="Discipline Stats")
-                return report.finish()
-        else:
-            return render_to_response('sis/disc_report.html', {'request': request, 'form': form})
-    return render_to_response('sis/disc_report.html', {'request': request, 'form': form})
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')  
 def attendance_report(request):
@@ -767,7 +583,7 @@ def import_naviance(request):
     msg = mark_safe(msg)
     return render_to_response('sis/generic_form.html', {'form':form,'msg':msg}, RequestContext(request, {}),)
 
-@user_passes_test(lambda u: u.groups.filter(name="registrar").count() or u.is_superuser, login_url='/')   
+@user_passes_test(lambda u: u.groups.filter(name="registrar").count() or u.has_perm('sis.reports') or u.is_superuser, login_url='/')   
 def grade_report(request):
     form = StudentGradeReportWriterForm()
     mp_form = MarkingPeriodForm()
@@ -954,7 +770,11 @@ def view_student(request, id=None):
             schedule_days = None
             periods = None
         
-        disciplines = student.studentdiscipline_set.all()
+        # Discipline
+        if 'ecwsp.discipline' in settings.INSTALLED_APPS:
+            disciplines = student.studentdiscipline_set.all()
+        else:
+            disciplines = None
         attendances = student.student_attn.all()
         
         # Alumni

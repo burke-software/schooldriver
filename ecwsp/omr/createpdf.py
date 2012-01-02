@@ -101,8 +101,8 @@ def generate_xml(test_id):
                     idlist = []
                     for answer in choices:
                         idlist.append(answer.id)
-                    answers.append((idlist[0],"True"))
-                    answers.append((idlist[1],"False"))
+                    answers.append((idlist[0],"T"))
+                    answers.append((idlist[1],"F"))
                     
                 for answer_id, choice in answers:
                     choicetag = doc.createElement("choice")
@@ -221,11 +221,12 @@ def newPage(c):
     drawLines(c)
     c.translate(left_margin,bottom_margin)
     
+    next_line = first_line
     title_length = title.__len__() * font_size
     if title_length > 245:
         title = title[:245/font_size]
     c.drawString(250,first_line+10, title)
-    next_line = first_line
+    next_line = next_line - (line_space)
     name_length = (names[id]).__len__() * font_size
     if name_length > 295:
         name = names[id][:295/font_size]
@@ -253,10 +254,10 @@ def drawLines(c):
     
 def barcode(c):
     global code
-    code = str(testid).zfill(7) + (str(page).zfill(3))
-    barcode = Codabar(code, barWidth = inch*0.028)
-    x = width - (3.1*inch)  #4.8
-    y = height - (.6*inch)
+    code = str(testid).zfill(4) + (str(page).zfill(1))
+    barcode = Codabar(code, barWidth = inch*0.05)
+    x = width - (4.6*inch)  #4.8, 3.1 for 4 & 1
+    y = height - (.7*inch)
     barcode.drawOn(c,x,y)
     
 def student_barcode(c):
@@ -317,11 +318,11 @@ def createTest(c):
                 if choice_number > 0:
                     next_line=next_line - line_space
                 if choice_number ==2:
-                    extra_indent=45
+                    extra_indent=30 #45 works
                 elif choice_number < 5:
-                    extra_indent = 30
+                    extra_indent = 20 #30  works
                 else:
-                    extra_indent = 25
+                    extra_indent = 20 #25 works
                     skip_row = next_line;
                     
                 c.drawString(indent,next_line,question)
@@ -331,15 +332,16 @@ def createTest(c):
                 choice_indent = indent + extra_indent
                 current_choice_count = 1
                 for choice, value in questions[question]:
+                    box_size = 9 #13 works, 9 is being tested
                     if current_choice_count != choice_number:
                         c.setDash([1,1,1,1],0)
                         c.setLineWidth(.5)
-                        c.line(choice_indent+13,next_line+6.5,choice_indent+extra_indent,next_line+6.5)
+                        c.line(choice_indent+box_size,next_line+(box_size/2),choice_indent+extra_indent,next_line+(box_size/2))
                     c.drawString(choice_indent,next_line+line_space,str(choice))
                     c.setDash()
                     c.setLineWidth(.5)
-                    c.rect(choice_indent,next_line,9,9,fill=0)
-                    choiceBanding(choice_indent+.5,next_line+13,choice_indent+13,next_line+.5,choice,value)
+                    c.rect(choice_indent,next_line,box_size,box_size,fill=0)
+                    choiceBanding(choice_indent+.5,next_line+box_size,choice_indent+box_size,next_line+.5,choice,value)
                     choice_indent+=extra_indent
                     current_choice_count+=1
                 next_line = next_line - line_space
@@ -488,80 +490,80 @@ def pageBanding():
         barcodeBoxgroup()
     
     
-def barcodeBanding():
-    #doesn't work - inquiry is into QueXF
-    boxgroup = doc.createElement("boxgroup")
-    pagetag.appendChild(boxgroup)
-    typetag = doc.createElement("type")
-    boxgroup.appendChild(typetag)
-    typetext = doc.createTextNode("5")
-    typetag.appendChild(typetext)
-    widthtag = doc.createElement("width")
-    boxgroup.appendChild(widthtag)
-    widthtext = doc.createTextNode("5")
-    widthtag.appendChild(widthtext)
-    varnametag = doc.createElement("varname")
-    boxgroup.appendChild(varnametag)
-    varnametext = doc.createTextNode("barcode_boxgroup")
-    varnametag.appendChild(varnametext)
-    sorttag = doc.createElement("sortorder")
-    boxgroup.appendChild(sorttag)
-    sorttext = doc.createTextNode("0")
-    sorttag.appendChild(sorttext)
-    label_barcode = doc.createElement("label")
-    boxgroup.appendChild(label_barcode)
-    #labeltext = doc.createTextNode(str(question))
-    #label2.appendChild(labeltext)
-    groupsectiontag = doc.createElement("groupsection")
-    #groupsectiontag.setAttribute("idref","1")
-    boxgroup.appendChild(groupsectiontag)
-    
-    
-    topx = (.04*inch + left_margin) *300/72
-    topy = (.4*inch) *300/72    
-    botx = (2.4*inch + left_margin) *300/72
-    boty = (.6*inch) *300/72
-    box = doc.createElement("box")
-    boxgroup.appendChild(box)
-    boxid = doc.createElement("id")
-    boxidtext = doc.createTextNode(str(page)) #will be student id
-    box.appendChild(boxid)
-    boxid.appendChild(boxidtext)
-    
-    tlx = doc.createElement("tlx")
-    box.appendChild(tlx)
-    tlxnum = doc.createTextNode(str(topx))
-    tlx.appendChild(tlxnum)
-    tly = doc.createElement("tly")
-    box.appendChild(tly)
-    tlynum = doc.createTextNode(str(topy))
-    tly.appendChild(tlynum)
-    brx = doc.createElement("brx")
-    box.appendChild(brx)
-    brxnum = doc.createTextNode(str(botx))
-    brx.appendChild(brxnum)
-    bry = doc.createElement("bry")
-    box.appendChild(bry)
-    brynum = doc.createTextNode(str(boty))
-    bry.appendChild(brynum)
-    valuetag = doc.createElement("value")
-    box.appendChild(valuetag)
-    #valuetext = doc.createTextNode("barcode")
-    #valuetag.appendChild(valuetext)
-    boxlabel = doc.createElement("label")
-    box.appendChild(boxlabel)
-    
+#def barcodeBanding():
+#    #doesn't work - inquiry is into QueXF
+#    boxgroup = doc.createElement("boxgroup")
+#    pagetag.appendChild(boxgroup)
+#    typetag = doc.createElement("type")
+#    boxgroup.appendChild(typetag)
+#    typetext = doc.createTextNode("5")
+#    typetag.appendChild(typetext)
+#    widthtag = doc.createElement("width")
+#    boxgroup.appendChild(widthtag)
+#    widthtext = doc.createTextNode("5")
+#    widthtag.appendChild(widthtext)
+#    varnametag = doc.createElement("varname")
+#    boxgroup.appendChild(varnametag)
+#    varnametext = doc.createTextNode("barcode_boxgroup")
+#    varnametag.appendChild(varnametext)
+#    sorttag = doc.createElement("sortorder")
+#    boxgroup.appendChild(sorttag)
+#    sorttext = doc.createTextNode("0")
+#    sorttag.appendChild(sorttext)
+#    label_barcode = doc.createElement("label")
+#    boxgroup.appendChild(label_barcode)
+#    #labeltext = doc.createTextNode(str(question))
+#    #label2.appendChild(labeltext)
+#    groupsectiontag = doc.createElement("groupsection")
+#    #groupsectiontag.setAttribute("idref","1")
+#    boxgroup.appendChild(groupsectiontag)
+#    
+#    
+#    topx = (.04*inch + left_margin) *300/72
+#    topy = (.4*inch) *300/72    
+#    botx = (2.4*inch + left_margin) *300/72
+#    boty = (.6*inch) *300/72
+#    box = doc.createElement("box")
+#    boxgroup.appendChild(box)
+#    boxid = doc.createElement("id")
+#    boxidtext = doc.createTextNode(str(page)) #will be student id
+#    box.appendChild(boxid)
+#    boxid.appendChild(boxidtext)
+#    
+#    tlx = doc.createElement("tlx")
+#    box.appendChild(tlx)
+#    tlxnum = doc.createTextNode(str(topx))
+#    tlx.appendChild(tlxnum)
+#    tly = doc.createElement("tly")
+#    box.appendChild(tly)
+#    tlynum = doc.createTextNode(str(topy))
+#    tly.appendChild(tlynum)
+#    brx = doc.createElement("brx")
+#    box.appendChild(brx)
+#    brxnum = doc.createTextNode(str(botx))
+#    brx.appendChild(brxnum)
+#    bry = doc.createElement("bry")
+#    box.appendChild(bry)
+#    brynum = doc.createTextNode(str(boty))
+#    bry.appendChild(brynum)
+#    valuetag = doc.createElement("value")
+#    box.appendChild(valuetag)
+#    #valuetext = doc.createTextNode("barcode")
+#    #valuetag.appendChild(valuetext)
+#    boxlabel = doc.createElement("label")
+#    box.appendChild(boxlabel)
+
 def barcodeBoxgroup():
     """hacks on QueXF's database to insert the banding for the student barcode into the database
     """
     db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
     db_cursor = db.cursor()
-    db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
+    #db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
     db_cursor.execute("SHOW TABLE STATUS LIKE 'pages'")
     row = db_cursor.fetchone()
     auto_increment = row[10]
     pageid = auto_increment + (page - 1)
-    barcodename = "barcode_" + str(pageid) +"test"
+    barcodename = "barcode_" + str(pageid)
     db_cursor.execute("INSERT INTO boxgroupstype (btid,width,pid,varname,sortorder) values (5,5," + str(pageid) + ",'"
                       + barcodename + "',0)")
     db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +

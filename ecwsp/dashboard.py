@@ -38,6 +38,7 @@ class CustomIndexDashboard(Dashboard):
                         'ecwsp.work_study.models.Company',
                         'ecwsp.work_study.models.WorkTeam',
                         'ecwsp.work_study.models.TimeSheet',
+                        'ecwsp.work_study.models.TimeSheetPerformanceChoice',
                         'ecwsp.work_study.models.Contact',
                         'ecwsp.work_study.models.CompanyContract',
                         'ecwsp.work_study.models.CompanyHistory',
@@ -87,9 +88,9 @@ class CustomIndexDashboard(Dashboard):
             title = 'Discipline',
             column=1,
             models=(
-                'ecwsp.sis.models.StudentDiscipline',
-                'ecwsp.sis.models.DisciplineAction',
-                'ecwsp.sis.models.PresetComment',
+                'ecwsp.discipline.models.StudentDiscipline',
+                'ecwsp.discipline.models.DisciplineAction',
+                'ecwsp.discipline.models.PresetComment',
             ),
         ))
     
@@ -117,6 +118,14 @@ class CustomIndexDashboard(Dashboard):
             models=('ecwsp.omr.*',),
         ))
         
+        self.children.append(modules.Feed(
+            title='Annoucements',
+            column=2,
+            # Run feed through feedburner to prevent pain if it gets slow or something happens.
+            feed_url='http://feeds.feedburner.com/FeedForBurkeSoftwareAndConsultingLlc',
+            limit=2
+        ))
+        
         self.children.append(modules.AppList(
             title='Administration',
             column=2,
@@ -134,13 +143,6 @@ class CustomIndexDashboard(Dashboard):
             title='Recent Actions',
             column=2,
             limit=5
-        ))
-        
-        self.children.append(modules.Feed(
-            title='Latest SWORD News',
-            column=2,
-            feed_url='http://googleplusrss.nodester.com/112784955559393766110',
-            limit=2
         ))
         
         self.children.append(modules.LinkList(

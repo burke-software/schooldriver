@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
 <h2> 500 Error </h2>
-<p>
-Opps something went wrong. An administrator has been notified.
-</p>
+<p>You've encountered an error!</p>
+{% if request.sentry.id %}
+    <p>If you need assistance, you may reference this error as <strong>{{ request.sentry.id }}</strong></p>
+{% endif %}
 {% endblock %}

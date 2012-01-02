@@ -391,6 +391,11 @@ class Importer:
             inserted, updated = self.import_benchmarks(sheet)
             msg += "%s benchmarks inserted, %s benchmarks updated <br/>" % (inserted, updated)
         except: pass
+        try:
+            sheet = self.get_sheet_by_case_insensitive_name("company contract")
+            inserted, updated = self.import_contract_information(sheet)
+            msg += "%s contracts inserted, %s contracts updated <br/>" % (inserted, updated)
+        except: pass
         
         
         if msg == "":
@@ -1843,8 +1848,7 @@ class Importer:
                     model.save()
             except:
                 print >> sys.stderr, str(sys.exc_info())
-            x += 1
-            
+            x += 1  
 
     @transaction.commit_manually
     def import_workteams(self, sheet):
@@ -2057,6 +2061,73 @@ class Importer:
                             supid = value
                             if Contact.objects.get(id=supid):
                                 model.primary_contact = value
+                model.save()
+                if created:
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
+                else:
+                    self.log_and_commit(model, addition=False)
+                    updated += 1
+            except:
+                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            x += 1
+        return inserted, updated
+
+
+    @transaction.commit_manually
+    def import_contract_information(self, sheet):
+        #does not allow  updates
+        from ecwsp.work_study.models import *
+        x, header, inserted, updated = self.import_prep(sheet)
+        while x < sheet.nrows:
+            try:
+                row = sheet.row(x)
+                items = zip(header, row)
+                model = None
+                created = True
+                for (name, value) in items:
+                    is_ok, name, value = self.sanitize_item(name, value)
+                    if is_ok:
+                        if name == "company":
+                            model = CompContract(company = Company.objects.get(name=value))
+                        elif name == "official company name" or name == "official name" or name == "company name":
+                            model.company_name = value
+                        elif name == "name" or name == "contact name":
+                            model.name = value
+                        elif name == "contact title" or name =="title":
+                            model.title = value
+                        elif name == "date" or name == "effective date" or name == "start date":
+                            model.date = self.convert_date(value)
+                        elif name == "school year":
+                            model.school_year = SchoolYear.objects.get(name=value)
+                        elif name == "number of students" or name == "number students" or name == "students":
+                            model.number_students = value
+                        elif name == "payment option" or name == "payment":
+                            model.payment = PaymentOption.objects.get(name=value)
+                        elif name.find("responsibilities") != -1:
+                            model.save()
+                            try:
+                                model.student_functional_responsibilities.add(StudentFunctionalResponsibility.objects.get(name=value))
+                            except:
+                                model.student_functional_responsibilities_other += value
+                        elif name.find("skills") != -1:
+                            model.save()
+                            try:
+                                model.student_desired_skills.add(StudentDesiredSkill.objects.get(name = value))
+                            except:
+                                model.student_desired_skills_other += value
+                        elif name == "student leave" or name == "leave":
+                            model.student_leave = self.determine_truth(value)
+                        elif name == "student leave lunch" or name == "leave lunch" or name == "lunch":
+                            model.student_leave_lunch = self.determine_truth(value)
+                        elif name == "student leave errands" or name == "leave errands" or name == "errands":
+                            model.student_leave_errands = self.determine_truth(value)
+                        elif name == "student leave other" or name == "leave other":
+                            model.student_leave_other = value
+                        elif name == "signed":
+                            model.signed = self.determine_truth(value)
+                        
+                        
                 model.save()
                 if created:
                     self.log_and_commit(model, addition=True)

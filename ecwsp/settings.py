@@ -17,7 +17,8 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
-import os,sys
+import os,sys, logging
+
 
 LDAP = False
 if LDAP:
@@ -86,11 +87,7 @@ ASP = True
 PREFERED_FORMAT = 'o'
 templateHead = os.path.dirname(os.path.abspath(''))
 TEMPLATE_DIRS = os.path.join('/opt/sword/templates/')
-# Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
-# although not all choices may be available on all operating systems.
-# If running in a Windows environment this must be set to the same as your
-# system time zone.
+
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
@@ -98,10 +95,6 @@ DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y')
 #USE_L10N = True
-########################################################################
-# These settings should not normally be edited. Editing them is not
-# tested.
-########################################################################
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -151,13 +144,13 @@ ROOT_URLCONF = 'ecwsp.urls'
 INSTALLED_APPS = (
     'grappelli.dashboard',
     'grappelli',
-    'django.contrib.admin',
-    'ajax_select',
+    'django.contrib.admin',    
     'django.contrib.staticfiles',
     'django.contrib.auth',
     'django.contrib.admindocs',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.webdesign',
 
     'ecwsp.volunteer_track',
     'ecwsp.sis',
@@ -168,31 +161,32 @@ INSTALLED_APPS = (
     'ecwsp.engrade_sync',
     'ecwsp.alumni',
     'ecwsp.omr',
+    'ecwsp.discipline',
+    
+    'ajax_select',
     'reversion',
     'ldap_groups',
-    'django.contrib.webdesign',
     'django_extensions',
     'django_filters',
     'pagination',
     'massadmin',
     'admin_export',
     'custom_field',
-#   'ecwsp.inventory',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = ()
+MIDDLEWARE_CLASSES += (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'pagination.middleware.PaginationMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
-   
-)
+    )
 if CAS:
     MIDDLEWARE_CLASSES += (
         'django_cas.middleware.CASMiddleware',
         'django.middleware.doc.XViewMiddleware',
-    )
+        )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
@@ -215,8 +209,8 @@ AJAX_LOOKUP_CHANNELS = {
     'faculty' : ('ecwsp.sis.lookups', 'FacultyLookup'),
     'faculty_user' : ('ecwsp.sis.lookups', 'FacultyUserLookup'),
     'emergency_contact' : ('ecwsp.sis.lookups', 'EmergencyContactLookup'),
-    'discstudent' : ('ecwsp.sis.lookups', 'StudentWithDisciplineLookup'),
-    'discipline_view_student': ('ecwsp.sis.lookups', 'DisciplineViewStudentLookup'),
+    'discstudent' : ('ecwsp.discipline.lookups', 'StudentWithDisciplineLookup'),
+    'discipline_view_student': ('ecwsp.discipline.lookups', 'DisciplineViewStudentLookup'),
     'attendance_view_student': ('ecwsp.sis.lookups', 'AttendanceStudentLookup'),
     'attendance_quick_view_student': ('ecwsp.sis.lookups', 'AttendanceAddStudentLookup'),
     'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
@@ -229,7 +223,7 @@ if 'ecwsp.omr' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['benchmark'] = ('ecwsp.omr.lookups', 'BenchmarkLookup')
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
+TEMPLATE_DEBUG = True
 
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
@@ -268,6 +262,40 @@ CKEDITOR_CONFIGS = {
 #    }
 #}
 
+if not DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': True,
+        'root': {
+            'level': 'WARNING',
+            'handlers': ['sentry'],
+        },
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+        },
+        'handlers': {
+            'sentry': {
+                'level': 'DEBUG',
+                'class': 'raven.contrib.django.handlers.SentryHandler',
+                'formatter': 'verbose'
+            },
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose'
+            }
+        },
+        'loggers': {
+            'sentry.errors': {
+                'level': 'DEBUG',
+                'handlers': ['console'],
+                'propagate': False,
+            },
+        },
+    }
+
 # http://ww7.engrade.com/api/key.php
 ENGRADE_APIKEY = ''
 # Admin user login
@@ -283,6 +311,8 @@ ADMISSIONS_DEFAULT_COUNTRY = "United States"
 OMR_MASTER_SERVER='localhost'
 # If this instance the master server?
 OMR_IS_MASTER_SERVER=True
+
+SENTRY_MAIL_LEVEL = logging.WARNING
 
 # The "new" url path for quexf.
 QUEXF_URL = "http://quexf.cristoreyny.org/admin/new.php"

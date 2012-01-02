@@ -197,7 +197,7 @@ class Applicant(models.Model):
     def save(self, *args, **kwargs):
         if self.id:
             for level in AdmissionLevel.objects.all():
-                checks = AdmissionCheck.objects.filter(level=level)
+                checks = level.admissioncheck_set.all()
                 i = 0
                 for check in checks:
                     if check in self.checklist.all():
