@@ -25,6 +25,7 @@ from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSele
 
 from ecwsp.sis.forms import TimeBasedForm
 from models import *
+import datetime
 
 class DisciplineViewForm(forms.Form):
     student = AutoCompleteSelectField('discipline_view_student')
@@ -46,3 +47,23 @@ class DisciplineStudentStatistics(TimeBasedForm):
     minimum_action = forms.IntegerField(initial=0, help_text="Minimal number of above action needed to show student in Student Report")
     infraction = forms.ModelChoiceField(required=False, queryset=Infraction.objects.all())
     minimum_infraction = forms.IntegerField(initial=0, help_text="Minimal number of above infraction needed to show student in Student Report")
+    
+def get_start_date_default():
+    """ Return default date for report. It should be X work days ago. """
+    work_days = (0,1,2,3,4) # python day of weeks mon-fri
+    days_back = 14          # Traverse back these many days
+    default_date = datetime.date.today()
+    while days_back > 0:
+        while not default_date.weekday() in work_days:
+            default_date = default_date - datetime.timedelta(days=1)
+        default_date = default_date - datetime.timedelta(days=1)
+        days_back -= 1
+    return default_date 
+class HonorForm(forms.Form):
+    start_date = forms.DateField(initial=get_start_date_default, widget=adminwidgets.AdminDateWidget())
+    end_date = forms.DateField(initial=datetime.date.today, widget=adminwidgets.AdminDateWidget())
+    level_one = forms.IntegerField(initial=0)
+    level_two = forms.IntegerField(initial=1, required=False)
+    level_three = forms.IntegerField(initial=3, required=False)
+    level_four = forms.IntegerField(initial=5, required=False)
+    

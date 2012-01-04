@@ -115,9 +115,9 @@ def discipline_list(request, type="doc", start_date=False, end_date=False):
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
 def discipline_report_view(request):
-    form = DisciplineStudentStatistics()
     if request.method == 'POST':
         form = DisciplineStudentStatistics(request.POST)
+        honor_form = HonorForm(request.POST)
         if form.is_valid():
             data = []
             start, end = form.get_dates()
@@ -216,5 +216,9 @@ def discipline_report_view(request):
         else:
             return render_to_response('discipline/disc_report.html', {'request': request, 'form': form},
                                       RequestContext(request, {}),)
-    return render_to_response('discipline/disc_report.html', {'request': request, 'form': form},
+            
+    else:
+        form = DisciplineStudentStatistics()
+        honor_form = HonorForm()
+    return render_to_response('discipline/disc_report.html', {'request': request, 'form': form, 'honor_form':honor_form,},
                               RequestContext(request, {}),)
