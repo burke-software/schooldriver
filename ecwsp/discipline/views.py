@@ -21,12 +21,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.core.urlresolvers import reverse
+from django.db.models import Count
 from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 
 from ecwsp.administration.models import *
-from ecwsp.sis.models import UserPreference, SchoolYear
+from ecwsp.sis.models import UserPreference, SchoolYear, Student
 from ecwsp.sis.xlsReport import *
 from models import *
 from forms import *
@@ -115,110 +116,145 @@ def discipline_list(request, type="doc", start_date=False, end_date=False):
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
 def discipline_report_view(request):
+    form = DisciplineStudentStatistics()
+    merit_form = MeritForm()
     if request.method == 'POST':
-        form = DisciplineStudentStatistics(request.POST)
-        honor_form = HonorForm(request.POST)
-        if form.is_valid():
-            data = []
-            start, end = form.get_dates()
-            if 'student' in request.POST:
-                students = Student.objects.all()
-                if not form.cleaned_data['include_deleted'] :
-                    students = students.exclude(inactive=True)
-                if form.cleaned_data['order_by'] == "Year":
-                    students = students.order_by('year')
-                subtitles = ["Student",]
-                titles = ["","Infractions",]
-                for infr in Infraction.objects.all():
-                    titles.append("")
-                titles.pop()
-                titles.append("Actions")
-                for infr in Infraction.objects.all():
-                    subtitles.append(unicode(infr))
-                for action in DisciplineAction.objects.all():
-                    subtitles.append(unicode(action))
-                    titles.append("")
-                titles.pop()
-                data.append(subtitles)
+        if 'merit' in request.POST:
+            merit_form = MeritForm(request.POST)
+            if merit_form.is_valid():
+                from ecwsp.sis.report import pod_report_generic
+                data = {}
+                l1 = merit_form.cleaned_data['level_one']
+                l2 = merit_form.cleaned_data['level_two']
+                l3 = merit_form.cleaned_data['level_three']
+                l4 = merit_form.cleaned_data['level_four']
+                start_date = merit_form.cleaned_data['start_date']
+                end_date = merit_form.cleaned_data['end_date']
                 
-                pref = UserPreference.objects.get_or_create(user=request.user)[0]
+                students = Student.objects.filter(inactive=False)
+                disciplines = StudentDiscipline.objects.filter(date__range=(start_date, end_date)).values('students').annotate(Count('pk'))
                 for student in students:
-                    disciplines = student.studentdiscipline_set.all()
-                    disciplines = disciplines.filter(date__range=(start, end))
-                    stats = [unicode(student),]
-                    
-                    add = True
-                    for infr in Infraction.objects.all():
-                        number = disciplines.filter(infraction=infr, students=student).count()
-                        stats.append(number)
-                        # check for filter
-                        if form.cleaned_data['infraction'] == infr:
-                            infraction_discipline = disciplines.filter(infraction=form.cleaned_data['infraction'])
-                            if number < form.cleaned_data['minimum_infraction']:
-                                add = False
-                    for action in DisciplineAction.objects.all():
-                        actions = disciplines.filter(disciplineactioninstance__action=action, students=student).count()
-                        stats.append(actions)
-                        # check for filter
-                        if form.cleaned_data['action'] == action:
-                            if actions < form.cleaned_data['minimum_action']:
-                                add = False
-                         
-                    pref.get_additional_student_fields(stats, student, students, titles)
-                    if add: data.append(stats)
-                
-                report = xlsReport(data, titles, "disc_stats.xls", heading="Discipline Stats")
-                
-                # By Teacher
-                data = []
-                titles = ['teacher']
-                for action in DisciplineAction.objects.all():
-                    titles.append(action)
-                
-                teachers = Faculty.objects.filter(studentdiscipline__isnull=False).distinct()
-                disciplines = StudentDiscipline.objects.filter(date__range=(start, end))
-                
-                for teacher in teachers:
-                    row = [teacher]
-                    for action in DisciplineAction.objects.all():
-                        row.append(disciplines.filter(teacher=teacher, action=action).count())
-                    data.append(row)
-                
-                report.addSheet(data, titles=titles, heading="By Teachers")
-                return report.finish()
-                
-            elif 'aggr' in request.POST:
-                disciplines = StudentDiscipline.objects.filter(date__range=(start, end))
-                if form.cleaned_data['this_year']:
-                    school_start = SchoolYear.objects.get(active_year=True).start_date
-                    school_end = SchoolYear.objects.get(active_year=True).end_date
-                    disciplines = disciplines.filter(date__range=(school_start, school_end))
-                elif not form.cleaned_data['this_year'] and not form.cleaned_data['all_years']:
-                    disciplines = disciplines.filter(date__range=(form.cleaned_data['date_begin'], form.cleaned_data['date_end']))
-                
-                stats = []
-                titles = []
-                for infr in Infraction.objects.all():
-                    titles.append(infr)
-                    number = disciplines.filter(infraction=infr).count()
-                    stats.append(number)
-                
-                for action in DisciplineAction.objects.all():
-                    titles.append(action)
-                    number = 0
-                    for a in DisciplineActionInstance.objects.filter(action=action):
-                        number += a.quantity
-                    stats.append(number)
-                    
-                data.append(stats)
-                report = xlsReport(data, titles, "disc_stats.xls", heading="Discipline Stats")
-                return report.finish()
+                    disc = 0
+                    for discipline in disciplines:
+                        if discipline['students'] == student.id:
+                            disc = discipline['pk__count']
+                            break
+                    student.disc_count = disc
+                    if student.disc_count <= l1:
+                        student.merit_level = 1
+                    elif student.disc_count <= l2:
+                        student.merit_level = 2
+                    elif student.disc_count <= l3:
+                        student.merit_level = 3
+                    elif student.disc_count <= l4:
+                        student.merit_level = 4
+                    print student.disc_count
+                data['students'] = students
+                template = Template.objects.get_or_create(name="Merit Level Handout")[0]
+                template = template.get_template_path(request)
+                format_type = UserPreference
+                if template:
+                    format_type = UserPreference.objects.get_or_create(user=request.user)[0].get_format()
+                    return pod_report_generic(template, data, "Merit Handouts", format=format_type)
         else:
-            return render_to_response('discipline/disc_report.html', {'request': request, 'form': form},
-                                      RequestContext(request, {}),)
-            
-    else:
-        form = DisciplineStudentStatistics()
-        honor_form = HonorForm()
-    return render_to_response('discipline/disc_report.html', {'request': request, 'form': form, 'honor_form':honor_form,},
+            form = DisciplineStudentStatistics(request.POST)
+            if form.is_valid():
+                data = []
+                start, end = form.get_dates()
+                if 'student' in request.POST:
+                    students = Student.objects.all()
+                    if not form.cleaned_data['include_deleted'] :
+                        students = students.exclude(inactive=True)
+                    if form.cleaned_data['order_by'] == "Year":
+                        students = students.order_by('year')
+                    subtitles = ["Student",]
+                    titles = ["","Infractions",]
+                    for infr in Infraction.objects.all():
+                        titles.append("")
+                    titles.pop()
+                    titles.append("Actions")
+                    for infr in Infraction.objects.all():
+                        subtitles.append(unicode(infr))
+                    for action in DisciplineAction.objects.all():
+                        subtitles.append(unicode(action))
+                        titles.append("")
+                    titles.pop()
+                    data.append(subtitles)
+                    
+                    pref = UserPreference.objects.get_or_create(user=request.user)[0]
+                    for student in students:
+                        disciplines = student.studentdiscipline_set.all()
+                        disciplines = disciplines.filter(date__range=(start, end))
+                        stats = [unicode(student),]
+                        
+                        add = True
+                        for infr in Infraction.objects.all():
+                            number = disciplines.filter(infraction=infr, students=student).count()
+                            stats.append(number)
+                            # check for filter
+                            if form.cleaned_data['infraction'] == infr:
+                                infraction_discipline = disciplines.filter(infraction=form.cleaned_data['infraction'])
+                                if number < form.cleaned_data['minimum_infraction']:
+                                    add = False
+                        for action in DisciplineAction.objects.all():
+                            actions = disciplines.filter(disciplineactioninstance__action=action, students=student).count()
+                            stats.append(actions)
+                            # check for filter
+                            if form.cleaned_data['action'] == action:
+                                if actions < form.cleaned_data['minimum_action']:
+                                    add = False
+                             
+                        pref.get_additional_student_fields(stats, student, students, titles)
+                        if add: data.append(stats)
+                    
+                    report = xlsReport(data, titles, "disc_stats.xls", heading="Discipline Stats")
+                    
+                    # By Teacher
+                    data = []
+                    titles = ['teacher']
+                    for action in DisciplineAction.objects.all():
+                        titles.append(action)
+                    
+                    teachers = Faculty.objects.filter(studentdiscipline__isnull=False).distinct()
+                    disciplines = StudentDiscipline.objects.filter(date__range=(start, end))
+                    
+                    for teacher in teachers:
+                        row = [teacher]
+                        for action in DisciplineAction.objects.all():
+                            row.append(disciplines.filter(teacher=teacher, action=action).count())
+                        data.append(row)
+                    
+                    report.addSheet(data, titles=titles, heading="By Teachers")
+                    return report.finish()
+                    
+                elif 'aggr' in request.POST:
+                    disciplines = StudentDiscipline.objects.filter(date__range=(start, end))
+                    if form.cleaned_data['this_year']:
+                        school_start = SchoolYear.objects.get(active_year=True).start_date
+                        school_end = SchoolYear.objects.get(active_year=True).end_date
+                        disciplines = disciplines.filter(date__range=(school_start, school_end))
+                    elif not form.cleaned_data['this_year'] and not form.cleaned_data['all_years']:
+                        disciplines = disciplines.filter(date__range=(form.cleaned_data['date_begin'], form.cleaned_data['date_end']))
+                    
+                    stats = []
+                    titles = []
+                    for infr in Infraction.objects.all():
+                        titles.append(infr)
+                        number = disciplines.filter(infraction=infr).count()
+                        stats.append(number)
+                    
+                    for action in DisciplineAction.objects.all():
+                        titles.append(action)
+                        number = 0
+                        for a in DisciplineActionInstance.objects.filter(action=action):
+                            number += a.quantity
+                        stats.append(number)
+                        
+                    data.append(stats)
+                    report = xlsReport(data, titles, "disc_stats.xls", heading="Discipline Stats")
+                    return report.finish()
+            else:
+                return render_to_response('discipline/disc_report.html', {'request': request, 'form': form},
+                                          RequestContext(request, {}),)    
+    return render_to_response('discipline/disc_report.html', {'request': request, 'form': form, 'merit_form':merit_form,},
                               RequestContext(request, {}),)

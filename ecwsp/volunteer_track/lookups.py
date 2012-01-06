@@ -1,5 +1,7 @@
 from django.db.models import Q
 from django.core import urlresolvers
+from django.utils.html import escape
+from ajax_select import LookupChannel
 from ecwsp.sis.models import UserPreference
 from ecwsp.volunteer_track.models import *
 from ecwsp.administration.models import *
@@ -81,3 +83,22 @@ class SiteLookup(object):
             this is for displaying the currently selected items (in the case of a ManyToMany field)
         """
         return Site.objects.filter(pk__in=ids).order_by('site_name')
+        
+
+class SiteSupervisorLookup(LookupChannel):
+    model = SiteSupervisor
+
+    def get_query(self,q,request):
+        return SiteSupervisor.objects.filter(Q(name__icontains=q)).order_by('name')
+
+    def get_result(self,obj):
+        u""" result is the simple text that is the completion of what the person typed """
+        return obj.name
+
+    def format_match(self,obj):
+        """ (HTML) formatted item for display in the dropdown """
+        return self.format_item_display(obj)
+
+    def format_item_display(self,obj):
+        """ (HTML) formatted item for displaying item in the selected deck area """
+        return u"<a href=\"/admin/volunteer_track/sitesupervisor/%s/\" target=\"_blank\">%s</a><div><i>%s %s</i></div>" % (obj.id, escape(obj.name),escape(obj.phone),escape(obj.email))

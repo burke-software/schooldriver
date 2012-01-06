@@ -23,7 +23,6 @@
             $('#' + id.split("_")[1] + '_' + id.split("_")[2]).toggle('fast');
         }
         
-        
         $(document).ready(function() {
             grappelli.initDateAndTimePicker();
         });
@@ -34,9 +33,13 @@
 <div id="breadcrumbs"> 
 <a href="/admin"> 
 Home
+</a>
+&rsaquo; 
+<a href="/admin/discipline/"> 
+ Discipline
 </a> 
 &rsaquo; 
-<a href="/admin/sis/studentdiscipline/"> 
+<a href="/admin/discipline/studentdiscipline/"> 
  Student disciplines
 </a> 
 &rsaquo; 
@@ -78,34 +81,37 @@ Student disciplines statistics
         </fieldset>
         <br/>
         <fieldset>
-            <legend>Honor</legend>
+            <legend>Merit Levels (recent discipline awards)</legend>
             &nbsp;
-            {{ honor_form.non_field_errors  }}
-            {{ honor_form.start_date.label }} {{ honor_form.start_date }} {{ honor_form.start_date.errors }} &nbsp;&nbsp;&nbsp;&nbsp&nbsp
-            {{ honor_form.end_date.label }} {{ honor_form.end_date }} {{ honor_form.end_date.errors }}
+            {{ merit_form.non_field_errors  }}
+            {{ merit_form.start_date.label }} {{ merit_form.start_date }} {{ merit_form.start_date.errors }} &nbsp;&nbsp;&nbsp;&nbsp&nbsp
+            {{ merit_form.end_date.label }} {{ merit_form.end_date }} {{ merit_form.end_date.errors }}
             <table>
                 <tr>
-                    <th colspan="2">Honor levels - Number of Discipline issues for level </th>
+                    <th colspan="2">Merit levels - Number of Discipline issues for level </th>
                 </tr>
                 <tr>
-                    <td>{{ honor_form.level_one.label }}</td>
-                    <td>{{ honor_form.level_one }} {{ honor_form.level_one.errors }}</td>
+                    <td>{{ merit_form.level_one.label }}</td>
+                    <td>{{ merit_form.level_one }} {{ merit_form.level_one.errors }}</td>
                 </tr>
                 <tr>
-                    <td>{{ honor_form.level_two.label }}</td>
-                    <td>{{ honor_form.level_two }} {{ honor_form.level_two.errors }}</td>
+                    <td>{{ merit_form.level_two.label }}</td>
+                    <td>{{ merit_form.level_two }} {{ merit_form.level_two.errors }}</td>
                 </tr>
                 <tr>
-                    <td>{{ honor_form.level_three.label }}</td>
-                    <td>{{ honor_form.level_three }} {{ honor_form.level_three.errors }}</td>
+                    <td>{{ merit_form.level_three.label }}</td>
+                    <td>{{ merit_form.level_three }} {{ merit_form.level_three.errors }}</td>
                 </tr>
                 <tr>
-                    <td>{{ honor_form.level_four.label }}</td>
-                    <td>{{ honor_form.level_four }} {{ honor_form.level_four.errors }}</td>
+                    <td>{{ merit_form.level_four.label }}</td>
+                    <td>{{ merit_form.level_four }} {{ merit_form.level_four.errors }}</td>
                 </tr>
             </table>
-            <input type="submit" name="honor"/>
+            <input type="submit" name="merit"/>
+            <br/>
+            {% if perms.adminstration.change_configuration %}
+                <a href="/admin/administration/configuration/?q=discipline">Edit Defaults</a>
+            {% endif %}
         </fieldset>
-	
     </form>
 {% endblock %}

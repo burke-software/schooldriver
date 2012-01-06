@@ -205,19 +205,23 @@ AJAX_LOOKUP_CHANNELS = {
     'student' : ('ecwsp.sis.lookups', 'StudentLookup'),
     'all_student' : ('ecwsp.sis.lookups', 'AllStudentLookup'),
     'dstudent' : ('ecwsp.sis.lookups', 'StudentLookupSmall'),
-    'studentworker' : ('ecwsp.work_study.lookups', 'StudentLookup'),
     'faculty' : ('ecwsp.sis.lookups', 'FacultyLookup'),
     'faculty_user' : ('ecwsp.sis.lookups', 'FacultyUserLookup'),
+    'attendance_quick_view_student': ('ecwsp.sis.lookups', 'AttendanceAddStudentLookup'),
     'emergency_contact' : ('ecwsp.sis.lookups', 'EmergencyContactLookup'),
+    'attendance_view_student': ('ecwsp.sis.lookups', 'AttendanceStudentLookup'),
     'discstudent' : ('ecwsp.discipline.lookups', 'StudentWithDisciplineLookup'),
     'discipline_view_student': ('ecwsp.discipline.lookups', 'DisciplineViewStudentLookup'),
-    'attendance_view_student': ('ecwsp.sis.lookups', 'AttendanceStudentLookup'),
-    'attendance_quick_view_student': ('ecwsp.sis.lookups', 'AttendanceAddStudentLookup'),
     'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
     'site': ('ecwsp.volunteer_track.lookups', 'SiteLookup'),
+    'site_supervisor': ('ecwsp.volunteer_track.lookups', 'SiteSupervisorLookup'),
     'theme': ('ecwsp.omr.lookups', 'ThemeLookup'),
+    'studentworker' : ('ecwsp.work_study.lookups', 'StudentLookup'),
     'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
+    
 }
+AJAX_SELECT_BOOTSTRAP = False
+AJAX_SELECT_INLINES = 'staticfiles'
 
 if 'ecwsp.omr' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['benchmark'] = ('ecwsp.omr.lookups', 'BenchmarkLookup')
