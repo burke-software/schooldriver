@@ -50,6 +50,13 @@ class EditAnswerInstanceForm(forms.ModelForm):
         fields = ['answer','question','points_earned']
         widgets = {'question':forms.HiddenInput, 'points_earned':forms.HiddenInput,}
         
+class ManualEditAnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        widgets = {
+            input: radiobutton
+        }
+        
 
 
 #https://docs.djangoproject.com/en/dev/ref/forms/widgets/

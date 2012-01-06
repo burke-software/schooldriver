@@ -410,6 +410,9 @@ def manual_edit(request, test_id):
     #open the blob.
     test = get_object_or_404(TestInstance, id=test_id)
     letter = {}
+    ascii_letter = None
+    tf_response  = None
+    student_answer = None
     for question in test.test.question_set.all(): #each question
         for answer in question.answerinstance_set.all(): #student's answer to question
             student_answer = answer.answer
@@ -417,13 +420,12 @@ def manual_edit(request, test_id):
         ascii_letter = 45
         tf_response = "none"
         if question.type == "True/False":
-            print "true/false"
             ascii_letter = False
             tf_response = student_answer.answer
         else:
             for possible in question.answer_set.all():
                 if student_answer == possible:
-                        ascii_letter = 65+count #'A', 'B', 'C', etc. in ASCII
+                    ascii_letter = 65+count #'A', 'B', 'C', etc. in ASCII
                 else:
                     count += 1
         if ascii_letter:

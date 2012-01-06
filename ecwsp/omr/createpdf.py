@@ -76,7 +76,6 @@ def generate_xml(test_id):
         essays = []
             
         i = 1 # Question number for human use only
-        priorType = None
         for q in questions:
             questiontag = doc.createElement("question")
             questiontag.setAttribute("varName",str(q.id))
@@ -87,6 +86,7 @@ def generate_xml(test_id):
                 essays.append([q,q.id,i])
                 teacher_section_required = True
                 text = str(i) + ".  Essay Question"
+                
             else:
                 text = str(i) + ". "
                 answers = []
@@ -101,8 +101,11 @@ def generate_xml(test_id):
                     idlist = []
                     for answer in choices:
                         idlist.append(answer.id)
-                    answers.append((idlist[0],"T"))
-                    answers.append((idlist[1],"F"))
+                    label = ["T","F"]
+
+
+                    answers.append((idlist[0],label[0]))
+                    answers.append((idlist[1],label[1]))
                     
                 for answer_id, choice in answers:
                     choicetag = doc.createElement("choice")
@@ -302,6 +305,8 @@ def createTest(c):
         
         def createSections(questions,choices, varnames):
             global indent, column, sort, next_line
+            prior_question = None
+            same = False
             for question, varname in zip(questions,varnames.values()):
                 if next_line + font_size <=0:
                     column +=1
@@ -313,8 +318,17 @@ def createTest(c):
                     else:
                         next_line = first_line - line_space*3
                     indent = ((width-left_margin-right_margin)/3)*column
+                if prior_question:
+                    for elem, val in questions[question]:
+                        if elem in prior_choices:
+                            same = True
+                        else:
+                            same = False
+                            break
+                prior_choices = []
+                if same:
+                    next_line += (line_space*.8)
                 choice_number = len(questions[question])
-                #skip_row = False;
                 if choice_number > 0:
                     next_line=next_line - line_space
                 if choice_number ==2:
@@ -332,12 +346,14 @@ def createTest(c):
                 choice_indent = indent + extra_indent
                 current_choice_count = 1
                 for choice, value in questions[question]:
-                    box_size = 9 #13 works, 9 is being tested
+                    prior_choices.append(choice)
+                    box_size = 9
                     if current_choice_count != choice_number:
                         c.setDash([1,1,1,1],0)
                         c.setLineWidth(.5)
                         c.line(choice_indent+box_size,next_line+(box_size/2),choice_indent+extra_indent,next_line+(box_size/2))
-                    c.drawString(choice_indent,next_line+line_space,str(choice))
+                    if not same:
+                        c.drawString(choice_indent,next_line+line_space,str(choice))
                     c.setDash()
                     c.setLineWidth(.5)
                     c.rect(choice_indent,next_line,box_size,box_size,fill=0)
@@ -345,6 +361,7 @@ def createTest(c):
                     choice_indent+=extra_indent
                     current_choice_count+=1
                 next_line = next_line - line_space
+                prior_question = question
     
     
     
