@@ -1,42 +1,16 @@
 from ecwsp.work_study.models import StudentWorker as Student, Contact
 from django.db.models import Q
+from ajax_select import LookupChannel
 
-class StudentLookup(object):
-
+class StudentLookup(LookupChannel):
+    model = Student
     def get_query(self,q,request):
-        """ return a query set.  you also have access to request.user if needed """
-        words = q.split()
-        # if there is a space
-        self.user = request.user
-        if (len(words) == 2):
-            # search based on first or last name in either order with space in between.
-            result = Student.objects.filter(Q(Q(fname__istartswith=words[0]) & Q(lname__istartswith=words[1]) | Q(fname__istartswith=words[1]) & Q(lname__istartswith=words[0])))
-        # if all one word (or technically more but this will fail)
-        else:
-            result = Student.objects.filter(Q(fname__istartswith=q) | Q(lname__istartswith=q) | Q(username__icontains=q))
-        return result.filter(inactive=False)
+        qs = Student.objects.all()
+        for word in q.split():
+            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word) | Q(username__istartswith=q))
+        return qs.order_by('lname')
 
-    def format_result(self,student):
-        """ 
-        the search results display in the dropdown menu.  may contain html and multiple-lines. will remove any |  
-        Null's will break this, so check everything and replace it with something meaningful before return 
-        """
-        year = student.year
-        if not year: year = "Unknown year"
-        try:
-            cra = student.placement.cra
-        except:
-            cra = "No CRA"
-        if not cra: cra = "No CRA"
-        image = student.pic.url_70x65
-        if not image: image = "/static/images/noimage.jpg"
-        company = student.placement
-        if not company: company = "No placement"
-        return "<table style=\"border-collapse: collapse;\"><tr><td><img src=%s></td><td>%s %s<br/>%s<br/>%s<br/>%s</td></tr></table>" \
-            % (image, student.fname, student.lname, year, cra, company)
-
-    def format_item(self,student):
-        """ the display of a currently selected object in the area below the search box. html is OK """
+    def format_match(self,student):
         year = student.year
         if not year: year = "Unknown year"
         try:
@@ -50,37 +24,46 @@ class StudentLookup(object):
             company = student.placement
             if not company: company = "No placement"
         except: company = "None"
-        txt = "<table style=\"border-collapse: collapse;\"><tr><td><img src=%s></td><td><a href=\"/sis/get_student/%s/\" target=\"_blank\">%s %s</a><br/>%s<br/>CRA: %s<br/>%s</td></tr></table>" \
+        txt = '<img align="left" src=%s/> %s %s <br/>%s<br/>CRA: %s<br/>%s' \
+             % (image, student.fname, student.lname, year, cra, company)
+        return txt
+
+    def format_item_display(self,student):
+        year = student.year
+        if not year: year = "Unknown year"
+        try:
+            cra = student.placement.cra
+        except:
+            cra = "No CRA"
+        if not cra: cra = "No CRA"
+        image = student.pic.url_70x65
+        if not image: image = "/static/images/noimage.jpg"
+        try:
+            company = student.placement
+            if not company: company = "No placement"
+        except: company = "None"
+        txt = '<img align="left" src=%s/> <a href=\"/sis/get_student/%s/\" target=\"_blank\">  %s %s</a><br/>%s<br/>CRA: %s<br/>%s' \
              % (image, student.id, student.fname, student.lname, year, cra, company)
         return txt
 
     def get_objects(self,ids):
-        """ given a list of ids, return the objects ordered as you would like them on the admin page.
-            this is for displaying the currently selected items (in the case of a ManyToMany field)
-        """
         return Student.objects.filter(pk__in=ids).order_by('lname')
 
 
 
-class ContactLookup(object):
+class ContactLookup(LookupChannel):
+    model = Contact
+    
     def get_query(self,q,request):
-        """ return a query set.  you also have access to request.user if needed """
-        words = q.split()
-        # if there is a space
-        self.user = request.user
-        if (len(words) == 2):
-            # search based on first or last name in either order with space in between.
-            result = Contact.objects.filter(Q(Q(fname__istartswith=words[0]) & Q(lname__istartswith=words[1]) | Q(fname__istartswith=words[1]) & Q(lname__istartswith=words[0])))
-        # if all one word (or technically more but this will fail)
-        else:
-            result = Contact.objects.filter(Q(fname__istartswith=q) | Q(lname__istartswith=q))
-        return result
+        qs = Contact.objects.all()
+        for word in q.split():
+            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word) | Q(email__istartswith=q))
+        return qs.order_by('lname')
 
-    def format_result(self,contact):
-        """ 
-        the search results display in the dropdown menu.  may contain html and multiple-lines. will remove any |  
-        Null's will break this, so check everything and replace it with something meaningful before return 
-        """
+    def format_match(self,obj):
+        return self.format_item_display(obj)
+
+    def format_item_display(self,contact):
         phone = contact.phone
         if not phone: phone = " "
         phone_cell = contact.phone_cell
@@ -89,25 +72,8 @@ class ContactLookup(object):
         if not fax: fax = " "
         email = contact.email
         if not email: email = " "
-        return "<table style=\"border-collapse: collapse;\"><tr><td>%s %s<br/>%s<br/>%s</td></tr></table>" \
-            % (contact.fname, contact.lname, phone, phone_cell)
-
-
-    def format_item(self,contact):
-        """ the display of a currently selected object in the area below the search box. html is OK """
-        phone = contact.phone
-        if not phone: phone = " "
-        phone_cell = contact.phone_cell
-        if not phone_cell: phone_cell = " "
-        fax = contact.fax
-        if not fax: fax = " "
-        email = contact.email
-        if not email: email = " "
-        return "<table style=\"border-collapse: collapse;\"><tr><td>%s %s<br/>Phone: %s<br/>Cell: %s</td></tr></table>" \
+        return "%s %s<br/>Phone: %s<br/>Cell: %s" \
              % (contact.fname, contact.lname, phone, phone_cell)
 
     def get_objects(self,ids):
-        """ given a list of ids, return the objects ordered as you would like them on the admin page.
-            this is for displaying the currently selected items (in the case of a ManyToMany field)
-        """
         return Contact.objects.filter(pk__in=ids).order_by('lname')

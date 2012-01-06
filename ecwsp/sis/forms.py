@@ -22,6 +22,7 @@ from django.contrib.admin import widgets as adminwidgets
 from django.conf import settings
 
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
+from ajax_select import make_ajax_field
 from tempfile import mkstemp
 from ajax_filtered_fields.forms import ManyToManyByRelatedField
 
@@ -48,8 +49,8 @@ class StudentForm(forms.ModelForm):
     ssn = USSocialSecurityNumberField(required=False)
     state = USStateField()
     zip = USZipCodeField(required=False)
-    siblings = AutoCompleteSelectMultipleField('all_student', required=False)
-    emergency_contacts = AutoCompleteSelectMultipleField('emergency_contact', required=False)
+    siblings  = make_ajax_field(Student,'siblings','all_student',help_text=None)
+    emergency_contacts  = make_ajax_field(Student,'emergency_contacts','emergency_contact',help_text=None)
 
 
 class UserPreferenceForm(forms.ModelForm):

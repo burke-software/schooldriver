@@ -1,7 +1,10 @@
 from django.db.models import Q
 from ecwsp.omr.models import *
+from ajax_select import LookupChannel
 
-class BenchmarkLookup(object):
+class BenchmarkLookup(LookupChannel):
+    model = Benchmark
+    
     def get_query(self,q,request):
         result = Benchmark.objects.all()
         if request.session['omr_test_id']:
@@ -11,17 +14,13 @@ class BenchmarkLookup(object):
         result = result.filter(Q(name__icontains=q) | Q(number__icontains=q))
         return result
 
-    def format_result(self, object):
-        return "%s %s" % (object.number, object.name)
-
-    def format_item(self,object):
-        return "%s %s" % (object.number, object.name)
-
     def get_objects(self,ids):
         return Benchmark.objects.filter(pk__in=ids).order_by('name')
         
 
-class ThemeLookup(object):
+class ThemeLookup(LookupChannel):
+    model = Theme
+    
     def get_query(self,q,request):
         result = Theme.objects.filter(Q(name__contains=q))
         return result
