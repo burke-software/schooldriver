@@ -18,7 +18,6 @@ class StudentLookup(LookupChannel):
         if not UserPreference.objects.get_or_create(user=request.user)[0].include_deleted_students:
             qs = qs.filter(inactive=False)
         for word in q.split():
-            print word
             qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word))
         return qs.order_by('lname')
 
@@ -69,7 +68,6 @@ class EmergencyContactLookup(LookupChannel):
     def get_query(self,q,request):
         qs = EmergencyContact.objects.all()
         for word in q.split():
-            print word
             qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word))
         return qs.order_by('lname')
 

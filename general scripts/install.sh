@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # install everything needed to run this application, start with deb files, should be run as root
-apt-get install mysql-server libapache2-mod-wsgi python-xlwt python-reportlab python-mysqldb python-ldap python-setuptools python-feedparser python-xlrd python-mysqldb mysql-client
+apt-get install mysql-server libapache2-mod-wsgi python-xlwt python-reportlab python-mysqldb python-ldap python-pip python-feedparser python-xlrd python-mysqldb mysql-client
 
 # now install python libs that aren't in deb
 cd /var/tmp
@@ -9,25 +9,8 @@ wget http://downloads.sourceforge.net/project/pyrtf/pyrtf/0.45/PyRTF-0.45.tar.gz
 tar -xvf PyRTF-0.45.tar.gz
 cd PyRTF-0.45
 python setup.py install
-easy_install django
-easy_install django-reversion
-easy_install simplejson
-easy_install httpagentparser
 # stable version of ldap-groups may not work with mysql
-easy_install django-ldap-groups
-easy_install django_cas
-easy_install django-ajax-selects
-easy_install django_extensions
-easy_install django-grappelli
-easy_install django-ckeditor
-easy_install elementtree
-easy_install django-filter
-easy_install poster
-easy_install django-ajax-filtered-fields
-easy_install django-mass-edit
-easy_install django-pagination
-easy_install django-admin-export
-easy_install django-custom-field
+pip install django django-reversion simplejson httpagentparser django-ldap-groups django_cas django-ajax-selects django_extensions django-grappelli django-ckeditor elementtree django-filter poster django-ajax-filtered-fields django-mass-edit django-pagination django-admin-export django-custom-field
 
 #prepare mysql
 echo "enter mysql root password"
