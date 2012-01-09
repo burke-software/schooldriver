@@ -54,7 +54,7 @@ class ManualEditAnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
         widgets = {
-            input: radiobutton
+            input: RadioSelect
         }
         
 
