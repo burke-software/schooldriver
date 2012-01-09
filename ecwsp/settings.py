@@ -19,6 +19,15 @@
 #       MA 02110-1301, USA.
 import os,sys, logging
 
+TEMPLATE_DIRS = os.path.join('/opt/sword/templates/')
+staticHead = os.path.dirname(os.path.abspath(''))
+STATICFILES_DIRS = ((''),
+    '/opt/sword/static_files/',
+)
+staticRootHead = os.path.dirname(os.path.abspath(''))
+STATIC_ROOT = os.path.join(staticRootHead, 'static/')
+STATIC_URL = '/static/'
+
 
 LDAP = False
 if LDAP:
@@ -85,8 +94,6 @@ ASP = True
 # m = Microsoft Binary
 # x = Microsoft XML
 PREFERED_FORMAT = 'o'
-templateHead = os.path.dirname(os.path.abspath(''))
-TEMPLATE_DIRS = os.path.join('/opt/sword/templates/')
 
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
@@ -117,15 +124,6 @@ else:
 MEDIA_URL = '/media/'
 mediaHead = os.path.dirname(os.path.abspath(''))
 MEDIA_ROOT = os.path.join(mediaHead, 'media/')
-
-staticHead = os.path.dirname(os.path.abspath(''))
-STATICFILES_DIRS = ((''),
-    '/opt/sword/static_files/',
-)
-
-staticRootHead = os.path.dirname(os.path.abspath(''))
-STATIC_ROOT = os.path.join(staticRootHead, 'static/')
-STATIC_URL = '/static/'
 
 ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
 

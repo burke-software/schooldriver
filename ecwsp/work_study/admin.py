@@ -286,7 +286,6 @@ admin.site.register(Contact, ContactAdmin)
 
 class TimeSheetPerformanceChoiceAdmin(admin.ModelAdmin):
     list_display = ('edit', 'name', 'rank')
-    #list_display_links = ('edit',)
     list_editable = ('name', 'rank')
     
 admin.site.register(TimeSheetPerformanceChoice, TimeSheetPerformanceChoiceAdmin)

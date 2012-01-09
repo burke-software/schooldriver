@@ -148,7 +148,6 @@ def discipline_report_view(request):
                         student.merit_level = 3
                     elif student.disc_count <= l4:
                         student.merit_level = 4
-                    print student.disc_count
                 data['students'] = students
                 template = Template.objects.get_or_create(name="Merit Level Handout")[0]
                 template = template.get_template_path(request)

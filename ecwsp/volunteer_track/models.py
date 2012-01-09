@@ -24,6 +24,7 @@ from django.contrib import messages
 
 from datetime import datetime
 import random
+import sys
 
 from ecwsp.administration.models import Configuration
 
@@ -82,8 +83,12 @@ class Volunteer(models.Model):
             old_volunteer = Volunteer.objects.get(id=self.id)
             if saved_by_volunteer:
                 if old_volunteer.site != self.site:
+                    if not self.email_queue:
+                        self.email_queue = ""
                     self.email_queue += "Changed site from %s to %s. " % (unicode(old_volunteer.site), unicode(self.site))
                 if old_volunteer.site_supervisor != self.site_supervisor:
+                    if not self.email_queue:
+                        self.email_queue = ""
                     self.email_queue += "Changed supervisor from %s to %s. " % (unicode(old_volunteer.site_supervisor), unicode(self.site_supervisor))
             
             if old_volunteer.site_approval == "Submitted" and self.site_approval == "Accepted":
