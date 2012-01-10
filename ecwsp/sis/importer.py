@@ -2060,7 +2060,7 @@ class Importer:
                         elif name == "primary supervisor id" or name == "supervisor id":
                             supid = value
                             if Contact.objects.get(id=supid):
-                                model.primary_contact = value
+                                model.primary_contact = Contact.objects.get(id=supid)
                 model.save()
                 if created:
                     self.log_and_commit(model, addition=True)
