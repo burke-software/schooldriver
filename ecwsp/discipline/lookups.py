@@ -29,7 +29,7 @@ class StudentWithDisciplineLookup(StudentLookup):
 
 
 class DisciplineViewStudentLookup(StudentLookup):
-    def format_item(self,student):
+    def format_item_display(self,student):
         year = student.year
         if not year: year = "Unknown year"
         image = student.pic.url_70x65
