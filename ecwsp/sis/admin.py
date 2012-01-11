@@ -117,14 +117,14 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         """override to hide inactive students by default"""
         try:
             test = request.META['HTTP_REFERER'].split(request.META['PATH_INFO'])
-            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('inactive__exact'):
+            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('inactive__exact') and not request.GET.has_key('id__in'):
                 return HttpResponseRedirect("/admin/sis/student/?inactive__exact=0")
         except: pass # In case there is no referer
         return super(StudentAdmin,self).changelist_view(request, extra_context=extra_context)
 
     
     def lookup_allowed(self, lookup, *args, **kwargs):
-        if lookup in ('year__id__exact'):
+        if lookup in ('id', 'id__in', 'year__id__exact'):
             return True
         return super(StudentAdmin, self).lookup_allowed(lookup, *args, **kwargs)
     

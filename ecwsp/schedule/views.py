@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -432,14 +432,12 @@ def check_if_match(grade, filter, filter_grade):
 def grade_analytics(request):
     form = GradeFilterForm()
     if request.method == 'POST':
-        if 'bulk' in request.POST:
+        if 'edit' in request.POST:
             selected = request.POST.getlist('selected')
-            queryset = Student.objects.filter(id__in=selected)
-            return redirect_to(request, url = '/admin/sis/%s-masschange/%s' % ('student', ','.join(selected)))
+            return redirect('/admin/sis/student/?id__in=%s' % (','.join(selected),))
             
         form = GradeFilterForm(request.POST)
         if form.is_valid():
-            # Add to course
             ids = []
             if 'submit_course' in request.POST and 'course' in request.POST:
                 course_selection = CourseSelectionForm(request.POST)
@@ -455,16 +453,20 @@ def grade_analytics(request):
                     else:
                         messages.success(request, 'Did not enroll, please select students and a course.')
             course_selection = CourseSelectionForm()
+            
             data = form.cleaned_data
+            
             students = Student.objects.all()
             if not data['include_deleted']:
                 students = students.filter(inactive=False)
             if data['filter_year']:
                 students = students.filter(year__in=data['filter_year'])
-            if data['currently_in_asp']:
-                students = students.filter(courseenrollment__course__asp=True)
             if data['in_individual_education_program']:
                 students = students.filter(individual_education_program=True)
+            if data['gpa']:
+                # this will be something like filter(cache_gpa__lte=gpa)
+                arg = 'cache_gpa__' + data['gpa_equality']
+                students = students.filter(**{arg: data['gpa'],})
             
             courses = Course.objects.filter(courseenrollment__user__in=students, graded=True)
             if data['this_year']:
@@ -486,29 +488,20 @@ def grade_analytics(request):
             show_students = []
             max_courses = 0
             
-            #Figure out dates
-            if data['date_begin'] and date['date_end']:
-                date_begin = data['date_begin']
-                date_end = date['date_end']
-            elif data['marking_period']:
-                mps = data['marking_period'].order_by('-end_date')
-                date_begin = mps.reverse()[0].start_date
-                date_end = mps[0].end_date
-            elif data['this_year']:
-                year = SchoolYear.objects.get(active_year=True)
-                date_begin = year.start_date
-                date_end = year.end_date
-            else: # all of time
-                date_begin = date(1980, 1, 1)
-                date_end = date(2980, 1, 1)
+            (date_begin, date_end) = form.get_dates()
             
             # Pre load Discipline data
             if 'ecwsp.discipline' in settings.INSTALLED_APPS:
                 if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
-                    student_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end), studentdiscipline__action=data['filter_disc_action']).annotate(action_count=Count('studentdiscipline__action'))
+                    
+                    student_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end),
+                                                          studentdiscipline__action=data['filter_disc_action'],
+                                                          ).annotate(action_count=Count('studentdiscipline__action'))
             # Pre load Attendance data
             if data['filter_attn'] and data['filter_attn_times']:
-                student_attendances = students.filter(student_attn__date__range=(date_begin, date_end), student_attn__status__absent=True).annotate(attn_count=Count('student_attn'))
+                student_attendances = students.filter(student_attn__date__range=(date_begin, date_end),
+                                                      student_attn__status__absent=True,
+                                                      ).annotate(attn_count=Count('student_attn'))
                 
             for student in students:
                 # if this is a report, only calculate for selected students.
@@ -519,7 +512,6 @@ def grade_analytics(request):
                     student.courses = []
                     i_courses = 0
                     
-                    # For ASP
                     student.departments = []
                     for dept in Department.objects.all():
                         student.departments.append("")
@@ -545,7 +537,7 @@ def grade_analytics(request):
                                         i += 1
                                 else:
                                     match_all = False
-                    if data['each_marking_period'] or data['mid_mark']:
+                    if data['each_marking_period']:
                         # Using just grades for optimization. Rather than for course, for mp, for grade.
                         for grade in student.grade_set.filter(course__in=courses, course__courseenrollment__user=student).order_by('course__department', 'marking_period').select_related():
                             if mps_selected == [] or grade.marking_period_id in mps_selected:
@@ -571,14 +563,7 @@ def grade_analytics(request):
                                         num_matched += 1
                                     else:
                                         match_all = False
-                                if data['mid_mark'] and grade.final == False and grade.override_final == False:
-                                    grade_value = grade.get_grade()
-                                    match = check_if_match(grade_value, data['filter'], data['grade'])
-                                    if match:
-                                        grades_text += str(grade.marking_period.shortname) + str(grade.course) + '(mid):' + str(grade_value) + " "
-                                        num_matched += 1
-                                    else:
-                                        match_all = False
+                                
                         if grades_text:
                             student.courses.append(str(course.shortname) + ' <br/>' + grades_text)
                             i_courses += 1
@@ -598,10 +583,11 @@ def grade_analytics(request):
                     # Check discipline
                     if 'ecwsp.discipline' in settings.INSTALLED_APPS:
                         if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
-                            try:
-                                student.action_count = student_disciplines.get(id=student.id).action_count
-                            except:
-                                student.action_count = 0
+                            student.action_count = 0
+                            for disc in student_disciplines:
+                                if disc.id == student.id:
+                                    student.action_count = disc.action_count
+                                    break
                             if ((data['filter_disc'] == "lt" and not student.action_count < int(data['filter_disc_times'])) or 
                                 (data['filter_disc'] == "lte" and not student.action_count <= int(data['filter_disc_times'])) or 
                                 (data['filter_disc'] == "gt" and not student.action_count > int(data['filter_disc_times'])) or 
@@ -647,11 +633,6 @@ def grade_analytics(request):
                             row.append("")
                             i += 1
                         
-                        # add dept data for asp
-                        if 'xls_asp' in request.POST:
-                            for dept in student.departments:
-                                row.append(dept)
-                        
                         data.append(row)
                 titles.append('Grades')
                 
@@ -665,5 +646,5 @@ def grade_analytics(request):
                 report = xlsReport(data, titles, "analytics.xls", heading="Analytics Report")
                 return report.finish()
                 
-            return render_to_response('schedule/grade_analytics.html', {'form': form, 'course_selection': course_selection, 'students': show_students,}, RequestContext(request, {}),)
+            return render_to_response('schedule/grade_analytics.html', {'form': form, 'course_selection': None, 'students': show_students,}, RequestContext(request, {}),)
     return render_to_response('schedule/grade_analytics.html', {'form': form,}, RequestContext(request, {}),)

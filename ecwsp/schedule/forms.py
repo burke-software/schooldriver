@@ -34,8 +34,7 @@ class GradeUpload(UploadFileForm, MarkingPeriodSelectForm):
 class GradeFilterForm(TimeBasedForm):
     marking_period = forms.ModelMultipleChoiceField(required=False, queryset=MarkingPeriod.objects.all())
     final = forms.BooleanField(required=False)
-    each_marking_period = forms.BooleanField(required=False)
-    mid_mark = forms.BooleanField(required=False)
+    each_marking_period = forms.BooleanField(required=False,initial=True)
     grade = forms.CharField(max_length=5,
                             widget=forms.TextInput(attrs={'placeholder': 'Enter Grade Here'}),
                             required=False,
@@ -46,10 +45,11 @@ class GradeFilterForm(TimeBasedForm):
         ("gt", "Greater Than"),
         ("gte", "Greater Than Equals"),
     )
+    gpa = forms.DecimalField(max_digits=5, decimal_places=2, required=False)
+    gpa_equality =  forms.ChoiceField(choices=filter_choices)
     filter = forms.ChoiceField(choices=filter_choices)
     filter_times = forms.CharField(max_length=2, required=False, initial="*", widget=forms.TextInput(attrs={'style':'width:20px;'}))
     filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
-    currently_in_asp = forms.BooleanField(required=False)
     in_individual_education_program = forms.BooleanField(required=False)
     #disc
     if 'ecwsp.discipline' in settings.INSTALLED_APPS:
