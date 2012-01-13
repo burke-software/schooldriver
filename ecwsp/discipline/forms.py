@@ -76,4 +76,5 @@ class MeritForm(forms.Form):
     level_two = forms.IntegerField(initial=get_default_two, required=False)
     level_three = forms.IntegerField(initial=get_default_three, required=False)
     level_four = forms.IntegerField(initial=get_default_four, required=False)
+    sort_by = forms.ChoiceField(choices=(('lname', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
     
