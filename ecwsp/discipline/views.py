@@ -132,6 +132,10 @@ def discipline_report_view(request):
                 end_date = merit_form.cleaned_data['end_date']
                 
                 students = Student.objects.filter(inactive=False)
+                if merit_form.cleaned_data['sort_by'] == 'year':
+                    students = students.order_by('year')
+                elif merit_form.cleaned_data['sort_by'] == 'cohort':
+                    students = students.order_by('cache_cohort')
                 disciplines = StudentDiscipline.objects.filter(date__range=(start_date, end_date)).values('students').annotate(Count('pk'))
                 for student in students:
                     disc = 0

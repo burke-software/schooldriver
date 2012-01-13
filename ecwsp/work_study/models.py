@@ -531,7 +531,10 @@ m2m_changed.connect(set_stu_int_placement, sender=StudentInteraction.student.thr
 
 def get_next_rank():
     """ Return next ranking """
-    return TimeSheetPerformanceChoice.objects.order_by('-rank')[0].id + 1
+    try:
+        return TimeSheetPerformanceChoice.objects.order_by('-rank')[0].id + 1
+    except IndexError:
+        return 1
 class TimeSheetPerformanceChoice(models.Model):
     name = models.CharField(max_length=255, unique=True)
     rank = models.IntegerField(unique=True, default=get_next_rank, help_text="Must be unique. Convention is that higher numbers are better.")
