@@ -71,7 +71,6 @@
 				color:#565656;
 				display:block;
 				float:left;
-				font-size:1.1em;
 				font-weight:bold;
 				margin:5px 1px;
 				padding:7px 20px 4px;
@@ -160,8 +159,8 @@
 			<nav class="clear">
 				<ul>
 					{% if supervisor %}
-						<li><a href="{% url ecwsp.work_study.views.supervisor_dash %}">Supervisor Dashboard</a></li>
-						<li><a href="/accounts/password_change">Change Password</a></li>
+					    <li><a href="{% url ecwsp.work_study.views.supervisor_dash %}">Supervisor Dashboard</a></li>
+					    <li><a href="/accounts/password_change">Change Password</a></li>
 					{% endif %}
 					{% if student %}
 					    {% if "ecwsp.work_study" in settings.INSTALLED_APPS %}
@@ -174,6 +173,7 @@
 					    {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
 						<li><a href="{% url ecwsp.benchmark_grade.views.student_grade %}">Grades</a></li>
 					    {% endif %}
+					    <li><a href="/accounts/password_change">Change Password</a></li>
 					{% endif %}
 					{% block nav %}
 					{% endblock %}

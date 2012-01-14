@@ -1,163 +1,222 @@
-{% extends "admin/index.html" %}
+{% extends "admin/base_site.html" %}
 {% load i18n %}
 
 {% block extrahead %}
-    {% load adminmedia %}
-	<script type="text/javascript" src="/admin/jsi18n/"></script>
-    <script type="text/javascript" src="/static/grappelli/js/core.js"></script>
-	{{ form.media }}
-	
-	<script src="/static/js/jquery.tools.min.js" type="text/javascript"></script>
-	<style type="text/css">
-		.colM  {
-			width: 100%;
-		}
-		.dashboard #content {
-			width: 99%;
-		}
-		.course_cell {
-			border: none;
-			padding-top: 0px;
-			margin-top: 0px;
-			padding-bottom: 0px;
-			margin-bottom: 0px;
-		}
-		td{
-			vertical-align: middle;
-		}
-		tr:nth-child(even).alter {
-			background-color:#EDF3FE;
-		}
-		.header {
-			background-image: -webkit-gradient(
-				linear,
-				left bottom,
-				left top,
-				color-stop(0.05, rgb(219,219,219)),
-				color-stop(0.77, rgb(250,250,250))
-			);
-			background-image: -moz-linear-gradient(
-				center bottom,
-				rgb(219,219,219) 5%,
-				rgb(250,250,250) 77%
-			);
-		}
-		td, th {
-			padding-top: 3px;
-			padding-bottom: 3px;
-		}
-		
-		.modal {
-			background-color:#fff;
-			display:none;
-			width:550px;
-			padding:15px;
-			text-align:center;
-			border:2px solid #333;
-		
-			opacity:0.9;
-			border-radius:6px;
-			-moz-border-radius:6px;
-			-webkit-border-radius:6px;
-			box-shadow: 0 0 100px #ddd;
-			-moz-box-shadow: 0 0 100px #ddd;
-			-webkit-box-shadow: 0 0 100px #ddd;
-		}
-	</style>
-	
-	<script type="text/javascript"> 
-		$(document).ready(function()
-		{
-			$("#check_all").click(function()				
-			{
-				var checked_status = this.checked;
-				$(".check_student").each(function()
-				{
-					this.checked = checked_status;
-				});
-			});
-		});
-	</script> 
+    
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+	<script type="text/javascript" src="/static/grappelli/js/core.js"></script>
+    <script type="text/javascript" src="/static/grappelli/js/calendar.js"></script>    
+    <script type="text/javascript" src="/static/grappelli/js/admin/DateTimeShortcuts.js"></script>
+    <script type="text/javascript" src="/static/js/time_actions.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            grappelli.initDateAndTimePicker();
+        });
+    </script>
+    
+    <style type="text/css">
+        .colM  {
+            width: 100%;
+        }
+        .dashboard #content {
+            width: 99%;
+        }
+        .course_cell {
+            border: none;
+            padding-top: 0px;
+            margin-top: 0px;
+            padding-bottom: 0px;
+            margin-bottom: 0px;
+        }
+        td{
+            vertical-align: middle;
+        }
+        tr:nth-child(even).alter {
+            background-color:#EDF3FE;
+        }
+        .header {
+            background-image: -webkit-gradient(
+                linear,
+                left bottom,
+                left top,
+                color-stop(0.05, rgb(219,219,219)),
+                color-stop(0.77, rgb(250,250,250))
+            );
+            background-image: -moz-linear-gradient(
+                center bottom,
+                rgb(219,219,219) 5%,
+                rgb(250,250,250) 77%
+            );
+        }
+        td, th {
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
+        
+        .modal {
+            background-color:#fff;
+            display:none;
+            width:550px;
+            padding:15px;
+            text-align:center;
+            border:2px solid #333;
+        
+            opacity:0.9;
+            border-radius:6px;
+            -moz-border-radius:6px;
+            -webkit-border-radius:6px;
+            box-shadow: 0 0 100px #ddd;
+            -moz-box-shadow: 0 0 100px #ddd;
+            -webkit-box-shadow: 0 0 100px #ddd;
+        }
+        
+        div.container {
+            width: 100%
+        }
+        
+        tr.top td { border-top: thin solid black; }
+        tr.bottom td { border-bottom: thin solid black; }
+        tr.row td:first-child { border-left: thin solid black; }
+        tr.row td:last-child { border-right: thin solid black; }
+        tbody tr.row:last-child td, tbody tr.row:last-child th {
+            border-bottom: thin solid black;
+        }
+    </style>
+    
+    <script type="text/javascript"> 
+        $(document).ready(function()
+        {
+            $("#check_all").click(function()                
+            {
+                var checked_status = this.checked;
+                $(".check_student").each(function()
+                {
+                    this.checked = checked_status;
+                });
+            });
+        });
+        
+	function options_toggle(id) {
+            /*id must follow convenction toggle_model_action
+             Ex id = toggle_student_filter */
+            if ($('#' + id.split("_")[1] + '_' + id.split("_")[2]).is(':visible')) {
+                $('#' + id).html('Show ' + id.split("_").slice(-2) );
+            } else {
+                $('#' + id).html('Hide ' + id.split("_").slice(-2));
+            }
+            $('#' + id.split("_")[1] + '_' + id.split("_")[2]).toggle('fast');
+        }
+    </script>
 {% endblock %}
 
 {% block content %}
 
     <h2> Grade Analytics </h2>
     <form action="" method="post">
-		{{ form.non_field_errors  }}
-		<table>
-			<tr><td style="border: solid 1px;">
-				<span style="font-weight:bold"> Dates </span><br/>
-					{{ form.this_year.label }} {{ form.this_year }} {{ form.this_year.errors }}
-					<br/> {{ form.all_years.label }} {{ form.all_years }} {{ form.all_years.errors }}
-					<br/> {{ form.date_begin.label }} {{ form.date_begin }} {{ form.date_begin.errors }}
-					<br/> {{ form.date_end.label }} {{ form.date_end }} {{ form.date_end.errors }}
-				</fieldset>
-			</td><td style="border: solid 1px;">
-				<span style="font-weight:bold"> Grades </span><br/>
-					{{ form.final.label }} {{ form.final }} {{ form.final.errors }}
-					<br/> {{ form.each_marking_period.label }} {{ form.each_marking_period }} {{ form.each_marking_period.errors }}
-					<br/> {{ form.mid_mark.label }} {{ form.mid_mark }} {{ form.mid_mark.errors }}
-				</fieldset>
-			</td><td style="border: solid 1px;">
-				<span style="font-weight:bold"> Students </span><br/>
-					{{ form.include_deleted.label }} {{ form.include_deleted }} {{ form.include_deleted.errors }}
-					<br/> {{ form.currently_in_asp.label }} {{ form.currently_in_asp }} {{ form.currently_in_asp.errors }}
-					<br/> {{ form.in_individual_education_program.label }} {{ form.in_individual_education_program }} {{ form.in_individual_education_program.errors }}
-					<br/> {{ form.filter_year.label }} {{ form.filter_year }} {{ form.filter_year.errors }}
-				</fieldset>
-			</td><td style="border: solid 1px;">
-				<span style="font-weight:bold"> {{ form.marking_period.label }} </span><br/> {{ form.marking_period }} {{ form.marking_period.errors }}
-			</td></tr><tr><td colspan="4" style="border: solid 1px;">
-				Discipline: {{ form.filter_disc_action }} {{ form.filter_disc_action.errors }}
-				{{ form.filter_disc }} {{ form.filter_disc.errors }}
-				{{ form.filter_disc_times }} {{ form.filter_disc_times.errors }} times
-			</td></tr><tr><td colspan="4" style="border: solid 1px;">
-				Attendance: Total absenses
-				{{ form.filter_attn }} {{ form.filter_attn.errors }}
-				{{ form.filter_attn_times }} {{ form.filter_attn_times.errors }} times
-			</td></tr><tr><td colspan="4" style="border: solid 1px;">
-				Grade: {{ form.filter }} {{ form.filter.errors }} {{ form.grade }} {{ form.grade.errors }}
-				{{ form.filter_times }} {{ form.filter_times.errors }} times
-				<input type="submit" style="min-width:90px;" value="Go"/>
-			</td></tr>
-		</table>
-	
-	{% if students %}
-		<div class="modal" id="enroll_form">
-			<h4>Select course to enroll selected students in.</h4>
-			{{ course_selection.as_p }}
-			<input type="submit" name="submit_course"/>
-		</div>
-		
-		<table>
-			<tr class="alter header">
-				<th> <input type="checkbox" id="check_all" /></th>
-				<td>Select all </td> <td style="text-align:right;">
-				<input type="button" class="modalInput" value="Enroll in..." rel="#enroll_form"/>
-				<input type="submit" name="xls" value="Export to XLS"/>
-				<input type="submit" name="xls_asp" value="ASP XLS"/>
-				<input type="button" value="Print Report"/>
-				<input type="submit" name="bulk" value="Bulk Edit Students"/>
-				</td>
-			</tr>
-			{% for student in students %}
-				<tr class="alter">
-					<td><input type="checkbox" class="check_student" name="selected" value="{{ student.id }}"/></td>
-					<td> <a href="/sis/view_student/?student={{ student.id }}&show_grades=True" target="_blank"> {{ student }} </a> </td>
-					<td>
-						<table style="border: none">
-							<tr>
-							{% for course in student.courses %}
-								<td class="course_cell">{{ course|safe }} </td>
-							{% endfor %}
-							</td>
-						</table>
-					</td>
-				</tr>
-			{% endfor %}
-		</table>
-	{% endif %}
-	</form>
+        {{ form.non_field_errors  }}
+        <table cellspacing="0">
+            <tr class="top row">
+                <td colspan="2" >
+                    <a href="#" id="toggle_time_options" onclick='options_toggle(id)'>Show time options</a>
+                    <br/>
+                    <div id="time_options" class="container" style="display: none;">
+                        <div style="float:left;">
+                            {{ form.this_year.label }} {{ form.this_year }} {{ form.this_year.errors }}
+                            <br/> {{ form.all_years.label }} {{ form.all_years }} {{ form.all_years.errors }}
+                            <br/> {{ form.date_begin.label }} {{ form.date_begin }} {{ form.date_begin.errors }}
+                            <br/> {{ form.date_end.label }} {{ form.date_end }} {{ form.date_end.errors }}
+                        </div>
+                        <div style="float:right;">
+                            {{ form.marking_period }} {{ form.marking_period.errors }}
+                        </div>
+                    </div>
+                    
+                    {{ form.each_marking_period }} Include each marking period grade {{ form.each_marking_period.errors }}
+                    <br/>
+                    {{ form.final }} Include final calculated grade {{ form.final.errors }}
+                    <br/>
+                    <a href="#" id="toggle_filter_options" onclick='options_toggle(id)'>Show student filter</a>
+                    <div id="filter_options" style="display: none">
+                        <div style="float:left;">
+                            Include inactive students {{ form.include_deleted }} {{ form.include_deleted.errors }}
+                            <br/>
+                            {{ form.in_individual_education_program.label }} {{ form.in_individual_education_program }} {{ form.in_individual_education_program.errors }}
+                        </div>
+                        <div style="float:right">
+                            {{ form.filter_year.label }} {{ form.filter_year }} {{ form.filter_year.errors }}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr class="row">
+                <td >Discipline:</td>
+                <td >
+                    {{ form.filter_disc_action }} {{ form.filter_disc_action.errors }}
+                    {{ form.filter_disc }} {{ form.filter_disc.errors }}
+                    {{ form.filter_disc_times }} {{ form.filter_disc_times.errors }} times
+                </td>
+            </tr>
+            <tr class="row">
+                <td> Absenses </td>
+                <td>
+                    {{ form.filter_attn }} {{ form.filter_attn.errors }}
+                    {{ form.filter_attn_times }} {{ form.filter_attn_times.errors }} times
+                </td>
+            </tr>
+            <tr class="row">
+                <td>Grades</td>
+                <td>
+                    {{ form.filter }} {{ form.filter.errors }} {{ form.grade }} {{ form.grade.errors }}
+                    {{ form.filter_times }} {{ form.filter_times.errors }} times
+                </td>
+            </tr>
+            <tr class="row">
+                <td>GPA</td>
+                <td>
+                    {{ form.gpa_equality }} {{ form.gpa_equality.errors }} {{ form.gpa }} {{ form.gpa.errors }}
+                    <br/>
+                    
+                </td>
+            </tr>
+        </table>
+    <input type="submit" style="min-width:90px;" value="Go"/>
+    {% if students %}
+        <div class="modal" id="enroll_form">
+            <h4>Select course to enroll selected students in.</h4>
+            {{ course_selection.as_p }}
+            <input type="submit" name="submit_course"/>
+        </div>
+        
+        <table>
+            <tr class="alter header">
+                <th> <input type="checkbox" id="check_all" /></th>
+                <td>Select all </td>
+                <td style="text-align:right;">
+                    <!--<input type="button" class="modalInput" value="Enroll in..." rel="#enroll_form"/>-->
+                    <input type="submit" name="xls" value="Export to XLS"/>
+                    <input type="submit" name="xls_asp" value="ASP XLS">
+                    {% if perms.sis.change_student %}
+                        <input type="submit" name="edit" value="View selected in edit list"/>
+                    {% endif %}
+                </td>
+            </tr>
+            {% for student in students %}
+                <tr class="alter">
+                    <td><input type="checkbox" class="check_student" name="selected" value="{{ student.id }}"/></td>
+                    <td> <a href="/sis/view_student/?student={{ student.id }}&show_grades=True" target="_blank"> {{ student }} </a> </td>
+                    <td>
+                        <table style="border: none">
+                            <tr>
+                            {% for course in student.courses %}
+                                <td class="course_cell">{{ course|safe }} </td>
+                            {% endfor %}
+                            </td>
+                        </table>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    </form>
 {% endblock %}
 

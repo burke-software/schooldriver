@@ -2,74 +2,55 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
 from django.contrib.auth.models import User
+from django.utils.html import escape
+from ajax_select import LookupChannel
 
 from ecwsp.sis.models import *
 from ecwsp.administration.models import *
 
 from datetime import date
 
-class StudentLookup(object):
+class StudentLookup(LookupChannel):
+    model = Student
+    
     def get_query(self,q,request):
-        """ return a query set.  you also have access to request.user if needed """
-        if not request.user.has_perm('sis.view_student'):
-            return Student.objects.none()  # Rather than 500 error, just return nothing.
-        
-        words = q.split()
-        # if there is a space
-        if (len(words) == 2):
-            # search based on first or last name in either order with space in between.
-            result = Student.objects.filter(Q(Q(fname__istartswith=words[0]) & Q(lname__istartswith=words[1]) | Q(fname__istartswith=words[1]) & Q(lname__istartswith=words[0])))
-        # if all one word (or technically more but this will fail)
-        else:
-            result = Student.objects.filter(Q(fname__istartswith=q) | Q(lname__istartswith=q) | Q(username__icontains=q))
-        pref = UserPreference.objects.get_or_create(user=request.user)[0]
-        if pref.include_deleted_students:
-            return result
-        return result.filter(inactive=False)
+        qs = Student.objects.all()
+        if not UserPreference.objects.get_or_create(user=request.user)[0].include_deleted_students:
+            qs = qs.filter(inactive=False)
+        for word in q.split():
+            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word))
+        return qs.order_by('lname')
 
-    def format_result(self,student):
-        """ 
-        the search results display in the dropdown menu.  may contain html and multiple-lines. will remove any |  
-        Null's will break this, so check everything and replace it with something meaningful before return 
-        """
+    def format_match(self,student):
         year = student.year
         if not year: year = "Unknown year"
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
-        return "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=%s></td><td>%s %s<br/>%s</td></tr></table>" \
+        return '<div style="width:250px; min-height:53px;"><img style="float:left; margin-right: 3px;" src=%s> %s %s <br/> %s </div>' \
             % (image, student.fname, student.lname, year)
 
-    def format_item(self,student):
-        """ the display of a currently selected object in the area below the search box. html is OK """
+    def format_item_display(self,student):
         year = student.year
         if not year: year = "Unknown year"
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
-        return "<table style=\"border-collapse: collapse;\"><tr><td><img src=%s></td><td><a href=\"/admin/sis/student/%s/\" target=\"_blank\">%s %s</a><br/>%s</td></tr></table>" \
-            % (image, student.id, student.fname, student.lname, year)
+        return '<div style="min-width:250px; min-height:53px;"><img style="float:left; margin-right: 3px;" src=%s> %s %s <br/> %s </div><div/>' \
+            % (image, student.fname, student.lname, year) 
 
     def get_objects(self,ids):
-        """ given a list of ids, return the objects ordered as you would like them on the admin page.
-            this is for displaying the currently selected items (in the case of a ManyToMany field)
-        """
         return Student.objects.filter(pk__in=ids).order_by('lname')
 
 
 class AllStudentLookup(StudentLookup):
+    """ Always looks up inactive students too """
     def get_query(self,q,request):
-        """ return a query set.  you also have access to request.user if needed """
-        words = q.split()
-        # if there is a space
-        if (len(words) == 2):
-            # search based on first or last name in either order with space in between.
-            result = Student.objects.filter(Q(Q(fname__istartswith=words[0]) & Q(lname__istartswith=words[1]) | Q(fname__istartswith=words[1]) & Q(lname__istartswith=words[0])))
-        # if all one word (or technically more but this will fail)
-        else:
-            result = Student.objects.filter(Q(fname__istartswith=q) | Q(lname__istartswith=q) | Q(username__icontains=q))
-        return result
+        qs = Student.objects.all()
+        for word in q.split():
+            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word))
+        return qs.order_by('lname')
 
 class StudentLookupSmall(StudentLookup):
-    def format_result(self,student):
+    def format_match(self,student):
         year = student.year
         if not year: year = "Unknown year"
         image = student.pic.url_70x65
@@ -77,29 +58,20 @@ class StudentLookupSmall(StudentLookup):
         return "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=%s></td><td>%s %s<br/>%s</td></tr></table>" \
             % (image, student.fname, student.lname, year)
 
-    def format_item(self,student):
+    def format_item_display(self,student):
         return "%s %s" % (student.fname, student.lname)
 
-    def get_objects(self,ids):
-        return Student.objects.filter(pk__in=ids).order_by('lname')
 
-
-class EmergencyContactLookup(object):
+class EmergencyContactLookup(LookupChannel):
+    model = EmergencyContact
+    
     def get_query(self,q,request):
-        words = q.split()
-        # if there is a space
-        if (len(words) == 2):
-            # search based on first or last name in either order with space in between.
-            result = EmergencyContact.objects.filter(Q(Q(fname__istartswith=words[0]) & Q(lname__istartswith=words[1]) | Q(fname__istartswith=words[1]) & Q(lname__istartswith=words[0])))
-        # if all one word (or technically more but this will fail)
-        else:
-            result = EmergencyContact.objects.filter(Q(fname__istartswith=q) | Q(lname__istartswith=q))
-        return result
+        qs = EmergencyContact.objects.all()
+        for word in q.split():
+            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word))
+        return qs.order_by('lname')
 
-    def format_result(self, emergency_contact):
-        return "%s %s - %s" % (emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student)
-
-    def format_item(self,emergency_contact):
+    def format_item_display(self,emergency_contact):
         if emergency_contact.emergency_only:
             result = "<table style=\"width: auto;\"><tr><td colspan=3><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\">%s %s - %s (Emergency only)</a></td></tr>" \
                 % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student)
@@ -119,17 +91,12 @@ class EmergencyContactLookup(object):
         return EmergencyContact.objects.filter(pk__in=ids).order_by('-primary_contact', 'emergency_only', 'lname')
     
     
-class FacultyLookup(object):
+class FacultyLookup(LookupChannel):
     def get_query(self,q,request):
-        words = q.split()
-        result = Faculty.objects.filter(Q(fname__istartswith=q) | Q(lname__istartswith=q) | Q(username__istartswith=q))
-        return result
-
-    def format_result(self, faculty):
-        return "%s %s" % (faculty.fname, faculty.lname)
-
-    def format_item(self,faculty):
-        return "%s %s" % (faculty.fname, faculty.lname)
+        qs = Faculty.objects.all()
+        for word in q.split():
+            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word) | Q(username__istartswith=q))
+        return qs.order_by('lname')
 
     def get_objects(self,ids):
         return Faculty.objects.filter(pk__in=ids).order_by('lname')
@@ -150,7 +117,7 @@ class FacultyUserLookup(object):
         return User.objects.filter(pk__in=ids).order_by('last_name')
     
 class AttendanceStudentLookup(StudentLookup):
-    def format_item(self,student):
+    def format_item_display(self,student):
         output = "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=%s></td><td>%s %s</td></tr></table>" \
             % (student.pic.url_70x65, student.fname, student.lname)
         
@@ -168,7 +135,7 @@ class AttendanceStudentLookup(StudentLookup):
         
         
 class AttendanceAddStudentLookup(StudentLookup):
-    def format_item(self,student):
+    def format_item_display(self,student):
         output = "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=%s></td><td>%s %s</td></tr></table>" \
             % (student.pic.url_70x65, student.fname, student.lname)
         

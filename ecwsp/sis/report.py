@@ -174,6 +174,11 @@ def pod_report(template, data, filename, format="odt"):
     data = dict(data.items() + get_default_data().items())
     return pod_save(filename, "." + str(format), data, template)
 
+def pod_report_generic(template, data, filename, format="odt"):
+    default_data = get_default_data()
+    data = dict(default_data.items() + data.items())
+    return pod_save(filename, "." + str(format), data, template)
+
 def pod_report_all(template, options=None, students=None, format="odt"):
     """ options is from StudentReportWriterForm, it includes the time range
     and some other options """
