@@ -26,7 +26,7 @@ class StudentLookup(LookupChannel):
         if not year: year = "Unknown year"
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
-        return '<div style="width:250px; min-height:53px;"><img style="float:left; margin-right: 3px;" src=%s> %s %s <br/> %s </div>' \
+        return '<div style="width:250px;"><img style="float:left; margin-right: 3px;" src=%s> %s %s <br/> %s </div> <div style="clear: both;"/>' \
             % (image, student.fname, student.lname, year)
 
     def format_item_display(self,student):

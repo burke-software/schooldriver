@@ -17,7 +17,7 @@ class StudentWithDisciplineLookup(StudentLookup):
         school_start = SchoolYear.objects.get(active_year=True).start_date
         school_end = SchoolYear.objects.get(active_year=True).end_date
         priors = StudentDiscipline.objects.filter(students=student).filter(date__range=(school_start, school_end))
-        output = "<table style=\"border-collapse: collapse; width:700px;\"><tr><td><img style=\"height:30px;\" src=%s></td><td>%s %s <br/><a href=\"/sis/disc/report/%s\">View full report</a>" \
+        output = "<table style=\"border-collapse: collapse; width:700px;\"><tr><td><img src=%s></td><td>%s %s <br/><a href=\"/sis/disc/report/%s\">View full report</a>" \
             % (image, student.fname, student.lname, student.id) 
         for prior in priors:
             output += "<br/>%s - %s - %s - %s" % (prior.date.strftime('%b %d, %Y'), prior.infraction, prior.all_actions(), prior.comments)
@@ -35,7 +35,7 @@ class DisciplineViewStudentLookup(StudentLookup):
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
         priors = StudentDiscipline.objects.filter(students=student)
-        output = "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=%s></td><td>%s %s <br/><a href=\"/sis/disc/report/%s\">View full report</a></td></tr></table>" \
+        output = "<table style=\"border-collapse: collapse;\"><tr><td><img src=%s></td><td>%s %s <br/><a href=\"/sis/disc/report/%s\">View full report</a></td></tr></table>" \
             % (image, student.fname, student.lname, student.id) 
         if priors.count() >= 1:
             
