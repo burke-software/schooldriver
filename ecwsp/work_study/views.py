@@ -698,7 +698,8 @@ def report_builder_view(request):
             if template_form.is_valid():
                 students = template_form.get_students(template_form.cleaned_data, worker=True)
                 template = template_form.get_template(request)
-                return pod_report_work_study(template, students)
+                if template:
+                    return pod_report_work_study(template, students)
         else:
             form = ReportBuilderForm(request.POST)
             if form.is_valid():
