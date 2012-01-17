@@ -26,6 +26,8 @@ import datetime
 
 class DisciplineAction(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    major_offense = models.BooleanField(
+        help_text="This can be filtered by on Grade Analytics and other reports.")
     
     def __unicode__(self): 
         return unicode(self.name)
@@ -41,7 +43,9 @@ class DisciplineActionInstance(models.Model):
 
 class Infraction(models.Model):
     """ Infractions are things like  """
-    comment = models.CharField(max_length=255, help_text='If comment is "Case note" these infractions will not be counted as a discipline issue in reports')
+    comment = models.CharField(
+        max_length=255,
+        help_text='If comment is "Case note" these infractions will not be counted as a discipline issue in reports')
     
     def __unicode__(self):
         if len(self.comment) < 42:
