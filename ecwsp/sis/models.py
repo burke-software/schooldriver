@@ -187,25 +187,8 @@ class MdlUser(models.Model):
         logger.WARNING('Depreciated use of MdlUser.deleted which was changed to inactive')
         return self.inactive
         
-        
     def django_user(self):
         return User.objects.get(username=self.username)
-        
-    def promote_to_sis(self):
-        """ Promote student object to a student worker keeping all fields, does nothing on duplicate. """
-        try:
-            cursor = connection.cursor()
-            cursor.execute("insert into sis_student (mdluser_ptr_id) values (" + str(self.id) + ");")
-        except:
-            return
-            
-    def promote_to_faculty(self):
-        """ Promote student object to a facultu keeping all fields, does nothing on duplicate. """
-        try:
-            cursor = connection.cursor()
-            cursor.execute("insert into sis_faculty (mdluser_ptr_id) values (" + str(self.id) + ");")
-        except:
-            return
         
         
         
@@ -297,12 +280,20 @@ class Faculty(MdlUser):
         ordering = ("lname", "fname")
     
     def save(self, *args, **kwargs):
+        if Student.objects.filter(id=self.id).count():
+            raise ValidationError('Cannot have someone be a student AND faculty!')
         super(Faculty, self).save(*args, **kwargs)
         user, created = User.objects.get_or_create(username=self.username)
         group, created = Group.objects.get_or_create(name="faculty")
         if created: group.save()
         user.groups.add(group)
         user.save()
+        
+    def full_clean(self, *args, **kwargs):
+        """ Check if a Faculty exists, can't have someone be a Student and Faculty """
+        if Student.objects.filter(id=self.id).count():
+            raise ValidationError('Cannot have someone be a student AND faculty!')
+        super(Faculty, self).full_clean(*args, **kwargs)
 
 
 class Cohort(models.Model):
@@ -356,7 +347,7 @@ class Student(MdlUser, CustomFieldModel):
     """student based on a Moodle user"""
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
     grad_date = models.DateField(blank=True, null=True)
-    pic = ImageWithThumbsField(upload_to="student_pics", blank=True, sizes=((70,65),(530, 400)))
+    pic = ImageWithThumbsField(upload_to="student_pics", blank=True, null=True, sizes=((70,65),(530, 400)))
     alert = models.CharField(max_length=500, blank=True, help_text="Warn any user who accesses this record with this text")
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date")
@@ -527,6 +518,8 @@ class Student(MdlUser, CustomFieldModel):
             self.cache_cohort = None
     
     def save(self, *args, **kwargs):
+        if Faculty.objects.filter(id=self.id).count():
+            raise ValidationError('Cannot have someone be a student AND faculty!')
         self.cache_cohorts()
         if self.inactive == True:
             try:
@@ -536,6 +529,12 @@ class Student(MdlUser, CustomFieldModel):
         user, created = User.objects.get_or_create(username=self.username)
         group, gcreated = Group.objects.get_or_create(name="students")
         user.groups.add(group)
+        
+    def full_clean(self, *args, **kwargs):
+        """ Check if a Faculty exists, can't have someone be a Student and Faculty """
+        if Faculty.objects.filter(id=self.id).count():
+            raise ValidationError('Cannot have someone be a student AND faculty!')
+        super(Student, self).full_clean(*args, **kwargs)
         
     def graduate_and_create_alumni(self):
         self.inactive = True
