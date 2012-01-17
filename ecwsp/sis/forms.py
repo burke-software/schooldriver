@@ -19,6 +19,7 @@
 from django import forms
 from django.contrib.localflavor.us.forms import *
 from django.contrib.admin import widgets as adminwidgets
+from django.contrib import messages
 from django.conf import settings
 
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
@@ -154,7 +155,10 @@ class StudentSelectForm(TimeBasedForm):
         if self.cleaned_data['template']:
             # use selected template
             template = self.cleaned_data['template']
-            return template.file.path
+            if template.file:
+                return template.file.path
+            else:
+                messages.error(request, 'Template not found')
         else:
             # or use uploaded template, saving it to temp file
             template = request.FILES['upload_template']

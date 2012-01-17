@@ -493,15 +493,38 @@ def grade_analytics(request):
             # Pre load Discipline data
             if 'ecwsp.discipline' in settings.INSTALLED_APPS:
                 if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
-                    
                     student_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end),
                                                           studentdiscipline__action=data['filter_disc_action'],
                                                           ).annotate(action_count=Count('studentdiscipline__action'))
+                if data['aggregate_disc'] and data['aggregate_disc_times']:
+                    if data['aggregate_disc_major']:
+                        student_aggregate_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end),
+                                                          studentdiscipline__action__major_offense=True,
+                                                          ).annotate(action_count=Count('studentdiscipline'))
+                    else:
+                        student_aggregate_disciplines = students.filter(studentdiscipline__date__range=(date_begin, date_end),
+                                                          ).annotate(action_count=Count('studentdiscipline'))
+                    for student in students:
+                        student.aggregate_disciplines = 0
+                        for aggr in student_aggregate_disciplines:
+                            if aggr.id == student.id:
+                                student.aggregate_disciplines = aggr.action_count
+                                break
             # Pre load Attendance data
             if data['filter_attn'] and data['filter_attn_times']:
                 student_attendances = students.filter(student_attn__date__range=(date_begin, date_end),
                                                       student_attn__status__absent=True,
                                                       ).annotate(attn_count=Count('student_attn'))
+            if data['filter_tardy'] and data['filter_tardy_times']:
+                students_tardies = students.filter(student_attn__date__range=(date_begin, date_end),
+                                                      student_attn__status__tardy=True,
+                                                      ).annotate(tardy_count=Count('student_attn'))
+                for student in students:
+                    student.tardy_count = 0
+                    for student_tardies in students_tardies:
+                        if student_tardies.id == student.id:
+                            student.tardy_count = student_tardies.tardy_count
+                            break
                 
             for student in students:
                 # if this is a report, only calculate for selected students.
@@ -520,11 +543,11 @@ def grade_analytics(request):
                     course = None
                     done = False
                     grades_text = ""
-                    if data['final']:
+                    if add_to_list and data['final_grade'] and data['final_grade_filter'] and data['final_grade_times']:
                         for course in student.course_set.filter(id__in=courses):
                             grade = course.get_final_grade(student)
                             if grade:
-                                match = check_if_match(grade, data['filter'], data['grade'])
+                                match = check_if_match(grade, data['final_grade_filter'], data['final_grade'])
                                 if match:
                                     student.courses.append(str(course.shortname) + ' <br/>' + str(grade))
                                     num_matched += 1
@@ -537,7 +560,11 @@ def grade_analytics(request):
                                         i += 1
                                 else:
                                     match_all = False
-                    if data['each_marking_period']:
+                        if data['final_grade_times'] == "*" and not match_all:
+                            add_to_list = False    
+                        elif not num_matched >= int(data['final_grade_times']):
+                            add_to_list = False
+                    if add_to_list and data['grade'] and data['grade_filter'] and data['grade_times']:
                         # Using just grades for optimization. Rather than for course, for mp, for grade.
                         for grade in student.grade_set.filter(course__in=courses, course__courseenrollment__user=student).order_by('course__department', 'marking_period').select_related():
                             if mps_selected == [] or grade.marking_period_id in mps_selected:
@@ -555,9 +582,10 @@ def grade_analytics(request):
                                     grades_text = ""
                                 course = grade.course
                                 
-                                if data['each_marking_period'] and grade.final == True and grade.override_final == False:
+                                # data['each_marking_period'] and
+                                if grade.final == True and grade.override_final == False:
                                     grade_value = grade.get_grade()
-                                    match = check_if_match(grade_value, data['filter'], data['grade'])
+                                    match = check_if_match(grade_value, data['grade_filter'], data['grade'])
                                     if match:
                                         grades_text += str(grade.marking_period.shortname) + ':' + str(grade_value) + " "
                                         num_matched += 1
@@ -574,14 +602,14 @@ def grade_analytics(request):
                                     student.departments[i] = "X"
                                 i += 1
                         grades_text = ""
-                    if data['filter_times'] == "*" or data['filter_times'] == None:
-                        if not match_all:
+                        
+                        if data['grade_times'] == "*" and not match_all:
+                            add_to_list = False    
+                        if data['grade_times'] != "*" and not num_matched >= int(data['grade_times']):
                             add_to_list = False
-                    elif not num_matched >= int(data['filter_times']):
-                        add_to_list = False
                     
                     # Check discipline
-                    if 'ecwsp.discipline' in settings.INSTALLED_APPS:
+                    if add_to_list and 'ecwsp.discipline' in settings.INSTALLED_APPS:
                         if data['filter_disc_action'] and data['filter_disc'] and data['filter_disc_times']:
                             student.action_count = 0
                             for disc in student_disciplines:
@@ -596,9 +624,19 @@ def grade_analytics(request):
                                 add_to_list = False
                             else:
                                 student.courses.append('%s: %s' % (data['filter_disc_action'], student.action_count))
+                        
+                        if data['aggregate_disc'] and data['aggregate_disc_times']:
+                            if ((data['aggregate_disc'] == "lt" and not student.aggregate_disciplines < int(data['aggregate_disc_times'])) or 
+                                (data['aggregate_disc'] == "lte" and not student.aggregate_disciplines <= int(data['aggregate_disc_times'])) or 
+                                (data['aggregate_disc'] == "gt" and not student.aggregate_disciplines > int(data['aggregate_disc_times'])) or 
+                                (data['aggregate_disc'] == "gte" and not student.aggregate_disciplines >= int(data['aggregate_disc_times']))
+                            ):
+                                add_to_list = False
+                            else:
+                                student.courses.append('%s: %s' % ("Aggregate Discipline", student.aggregate_disciplines))
                     
                     # Check Attendance
-                    if data['filter_attn'] and data['filter_attn_times']:
+                    if add_to_list and data['filter_attn'] and data['filter_attn_times']:
                         try:
                             student.attn_count = student_attendances.get(id=student.id).attn_count
                         except:
@@ -611,6 +649,17 @@ def grade_analytics(request):
                             add_to_list = False
                         else:
                             student.courses.append('Absents: %s' % (student.attn_count,))
+                            
+                    # Tardies
+                    if add_to_list and data['filter_tardy'] and data['filter_tardy_times']:
+                        if ((data['filter_tardy'] == "lt" and not student.tardy_count < int(data['filter_tardy_times'])) or 
+                            (data['filter_tardy'] == "lte" and not student.tardy_count <= int(data['filter_tardy_times'])) or 
+                            (data['filter_tardy'] == "gt" and not student.tardy_count > int(data['filter_tardy_times'])) or 
+                            (data['filter_tardy'] == "gte" and not student.tardy_count >= int(data['filter_tardy_times']))
+                        ):
+                            add_to_list = False
+                        else:
+                            student.courses.append('Tardies: %s' % (student.tardy_count,))
                     
                     if add_to_list:
                         show_students.append(student)
