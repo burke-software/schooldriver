@@ -383,7 +383,7 @@ class Grade(models.Model):
             returns success (True or False)"""
         try:
             grade = Decimal(str(grade))
-            if grade <= 1:
+            if grade < 1:
                 # assume grade is a percentage
                 grade = grade * 100
             self.grade = grade
