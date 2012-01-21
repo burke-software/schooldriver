@@ -122,7 +122,7 @@ class WorkTeam(models.Model):
     login = models.ManyToManyField(User, blank=True, help_text="user from <a href=\"/admin/auth/user/\">here</a> that this company may login with, ensure user is in the \"company\" group so they have correct permissions")
     paying = models.CharField(max_length=1, choices=(('P', 'Paying'), ('N', 'Non-Paying'), ('F', 'Funded')), blank=True)
     funded_by = models.CharField(max_length=150, blank=True)
-    cra = models.ForeignKey(CraContact, blank=True, null=True)
+    cras = models.ManyToManyField(CraContact, blank=True, null=True)
     industry_type = models.CharField(max_length=100, blank=True)
     train_line = models.CharField(max_length=50, blank=True)
     stop_location = models.CharField(max_length=150, blank=True)
@@ -178,6 +178,17 @@ class WorkTeam(models.Model):
         except:
             return None
     
+    def show_cras(self):
+        txt = ""
+        for cra in self.cras.all():
+            txt += unicode(cra) + ", "
+        return txt[:-2]
+    
+    @property
+    def cra(self):
+        """ For legacy purposes, self.cras was once a fk cra """
+        return self.show_cras()
+            
     @property
     def map_path(self):
         if self.placement and self.placement.map:

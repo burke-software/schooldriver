@@ -26,6 +26,7 @@ from appy.pod import PodError
 from appy.shared import mimeTypesExts
 from appy.shared.xml_parser import XmlElement
 from appy.shared.utils import FolderDeleter, executeCommand
+from appy.shared.utils import FileWrapper
 from appy.pod.pod_parser import PodParser, PodEnvironment, OdInsert
 from appy.pod.converter import FILE_TYPES
 from appy.pod.buffers import FileBuffer
@@ -142,10 +143,14 @@ class Renderer:
         self.forceOoCall = forceOoCall
         self.finalizeFunction = finalizeFunction
         self.overwriteExisting = overwriteExisting
-        # Retain potential files or images that will be included through
+        # Remember potential files or images that will be included through
         # "do ... from document" statements: we will need to declare them in
-        # META-INF/manifest.xml.
-        self.fileNames = []
+        # META-INF/manifest.xml. Keys are file names as they appear within the
+        # ODT file (to dump in manifest.xml); values are original paths of
+        # included images (used for avoiding to create multiple copies of a file
+        # which is imported several times).
+        # imported file).
+        self.fileNames = {}
         self.prepareFolders()
         # Unzip template
         self.unzipFolder = os.path.join(self.tempFolder, 'unzip')
@@ -233,6 +238,7 @@ class Renderer:
         ns = self.currentParser.env.namespaces
         # xhtmlString can only be a chunk of XHTML. So we must surround it a
         # tag in order to get a XML-compliant file (we need a root tag).
+        if xhtmlString == None: xhtmlString = ''
         xhtmlContent = '<p>%s</p>' % xhtmlString
         return Xhtml2OdtConverter(xhtmlContent, encoding, self.stylesManager,
                                   stylesMapping, ns).run()
@@ -240,6 +246,7 @@ class Renderer:
     def renderText(self, text, encoding='utf-8', stylesMapping={}):
         '''Method that can be used (under the name 'text') into a pod template
            for inserting a text containing carriage returns.'''
+        if text == None: text = ''
         text = cgi.escape(text).replace('\r\n', '<br/>').replace('\n', '<br/>')
         return self.renderXhtml(text, encoding, stylesMapping)
 
@@ -255,18 +262,28 @@ class Renderer:
     imageFormats = ('png', 'jpeg', 'jpg', 'gif')
     ooFormats = ('odt',)
     def importDocument(self, content=None, at=None, format=None,
-                       anchor='as-char'):
+                       anchor='as-char', wrapInPara=True, size=None):
         '''If p_at is not None, it represents a path or url allowing to find
            the document. If p_at is None, the content of the document is
            supposed to be in binary format in p_content. The document
-           p_format may be: odt or any format in imageFormats. p_anchor is only
-           relevant for images.'''
+           p_format may be: odt or any format in imageFormats.
+
+           p_anchor, p_wrapInPara and p_size are only relevant for images:
+           * p_anchor defines the way the image is anchored into the document;
+                      Valid values are 'page','paragraph', 'char' and 'as-char';
+           * p_wrapInPara, if true, wraps the resulting 'image' tag into a 'p'
+                           tag;
+           * p_size, if specified, is a tuple of float or integers
+                     (width, height) expressing size in centimeters. If not
+                     specified, size will be computed from image info.'''
         ns = self.currentParser.env.namespaces
         importer = None
         # Is there someting to import?
         if not content and not at:
             raise PodError(DOC_NOT_SPECIFIED)
         # Guess document format
+        if isinstance(content, FileWrapper):
+            format = content.mimeType
         if not format:
             # It should be deduced from p_at
             if not at:
@@ -287,12 +304,10 @@ class Renderer:
             importer = PdfImporter
         else:
             raise PodError(DOC_WRONG_FORMAT % format)
-        imp = importer(content, at, format, self.tempFolder, ns)
-        if isImage:
-            imp.setAnchor(anchor)
+        imp = importer(content, at, format, self.tempFolder, ns, self.fileNames)
+        # Initialise image-specific parameters
+        if isImage: imp.setImageInfo(anchor, wrapInPara, size)
         res = imp.run()
-        if imp.fileNames:
-            self.fileNames += imp.fileNames
         return res
 
     def prepareFolders(self):
@@ -323,7 +338,7 @@ class Renderer:
         if self.fileNames:
             j = os.path.join
             toInsert = ''
-            for fileName in self.fileNames:
+            for fileName in self.fileNames.iterkeys():
                 mimeType = mimetypes.guess_type(fileName)[0]
                 toInsert += ' <manifest:file-entry manifest:media-type="%s" ' \
                             'manifest:full-path="%s"/>\n' % (mimeType, fileName)

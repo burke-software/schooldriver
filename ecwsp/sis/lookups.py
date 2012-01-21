@@ -26,7 +26,7 @@ class StudentLookup(LookupChannel):
         if not year: year = "Unknown year"
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
-        return '<div style="width:250px;"><img style="float:left; margin-right: 3px;" src=%s> %s %s <br/> %s </div> <div style="clear: both;"/>' \
+        return '<div style="width:250px;"><img style="float:left; margin-right: 3px;" src="%s" /> %s %s <br/> %s </div> <div style="clear: both;"/>' \
             % (image, student.fname, student.lname, year)
 
     def format_item_display(self,student):
@@ -34,7 +34,7 @@ class StudentLookup(LookupChannel):
         if not year: year = "Unknown year"
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
-        return '<div style="min-width:250px; min-height:53px;"><img style="float:left; margin-right: 3px;" src=%s> %s %s <br/> %s </div><div/>' \
+        return '<div style="min-width:250px; min-height:53px;"><img style="float:left; margin-right: 3px;" src="%s" /> %s %s <br/> %s </div><div/>' \
             % (image, student.fname, student.lname, year) 
 
     def get_objects(self,ids):
@@ -55,7 +55,7 @@ class StudentLookupSmall(StudentLookup):
         if not year: year = "Unknown year"
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
-        return "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=%s></td><td>%s %s<br/>%s</td></tr></table>" \
+        return "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=\"%s\" /></td><td>%s %s<br/>%s</td></tr></table>" \
             % (image, student.fname, student.lname, year)
 
     def format_item_display(self,student):

@@ -269,7 +269,7 @@ class XmlUnmarshaller(XmlParser):
         # parsed basic type (unicode, float...)
         self.env.currentContent = '' # We store here the content of tags.
 
-    containerTags = ('tuple', 'list', 'object', 'file')
+    containerTags = ('tuple', 'list', 'dict', 'object', 'file')
     numericTypes = ('bool', 'int', 'float', 'long')
     def startElement(self, elem, attrs):
         # Remember the name of the previous element
@@ -289,6 +289,7 @@ class XmlUnmarshaller(XmlParser):
                 newObject = Object(**self.convertAttrs(attrs))
             elif elemType == 'tuple': newObject = [] # Tuples become lists
             elif elemType == 'list': newObject = []
+            elif elemType == 'dict': newObject = {}
             elif elemType == 'file':
                 newObject = UnmarshalledFile()
                 if attrs.has_key('name'):
@@ -329,8 +330,16 @@ class XmlUnmarshaller(XmlParser):
             currentContainer = e.containerStack[-1]
             if isinstance(currentContainer, list):
                 currentContainer.append(value)
+            elif isinstance(currentContainer, dict):
+                # If the current container is a dict, it means that p_value is
+                # a dict entry object named "entry" by convention and having
+                # attributes "k" and "v" that store, respectively, the key and
+                # the value of the entry. But this object is under construction:
+                # at this time, attributes "k" and "v" are not created yet. We
+                # will act in m_endElement, when the object will be finalized.
+                pass
             elif isinstance(currentContainer, UnmarshalledFile):
-                currentContainer.content += value
+                currentContainer.content += value or ''
             else:
                 # Current container is an object
                 if hasattr(currentContainer, name) and \
@@ -392,7 +401,13 @@ class XmlUnmarshaller(XmlParser):
             e.currentBasicType = None
             e.currentContent = ''
         else:
-            e.containerStack.pop()
+            elem = e.containerStack.pop()
+            # This element can be a temporary "entry" object representing a dict
+            # entry.
+            if e.containerStack:
+                lastContainer = e.containerStack[-1]
+                if isinstance(lastContainer, dict):
+                    lastContainer[elem.k] = elem.v
 
     # Alias: "unmarshall" -> "parse"
     unmarshall = XmlParser.parse
@@ -433,7 +448,8 @@ class XmlMarshaller:
         self.rootElementName = rootTag
         # The namespaces that will be defined at the root of the XML message.
         # It is a dict whose keys are namespace prefixes and whose values are
-        # namespace URLs.
+        # namespace URLs. If you want to specify a default namespace, specify an
+        # entry with an empty string as a key.
         self.namespaces = namespaces
         # The following dict will tell which XML tags will get which namespace
         # prefix ({s_tagName: s_prefix}). Special optional dict entry
@@ -460,8 +476,12 @@ class XmlMarshaller:
         res.write('<'); res.write(tagName)
         # Dumps namespace definitions if any
         for prefix, url in self.namespaces.iteritems():
-            res.write(' xmlns:%s="%s"' % (prefix, url))
-        # Dumps Appy- or Plone-specific attributed
+            if not prefix:
+                pre = 'xmlns' # The default namespace
+            else:
+                pre = 'xmlns:%s' % prefix
+            res.write(' %s="%s"' % (pre, url))
+        # Dumps Appy- or Plone-specific attribute
         if self.objectType != 'popo':
             res.write(' type="object" id="%s"' % instance.UID())
         res.write('>')
@@ -509,6 +529,14 @@ class XmlMarshaller:
             res.write(v.encode('base64'))
         res.write('</%s>' % partTag)
 
+    def dumpDict(self, res, v):
+        '''Dumps the XML version of dict p_v.'''
+        for key, value in v.iteritems():
+            res.write('<entry type="object">')
+            self.dumpField(res, 'k', key)
+            self.dumpField(res, 'v', value)
+            res.write('</entry>')
+
     def dumpValue(self, res, value, fieldType, isRef=False):
         '''Dumps the XML version of p_value to p_res.'''
         # Use a custom function if one is defined for this type of value.
@@ -517,8 +545,8 @@ class XmlMarshaller:
             self.conversionFunctions[className](res, value)
             return
         # Use a standard conversion else.
-        if fieldType == 'file':
-            self.dumpFile(res, value)
+        if fieldType == 'file':   self.dumpFile(res, value)
+        elif fieldType == 'dict': self.dumpDict(res, value)
         elif isRef:
             if value:
                 if type(value) in self.sequenceTypes:
@@ -529,12 +557,9 @@ class XmlMarshaller:
         elif type(value) in self.sequenceTypes:
             # The previous condition must be checked before this one because
             # referred objects may be stored in lists or tuples, too.
-            for elem in value:
-                self.dumpField(res, 'e', elem)
-        elif isinstance(value, basestring):
-            self.dumpString(res, value)
-        elif isinstance(value, bool):
-            res.write(self.trueFalse[value])
+            for elem in value: self.dumpField(res, 'e', elem)
+        elif isinstance(value, basestring): self.dumpString(res, value)
+        elif isinstance(value, bool): res.write(self.trueFalse[value])
         elif fieldType == 'object':
             if hasattr(value, 'absolute_url'):
                 # Dump the URL to the object only
@@ -552,6 +577,13 @@ class XmlMarshaller:
 
     def dumpField(self, res, fieldName, fieldValue, fieldType='basic'):
         '''Dumps in p_res, the value of the p_field for p_instance.'''
+        # As a preamble, manage special case of p_fieldName == "_any". In that
+        # case, p_fieldValue corresponds to a previously marshalled string that
+        # must be included as is here, without dumping the tag name.
+        if fieldName == '_any':
+            res.write(value)
+            return
+        # Now, dump "normal" fields.
         fieldTag = self.getTagName(fieldName)
         res.write('<'); res.write(fieldTag)
         # Dump the type of the field as an XML attribute
@@ -564,6 +596,8 @@ class XmlMarshaller:
         elif isinstance(fieldValue, long):                fType = 'long'
         elif isinstance(fieldValue, tuple):               fType = 'tuple'
         elif isinstance(fieldValue, list):                fType = 'list'
+        elif isinstance(fieldValue, dict) or \
+             fieldValue.__class__.__name__ == 'PersistentMapping':fType = 'dict'
         elif fieldValue.__class__.__name__ == 'DateTime': fType = 'DateTime'
         elif self.isAnObject(fieldValue):                 fType = 'object'
         if self.objectType != 'popo':

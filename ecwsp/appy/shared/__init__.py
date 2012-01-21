@@ -44,7 +44,4 @@ class UnicodeBuffer:
             self.buffer.append(unicode(s))
     def getValue(self):
         return u''.join(self.buffer)
-
-# ------------------------------------------------------------------------------
-class Dummy: pass
 # ------------------------------------------------------------------------------

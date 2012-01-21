@@ -29,17 +29,6 @@ def promote_to_worker(modeladmin, request, queryset):
                     object_repr     = unicode(object), 
                     action_flag     = CHANGE
                 )
-
-def promote_to_sis(modeladmin, request, queryset):
-    for object in queryset:
-        object.promote_to_sis()
-        LogEntry.objects.log_action(
-                    user_id         = request.user.pk, 
-                    content_type_id = ContentType.objects.get_for_model(object).pk,
-                    object_id       = object.pk,
-                    object_repr     = unicode(object), 
-                    action_flag     = CHANGE
-                )
         
 
 def graduate_and_create_alumni(modeladmin, request, queryset):
@@ -183,10 +172,7 @@ class EmergencyContactAdmin(admin.ModelAdmin):
     search_fields = ['fname', 'lname', 'email', 'student__fname', 'student__lname']
 admin.site.register(EmergencyContact, EmergencyContactAdmin)
 
-
-class MdlUserAdmin(admin.ModelAdmin):
-    actions = [promote_to_sis]
-admin.site.register(MdlUser, MdlUserAdmin)
+admin.site.register(MdlUser) # Not used?
 
 admin.site.register(LanguageChoice)
 
@@ -246,3 +232,8 @@ class SchoolYearAdmin(admin.ModelAdmin):
         return form
     inlines = [MarkingPeriodInline]
 admin.site.register(SchoolYear, SchoolYearAdmin)
+
+class ImportLogAdmin(admin.ModelAdmin):
+    list_display = ['user','date','errors']
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
+admin.site.register(ImportLog, ImportLogAdmin)
