@@ -189,6 +189,7 @@ class StylesManager:
         self.textStyles = self.styles.getStyles('text')
         # List of paragraph styles derived from self.styles
         self.paragraphStyles = self.styles.getStyles('paragraph')
+
     def checkStylesAdequation(self, htmlStyle, odtStyle):
         '''Checks that p_odtStyle my be used for style p_htmlStyle.'''
         if (htmlStyle in XHTML_PARAGRAPH_TAGS_NO_LISTS) and \
@@ -199,6 +200,7 @@ class StylesManager:
             (odtStyle in self.paragraphStyles):
             raise PodError(HTML_TEXT_ODT_PARA % (
                 htmlStyle, odtStyle.displayName))
+
     def checkStylesMapping(self, stylesMapping):
         '''Checks that the given p_stylesMapping is correct. Returns the same
            dict as p_stylesMapping, but with Style instances as values, instead

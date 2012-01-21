@@ -45,7 +45,10 @@ class PodError(Exception):
             i += 1
             if i > linesToRemove:
                 buffer.write('<%s:p>' % textNs)
-                buffer.dumpContent(tLine)
+                try:
+                    buffer.dumpContent(tLine)
+                except UnicodeDecodeError, ude:
+                    buffer.dumpContent(tLine.decode('utf-8'))
                 buffer.write('</%s:p>' % textNs)
     dumpTraceback = staticmethod(dumpTraceback)
     def dump(buffer, message, withinElement=None, removeFirstLine=False, dumpTb=True):
