@@ -31,13 +31,15 @@
         text-align:right;
     }
     span label {
+	-webkit-text-size-adjust:none;
         font-size: 0px;
+	color: white;
     }
     </style>
 {% endblock %}
 
 {% block breadcrumbs %}{% if not is_popup %}
-<div class="breadcrumbs">
+<div id="breadcrumbs">
     <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
     <a href="{% url admin:app_list 'work_study' %}">{% trans "Work Study" %}</a> &rsaquo;
     <a href="{% url admin:work_study_clientvisit_changelist %}"> Client Visit </a> &rsaquo; 

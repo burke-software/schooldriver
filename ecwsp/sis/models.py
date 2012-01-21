@@ -34,6 +34,7 @@ import types
 from ecwsp.administration.models import Configuration
 from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -758,3 +759,21 @@ class SchoolYear(models.Model):
         super(SchoolYear, self).save(*args, **kwargs) 
     
     
+class ImportLog(models.Model):
+    """ Keep a log of each time a user attempts to import a file, if successful store a database backup
+    Backup is a full database dump and should not be thought of as a easy way to revert changes.
+    """
+    user = models.ForeignKey(User, editable=False)
+    date = models.DateTimeField(auto_now_add=True)
+    import_file = models.FileField(upload_to="import_files")
+    sql_backup = models.FileField(blank=True,null=True,upload_to="sql_dumps")
+    user_note = models.CharField(max_length=1024,blank=True)
+    errors = models.BooleanField()
+    
+    def delete(self, *args, **kwargs):
+        """ These logs files would get huge if not deleted often """
+        if self.sql_backup and os.path.exists(self.sql_backup.path):
+            os.remove(self.sql_backup.path)
+        if self.import_file and os.path.exists(self.import_file.path):
+            os.remove(self.import_file.path)
+        super(SchoolYear, self).delete(*args, **kwargs) 

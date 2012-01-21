@@ -232,3 +232,8 @@ class SchoolYearAdmin(admin.ModelAdmin):
         return form
     inlines = [MarkingPeriodInline]
 admin.site.register(SchoolYear, SchoolYearAdmin)
+
+class ImportLogAdmin(admin.ModelAdmin):
+    list_display = ['user','date','errors']
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
+admin.site.register(ImportLog, ImportLogAdmin)
