@@ -43,8 +43,7 @@ def login(request, template_name='registration/login.html',
                 if not redirect_to:
                     redirect_to = settings.LOGIN_REDIRECT_URL
     
-                # Security check -- don't allow redirection to a different
-                # host.
+                # Security check -- don't allow redirection to a different host.
                 elif netloc and netloc != request.get_host():
                     redirect_to = settings.LOGIN_REDIRECT_URL
     
