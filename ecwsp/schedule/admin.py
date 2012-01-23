@@ -99,6 +99,3 @@ class StandardTestResultAdmin(admin.ModelAdmin):
 admin.site.register(StandardTestResult, StandardTestResultAdmin)
 
 admin.site.register(Award)
-
-from admin_import.options import add_import
-add_import(StandardTestResultAdmin)
