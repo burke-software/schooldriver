@@ -106,7 +106,7 @@ class AlumniNote(models.Model):
     note = models.TextField()
     alumni = models.ForeignKey('Alumni')
     date = models.DateField(auto_now_add=True)
-    user = models.ForeignKey(User, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     
     def __unicode__(self):
         return "%s %s: %s" % (self.user, self.date, self.note)
@@ -116,7 +116,7 @@ class AlumniAction(models.Model):
     note = models.TextField(blank=True)
     alumni = models.ManyToManyField('Alumni', blank=True, null=True)
     date = models.DateField(default=datetime.date.today, blank=True, null=True)
-    user = models.ForeignKey(User, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     
     def __unicode__(self):
         return "%s %s" % (self.title, self.date)
