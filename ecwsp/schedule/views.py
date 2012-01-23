@@ -682,6 +682,10 @@ def grade_analytics(request):
                             row.append("")
                             i += 1
                         
+                        if 'xls_asp' in request.POST:
+                            for dept in student.departments:
+                                row.append(dept)
+                        
                         data.append(row)
                 titles.append('Grades')
                 
