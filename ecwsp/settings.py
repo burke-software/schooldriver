@@ -163,7 +163,7 @@ INSTALLED_APPS = (
     'admin_export',
     'custom_field',
     
-    'google_auth',
+    #'google_auth',
 )
 
 # Google Apps Settings
