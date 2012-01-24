@@ -637,7 +637,7 @@ class TimeSheet(models.Model):
         
         # set hours
         hours = self.time_lunch.hour - self.time_in.hour
-        mins = self.time_lunch  .minute - self.time_in.minute
+        mins = self.time_lunch.minute - self.time_in.minute
         hours += self.time_out.hour - self.time_lunch_return.hour
         mins += self.time_out.minute - self.time_lunch_return.minute
         hours += mins/Decimal(60)
