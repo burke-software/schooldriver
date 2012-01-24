@@ -219,7 +219,8 @@ AJAX_LOOKUP_CHANNELS = {
     'theme': ('ecwsp.omr.lookups', 'ThemeLookup'),
     'studentworker' : ('ecwsp.work_study.lookups', 'StudentLookup'),
     'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
-    
+    'course': {'model':'schedule.course', 'search_field':'fullname'},
+    'day': ('ecwsp.schedule.lookups','DayLookup'),
 }
 AJAX_SELECT_BOOTSTRAP = False
 AJAX_SELECT_INLINES = 'staticfiles'

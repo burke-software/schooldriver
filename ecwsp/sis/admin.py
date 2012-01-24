@@ -99,6 +99,12 @@ class MarkingPeriodInline(admin.StackedInline):
     model = MarkingPeriod
     extra = 0
 
+class StudentCourseInline(admin.TabularInline):
+    model = CourseEnrollment
+    form = make_ajax_form(CourseEnrollment, {'course':'course','exclude_days':'day'})
+    fields = ['course', 'attendance_note', 'exclude_days']
+    extra = 0
+
 admin.site.register(GradeLevel)
 
 class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
@@ -161,6 +167,17 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     list_display = ['__unicode__','year']
 admin.site.register(Student, StudentAdmin)
 
+### Second student admin just for courses
+class StudentCourse(Student):
+    class Meta:
+        proxy = True
+class StudentCourseAdmin(admin.ModelAdmin):
+    inlines = [StudentCourseInline]
+    search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
+    fields = ['fname', 'lname']
+    list_filter = ['inactive','year']
+    readonly_fields = fields
+admin.site.register(StudentCourse, StudentCourseAdmin)
 
 class EmergencyContactAdmin(admin.ModelAdmin):
     fieldsets = [

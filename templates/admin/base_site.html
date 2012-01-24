@@ -26,6 +26,30 @@
     div#breadcrumbs {
         padding: 2px 4px 2px 9px;
     }
+    /* Why is it by id sometimes? */
+    div.breadcrumbs {
+        padding: 2px 4px 2px 9px;
+    }
+    div.breadcrumbs {
+        position: fixed;
+        top: 30px;
+        left: 0;
+        z-index: 1000;
+        width: 100%;
+        font-size: 11px;
+    /*    font-weight: bold;*/
+        text-align: left;
+    }
+    div.breadcrumbs {
+        color: #666;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        background: #e6e6e6;
+    }
+    body.popup div#breadcrumbs {
+        top: 0;
+    }
+
     h1 {
         margin: 8px 0 10px;
     }
