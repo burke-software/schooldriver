@@ -58,6 +58,9 @@
                     {% include "admin/includes/custom_field_fieldset.html" with custom_form=custom_form %}
                     <fieldset class="module collapse closed open"><h2 class="collapse-handler">Courses</h2>
                         <div class="form-row checklist">
+                            <p>
+                            <a href="/admin/sis/studentcourse/{{ object_id }}" target="_blank" >Change Enrollment (Will open new tab)</a>
+                            </p>
                              <table>
                                   {% for course in courses %}
                                        <tr>
