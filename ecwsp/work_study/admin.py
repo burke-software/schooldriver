@@ -111,10 +111,10 @@ class WorkTeamAdmin(VersionAdmin):
             user.groups.add(group)
             user.save()
     
-    search_fields = ['company__name', 'team_name', 'address', 'cra__name__first_name', 'cra__name__last_name']
-    list_filter = ['inactive', 'pickup_location', 'train_line', 'industry_type', 'paying',]
+    search_fields = ['company__name', 'team_name', 'address',]
+    list_filter = ['inactive', 'pickup_location', 'train_line', 'industry_type', 'paying','cras']
     fieldsets = [
-        (None, {'fields': [('company', 'inactive'), 'team_name', 'job_description', 'company_description', 'login', ('paying', 'funded_by'), 'industry_type', 'cra', ('dropoff_location', 'pickup_location'), 'contacts']}),
+        (None, {'fields': [('company', 'inactive'), 'team_name', 'job_description', 'company_description', 'login', ('paying', 'funded_by'), 'industry_type', 'cras', ('dropoff_location', 'pickup_location'), 'contacts']}),
         ("Location", {'fields': ['address', ('city', 'state'), 'zip',('train_line', 'stop_location'), ('map', 'use_google_maps'), 'directions_to', 'directions_pickup'], 'classes': ['collapse']}),
     ]
     filter_horizontal = ('contacts', 'login')
@@ -300,10 +300,11 @@ class TimeSheetAdmin(admin.ModelAdmin):
             return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
         
     search_fields = ['student__fname', 'student__lname', 'company__team_name']
-    list_filter = ['date', 'creation_date', 'approved', 'for_pay', 'make_up', 'company', 'student__inactive']
+    list_filter = ['creation_date', 'approved', 'for_pay', 'make_up', 'company', 'student__inactive']
     list_display = ('student', 'date', 'company', 'performance', 'student_Accomplishment_Brief', 'supervisor_Comment_Brief', 'approved', 'for_pay', 'make_up',)
     readonly_fields = ['supervisor_key', 'hours', 'school_net', 'student_net', 'creation_date']
     actions = [approve]
+    date_hierarchy = 'date'
 admin.site.register(TimeSheet, TimeSheetAdmin)
 
 admin.site.register(CompanyHistory)

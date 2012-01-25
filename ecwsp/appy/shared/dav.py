@@ -168,7 +168,7 @@ class Resource:
         except socket.gaierror, sge:
             raise ResourceError('Check your Internet connection (%s)'% str(sge))
         except socket.error, se:
-            raise ResourceError('Connection error (%s)'% str(sge))
+            raise ResourceError('Connection error (%s)'% str(se))
         # Tell what kind of HTTP request it will be.
         conn.putrequest(method, uri)
         # Add HTTP headers

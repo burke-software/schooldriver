@@ -135,6 +135,7 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.administration.*',
                 'ecwsp.engrade_sync.*',
                 'ldap_groups.*',
+                'google_auth.*',
             )
         ))
         

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 # Appy is a framework for building applications in the Python language.
 # Copyright (C) 2007 Gaetan Delannay
@@ -163,7 +164,7 @@ def executeCommand(cmd):
     return res
 
 # ------------------------------------------------------------------------------
-unwantedChars = ('\\', '/', ':', '*', '?', '"', '<', '>', '|', ' ')
+unwantedChars = ('\\', '/', ':', '*', '?', '"', '<', '>', '|', ' ', '\t')
 alphaRex = re.compile('[a-zA-Z]')
 alphanumRex = re.compile('[a-zA-Z0-9]')
 def normalizeString(s, usage='fileName'):
@@ -194,11 +195,70 @@ def normalizeString(s, usage='fileName'):
         res = s
     return res
 
+def formatNumber(n, sep=',', precision=2, tsep=' '):
+    '''Returns a string representation of number p_n, which can be a float
+       or integer. p_sep is the decimal separator to use. p_precision is the
+       number of digits to keep in the decimal part for producing a nice rounded
+       string representation. p_tsep is the "thousands" separator.'''
+    if n == None: return ''
+    # Manage precision
+    if precision == None:
+        res = str(n)
+    else:
+        format = '%%.%df' % precision
+        res = format % n
+    # Use the correct decimal separator
+    res = res.replace('.', sep)
+    # Insert p_tsep every 3 chars in the integer part of the number
+    splitted = res.split(sep)
+    res = ''
+    if len(splitted[0]) < 4: res = splitted[0]
+    else:
+        i = len(splitted[0])-1
+        j = 0
+        while i >= 0:
+            j += 1
+            res = splitted[0][i] + res
+            if (j % 3) == 0:
+                res = tsep + res
+            i -= 1
+    # Add the decimal part if not 0
+    if len(splitted) > 1:
+        try:
+            decPart = int(splitted[1])
+            if decPart != 0:
+                res += sep + str(decPart)
+        except ValueError:
+            # This exception may occur when the float value has an "exp"
+            # part, like in this example: 4.345e-05
+            res += sep + splitted[1]
+    return res
+
+# ------------------------------------------------------------------------------
+toLower = {'Ç':'ç','Ù':'ù','Û':'û','Ü':'ü','Î':'î','Ï':'ï','Ô':'ô','Ö':'ö',
+           'É':'é','È':'è','Ê':'ê','Ë':'ë','À':'à','Â':'â','Ä':'ä'}
+toUpper = {'ç':'Ç','ù':'Ù','û':'Û','ü':'Ü','î':'Î','ï':'Ï','ô':'Ô','ö':'Ö',
+           'é':'É','è':'È','ê':'Ê','ë':'Ë','à':'À','â':'Â','ä':'Ä'}
+
+def lower(s):
+    '''French-accents-aware variant of string.lower.'''
+    res = s.lower()
+    for upp, low in toLower.iteritems():
+        if upp in res: res = res.replace(upp, low)
+    return res
+
+def upper(s):
+    '''French-accents-aware variant of string.upper.'''
+    res = s.upper()
+    for low, upp in toUpper.iteritems():
+        if low in res: res = res.replace(low, upp)
+    return res
+
 # ------------------------------------------------------------------------------
 typeLetters = {'b': bool, 'i': int, 'j': long, 'f':float, 's':str, 'u':unicode,
                'l': list, 'd': dict}
 exts = {'py': ('.py', '.vpy', '.cpy'), 'pt': ('.pt', '.cpt')}
-# ------------------------------------------------------------------------------
+
 class CodeAnalysis:
     '''This class holds information about some code analysis (line counts) that
        spans some folder hierarchy.'''
@@ -350,4 +410,82 @@ class LinesCounter:
                 elif ext in exts['pt']:
                     self.zpt[self.inTest].analyseFile(j(root, fileName))
         self.printReport()
+
+# ------------------------------------------------------------------------------
+CONVERSION_ERROR = 'An error occurred while executing command "%s". %s'
+class FileWrapper:
+    '''When you get, from an appy object, the value of a File attribute, you
+       get an instance of this class.'''
+    def __init__(self, zopeFile):
+        '''This constructor is only used by Appy to create a nice File instance
+           from a Zope corresponding instance (p_zopeFile). If you need to
+           create a new file and assign it to a File attribute, use the
+           attribute setter, do not create yourself an instance of this
+           class.'''
+        d = self.__dict__
+        d['_zopeFile'] = zopeFile # Not for you!
+        d['name'] = zopeFile.filename
+        d['content'] = zopeFile.data
+        d['mimeType'] = zopeFile.content_type
+        d['size'] = zopeFile.size # In bytes
+
+    def __setattr__(self, name, v):
+        d = self.__dict__
+        if name == 'name':
+            self._zopeFile.filename = v
+            d['name'] = v
+        elif name == 'content':
+            self._zopeFile.update_data(v, self.mimeType, len(v))
+            d['content'] = v
+            d['size'] = len(v)
+        elif name == 'mimeType':
+            self._zopeFile.content_type = self.mimeType = v
+        else:
+            raise 'Impossible to set attribute %s. "Settable" attributes ' \
+                  'are "name", "content" and "mimeType".' % name
+
+    def dump(self, filePath=None, format=None, tool=None):
+        '''Writes the file on disk. If p_filePath is specified, it is the
+           path name where the file will be dumped; folders mentioned in it
+           must exist. If not, the file will be dumped in the OS temp folder.
+           The absolute path name of the dumped file is returned.
+           If an error occurs, the method returns None. If p_format is
+           specified, OpenOffice will be called for converting the dumped file
+           to the desired format. In this case, p_tool, a Appy tool, must be
+           provided. Indeed, any Appy tool contains parameters for contacting
+           OpenOffice in server mode.'''
+        if not filePath:
+            filePath = '%s/file%f.%s' % (getOsTempFolder(), time.time(),
+                normalizeString(self.name))
+        f = file(filePath, 'w')
+        if self.content.__class__.__name__ == 'Pdata':
+            # The file content is splitted in several chunks.
+            f.write(self.content.data)
+            nextPart = self.content.next
+            while nextPart:
+                f.write(nextPart.data)
+                nextPart = nextPart.next
+        else:
+            # Only one chunk
+            f.write(self.content)
+        f.close()
+        if format:
+            if not tool: return
+            # Convert the dumped file using OpenOffice
+            errorMessage = tool.convert(filePath, format)
+            # Even if we have an "error" message, it could be a simple warning.
+            # So we will continue here and, as a subsequent check for knowing if
+            # an error occurred or not, we will test the existence of the
+            # converted file (see below).
+            os.remove(filePath)
+            # Return the name of the converted file.
+            baseName, ext = os.path.splitext(filePath)
+            if (ext == '.%s' % format):
+                filePath = '%s.res.%s' % (baseName, format)
+            else:
+                filePath = '%s.%s' % (baseName, format)
+            if not os.path.exists(filePath):
+                tool.log(CONVERSION_ERROR % (cmd, errorMessage), type='error')
+                return
+        return filePath
 # ------------------------------------------------------------------------------

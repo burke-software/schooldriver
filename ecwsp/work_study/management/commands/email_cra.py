@@ -14,7 +14,7 @@ class Command(BaseCommand):
         for cra in cras:
             msg = "Student(s): "
             subject = "SWORD student interactions"
-            interactions = StudentInteraction.objects.filter(date__year=date.today().year, date__day=date.today().day, date__month=date.today().month).filter(student__placement__cra=cra)
+            interactions = StudentInteraction.objects.filter(date__year=date.today().year, date__day=date.today().day, date__month=date.today().month).filter(student__placement__cras=cra)
             if interactions.count() > 0:
                 for interaction in interactions:
                     for student in interaction.student.all():
@@ -31,7 +31,7 @@ class Command(BaseCommand):
             msg = ""
             subject = "SWORD comments"
             send = False
-            timesheets = TimeSheet.objects.filter(company__cra=cra).filter(creation_date__year=date.today().year, creation_date__day=date.today().day, creation_date__month=date.today().month)
+            timesheets = TimeSheet.objects.filter(company__cras=cra).filter(creation_date__year=date.today().year, creation_date__day=date.today().day, creation_date__month=date.today().month)
             if timesheets.count() > 0:
                 for timesheet in timesheets:
                     if timesheet.supervisor_comment or timesheet.performance or timesheet.student_accomplishment:

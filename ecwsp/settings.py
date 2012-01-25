@@ -52,14 +52,6 @@ else:
 
 LOGIN_REDIRECT_URL = "/"
 
-# Google Apps Settings
-GAPPS = False
-if GAPPS:
-    GAPPS_DOMAIN = ''
-    GAPPS_USERNAME = ''
-    GAPPS_PASSWORD = ''
-    AUTHENTICATION_BACKENDS += ('ecwsp.google_auth.backends.GoogleAppsBackend',)
-
 # admins get emailed if there is an error
 ADMINS = (
     ('Admin', 'someone@example.com'),
@@ -170,7 +162,18 @@ INSTALLED_APPS = (
     'massadmin',
     'admin_export',
     'custom_field',
+    
+    #'google_auth',
 )
+
+# Google Apps Settings
+GAPPS = False
+if GAPPS:
+    GAPPS_DOMAIN = ''
+    GAPPS_USERNAME = ''
+    GAPPS_PASSWORD = ''
+    GAPPS_ALWAY_ADD_GROUPS = False
+    AUTHENTICATION_BACKENDS += ('ecwsp.google_auth.backends.GoogleAppsBackend',)
 
 MIDDLEWARE_CLASSES = ()
 MIDDLEWARE_CLASSES += (
@@ -216,7 +219,8 @@ AJAX_LOOKUP_CHANNELS = {
     'theme': ('ecwsp.omr.lookups', 'ThemeLookup'),
     'studentworker' : ('ecwsp.work_study.lookups', 'StudentLookup'),
     'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
-    
+    'course': {'model':'schedule.course', 'search_field':'fullname'},
+    'day': ('ecwsp.schedule.lookups','DayLookup'),
 }
 AJAX_SELECT_BOOTSTRAP = False
 AJAX_SELECT_INLINES = 'staticfiles'

@@ -33,22 +33,29 @@ class GradeUpload(UploadFileForm, MarkingPeriodSelectForm):
     
 class GradeFilterForm(TimeBasedForm):
     marking_period = forms.ModelMultipleChoiceField(required=False, queryset=MarkingPeriod.objects.all())
-    final = forms.BooleanField(required=False)
-    each_marking_period = forms.BooleanField(required=False,initial=True)
-    grade = forms.CharField(max_length=5,
-                            widget=forms.TextInput(attrs={'placeholder': 'Enter Grade Here'}),
-                            required=False,
-                            help_text="P counts as 100%, F counts as 0%",)
+
     filter_choices = (
         ("lt", "Less Than"),
         ("lte", "Less Than Equals"),
         ("gt", "Greater Than"),
         ("gte", "Greater Than Equals"),
     )
+
+    grade = forms.CharField(max_length=5,
+                            widget=forms.TextInput(attrs={'placeholder': 'Enter Grade Here'}),
+                            required=False,
+                            help_text="P counts as 100%, F counts as 0%",)
+    grade_filter = forms.ChoiceField(choices=filter_choices)
+    grade_times = forms.CharField(max_length=2, required=False, initial="*", widget=forms.TextInput(attrs={'style':'width:20px;'}))
+    final_grade = forms.CharField(max_length=5,
+                            widget=forms.TextInput(attrs={'placeholder': 'Enter Grade Here'}),
+                            required=False,
+                            help_text="P counts as 100%, F counts as 0%",)
+    final_grade_filter = forms.ChoiceField(choices=filter_choices)
+    final_grade_times = forms.CharField(max_length=2, required=False, initial="*", widget=forms.TextInput(attrs={'style':'width:20px;'}))
+
     gpa = forms.DecimalField(max_digits=5, decimal_places=2, required=False)
     gpa_equality =  forms.ChoiceField(choices=filter_choices)
-    filter = forms.ChoiceField(choices=filter_choices)
-    filter_times = forms.CharField(max_length=2, required=False, initial="*", widget=forms.TextInput(attrs={'style':'width:20px;'}))
     filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
     in_individual_education_program = forms.BooleanField(required=False)
     #disc
@@ -57,9 +64,16 @@ class GradeFilterForm(TimeBasedForm):
         filter_disc_action = forms.ModelChoiceField(required=False, queryset=DisciplineAction.objects.all())
         filter_disc = forms.ChoiceField(choices=filter_choices, required=False)
         filter_disc_times = forms.CharField(max_length=2, required=False, widget=forms.TextInput(attrs={'style':'width:20px;'}))
-    #attn
+        # Aggregated
+        aggregate_disc = forms.ChoiceField(choices=filter_choices, required=False)
+        aggregate_disc_times = forms.CharField(max_length=2, required=False, widget=forms.TextInput(attrs={'style':'width:20px;'}))
+        aggregate_disc_major = forms.BooleanField(required=False)
+    # Absences
     filter_attn = forms.ChoiceField(choices=filter_choices, required=False)
     filter_attn_times = forms.CharField(max_length=2, required=False, widget=forms.TextInput(attrs={'style':'width:20px;'}))
+    # Tardies
+    filter_tardy = forms.ChoiceField(choices=filter_choices, required=False)
+    filter_tardy_times = forms.CharField(max_length=2, required=False, widget=forms.TextInput(attrs={'style':'width:20px;'}))
     
 class CourseSelectionForm(forms.Form):
     course = forms.ModelChoiceField(queryset=Course.objects.filter(marking_period__school_year__active_year=True).distinct(), required=False)

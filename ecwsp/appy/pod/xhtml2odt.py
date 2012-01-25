@@ -106,7 +106,8 @@ class HtmlElement:
         if (parentElem.elemType == 'para') and \
            (self.elem in NOT_INSIDE_P_OR_P):
             # Oups, li->p wrongly considered as a conflict.
-            if (parentElem.elem == 'li') and (self.elem == 'p'): return ()
+            if (parentElem.elem == 'li') and (self.elem in ('p', 'div')):
+                return ()
             return (parentElem.setConflictual(),)
         # Check inner paragraphs
         if (parentElem.elem in INNER_TAGS) and (self.elemType == 'para'):
@@ -453,6 +454,9 @@ class XhtmlParser(XmlParser):
         currentElem, elemsToReopen = e.onElementEnd(elem)
         # Determine the tag to dump
         startTag, endTag = currentElem.getOdfTags(e)
+        if currentElem.isConflictual:
+            # Compute the start tag, with potential styles applied
+            startTag = e.getTags((currentElem,), start=True)
         if currentElem.isConflictual and e.res.endswith(startTag):
             # We will not dump it, it would constitute a silly empty tag.
             e.res = e.res[:-len(startTag)]

@@ -130,11 +130,6 @@
                             {{ form.marking_period }} {{ form.marking_period.errors }}
                         </div>
                     </div>
-                    
-                    {{ form.each_marking_period }} Include each marking period grade {{ form.each_marking_period.errors }}
-                    <br/>
-                    {{ form.final }} Include final calculated grade {{ form.final.errors }}
-                    <br/>
                     <a href="#" id="toggle_filter_options" onclick='options_toggle(id)'>Show student filter</a>
                     <div id="filter_options" style="display: none">
                         <div style="float:left;">
@@ -157,6 +152,14 @@
                 </td>
             </tr>
             <tr class="row">
+                <td >Discipline Combined:</td>
+                <td >
+                    {{ form.aggregate_disc }} {{ form.aggregate_disc.errors }}
+                    {{ form.aggregate_disc_times }} {{ form.aggregate_disc_times.errors }} times
+                    {{ form.aggregate_disc_major }} Include only "major offenses" {{ form.aggregate_disc_major.errors }}
+                </td>
+            </tr>
+            <tr class="row">
                 <td> Absenses </td>
                 <td>
                     {{ form.filter_attn }} {{ form.filter_attn.errors }}
@@ -164,10 +167,24 @@
                 </td>
             </tr>
             <tr class="row">
-                <td>Grades</td>
+                <td> Tardies </td>
                 <td>
-                    {{ form.filter }} {{ form.filter.errors }} {{ form.grade }} {{ form.grade.errors }}
-                    {{ form.filter_times }} {{ form.filter_times.errors }} times
+                    {{ form.filter_tardy }} {{ form.filter_tardy.errors }}
+                    {{ form.filter_tardy_times }} {{ form.filter_tardy_times.errors }} times
+                </td>
+            </tr>
+            <tr class="row">
+                <td>Grades (Each MP)</td>
+                <td>
+                    {{ form.grade_filter }} {{ form.grade_filter.errors }} {{ form.grade }} {{ form.grade.errors }}
+                    {{ form.grade_times }} {{ form.grade_times.errors }} times
+                </td>
+            </tr>
+            <tr class="row">
+                <td>Grades (Course Final)</td>
+                <td>
+                    {{ form.final_grade_filter }} {{ form.final_grade_filter.errors }} {{ form.final_grade }} {{ form.final_grade.errors }}
+                    {{ form.final_grade_times }} {{ form.final_grade_times.errors }} times
                 </td>
             </tr>
             <tr class="row">

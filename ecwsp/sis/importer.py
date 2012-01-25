@@ -1,11 +1,11 @@
 #       import.py
 #       
-#       Copyright 2010 Cristo Rey New York High School
+#       Copyright 2010-2012 Burke Software and Consulting
 #		Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
+#       the Free Software Foundation; either version 3 of the License, or
 #       (at your option) any later version.
 #       
 #       This program is distributed in the hope that it will be useful,
@@ -19,7 +19,9 @@
 #       MA 02110-1301, USA.
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from django.core.files.base import ContentFile
 from django.db import transaction
+
 from ecwsp.admissions.models import *
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
@@ -30,15 +32,17 @@ import xlrd
 import re
 from heapq import merge
 from datetime import time
+import datetime
 import sys
-
 from decimal import *
+import subprocess
 
 class Importer:
     def __init__(self, file=None, user=None):
         """Opens file. If not xls, convert to xls using uno
         supports any file Openoffice.org supports"""
         if file:
+            self.file = file
             if file.name[-3:] == "xls":
                 self.book = xlrd.open_workbook(file_contents=file.read())
             else: # convert to xls
@@ -53,23 +57,30 @@ class Importer:
             self.errors = 0
             self.user = user
     
-    def do_mysql_backup(self, outfile):
+    def do_mysql_backup(self, database='default'):
         args = []
-        if settings.DATABASE_USER:
-            args += ["--user=%s" % settings.DATABASE_USER]
-        if settings.DATABASE_PASSWORD:
-            args += ["--password=%s" % settings.DATABASE_PASSWORD]
-        if settings.DATABASE_HOST:
-            args += ["--host=%s" % settings.DATABASE_HOST]
-        if settings.DATABASE_PORT:
-            args += ["--port=%s" % settings.DATABASE_PORT]
-        args += [settings.DATABASE_NAME]
+        database = settings.DATABASES[database]
+        if 'USER' in database:
+            args += ["--user=%s" % database['USER']]
+        if 'PASSWORD' in database:
+            args += ["--password=%s" % database['PASSWORD']]
+        if 'HOSTNAME' in database:
+            args += ["--host=%s" % database['HOSTNAME']]
+        if 'PORT' in database and database['PORT']:
+            args += ["--port=%s" % database['PORT']]
+        args += [database['NAME']]
         
-        backup_dir = 'backups'
-        if not os.path.exists(backup_dir):
-            os.makedirs(backup_dir)
-        outfile = os.path.join(backup_dir, 'backup_import_%s.sql' % time.strftime('%y%m%d%S'))
-        os.system('mysqldump %s > %s' % (' '.join(args), outfile))
+        mysql_as_string = subprocess.check_output('mysqldump %s' % (' '.join(args),),shell=True)
+        return ContentFile(mysql_as_string)
+        
+    def make_log_entry(self, user_note=""):
+        self.log = ImportLog(user=self.user, user_note=user_note, import_file=self.file)
+        file_name = datetime.datetime.now().strftime("%Y%m%d%H%M") + ".sql"
+        self.log.sql_backup.save(file_name, self.do_mysql_backup())
+        self.log.save()
+        # Clean up old log files
+        for import_log in ImportLog.objects.filter(date__lt=datetime.datetime.now() - datetime.timedelta(60)):
+            import_log.delete()
         
     def handle_error(self, row, colname, exc, name):
         """ Add error infomation to exception list and error_date which will be
@@ -264,139 +275,114 @@ class Importer:
             if sheet_name.lower() == name.lower():
                 return self.book.sheet_by_index(i)
             i += 1
-        raise Exception('Couldn\'t find sheet %s' % (name,))
     
     def magic_import_everything(self):
         """Import a workbook using sheet names to determine what to import"""
+        self.make_log_entry()
         inserted = 0
         updated = 0
         msg = ""
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("students")
+        
+        sheet = self.get_sheet_by_case_insensitive_name("students")
+        if sheet:
             inserted, updated = self.import_students(sheet)
             msg += "%s students inserted, %s students updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("emergency contact")
+        sheet = self.get_sheet_by_case_insensitive_name("emergency contact")
+        if sheet:
             inserted, updated = self.import_emergency_contacts(sheet)
             msg += "%s emergency contacts inserted, %s emergency contacts updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("faculty")
+        sheet = self.get_sheet_by_case_insensitive_name("faculty")
+        if sheet:
             inserted, updated = self.import_faculty(sheet)
             msg += "%s faculty inserted, %s faculty updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("attendance")
+        sheet = self.get_sheet_by_case_insensitive_name("attendance")
+        if sheet:
             inserted = self.import_attendance(sheet)
             msg += "%s attendance records inserted. <br/>" % (inserted)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("discipline")
+        sheet = self.get_sheet_by_case_insensitive_name("discipline")
+        if sheet:
             inserted = self.import_discipline(sheet)
             msg += "%s discipline records inserted. <br/>" % (inserted)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("school year")
+        sheet = self.get_sheet_by_case_insensitive_name("school year")
+        if sheet:
             inserted = self.import_year(sheet)
             msg += "%s year records inserted. <br/>" % (inserted)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("marking period")
+        sheet = self.get_sheet_by_case_insensitive_name("marking period")
+        if sheet:
             inserted, updated = self.import_mp(sheet)
             msg += "%s marking period records inserted. <br/>" % (inserted)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("days off")
+        sheet = self.get_sheet_by_case_insensitive_name("days off")
+        if sheet:
             inserted = self.import_days_off(sheet)
             msg += "%s days off records inserted. <br/>" % (inserted)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("period")
+        sheet = self.get_sheet_by_case_insensitive_name("period")
+        if sheet:
             inserted, updated = self.import_period(sheet)
             msg += "%s period records inserted. %s period records updated.<br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("cohort")
+        sheet = self.get_sheet_by_case_insensitive_name("cohort")
+        if sheet:
             inserted = self.import_cohort(sheet)
             msg += "%s cohort records inserted. <br/>" % (inserted)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("course")
+        sheet = self.get_sheet_by_case_insensitive_name("course")
+        if sheet:
             inserted, updated = self.import_course(sheet)
             msg += "%s course records inserted and %s updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("course enrollment")
+        sheet = self.get_sheet_by_case_insensitive_name("course enrollment")
+        if sheet:
             inserted = self.import_course_enrollment(sheet)
             msg += "%s course enrollment records inserted. <br/>" % (inserted)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("grade")
+        sheet = self.get_sheet_by_case_insensitive_name("grade")
+        if sheet:
             inserted, updated = self.import_grades_admin(sheet)
             msg += "%s grades inserted, %s grades updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("grade comments")
+        sheet = self.get_sheet_by_case_insensitive_name("grade comments")
+        if sheet:
             inserted, updated = self.import_grades_comment(sheet)
             msg += "%s grades comments inserted, %s grades comments updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("standard test")
+        sheet = self.get_sheet_by_case_insensitive_name("standard test")
+        if sheet:
             inserted = self.import_standard_test(sheet)
             msg += "%s standard tests inserted <br/>" % (inserted)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("course meet")
+        sheet = self.get_sheet_by_case_insensitive_name("course meet")
+        if sheet:
             inserted, updated = self.import_course_meet(sheet)
             msg += "%s course meets inserted, %s course meets updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("workteam")
+        sheet = self.get_sheet_by_case_insensitive_name("workteam")
+        if sheet:
             inserted, updated = self.import_workteams(sheet)
             msg += "%s workteams inserted, %s workteams updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("student worker")
+        sheet = self.get_sheet_by_case_insensitive_name("student worker")
+        if sheet:
             inserted, updated = self.import_student_workers(sheet)
             msg += "%s workers inserted, %s workers updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("company contact")
+        sheet = self.get_sheet_by_case_insensitive_name("company contact")
+        if sheet:
             inserted, updated = self.import_company_contacts(sheet)
             msg += "%s company contacts inserted, %s company contacts updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("applicant")
+        sheet = self.get_sheet_by_case_insensitive_name("applicant")
+        if sheet:
             inserted, updated = self.import_applicants(sheet)
             msg += "%s applicants inserted, %s applicants updated <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("adm checks")
+        sheet = self.get_sheet_by_case_insensitive_name("adm checks")
+        if sheet:
             inserted, updated = self.import_admissions_checks(sheet)
             msg += "%s admission checks inserted,<br/>" % (inserted,)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("adm log")
+        sheet = self.get_sheet_by_case_insensitive_name("adm log")
+        if sheet:
             inserted, updated = self.import_admissions_log(sheet)
             msg += "%s admission contact log entries inserted,<br/>" % (inserted,)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("college enrollment")
+        sheet = self.get_sheet_by_case_insensitive_name("college enrollment")
+        if sheet:
             inserted, updated = self.import_college_enrollment(sheet)
             msg += "%s college enrollments inserted, %s college enrollments updated. <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("benchmarks")
+        sheet = self.get_sheet_by_case_insensitive_name("benchmarks")
+        if sheet:
             inserted, updated = self.import_benchmarks(sheet)
             msg += "%s benchmarks inserted, %s benchmarks updated <br/>" % (inserted, updated)
-        except: pass
-        try:
-            sheet = self.get_sheet_by_case_insensitive_name("company contract")
+        sheet = self.get_sheet_by_case_insensitive_name("company contract")
+        if sheet:
             inserted, updated = self.import_contract_information(sheet)
             msg += "%s contracts inserted, %s contracts updated <br/>" % (inserted, updated)
-        except: pass
-        
         
         if msg == "":
             msg = "No files found. Check if sheets are named correctly. "
@@ -405,6 +391,8 @@ class Importer:
         
         filename = 'import_error.xls'
         if len(self.error_data):
+            self.log.errors = True
+            self.log.save()
             report = customXls("")
             save = False
             for key, error_page in self.error_data.items():

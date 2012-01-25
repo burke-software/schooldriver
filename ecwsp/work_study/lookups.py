@@ -24,7 +24,7 @@ class StudentLookup(LookupChannel):
             company = student.placement
             if not company: company = "No placement"
         except: company = "None"
-        txt = '<img align="left" src=%s/> %s %s <br/>%s<br/>%s' \
+        txt = '<img align="left" src="%s"/> %s %s <br/>%s<br/>%s' \
              % (image, student.fname, student.lname, year, company)
         return txt
 
@@ -45,7 +45,7 @@ class StudentLookup(LookupChannel):
         contact_number = ""
         if student.primary_contact:
             contact_number = student.primary_contact.phone
-        txt = '<img align="left" src=%s/> <a href=\"/sis/get_student/%s/\" target=\"_blank\">  %s %s</a><br/>%s<br/>CRA: %s<br/>%s<br/>%s %s' \
+        txt = '<img align="left" src="%s"/> <a href=\"/sis/get_student/%s/\" target=\"_blank\">  %s %s</a><br/>%s<br/>CRA: %s<br/>%s<br/>%s %s' \
              % (image, student.id, student.fname, student.lname, year, cra, company, student.primary_contact, contact_number)
         return txt
 

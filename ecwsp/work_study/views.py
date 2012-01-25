@@ -939,7 +939,7 @@ def report_builder_view(request):
                     return report.finish()
     
                 elif 'all_timesheets' in request.POST:
-                    timesheets = TimeSheet.objects.all().order_by('student', 'date')
+                    timesheets = TimeSheet.objects.filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])).order_by('student', 'date')
                     data = []
                     titles = ["Name", "", "For Pay", "make up", "approved", "company", "creation date", "date"]
                     fileName = "timesheets.xls"
