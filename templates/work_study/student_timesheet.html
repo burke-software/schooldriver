@@ -36,12 +36,18 @@
             var minutes_out = time_out.getMinutes();
             
             var time_lunch = Date.parse($('#id_time_lunch').val())
-            var hours_lunch = time_lunch.getHours();
-            var minutes_lunch = time_lunch.getMinutes();
-            
             var time_lunch_return = Date.parse($('#id_time_lunch_return').val())
-            var hours_lunch_return = time_lunch_return.getHours();
-            var minutes_lunch_return = time_lunch_return.getMinutes();
+            if (time_lunch && time_lunch_return) {
+                var hours_lunch = time_lunch.getHours();
+                var minutes_lunch = time_lunch.getMinutes();
+                var hours_lunch_return = time_lunch_return.getHours();
+                var minutes_lunch_return = time_lunch_return.getMinutes();
+            } else {
+                var hours_lunch = 0;
+                var minutes_lunch = 0;
+                var hours_lunch_return = 0;
+                var minutes_lunch_return = 0;
+            }
             
             var hours = hours_lunch - hours_in;
             hours = hours + (hours_out - hours_lunch_return);
@@ -94,6 +100,7 @@
         function no_lunch() {
             document.timesheet_form.time_lunch.value = "";
             document.timesheet_form.time_lunch_return.value = "";
+            add_hours();
         }
         
         function check_date() {
