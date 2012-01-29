@@ -17,13 +17,44 @@
     {% load adminmedia %}
     <script type="text/javascript" src="/admin/jsi18n/"></script>
     <script type="text/javascript" src="/static/grappelli/js/core.js"></script>
+    <script type="text/javascript" src="/static/js/date.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/grappelli/css/widgets.css" media="screen" />
     <script type="text/javascript">
         window.__admin_media_prefix__ = "{% filter escapejs %}{% admin_media_prefix %}{% endfilter %}";
     </script>
     {{ form.media }}
     
-    <script language="JavaScript">
+    <script type="text/javascript">
+    // Wow dates in javascript are soooooo bad
+        function add_hours(){
+            var time_in = Date.parse($('#id_time_in').val())
+            var hours_in = time_in.getHours();
+            var minutes_in = time_in.getMinutes();
+            
+            var time_out = Date.parse($('#id_time_out').val())
+            var hours_out = time_out.getHours();
+            var minutes_out = time_out.getMinutes();
+            
+            var time_lunch = Date.parse($('#id_time_lunch').val())
+            var hours_lunch = time_lunch.getHours();
+            var minutes_lunch = time_lunch.getMinutes();
+            
+            var time_lunch_return = Date.parse($('#id_time_lunch_return').val())
+            var hours_lunch_return = time_lunch_return.getHours();
+            var minutes_lunch_return = time_lunch_return.getMinutes();
+            
+            var hours = hours_lunch - hours_in;
+            hours = hours + (hours_out - hours_lunch_return);
+            
+            var minutes = minutes_lunch - minutes_in;
+            minutes = minutes + (minutes_out - minutes_lunch_return);
+            
+            hours = hours + minutes/60;
+            hours = Math.round(hours * 100) / 100
+            
+            $('#span_hours').html(hours);
+        }
+        
         $(document).ready(
             function () {
                 $('code').each(
@@ -31,11 +62,25 @@
                         eval($(this).html());
                     }
                 )
+                add_hours();
+                $('#ptTimeSelectSetButton').click(function() {
+                    add_hours();
+                });
+                $('#id_time_in').change(function() {
+                    add_hours();
+                });
+                $('#id_time_out').change(function() {
+                    add_hours();
+                });
+                $('#id_time_lunch').change(function() {
+                    add_hours();
+                });
+                $('#id_time_lunch_return').change(function() {
+                    add_hours();
+                });
             }
         );
-    </script>
-    
-    <script type="text/javascript">
+        
         function check_time() {
             lunch_out = document.timesheet_form.time_lunch.value;
             lunch_in = document.timesheet_form.time_lunch_return.value;
@@ -142,7 +187,7 @@
                             </code>
                         </tr>
                     </table>
-                    <a href="#" onclick="no_lunch()" >No Lunch</a>
+                    <a href="#" onclick="no_lunch()" >No Lunch</a> <span style="padding-left: 140px;">Total Hours: <span id="span_hours"></span></span>
                 </td>
             </tr>
             <tr class="spacer"></tr>
