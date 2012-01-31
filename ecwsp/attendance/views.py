@@ -104,7 +104,7 @@ def teacher_attendance(request, course=None):
                     object_repr     = unicode(object), 
                     action_flag     = ADDITION
                 )
-            AttendanceLog(user=request.user, date=date.today(), course=course, asp=asp).save()
+            AttendanceLog(user=request.user, date=datetime.date.today(), course=course, asp=asp).save()
             messages.success(request, 'Attendance recorded')
             return HttpResponseRedirect(reverse('admin:index'))
         else:
@@ -174,6 +174,55 @@ def teacher_submissions(request):
     return render_to_response(
         'attendance/teacher_submissions.html',
         {'request': request, 'submissions': submissions})
+
+
+def daily_attendance_report(date, private_notes=False, type="odt"):
+    from ecwsp.sis.report import *
+    template = Template.objects.get_or_create(name="Daily Attendance")[0]
+    template = template.file.path
+    
+    data = get_default_data()
+    data['selected_date'] = unicode(date)
+    data['school_day'] = get_school_day_number(date)
+    
+    attendance = StudentAttendance.objects.filter(date=date)
+    students = Student.objects.filter(student_attn__in=attendance)
+    
+    active_year = SchoolYear.objects.get(active_year=True)
+    active_year_dates = (active_year.start_date, active_year.end_date)
+    
+    for year in GradeLevel.objects.all():
+        attns = attendance.filter(student__year__id=year.id)
+        for attn in attns:
+            if attn.status.absent:
+                attn.total = StudentAttendance.objects.filter(student=attn.student, status__absent=True, date__range=active_year_dates).count()
+            elif attn.status.tardy:
+                attn.total = StudentAttendance.objects.filter(student=attn.student, status__tardy=True, date__range=active_year_dates).count()
+            else:
+                attn.total = StudentAttendance.objects.filter(student=attn.student, status=attn.status, date__range=active_year_dates).count()
+        data['absences_' + str(year.id)] = attns
+        
+        attn_list = ""
+        for status in AttendanceStatus.objects.exclude(name="Present"):
+            attn = StudentAttendance.objects.filter(status=status, date=date, student__year__id=year.id)
+            if attn.count() > 0:
+                attn_list += unicode(status.name) + " " + unicode(attn.count()) + ",  " 
+        if len(attn_list) > 3: attn_list = attn_list[:-3]
+        data['stat_' + str(year.id)] = attn_list
+        
+    
+    data['comments'] = ""
+    for attn in StudentAttendance.objects.filter(date=date):
+        if (attn.notes) or (attn.private_notes and private_notes):
+            data['comments'] += unicode(attn.student) + ": "
+            if attn.notes: data['comments'] += unicode(attn.notes) + "  "
+            if attn.private_notes and private_notes: 
+                data['comments'] += unicode(attn.private_notes) 
+            data['comments'] += ",  "
+    if len(data['comments']) > 3: data['comments'] = data['comments'][:-3]
+    
+    filename = "daily_attendance"
+    return pod_save(filename, "." + str(type), data, template)
 
 
 @permission_required('sis.reports') 
