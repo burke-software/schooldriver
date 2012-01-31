@@ -8,10 +8,10 @@
     {% if has_add_permission %}
         <ul class="tools">
             <li>
-                <a href="{% url ecwsp.attendance.views.attendance_report %}"> Reports </a>
+                <a href="/attendance/studentattendance/report/"> Reports </a>
             </li>
             <li>
-            <a href="{% url ecwsp.attendance.views.teacher_submissions %}"> Today's submissions </a>
+            <a href="/attendance/teacher_submissions/"> Today's submissions </a>
           </li>
             <li>
                 <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="add-handler focus">
