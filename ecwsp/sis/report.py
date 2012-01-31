@@ -134,41 +134,7 @@ def daily_attendance_report(date, private_notes=False, type="odt"):
     
     filename = "daily_attendance"
     return pod_save(filename, "." + str(type), data, template)
-
-
-def attendance_student(id, all_years=False, order_by="Date", include_private_notes=False, type="odt"):
-    """ Attendance report on particular student """
-    student = Student.objects.get(id=id)
-    if all_years:
-        attendances = StudentAttendance.objects.filter(student=student)
-    else:
-        active_year = SchoolYear.objects.get(active_year=True)
-        active_year_dates = (active_year.start_date, active_year.end_date)
-        attendances = StudentAttendance.objects.filter(student=student, date__range=active_year_dates)
-    if order_by == "Status": attendances = attendances.order_by('status') 
     
-    data = get_default_data()
-    
-    data['attendances'] = []
-    
-    for attn in attendances:
-        if include_private_notes:
-            notes = unicode(attn.notes) + "  " + unicode(attn.private_notes)
-        else:
-            notes = unicode(attn.notes)
-        attendance = struct()
-        attendance.date = attn.date
-        attendance.status = attn.status
-        attendance.notes = notes
-        data['attendances'].append(attendance)
-              
-   # data['attendances'] = attendances
-    data['student'] = student
-    data['student_year'] = student.year
-    
-    template = Template.objects.get_or_create(name="Student Attendance Report")[0]
-    filename = unicode(student) + "_Attendance"
-    return pod_save(filename, "." + str(type), data, template.file.path)
 
 def pod_report(template, data, filename, format="odt"):
     data = dict(data.items() + get_default_data().items())

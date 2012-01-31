@@ -31,18 +31,18 @@
                 </li>
             {% endif %}
             <!-- Attendance  -->
-            {% if perms.sis.reports or perms.sis.change_studentattendance or perms.sis.take_studentattendance %}
+            {% if perms.sis.reports or perms.attendance.change_studentattendance or perms.attendance.take_studentattendance %}
                 <li class="user-options-container collapse closed">
                     <a href="javascript://" class="user-options-handler collapse-handler"> {% trans 'Attendance' %} </a>
                     <ul class="user-options">
-                        {% if perms.sis.take_studentattendance %}
-                            <li><a href="{% url ecwsp.sis.views.teacher_attendance %}">{% trans 'Take Homeroom Attendance' %}</a>
+                        {% if perms.attendance.take_studentattendance %}
+                            <li><a href="{% url ecwsp.attendance.views.teacher_attendance %}">{% trans 'Take Homeroom Attendance' %}</a>
                         {% endif %}
-                        {% if perms.sis.change_studentattendance %}
-                            <li><a href="{% url admin:sis_studentattendance_changelist %}">{% trans 'Edit' %}</a></li>
+                        {% if perms.attendance.change_studentattendance %}
+                            <li><a href="{% url admin:attendance_studentattendance_changelist %}">{% trans 'Edit' %}</a></li>
                         {% endif %}
                         {% if perms.studentattendance.reports %}
-                            <li><a href="{% url ecwsp.sis.views.attendance_report %}">{% trans 'Reports' %}</a></li>
+                            <li><a href="{% url ecwsp.attendance.views.attendance_report %}">{% trans 'Reports' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>

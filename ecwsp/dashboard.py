@@ -93,6 +93,14 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.discipline.models.PresetComment',
             ),
         ))
+        
+        self.children.append(modules.ModelList(
+            title = 'Attendance',
+            column=1,
+            models=(
+                'ecwsp.attendance.*',
+            ),
+        ))
     
         self.children.append(modules.ModelList(
             title='Courses and Grades',

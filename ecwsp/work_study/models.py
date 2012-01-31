@@ -716,7 +716,7 @@ class ClientVisit(models.Model):
     choices = (
         ('4', "Above and Beyond"),
         ('3', "Represents Level of Proficiency"),
-        ('2', "One the way with some help"),
+        ('2', "On the way with some help"),
         ('1', "Need Immediate Intervention"),
     )
     attendance_and_punctuality = models.CharField(max_length=1, choices=choices, blank=True)
