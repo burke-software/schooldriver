@@ -21,6 +21,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.core.urlresolvers import reverse
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, Sum, Count, get_model
 from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.http import HttpResponse, HttpResponseRedirect
