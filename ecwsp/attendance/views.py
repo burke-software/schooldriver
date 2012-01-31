@@ -104,7 +104,7 @@ def teacher_attendance(request, course=None):
                     object_repr     = unicode(object), 
                     action_flag     = ADDITION
                 )
-            AttendanceLog(user=request.user, date=datetime.date.today(), course=course, asp=asp).save()
+            AttendanceLog(user=request.user, date=datetime.date.today(), course=course, asp=course.asp).save()
             messages.success(request, 'Attendance recorded')
             return HttpResponseRedirect(reverse('admin:index'))
         else:
