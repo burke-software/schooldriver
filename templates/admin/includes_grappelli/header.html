@@ -31,6 +31,7 @@
                 </li>
             {% endif %}
             <!-- Attendance  -->
+            {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
             {% if perms.sis.reports or perms.attendance.change_studentattendance or perms.attendance.take_studentattendance %}
                 <li class="user-options-container collapse closed">
                     <a href="javascript://" class="user-options-handler collapse-handler"> {% trans 'Attendance' %} </a>
@@ -46,6 +47,7 @@
                         {% endif %}
                     </ul>
                 </li>
+            {% endif %}
             {% endif %}
             <!-- Discipline  -->
             {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
