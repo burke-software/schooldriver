@@ -34,6 +34,8 @@ else:
 
 if 'ecwsp.discipline' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^discipline/', include('ecwsp.discipline.urls')), )
+if 'ecwsp.attendance' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^attendance/', include('ecwsp.attendance.urls')), )
 if 'ecwsp.schedule' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^schedule/', include('ecwsp.schedule.urls')), )
 if 'ecwsp.work_study' in settings.INSTALLED_APPS:

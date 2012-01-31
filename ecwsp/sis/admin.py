@@ -218,28 +218,10 @@ class CohortAdmin(admin.ModelAdmin):
     
 admin.site.register(Cohort, CohortAdmin)
 
-class StudentAttendanceAdmin(admin.ModelAdmin):
-    form = make_ajax_form(StudentAttendance, dict(student='attendance_quick_view_student'))
-    list_display = ['student', 'date', 'status', 'notes']
-    list_filter = ['date', 'status']
-    list_editable = ['status', 'notes']
-    search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
-admin.site.register(StudentAttendance, StudentAttendanceAdmin)
-
-admin.site.register(AttendanceLog)
-
-class AttendanceStatusAdmin(admin.ModelAdmin):
-    list_display = ['name', 'code', 'excused', 'absent', 'tardy']
-admin.site.register(AttendanceStatus,AttendanceStatusAdmin)
 admin.site.register(ReasonLeft)
 admin.site.register(ReportField)
 
 admin.site.register(TranscriptNoteChoices)
-
-if settings.ASP:
-    class ASPAttendanceAdmin(admin.ModelAdmin):
-        list_display = ['student', 'status', 'date', 'course', 'notes']
-    admin.site.register(ASPAttendance, ASPAttendanceAdmin)
 
 class SchoolYearAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
