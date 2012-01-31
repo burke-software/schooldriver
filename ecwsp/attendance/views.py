@@ -176,16 +176,17 @@ def teacher_submissions(request):
         {'request': request, 'submissions': submissions})
 
 
-def daily_attendance_report(date, private_notes=False, type="odt"):
+def daily_attendance_report(adate, private_notes=False, type="odt"):
     from ecwsp.sis.report import *
     template = Template.objects.get_or_create(name="Daily Attendance")[0]
     template = template.file.path
     
     data = get_default_data()
-    data['selected_date'] = unicode(date)
-    data['school_day'] = get_school_day_number(date)
+    data['selected_date'] = unicode(adate)
+    print adate
+    data['school_day'] = get_school_day_number(adate)
     
-    attendance = StudentAttendance.objects.filter(date=date)
+    attendance = StudentAttendance.objects.filter(date=adate)
     students = Student.objects.filter(student_attn__in=attendance)
     
     active_year = SchoolYear.objects.get(active_year=True)
@@ -204,7 +205,7 @@ def daily_attendance_report(date, private_notes=False, type="odt"):
         
         attn_list = ""
         for status in AttendanceStatus.objects.exclude(name="Present"):
-            attn = StudentAttendance.objects.filter(status=status, date=date, student__year__id=year.id)
+            attn = StudentAttendance.objects.filter(status=status, date=adate, student__year__id=year.id)
             if attn.count() > 0:
                 attn_list += unicode(status.name) + " " + unicode(attn.count()) + ",  " 
         if len(attn_list) > 3: attn_list = attn_list[:-3]
@@ -212,7 +213,7 @@ def daily_attendance_report(date, private_notes=False, type="odt"):
         
     
     data['comments'] = ""
-    for attn in StudentAttendance.objects.filter(date=date):
+    for attn in StudentAttendance.objects.filter(date=adate):
         if (attn.notes) or (attn.private_notes and private_notes):
             data['comments'] += unicode(attn.student) + ": "
             if attn.notes: data['comments'] += unicode(attn.notes) + "  "
