@@ -183,7 +183,6 @@ def daily_attendance_report(adate, private_notes=False, type="odt"):
     
     data = get_default_data()
     data['selected_date'] = unicode(adate)
-    print adate
     data['school_day'] = get_school_day_number(adate)
     
     attendance = StudentAttendance.objects.filter(date=adate)
