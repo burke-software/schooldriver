@@ -72,7 +72,7 @@ class Importer:
         
         #below is only available in python 2.7. Until I have time to talk with David about updating the server, using older coding
         #mysql_as_string = subprocess.check_output('mysqldump %s' % (' '.join(args),),shell=True)        
-        mysql_as_string = subprocess.Popen('mysqldump %s' % (' '.join(args),), stdout=subprocess.PIPE).communicate()[0]
+        mysql_as_string = subprocess.Popen('mysqldump %s' % (' '.join(args),),shell=True).communicate()[0]
         return ContentFile(mysql_as_string)
         
     def make_log_entry(self, user_note=""):
