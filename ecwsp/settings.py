@@ -282,9 +282,8 @@ if not DEBUG:
         },
         'handlers': {
             'sentry': {
-                'level': 'DEBUG',
+                'level': 'WARNING',
                 'class': 'raven.contrib.django.handlers.SentryHandler',
-                'formatter': 'verbose'
             },
             'console': {
                 'level': 'DEBUG',
@@ -293,6 +292,16 @@ if not DEBUG:
             }
         },
         'loggers': {
+            'django.db.backends': {
+                'level': 'ERROR',
+                'handlers': ['console'],
+                'propagate': False,
+            },
+            'raven': {
+                'level': 'DEBUG',
+                'handlers': ['console'],
+                'propagate': False,
+            },
             'sentry.errors': {
                 'level': 'DEBUG',
                 'handlers': ['console'],
@@ -300,6 +309,7 @@ if not DEBUG:
             },
         },
     }
+
 
 # http://ww7.engrade.com/api/key.php
 ENGRADE_APIKEY = ''
