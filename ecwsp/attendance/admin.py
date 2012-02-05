@@ -27,7 +27,7 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
     list_display = ['student', 'date', 'status', 'notes']
     list_filter = ['date', 'status']
     list_editable = ['status', 'notes']
-    search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
+    search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']    
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 
 admin.site.register(AttendanceLog)

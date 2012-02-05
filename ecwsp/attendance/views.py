@@ -164,10 +164,11 @@ def teacher_submissions(request):
         submission = {}
         submission['homeroom'] = homeroom
         submission['teacher'] = homeroom.teacher
-        teacher_user, created = User.objects.get_or_create(username=homeroom.teacher.username)
-        log = AttendanceLog.objects.filter(date=datetime.date.today(), user=teacher_user)
+        log = AttendanceLog.objects.filter(date=datetime.date.today(), course=homeroom)
         if log.count() > 0:
             submission['submitted'] = "Yes"
+            if log[0].user and Faculty.objects.filter(username=log[0].user.username):
+                submission['submitted_by'] = Faculty.objects.filter(username=log[0].user.username)[0]
         else:
             submission['submitted'] = "No"
         submissions.append(submission)
