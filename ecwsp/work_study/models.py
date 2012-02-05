@@ -365,6 +365,18 @@ class StudentWorker(Student):
             return ""
     company.allow_tags = True
     
+    def get_day_as_iso_date(self):
+        if self.day == 'M':
+            return 0
+        elif self.day == 'T':
+            return 1
+        elif self.day == 'W':
+            return 2
+        elif self.day == 'TH':
+            return 3
+        elif self.day == 'F':
+            return 4
+    
     @property
     def get_contact(self):
         if self.primary_contact:
@@ -697,6 +709,7 @@ class Attendance(models.Model):
     half_day = models.BooleanField(help_text="Missed only half day")
     waive = models.BooleanField(help_text="Does not need to make up day at work.")
     notes = models.CharField(max_length=255, blank=True)
+    sis_attendance = models.ForeignKey('attendance.StudentAttendance',blank=True,null=True,editable=False)
     
     def __unicode__(self):
         return unicode(self.student) + " absent on " + unicode(self.absence_date)

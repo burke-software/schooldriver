@@ -1,6 +1,7 @@
 from ajax_select import LookupChannel
 from ecwsp.sis.lookups import StudentLookup
 from models import *
+from ecwsp.sis.models import SchoolYear
 
 import datetime
 
