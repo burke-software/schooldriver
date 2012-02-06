@@ -1,4 +1,4 @@
-#   Copyright 2011 Burke Software and Consulting LLC
+#   Copyright 2011-2012 Burke Software and Consulting LLC
 #   Author Callista Goss <calli@burkesoftware.com>
 #   
 # This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,10 @@ from django.core.files import File
 from omr.models import Test
 from ecwsp.omr.queXF import import_queXF
 from ecwsp.omr.models import *
+
+def get_db_connection():
+    db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
+    return db.cursor()
 
 def generate_xml(test_id):
     global entire_testtag
@@ -148,6 +152,15 @@ def generate_xml(test_id):
                     choicevaluetag.appendChild(choicevalue)
         
         entire_testtag.appendChild(id.cloneNode(True))
+        
+    
+    def validate_pdf(testid):
+        db_cursor = get_db_connection()
+        db_cursor.execute('select count(*) from pages left join questionnaires on questionnaires.qid=pages.qid where questionnaires.description=%s;', (testid,))
+        if int(db_cursor.fetchone()[0]) == 0:
+            raise Exception('PDF should have been sent to quexf but was not!')
+        
+        
 
     entiredoc = minidom.Document()
     entire_testtag = entiredoc.createElement("test")
@@ -186,6 +199,9 @@ def generate_xml(test_id):
     
     test.finalized = True
     test.save()
+    
+    validate_pdf(testid)
+    
     return pdf
 
 
