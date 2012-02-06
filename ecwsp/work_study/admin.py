@@ -316,10 +316,11 @@ class AttendanceAdmin(admin.ModelAdmin):
     list_filter = ['absence_date', 'makeup_date', 'reason', 'fee', 'student']
     list_display = ('absence_date', 'makeup_date', 'reason', 'fee', 'student', 'billed')
     def render_change_form(self, request, context, *args, **kwargs):
-        sis_attendance = context['original'].sis_attendance
-        if sis_attendance:
-            txt = '<span style="color:#444;">School attendance notes: %s %s</span>' % (sis_attendance.status, sis_attendance.notes)
-            context['adminform'].form.fields['notes'].help_text = txt
+        if 'original' in context:
+            sis_attendance = context['original'].sis_attendance
+            if sis_attendance:
+                txt = '<span style="color:#444;">School attendance notes: %s %s</span>' % (sis_attendance.status, sis_attendance.notes)
+                context['adminform'].form.fields['notes'].help_text = txt
         return super(AttendanceAdmin, self).render_change_form(request, context, args, kwargs)
 admin.site.register(Attendance, AttendanceAdmin)
 admin.site.register(AttendanceFee)
