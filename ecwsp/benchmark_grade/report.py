@@ -108,14 +108,14 @@ def benchmark_report_card(template, options, students, format="odt"):
                 except:
                     pass
             items = []
-            for item in Item.objects.filter(category__name="Standards", course=course, markingPeriod=marking_period):
-                markItem = struct()
-                markItem.name = item.name
-                markItem.range = item.scale.range()
-                try:
-                    markItem.mark = item.mark_set.get(student=student, description="Session").mark
-                except:
-                    continue
+	    standards_category = Category.objects.get(name="Standards") # save time, move to top and do this once?
+	    for mark in Mark.objects.filter(item__category=standards_category, item__course=course,
+	                                    item__markingPeriod=marking_period,
+					    student=student, description="Session"):
+		markItem = struct()
+		markItem.name = mark.item.name
+		markItem.range = mark.item.scale.range()
+		markItem.mark = mark.mark
                 if markItem.mark is not None:
                     items.append(markItem)
                     if Hire4Ed:
@@ -131,7 +131,7 @@ def benchmark_report_card(template, options, students, format="odt"):
                         except KeyError:
                             averages["Hire4Ed"] = markItem.mark
                             denominators["Hire4Ed"] = 1
-                markItem.mark = item.scale.spruce(markItem.mark)
+                markItem.mark = mark.item.scale.spruce(markItem.mark)
             course.items = items
             try:
                 if Hire4Ed and course.averageDenom > 0:
