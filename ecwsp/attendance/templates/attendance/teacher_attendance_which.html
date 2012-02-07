@@ -15,7 +15,7 @@
 {% block content %}
 	<h2> Select Course for Attendance </h2>
     {% for course in courses %}
-        <a href="/sis/teacher_attendance/{{ type }}/{{ course.id }}">{{ course }}</a><br/> 
+        <a href="/attendance/teacher_attendance/{{ course.id }}">{{ course }}</a><br/> 
     {% endfor %}
 {% endblock %}
 

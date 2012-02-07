@@ -8,7 +8,7 @@
   Home
   </a> 
   &rsaquo; 
-  <a href="/admin/sis/studentattendance/"> 
+  <a href="/admin/attendance/studentattendance/"> 
    Student Attendance
   </a> 
   &rsaquo; Attendance Submissions
@@ -28,7 +28,15 @@
                 <tr>
                     <td>{{ submission.homeroom }}</td>
                     <td>{{ submission.teacher }}</td>
-                    <td>{{ submission.submitted }}</td>
+                    <td>
+		     {{ submission.submitted }}
+		     {% if submission.submitted_by %}
+		      {% if submission.submitted_by != submission.teacher %}
+		       , by {{ submission.submitted_by }}
+		      {% endif %}
+		     {% endif %}
+		    </td>
+		    
                 </tr>
                 {% endfor %}
             </table>

@@ -78,8 +78,6 @@ MAX_HOURS_DAY = 10
 # Sync data to SugarCRM
 SYNC_SUGAR = False
 
-ASP = True
-
 # Prefered file format, may be changed in user preferences.
 # Default o
 # o = Open Document
@@ -152,6 +150,7 @@ INSTALLED_APPS = (
     'ecwsp.alumni',
     'ecwsp.omr',
     'ecwsp.discipline',
+    'ecwsp.attendance',
     
     'ajax_select',
     'reversion',
@@ -208,9 +207,9 @@ AJAX_LOOKUP_CHANNELS = {
     'dstudent' : ('ecwsp.sis.lookups', 'StudentLookupSmall'),
     'faculty' : ('ecwsp.sis.lookups', 'FacultyLookup'),
     'faculty_user' : ('ecwsp.sis.lookups', 'FacultyUserLookup'),
-    'attendance_quick_view_student': ('ecwsp.sis.lookups', 'AttendanceAddStudentLookup'),
+    'attendance_quick_view_student': ('ecwsp.attendance.lookups', 'AttendanceAddStudentLookup'),
     'emergency_contact' : ('ecwsp.sis.lookups', 'EmergencyContactLookup'),
-    'attendance_view_student': ('ecwsp.sis.lookups', 'AttendanceStudentLookup'),
+    'attendance_view_student': ('ecwsp.attendance.lookups', 'AttendanceStudentLookup'),
     'discstudent' : ('ecwsp.discipline.lookups', 'StudentWithDisciplineLookup'),
     'discipline_view_student': ('ecwsp.discipline.lookups', 'DisciplineViewStudentLookup'),
     'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
@@ -283,9 +282,8 @@ if not DEBUG:
         },
         'handlers': {
             'sentry': {
-                'level': 'DEBUG',
+                'level': 'WARNING',
                 'class': 'raven.contrib.django.handlers.SentryHandler',
-                'formatter': 'verbose'
             },
             'console': {
                 'level': 'DEBUG',
@@ -294,6 +292,16 @@ if not DEBUG:
             }
         },
         'loggers': {
+            'django.db.backends': {
+                'level': 'ERROR',
+                'handlers': ['console'],
+                'propagate': False,
+            },
+            'raven': {
+                'level': 'DEBUG',
+                'handlers': ['console'],
+                'propagate': False,
+            },
             'sentry.errors': {
                 'level': 'DEBUG',
                 'handlers': ['console'],
@@ -301,6 +309,7 @@ if not DEBUG:
             },
         },
     }
+
 
 # http://ww7.engrade.com/api/key.php
 ENGRADE_APIKEY = ''

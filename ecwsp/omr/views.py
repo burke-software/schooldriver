@@ -39,6 +39,7 @@ from ecwsp.schedule.models import Course
 from elementtree.SimpleXMLWriter import XMLWriter
 import django_filters
 import MySQLdb
+import logging
 
 class QuestionBankFilter(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
@@ -361,12 +362,18 @@ def ajax_question_form(request, test_id, question_id):
 @permission_required('omr.teacher_test')
 def ajax_finalize_test(request, test_id):
     try:
-        # Send shit to QueXF
-        generate_xml(test_id)        
-        
+        # Send to QueXF
+        generate_xml(test_id)
         return HttpResponse('SUCCESS');
     except:
-        return HttpResponse('Unexpected Error');
+        try: # try again? One time it failed and then worked on second try..no clue why
+            generate_xml(test_id)
+            return HttpResponse('SUCCESS');
+        except:
+            logging.error('Couldn\'t finalize omr test.', exc_info=True, extra={
+                'request': request,
+            })
+            return HttpResponse('Unexpected Error');
 
 @permission_required('omr.teacher_test')
 def test_result(request, test_id):

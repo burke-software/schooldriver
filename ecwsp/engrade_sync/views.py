@@ -29,6 +29,7 @@ def setup(request):
                 ids = engrade_sync.generate_courses(course_form.cleaned_data['marking_period'])
                 msg += "Success. Engrade course ids are " + unicode(ids)
         elif 'generate_teacher' in request.POST:
+            course_form = SetupCoursesForm()
             num_created = engrade_sync.generate_all_teachers()
             msg += "Created %s teachers in Engrade." % (num_created,)
     else:

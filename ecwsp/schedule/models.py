@@ -458,7 +458,7 @@ class StandardTest(models.Model):
         if self.cherry_pick_final:
             for result in self.standardtestresult_set.filter(student=student):
                 cat_total = result.standardcategorygrade_set.get(category__is_total=True)
-                if cat_total > cherry: cherry = cat_total.grade
+                if cat_total.grade > cherry: cherry = cat_total.grade
         elif self.cherry_pick_categories:
             cats = self.standardcategory_set.filter(standardcategorygrade__result__student=student).annotate(highest=Max('standardcategorygrade__grade'))
             for cat in cats:
