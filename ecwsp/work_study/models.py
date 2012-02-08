@@ -367,15 +367,15 @@ class StudentWorker(Student):
     
     def get_day_as_iso_date(self):
         if self.day == 'M':
-            return 0
-        elif self.day == 'T':
             return 1
-        elif self.day == 'W':
+        elif self.day == 'T':
             return 2
-        elif self.day == 'TH':
+        elif self.day == 'W':
             return 3
-        elif self.day == 'F':
+        elif self.day == 'TH':
             return 4
+        elif self.day == 'F':
+            return 5
     
     @property
     def get_contact(self):
@@ -709,7 +709,8 @@ class Attendance(models.Model):
     half_day = models.BooleanField(help_text="Missed only half day")
     waive = models.BooleanField(help_text="Does not need to make up day at work.")
     notes = models.CharField(max_length=255, blank=True)
-    sis_attendance = models.ForeignKey('attendance.StudentAttendance',blank=True,null=True,editable=False)
+    if 'ecwsp.attendance' in settings.INSTALLED_APPS:
+        sis_attendance = models.ForeignKey('attendance.StudentAttendance',blank=True,null=True,editable=False,on_delete=models.SET_NULL)
     
     def __unicode__(self):
         return unicode(self.student) + " absent on " + unicode(self.absence_date)
