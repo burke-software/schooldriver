@@ -8,4 +8,5 @@ urlpatterns = patterns('',
     (r'^disc/list/(?P<type>[a-z]+)$', discipline_list),
     (r'^disc/report/(?P<student_id>\d+)/$', discipline_report),
     (r'^disc/stats/$', discipline_report_view),
+    (r'^generate_from_attendance/$', generate_from_attendance),
 )

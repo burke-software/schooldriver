@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+  <div id="breadcrumbs"> 
+  <a href="{% url admin:index %}"> 
+   Home
+  </a>
+  &rsaquo; 
+  <a href="{% url admin:app_list 'discipline' %}"> 
+   Discipline
+  </a> 
+  &rsaquo; 
+  <a href="{% url admin:discipline_studentdiscipline_changelist %}"> 
+   Student disciplines
+  </a> 
+  &rsaquo; 
+  Generate From Attendance
+  </div> 
+{% endblock %}
+
+{% block content %}    
+    <h2> Generate From Attendance </h2>
+    This tool can be used to determine discipline issues based on unexcused tardies
+    in attendance. Currents settings are <br/>
+    Number of tardies this year before discipline: {{ tardies_before_disc }} <br/>
+    Discipline infraction: {{ conf_infraction }} <br/>
+    Discipline action: {{ conf_action }} <br/>
+    {% if perms.administration.change_configuration %}
+      <a href="{% url admin:administration_configuration_changelist %}?q=attendance_disc">Change settings</a><br/>
+    {% endif %}
+    <br/>
+    
+    <form method="post">
+      {% for student in students %}
+        <input type="checkbox" checked="checked" name="{{ student.id }}"/>{{ student }} <br/>
+        <div style="margin-left: 2em;">
+          {% for tardy in student.tardies %}
+            {{ tardy.date }} {{ tardy.status }} {{ tardy.notes }} <br/>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      <br/>
+      <input type="submit"/>
+    </form>
+{% endblock %}
