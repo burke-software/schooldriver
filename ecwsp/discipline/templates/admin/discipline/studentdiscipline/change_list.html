@@ -7,14 +7,19 @@
 {% block object-tools %}
     {% if has_add_permission %}
         <ul class="tools">
+            {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
+                <li>
+                    <a href="{% url ecwsp.discipline.views.generate_from_attendance %}"> Create from Tardies </a>
+                </li>
+            {% endif %}
             <li>
-                <a href="/sis/disc/view"> Lookup Student </a>
+                <a href="{% url ecwsp.discipline.views.view_discipline %}"> Lookup Student </a>
             </li>
             <li>
-            <a href="/sis/disc/list/doc"> Today's List </a>
+            <a href="{% url ecwsp.discipline.views.discipline_list %}"> Today's List </a>
           </li>
           <li>
-            <a href="/sis/disc/stats"> Reports </a>
+            <a href="{% url ecwsp.discipline.views.discipline_report_view %}"> Reports </a>
           </li>
             <li>
                 <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="add-handler focus">
