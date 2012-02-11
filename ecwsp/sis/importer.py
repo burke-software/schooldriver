@@ -1479,13 +1479,12 @@ class Importer:
                                 ecNumber.contact = ec
                                 ecNumber.save()
                             model.emergency_contacts.add(ec)
-                        0/0
-                        if created:
-                            self.log_and_commit(model, addition=True)
-                            inserted += 1
-                        else:
-                            self.log_and_commit(model, addition=False)
-                            updated += 1
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
                 except:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
                 x += 1
