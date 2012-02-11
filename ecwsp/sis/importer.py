@@ -407,7 +407,7 @@ class Importer:
                 filename = None
         return msg, filename
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def import_just_standard_test(self, test=None):
         inserted = 0
         msg = ""
@@ -436,7 +436,7 @@ class Importer:
                 filename = None
         return msg, filename
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def import_benchmarks(self, sheet, test=None):
         """Import Standardized tests. Does not allow updates.
         test: if the test named is already known. """
@@ -445,63 +445,64 @@ class Importer:
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                topic = b_name = number = year = measurement_topic_description = measurement_topic_department = None
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "benchmark":
-                            b_name = value
-                        elif name == "number":
-                            number = value
-                        elif name == "year":
-                            year = value
-                        elif name in ["measurement_topics", "measurement topic", "measurement topics"]:
-                            topic = value
-                        elif name in ["measurement_topics description", "measurement topic description", "measurement topics description"]:
-                            measurement_topic_description = value
-                        elif name in ["measurement_topics department", "measurement topic department", "measurement topics department"]:
-                            measurement_topic_department = value
-                if measurement_topic_department:
-                    measurement_topic_department = omrDepartment.objects.get_or_create(name=measurement_topic_department)[0]
-                if topic:
-                    # Secondary key for measurement topic is department + name.
-                    if measurement_topic_department == "":
-                        measurement_topic_department = None
-                    topic = MeasurementTopic.objects.get_or_create(name=topic, department=measurement_topic_department)[0]
-                if measurement_topic_description and topic:
-                    topic.description = measurement_topic_description
-                    topic.save()
-                if measurement_topic_department and topic:
-                    topic.department = measurement_topic_department
-                    topic.save()
-                model, created = Benchmark.objects.get_or_create(number=number, name=b_name)
-                #if number and Benchmark.objects.filter(number=number).count():
-                #    model = Benchmark.objects.filter(number=number)[0]
-                #else:
-                #    model = Benchmark(number=number)
-                #    created = True
-                if year:
-                    try:
-                        model.year = GradeLevel.objects.get(name=year)
-                    except:
-                        model.year = GradeLevel.objects.get(id=year)
-                model.full_clean()
-                model.save()
-                model.measurement_topics.add(topic)
-                self.log_and_commit(model, addition=created)
-                if created:
-                    inserted += 1
-                else:
-                    updated += 1
+                with transaction.commit_manually():
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    topic = b_name = number = year = measurement_topic_description = measurement_topic_department = None
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "benchmark":
+                                b_name = value
+                            elif name == "number":
+                                number = value
+                            elif name == "year":
+                                year = value
+                            elif name in ["measurement_topics", "measurement topic", "measurement topics"]:
+                                topic = value
+                            elif name in ["measurement_topics description", "measurement topic description", "measurement topics description"]:
+                                measurement_topic_description = value
+                            elif name in ["measurement_topics department", "measurement topic department", "measurement topics department"]:
+                                measurement_topic_department = value
+                    if measurement_topic_department:
+                        measurement_topic_department = omrDepartment.objects.get_or_create(name=measurement_topic_department)[0]
+                    if topic:
+                        # Secondary key for measurement topic is department + name.
+                        if measurement_topic_department == "":
+                            measurement_topic_department = None
+                        topic = MeasurementTopic.objects.get_or_create(name=topic, department=measurement_topic_department)[0]
+                    if measurement_topic_description and topic:
+                        topic.description = measurement_topic_description
+                        topic.save()
+                    if measurement_topic_department and topic:
+                        topic.department = measurement_topic_department
+                        topic.save()
+                    model, created = Benchmark.objects.get_or_create(number=number, name=b_name)
+                    #if number and Benchmark.objects.filter(number=number).count():
+                    #    model = Benchmark.objects.filter(number=number)[0]
+                    #else:
+                    #    model = Benchmark(number=number)
+                    #    created = True
+                    if year:
+                        try:
+                            model.year = GradeLevel.objects.get(name=year)
+                        except:
+                            model.year = GradeLevel.objects.get(id=year)
+                    model.full_clean()
+                    model.save()
+                    model.measurement_topics.add(topic)
+                    self.log_and_commit(model, addition=created)
+                    if created:
+                        inserted += 1
+                    else:
+                        updated += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def import_standard_test(self, sheet, known_test=None):
         """Import Standardized tests. Does not allow updates.
         test: if the test named is already known. """
@@ -509,124 +510,126 @@ class Importer:
         test = known_test
         while x < sheet.nrows:
             try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = StandardTestResult()
-                is_plan = False
-                test = None
-                if known_test:
-                    test = known_test
-                    model.test = test
-                model.student = self.get_student(items)
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "test name":
-                            test, created = StandardTest.objects.get_or_create(name=value)
-                            model.test = test
-                        elif name == "date" or name == "test_date":
-                            model.date = self.convert_date(value)
-                        elif name == "is_plan":
-                            is_plan = self.determine_truth(value)
-                            if is_plan:
-                                test = StandardTest.objects.get_or_create(name="PLAN")
+                with transaction.commit_manually():
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = StandardTestResult()
+                    is_plan = False
+                    test = None
+                    if known_test:
+                        test = known_test
+                        model.test = test
+                    model.student = self.get_student(items)
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "test name":
+                                test, created = StandardTest.objects.get_or_create(name=value)
                                 model.test = test
-                        elif name[:9] == "category ":
-                            model.save()
-                            category, created = StandardCategory.objects.get_or_create(name=name[9:], test=test)
-                            grade, created = StandardCategoryGrade.objects.get_or_create(category=category, result=model, grade=value)
-                        elif name in ["verbal", "math", "writing", "english", "reading", "science", "composite"]: # Naviance
-                            model.save()
-                            category = StandardCategory.objects.get_or_create(name=name, test=test)[0]
-                            grade = StandardCategoryGrade.objects.get_or_create(category=category, result=model, grade=value)[0]
-                        elif name in ["show_on_reports","show on reports","show on report"]:
-                            model.show_on_reports = self.determine_truth(value)
-                model.full_clean()
-                model.save()
-                self.log_and_commit(model, addition=True)
-                inserted += 1
+                            elif name == "date" or name == "test_date":
+                                model.date = self.convert_date(value)
+                            elif name == "is_plan":
+                                is_plan = self.determine_truth(value)
+                                if is_plan:
+                                    test = StandardTest.objects.get_or_create(name="PLAN")
+                                    model.test = test
+                            elif name[:9] == "category ":
+                                model.save()
+                                category, created = StandardCategory.objects.get_or_create(name=name[9:], test=test)
+                                grade, created = StandardCategoryGrade.objects.get_or_create(category=category, result=model, grade=value)
+                            elif name in ["verbal", "math", "writing", "english", "reading", "science", "composite"]: # Naviance
+                                model.save()
+                                category = StandardCategory.objects.get_or_create(name=name, test=test)[0]
+                                grade = StandardCategoryGrade.objects.get_or_create(category=category, result=model, grade=value)[0]
+                            elif name in ["show_on_reports","show on reports","show on report"]:
+                                model.show_on_reports = self.determine_truth(value)
+                    model.full_clean()
+                    model.save()
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def import_college_enrollment(self, sheet):
         from ecwsp.alumni.models import Alumni, College, CollegeEnrollment
         x, header, inserted, updated = self.import_prep(sheet)
         name = None
         while x < sheet.nrows:
             try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                student = self.get_student(items)
-                search_date = code = college_name = state = year = type = begin = end = None
-                status = graduated = graduation_date = degree_title = major = None
-                if hasattr(student, 'alumni'):
-                    alumni = student.alumni
-                else:
-                    alumni = Alumni(student=student)
-                    alumni.save()
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "search date":
-                            search_date = self.convert_date(value)
-                        elif name in ["college code", 'college code/branch']:
-                            code = value
-                        elif name in ['name', 'college name']:
-                            college_name = value
-                        elif name in ['state', 'college state']:
-                            state = value
-                        elif name in ['year', '2-year/4-year', '2-year / 4-year']:
-                            year = value
-                        elif name in ['type', 'public/private', 'public / private']:
-                            type = value
-                        elif name in ['begin', 'enrollment begin']:
-                            begin = self.convert_date(value)
-                        elif name in ['end', 'enrollment end']:
-                            end = self.convert_date(value)
-                        elif name in ['status', 'enrollment status']:
-                            status = value.strip()
-                        elif name in ['graduated', 'graduated?']:
-                            graduated = self.determine_truth(value)
-                        elif name in ['graduation date', 'graduation_date']:
-                            graduation_date = self.convert_date(value)
-                        elif name in ['degree_title', 'degree title']:
-                            degree_title = value
-                        elif name in ['major']:
-                            major = value
-                            
-                # First get or create college
-                college, c_created = College.objects.get_or_create(code=code)
-                if c_created:
-                    college.name = college_name
-                    college.state = state
-                    college.type = type
-                    college.save()
-                # Get or create enrollment based on secondary key
-                model, created = CollegeEnrollment.objects.get_or_create(
-                    college=college,
-                    program_years=year,
-                    begin=begin,
-                    end=end,
-                    status=status,
-                    alumni=alumni,
-                )
-                model.search_date = search_date
-                model.graduated = graduated
-                model.graduation_date = graduation_date
-                model.degree_title = degree_title
-                model.major = major
-                
-                model.full_clean()
-                model.save()
-                self.log_and_commit(model, addition=created)
-                if created:
-                    inserted += 1
-                else:
-                    updated += 1
+                with transaction.commit_manually():
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    student = self.get_student(items)
+                    search_date = code = college_name = state = year = type = begin = end = None
+                    status = graduated = graduation_date = degree_title = major = None
+                    if hasattr(student, 'alumni'):
+                        alumni = student.alumni
+                    else:
+                        alumni = Alumni(student=student)
+                        alumni.save()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "search date":
+                                search_date = self.convert_date(value)
+                            elif name in ["college code", 'college code/branch']:
+                                code = value
+                            elif name in ['name', 'college name']:
+                                college_name = value
+                            elif name in ['state', 'college state']:
+                                state = value
+                            elif name in ['year', '2-year/4-year', '2-year / 4-year']:
+                                year = value
+                            elif name in ['type', 'public/private', 'public / private']:
+                                type = value
+                            elif name in ['begin', 'enrollment begin']:
+                                begin = self.convert_date(value)
+                            elif name in ['end', 'enrollment end']:
+                                end = self.convert_date(value)
+                            elif name in ['status', 'enrollment status']:
+                                status = value.strip()
+                            elif name in ['graduated', 'graduated?']:
+                                graduated = self.determine_truth(value)
+                            elif name in ['graduation date', 'graduation_date']:
+                                graduation_date = self.convert_date(value)
+                            elif name in ['degree_title', 'degree title']:
+                                degree_title = value
+                            elif name in ['major']:
+                                major = value
+                                
+                    # First get or create college
+                    college, c_created = College.objects.get_or_create(code=code)
+                    if c_created:
+                        college.name = college_name
+                        college.state = state
+                        college.type = type
+                        college.save()
+                    # Get or create enrollment based on secondary key
+                    model, created = CollegeEnrollment.objects.get_or_create(
+                        college=college,
+                        program_years=year,
+                        begin=begin,
+                        end=end,
+                        status=status,
+                        alumni=alumni,
+                    )
+                    model.search_date = search_date
+                    model.graduated = graduated
+                    model.graduation_date = graduation_date
+                    model.degree_title = degree_title
+                    model.major = major
+                    
+                    model.full_clean()
+                    model.save()
+                    self.log_and_commit(model, addition=created)
+                    if created:
+                        inserted += 1
+                    else:
+                        updated += 1
             except:
                 if hasattr(sheet, 'name'):
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
@@ -635,143 +638,147 @@ class Importer:
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def import_cohort(self, sheet):
         """Import cohorts. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                student = model.student = self.get_student(items)
-                student_cohort = None
-                model = None
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "cohort name":
-                            model, created = Cohort.objects.get_or_create(name=value)
-                            if created: model.save()
-                        elif name == "primary":
-                            if self.determine_truth(value):
-                                try:
-                                    student_cohort = StudentCohort.objects.get(student=student, cohort=model)
-                                    student_cohort.primary = True
-                                except: pass
-                model.students.add(student)
-                model.full_clean()
-                model.save()
-                if student_cohort: student_cohort.save()
-                self.log_and_commit(model, addition=True)
-                inserted += 1
+                with transaction.commit_manually():
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    student = model.student = self.get_student(items)
+                    student_cohort = None
+                    model = None
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "cohort name":
+                                model, created = Cohort.objects.get_or_create(name=value)
+                                if created: model.save()
+                            elif name == "primary":
+                                if self.determine_truth(value):
+                                    try:
+                                        student_cohort = StudentCohort.objects.get(student=student, cohort=model)
+                                        student_cohort.primary = True
+                                    except: pass
+                    model.students.add(student)
+                    model.full_clean()
+                    model.save()
+                    if student_cohort: student_cohort.save()
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def import_course_enrollment(self, sheet):
         """Import course enrollments. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = CourseEnrollment()
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "course":
-                            model.course = Course.objects.get(fullname=value)
-                        elif name == "user":
-                            try:
-                                model.user = MdlUser.objects.get(username=value)
-                            except:
+                with transaction.commit_manually():
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = CourseEnrollment()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "course":
+                                model.course = Course.objects.get(fullname=value)
+                            elif name == "user":
                                 try:
-                                    model.user = MdlUser.objects.get(id=value)
+                                    model.user = MdlUser.objects.get(username=value)
                                 except:
-                                    model.user = MdlUser.objects.get(unique_id=value)
-                        elif name == "role":
-                            model.role = unicode(value)
-                        elif name == "year":
-                            try:
-                                model.year = GradeLevel.objects.get(name=value)
-                            except: pass
-                            model.year = GradeLevel.objects.get(id=value)
-                model.full_clean()
-                model.save()
-                self.log_and_commit(model, addition=True)
-                inserted += 1
+                                    try:
+                                        model.user = MdlUser.objects.get(id=value)
+                                    except:
+                                        model.user = MdlUser.objects.get(unique_id=value)
+                            elif name == "role":
+                                model.role = unicode(value)
+                            elif name == "year":
+                                try:
+                                    model.year = GradeLevel.objects.get(name=value)
+                                except: pass
+                                model.year = GradeLevel.objects.get(id=value)
+                    model.full_clean()
+                    model.save()
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def import_faculty(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                model = None
-                created = False
-                comment = ""
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "username":
-                            model, created = Faculty.objects.get_or_create(username=value)
-                        elif name == "first name":
-                            model.fname = value
-                        elif name == "last name":
-                            model.lname = value
-                        elif name == "is teacher":
-                            model.teacher = self.determine_truth(value)
-                model.save()
-                if created:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-                else:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1 
+                with transaction.commit_manually():
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    model = None
+                    created = False
+                    comment = ""
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "username":
+                                model, created = Faculty.objects.get_or_create(username=value)
+                            elif name == "first name":
+                                model.fname = value
+                            elif name == "last name":
+                                model.lname = value
+                            elif name == "is teacher":
+                                model.teacher = self.determine_truth(value)
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1 
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def import_grades_comment(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                model = None
-                created = False
-                comment = ""
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "id":
-                            model, created = GradeComment.objects.get_or_create(id=value)
-                        elif name == "comment":
-                            model.comment = value
-                model.save()
-                if created:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-                else:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1
+                with transaction.commit_manually():
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    model = None
+                    created = False
+                    comment = ""
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "id":
+                                model, created = GradeComment.objects.get_or_create(id=value)
+                            elif name == "comment":
+                                model.comment = value
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_grades_admin(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
@@ -829,7 +836,7 @@ class Importer:
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_course(self, sheet):
         """Import Courses. Does allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
@@ -887,7 +894,7 @@ class Importer:
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_course_meet(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
@@ -926,7 +933,7 @@ class Importer:
             x += 1
         return inserted, updated
                 
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_period(self, sheet):
         """Import periods. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
@@ -958,7 +965,7 @@ class Importer:
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_days_off(self, sheet):
         """Import days off for a marking period. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
@@ -984,7 +991,7 @@ class Importer:
             x += 1
         return inserted
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_mp(self, sheet):
         """Import marking periods. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
@@ -1037,7 +1044,7 @@ class Importer:
             x += 1
         return inserted
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_year(self, sheet):
         """Import school year. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
@@ -1068,7 +1075,7 @@ class Importer:
             x += 1
         return inserted
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_discipline(self, sheet):
         """Import discipline linking them to each a student. Does not allow updates. 
         If a infraction or action doesn't already exist, it is created"""
@@ -1115,7 +1122,7 @@ class Importer:
             x += 1
         return inserted
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_attendance(self, sheet):
         """Import attendance linking them to each a student. Does not allow updates. 
         If a status doesn't already exist, it is created"""
@@ -1151,7 +1158,7 @@ class Importer:
             x += 1
         return inserted
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_emergency_contacts(self, sheet):
         """Import emergency contacts. Link to student by either username or
         unique id. Will attempt to lookup duplicates and update instead of 
@@ -1285,8 +1292,8 @@ class Importer:
     def import_students(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                with transaction.commit_manually():
+            with transaction.commit_manually():
+                try:
                     name = None
                     p_fname = p_mname = p_lname = p_relationship_to_student = p_street = p_city = None
                     p_state = p_zip = p_email = home = cell = work = other = None
@@ -1462,19 +1469,20 @@ class Importer:
                                 ecNumber.contact = ec
                                 ecNumber.save()
                             model.emergency_contacts.add(ec)
+                        0/0
                         if created:
                             self.log_and_commit(model, addition=True)
                             inserted += 1
                         else:
                             self.log_and_commit(model, addition=False)
                             updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_applicants(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
@@ -1719,7 +1727,7 @@ class Importer:
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_admissions_checks(self, sheet):
         from ecwsp.admissions.models import Applicant, AdmissionCheck
         x, header, inserted, updated = self.import_prep(sheet)
@@ -1750,7 +1758,7 @@ class Importer:
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_admissions_log(self, sheet):
         from ecwsp.admissions.models import Applicant, ContactLog
         x, header, inserted, updated = self.import_prep(sheet)
@@ -1841,7 +1849,7 @@ class Importer:
                 print >> sys.stderr, str(sys.exc_info())
             x += 1  
 
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_workteams(self, sheet):
         from ecwsp.work_study.models import *
         x, header, inserted, updated = self.import_prep(sheet)
@@ -1921,7 +1929,7 @@ class Importer:
         return inserted, updated
 
 
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_company_contacts(self, sheet):
         from ecwsp.work_study.models import *
         x, header, inserted, updated = self.import_prep(sheet)
@@ -2004,7 +2012,7 @@ class Importer:
         return inserted, updated
 
 
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_student_workers(self, sheet):
         """ Import students workers """
         from ecwsp.work_study.models import *
@@ -2065,67 +2073,68 @@ class Importer:
         return inserted, updated
 
 
-    @transaction.commit_manually
+    #@transaction\.commit_manually
     def import_contract_information(self, sheet):
         #does not allow  updates
         from ecwsp.work_study.models import *
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                model = None
-                created = True
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "company":
-                            model = CompContract(company = Company.objects.get(name=value))
-                        elif name == "official company name" or name == "official name" or name == "company name":
-                            model.company_name = value
-                        elif name == "name" or name == "contact name":
-                            model.name = value
-                        elif name == "contact title" or name =="title":
-                            model.title = value
-                        elif name == "date" or name == "effective date" or name == "start date":
-                            model.date = self.convert_date(value)
-                        elif name == "school year":
-                            model.school_year = SchoolYear.objects.get(name=value)
-                        elif name == "number of students" or name == "number students" or name == "students":
-                            model.number_students = value
-                        elif name == "payment option" or name == "payment":
-                            model.payment = PaymentOption.objects.get(name=value)
-                        elif name.find("responsibilities") != -1:
-                            model.save()
-                            try:
-                                model.student_functional_responsibilities.add(StudentFunctionalResponsibility.objects.get(name=value))
-                            except:
-                                model.student_functional_responsibilities_other += value
-                        elif name.find("skills") != -1:
-                            model.save()
-                            try:
-                                model.student_desired_skills.add(StudentDesiredSkill.objects.get(name = value))
-                            except:
-                                model.student_desired_skills_other += value
-                        elif name == "student leave" or name == "leave":
-                            model.student_leave = self.determine_truth(value)
-                        elif name == "student leave lunch" or name == "leave lunch" or name == "lunch":
-                            model.student_leave_lunch = self.determine_truth(value)
-                        elif name == "student leave errands" or name == "leave errands" or name == "errands":
-                            model.student_leave_errands = self.determine_truth(value)
-                        elif name == "student leave other" or name == "leave other":
-                            model.student_leave_other = value
-                        elif name == "signed":
-                            model.signed = self.determine_truth(value)
-                        
-                        
-                model.save()
-                if created:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-                else:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1
+                with transaction.commit_manually():
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    model = None
+                    created = True
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "company":
+                                model = CompContract(company = Company.objects.get(name=value))
+                            elif name == "official company name" or name == "official name" or name == "company name":
+                                model.company_name = value
+                            elif name == "name" or name == "contact name":
+                                model.name = value
+                            elif name == "contact title" or name =="title":
+                                model.title = value
+                            elif name == "date" or name == "effective date" or name == "start date":
+                                model.date = self.convert_date(value)
+                            elif name == "school year":
+                                model.school_year = SchoolYear.objects.get(name=value)
+                            elif name == "number of students" or name == "number students" or name == "students":
+                                model.number_students = value
+                            elif name == "payment option" or name == "payment":
+                                model.payment = PaymentOption.objects.get(name=value)
+                            elif name.find("responsibilities") != -1:
+                                model.save()
+                                try:
+                                    model.student_functional_responsibilities.add(StudentFunctionalResponsibility.objects.get(name=value))
+                                except:
+                                    model.student_functional_responsibilities_other += value
+                            elif name.find("skills") != -1:
+                                model.save()
+                                try:
+                                    model.student_desired_skills.add(StudentDesiredSkill.objects.get(name = value))
+                                except:
+                                    model.student_desired_skills_other += value
+                            elif name == "student leave" or name == "leave":
+                                model.student_leave = self.determine_truth(value)
+                            elif name == "student leave lunch" or name == "leave lunch" or name == "lunch":
+                                model.student_leave_lunch = self.determine_truth(value)
+                            elif name == "student leave errands" or name == "leave errands" or name == "errands":
+                                model.student_leave_errands = self.determine_truth(value)
+                            elif name == "student leave other" or name == "leave other":
+                                model.student_leave_other = value
+                            elif name == "signed":
+                                model.signed = self.determine_truth(value)
+                            
+                            
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
