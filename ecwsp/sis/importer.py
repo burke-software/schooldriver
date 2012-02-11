@@ -1133,6 +1133,7 @@ class Importer:
                 items = zip(header, row)
                 created = False
                 model = StudentAttendance()
+                name = "student"
                 model.student = self.get_student(items)
                 for (name, value) in items:
                     is_ok, name, value = self.sanitize_item(name, value)
@@ -1478,7 +1479,7 @@ class Importer:
                             updated += 1
                 except:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
-            x += 1
+                x += 1
         return inserted, updated
     
     
