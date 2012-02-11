@@ -17,7 +17,7 @@ class GoogleAppsBackend:
     def authenticate(self, username=None, password=None):
         import gdata
         # Remove non breaking space that causes errors
-        password = password.replace("\xc2\xa0", " ")
+        password = unicode(password).replace(u'\xa0',u'')
         logging.debug('GoogleAppsBackend.authenticate: %s - %s' % (username, '*' * len(password)))
         admin_email = '%s@%s' % (settings.GAPPS_USERNAME, settings.GAPPS_DOMAIN)
         email = '%s@%s' % (username, settings.GAPPS_DOMAIN)
