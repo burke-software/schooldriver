@@ -27,6 +27,7 @@ from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
 from ecwsp.sis.xlsReport import *
 from ecwsp.sis.uno_report import *
+from ecwsp.attendance.models import *
 
 import xlrd
 import re
@@ -652,9 +653,10 @@ class Importer:
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
+                    model = None
                     student = model.student = self.get_student(items)
                     student_cohort = None
-                    model = None
+                    
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
