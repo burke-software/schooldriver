@@ -117,8 +117,8 @@ class TimeBasedForm(forms.Form):
             start = data['marking_period'].all().order_by('start_date')[0].start_date
             end = data['marking_period'].all().order_by('-end_date')[0].end_date
         else: # all of time
-            date_begin = date(1980, 1, 1)
-            date_end = date(2980, 1, 1)
+            start = date(1980, 1, 1)
+            end = date(2980, 1, 1)
         return (start, end)
 
 class StudentSelectForm(TimeBasedForm):

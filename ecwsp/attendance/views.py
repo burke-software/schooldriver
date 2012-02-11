@@ -31,6 +31,7 @@ from models import *
 from forms import *
 from ecwsp.schedule.models import Course
 from ecwsp.sis.models import Student, UserPreference, Faculty
+import xlwt
 
 import datetime
 

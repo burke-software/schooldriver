@@ -30,7 +30,17 @@ class EngradeSyncForm(MarkingPeriodSelectForm):
     
 class GradeUpload(UploadFileForm, MarkingPeriodSelectForm):
     pass
-    
+
+
+class StarOrIntField(forms.CharField):
+    def validate(self, value):
+        super(StarOrIntField, self).validate(value)
+        if not value == "*":
+            try:
+                int(value)
+            except:
+                raise ValidationError("Field must be * or an integer.")
+
 class GradeFilterForm(TimeBasedForm):
     marking_period = forms.ModelMultipleChoiceField(required=False, queryset=MarkingPeriod.objects.all())
 
@@ -46,13 +56,13 @@ class GradeFilterForm(TimeBasedForm):
                             required=False,
                             help_text="P counts as 100%, F counts as 0%",)
     grade_filter = forms.ChoiceField(choices=filter_choices)
-    grade_times = forms.CharField(max_length=2, required=False, initial="*", widget=forms.TextInput(attrs={'style':'width:20px;'}))
+    grade_times = StarOrIntField(max_length=2, required=False, initial="*", widget=forms.TextInput(attrs={'style':'width:20px;'}))
     final_grade = forms.CharField(max_length=5,
                             widget=forms.TextInput(attrs={'placeholder': 'Enter Grade Here'}),
                             required=False,
                             help_text="P counts as 100%, F counts as 0%",)
     final_grade_filter = forms.ChoiceField(choices=filter_choices)
-    final_grade_times = forms.CharField(max_length=2, required=False, initial="*", widget=forms.TextInput(attrs={'style':'width:20px;'}))
+    final_grade_times = StarOrIntField(max_length=2, required=False, initial="*", widget=forms.TextInput(attrs={'style':'width:20px;'}))
 
     gpa = forms.DecimalField(max_digits=5, decimal_places=2, required=False)
     gpa_equality =  forms.ChoiceField(choices=filter_choices)
