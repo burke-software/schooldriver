@@ -311,7 +311,7 @@ class Importer:
             msg += "%s year records inserted. <br/>" % (inserted)
         sheet = self.get_sheet_by_case_insensitive_name("marking period")
         if sheet:
-            inserted, updated = self.import_mp(sheet)
+            inserted = self.import_mp(sheet)
             msg += "%s marking period records inserted. <br/>" % (inserted)
         sheet = self.get_sheet_by_case_insensitive_name("days off")
         if sheet:
