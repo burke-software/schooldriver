@@ -446,6 +446,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -511,6 +512,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -561,6 +563,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     student = self.get_student(items)
@@ -645,6 +648,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -681,6 +685,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -720,6 +725,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
@@ -754,6 +760,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
@@ -783,6 +790,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -843,6 +851,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     location = None
                     row = sheet.row(x)
                     items = zip(header, row)
@@ -901,6 +910,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -942,6 +952,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -975,6 +986,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -1002,6 +1014,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -1056,6 +1069,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -1090,6 +1104,7 @@ class Importer:
             model = None
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -1137,6 +1152,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name  = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -1817,6 +1833,7 @@ class Importer:
         x += 2 # skip second row
         while x < sheet.nrows:
             try:
+                name = None
                 row = sheet.row(x)
                 items = zip(header, row)
                 created = False
@@ -1867,6 +1884,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
@@ -1948,6 +1966,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = Contact()
@@ -2033,6 +2052,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
@@ -2095,6 +2115,7 @@ class Importer:
         while x < sheet.nrows:
             with transaction.commit_manually():
                 try:
+                    name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
