@@ -444,8 +444,8 @@ class Importer:
         from ecwsp.omr.models import Department as omrDepartment
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                with transaction.commit_manually():
+            with transaction.commit_manually():
+                try:
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -497,8 +497,8 @@ class Importer:
                         inserted += 1
                     else:
                         updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
@@ -509,8 +509,8 @@ class Importer:
         x, header, inserted, updated = self.import_prep(sheet)
         test = known_test
         while x < sheet.nrows:
-            try:
-                with transaction.commit_manually():
+            with transaction.commit_manually():
+                try:
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -548,8 +548,8 @@ class Importer:
                     model.save()
                     self.log_and_commit(model, addition=True)
                     inserted += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
@@ -559,8 +559,8 @@ class Importer:
         x, header, inserted, updated = self.import_prep(sheet)
         name = None
         while x < sheet.nrows:
-            try:
-                with transaction.commit_manually():
+            with transaction.commit_manually():
+                try:
                     row = sheet.row(x)
                     items = zip(header, row)
                     student = self.get_student(items)
@@ -630,11 +630,11 @@ class Importer:
                         inserted += 1
                     else:
                         updated += 1
-            except:
-                if hasattr(sheet, 'name'):
-                    self.handle_error(row, name, sys.exc_info(), sheet.name)
-                else:
-                    self.handle_error(row, name, sys.exc_info(), "Unknown")
+                except:
+                    if hasattr(sheet, 'name'):
+                        self.handle_error(row, name, sys.exc_info(), sheet.name)
+                    else:
+                        self.handle_error(row, name, sys.exc_info(), "Unknown")
             x += 1
         return inserted, updated
     
@@ -643,8 +643,8 @@ class Importer:
         """Import cohorts. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                with transaction.commit_manually():
+            with transaction.commit_manually():
+                try:
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -669,8 +669,8 @@ class Importer:
                     if student_cohort: student_cohort.save()
                     self.log_and_commit(model, addition=True)
                     inserted += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
@@ -679,8 +679,8 @@ class Importer:
         """Import course enrollments. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                with transaction.commit_manually():
+            with transaction.commit_manually():
+                try:
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = False
@@ -709,8 +709,8 @@ class Importer:
                     model.save()
                     self.log_and_commit(model, addition=True)
                     inserted += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
@@ -718,8 +718,8 @@ class Importer:
     def import_faculty(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                with transaction.commit_manually():
+            with transaction.commit_manually():
+                try:
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
@@ -743,8 +743,8 @@ class Importer:
                     else:
                         self.log_and_commit(model, addition=False)
                         updated += 1 
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
@@ -752,8 +752,8 @@ class Importer:
     def import_grades_comment(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                with transaction.commit_manually():
+            with transaction.commit_manually():
+                try:
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
@@ -773,66 +773,66 @@ class Importer:
                     else:
                         self.log_and_commit(model, addition=False)
                         updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
-    #@transaction\.commit_manually
     def import_grades_admin(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                grade = None
-                letter_grade = None
-                student = self.get_student(items)
-                course = None
-                final = False
-                marking_period = None
-                override_final = False
-                comment = ""
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "grade":
-                            grade = value
-                        elif name == "comment code":
-                            for cc in str(value).strip().split(','):
-                                try:
-                                    comment += unicode(GradeComment.objects.get(id=int(float(str(cc).strip()))).comment) + " "
-                                except:
-                                    if comment:
-                                        comment += unicode(cc) + " IS NOT VALID COMMENT CODE! "
-                        elif name == "comment":
-                            comment = unicode(value) + " "
-                        elif name == "course":
-                            course = Course.objects.get(fullname=value)
-                        elif name == "marking period":
-                            marking_period = MarkingPeriod.objects.get(name=value)
-                        elif name == "final":
-                            final = self.determine_truth(value)
-                        elif name == "override final":
-                            override_final = self.determine_truth(value)
-                if student and course and grade:
-                    model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=final, override_final=override_final)
-                    model.comment = comment
-                    model.set_grade(grade)
-                    model.final = final
-                    model.override_final = override_final
-                    model.save()
-                    if created:
-                        self.log_and_commit(model, addition=True)
-                        inserted += 1
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    grade = None
+                    letter_grade = None
+                    student = self.get_student(items)
+                    course = None
+                    final = False
+                    marking_period = None
+                    override_final = False
+                    comment = ""
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "grade":
+                                grade = value
+                            elif name == "comment code":
+                                for cc in str(value).strip().split(','):
+                                    try:
+                                        comment += unicode(GradeComment.objects.get(id=int(float(str(cc).strip()))).comment) + " "
+                                    except:
+                                        if comment:
+                                            comment += unicode(cc) + " IS NOT VALID COMMENT CODE! "
+                            elif name == "comment":
+                                comment = unicode(value) + " "
+                            elif name == "course":
+                                course = Course.objects.get(fullname=value)
+                            elif name == "marking period":
+                                marking_period = MarkingPeriod.objects.get(name=value)
+                            elif name == "final":
+                                final = self.determine_truth(value)
+                            elif name == "override final":
+                                override_final = self.determine_truth(value)
+                    if student and course and grade:
+                        model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=final, override_final=override_final)
+                        model.comment = comment
+                        model.set_grade(grade)
+                        model.final = final
+                        model.override_final = override_final
+                        model.save()
+                        if created:
+                            self.log_and_commit(model, addition=True)
+                            inserted += 1
+                        else:
+                            self.log_and_commit(model, addition=False)
+                            updated += 1
                     else:
-                        self.log_and_commit(model, addition=False)
-                        updated += 1
-                else:
-                    raise Exception('Requires student, course, and grade')
-            except:
-                self.handle_error(row, header, sys.exc_info(), sheet.name)
+                        raise Exception('Requires student, course, and grade')
+                except:
+                    self.handle_error(row, header, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
@@ -841,56 +841,57 @@ class Importer:
         """Import Courses. Does allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                location = None
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = None
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "fullname":
-                            model, created = Course.objects.get_or_create(fullname=value)
-                        elif name == "shortname":
-                            model.shortname = unicode(value)
-                        elif name == "description":
-                            model.description = unicode(value)
-                        elif name == "active":
-                            model.active = value
-                        elif name == "teacher username" or name == "teacher":
-                            model.teacher = Faculty.objects.get(username=value)
-                        elif name == "location":
-                            location, c = Location.objects.get_or_create(name=value)
-                            if c: location.save()
-                        elif name == "level":
-                            try:
-                                model.level = GradeLevel.objects.get(name=value)
-                            except:
-                                model.level = GradeLevel.objects.get(id=value)
-                        elif name == "homeroom":
-                            model.homeroom = value
-                        elif name == "graded":
-                            model.graded = value
-                        elif name == "department":
-                            model.department, created = Department.objects.get_or_create(name=value)
-                        elif name[:14] == "marking period":
-                            model.save()
-                            model.marking_period.add(MarkingPeriod.objects.get(name=value))
-                        elif name == "enroll cohort":
-                            model.save()
-                            cohort, created = Cohort.objects.get_or_create(name=value)
-                            model.add_cohort(cohort)
-                model.full_clean()
-                model.save()
-                if created:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-                else:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            with transaction.commit_manually():
+                try:
+                    location = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = None
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "fullname":
+                                model, created = Course.objects.get_or_create(fullname=value)
+                            elif name == "shortname":
+                                model.shortname = unicode(value)
+                            elif name == "description":
+                                model.description = unicode(value)
+                            elif name == "active":
+                                model.active = value
+                            elif name == "teacher username" or name == "teacher":
+                                model.teacher = Faculty.objects.get(username=value)
+                            elif name == "location":
+                                location, c = Location.objects.get_or_create(name=value)
+                                if c: location.save()
+                            elif name == "level":
+                                try:
+                                    model.level = GradeLevel.objects.get(name=value)
+                                except:
+                                    model.level = GradeLevel.objects.get(id=value)
+                            elif name == "homeroom":
+                                model.homeroom = value
+                            elif name == "graded":
+                                model.graded = value
+                            elif name == "department":
+                                model.department, created = Department.objects.get_or_create(name=value)
+                            elif name[:14] == "marking period":
+                                model.save()
+                                model.marking_period.add(MarkingPeriod.objects.get(name=value))
+                            elif name == "enroll cohort":
+                                model.save()
+                                cohort, created = Cohort.objects.get_or_create(name=value)
+                                model.add_cohort(cohort)
+                    model.full_clean()
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
@@ -898,38 +899,39 @@ class Importer:
     def import_course_meet(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                course = None
-                period = None
-                day = None
-                location = None
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "course" or name == "course fullname":
-                            course = Course.objects.get(fullname=value)
-                        elif name == "period":
-                            period = Period.objects.get(name=value)
-                        elif name == "day":
-                            day = self.convert_day(value)
-                        elif name == "location":
-                            location = Location.objects.get_or_create(name=value)[0]
-                if course and period and day:
-                    meet, created = CourseMeet.objects.get_or_create(course=course, period=period, day=day)
-                    if location:
-                        meet.location = location
-                        meet.save()
-                    if created:
-                        inserted += 1
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    course = None
+                    period = None
+                    day = None
+                    location = None
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "course" or name == "course fullname":
+                                course = Course.objects.get(fullname=value)
+                            elif name == "period":
+                                period = Period.objects.get(name=value)
+                            elif name == "day":
+                                day = self.convert_day(value)
+                            elif name == "location":
+                                location = Location.objects.get_or_create(name=value)[0]
+                    if course and period and day:
+                        meet, created = CourseMeet.objects.get_or_create(course=course, period=period, day=day)
+                        if location:
+                            meet.location = location
+                            meet.save()
+                        if created:
+                            inserted += 1
+                        else:
+                            updated += 1
                     else:
-                        updated += 1
-                else:
-                    raise Exception('Requires course, period, and day')
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                        raise Exception('Requires course, period, and day')
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
                 
@@ -938,30 +940,31 @@ class Importer:
         """Import periods. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = Period()
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "name":
-                           model, created = Period.objects.get_or_create(name=value)
-                        elif name == "start time":
-                            model.start_time = self.convert_time(value)
-                        elif name == "end time":
-                            model.end_time = self.convert_time(value)
-                model.full_clean()
-                model.save()
-                if created:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-                else:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = Period()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "name":
+                               model, created = Period.objects.get_or_create(name=value)
+                            elif name == "start time":
+                                model.start_time = self.convert_time(value)
+                            elif name == "end time":
+                                model.end_time = self.convert_time(value)
+                    model.full_clean()
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
@@ -970,24 +973,25 @@ class Importer:
         """Import days off for a marking period. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = DaysOff()
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "date":
-                           model.date = self.convert_date(value)
-                        elif name == "marking period":
-                            model.marking_period = MarkingPeriod.objects.get(name=value)
-                model.full_clean()
-                model.save()
-                self.log_and_commit(model, addition=True)
-                inserted += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = DaysOff()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "date":
+                               model.date = self.convert_date(value)
+                            elif name == "marking period":
+                                model.marking_period = MarkingPeriod.objects.get(name=value)
+                    model.full_clean()
+                    model.save()
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
@@ -996,51 +1000,52 @@ class Importer:
         """Import marking periods. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = MarkingPeriod()
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "name":
-                            model.name = unicode(value)
-                        if name == "shortname" or name == "short name":
-                            model.shortname = unicode(value)
-                        elif name == "start date":
-                           model.start_date = self.convert_date(value)
-                        elif name == "end date":
-                            model.end_date = self.convert_date(value)
-                        elif name == "school year":
-                            model.school_year = SchoolYear.objects.get(name=value)
-                        elif name == "monday":
-                            if value == "True" or value == "Yes" or value == True or value == 1:
-                                model.monday = True
-                        elif name == "tuesday":
-                            if value == "True" or value == "Yes" or value == True or value == 1:
-                                model.tuesday = True
-                        elif name == "wednesday":
-                            if value == "True" or value == "Yes" or value == True or value == 1:
-                                model.wednesday = True
-                        elif name == "thursday":
-                            if value == "True" or value == "Yes" or value == True or value == 1:
-                                model.thursday = True
-                        elif name == "friday":
-                            if value == "True" or value == "Yes" or value == True or value == 1:
-                                model.friday = True
-                        elif name == "saturday":
-                            if value == "True" or value == "Yes" or value == True or value == 1:
-                                model.saturday = True
-                        elif name == "sunday":
-                            if value == "True" or value == "Yes" or value == True or value == 1:
-                                model.sunday = True
-                model.full_clean()
-                model.save()
-                self.log_and_commit(model, addition=True)
-                inserted += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = MarkingPeriod()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "name":
+                                model.name = unicode(value)
+                            if name == "shortname" or name == "short name":
+                                model.shortname = unicode(value)
+                            elif name == "start date":
+                               model.start_date = self.convert_date(value)
+                            elif name == "end date":
+                                model.end_date = self.convert_date(value)
+                            elif name == "school year":
+                                model.school_year = SchoolYear.objects.get(name=value)
+                            elif name == "monday":
+                                if value == "True" or value == "Yes" or value == True or value == 1:
+                                    model.monday = True
+                            elif name == "tuesday":
+                                if value == "True" or value == "Yes" or value == True or value == 1:
+                                    model.tuesday = True
+                            elif name == "wednesday":
+                                if value == "True" or value == "Yes" or value == True or value == 1:
+                                    model.wednesday = True
+                            elif name == "thursday":
+                                if value == "True" or value == "Yes" or value == True or value == 1:
+                                    model.thursday = True
+                            elif name == "friday":
+                                if value == "True" or value == "Yes" or value == True or value == 1:
+                                    model.friday = True
+                            elif name == "saturday":
+                                if value == "True" or value == "Yes" or value == True or value == 1:
+                                    model.saturday = True
+                            elif name == "sunday":
+                                if value == "True" or value == "Yes" or value == True or value == 1:
+                                    model.sunday = True
+                    model.full_clean()
+                    model.save()
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
@@ -1049,29 +1054,30 @@ class Importer:
         """Import school year. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = SchoolYear()
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "name":
-                            model.name = unicode(value)
-                        elif name == "start date":
-                           model.start_date = self.convert_date(value)
-                        elif name == "end date":
-                            model.end_date = self.convert_date(value)
-                        elif name == "active year":
-                            if value == "True" or value == "Yes" or value == True or value == 1:
-                                model.active_year = True
-                model.full_clean()
-                model.save()
-                self.log_and_commit(model, addition=True)
-                inserted += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = SchoolYear()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "name":
+                                model.name = unicode(value)
+                            elif name == "start date":
+                               model.start_date = self.convert_date(value)
+                            elif name == "end date":
+                                model.end_date = self.convert_date(value)
+                            elif name == "active year":
+                                if value == "True" or value == "Yes" or value == True or value == 1:
+                                    model.active_year = True
+                    model.full_clean()
+                    model.save()
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
@@ -1082,43 +1088,44 @@ class Importer:
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             model = None
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = StudentDiscipline()
-                action_instance = None
-                student = self.get_student(items)
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "date":
-                           model.date = self.convert_date(value)
-                        elif name == "teacher username":
-                            model.teacher = Faculty.objects.get(username=value)
-                        elif name == "infraction":
-                            infr, created = PresetComment.objects.get_or_create(comment__iexact=value)
-                            if created:
-                                infr.comment = value 
-                                infr.save()
-                            model.infraction = infr
-                        elif name == "comments":
-                            model.comments = unicode(value)
-                        elif name == "action":
-                            action, created = DisciplineAction.objects.get_or_create(name__iexact=value)
-                            if created: action.save()
-                            model.save()
-                            action_instance = DisciplineActionInstance(action=action, student_discipline=model)
-                        elif name == "action quantity":
-                            action_instance.quantity = value       
-                model.full_clean()
-                model.save()
-                model.students.add(student)
-                if action_instance: action_instance.save()
-                self.log_and_commit(model, addition=True)
-                inserted += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = StudentDiscipline()
+                    action_instance = None
+                    student = self.get_student(items)
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "date":
+                               model.date = self.convert_date(value)
+                            elif name == "teacher username":
+                                model.teacher = Faculty.objects.get(username=value)
+                            elif name == "infraction":
+                                infr, created = PresetComment.objects.get_or_create(comment__iexact=value)
+                                if created:
+                                    infr.comment = value 
+                                    infr.save()
+                                model.infraction = infr
+                            elif name == "comments":
+                                model.comments = unicode(value)
+                            elif name == "action":
+                                action, created = DisciplineAction.objects.get_or_create(name__iexact=value)
+                                if created: action.save()
+                                model.save()
+                                action_instance = DisciplineActionInstance(action=action, student_discipline=model)
+                            elif name == "action quantity":
+                                action_instance.quantity = value       
+                    model.full_clean()
+                    model.save()
+                    model.students.add(student)
+                    if action_instance: action_instance.save()
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
@@ -1128,34 +1135,35 @@ class Importer:
         If a status doesn't already exist, it is created"""
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = StudentAttendance()
-                name = "student"
-                model.student = self.get_student(items)
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "date":
-                           model.date = self.convert_date(value)
-                        elif name == "status":
-                            status, created = AttendanceStatus.objects.get_or_create(name=value)
-                            if created: 
-                                status.name = unicode(value)
-                                status.save()
-                            model.status = status
-                        elif name == "code":
-                            model.status = AttendanceStatus.objects.get(code=value)
-                        elif name == "notes":
-                            model.notes = unicode(value)
-                model.full_clean()
-                model.save()
-                self.log_and_commit(model, addition=True)
-                inserted += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = StudentAttendance()
+                    name = "student"
+                    model.student = self.get_student(items)
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "date":
+                               model.date = self.convert_date(value)
+                            elif name == "status":
+                                status, created = AttendanceStatus.objects.get_or_create(name=value)
+                                if created: 
+                                    status.name = unicode(value)
+                                    status.save()
+                                model.status = status
+                            elif name == "code":
+                                model.status = AttendanceStatus.objects.get(code=value)
+                            elif name == "notes":
+                                model.notes = unicode(value)
+                    model.full_clean()
+                    model.save()
+                    self.log_and_commit(model, addition=True)
+                    inserted += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
     
@@ -1167,125 +1175,126 @@ class Importer:
         student and fname and lname and relationship"""
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                name = None
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = None
-                id = None
-                fname = None
-                mname = None
-                lname = None
-                relationship = None
-                email = None
-                street = None
-                city = state = None
-                zips = None # not sure why I can't use zip
-                unknown_number = None
-                work = None
-                home = None
-                cell = None
-                primary = False
-                applicant = None
-                student = self.get_student(items, allow_none=True)
-                
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "emergency contact id":
-                            id = value
-                        elif name == "applicant id":
-                            from ecwsp.admissions.models import Applicant
-                            applicant = Applicant.objects.get(id=value)
-                        elif name == "first name":
-                            fname = value
-                        elif name == "last name":
-                            lname = value
-                        elif name == "relationship":
-                            relationship = value
-                        elif name == "email":
-                            email = value
-                        elif name == "number":
-                            unknown_number = value
-                        elif name == "home number":
-                            home = value
-                        elif name == "cell number":
-                            cell = value
-                        elif name == "work number":
-                            work = value
-                        elif name == "primary":
-                            primary = self.determine_truth(value)
-                        elif name == "street":
-                            street = value
-                        elif name == "city":
-                            city = value
-                        elif name == "state":
-                            state = value
-                        elif name == "zip":
-                            zips = value
-                        elif name =="middle name":
-                            mname = value
-                if id:
-                    model, created = EmergencyContact.objects.get_or_create(id=id)
-                elif student and fname and lname:
-                    # Secondary key, good enough to find unique emergency contact
-                    ecs = EmergencyContact.objects.filter(fname=fname, lname=lname, student=student)
-                    if ecs.count() == 1:
-                        model = ecs[0]
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = None
+                    id = None
+                    fname = None
+                    mname = None
+                    lname = None
+                    relationship = None
+                    email = None
+                    street = None
+                    city = state = None
+                    zips = None # not sure why I can't use zip
+                    unknown_number = None
+                    work = None
+                    home = None
+                    cell = None
+                    primary = False
+                    applicant = None
+                    student = self.get_student(items, allow_none=True)
+                    
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "emergency contact id":
+                                id = value
+                            elif name == "applicant id":
+                                from ecwsp.admissions.models import Applicant
+                                applicant = Applicant.objects.get(id=value)
+                            elif name == "first name":
+                                fname = value
+                            elif name == "last name":
+                                lname = value
+                            elif name == "relationship":
+                                relationship = value
+                            elif name == "email":
+                                email = value
+                            elif name == "number":
+                                unknown_number = value
+                            elif name == "home number":
+                                home = value
+                            elif name == "cell number":
+                                cell = value
+                            elif name == "work number":
+                                work = value
+                            elif name == "primary":
+                                primary = self.determine_truth(value)
+                            elif name == "street":
+                                street = value
+                            elif name == "city":
+                                city = value
+                            elif name == "state":
+                                state = value
+                            elif name == "zip":
+                                zips = value
+                            elif name =="middle name":
+                                mname = value
+                    if id:
+                        model, created = EmergencyContact.objects.get_or_create(id=id)
+                    elif student and fname and lname:
+                        # Secondary key, good enough to find unique emergency contact
+                        ecs = EmergencyContact.objects.filter(fname=fname, lname=lname, student=student)
+                        if ecs.count() == 1:
+                            model = ecs[0]
+                        else:
+                           model = EmergencyContact()
+                    elif applicant and fname and lname:
+                        ecs = EmergencyContact.objects.filter(fname=fname, lname=lname, applicant=applicant)
+                        if ecs.count() == 1:
+                            model = ecs[0]
+                        else:
+                           model = EmergencyContact()
                     else:
-                       model = EmergencyContact()
-                elif applicant and fname and lname:
-                    ecs = EmergencyContact.objects.filter(fname=fname, lname=lname, applicant=applicant)
-                    if ecs.count() == 1:
-                        model = ecs[0]
+                        model = EmergencyContact()
+                    if fname: model.fname = fname
+                    if mname: model.mname = mname
+                    if lname: model.lname = lname
+                    if email: model.email = email
+                    if street: model.street = street
+                    if city: model.city = city
+                    if state: model.state = state
+                    if zips: model.zip = zips
+                    model.primary_contact = primary
+                    if relationship: model.relationship_to_student = relationship
+                    model.full_clean()
+                    model.save()
+                    if student: model.student_set.add(student)
+                    if applicant: model.applicant_set.add(applicant)
+                    if unknown_number:
+                        number, extension = self.import_number(unknown_number)
+                        ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="" , contact=model)
+                        ecNumber.contact = model
+                        ecNumber.save()
+                    if home:    
+                        number, extension = self.import_number(home)
+                        ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="H" , contact=model)
+                        ecNumber.contact = model
+                        ecNumber.save()
+                    if cell:    
+                        number, extension = self.import_number(cell)
+                        ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="C" , contact=model)
+                        ecNumber.contact = model
+                        ecNumber.save()
+                    if work:    
+                        number, extension = self.import_number(work)
+                        ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="W" , contact=model)
+                        ecNumber.contact = model
+                        ecNumber.save()
+                    model.save()
+                    if model.id:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
                     else:
-                       model = EmergencyContact()
-                else:
-                    model = EmergencyContact()
-                if fname: model.fname = fname
-                if mname: model.mname = mname
-                if lname: model.lname = lname
-                if email: model.email = email
-                if street: model.street = street
-                if city: model.city = city
-                if state: model.state = state
-                if zips: model.zip = zips
-                model.primary_contact = primary
-                if relationship: model.relationship_to_student = relationship
-                model.full_clean()
-                model.save()
-                if student: model.student_set.add(student)
-                if applicant: model.applicant_set.add(applicant)
-                if unknown_number:
-                    number, extension = self.import_number(unknown_number)
-                    ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="" , contact=model)
-                    ecNumber.contact = model
-                    ecNumber.save()
-                if home:    
-                    number, extension = self.import_number(home)
-                    ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="H" , contact=model)
-                    ecNumber.contact = model
-                    ecNumber.save()
-                if cell:    
-                    number, extension = self.import_number(cell)
-                    ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="C" , contact=model)
-                    ecNumber.contact = model
-                    ecNumber.save()
-                if work:    
-                    number, extension = self.import_number(work)
-                    ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="W" , contact=model)
-                    ecNumber.contact = model
-                    ecNumber.save()
-                model.save()
-                if model.id:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1
-                else:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
@@ -1487,244 +1496,245 @@ class Importer:
     def import_applicants(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                name = None
-                p_fname = p_mname = p_lname = p_relationship_to_student = p_street = p_city = None
-                p_state = p_zip = p_email = home = cell = work = other = None
-                p2_fname = p2_mname = p2_lname = p2_relationship_to_student = p2_street = p2_city = None
-                p2_state = p2_zip = p2_email = home2 = cell2 = work2 = other2 = None
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = True
-                model = Applicant()
-                model.save()
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "id":
-                            model = Applicant.objects.get(id=value)
-                            created = False
-                            model.save()
-                        elif name == "first name" or name == "fname":
-                                model.fname = value
-                        elif name == "last name" or name == "lname":
-                            model.lname = value
-                        elif name == "middle name" or name == "mname":
-                            model.mname = value
-                        elif name =="social security" or name == "ssn" or name == "social security number":
-                            model.ssn = value
-                        elif name == "gender" or name == "sex":
-                            if value == "Male":
-                                model.sex = "M"
-                            elif value == "Female":
-                                model.sex = "F"
-                            else:
-                                model.sex = unicode.upper(value)
-                        elif name == "birth date" or name == "birthday" or name == "birth day" or name == "bday":
-                            model.bday = self.convert_date(value)
-                        elif name == "student street" or name == "street":
-                            model.street = value
-                        elif name == "student city" or name == "city":
-                            model.city = value
-                        elif name == "student state" or name == "state":
-                            model.state = value
-                        elif name == "student zip" or name == "zip":
-                            model.zip = value
-                        elif name == "notes":
-                            model.notes = value
-                        elif name == "year" or name == "grade level":
-                            #try:
-                                model.year = GradeLevel.objects.get(name=value)
-                            #except: pass
-                            #model.year = GradeLevel.objects.get(id=value)
-                        elif name == "school year" or name == "school_year":
-                            model.school_year = SchoolYear.objects.get(name=value)
-                        elif name == "e-mail" or name == "email":
-                            model.email = value
-                        elif name == "home_country" or name == "home country":
-                            model.home_country = value
-                        elif name == "relationship_to_student" or name == "relationship to student":
-                            model.relationship_to_student = value
-                        elif name == "ethnicity":
-                            model.ethnicity = EthnicityChoice.objects.get_or_create(name=value)[0]
-                        elif name == "hs_grad_yr" or name == "high school grad year":
-                            model.hs_grad_yr = value
-                        elif name == "elem_grad_yr" or name == "elem grad year":
-                            model.elem_grad_yr = value
-                        elif name == "present_school" or name == "present school":
-                            model.present_school = FeederSchool.objects.get_or_create(name=value)[0]
-                        elif name == "religion":
-                            model.religion = ReligionChoice.objects.get_or_create(name=value)[0]
-                        elif name == "heard_about_us" or name == "heard about us":
-                            model.heard_about_us = HeardAboutUsOption.objects.get_or_create(name=value)[0]
-                        elif name == "first_contact" or name == "first contact":
-                            model.first_contact = FirstContactOption.objects.get_or_create(name=value)[0]
-                        elif name == "borough":
-                            model.borough = BoroughOption.objects.get_or_create(name=value)[0]
-                        elif name == "application_decision" or name == "application decision":
-                            model.application_decision = ApplicationDecisionOption.objects.get_or_create(name=value)[0]
-                        elif name == "withdrawn":
-                            model.withdrawn = WithdrawnChoices.objects.get_or_create(name=value)[0]
-                        elif name == "withdrawn_note" or name == "withdrawn note":
-                            model.withdrawn_note = value
-                        elif name == "ready for export":
-                            model.ready_for_export = self.determine_truth(value)
-                        elif name == "student id":
-                            model.sis_student = Student.objects.get(id=value)
-                        
-                        elif name in ["parent first name", 'parent 1 first name']:
-                            p_fname = value
-                        elif name in ["parent middle name", 'parent 1 middle name']:
-                            p_mname = value
-                        elif name in ['parent last name', 'parent 1 last name']:
-                            p_lname = value
-                        elif name in ['parent relationship to student', 'parent 1 relationship to student']:
-                            p_relationship_to_student = value
-                        elif name in ['parent street', 'parent 1 street']:
-                            p_street = value
-                        elif name in ['parent city', 'parent 1 city']:
-                            p_city = value
-                        elif name in ['parent state', 'parent 1 state']:
-                            p_state = value
-                        elif name in ['parent zip', 'parent 1 zip']:
-                            p_zip = value
-                        elif name in ["parent e-mail", "parent email", "parentemail", "parent__email", 'parent 1 email', 'parent 1 e-mail']:
-                            p_email = value
-                        elif name in ['parent home number', 'parent 1 home number', 'parent home phone', 'parent 1 home phone']:
-                            home = value
-                        elif name in ['parent cell number', 'parent 1 cell number', 'parent cell phone', 'parent 1 cell phone']:
-                            cell = value
-                        elif name in ['parent work number', 'parent 1 work number', 'parent work phone', 'parent 1 work phone']:
-                            work = value
-                        elif name in ['parent number', 'parent 1 number', 'parent other number', 'parent 1 other number', 'parent phone', 'parent 1 phone', 'parent other phone', 'parent 1 other phone']:
-                            other = value
-                        
-                        elif name in ['parent 2 first name']:
-                            p2_fname = value
-                        elif name in ["parent 2 middle name"]:
-                            p2_mname = value
-                        elif name in ['parent 2 last name']:
-                            p2_lname = value
-                        elif name in ['parent 2 relationship to student']:
-                            p2_relationship_to_student = value
-                        elif name in ['parent 2 street']:
-                            p2_street = value
-                        elif name in ['parent 2 city']:
-                            p2_city = value
-                        elif name in ['parent 2 state']:
-                            p2_state = value
-                        elif name in ['parent 2 zip']:
-                            p2_zip = value
-                        elif name in ["parent 2 e-mail", "parent 2 email"]:
-                            p2_email = value
-                        elif name in ['parent 2 home number', 'parent 2 home phone']:
-                            home2 = value
-                        elif name in ['parent 2 cell number', 'parent 2 cell phone']:
-                            cell2 = value
-                        elif name in ['parent 2 work number', 'parent 2 work phone']:
-                            work2 = value
-                        elif name in ['parent 2 number', 'parent 2 other number', 'parent 2 phone', 'parent 2 other phone']:
-                            other2 = value
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    p_fname = p_mname = p_lname = p_relationship_to_student = p_street = p_city = None
+                    p_state = p_zip = p_email = home = cell = work = other = None
+                    p2_fname = p2_mname = p2_lname = p2_relationship_to_student = p2_street = p2_city = None
+                    p2_state = p2_zip = p2_email = home2 = cell2 = work2 = other2 = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = True
+                    model = Applicant()
+                    model.save()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "id":
+                                model = Applicant.objects.get(id=value)
+                                created = False
+                                model.save()
+                            elif name == "first name" or name == "fname":
+                                    model.fname = value
+                            elif name == "last name" or name == "lname":
+                                model.lname = value
+                            elif name == "middle name" or name == "mname":
+                                model.mname = value
+                            elif name =="social security" or name == "ssn" or name == "social security number":
+                                model.ssn = value
+                            elif name == "gender" or name == "sex":
+                                if value == "Male":
+                                    model.sex = "M"
+                                elif value == "Female":
+                                    model.sex = "F"
+                                else:
+                                    model.sex = unicode.upper(value)
+                            elif name == "birth date" or name == "birthday" or name == "birth day" or name == "bday":
+                                model.bday = self.convert_date(value)
+                            elif name == "student street" or name == "street":
+                                model.street = value
+                            elif name == "student city" or name == "city":
+                                model.city = value
+                            elif name == "student state" or name == "state":
+                                model.state = value
+                            elif name == "student zip" or name == "zip":
+                                model.zip = value
+                            elif name == "notes":
+                                model.notes = value
+                            elif name == "year" or name == "grade level":
+                                #try:
+                                    model.year = GradeLevel.objects.get(name=value)
+                                #except: pass
+                                #model.year = GradeLevel.objects.get(id=value)
+                            elif name == "school year" or name == "school_year":
+                                model.school_year = SchoolYear.objects.get(name=value)
+                            elif name == "e-mail" or name == "email":
+                                model.email = value
+                            elif name == "home_country" or name == "home country":
+                                model.home_country = value
+                            elif name == "relationship_to_student" or name == "relationship to student":
+                                model.relationship_to_student = value
+                            elif name == "ethnicity":
+                                model.ethnicity = EthnicityChoice.objects.get_or_create(name=value)[0]
+                            elif name == "hs_grad_yr" or name == "high school grad year":
+                                model.hs_grad_yr = value
+                            elif name == "elem_grad_yr" or name == "elem grad year":
+                                model.elem_grad_yr = value
+                            elif name == "present_school" or name == "present school":
+                                model.present_school = FeederSchool.objects.get_or_create(name=value)[0]
+                            elif name == "religion":
+                                model.religion = ReligionChoice.objects.get_or_create(name=value)[0]
+                            elif name == "heard_about_us" or name == "heard about us":
+                                model.heard_about_us = HeardAboutUsOption.objects.get_or_create(name=value)[0]
+                            elif name == "first_contact" or name == "first contact":
+                                model.first_contact = FirstContactOption.objects.get_or_create(name=value)[0]
+                            elif name == "borough":
+                                model.borough = BoroughOption.objects.get_or_create(name=value)[0]
+                            elif name == "application_decision" or name == "application decision":
+                                model.application_decision = ApplicationDecisionOption.objects.get_or_create(name=value)[0]
+                            elif name == "withdrawn":
+                                model.withdrawn = WithdrawnChoices.objects.get_or_create(name=value)[0]
+                            elif name == "withdrawn_note" or name == "withdrawn note":
+                                model.withdrawn_note = value
+                            elif name == "ready for export":
+                                model.ready_for_export = self.determine_truth(value)
+                            elif name == "student id":
+                                model.sis_student = Student.objects.get(id=value)
                             
-                model.save()
-                # add emergency contacts (parents)
-                if p_lname and p_fname:
-                    ecs = EmergencyContact.objects.filter(fname=p_fname, lname=p_lname, street=p_street)
-                    if ecs.count():
-                        model.parent_guardians.add(ecs[0])
-                    else:
-                        ec = EmergencyContact(
-                            fname = p_fname,
-                            mname = p_mname,
-                            lname = p_lname,
-                            relationship_to_student = p_relationship_to_student,
-                            street = p_street,
-                            city = p_city,
-                            state = p_state,
-                            zip = p_zip,
-                            email=  p_email,
-                            primary_contact = True,
-                        )
-                        ec.save()
-                        if other:
-                            number, extension = self.import_number(other)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="" , contact=ec)
-                            ecNumber.contact = ec
-                            ecNumber.save()
-                        if home:    
-                            number, extension = self.import_number(home)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="H" , contact=ec)
-                            ecNumber.contact = ec
-                            ecNumber.save()
-                        if cell:    
-                            number, extension = self.import_number(cell)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="C" , contact=ec)
-                            ecNumber.contact = ec
-                            ecNumber.save()
-                        if work:    
-                            number, extension = self.import_number(work)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="W" , contact=ec)
-                            ecNumber.contact = ec
-                            ecNumber.save()
-                        model.parent_guardians.add(ec)
-                if p2_lname and p2_fname:
-                    ecs = EmergencyContact.objects.filter(fname=p2_fname, lname=p2_lname, street=p2_street)
-                    if ecs.count():
-                        model.parent_guardians.add(ecs[0])
-                    else:
-                        ec2 = EmergencyContact(
-                            fname = p2_fname,
-                            mname = p2_mname,
-                            lname = p2_lname,
-                            relationship_to_student = p2_relationship_to_student,
-                            street = p2_street,
-                            city = p2_city,
-                            state = p2_state,
-                            zip = p2_zip,
-                            email=  p2_email,
-                            primary_contact = False,
+                            elif name in ["parent first name", 'parent 1 first name']:
+                                p_fname = value
+                            elif name in ["parent middle name", 'parent 1 middle name']:
+                                p_mname = value
+                            elif name in ['parent last name', 'parent 1 last name']:
+                                p_lname = value
+                            elif name in ['parent relationship to student', 'parent 1 relationship to student']:
+                                p_relationship_to_student = value
+                            elif name in ['parent street', 'parent 1 street']:
+                                p_street = value
+                            elif name in ['parent city', 'parent 1 city']:
+                                p_city = value
+                            elif name in ['parent state', 'parent 1 state']:
+                                p_state = value
+                            elif name in ['parent zip', 'parent 1 zip']:
+                                p_zip = value
+                            elif name in ["parent e-mail", "parent email", "parentemail", "parent__email", 'parent 1 email', 'parent 1 e-mail']:
+                                p_email = value
+                            elif name in ['parent home number', 'parent 1 home number', 'parent home phone', 'parent 1 home phone']:
+                                home = value
+                            elif name in ['parent cell number', 'parent 1 cell number', 'parent cell phone', 'parent 1 cell phone']:
+                                cell = value
+                            elif name in ['parent work number', 'parent 1 work number', 'parent work phone', 'parent 1 work phone']:
+                                work = value
+                            elif name in ['parent number', 'parent 1 number', 'parent other number', 'parent 1 other number', 'parent phone', 'parent 1 phone', 'parent other phone', 'parent 1 other phone']:
+                                other = value
+                            
+                            elif name in ['parent 2 first name']:
+                                p2_fname = value
+                            elif name in ["parent 2 middle name"]:
+                                p2_mname = value
+                            elif name in ['parent 2 last name']:
+                                p2_lname = value
+                            elif name in ['parent 2 relationship to student']:
+                                p2_relationship_to_student = value
+                            elif name in ['parent 2 street']:
+                                p2_street = value
+                            elif name in ['parent 2 city']:
+                                p2_city = value
+                            elif name in ['parent 2 state']:
+                                p2_state = value
+                            elif name in ['parent 2 zip']:
+                                p2_zip = value
+                            elif name in ["parent 2 e-mail", "parent 2 email"]:
+                                p2_email = value
+                            elif name in ['parent 2 home number', 'parent 2 home phone']:
+                                home2 = value
+                            elif name in ['parent 2 cell number', 'parent 2 cell phone']:
+                                cell2 = value
+                            elif name in ['parent 2 work number', 'parent 2 work phone']:
+                                work2 = value
+                            elif name in ['parent 2 number', 'parent 2 other number', 'parent 2 phone', 'parent 2 other phone']:
+                                other2 = value
+                                
+                    model.save()
+                    # add emergency contacts (parents)
+                    if p_lname and p_fname:
+                        ecs = EmergencyContact.objects.filter(fname=p_fname, lname=p_lname, street=p_street)
+                        if ecs.count():
+                            model.parent_guardians.add(ecs[0])
+                        else:
+                            ec = EmergencyContact(
+                                fname = p_fname,
+                                mname = p_mname,
+                                lname = p_lname,
+                                relationship_to_student = p_relationship_to_student,
+                                street = p_street,
+                                city = p_city,
+                                state = p_state,
+                                zip = p_zip,
+                                email=  p_email,
+                                primary_contact = True,
                             )
-                        ec2.save()
-                        if other2:
-                            number, extension = self.import_number(other2)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="" , contact=ec)
-                            ecNumber.contact = ec2
-                            ecNumber.save()
-                        if home2:    
-                            number, extension = self.import_number(home2)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="H" , contact=ec)
-                            ecNumber.contact = ec2
-                            ecNumber.save()
-                        if cell2:    
-                            number, extension = self.import_number(cell2)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="C" , contact=ec)
-                            ecNumber.contact = ec2
-                            ecNumber.save()
-                        if work2:
-                            number, extension = self.import_number(work2)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="W" , contact=ec)
-                            ecNumber.contact = ec2
-                            ecNumber.save()
-                        model.parent_guardians.add(ec2)
-                model.save()
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "siblings":
-                            model.siblings.add(Student.objects.get(value))
-                        elif name == "open_house_attended" or name == "open house attended":
-                            try:
-                                house = OpenHouse.objects.get_or_create(date=self.convert_date(value))[0]
-                            except:
-                                house = OpenHouse.objects.get_or_create(name=value)[0]
-                            model.open_house_attended.add(house)
-                        elif name == "checklist":
-                            check = AdmissionCheck.objects.get(name=value)
-                            model.checklist.add(check)
-                
-                inserted, updated = self.log_and_commit(model, inserted, updated, created)
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+                            ec.save()
+                            if other:
+                                number, extension = self.import_number(other)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="" , contact=ec)
+                                ecNumber.contact = ec
+                                ecNumber.save()
+                            if home:    
+                                number, extension = self.import_number(home)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="H" , contact=ec)
+                                ecNumber.contact = ec
+                                ecNumber.save()
+                            if cell:    
+                                number, extension = self.import_number(cell)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="C" , contact=ec)
+                                ecNumber.contact = ec
+                                ecNumber.save()
+                            if work:    
+                                number, extension = self.import_number(work)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="W" , contact=ec)
+                                ecNumber.contact = ec
+                                ecNumber.save()
+                            model.parent_guardians.add(ec)
+                    if p2_lname and p2_fname:
+                        ecs = EmergencyContact.objects.filter(fname=p2_fname, lname=p2_lname, street=p2_street)
+                        if ecs.count():
+                            model.parent_guardians.add(ecs[0])
+                        else:
+                            ec2 = EmergencyContact(
+                                fname = p2_fname,
+                                mname = p2_mname,
+                                lname = p2_lname,
+                                relationship_to_student = p2_relationship_to_student,
+                                street = p2_street,
+                                city = p2_city,
+                                state = p2_state,
+                                zip = p2_zip,
+                                email=  p2_email,
+                                primary_contact = False,
+                                )
+                            ec2.save()
+                            if other2:
+                                number, extension = self.import_number(other2)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="" , contact=ec)
+                                ecNumber.contact = ec2
+                                ecNumber.save()
+                            if home2:    
+                                number, extension = self.import_number(home2)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="H" , contact=ec)
+                                ecNumber.contact = ec2
+                                ecNumber.save()
+                            if cell2:    
+                                number, extension = self.import_number(cell2)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="C" , contact=ec)
+                                ecNumber.contact = ec2
+                                ecNumber.save()
+                            if work2:
+                                number, extension = self.import_number(work2)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="W" , contact=ec)
+                                ecNumber.contact = ec2
+                                ecNumber.save()
+                            model.parent_guardians.add(ec2)
+                    model.save()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "siblings":
+                                model.siblings.add(Student.objects.get(value))
+                            elif name == "open_house_attended" or name == "open house attended":
+                                try:
+                                    house = OpenHouse.objects.get_or_create(date=self.convert_date(value))[0]
+                                except:
+                                    house = OpenHouse.objects.get_or_create(name=value)[0]
+                                model.open_house_attended.add(house)
+                            elif name == "checklist":
+                                check = AdmissionCheck.objects.get(name=value)
+                                model.checklist.add(check)
+                    
+                    inserted, updated = self.log_and_commit(model, inserted, updated, created)
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
@@ -1764,33 +1774,34 @@ class Importer:
         from ecwsp.admissions.models import Applicant, ContactLog
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                name = None
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = True
-                applicant = None
-                model = ContactLog()
-                
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "applicant id":
-                            model.applicant = Applicant.objects.get(id=value)
-                        elif name == "date":
-                            model.date = self.convert_date(value)
-                        elif name == "note":
-                            model.note = value
-                        elif name == "user":
-                            model.user = User.objects.get(username=value)
-                model.save()
-                self.log_and_commit(model, addition=False)
-                if created:
-                    inserted += 1
-                else:
-                    updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = True
+                    applicant = None
+                    model = ContactLog()
+                    
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "applicant id":
+                                model.applicant = Applicant.objects.get(id=value)
+                            elif name == "date":
+                                model.date = self.convert_date(value)
+                            elif name == "note":
+                                model.note = value
+                            elif name == "user":
+                                model.user = User.objects.get(username=value)
+                    model.save()
+                    self.log_and_commit(model, addition=False)
+                    if created:
+                        inserted += 1
+                    else:
+                        updated += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
     
@@ -1855,77 +1866,78 @@ class Importer:
         from ecwsp.work_study.models import *
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                model = None
-                created = False
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "id" or name == "workteam id":
-                            model = WorkTeam.objects.get(id=value)
-                            created = False
-                        elif name == "workteam" or name == "work team" or name == "name":
-                            model, created = WorkTeam.objects.get_or_create(team_name=value)
-                        if name == "company":
-                            model.company = Company.objects.get_or_create(name=value)[0]
-                        elif name == "login":
-                            login = User.objects.get_or_create(username=value)[0]
-                            group = Group.objects.get_or_create(name="Company")[0]
-                            login.groups.add(group)
-                            model.login.add(login)
-                            login.save()
-                        elif name == "password":
-                            login.set_password(value)
-                            login.save()
-                        elif name == "paying":
-                            if value == "Paying": model.paying = "P"
-                            elif value == "None-Paying": model.paying = "N"
-                            elif value == "Funded": model.paying = "F"
-                            else: model.paying = value
-                        elif name == "funded_by" or name =="funded by":
-                            model.funded_by = value
-                        elif name == "cra":
-                            cra, created = CraContact.objects.get_or_create(name=User.objects.get(username=value))
-                            model.cra = cra
-                        elif name == "industry_type" or name == "industry type":
-                            model.industry_type = value
-                        elif name == "train_line" or name == "train line":
-                            model.train_line = value
-                        elif name == "industry_type" or name == "industry type":
-                            model.industry_type = value
-                        elif name == "stop_location" or name == "stop location":
-                            model.stop_location = value
-                        elif name == "dropoff_location" or name == "dropoff location":
-                            model.dropoff_location = PickupLocation.objects.get_or_create(location=value)[0]
-                        elif name == "pickup_location" or name == "pickup location":
-                            model.pickup_location = PickupLocation.objects.get_or_create(location=value)[0]
-                        elif name == "address":
-                            model.address = value
-                        elif name == "city":
-                            model.city = value
-                        elif name == "state":
-                            model.state = value
-                        elif name == "zip":
-                            model.zip = value
-                        elif name == "directions_to" or name == "directions to":
-                            model.directions_to = value
-                        elif name == "directions_pickup" or name == "directions pickup":
-                            model.directions_pickup = value
-                        elif name == "use_google_maps" or name == "use google maps":
-                            model.use_google_maps = self.determine_truth(value)
-                        elif name == "job_description" or name == "job description":
-                            model.job_description = value
-                model.save()
-                if created:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-                else:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    model = None
+                    created = False
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "id" or name == "workteam id":
+                                model = WorkTeam.objects.get(id=value)
+                                created = False
+                            elif name == "workteam" or name == "work team" or name == "name":
+                                model, created = WorkTeam.objects.get_or_create(team_name=value)
+                            if name == "company":
+                                model.company = Company.objects.get_or_create(name=value)[0]
+                            elif name == "login":
+                                login = User.objects.get_or_create(username=value)[0]
+                                group = Group.objects.get_or_create(name="Company")[0]
+                                login.groups.add(group)
+                                model.login.add(login)
+                                login.save()
+                            elif name == "password":
+                                login.set_password(value)
+                                login.save()
+                            elif name == "paying":
+                                if value == "Paying": model.paying = "P"
+                                elif value == "None-Paying": model.paying = "N"
+                                elif value == "Funded": model.paying = "F"
+                                else: model.paying = value
+                            elif name == "funded_by" or name =="funded by":
+                                model.funded_by = value
+                            elif name == "cra":
+                                cra, created = CraContact.objects.get_or_create(name=User.objects.get(username=value))
+                                model.cra = cra
+                            elif name == "industry_type" or name == "industry type":
+                                model.industry_type = value
+                            elif name == "train_line" or name == "train line":
+                                model.train_line = value
+                            elif name == "industry_type" or name == "industry type":
+                                model.industry_type = value
+                            elif name == "stop_location" or name == "stop location":
+                                model.stop_location = value
+                            elif name == "dropoff_location" or name == "dropoff location":
+                                model.dropoff_location = PickupLocation.objects.get_or_create(location=value)[0]
+                            elif name == "pickup_location" or name == "pickup location":
+                                model.pickup_location = PickupLocation.objects.get_or_create(location=value)[0]
+                            elif name == "address":
+                                model.address = value
+                            elif name == "city":
+                                model.city = value
+                            elif name == "state":
+                                model.state = value
+                            elif name == "zip":
+                                model.zip = value
+                            elif name == "directions_to" or name == "directions to":
+                                model.directions_to = value
+                            elif name == "directions_pickup" or name == "directions pickup":
+                                model.directions_pickup = value
+                            elif name == "use_google_maps" or name == "use google maps":
+                                model.use_google_maps = self.determine_truth(value)
+                            elif name == "job_description" or name == "job description":
+                                model.job_description = value
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
 
@@ -1935,80 +1947,81 @@ class Importer:
         from ecwsp.work_study.models import *
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                model = Contact()
-                created = True
-                fname = None
-                lname = None
-                phone = None
-                phone_cell = None
-                fax = None
-                email = None
-                workteam = None
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "id":
-                            model = Contact.objects.get(id=value)
-                            created = False
-                        elif name == "guid":
-                            model.guid = value
-                        elif name == "fname" or name == "first name":
-                            fname = value
-                        elif name == "lname" or name == "last name":
-                            lname = value
-                        elif name == "phone":
-                            number, ext = self.import_number(value)
-                            if ext:
-                                phone = number + " " + ext
-                            else:
-                                phone = number
-                        elif name == "phone_cell" or name == "phone cell":
-                            number, ext = self.import_number(value)
-                            if ext:
-                                phone_cell = number + " " + ext
-                            else:
-                                phone_cell = number
-                        elif name == "email":
-                            email = value
-                        elif name == "fax":
-                            fax = value
-                        elif name == "work team":
-                            workteam = WorkTeam.objects.get(team_name=value)
-                existing_contacts = Contact.objects.filter(fname=fname,lname=lname)
-                if existing_contacts.count()==1:
-                    model = Contact.objects.get(id = existing_contacts[0].id)
-                    created = False
-                elif existing_contacts.count() >1:
-                    exist_filter_by_workteam = existing_contacts.workteam_set.filter(workteam)
-                    if exist_filter_by_workteam.count()==1:
-                        model = Contact.objects.get(id = exist_filter_by_workteam[0].id)
+            with transaction.commit_manually():
+                try:
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    model = Contact()
+                    created = True
+                    fname = None
+                    lname = None
+                    phone = None
+                    phone_cell = None
+                    fax = None
+                    email = None
+                    workteam = None
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "id":
+                                model = Contact.objects.get(id=value)
+                                created = False
+                            elif name == "guid":
+                                model.guid = value
+                            elif name == "fname" or name == "first name":
+                                fname = value
+                            elif name == "lname" or name == "last name":
+                                lname = value
+                            elif name == "phone":
+                                number, ext = self.import_number(value)
+                                if ext:
+                                    phone = number + " " + ext
+                                else:
+                                    phone = number
+                            elif name == "phone_cell" or name == "phone cell":
+                                number, ext = self.import_number(value)
+                                if ext:
+                                    phone_cell = number + " " + ext
+                                else:
+                                    phone_cell = number
+                            elif name == "email":
+                                email = value
+                            elif name == "fax":
+                                fax = value
+                            elif name == "work team":
+                                workteam = WorkTeam.objects.get(team_name=value)
+                    existing_contacts = Contact.objects.filter(fname=fname,lname=lname)
+                    if existing_contacts.count()==1:
+                        model = Contact.objects.get(id = existing_contacts[0].id)
                         created = False
+                    elif existing_contacts.count() >1:
+                        exist_filter_by_workteam = existing_contacts.workteam_set.filter(workteam)
+                        if exist_filter_by_workteam.count()==1:
+                            model = Contact.objects.get(id = exist_filter_by_workteam[0].id)
+                            created = False
+                        else:
+                            model.fname =fname
+                            model.lanem = lname
                     else:
-                        model.fname =fname
-                        model.lanem = lname
-                else:
-                    model.fname = fname
-                    model.lname = lname
-                if phone: model.phone = phone
-                if phone_cell: model.phone_cell = phone_cell
-                if fax: model.fax = fax
-                if email: model.email = email
-                model.save()
-                if workteam: model.workteam_set.add(workteam)
-                    
-                model.save()
-                if created:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-                else:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
-            x += 1
+                        model.fname = fname
+                        model.lname = lname
+                    if phone: model.phone = phone
+                    if phone_cell: model.phone_cell = phone_cell
+                    if fax: model.fax = fax
+                    if email: model.email = email
+                    model.save()
+                    if workteam: model.workteam_set.add(workteam)
+                        
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
+                x += 1
             
         return inserted, updated
 
@@ -2019,58 +2032,59 @@ class Importer:
         from ecwsp.work_study.models import *
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                row = sheet.row(x)
-                items = zip(header, row)
-                model = None
-                supid = None
-                created = False
+            with transaction.commit_manually():
                 try:
-                    student = self.get_student(items)
-                except:
-                    student = None
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if student:
-                            if hasattr(student, 'studentworker'):
-                                model = student.studentworker
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    model = None
+                    supid = None
+                    created = False
+                    try:
+                        student = self.get_student(items)
+                    except:
+                        student = None
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if student:
+                                if hasattr(student, 'studentworker'):
+                                    model = student.studentworker
+                                else:
+                                    student.promote_to_worker()
+                                    student = StudentWorker.objects.get(id=student.id)
                             else:
-                                student.promote_to_worker()
-                                student = StudentWorker.objects.get(id=student.id)
-                        else:
-                            if name == "student unique id":
-                                model = StudentWorker(unique_id=value)
-                            elif name == "student username":
-                                model = StudentWorker(username=value)
-                        if name == "day" or name == "work day":
-                            value = unicode.lower(value)
-                            if value == "monday": model.day = "M"
-                            elif value == "tuesday": model.day = "T"
-                            elif value == "wednesday": model.day = "W"
-                            elif value == "thursday": model.day = "TH"
-                            elif value == "friday": model.day = "F"
-                            else: model.day = value
-                        elif name == "workteam id" or name == 'workteam_id':
-                            model.placement = WorkTeam.objects.get(id=value)
-                        elif name == "workteam name" or name == "placement":
-                            model.placement = WorkTeam.objects.get(team_name=value)
-                        elif name == "work permit" or name == "work permit number":
-                            model.work_permit_no = value
-                        elif name == "primary supervisor id" or name == "supervisor id":
-                            supid = value
-                            if Contact.objects.get(id=supid):
-                                model.primary_contact = Contact.objects.get(id=supid)
-                model.save()
-                if created:
-                    self.log_and_commit(model, addition=True)
-                    inserted += 1
-                else:
-                    self.log_and_commit(model, addition=False)
-                    updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
-            x += 1
+                                if name == "student unique id":
+                                    model = StudentWorker(unique_id=value)
+                                elif name == "student username":
+                                    model = StudentWorker(username=value)
+                            if name == "day" or name == "work day":
+                                value = unicode.lower(value)
+                                if value == "monday": model.day = "M"
+                                elif value == "tuesday": model.day = "T"
+                                elif value == "wednesday": model.day = "W"
+                                elif value == "thursday": model.day = "TH"
+                                elif value == "friday": model.day = "F"
+                                else: model.day = value
+                            elif name == "workteam id" or name == 'workteam_id':
+                                model.placement = WorkTeam.objects.get(id=value)
+                            elif name == "workteam name" or name == "placement":
+                                model.placement = WorkTeam.objects.get(team_name=value)
+                            elif name == "work permit" or name == "work permit number":
+                                model.work_permit_no = value
+                            elif name == "primary supervisor id" or name == "supervisor id":
+                                supid = value
+                                if Contact.objects.get(id=supid):
+                                    model.primary_contact = Contact.objects.get(id=supid)
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
+                x += 1
         return inserted, updated
 
 
@@ -2080,8 +2094,8 @@ class Importer:
         from ecwsp.work_study.models import *
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            try:
-                with transaction.commit_manually():
+            with transaction.commit_manually():
+                try:
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
@@ -2136,7 +2150,7 @@ class Importer:
                     else:
                         self.log_and_commit(model, addition=False)
                         updated += 1
-            except:
-                self.handle_error(row, name, sys.exc_info(), sheet.name)
-            x += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
+                x += 1
         return inserted, updated
