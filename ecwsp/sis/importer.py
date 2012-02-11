@@ -1281,192 +1281,193 @@ class Importer:
             x += 1
         return inserted, updated
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def import_students(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             try:
-                name = None
-                p_fname = p_mname = p_lname = p_relationship_to_student = p_street = p_city = None
-                p_state = p_zip = p_email = home = cell = work = other = None
-                row = sheet.row(x)
-                items = zip(header, row)
-                created = False
-                model = None
-                custom_fields = []
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "id":
-                            try:
-                                model = Student.objects.get(id=value)
-                                created = False
-                            except:
-                                raise Exception("Student ID not found. ID should not be set when creating new student, use unique ID for this.")
-                        elif name == "unique id" or name == "unique_id":
-                            if model:
-                                model.unique_id = value
-                            else:
-                                students = Student.objects.filter(unique_id=value)
-                                if students:
-                                    model = students[0]
+                with transaction.commit_manually():
+                    name = None
+                    p_fname = p_mname = p_lname = p_relationship_to_student = p_street = p_city = None
+                    p_state = p_zip = p_email = home = cell = work = other = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = False
+                    model = None
+                    custom_fields = []
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "id":
+                                try:
+                                    model = Student.objects.get(id=value)
                                     created = False
+                                except:
+                                    raise Exception("Student ID not found. ID should not be set when creating new student, use unique ID for this.")
+                            elif name == "unique id" or name == "unique_id":
+                                if model:
+                                    model.unique_id = value
                                 else:
-                                    model = Student(unique_id=value)
-                                    created = True
-                        elif name == "username":
-                            if model:
-                                model.username = value
-                            else:
-                                students = Student.objects.filter(username=value)
-                                if students:
-                                    model = students[0]
-                                    created = False
+                                    students = Student.objects.filter(unique_id=value)
+                                    if students:
+                                        model = students[0]
+                                        created = False
+                                    else:
+                                        model = Student(unique_id=value)
+                                        created = True
+                            elif name == "username":
+                                if model:
+                                    model.username = value
                                 else:
-                                    model = Student(username=value)
-                                    created = True
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok and model:
-                        if name == "first name" or name == "fname":
-                            model.fname = value
-                        elif name == "last name" or name == "lname":
-                            model.lname = value
-                        elif name == "alert":
-                            model.alert = value
-                        elif name == "grad date":
-                            model.grad_date = self.convert_date(value)
-                        elif name == "gender" or name == "sex":
-                            model.sex = unicode.upper(value)
-                        elif name == "birth date" or name == "birthday" or name == "birth day" or name == "bday":
-                            model.bday = self.convert_date(value)
-                        elif name == "year" or name == "grade level":
-                            try:
-                                model.year = GradeLevel.objects.get(name=value)
-                            except:
-                                model.year = GradeLevel.objects.get(id=value)
-                        
-                        elif name == "parent e-mail" or name == "parent email" or name == "parentemail" or name == "parent__email":
-                            model.parent_email = value
-                        elif name == "middle name" or name == "mname":
-                            model.mname = value
-                        elif name == "homeroom":
-                            model.home_room = value
-                        elif name == "ssn" or name == "social security":
-                            model.ssn = value
-                        elif name in ['preferred language', 'language', 'family preferred language']:
-                            language = LanguageChoice.objects.get_or_create(name=value)[0]
-                            model.name = language
-                        elif name == "deleted":
-                            model.deleted = self.determine_truth(value)
-                        
-                        # Import emergency contact shortcut
-                        elif name in ["parent first name", 'parent 1 first name']:
-                            p_fname = value
-                        elif name in ["parent middle name", 'parent 1 middle name']:
-                            p_mname = value
-                        elif name in ['parent last name', 'parent 1 last name']:
-                            p_lname = value
-                        elif name in ['parent relationship to student', 'parent 1 relationship to student']:
-                            p_relationship_to_student = value
-                        elif name in ['parent street', 'parent 1 street']:
-                            p_street = value
-                        elif name in ['parent city', 'parent 1 city']:
-                            p_city = value
-                        elif name in ['parent state', 'parent 1 state']:
-                            p_state = value
-                        elif name in ['parent zip', 'parent 1 zip']:
-                            p_zip = value
-                        elif name in ["parent e-mail", "parent email", "parentemail", "parent__email", 'parent 1 email', 'parent 1 e-mail']:
-                            p_email = value
-                        elif name in ['parent home number', 'parent 1 home number', 'parent home phone', 'parent 1 home phone']:
-                            home = value
-                        elif name in ['parent cell number', 'parent 1 cell number', 'parent cell phone', 'parent 1 cell phone']:
-                            cell = value
-                        elif name in ['parent work number', 'parent 1 work number', 'parent work phone', 'parent 1 work phone']:
-                            work = value
-                        elif name in ['parent number', 'parent 1 number', 'parent other number', 'parent 1 other number', 'parent phone', 'parent 1 phone', 'parent other phone', 'parent 1 other phone']:
-                            other = value
+                                    students = Student.objects.filter(username=value)
+                                    if students:
+                                        model = students[0]
+                                        created = False
+                                    else:
+                                        model = Student(username=value)
+                                        created = True
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok and model:
+                            if name == "first name" or name == "fname":
+                                model.fname = value
+                            elif name == "last name" or name == "lname":
+                                model.lname = value
+                            elif name == "alert":
+                                model.alert = value
+                            elif name == "grad date":
+                                model.grad_date = self.convert_date(value)
+                            elif name == "gender" or name == "sex":
+                                model.sex = unicode.upper(value)
+                            elif name == "birth date" or name == "birthday" or name == "birth day" or name == "bday":
+                                model.bday = self.convert_date(value)
+                            elif name == "year" or name == "grade level":
+                                try:
+                                    model.year = GradeLevel.objects.get(name=value)
+                                except:
+                                    model.year = GradeLevel.objects.get(id=value)
                             
-                        # Custom
-                        elif name.split() and name.split()[0] == "custom":
-                            custom_fields.append([name.split()[1], value])
+                            elif name == "parent e-mail" or name == "parent email" or name == "parentemail" or name == "parent__email":
+                                model.parent_email = value
+                            elif name == "middle name" or name == "mname":
+                                model.mname = value
+                            elif name == "homeroom":
+                                model.home_room = value
+                            elif name == "ssn" or name == "social security":
+                                model.ssn = value
+                            elif name in ['preferred language', 'language', 'family preferred language']:
+                                language = LanguageChoice.objects.get_or_create(name=value)[0]
+                                model.name = language
+                            elif name == "deleted":
+                                model.deleted = self.determine_truth(value)
                             
-                if not model.username and model.fname and model.lname:
-                    model.username = self.gen_username(model.fname, model.lname)
-                model.save()
-                for (custom_field, value) in custom_fields:
-                    model.set_custom_value(custom_field, value)
-                for (name, value) in items:
-                    is_ok, name, value = self.sanitize_item(name, value)
-                    if is_ok:
-                        if name == "student phone":    
-                            number, extension = self.import_number(value)
-                            contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="H" , student=model)
-                            contactModel.save()
-                        elif name == "student cell ph" or name == "student cell" or name == "student cell phone":
-                            number, extension = self.import_number(value)
-                            contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="C" , student=model)
-                            contactModel.save()
-                        elif name == "student phone other":
-                            number, extension = self.import_number(value)
-                            contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="O" , student=model)
-                            contactModel.save()
-                        elif name == "student phone work":
-                            number, extension = self.import_number(value)
-                            contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="W" , student=model)
-                            contactModel.save()
-                        elif name == "primary cohort":
-                            cohort = Cohort.objects.get_or_create(name=value)[0]
-                            student_cohort = StudentCohort.objects.get_or_create(student=model, cohort=cohort)[0]
-                            student_cohort.primary = True
-                            student_cohort.save()
-                # add emergency contacts (parents)
-                if p_lname and p_fname:
-                    ecs = EmergencyContact.objects.filter(fname=p_fname, lname=p_lname, street=p_street)
-                    if ecs.count():
-                        model.emergency_contacts.add(ecs[0])
-                    else:
-                        ec = EmergencyContact(
-                            fname = p_fname,
-                            mname = p_mname,
-                            lname = p_lname,
-                            relationship_to_student = p_relationship_to_student,
-                            street = p_street,
-                            city = p_city,
-                            state = p_state,
-                            zip = p_zip,
-                            email=  p_email,
-                            primary_contact = True,
-                        )
-                        ec.save()
-                        if other:
-                            number, extension = self.import_number(other)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="" , contact=ec)
-                            ecNumber.contact = ec
-                            ecNumber.save()
-                        if home:    
-                            number, extension = self.import_number(home)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="H" , contact=ec)
-                            ecNumber.contact = ec
-                            ecNumber.save()
-                        if cell:    
-                            number, extension = self.import_number(cell)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="C" , contact=ec)
-                            ecNumber.contact = ec
-                            ecNumber.save()
-                        if work:    
-                            number, extension = self.import_number(work)
-                            ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="W" , contact=ec)
-                            ecNumber.contact = ec
-                            ecNumber.save()
-                        model.emergency_contacts.add(ec)
-                    if created:
-                        self.log_and_commit(model, addition=True)
-                        inserted += 1
-                    else:
-                        self.log_and_commit(model, addition=False)
-                        updated += 1
+                            # Import emergency contact shortcut
+                            elif name in ["parent first name", 'parent 1 first name']:
+                                p_fname = value
+                            elif name in ["parent middle name", 'parent 1 middle name']:
+                                p_mname = value
+                            elif name in ['parent last name', 'parent 1 last name']:
+                                p_lname = value
+                            elif name in ['parent relationship to student', 'parent 1 relationship to student']:
+                                p_relationship_to_student = value
+                            elif name in ['parent street', 'parent 1 street']:
+                                p_street = value
+                            elif name in ['parent city', 'parent 1 city']:
+                                p_city = value
+                            elif name in ['parent state', 'parent 1 state']:
+                                p_state = value
+                            elif name in ['parent zip', 'parent 1 zip']:
+                                p_zip = value
+                            elif name in ["parent e-mail", "parent email", "parentemail", "parent__email", 'parent 1 email', 'parent 1 e-mail']:
+                                p_email = value
+                            elif name in ['parent home number', 'parent 1 home number', 'parent home phone', 'parent 1 home phone']:
+                                home = value
+                            elif name in ['parent cell number', 'parent 1 cell number', 'parent cell phone', 'parent 1 cell phone']:
+                                cell = value
+                            elif name in ['parent work number', 'parent 1 work number', 'parent work phone', 'parent 1 work phone']:
+                                work = value
+                            elif name in ['parent number', 'parent 1 number', 'parent other number', 'parent 1 other number', 'parent phone', 'parent 1 phone', 'parent other phone', 'parent 1 other phone']:
+                                other = value
+                                
+                            # Custom
+                            elif name.split() and name.split()[0] == "custom":
+                                custom_fields.append([name.split()[1], value])
+                                
+                    if not model.username and model.fname and model.lname:
+                        model.username = self.gen_username(model.fname, model.lname)
+                    model.save()
+                    for (custom_field, value) in custom_fields:
+                        model.set_custom_value(custom_field, value)
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "student phone":    
+                                number, extension = self.import_number(value)
+                                contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="H" , student=model)
+                                contactModel.save()
+                            elif name == "student cell ph" or name == "student cell" or name == "student cell phone":
+                                number, extension = self.import_number(value)
+                                contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="C" , student=model)
+                                contactModel.save()
+                            elif name == "student phone other":
+                                number, extension = self.import_number(value)
+                                contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="O" , student=model)
+                                contactModel.save()
+                            elif name == "student phone work":
+                                number, extension = self.import_number(value)
+                                contactModel, contactCreated = StudentNumber.objects.get_or_create(number=number, ext=extension, type="W" , student=model)
+                                contactModel.save()
+                            elif name == "primary cohort":
+                                cohort = Cohort.objects.get_or_create(name=value)[0]
+                                student_cohort = StudentCohort.objects.get_or_create(student=model, cohort=cohort)[0]
+                                student_cohort.primary = True
+                                student_cohort.save()
+                    # add emergency contacts (parents)
+                    if p_lname and p_fname:
+                        ecs = EmergencyContact.objects.filter(fname=p_fname, lname=p_lname, street=p_street)
+                        if ecs.count():
+                            model.emergency_contacts.add(ecs[0])
+                        else:
+                            ec = EmergencyContact(
+                                fname = p_fname,
+                                mname = p_mname,
+                                lname = p_lname,
+                                relationship_to_student = p_relationship_to_student,
+                                street = p_street,
+                                city = p_city,
+                                state = p_state,
+                                zip = p_zip,
+                                email=  p_email,
+                                primary_contact = True,
+                            )
+                            ec.save()
+                            if other:
+                                number, extension = self.import_number(other)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="" , contact=ec)
+                                ecNumber.contact = ec
+                                ecNumber.save()
+                            if home:    
+                                number, extension = self.import_number(home)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="H" , contact=ec)
+                                ecNumber.contact = ec
+                                ecNumber.save()
+                            if cell:    
+                                number, extension = self.import_number(cell)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="C" , contact=ec)
+                                ecNumber.contact = ec
+                                ecNumber.save()
+                            if work:    
+                                number, extension = self.import_number(work)
+                                ecNumber, ecNumberCreated = EmergencyContactNumber.objects.get_or_create(number=number, ext=extension, type="W" , contact=ec)
+                                ecNumber.contact = ec
+                                ecNumber.save()
+                            model.emergency_contacts.add(ec)
+                        if created:
+                            self.log_and_commit(model, addition=True)
+                            inserted += 1
+                        else:
+                            self.log_and_commit(model, addition=False)
+                            updated += 1
             except:
                 self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
