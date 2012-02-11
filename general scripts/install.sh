@@ -10,8 +10,9 @@ tar -xvf PyRTF-0.45.tar.gz
 cd PyRTF-0.45
 python setup.py install
 # stable version of ldap-groups may not work with mysql
-pip install django django-reversion simplejson httpagentparser django-ldap-groups django_cas django-ajax-selects django_extensions django-grappelli django-ckeditor elementtree django-filter poster django-ajax-filtered-fields django-mass-edit django-pagination django-admin-export django-custom-field
-
+pip install django django-reversion simplejson httpagentparser django-ajax-selects django_extensions django-grappelli django-ckeditor elementtree django-filter poster django-ajax-filtered-fields django-mass-edit django-pagination django-admin-export django-custom-field
+# optional auth related
+pip install django-ldap-groups django-auth-gapps django_cas
 #prepare mysql
 echo "enter mysql root password"
 mysql -uroot -p -e "create database sword"
