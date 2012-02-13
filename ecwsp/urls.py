@@ -28,7 +28,7 @@ urlpatterns = patterns('',
 )
 
 if settings.GAPPS:
-    urlpatterns += patterns('', (r'^accounts/login/$', 'ecwsp.google_auth.views.login'), )
+    urlpatterns += patterns('', (r'^accounts/login/$', 'google_auth.views.login'), )
 else:
     urlpatterns += patterns('', (r'^accounts/login/$', 'django.contrib.auth.views.login'), )
 
