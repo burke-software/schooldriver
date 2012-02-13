@@ -21,6 +21,8 @@ class struct(object):
     def __unicode__(self):
         return ""
 
+# obsoleted hack pending removal
+"""
 def credits_hack_thing(student):
     ''' get credits before benchmark grading, using an arbitrary date from the past '''
     credits = 0
@@ -31,9 +33,11 @@ def credits_hack_thing(student):
         except:
             pass
     return credits
+"""
 
 def benchmark_report_card(template, options, students, format="odt"):
     """ A TC-exclusive benchmark-based report card generator for a single marking period """
+    """ lots of crap commented out is obsoleted by legit gpa calculator and will be removed soon """
 
     data = get_default_data()
 
@@ -51,6 +55,7 @@ def benchmark_report_card(template, options, students, format="odt"):
         # how do we really handle errors around here?
      #   return HttpResponse("Could not find a marking period for the date " + str(for_date) + ".")
         
+    '''
     # for GPA calculation, how far into the year are we?
     year_mps = attendance_marking_periods.count()
     this_mp = None
@@ -61,7 +66,8 @@ def benchmark_report_card(template, options, students, format="odt"):
             break
         i += 1
     year_fraction = float(this_mp) / float(year_mps) # just die ungracefully if this doesn't work
-    
+    '''
+
     for student in students:
         courses = Course.objects.filter(
             courseenrollment__user=student,
@@ -164,6 +170,9 @@ def benchmark_report_card(template, options, students, format="odt"):
                     i += 1
             except:
                 pass
+
+        # whoa, we actually calcuate real cumulative GPAs now!
+        '''
         if student.cache_gpa is None:
             student.cache_gpa = student.calculate_gpa()
         try:
@@ -172,13 +181,21 @@ def benchmark_report_card(template, options, students, format="odt"):
         except:
             student.cumulative_gpa = 0
             student.credits = 0
+        '''
         if i > 0:
             student.session_gpa = Decimal(str(session_gpa / i)).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
+        '''
             student.cumulative_gpa *= student.credits
             student.cumulative_gpa += float(i) * year_fraction * float(student.session_gpa)
             student.credits += float(i) * year_fraction # this year doesn't count as a whole unless it's complete
             student.cumulative_gpa /= student.credits
             student.cumulative_gpa = Decimal(str(student.cumulative_gpa)).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
+        '''
+        # don't fuck this up
+        if student.session_gpa == student.calculate_gpa_mp(marking_period):
+            print 'jnm Marking Period GPA Assertion PASSED!'
+        else:
+            print 'BADNESS! GPA calculation problem for', student, marking_period
 
         #Attendance for marking period
         i = 1

@@ -440,6 +440,10 @@ class Student(MdlUser, CustomFieldModel):
             return disc
     
     def __calculate_grade_for_courses(self, courses, marking_period=None, date_report=None):
+        if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
+            from ecwsp.benchmark_grade.utility import benchmark_calculate_grade_for_courses
+            return benchmark_calculate_grade_for_courses(self, courses, marking_period, date_report)
+
         gpa = float(0)
         credits = float(0)
         for course in courses.distinct():
