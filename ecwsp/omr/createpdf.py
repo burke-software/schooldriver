@@ -258,6 +258,7 @@ def newPage(c):
     page = page +1
     
 def drawLines(c):
+    c.setLineWidth(1.5)
     #bottom left
     c.line(.5*inch,.5*inch,1.5*inch,.5*inch)
     c.line(.5*inch,.5*inch,.5*inch,1.5*inch)
