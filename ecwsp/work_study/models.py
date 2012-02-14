@@ -41,6 +41,8 @@ import random
 from cStringIO import StringIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
+from custom_field.models import *
+from custom_field.custom_field import CustomFieldModel
 
 from ecwsp.administration.models import Configuration
 from ecwsp.sis.models import Student
@@ -115,7 +117,7 @@ class Company(models.Model):
         ordering = ('name',)
     
 
-class WorkTeam(models.Model):
+class WorkTeam(models.Model, CustomFieldModel):
     inactive = models.BooleanField(help_text="Will unset student's placements.")
     company = models.ForeignKey(Company, blank=True, null=True)
     team_name = models.CharField(max_length=255, unique=True)

@@ -32,6 +32,8 @@ from ecwsp.administration.models import Configuration
 from django.contrib.auth.models import User
 from django.db.models import Q
 from ajax_select import make_ajax_form
+from custom_field.custom_field import CustomFieldAdmin
+
     
 class StudentNumberInline(admin.TabularInline):
     model = StudentNumber
@@ -73,7 +75,7 @@ class CompanyAdmin(admin.ModelAdmin):
     inlines = [CompContractInline]
 admin.site.register(Company, CompanyAdmin)
 
-class WorkTeamAdmin(VersionAdmin):
+class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
     form = WorkTeamForm
     
     def changelist_view(self, request, extra_context=None):

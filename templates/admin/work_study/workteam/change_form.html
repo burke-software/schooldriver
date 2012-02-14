@@ -1,4 +1,5 @@
 {% extends "grappelli/templates/admin/change_form.html" %}
+{% load i18n admin_modify adminmedia grp_tags %}
 
 {% block javascripts %}
     {{ block.super }}
@@ -11,4 +12,50 @@
             parent.mapframe.src="http://maps.google.com/maps/api/staticmap?sensor=false&size=400x400&markers=size:mid|color:red|" + address + "," + city + "," + state + "," + zip;
         }
     </script>
+{% endblock %}
+
+{% block content %}
+   <div class="container-flexible">
+        <div class="form-container">
+            <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.module_name }}_form">{% csrf_token %}{% block form_top %}{% endblock %} 
+                <div>
+                    <!-- Popup Hidden Field -->
+                    {% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
+                    
+                    <!-- Errors -->
+                    {% if errors %}
+                            <p class="errornote">{% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}</p>
+                            <ul class="errorlist">{% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                    
+                    {% include "admin/includes/custom_field_fieldset.html" with custom_form=custom_form %}
+                    <!-- Fieldsets -->
+                    {% for fieldset in adminform %}
+                        {% include "admin/includes/fieldset.html" %}
+                    {% endfor %}
+                    
+                    {% block after_field_sets %}{% endblock %}
+                    
+                    <!-- Inlines -->
+                    {% for inline_admin_formset in inline_admin_formsets %}
+                        {% include inline_admin_formset.opts.template %}
+                    {% endfor %}
+                    
+                    {% block after_related_objects %}{% endblock %}
+                    
+                    <!-- Submit-Row -->
+                    {% submit_row %}
+                    
+                    </div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var alertbox = $('#id_custom_field').val();
+        if (alertbox.length > 0) {
+            alert(alertbox);
+        }
+    </script>
+                    
+    
 {% endblock %}
