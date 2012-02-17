@@ -41,7 +41,7 @@ class BaseDisciplineFormSet(BaseModelFormSet):
         form.fields['date'].widget = adminwidgets.AdminDateWidget()
                 
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
+@user_passes_test(lambda u: u.has_perm('discipline.change_studentdiscipline'))   
 def enter_discipline(request):
     DisciplineFormSet = modelformset_factory(StudentDiscipline, extra=5, formset=BaseDisciplineFormSet)
     if request.method == 'POST':
@@ -62,7 +62,7 @@ def enter_discipline(request):
                               RequestContext(request, {}),)
 
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/') 
+@user_passes_test(lambda u: u.has_perm('discipline.change_studentdiscipline') or u.has_perm('sis.reports'))
 def view_discipline(request):
     form = DisciplineViewForm()
     form.back = "/admin/discipline/studentdiscipline/"
@@ -70,7 +70,7 @@ def view_discipline(request):
                               RequestContext(request, {}),)
 
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/') 
+@user_passes_test(lambda u: u.has_perm('discipline.change_studentdiscipline') or u.has_perm('sis.reports'))
 def discipline_report(request, student_id):
     """Generate a complete report of a student's discipline history
     """
@@ -95,7 +95,7 @@ def discipline_report(request, student_id):
     return pod_save("disc_report", ".odt", data, template_path)
     
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
+@user_passes_test(lambda u: u.has_perm('discipline.change_studentdiscipline') or u.has_perm('sis.reports'))   
 def discipline_list(request, type="doc", start_date=False, end_date=False):
     template = Template.objects.get_or_create(name="Discipline Daily List")[0].get_template_path(request)
     if not template:
@@ -175,7 +175,7 @@ def generate_from_attendance(request):
         'conf_action': conf_action,
         },RequestContext(request, {}),)
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
+@user_passes_test(lambda u: u.has_perm('discipline.change_studentdiscipline') or u.has_perm('sis.reports'))
 def discipline_report_view(request):
     form = DisciplineStudentStatistics()
     merit_form = MeritForm()

@@ -22,7 +22,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader
 from django.conf.urls.defaults import *
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -222,71 +222,7 @@ def fte_by_pay(request):
     xls.addSheet(student_company_day_report(paying=True), heading="Detail")
     return xls.finish()
 
-class UploadFileForm(forms.Form):
-    file  = forms.FileField()
-    
-class UploadSurveyForm(forms.Form):
-    survey_name = forms.CharField(max_length=255, required=True)
-    file  = forms.FileField()
-
-
-@user_passes_test(lambda u: u.groups.filter(name='cwsp').count() > 0 or u.is_superuser == True, login_url='/')    
-def import_student(request):
-    form_survey = UploadSurveyForm()
-    return render_to_response('work_study/upload.html', {'form_survey': form_survey, 'request': request,}, RequestContext(request, {}))
-
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')
-def import_survey(request):
-    if request.POST:
-        form = UploadSurveyForm(request.POST, request.FILES)
-        if form.is_valid():
-            msg = []
-            ex = []
-            csvfile = request.FILES['file']
-            csvfile.read()
-            testReader = csv.reader(csvfile,delimiter=',', quotechar='"')
-            header = testReader.next()
-            i = 0
-            for row in testReader:
-                try:
-                    # items will looks like
-                    # [('student ID', '1'), ('Is student awesome?', 'Yes')]
-                    items = zip(header, row)
-                    student = StudentWorker.objects.get(id=items[0][1])
-                    for item in items:
-                        if item[0] != "student ID":
-                            survey = Survey(survey=form.cleaned_data['survey_name'])
-                            survey.student = student
-                            survey.question = item[0]
-                            survey.answer = item[1]
-                            survey.save()
-                            i += 1
-                except:
-                    print >> sys.stderr, "error"
-            return render_to_response('upload.html', {'msg': "Success! " + str(i) + " entries made.", 'request': request,}, RequestContext(request, {}))
-        else:
-            return render_to_response('upload.html', {'form_survey': form,'request': request,}, RequestContext(request, {}))
-    else:
-        return import_student(request)
-
-def import_number(value):
-    phonePattern = re.compile(r'''
-                # don't match beginning of string, number can start anywhere
-    (\d{3})     # area code is 3 digits (e.g. '800')
-    \D*         # optional separator is any number of non-digits
-    (\d{3})     # trunk is 3 digits (e.g. '555')
-    \D*         # optional separator
-    (\d{4})     # rest of number is 4 digits (e.g. '1212')
-    \D*         # optional separator
-    (\d*)       # extension is optional and can be any number of digits
-    $           # end of string
-    ''', re.VERBOSE)
-    a, b, c, ext = phonePattern.search(value).groups()
-    if ext == "0000":
-        ext = ""
-    return a + "-" + b + "-" + c, ext
-
-@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
 def student_timesheet(request):
     """ A student's timesheet. """
     try:
@@ -400,7 +336,7 @@ def approve(request):
             'studentName': sheet.student, 'supervisorName': sheet.student.primary_contact,}, RequestContext(request, {}))
     
 
-@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0 or u.is_superuser, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')
 def supervisor_dash(request, msg=""):
     comp = WorkTeam.objects.filter(login=request.user)[0]
     if 'mass_approve' in request.POST:
@@ -429,7 +365,7 @@ def supervisor_dash(request, msg=""):
     return render_to_response('work_study/supervisor_dash.html', {'supervisor': True,'msg': msg, 'comp': comp, 'students': students, \
         'timeSheets': timeSheets, 'timeSheetsApprovedForm': timeSheetsApprovedForm}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0 or u.is_superuser, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')
 def supervisor_xls(request):
     comp = WorkTeam.objects.filter(login=request.user)[0]
     timesheets = TimeSheet.objects.filter(approved=True).filter(company=comp).order_by('student', 'date',)
@@ -450,14 +386,14 @@ def supervisor_xls(request):
     
     return report.finish()
         
-@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0 or u.is_superuser, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')
 def supervisor_view(request):
     comp = WorkTeam.objects.filter(login=request.user)[0]
     students = StudentWorker.objects.filter(placement=comp)
     timeSheets = TimeSheet.objects.filter(company=comp).filter(approved=True).order_by('date').reverse()[:100]
     return render_to_response('work_study/supervisor_view.html', {'supervisor': True, 'timeSheets': timeSheets}, RequestContext(request, {}))
     
-@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
 def student_view(request):
     try:
         thisStudent = StudentWorker.objects.get(username=request.user.username)
@@ -466,7 +402,7 @@ def student_view(request):
     timeSheets = TimeSheet.objects.filter(student=thisStudent).order_by('date').reverse()[:100]
     return render_to_response('work_study/student_view.html', {'timeSheets': timeSheets, 'student': thisStudent}, RequestContext(request, {}))
     
-@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
 def student_edit(request, tsid):
     """ Student edits own timesheet """
     thisStudent = StudentWorker.objects.get(username=request.user.username)
@@ -511,7 +447,7 @@ def student_edit(request, tsid):
         return render_to_response('work_study/student_timesheet.html', {'student': True, 'form': form, 'studentName': thisStudent, \
             'supervisorName': supervisorName,}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0 or u.is_superuser, login_url='/')    
+@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')    
 def create_time_card(request, studentId):
     thisStudent = StudentWorker.objects.get(id = studentId)
     comp = WorkTeam.objects.filter(login=request.user)[0]
@@ -666,7 +602,7 @@ def change_supervisor(request, studentId):
     else:
         return HttpResponse("Access Denied")
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')    
+@user_passes_test(lambda u: u.has_perm('work_study.change_studentworker') or u.has_perm('sis.reports'))
 def report_builder_view(request):
     form = ReportBuilderForm()
     template_form = ReportTemplateForm()
@@ -1003,7 +939,8 @@ def report_builder_view(request):
                 return render_to_response('work_study/reportBuilder.html', {'form': form,'request':request, 'template_form': template_form}, RequestContext(request, {}))
     return render_to_response('work_study/reportBuilder.html', {'form': form,'request':request, 'template_form': template_form}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.groups.filter(name='cwsp').count() > 0 or u.is_superuser, login_url='/')    
+
+@permission_required('discipline.change_clientvisit')   
 def dol_form(request, id=None):
     if request.method == 'POST':
         if id:
@@ -1053,7 +990,7 @@ def dol_xls_report(begin_date, end_date,):
     
     return report.finish()
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')  
+@user_passes_test(lambda u: u.has_perm('work_study.change_studentinteraction') or u.has_perm('sis.reports'))
 def student_meeting(request):
     try:
         start_date = SchoolYear.objects.get(active_year=True).start_date
