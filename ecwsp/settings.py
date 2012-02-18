@@ -154,7 +154,6 @@ INSTALLED_APPS = (
     
     'ajax_select',
     'reversion',
-    'ldap_groups',
     'django_extensions',
     'django_filters',
     'pagination',
@@ -163,6 +162,7 @@ INSTALLED_APPS = (
     'custom_field',
     
     #'google_auth',
+    #'ldap_groups',
 )
 
 # Google Apps Settings
