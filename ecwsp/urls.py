@@ -22,7 +22,7 @@ urlpatterns = patterns('',
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     (r'^admin/jsi18n/$', 'django.views.i18n.javascript_catalog'),
     (r'^admin/', include(admin.site.urls) ),
-    (r'^ldap_grp/', include('ldap_groups.urls')),
+    
     (r'^ajax_select/', include('ajax_select.urls')),
     (r'^ajax_filtered_fields/', include('ajax_filtered_fields.urls')),
 )
@@ -31,6 +31,9 @@ if settings.GAPPS:
     urlpatterns += patterns('', (r'^accounts/login/$', 'google_auth.views.login'), )
 else:
     urlpatterns += patterns('', (r'^accounts/login/$', 'django.contrib.auth.views.login'), )
+
+if 'ldap_groups' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',(r'^ldap_grp/', include('ldap_groups.urls')),)
 
 if 'ecwsp.discipline' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^discipline/', include('ecwsp.discipline.urls')), )

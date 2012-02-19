@@ -3,8 +3,6 @@ from views import *
 
 urlpatterns = patterns('',
     (r'^reports/$', report_builder_view),
-    (r'^import/$', import_student),
-    (r'^import/survey/$', import_survey),
     
     (r'^student_timesheet/$', student_timesheet),
     (r'^supervisor/create_timesheet/(?P<studentId>\d+)/$', create_time_card),
