@@ -155,7 +155,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         return form
     
     fieldsets = [
-        (None, {'fields': [('lname', 'fname'), ('mname', 'inactive'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'year', ('date_dismissed','reason_left'),('unique_id','ssn'),
+        (None, {'fields': [('lname', 'fname'), ('mname', 'inactive'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'year',('unique_id','ssn'),
             'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
     ]
     change_list_template = "admin/sis/student/change_list.html"

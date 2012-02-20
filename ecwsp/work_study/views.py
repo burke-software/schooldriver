@@ -338,7 +338,13 @@ def approve(request):
 
 @user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')
 def supervisor_dash(request, msg=""):
-    comp = WorkTeam.objects.filter(login=request.user)[0]
+    try:
+        comp = WorkTeam.objects.filter(login=request.user)[0]
+    except IndexError:
+        return render_to_response(
+            'base.html',
+            {'msg': "You are a supervisor user but not linked to any specific company. Please notify administrator if you believe this is a mistake."},
+            RequestContext(request, {}))
     if 'mass_approve' in request.POST:
         msg="All checked time sheets approved"
         timeSheets = TimeSheet.objects.filter(company=comp).filter(approved=False)
