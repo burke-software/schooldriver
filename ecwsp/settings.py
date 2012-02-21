@@ -1,7 +1,7 @@
 #       settings.py
 #       
 #       Copyright 2010-2011 Burke Software and Consulting LLC
-#		Author David M Burke <david@burkesoftware.com>
+#       Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
