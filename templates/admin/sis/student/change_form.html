@@ -17,7 +17,32 @@
 {% block javascripts %}
     {{ block.super }}
     <script type="text/javascript">
+        function check_inactive() {
+            if ( $('#id_inactive').is(":checked") ) {
+                $('div.row.date_dismissed.reason_left').show('fast');
+            } else {
+                $('div.row.date_dismissed.reason_left').hide();
+            }
+        }
+        
         $(document).ready(function() {
+            check_inactive();
+            
+            $('#id_inactive').change(function() {
+                check_inactive();
+            });
+            
+            $('#student_form').submit(function() {
+                if (
+                    $('#id_inactive').is(":checked") &&
+                    $('#id_date_dismissed').val() == "" &&
+                    $('#id_reason_left').val() == ""
+                ) {
+                    return confirm('You set student to inactive but didn\'t give a date dismissed nor reason left. Are you sure you want to submit?');
+                }
+                return true;
+              });
+            
             $('div#studentcohort_set-group div.primary input').change(function() {
                 if ( $(this).prop("checked") ) {
                     check_it = true;

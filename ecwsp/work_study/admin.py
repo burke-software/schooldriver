@@ -34,6 +34,7 @@ from django.db.models import Q
 from ajax_select import make_ajax_form
 from custom_field.custom_field import CustomFieldAdmin
 
+import logging
     
 class StudentNumberInline(admin.TabularInline):
     model = StudentNumber
@@ -198,18 +199,25 @@ class StudentAdmin(ReadPermissionModelAdmin):
         try:
             compContacts = Contact.objects.filter(workteam=context['original'].placement)
             context['adminform'].form.fields['primary_contact'].queryset = compContacts
-            txt = context['adminform'].form.fields['placement'].help_text 
-            txt += "<a href=\"/admin/work_study/timesheet/?q=%s+%s\" target=\"_blank\">Time Sheets for this student</a>" % \
+            txt = "<span style=\"color:#444;\"><a href=\"/admin/work_study/timesheet/?q=%s+%s\" target=\"_blank\">Time Sheets for this student</a>" % \
                 (context['original'].fname, context['original'].lname)
             txt += "<br/><a href=\"/admin/work_study/survey/?q=%s+%s\" target=\"_blank\">Surveys for this student</a>" % \
                 (context['original'].fname, context['original'].lname)
             txt += "<br/>Go to work team " + str(context['original'].company())
             txt += "<br/>Company Contacts:"
             for compContact in compContacts:
-                txt += "<br/>" + str(compContact.edit_link())
-            context['adminform'].form.fields['placement'].help_text = txt
+                txt += "<br/>%s %s" % (str(compContact.edit_link),compContact.phone)
+            txt += '</span>'
+            context['adminform'].form.fields['placement'].help_text += txt
+        
+            # add contact info for pri contact
+            if context['original'].primary_contact:
+                txt = '<br/><span style="color:#444;">Number: %s</span>' % (context['original'].primary_contact.phone,)
+                context['adminform'].form.fields['primary_contact'].help_text += txt
         except:
-            print >> sys.stderr, "key error at student admin, maybe from creating a new student"
+            logging.warning("I coudln't create the student worker added info", exc_info=True, extra={
+                'request': request,
+            })
         return super(StudentAdmin, self).render_change_form(request, context, args, kwargs)
         
     fieldsets = [
@@ -315,8 +323,12 @@ class AttendanceAdmin(admin.ModelAdmin):
     form = make_ajax_form(Attendance, dict(student='studentworker'))
     search_fields = ['student__fname', 'student__lname', 'absence_date']
     list_editable = ('makeup_date','reason', 'fee', 'billed')
-    list_filter = ['absence_date', 'makeup_date', 'reason', 'fee', 'student']
-    list_display = ('absence_date', 'makeup_date', 'reason', 'fee', 'student', 'billed')
+    list_filter = ['absence_date', 'makeup_date', 'reason', 'fee', 'student','tardy']
+    list_display = ('absence_date', 'makeup_date', 'reason', 'fee', 'student', 'billed','tardy')
+    fieldsets = [
+        (None, {'fields': ['student',('absence_date','makeup_date'),('tardy','tardy_time_in'),
+                           ('fee','paid'),'billed','reason',('half_day','waive'),'notes']}),
+    ]
     def render_change_form(self, request, context, *args, **kwargs):
         if 'original' in context:
             sis_attendance = context['original'].sis_attendance
