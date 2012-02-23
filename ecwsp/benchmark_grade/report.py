@@ -114,14 +114,14 @@ def benchmark_report_card(template, options, students, format="odt"):
                 except:
                     pass
             items = []
-	    standards_category = Category.objects.get(name="Standards") # save time, move to top and do this once?
-	    for mark in Mark.objects.filter(item__category=standards_category, item__course=course,
-	                                    item__markingPeriod=marking_period,
-					    student=student, description="Session"):
-		markItem = struct()
-		markItem.name = mark.item.name
-		markItem.range = mark.item.scale.range()
-		markItem.mark = mark.mark
+        standards_category = Category.objects.get(name="Standards") # save time, move to top and do this once?
+        for mark in Mark.objects.filter(item__category=standards_category, item__course=course,
+                                        item__markingPeriod=marking_period,
+                                        student=student, description="Session"):
+        markItem = struct()
+        markItem.name = mark.item.name
+        markItem.range = mark.item.scale.range()
+        markItem.mark = mark.mark
                 if markItem.mark is not None:
                     items.append(markItem)
                     if Hire4Ed:
