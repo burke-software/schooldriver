@@ -266,11 +266,11 @@ def mail_merge(infile, outfile, data, type="doc"):
     
 
 def is_number(x):
-	try:
-		float(x)
-		return True
-	except ValueError:
-		return False
+    try:
+        float(x)
+        return True
+    except ValueError:
+        return False
         
     
 def replace_spreadsheet(infile, outfile, data, type="ods", sheets=False):

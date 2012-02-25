@@ -35,7 +35,7 @@ class CASAuthenticateUser extends SugarAuthenticateUser {
     ***********************************************************************************************************************/
     
       function authUser() {
-         phpCAS::client(CAS_VERSION_2_0,'cas.cristoreyny.org',8443,'cas');
+         phpCAS::client(CAS_VERSION_2_0,'cas.cristoreyny.org',443,'cas');
          phpCAS::setNoCasServerValidation();
          phpCAS::forceAuthentication();
          $authenticated = phpCAS::isAuthenticated();

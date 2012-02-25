@@ -1,7 +1,7 @@
 #       settings.py
 #       
 #       Copyright 2010-2011 Burke Software and Consulting LLC
-#		Author David M Burke <david@burkesoftware.com>
+#       Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ if LDAP:
 # Single Sign On
 CAS = False
 if CAS:
-    CAS_SERVER_URL = "https://cas.cristoreyny.org:8443/cas/"
+    CAS_SERVER_URL = "https://cas.cristoreyny.org:443/cas/"
     AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend','django_cas.backends.CASBackend',)
 elif LDAP:
     AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend',)

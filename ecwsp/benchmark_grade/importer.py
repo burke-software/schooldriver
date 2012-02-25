@@ -31,6 +31,7 @@ class BenchmarkGradeImporter(Importer):
                           'Engagement': 'Four-Oh',
                           'Organization': 'Four-Oh'}
         if course.department.name == "Hire4Ed":
+            category_scale['Standards'] = 'Four-Oh'
             category_scale['Precision and Accuracy'] = 'Four-Oh'
         else:
             category_scale['Daily Practice'] = 'Percent'
@@ -43,7 +44,9 @@ class BenchmarkGradeImporter(Importer):
                                                              scale=Scale.objects.get(name=scaleName))
                 if categoryName == 'Standards':
                     weakest = a.min(markDescription='Session')
-                    if weakest is not None and weakest < 3: # A YTD for you if any of your standards are below 3.0
+                    # A YTD for you if any of your standards are below 3.0
+                    # except Hire4Ed gets a free pass
+                    if weakest is not None and weakest < 3 and course.department.name != "Hire4Ed":
                         a.cachedValue = 0 # better luck next time
                     else:
                         a.cachedValue = a.mean(markDescription='Session')

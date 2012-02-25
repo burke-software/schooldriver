@@ -10,8 +10,8 @@ from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
 
 def copy(modeladmin, request, queryset):
-	for object in queryset:
-		object.copy_instance(request)
+    for object in queryset:
+        object.copy_instance(request)
 
 class CourseMeetInline(admin.TabularInline):
     model = CourseMeet
