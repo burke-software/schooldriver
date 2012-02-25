@@ -7,9 +7,11 @@
 {% block object-tools %}
     {% if has_add_permission %}
         <ul class="tools">
-            <li>
-                <a href="{% url ecwsp.schedule.views.teacher_grade_submissions %}"> View Teacher Submissions </a>
-            </li>
+            {% if perms.grades.change_grade %}
+                <li>
+                    <a href="{% url ecwsp.grades.views.teacher_grade_submissions %}"> View Teacher Submissions </a>
+                </li>
+            {% endif %}
             <li>
                 <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="add-handler focus">
                     {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}

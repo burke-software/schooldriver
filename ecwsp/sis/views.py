@@ -346,6 +346,7 @@ def grade_report(request):
                 format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
                 return pod_report_grade(template_path, options=data, students=form.get_students(data), format=format, report_card=report_card, transcript=transcript)
         elif 'aggregate_grade_report' in request.POST:
+            from ecwsp.grades.models import Grade
             form = MarkingPeriodForm(request.POST)
             if form.is_valid():
                 mps = form.cleaned_data['marking_period']
@@ -535,6 +536,7 @@ def view_student(request, id=None):
         ########################################################################
         
         years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct()
+        from ecwsp.grades.models import Grade
         for year in years:
             year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year).distinct().order_by("start_date")
             year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year).distinct()
