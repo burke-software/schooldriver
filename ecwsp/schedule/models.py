@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models.fields.related import ForeignKey
 from django.db.models import Max
 from django.contrib import messages
 from django.conf import settings
@@ -190,7 +189,6 @@ class Course(models.Model):
     teacher = models.ForeignKey('sis.Faculty', blank=True, null=True, related_name="ateacher")
     secondary_teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True, related_name="secondary_teachers")
     homeroom = models.BooleanField(help_text="Homerooms can be used for attendance")
-    asp = models.BooleanField()
     graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
     enrollments = models.ManyToManyField('sis.MdlUser', through=CourseEnrollment, blank=True, null=True)
     description = models.TextField(blank=True)
@@ -211,7 +209,8 @@ class Course(models.Model):
         except: pass
     
     def grades_link(self):
-       link = '<a href="/schedule/teacher_grade/upload/%s" class="historylink"> Grades </a>' % (self.id,)
+        
+       link = '<a href="/grades/teacher_grade/upload/%s" class="historylink"> Grades </a>' % (self.id,)
        return link
     grades_link.allow_tags = True
     
@@ -277,33 +276,37 @@ class Course(models.Model):
     def get_final_grade(self, student, date_report=None):
         """ Get final grade for a course. Returns override value if available.
         date_report: optional gets grade for time period"""
-        final = Grade.objects.filter(course=self, override_final=True, student=student)
-        if final.count():
-            if not date_report or final[0].course.marking_period.filter(end_date__lte=date_report).count():
-                final = final[0].get_grade()
-        else:
-            final = self.calculate_final_grade(student, date_report)
-        return final
+        if 'ecwsp.grades' in settings.INSTALLED_APPS:
+            from ecwsp.grades.models import Grade
+            final = Grade.objects.filter(course=self, override_final=True, student=student)
+            if final.count():
+                if not date_report or final[0].course.marking_period.filter(end_date__lte=date_report).count():
+                    final = final[0].get_grade()
+            else:
+                final = self.calculate_final_grade(student, date_report)
+            return final
     
     def calculate_final_grade(self, student, date_report=None):
         """ Calculates final grade. Does not take into account overrides. """
-        final = Decimal(0)
-        number = 0
-        grades =  Grade.objects.filter(student=student, final=True, course=self)
-        if date_report:
-            grades = grades.filter(marking_period__end_date__lte=date_report)
-        for grade in grades:
-            try:
-                final += grade.get_grade()
-                number += 1
-            # otherwise it's a letter grade.
-            except: pass
-        if number != 0:
-            final = final / number
-            final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
-        else:
-            final = None
-        return final
+        if 'ecwsp.grades' in settings.INSTALLED_APPS:
+            from ecwsp.grades.models import Grade
+            final = Decimal(0)
+            number = 0
+            grades =  Grade.objects.filter(student=student, final=True, course=self)
+            if date_report:
+                grades = grades.filter(marking_period__end_date__lte=date_report)
+            for grade in grades:
+                try:
+                    final += grade.get_grade()
+                    number += 1
+                # otherwise it's a letter grade.
+                except: pass
+            if number != 0:
+                final = final / number
+                final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
+            else:
+                final = None
+            return final
     
     def copy_instance(self, request):
         changes = (("fullname", self.fullname + " copy"),)
@@ -317,20 +320,7 @@ class Course(models.Model):
             new.coursemeet_set.create(location=cm.location,day=cm.day,period=cm.period)
         new.save()
         messages.success(request, 'Copy successful!')
-    
-    def generate_moodle_events(self):
-        pass
         
-
-class GradeComment(models.Model):
-    id = models.IntegerField(primary_key=True)
-    comment = models.CharField(max_length=500)
-    
-    def __unicode__(self):
-        return unicode(self.id) + ": " + unicode(self.comment)
-        
-    class Meta:
-        ordering = ('id',)
         
 class OmitCourseGPA(models.Model):
     """ Used to keep repeated or invalid course from affecting GPA """
@@ -345,95 +335,7 @@ class OmitYearGPA(models.Model):
     year = models.ForeignKey('sis.SchoolYear', help_text="Omit this year from GPA calculations and transcripts")
     def __unicode__(self):
         return "%s %s" % (self.student, self.year)
-
-class Grade(models.Model):
-    student = models.ForeignKey('sis.Student')
-    course = models.ForeignKey(Course)
-    marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
-    date = models.DateField(auto_now=True)
-    grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    final = models.BooleanField(help_text="Yes for final grade. No for mid marking period report. Only final grades are included in the average.")
-    override_final = models.BooleanField(help_text="Override final grade for marking period instead of calculating it.")
-    comment = models.CharField(max_length=500, blank=True)
-    letter_grade_choices = (
-            ("I", "Incomplete"),
-            ("P", "Pass"),
-            ("F", "Fail"),
-            ("A", "A"),
-            ("B", "B"),
-            ("C", "C"),
-            ("D", "D"),
-            ("HP", "High Pass"),
-        )
-    letter_grade = models.CharField(max_length=2, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
     
-    class Meta:
-        unique_together = (("student", "course", "marking_period", "final"),)
-        permissions = (
-            ("change_own_grade", "Change grades for own class"),
-        )
-        
-    def display_grade(self):
-        """ Returns full spelled out grade such as Fail, Pass, 60.05, B"""
-        return self.get_grade(display=True)
-    
-    def set_grade(self, grade):
-        """ set grade to decimal or letter 
-            if grade is less than 1 assume it's a percentage
-            returns success (True or False)"""
-        try:
-            grade = Decimal(str(grade))
-            if grade < 1:
-                # assume grade is a percentage
-                grade = grade * 100
-            self.grade = grade
-            self.letter_grade = None
-            return True
-        except:
-            grade = unicode.upper(unicode(grade)).strip()
-            if grade in dict(self.letter_grade_choices):
-                self.letter_grade = grade
-                self.grade = None
-                return True
-            elif grade in ('', None, 'None'):
-                self.grade = None
-                self.letter_grade = None
-                return True
-            return False
-    
-    def get_grade(self, letter=False, display=False, rounding=None):
-        """ By default returns simple grade such as 90.03, P, or F"""
-        if self.letter_grade:
-            if display:
-                return self.get_letter_grade_display()
-            else:
-                return self.letter_grade
-        elif self.grade:
-            if rounding != None:
-                string = '%.' + str(rounding) + 'f'
-                return string % float(str(self.grade))
-            else:
-                return self.grade
-        else:
-            return ""
-    
-    def clean(self):
-        from django.core.exceptions import ValidationError
-        if self.grade and self.letter_grade != None:
-            raise ValidationError('Cannot have both numeric and letter grade')
-    
-    def save(self, *args, **kwargs):
-        super(Grade, self).save(*args, **kwargs)
-        
-        #cache student's GPA
-        if self.grade and self.student:
-            self.student.cache_gpa = self.student.calculate_gpa()
-            if self.student.cache_gpa != "N/A":
-                self.student.save()
-    
-    def __unicode__(self):
-        return unicode(self.get_grade(self))
-        
 
 class StandardTest(models.Model):
     """ A test such as SAT or ACT """

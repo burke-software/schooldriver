@@ -164,7 +164,8 @@ def teacher_submissions(request):
     for homeroom in homerooms:
         submission = {}
         submission['homeroom'] = homeroom
-        submission['teacher'] = homeroom.teacher
+        if homeroom.teacher:
+            submission['teacher'] = homeroom.teacher
         log = AttendanceLog.objects.filter(date=datetime.date.today(), course=homeroom)
         if log.count() > 0:
             submission['submitted'] = "Yes"

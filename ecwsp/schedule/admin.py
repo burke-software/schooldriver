@@ -66,19 +66,11 @@ admin.site.register(Period)
 
 admin.site.register(Faculty)
 
-admin.site.register(GradeComment)
-
 admin.site.register(Location)
 
 admin.site.register(OmitCourseGPA)
 
 admin.site.register(OmitYearGPA)
-
-class GradeAdmin(admin.ModelAdmin):
-    list_display = ['grade', 'course', 'student', 'marking_period', 'final', 'override_final']
-    list_filter = ['date', 'final', 'override_final']
-    search_fields = ['student__fname', 'student__lname', 'course__fullname', 'course__shortname']
-admin.site.register(Grade, GradeAdmin)
 
 
 class StandardCategoryInline(admin.TabularInline):

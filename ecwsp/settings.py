@@ -151,6 +151,7 @@ INSTALLED_APPS = (
     'ecwsp.omr',
     'ecwsp.discipline',
     'ecwsp.attendance',
+    'ecwsp.grades',
     
     'ajax_select',
     'reversion',
