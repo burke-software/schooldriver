@@ -1,0 +1,169 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+
+<link rel="stylesheet" type="text/css" href="/static/css/fixedHeaderTable.css" />
+<style type="text/css">
+    table.grades tr:nth-child(4n+1) td, table.grades tr:nth-child(4n+2) td {
+        background: #EDF3FE;
+    }
+    input.grade_form {
+        border: 1px dotted rgba(0,0,0,0.1);
+        background-color:rgba(255,255,255,0.4);
+        padding: 0px;
+        margin: 0px;
+        text-align:right;
+        width: 100%;
+        max-width: 45px;
+    }
+    td.comment {
+        text-align: center;
+    }
+	
+    .final_override {
+	    background-color:rgba(255,165,0,0.5) !important;
+    }
+</style> 
+<script type="text/javascript" src="/static/js/fixedheadertable.js"></script>
+<script type="text/javascript"> 
+    $(document).ready(function() {
+        var windowWidth = $(window).width() - 40;
+        var windowHeight = $(window).height() - 250;
+        if (windowHeight < 100) {
+            windowHeigh = 100;
+        }
+        
+        $('.fullScreenTable').css({'width': windowWidth+'px', 'height': windowHeight+'px'});
+        
+        $(window).resize(function() {
+            var windowWidth = $(window).width() - 40;
+            var windowHeight = $(window).height() - 250;
+            if (windowHeight < 100) {
+                windowHeigh = 100;
+            }
+        
+            $('.fullScreenTable').css({'width': windowWidth+'px', 'height': windowHeight+'px'});
+        });	
+        
+        $('.fullScreenTable').fixedHeaderTable({autoResize:true, fixCol1:true});
+    });
+    
+    function toggle_comments(id) {
+        $(".comment").toggle();
+        $('.toggle_comments').toggle();
+        $('.fullScreenTable').fixedHeaderTable({autoResize:true, fixCol1:true});
+    }
+    
+    function enter_down(e, x, y) {
+        var key;
+        key = e.which;
+        if(key == 13) {
+            $('input[id=grade_' + x + '_' + (y+1) + ']').focus();
+            if (y == {{ last_y }}) {
+                return true;
+            }
+		} else if(key == 9) {
+			recalc_grade(x, y);
+			return true;
+		} else {
+			return true;
+		}
+		return false;
+    }
+	
+	function recalc_grade(x, y) {
+	    final_input = $('input[id=grade_{{ last_x }}_'  + y + ']');
+	    if (final_input.attr('class') != 'grade_form final_override') {
+		grade = 0;
+		num_mp_grades = 0;
+		for (i=0;i<{{ last_x }};i++) {
+		    mp_grade = parseFloat($('input[id=grade_' + i + '_'  + y + ']').val());
+		    if (!(isNaN(mp_grade))) {
+			grade += mp_grade;
+			num_mp_grades += 1;
+		    }
+		}
+		grade = grade / num_mp_grades;
+		grade = Math.round(grade*100)/100
+		
+		if (x == {{last_x}}) {
+		    orig_value = final_input.val()
+		    if (orig_value != grade) {
+			final_input.addClass('final_override');
+		    }
+		} else {
+		    if (isNaN(grade)){
+			grade = "None";
+		    }
+		    final_input.val(grade);
+		}
+	    }
+	}
+</script> 
+{% endblock %}
+
+{% block content %}
+	<h2> Grades - {{ course }} </h2>
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ import_form }} 
+        <input type="submit" value="Upload Grades" name="upload"/>
+        <div>
+            <a href="#" id="toggle_comments" class="toggle_comments" onclick='toggle_comments()'>Show Comments</a>
+            <a href="#" id="toggle_comments" class="toggle_comments" style="display: none" onclick='toggle_comments()'>Hide Comments</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{% url ecwsp.grades.views.view_comment_codes %}" target="_blank"> View Comment Codes</a>
+        </div>
+    </form>
+    
+    <form action="" method="post">
+        <div class="fullScreenTable">
+        <table class="grades">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">Student</th>
+                    {% for mp in marking_periods %}
+                         <th  style="text-align: center;"> {{ mp }} </th>
+                         {% if mp.has_mid %}
+                            <th  style="text-align: center;"> {{ mp }} Mid </th>
+                         {% endif %}
+                    {% endfor %}
+                    <th>Final</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                    <tr>
+                        <td style="text-align: left; vertical-align:middle;" rowspan="2"> {{ student }} </td> 
+                        {% for grade in student.display_grades %}
+                            <td onclick='document.getElementById("grade_{{ grade.x }}_{{ grade.y }}").focus()' style="text-align: right;">
+				{% if edit %}
+					<input onkeydown="return enter_down(event, {{ grade.x }}, {{ grade.y }})" onchange="recalc_grade({{ grade.x }}, {{ grade.y }})" class="grade_form" id="grade_{{ grade.x }}_{{ grade.y }}" name="grade_{{ grade.id }}_{{ grade.x }}_{{ grade.y }}" value="{{ grade.grade }}" />
+				{% else %}
+					{{ grade.grade }}
+				{% endif %}
+			    </td>
+                        {% endfor %}
+                        <td onclick='document.getElementById("grade_{{ student.final_x }}_{{ student.final_y }}").focus()' style="text-align: right;" class="{% if student.final_override %}final_override{% endif %}">
+                            {% if edit %}
+                                <input onkeydown="return enter_down(event, {{ student.final_x }}, {{ student.final_y }} )" class="grade_form {% if student.final_override %}final_override{% endif %}" id="grade_{{ student.final_x }}_{{ student.final_y }}" name="gradefinalform_{{ student.id }}_{{ student.final_x }}_{{ student.final_y }}" value="{{ student.final }}" />
+                            {% else %}
+                                {{ student.final }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        {% for comment in student.comments %}
+                            <td class="comment"> {{ comment }} </td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <br/>
+        {% if edit %} <input type="submit" name="edit" value="Save grades"/> 
+        Enter "None" or leave blank to delete grade (thus grade will be calculated instead) <br/> {% endif %} <span class="final_override"> * color indicates final grade has been manually changed. </span>
+    </form>
+    <script>$(".comment").hide();</script>
+{% endblock %}
