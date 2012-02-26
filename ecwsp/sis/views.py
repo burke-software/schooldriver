@@ -517,16 +517,19 @@ def view_student(request, id=None):
         #### CWSP related
         try:
             clientvisits = student.studentworker.clientvisit_set.all()
+        except: clientvisits = None
+        try:
             company_histories = student.studentworker.companyhistory_set.all()
+        except:company_histories = None
+        try:
             timesheets = student.studentworker.timesheet_set.exclude(Q(performance__isnull=True) | Q(performance__exact=''))
+        except: timesheets = None
+        try:
             if request.user.has_perm("sis.view_mentor_student"):
                 student_interactions = student.studentworker.studentinteraction_set.all()
             else:
                 student_interactions = None
         except:
-            clientvisits = None
-            company_histories = None
-            timesheets = None
             student_interactions = None
         try:
             supervisors = student.studentworker.placement.contacts.all()
@@ -547,6 +550,7 @@ def view_student(request, id=None):
                     except:
                         course.grade_html += '<td> </td>'
                 course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
+        print clientvisits
                 
         return render_to_response('sis/view_student.html', {'form':form, 'show_grades':show_grades, 'date':today, 'student':student, 'emergency_contacts': emergency_contacts,
                                                         'siblings': siblings, 'numbers':numbers, 'location':location, 'disciplines':disciplines, 'attendances':attendances,
