@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.template import RequestContext
+from django.db.models import Q
 
 from ecwsp.schedule.models import *
 from ecwsp.sis.models import *
