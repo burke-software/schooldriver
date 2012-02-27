@@ -2,6 +2,9 @@
 {% load i18n %}
 
 {% block extrahead %}
+		{% load  adminmedia %}
+		<link rel="stylesheet" type= "text/css" href="/static/css/view_student_style.css" />
+		
     <script type='text/javascript' src='https://www.google.com/jsapi'></script>
     <script type='text/javascript'>
         {% if timesheets %}
@@ -37,7 +40,7 @@
         function options_toggle(id) {
             /*id must follow convenction toggle_model_action
              Ex id = toggle_student_filter */
-            if ($('#' + id.split("_")[1] + '_' + id.split("_")[2]).is(':visible')) {
+           /* if ($('#' + id.split("_")[1] + '_' + id.split("_")[2]).is(':visible')) {
                 $('#' + id).html('+ Show');
                 $('#h5' + id).addClass('noprint')
             } else {
@@ -45,6 +48,7 @@
                 $('#h5' + id).removeClass('noprint')
             }
             $('#' + id.split("_")[1] + '_' + id.split("_")[2]).toggle('fast');
+        */
         }
         
         {% if show_grades %}
@@ -53,59 +57,110 @@
             });
         {% endif %}
     </script>
+    <script>
+$(document).ready(function() {
+    // Opens the first section by default.
+    $("a.section-header:first").toggleClass('expanded').next(".sv-main").show();
+    
+    // Switches CSS classes. This controls the right and down arrows.  
+    $("a.section-header").click(function () {
+    if ($(this).hasClass("subsection")) {
+        $(this).toggleClass('sub-expanded');
+    } else {
+        $(this).toggleClass('expanded');
+    }
+    
+    // Toggle the section.
+    $(this).next(".sv-main").slideToggle(600, function () {
+        // Get the coordinates of the section in question,
+        topPos = $(this).parent().offset();
+        // the height of the browser window,
+        windowHeight = $(window).height();
+        // and the height of the section.
+        elementHeight = $(this).height();
+        // If the section is taller than the height of the window,
+        if (topPos.top != 0 && topPos.top + elementHeight > windowHeight) {
+            $('html,body').animate({
+            // Scroll to the top of the section (minus 55 pixels to account for the admin bar up top).
+            scrollTop: topPos.top-55
+            }, 500);
+        }
+    });
+});
+		
+});
+</script>
 {% endblock %}
 
 {% block content %}
-    <h2> Student Record - {{ date }} </h2>
+    <h2> Student Record </h2>
     <form id="form" class="noprint" action="" method="post">
         {{ form }}
         <input type="submit" value="Get Record"/>
     </form>
     {% if student %}
-        <h4>{{ student }} {% if perms.sis.change_student %} <a href="{% url admin:sis_student_change student.id %}"> Edit </a> {% endif %}</h4>
-        {{ student.year }} <br/>
-        <span class="noprint"> Current Location: {{ location }}</span><br/>
-        <a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a>
-        <h5 id="h5toggle_section_infomation" class="noprint">General Information <a class="noprint" href="javascript:void(0)" id="toggle_section_infomation" onclick='options_toggle(id)'> + Show </a> </h5>
-        <div id="section_infomation" style="display: none">
-            <table>
-                <tr><td> Middle name </td><td> {{ student.mname }} </td>
-                    {% if student.pic %} <td rowspan=10> <a href="/media/{{ student.pic }}"><img src="{{ student.pic.url_530x400 }}"/></a> </td>{% endif %}
-                </tr>
-                <tr><td> Pri. Cohort </td><td> {{ student.primary_cohort }} </td></tr>
-                <tr><td> Sex </td><td> {{ student.sex }} </td></tr>
-                <tr><td> Alert </td><td> {{ student.alert }} </td></tr>
-                <tr><td> Birthday </td><td> {{ student.bday }} </td></tr>
-                {% if perms.sis.view_ssn_student %} <tr><td> SSN </td><td> {{ student.ssn }} {% endif %}
-                <tr><td> Parent/guardian </td><td> {{ student.parent_guardian }} </td></tr>
-                <tr><td> Street </td><td> {{ student.street }} </td></tr>
-                <tr><td> State </td><td> {{ student.state }} </td></tr>
-                <tr><td> Zip </td><td> {{ student.zip }} </td></tr>
-                <tr><td> Parent email </td><td> {{ student.parent_email }} </td></tr>
-                <tr><td> Alt email </td><td> {{ student.alt_email }} </td></tr>
-                <tr><td> Notes </td><td> {{ student.notes }} </td></tr>
-                {% for ec in emergency_contacts %}
-                    <tr><td> Emergency Contact </td><td> {{ ec }} </td></tr>
-                {% endfor %}
-                {% for sib in siblings %}
-                    <tr><td> Sibling </td><td> {{ sib }} </td></tr>
-                {% endfor %}
-                {% for cohort in cohorts %}
-                    <tr><td> Cohort </td><td> {{ cohort }} </td></tr>
-                {% endfor %}
-                {% for number in numbers %}
-                    <tr><td> Phone Number </td><td> {{ number }} </td></tr>
-                {% endfor %}
-            </table>
-        </div>
+<div id="student-header">
+      <div id="name-and-grade">
+        <h1 class="sv-name">{{ student }}</h1>
+        {{ student.year }} {% if location %} at <span class="noprint"> {{ location }}</span> {% endif %}
+      </div>
+      
+      <div id="transcript">   
+      <a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a><br/>
+      {% if perms.sis.change_student %} <a href="{% url admin:sis_student_change student.id %}"> Edit Profile </a><br /> {% endif %}
+      Profile generated on {{ date }}
+      </div>
+</div>
+<div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">General Information</a> 
+<div class="sv-main">
+	<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>
+	<!--{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img src={{ student.pic.url_350x250 }}/></a> </div>{% endif %}-->
+            <table class="section-table">
+                <tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname }} {{ student.lname }} </td></tr>
+                <tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
+                <tr><td class="thing"> Birthdate </td><td> {{ student.bday }} </td></tr>
+                <tr><td class="thing"> Primary Cohort </td><td> {{ student.primary_cohort }} </td></tr>
+                <tr><td class="thing"> Alert </td><td> {{ student.alert }} </td></tr>
+                <tr><td class="thing"> Notes </td><td> {{ student.notes }} </td></tr>
+                <tr><td class="thing"> Parent/Guardian </td><td> {{ student.parent_guardian }} </td></tr>
+                <tr><td class="thing"> Address </td><td> {{ student.street }} <br /> {{ student.city }}, {{ student.state }} {{ student.zip }} </td></tr>
+                <tr><td class="thing"> Parent E-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
+                <tr><td class="thing"> Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
+                </table>
+                
+                <div class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)">Additional Information</a>
+     
+    <div class="sv-main" style="display:none;">           
+    <table class="subsection-table">
+                {% if perms.sis.view_ssn_student %} <tr><td class="thing"> SSN </td><td> {{ student.ssn }} {% endif %}
+                
+                <tr><td class="thing"> Emergency Contact(s) </td><td> {% for ec in emergency_contacts %}
+				<p> {{ ec.fname }} {{ ec.lname }}<br />
+				{% for number in ec.emergencycontactnumber_set.all %} <span class="thing">{{ number.get_type_display }}:</span> {{ number.number }} {% endfor %} <br />
+				{% endfor %} </td></tr>
+                
+                {% if sib %}
+                <tr><td class="thing"> Sibling(s) </td><td> {% for sib in siblings %} {{ sib }} {% endfor %}</td></tr>
+                {% endif %}
+                
+                {% if cohort %}
+                <tr><td class="thing"> Cohort </td><td>{% for cohort in cohorts %} {{ cohort }} {% endfor %}</td></tr>
+                {% endif %}
+                </table>
+    </div> <!-- .sv-main -->
+    </div> <!-- .sv-section -->
+</div> <!-- .sv-main -->
+</div> <!-- .sv-section -->
         
-        <h5 id="h5toggle_section_grade" class="noprint">Grades <a class="noprint" href="javascript:void(0)" id="toggle_section_grade" onclick='options_toggle(id)'> + Show </a> </h5>
-        <div id="section_grade" style="display: none">
-            GPA: {{ student.gpa }} <br/>
-            <table>
-                {% for year in years %}
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Grades (GPA: {{ student.gpa }})</a>
+        <div class="sv-main">
+
+        {% for year in years %}
+        <div id="toggle_subsection_grade" class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)" id="toggle_section_grade" onclick='options_toggle(id)'>{{ year }}</a>
+        <div class="sv-main">
+			<table class="subsection-table">
                     <tr>
-                        <th> Courses {{ year }}</th>
+                        <th> Courses </th>
                         <th> Teacher </th>
                         {% for mp in year.mps %}
                             <th> {{ mp }} </th>
@@ -119,15 +174,19 @@
                         <!-- The logic gets complicated here so html generation is done in python, enjoy your spaghetti -->
                         {{ course.grade_html|safe }}
                     </tr>
-                    {% endfor %}    
-                {% endfor %}
+                    {% endfor %}
             </table>
-        </div>
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
+        {% endfor %}
+</div> <!-- .sv-main -->
+</div> <!-- .sv-section -->
         
         {% if current_mp %}
-            <h5 id="h5toggle_section_schedule" class="noprint"> {{ current_mp }} Schedule <a class="noprint" href="javascript:void(0)" id="toggle_section_schedule" onclick='options_toggle(id)'> + Show </a> </h5>
-            <div id="section_schedule" style="display: none">
-                <table>
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">{{ current_mp }} Schedule</a>
+        <div class="sv-main">
+
+                <table class="section-table">
                     <tr> <th></th>
                     {% for day in schedule_days %}
                         <th> {{ day }} </th>
@@ -143,13 +202,14 @@
                     {% endfor %}
                     </tr>
                 </table>
-            </div>
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
         {% endif %}
         
         {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
-            <h5 id="h5toggle_section_discipline" class="noprint">Discipline <a href="javascript:void(0)" class="noprint" id="toggle_section_discipline" onclick='options_toggle(id)'> + Show </a> </h5>
-            <div id="section_discipline" style="display: none">
-                <table>
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Discipline</a>
+        <div class="sv-main">
+                <table class="section-table">
                     <tr>
                         <th>Date</th>
                         <th>Incident</th>
@@ -160,12 +220,13 @@
                         <tr><td style="min-width:90px;"> {{ discipline.date }} </td><td> {{ discipline.infraction }} </td><td  style="min-width:92px;"> {{ discipline.teacher }} </td><td> {{ discipline.comments }} </td></tr>
                     {% endfor %}
                 </table>
-            </div>
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
         {% endif %}
         
-        <h5 id="h5toggle_section_attendance" class="noprint">Attendance <a class="noprint" href="javascript:void(0)" id="toggle_section_attendance" onclick='options_toggle(id)'> + Show </a> </h5>
-        <div id="section_attendance" style="display: none">
-            <table>
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)" >Attendance</a>
+        <div class="sv-main">
+            <table class="section-table">
                 <tr>
                     <th>Date</th>
                     <th>Status</th>
@@ -175,58 +236,90 @@
                     <tr><td> {{ attendance.date }} </td><td> {{ attendance.status }} </td><td> {{ attendance.notes }} </td></tr>
                 {% endfor %}
             </table>
-        </div>
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
         
         {% if student_interactions %}
-            <h5 id="h5toggle_section_interactions" class="noprint">Student Interactions <a class="noprint" href="javascript:void(0)" id="toggle_section_interactions" onclick='options_toggle(id)'> + Show </a> </h5>
-            <div id="section_interactions" style="display: none">
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Student Interactions</a>
+        <div class="sv-main">
+            <div class="section-div">
                 {% for student_interaction in student_interactions %}
                     Type {{ student_interaction.type }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reported by: {{ student_interaction.reported_by }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date: {{ student_interaction.date }}
                     <p style="max-width: 800px;">
                         {{ student_interaction.comments }}
                     </p>
                 {% endfor %}
-            </div>
+            </div> <!-- class="section-div" -->
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
         {% endif %}
         
         {% if alumni %}
-            <h5 id="h5toggle_section_alumni" class="noprint"> Alumni <a class="noprint" href="javascript:void(0)" id="toggle_section_alumni" onclick='options_toggle(id)'> + Show </a> </h5>
-            <div id="section_alumni" style="display: none">
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Alumni</a>
+        <div class="sv-main">
+            <div class="section-div">
                 Current college: {{ alumni.cache_college }} {% if alumni.cache_graduated %} (Graduated) {% endif %}
-            </div>
+            </div> <!-- class="section-div"-->
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
         {% endif %}
         
         {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %}
-            <h5 id="h5toggle_section_workvisit" class="noprint">Work Visits <a class="noprint" href="javascript:void(0)" id="toggle_section_workvisit" onclick='options_toggle(id)'> + Show </a> </h5>
-            <div id="section_workvisit" style="display: none">
-                {% for visit in clientvisits %}
-                    {{ visit.company }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ visit.date }}
-                    <p style="max-width: 800px;">
-                        {{ visit.notes }}
-                    </p>
-                {% endfor %}
-            </div>
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Work Visits</a>
+        <div class="sv-main">
+            <div class="section-div">
+		    <table>
+		        <tr>
+			        <th>Company</th>
+					<th>Date</th>
+					<th>Notes</th>
+				    <th></th>
+				    
+				</tr>
+				{% for visit in clientvisits %}
+					<tr><td>{{ visit.company }}</td><td>{{ visit.date }}</td><td style="max-width: 800px;">{{ visit.notes }}</td>
+					<td><a href="/admin/work_study/clientvisit/{{ visit.id }}">See More about this visit</tr>
+					{% endfor %}
+			</table>
+			
+            </div> <!-- class="section-div"-->
+            
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
         
-            <h5 id="h5toggle_section_company" class="noprint">Company Placement <a class="noprint" href="javascript:void(0)" id="toggle_section_company" onclick='options_toggle(id)'> + Show </a> </h5>
-            <div id="section_company" style="display: none">
-                Current placement: {{ student.studentworker.placement }} <br/>
-                Supervisor contact infomation <br/>
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Company Placement</a>
+        <div class="sv-main">
+            <div class="section-div">
+                <div class="showoff">Current placement: {{ student.studentworker.placement }} </div>
+                <div class="sv-placement-subhead">Supervisor contact infomation</div>
+                {% if supervisors %}
+                <ul>
                 {% for supervisor in supervisors %}
-                    &nbsp;{{ supervisor }} - {{ supervisor.phone }} <br/>
+                    <li>{{ supervisor }} - {{ supervisor.phone }}</li>
                 {% endfor %}
-                {% if company_histories %}
-                    <span stlye="font-weight: bold;"> History </span> <br/>
-                    {% for history in company_histories %}
-                        &nbsp;Left {{ history.placement }} on {{ history.date }} <br/>
-                    {% endfor %}
+                </ul>
                 {% endif %}
-            </div>
+                
+                {% if company_histories %}
+                    <div class="sv-placement-subhead">History</div> <br/>
+                    <ul>
+                    {% for history in company_histories %}
+                        <li>Left {{ history.placement }} on {{ history.date }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div> <!-- class="section-div" -->
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
         
             {% if timesheets %}
-                <h5 id="h5toggle_section_workperformance" class="noprint">Work Performance <a class="noprint" href="javascript:void(0)" id="toggle_section_workperformance" onclick='options_toggle(id)'> + Show </a> </h5>
-                <div id="section_workperformance">
+            <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Timesheets</a>
+            <div class="sv-main">
+			<div class="section-div">
                     <div id='chart_div' style='width: 800px; height: 200px;'></div>
-                </div>
+            </div> <!-- class="section-div" -->
+            </div> <!-- .sv-main -->
+            </div> <!-- .sv-section -->
             {% endif %}
         {% endif %}
         
