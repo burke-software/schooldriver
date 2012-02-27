@@ -139,11 +139,12 @@ class CourseEnrollment(models.Model):
         unique_together = (("course", "user", "role"),)
         
     def save(self, *args, **kwargs):
-        if not self.id and self.course.asp and hasattr(self.user, 'student'):
+        if not self.id and hasattr(self.user, 'student'):
             student = self.user.student
-            from ecwsp.sis.models import ASPHistory
-            asp = ASPHistory(student=student, asp=self.course.shortname, enroll=True)
-            asp.save()
+            #Asp has been depreciated
+            #from ecwsp.sis.models import ASPHistory
+            #asp = ASPHistory(student=student, asp=self.course.shortname, enroll=True)
+            #asp.save()
         super(CourseEnrollment, self).save(*args, **kwargs)
         
         
