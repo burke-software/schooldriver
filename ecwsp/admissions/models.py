@@ -62,11 +62,9 @@ class FirstContactOption(models.Model):
 
 class ApplicationDecisionOption(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    level = models.ForeignKey(AdmissionLevel, blank=True, null=True, help_text="Optional, allows us to sort rejections by level")
+    level = models.ManyToManyField(AdmissionLevel, blank=True, null=True, help_text="This decision can apply for these levels.")
     def __unicode__(self):
         return unicode(self.name)
-    class Meta:
-        ordering = ['level','name']
 
 class BoroughOption(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -193,25 +191,36 @@ class Applicant(models.Model):
             if contact.primary_contact:
                 contact.primary_contact = False
                 contact.save()
-        
+    
+    def __set_level(self):
+        for level in AdmissionLevel.objects.all():
+            checks = level.admissioncheck_set.all()
+            i = 0
+            for check in checks:
+                if check in self.checklist.all():
+                    i += 1
+            if i >= checks.count():
+                # verefy required checks are in
+                req_checks = AdmissionCheck.objects.filter(required=True, level__order__lte=level.order)
+                set_level = True
+                for req_check in req_checks:
+                    if not req_check in self.checklist.all():
+                        set_level = False
+                if set_level:
+                    self.level = level
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        self.__set_level()
+        if self.application_decision.level.all().count() and self.application_decision and not self.level in self.application_decision.level.all():
+            raise ValidationError('Decision %s must be on level(s) %s.' % (
+                self.application_decision,
+                self.application_decision.level.all(),
+                ))
+    
     def save(self, *args, **kwargs):
         if self.id:
-            for level in AdmissionLevel.objects.all():
-                checks = level.admissioncheck_set.all()
-                i = 0
-                for check in checks:
-                    if check in self.checklist.all():
-                        i += 1
-                if i >= checks.count():
-                    # verefy required checks are in
-                    req_checks = AdmissionCheck.objects.filter(required=True, level__order__lte=level.order)
-                    set_level = True
-                    for req_check in req_checks:
-                        if not req_check in self.checklist.all():
-                            set_level = False
-                    if set_level:
-                        self.level = level
-                    
+            self.__set_level()
         # create contact log entry on application decision
         if self.application_decision and self.id:
             old = Applicant.objects.get(id=self.id)

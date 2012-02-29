@@ -32,6 +32,7 @@ class Grade(models.Model):
             ("C", "C"),
             ("D", "D"),
             ("HP", "High Pass"),
+            ("LP", "Low Pass"),
         )
     letter_grade = models.CharField(max_length=2, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
     
