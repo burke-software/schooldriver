@@ -152,6 +152,7 @@ INSTALLED_APPS = (
     'ecwsp.discipline',
     'ecwsp.attendance',
     'ecwsp.grades',
+    'ecwsp.counseling',
     
     'ajax_select',
     'reversion',

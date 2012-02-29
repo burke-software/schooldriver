@@ -264,6 +264,24 @@ $(document).ready(function() {
         </div> <!-- .sv-section -->
         {% endif %}
         
+        {% if 'ecwsp.counseling' in settings.INSTALLED_APPS %}
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Counseling</a>
+        <div class="sv-main">
+            <div class="section-div">
+                {% for meeting in student.studentmeeting_set.all %}
+                    {{ meeting.date }}: {{ meeting }} 
+                    {% if perms.counseling.change_studentmeeting %} 
+                        {{ meeting.notes }} {{ meeting.follow_up_action.all }} {{ meeting.follow_up_notes }} 
+                    {% else %} 
+                        Details not shown
+                    {% endif %}
+                    <br/>
+                {% endfor %}
+            </div> <!-- class="section-div"-->
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
+        {% endif %}
+        
         {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %}
         <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Work Visits</a>
         <div class="sv-main">

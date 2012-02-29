@@ -115,6 +115,12 @@ class CustomIndexDashboard(Dashboard):
         ))
         
         self.children.append(modules.ModelList(
+            title='Counseling',
+            column=1,
+            models=('ecwsp.counseling.*',),
+        ))
+        
+        self.children.append(modules.ModelList(
             title='Alumni',
             column=1,
             models=('ecwsp.alumni.*',),
