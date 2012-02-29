@@ -21,20 +21,6 @@ class struct(object):
     def __unicode__(self):
         return ""
 
-# obsoleted hack pending removal
-"""
-def credits_hack_thing(student):
-    ''' get credits before benchmark grading, using an arbitrary date from the past '''
-    credits = 0
-    courses = student.course_set.filter(graded=True, marking_period__show_reports=True).exclude(omitcoursegpa__student=student).distinct()
-    for c in courses:
-        try:
-            credits += float(c.get_credits_earned(date_report=date(2011, 6, 30)))
-        except:
-            pass
-    return credits
-"""
-
 def benchmark_report_card(template, options, students, format="odt"):
     """ A TC-exclusive benchmark-based report card generator for a single marking period """
     """ lots of crap commented out is obsoleted by legit gpa calculator and will be removed soon """
@@ -55,19 +41,6 @@ def benchmark_report_card(template, options, students, format="odt"):
         # how do we really handle errors around here?
      #   return HttpResponse("Could not find a marking period for the date " + str(for_date) + ".")
         
-    '''
-    # for GPA calculation, how far into the year are we?
-    year_mps = attendance_marking_periods.count()
-    this_mp = None
-    i = 1
-    for mp in attendance_marking_periods.order_by('start_date'):
-        if mp == marking_period:
-            this_mp = i
-            break
-        i += 1
-    year_fraction = float(this_mp) / float(year_mps) # just die ungracefully if this doesn't work
-    '''
-
     for student in students:
         courses = Course.objects.filter(
             courseenrollment__user=student,
@@ -114,14 +87,14 @@ def benchmark_report_card(template, options, students, format="odt"):
                 except:
                     pass
             items = []
-        standards_category = Category.objects.get(name="Standards") # save time, move to top and do this once?
-        for mark in Mark.objects.filter(item__category=standards_category, item__course=course,
-                                        item__markingPeriod=marking_period,
-                                        student=student, description="Session"):
-        markItem = struct()
-        markItem.name = mark.item.name
-        markItem.range = mark.item.scale.range()
-        markItem.mark = mark.mark
+            standards_category = Category.objects.get(name="Standards") # save time, move to top and do this once?
+            for mark in Mark.objects.filter(item__category=standards_category, item__course=course,
+                                            item__markingPeriod=marking_period,
+                                            student=student, description="Session"):
+                markItem = struct()
+                markItem.name = mark.item.name
+                markItem.range = mark.item.scale.range()
+                markItem.mark = mark.mark
                 if markItem.mark is not None:
                     items.append(markItem)
                     if Hire4Ed:
@@ -148,8 +121,11 @@ def benchmark_report_card(template, options, students, format="odt"):
                 student.hire4ed = course
             else:
                 student.courses.append(course)
+        #GAHH ALL (faux) SPRUCING AT THE END
+        us_averages = {}
         for a in averages:
             if denominators[a] > 0:
+                us_averages[a] = averages[a] / denominators[a] # keep precision for gpa calculation
                 averages[a] =  Decimal(str(averages[a] / denominators[a])).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
         student.averages = averages
         # calculate gpas
@@ -165,37 +141,21 @@ def benchmark_report_card(template, options, students, format="odt"):
         gpaAverages = "Engagement", "Organization", "Hire4Ed"
         for gA in gpaAverages:
             try:
-                if averages[gA] is not None:
-                    session_gpa += averages[gA]
+                if us_averages[gA] is not None:
+                    session_gpa += us_averages[gA]
                     i += 1
             except:
                 pass
 
-        # whoa, we actually calcuate real cumulative GPAs now!
-        '''
-        if student.cache_gpa is None:
-            student.cache_gpa = student.calculate_gpa()
-        try:
-            student.cumulative_gpa = float(student.cache_gpa)
-            student.credits = credits_hack_thing(student)
-        except:
-            student.cumulative_gpa = 0
-            student.credits = 0
-        '''
         if i > 0:
-            student.session_gpa = Decimal(str(session_gpa / i)).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
-        '''
-            student.cumulative_gpa *= student.credits
-            student.cumulative_gpa += float(i) * year_fraction * float(student.session_gpa)
-            student.credits += float(i) * year_fraction # this year doesn't count as a whole unless it's complete
-            student.cumulative_gpa /= student.credits
-            student.cumulative_gpa = Decimal(str(student.cumulative_gpa)).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
-        '''
-        # don't fuck this up
-        if student.session_gpa == student.calculate_gpa_mp(marking_period):
-            print 'jnm Marking Period GPA Assertion PASSED!'
-        else:
-            print 'BADNESS! GPA calculation problem for', student, marking_period
+            student.session_gpa = Decimal(str(session_gpa / i)).quantize(Decimal(str(0.01)))
+            # eventually remove this check and don't do any GPA calculation in this function
+            discrepancy = student.session_gpa - student.calculate_gpa_mp(marking_period)
+            if discrepancy:
+                print 'BADNESS! GPA calculation problem for', student, marking_period, discrepancy
+        
+        # Cannot just rely on student.gpa for the cumulative GPA; it does not reflect report's date
+        student.current_report_cumulative_gpa = student.calculate_gpa(for_date)
 
         #Attendance for marking period
         i = 1

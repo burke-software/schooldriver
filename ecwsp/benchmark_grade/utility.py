@@ -56,7 +56,8 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
             else:
                 mps = course.marking_period.all()
             for mp in mps:
-                weight = float(course.credits) / course.marking_period.count()
+                try: weight = float(course.credits) / course.marking_period.count()
+                except TypeError: weight = 0
                 benchmark_mp_weight[mp.id] = benchmark_mp_weight.get(mp.id, 0) + weight
                 for cat in benchmark_individual_cat:
                     try: agg = Aggregate.objects.get(singleStudent = student, singleCourse = course, singleCategory = cat, singleMarkingPeriod = mp)
@@ -81,18 +82,8 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
                     benchmark_aggregate_denom[mp.id] = mp_denom_dict
         else:
             # legacy calculation
-            # stolen from burke's Student.__calculate_grade_for_courses()
-            #print "and not a single couch was fucked that day."
             try:
-                grade = None
-                credit = None
-                if marking_period:
-                    grade = float(student.grade_set.get(course=course, final=True, override_final=False, marking_period=marking_period).get_grade())
-                    credit = float(course.credits) / float(course.marking_period.count())
-                else:
-                    grade = float(course.get_final_grade(student, date_report=date_report)) # don't add in case credits throws ex
-                    credit = float(course.get_credits_earned(date_report=date_report))
-                # commit
+                grade, credit = student._calculate_grade_for_single_course(course, marking_period, date_report)
                 legacy_denominator += credit
                 legacy_numerator += float(grade) * credit
             except Exception as e:

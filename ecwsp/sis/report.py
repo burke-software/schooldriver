@@ -185,6 +185,9 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     data['marking_periods'] = marking_periods.order_by('start_date')
     
     for student in students:
+        # Cannot just rely on student.gpa for the cumulative GPA; it does not reflect report's date
+        student.current_report_cumulative_gpa = student.calculate_gpa(for_date)
+
         # for report_card
         if report_card:
             courses = Course.objects.filter(
@@ -323,6 +326,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                 student.departments_text += "| %s: %s " % (dept, dept.credits)
             student.departments_text += "|"
             
+            # Standardized tests
             student.tests = []
             student.highest_tests = []
             for test_result in student.standardtestresult_set.filter(test__show_on_reports=True,show_on_reports=True).order_by('test'):
