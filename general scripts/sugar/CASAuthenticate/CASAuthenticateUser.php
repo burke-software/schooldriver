@@ -30,7 +30,7 @@ class CASAuthenticateUser extends SugarAuthenticateUser {
     ***********************************************************************************************************************/    
     function authUser() {
         $cas_server = 'cas.cristoreyny.org';
-        phpCAS::client(CAS_VERSION_2_0,$cas_server,8443,'cas');
+        phpCAS::client(CAS_VERSION_2_0,$cas_server,443,'cas');
         phpCAS::setNoCasServerValidation();
         phpCAS::forceAuthentication();
         $authenticated = phpCAS::isAuthenticated();
@@ -46,7 +46,7 @@ class CASAuthenticateUser extends SugarAuthenticateUser {
                 else
                     return '';
             }
-       	    echo 'Not authorized user. You may need to ask an administrator to give you access to SugarCRM. You may try logging in again <a href="https://'.$cas_server.':8443/cas/logout?service=http://'.$_SERVER['SERVER_NAME'].'">here</a>';
+       	    echo 'Not authorized user. You may need to ask an administrator to give you access to SugarCRM. You may try logging in again <a href="https://'.$cas_server.':443/cas/logout?service=http://'.$_SERVER['SERVER_NAME'].'">here</a>';
 		    die();
             return ""; // SSO authentication was successful
         }

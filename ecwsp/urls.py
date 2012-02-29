@@ -55,6 +55,8 @@ if 'ecwsp.inventory' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^inventory/', include('ecwsp.inventory.urls')), )
 if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^engrade_sync/', include('ecwsp.engrade_sync.urls')), )
+if 'ecwsp.grades' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^grades/', include('ecwsp.grades.urls')), )
 
 if 'sentry' in settings.INSTALLED_APPS:    
     urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)

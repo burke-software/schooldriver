@@ -346,6 +346,7 @@ def grade_report(request):
                 format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
                 return pod_report_grade(template_path, options=data, students=form.get_students(data), format=format, report_card=report_card, transcript=transcript)
         elif 'aggregate_grade_report' in request.POST:
+            from ecwsp.grades.models import Grade
             form = MarkingPeriodForm(request.POST)
             if form.is_valid():
                 mps = form.cleaned_data['marking_period']
@@ -517,16 +518,19 @@ def view_student(request, id=None):
         #### CWSP related
         try:
             clientvisits = student.studentworker.clientvisit_set.all()
+        except: clientvisits = None
+        try:
             company_histories = student.studentworker.companyhistory_set.all()
+        except:company_histories = None
+        try:
             timesheets = student.studentworker.timesheet_set.exclude(Q(performance__isnull=True) | Q(performance__exact=''))
+        except: timesheets = None
+        try:
             if request.user.has_perm("sis.view_mentor_student"):
                 student_interactions = student.studentworker.studentinteraction_set.all()
             else:
                 student_interactions = None
         except:
-            clientvisits = None
-            company_histories = None
-            timesheets = None
             student_interactions = None
         try:
             supervisors = student.studentworker.placement.contacts.all()
@@ -535,6 +539,7 @@ def view_student(request, id=None):
         ########################################################################
         
         years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct()
+        from ecwsp.grades.models import Grade
         for year in years:
             year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year).distinct().order_by("start_date")
             year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year).distinct()
@@ -547,6 +552,7 @@ def view_student(request, id=None):
                     except:
                         course.grade_html += '<td> </td>'
                 course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
+        print clientvisits
                 
         return render_to_response('sis/view_student.html', {'form':form, 'show_grades':show_grades, 'date':today, 'student':student, 'emergency_contacts': emergency_contacts,
                                                         'siblings': siblings, 'numbers':numbers, 'location':location, 'disciplines':disciplines, 'attendances':attendances,

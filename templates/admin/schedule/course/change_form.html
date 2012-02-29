@@ -1,13 +1,16 @@
 {% extends "grappelli/templates/admin/change_form.html" %}
 {% load i18n admin_modify adminmedia grp_tags %}
+{% load url from future %}
 <!-- OBJECT TOOLS -->
 {% block object-tools %}
     {% if change %}
         {% if not is_popup %}
             <ul class="tools">
-                <li><a href="/schedule/teacher_grade/download/{{ object_id }}" class="historylink"> Gradesheet Template </a></li>
-                <li><a href="/schedule/teacher_grade/upload/{{ object_id }}" class="historylink"> Grades </a></li>
-                <li><a href="/schedule/enroll/{{ object_id }}" class="historylink">Enroll Students</a></li>
+                {% if object_id %}
+                    <li><a href="{% url 'ecwsp.grades.views.teacher_grade_download' object_id %}" class="historylink"> Gradesheet Template </a></li>
+                    <li><a href="{% url 'ecwsp.grades.views.teacher_grade_upload' object_id %}" class="historylink"> Grades </a></li>
+                    <li><a href="/schedule/enroll/{{ object_id }}" class="historylink">Enroll Students</a></li>
+                {% endif %}
                 <li><a href="history/">{% trans "History" %}</a></li>
                 {% if has_absolute_url %}<li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/" class="focus" target="_blank">{% trans "View on site" %}</a></li>{% endif%}
             </ul>

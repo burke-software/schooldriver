@@ -911,12 +911,12 @@ def report_builder_view(request):
                             eFname = eContact.fname
                             try:
                                 eNumbers = EmergencyContactNumber.objects.filter(contact = eContact)
-                                if not eNumbers[0]:
-                                    eNumbers[0] = ("none")
-                                if not eNumbers[1]:
-                                    eNumbers[1] = ("none")
                             except:
                                 eNumbers = [("none"), ("none")]
+                            try:
+                                eNumbers[1]
+                            except IndexError:
+                                eNumbers = [eNumbers[0],("none")]
                         except:
                             eFname = "No contact assigned"
                             eNumbers = [("none"), ("none")]
@@ -934,6 +934,7 @@ def report_builder_view(request):
                             supPhone = " "
                             supCell = " "
                             supEmail =" "
+                        
                         data.append([worker.fname, worker.lname, worker.mname, worker.year, worker.day, supFname,\
                             supLname,supPhone, supCell,supEmail,number,eFname,eNumbers[0],eNumbers[1]])   
                     fileName = "StudentMasterContactList.xls"
