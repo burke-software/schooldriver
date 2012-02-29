@@ -439,6 +439,17 @@ class Student(MdlUser, CustomFieldModel):
         else:
             return disc
     
+    def __calculate_grade_for_single_course(self, marking_period, date_report):
+        """ Separate from __calculate_grade_for_courses() to avoid code duplication in
+        ecwsp.benchmark_grade.utility """
+        if marking_period:
+            grade = float(self.grade_set.get(course=course, final=True, override_final=False, marking_period=marking_period).get_grade())
+            credit = float(course.credits) / float(course.marking_period.count())
+        else:
+            grade = float(course.get_final_grade(self, date_report=date_report))
+            credit = float(course.get_credits_earned(date_report=date_report))
+        return grade, credit
+
     def __calculate_grade_for_courses(self, courses, marking_period=None, date_report=None):
         if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
             from ecwsp.benchmark_grade.utility import benchmark_calculate_grade_for_courses
@@ -448,15 +459,7 @@ class Student(MdlUser, CustomFieldModel):
         credits = float(0)
         for course in courses.distinct():
             try:
-                grade = None
-                credit = None
-                if marking_period:
-                    grade = float(self.grade_set.get(course=course, final=True, override_final=False, marking_period=marking_period).get_grade())
-                    credit = float(course.credits) / float(course.marking_period.count())
-                else:
-                    grade = float(course.get_final_grade(self, date_report=date_report)) # don't add in case credits throws ex
-                    credit = float(course.get_credits_earned(date_report=date_report))
-                # commit
+                grade, credit = __calculate_grade_for_single_course(course, marking_period, date_report)
                 credits += credit
                 gpa += float(grade) * credit
             except:

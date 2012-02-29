@@ -87,14 +87,14 @@ def benchmark_report_card(template, options, students, format="odt"):
                 except:
                     pass
             items = []
-        standards_category = Category.objects.get(name="Standards") # save time, move to top and do this once?
-        for mark in Mark.objects.filter(item__category=standards_category, item__course=course,
-                                        item__markingPeriod=marking_period,
-                                        student=student, description="Session"):
-        markItem = struct()
-        markItem.name = mark.item.name
-        markItem.range = mark.item.scale.range()
-        markItem.mark = mark.mark
+            standards_category = Category.objects.get(name="Standards") # save time, move to top and do this once?
+            for mark in Mark.objects.filter(item__category=standards_category, item__course=course,
+                                            item__markingPeriod=marking_period,
+                                            student=student, description="Session"):
+                markItem = struct()
+                markItem.name = mark.item.name
+                markItem.range = mark.item.scale.range()
+                markItem.mark = mark.mark
                 if markItem.mark is not None:
                     items.append(markItem)
                     if Hire4Ed:
@@ -125,8 +125,9 @@ def benchmark_report_card(template, options, students, format="odt"):
         us_averages = {}
         for a in averages:
             if denominators[a] > 0:
-                averages[a] =  Decimal(str(averages[a] / denominators[a])).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
                 us_averages[a] = averages[a] / denominators[a] # keep precision for gpa calculation
+                averages[a] =  Decimal(str(averages[a] / denominators[a])).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
+        print averages, us_averages
         student.averages = averages
         # calculate gpas
         i = 0
@@ -148,14 +149,11 @@ def benchmark_report_card(template, options, students, format="odt"):
                 pass
 
         if i > 0:
-            student.session_gpa = Decimal(str(session_gpa / i)).quantize(Decimal(str(0.01))
-        # should remove all GPA calculation logic from this function
-        try:
-            error = student.session_gpa - student.calculate_gpa_mp(marking_period)
-            if error:
-                print 'BADNESS! GPA calculation problem for', student, marking_period, error
-        except Exception as e:
-            print e, student
+            student.session_gpa = Decimal(str(session_gpa / i)).quantize(Decimal(str(0.01)))
+            # eventually remove this check and don't do any GPA calculation in this function
+            discrepancy = student.session_gpa - student.calculate_gpa_mp(marking_period)
+            if discrepancy:
+                print 'BADNESS! GPA calculation problem for', student, marking_period, discrepancy
         
         #Attendance for marking period
         i = 1
