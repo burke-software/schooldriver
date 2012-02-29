@@ -154,6 +154,9 @@ def benchmark_report_card(template, options, students, format="odt"):
             if discrepancy:
                 print 'BADNESS! GPA calculation problem for', student, marking_period, discrepancy
         
+        # Cannot just rely on student.gpa for the cumulative GPA; it does not reflect report's date
+        student.current_report_cumulative_gpa = student.calculate_gpa(for_date)
+
         #Attendance for marking period
         i = 1
         student.absent_total = 0
