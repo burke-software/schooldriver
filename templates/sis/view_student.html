@@ -113,8 +113,8 @@ $(document).ready(function() {
 </div>
 <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">General Information</a> 
 <div class="sv-main">
-	<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>
-	<!--{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img src={{ student.pic.url_350x250 }}/></a> </div>{% endif %}-->
+	<!--<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>-->
+	{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img src={{ student.pic.url_350x250 }}/></a> </div>{% endif %}
             <table class="section-table">
                 <tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname }} {{ student.lname }} </td></tr>
                 <tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
@@ -156,8 +156,17 @@ $(document).ready(function() {
         <div class="sv-main">
 
         {% for year in years %}
+				{% if forloop.first %}
+						<div id="toggle_subsection_grade" class="sv-section noprint">
+								<a class="section-header subsection noprint sub-expanded" href="javascript:void(0)" id="toggle_section_grade" onclick='options_toggle(id)'>{{ year }}</a>
+								<div class="sv-main" style="display:block;">
+				
+				{% else %}
+						
         <div id="toggle_subsection_grade" class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)" id="toggle_section_grade" onclick='options_toggle(id)'>{{ year }}</a>
+				
         <div class="sv-main">
+				{% endif %}
 			<table class="subsection-table">
                     <tr>
                         <th> Courses </th>
