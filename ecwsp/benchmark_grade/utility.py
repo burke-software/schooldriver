@@ -56,7 +56,8 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
             else:
                 mps = course.marking_period.all()
             for mp in mps:
-                weight = float(course.credits) / course.marking_period.count()
+                try: weight = float(course.credits) / course.marking_period.count()
+                except TypeError: weight = 0
                 benchmark_mp_weight[mp.id] = benchmark_mp_weight.get(mp.id, 0) + weight
                 for cat in benchmark_individual_cat:
                     try: agg = Aggregate.objects.get(singleStudent = student, singleCourse = course, singleCategory = cat, singleMarkingPeriod = mp)
@@ -82,7 +83,7 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
         else:
             # legacy calculation
             try:
-                grade, credit = __calculate_grade_for_single_course(course, marking_period, date_report)
+                grade, credit = student._calculate_grade_for_single_course(course, marking_period, date_report)
                 legacy_denominator += credit
                 legacy_numerator += float(grade) * credit
             except Exception as e:
