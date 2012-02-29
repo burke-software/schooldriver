@@ -127,7 +127,6 @@ def benchmark_report_card(template, options, students, format="odt"):
             if denominators[a] > 0:
                 us_averages[a] = averages[a] / denominators[a] # keep precision for gpa calculation
                 averages[a] =  Decimal(str(averages[a] / denominators[a])).quantize(Decimal(str(0.01)), ROUND_HALF_UP)
-        print averages, us_averages
         student.averages = averages
         # calculate gpas
         i = 0
