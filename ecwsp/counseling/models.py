@@ -18,6 +18,7 @@
 
 from django.contrib.auth.models import User, Group
 from django.core.urlresolvers import reverse
+from django.core.mail import send_mail
 from django.db import models
 
 import datetime
