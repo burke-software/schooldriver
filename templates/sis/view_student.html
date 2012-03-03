@@ -37,20 +37,6 @@
                 });;
         });
         
-        function options_toggle(id) {
-            /*id must follow convenction toggle_model_action
-             Ex id = toggle_student_filter */
-           /* if ($('#' + id.split("_")[1] + '_' + id.split("_")[2]).is(':visible')) {
-                $('#' + id).html('+ Show');
-                $('#h5' + id).addClass('noprint')
-            } else {
-                $('#' + id).html('- Hide');
-                $('#h5' + id).removeClass('noprint')
-            }
-            $('#' + id.split("_")[1] + '_' + id.split("_")[2]).toggle('fast');
-        */
-        }
-        
         {% if show_grades %}
             $(document).ready(function() {
                 options_toggle('toggle_section_grade');
@@ -64,10 +50,13 @@ $(document).ready(function() {
     
     // Switches CSS classes. This controls the right and down arrows.  
     $("a.section-header").click(function () {
+    $(this).parent().removeClass('noprint');
     if ($(this).hasClass("subsection")) {
         $(this).toggleClass('sub-expanded');
+	$(this).toggleClass('noprint');
     } else {
         $(this).toggleClass('expanded');
+	$(this).toggleClass('noprint');
     }
     
     // Toggle the section.
@@ -102,7 +91,7 @@ $(document).ready(function() {
 <div id="student-header">
       <div id="name-and-grade">
         <h1 class="sv-name">{{ student }}</h1>
-        {{ student.year }} {% if location %} at <span class="noprint"> {{ location }}</span> {% endif %}
+        {{ student.year }} {% if location %} at {{ location }} {% endif %}
       </div>
       
       <div id="transcript">   
@@ -111,10 +100,10 @@ $(document).ready(function() {
       Profile generated on {{ date }}
       </div>
 </div>
-<div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">General Information</a> 
+<div class="sv-section"><a class="section-header" href="javascript:void(0)">General Information</a> 
 <div class="sv-main">
 	<!--<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>-->
-	{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img src={{ student.pic.url_350x250 }}/></a> </div>{% endif %}
+	{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img style="max-height: 250px;" src="{{ student.pic.url_530x400 }}"/></a> </div>{% endif %}
             <table class="section-table">
                 <tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname }} {{ student.lname }} </td></tr>
                 <tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
