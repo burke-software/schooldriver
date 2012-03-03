@@ -1,0 +1,380 @@
+from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
+from django.contrib import messages
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
+from django.template import RequestContext
+from django.db.models import Q
+
+from ecwsp.schedule.models import *
+from ecwsp.sis.models import *
+from ecwsp.sis.helper_functions import Struct
+from ecwsp.sis.uno_report import replace_spreadsheet
+import datetime
+from models import *
+from forms import *
+import time
+
+import logging
+
+@permission_required('grades.change_own_grade')
+def teacher_grade(request):
+    if Faculty.objects.filter(username=request.user.username):
+        teacher = Faculty.objects.get(username=request.user.username)
+    else:
+        messages.info(request, 'You do not have any courses.')
+        return HttpResponseRedirect(reverse('admin:index'))
+    courses = Course.objects.filter(
+            graded=True,
+            marking_period__school_year__active_year=True,
+        ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+
+    if "ecwsp.engrade_sync" in settings.INSTALLED_APPS:
+        if request.method == 'POST':
+            form = EngradeSyncForm(request.POST)
+            if form.is_valid():
+                try:
+                    from ecwsp.engrade_sync.engrade_sync import EngradeSync
+                    marking_period = form.cleaned_data['marking_period']
+                    include_comments = form.cleaned_data['include_comments']
+                    courses = courses.filter(marking_period=marking_period)
+                    es = EngradeSync()
+                    errors = ""
+                    for course in courses:
+                        errors += es.sync_course_grades(course, marking_period, include_comments)
+                    if errors:
+                        messages.success(request, 'Engrade Sync attempted, but has some issues: ' + errors)
+                    else:
+                        messages.success(request, 'Engrade Sync successful. Please verify each course!')
+                except:
+                    messages.info(request, 'Engrade Sync unsuccessful. Contact an administrator.')
+                    logger.error('Engrade Sync unsuccessful', exc_info=True, extra={
+                        'request': request,
+                    })
+            else:
+                messages.info(request, 'You must select a valid marking period')
+        engrade_sync = True
+        form = EngradeSyncForm()
+    else:
+        engrade_sync = False
+        form = None
+    return render_to_response(
+        'grades/teacher_grade.html',
+        {'request': request, 'courses': courses, 'form': form,'engrade_sync': engrade_sync},
+        RequestContext(request, {}),
+        )
+    
+
+@permission_required('schedule.change_grade')
+def teacher_grade_submissions(request):
+    teachers = Faculty.objects.filter(
+        teacher=True,
+        course__marking_period__school_year__active_year=True,
+        ).distinct()
+    try:
+        marking_period = MarkingPeriod.objects.filter(active=True).order_by('-end_date')[0]
+    except:
+        marking_period = None
+    courses = Course.objects.filter(marking_period=marking_period)
+    
+    for teacher in teachers:
+        teacher.courses = courses.filter(teacher=teacher)
+    
+    return render_to_response(
+        'grades/teacher_grade_submissions.html',
+        {'teachers':teachers, 'marking_period':marking_period},
+        RequestContext(request, {}),)
+
+
+def view_comment_codes(request):
+    comments = GradeComment.objects.all()
+    msg = ""
+    for comment in comments:
+        msg += "%s <br/>" % (comment,)
+    return render_to_response('sis/generic_msg.html', {'msg': msg,}, RequestContext(request, {}),)
+
+
+@user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade'))
+def teacher_grade_upload(request, id):
+    """ This view is for inputing grades. It usually is done by uploading a spreadsheet.
+    However it can also be done by manually overriding grades. This requires
+    registrar level access. """
+    
+    course = Course.objects.get(id=id)
+    
+    # if benchmark grading is installed and enabled for the course's school year,
+    # bail out to another function
+    if ("ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
+        course.marking_period.all().order_by('-start_date')[0].school_year.benchmark_grade):
+        from ecwsp.benchmark_grade.views import benchmark_grade_upload
+        return benchmark_grade_upload(request, id)
+        
+    students = course.get_enrolled_students(show_deleted=True)
+    grades = course.grade_set.all()
+    
+    if request.method == 'POST' and 'upload' in request.POST:
+        import_form = GradeUpload(request.POST, request.FILES)
+        if import_form.is_valid():
+            from sis.importer import Importer
+            importer = Importer(request.FILES['file'], request.user)
+            error = importer.import_grades(course, import_form.cleaned_data['marking_period'])
+            if error:
+                messages.warning(request, error)
+            else:
+                course.last_grade_submission = datetime.datetime.now()
+                course.save()
+    else:
+        import_form = GradeUpload()
+        
+    if request.method == 'POST' and 'edit' in request.POST:
+        # save grades
+        handle_grade_save(request, course)
+    for student in students:
+        student.grades = []
+        # display grades include mid marks and are not used for calculations
+        student.display_grades = []
+        student.comments = []
+        student.grade_id = []
+    
+    marking_periods = course.marking_period.all().order_by('start_date')
+    
+    for mp in marking_periods:
+        if Grade.objects.filter(course=course, marking_period=mp, final=False).count():
+            mp.has_mid = True
+        else:
+            mp.has_mid = False
+    
+    x = 0
+    y = 0
+    for mp in marking_periods:
+        y = 0
+        for student in students:
+            grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp, final=True)
+            grade_struct = Struct()
+            grade_struct.grade = grade.get_grade()
+            grade_struct.id = grade.id
+            grade_struct.x = x
+            grade_struct.y = y
+            student.display_grades.append(grade_struct)
+            student.comments.append(grade.comment)
+            
+            
+            if mp.has_mid:
+                mid_grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp, final=False)
+                grade_struct = Struct()
+                grade_struct.grade = mid_grade.get_grade()
+                grade_struct.id = mid_grade.id
+                grade_struct.x = x + 1
+                grade_struct.y = y
+                student.display_grades.append(grade_struct)
+                student.comments.append(mid_grade.comment)
+                student.grade_id.append(mid_grade.id)
+            y += 1
+        x += 1
+        if mp.has_mid: x += 1
+        last_y = y - 1
+        last_x = x
+            
+    y = 0
+    for student in students:
+        student.final_x = x
+        student.final_y = y
+        y += 1
+        try:
+            override_grade = Grade.objects.get(student=student, course=course, override_final=True)
+            student.final = unicode(override_grade.get_grade())
+            student.final_override = True  # effects CSS
+        except:
+            student.final = course.calculate_final_grade(student)
+    
+    if request.user.is_superuser or request.user.has_perm('grades.change_own_grade'):
+        edit = True
+    else:
+        edit = False
+    
+    return render_to_response('grades/teacher_grade_upload.html', {
+        'request': request, 
+        'course': course, 
+        'marking_periods': marking_periods, 
+        'students': students, 
+        'import_form': import_form,
+        'edit': edit,
+        'last_y': last_y,
+        'last_x': last_x,
+    }, RequestContext(request, {}),)
+
+
+@user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade'))   
+def teacher_grade_download(request, id, type=None):
+    """ Download grading spreadsheet of requested class 
+    id: course id
+    type: filetype (ods or xls)"""
+    if not type:
+        profile = UserPreference.objects.get_or_create(user=request.user)[0]
+        type = profile.get_format(type="spreadsheet")
+    course = Course.objects.get(id=id)
+    template, created = Template.objects.get_or_create(name="grade spreadsheet")
+    filename = unicode(course) + "_grade"
+    data={}
+    data['$students'] = []
+    data['$username'] = []
+    
+    for student in course.get_enrolled_students(show_deleted=True):
+        data['$students'].append(unicode(student))
+        data['$username'].append(unicode(student.username))
+    
+    # Libreoffice crashes sometimes, maybe 5% of the time. So try it some more!
+    for x in range(0,3):
+        try:
+            template_path = template.get_template_path(request)
+            if not template_path:
+                return HttpResponseRedirect(reverse('admin:index'))
+            return replace_spreadsheet(template_path, filename, data, type)
+        except:
+            logger.warning('LibreOffice crashed?', exc_info=True, extra={
+                'request': request,
+            })
+            time.sleep(3)
+    return replace_spreadsheet(template_path, filename, data, type)
+    
+    
+def handle_grade_save(request, course=None):
+    """ Customized code to process POST data from the gradesheets (both course and student) """
+    for input, value in request.POST.items():
+        try:
+            input = input.split('_')
+            if input[0] == "grade":
+                grade = Grade.objects.get(id=input[1])
+                if grade.get_grade() != value:
+                    grade.set_grade(value)
+                    grade.save()
+            elif input[0] == "comment":
+                grade = Grade.objects.get(id=input[1])
+                if grade.comment != value:
+                    grade.comment = value
+                    grade.save()
+        except:
+            try:
+                messages.info(request, 'Error in grade for ' + unicode(Student.objects.get(id=input[1])))
+            except:
+                try:
+                    messages.info(request, 'Error in grade for ' + unicode(Grade.objects.get(id=input[1]).student))
+                except:
+                    messages.info(request, 'Unknown error ' + unicode(input))
+                    logger.error('Unable to save grade', exc_info=True, extra={
+                        'request': request,
+                    })
+    handle_final_grade_save(request, course=course)
+    
+
+def handle_final_grade_save(request, course=None):
+    for input, value in request.POST.items():
+        try:
+            input = input.split('_')
+            # Final grade
+            if input[0] == "gradefinalform":
+                student = Student.objects.get(id=input[1])
+                grade = value
+                if not Grade.objects.filter(course=course, override_final=True, student=student).count():
+                    try:
+                        # check if number
+                        Decimal(grade)
+                        # Check if it's the same value, thus no override needed
+                        final = course.calculate_final_grade(student)
+                        # Sanitize! Force it to 2 decimal points
+                        grade = Decimal(grade).quantize(Decimal("0.01"), ROUND_HALF_UP)
+                        if grade != final:
+                            # Different so override!
+                            grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
+                            grade_object.set_grade(grade)
+                            grade_object.save()
+                    except:
+                        # not number
+                        if not grade == "" and not grade == None and not grade == "None":
+                            grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
+                            grade_object.set_grade(grade)
+                            grade_object.save()
+                else:
+                    # override already exists
+                    grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
+                    if grade == "" or grade == None or grade == "None":
+                        grade_object.delete()
+                    else:
+                        grade_object.set_grade(grade)
+                        grade_object.save()
+            elif input[0] == "coursefinalform":  # coursefinalform_course.id_student.id    
+                course = Course.objects.get(id=input[1])
+                student = Student.objects.get(id=input[2])
+                grade = value
+                if not Grade.objects.filter(course=course, override_final=True, student=student).count():
+                    try:
+                        # check if number
+                        Decimal(grade)
+                        # Check if it's the same value, thus no override needed
+                        final = course.calculate_final_grade(student)
+                        # Sanitize! Force it to 2 decimal points
+                        grade = Decimal(grade).quantize(Decimal("0.01"), ROUND_HALF_UP)
+                        if grade != final:
+                            # Different so override!
+                            grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
+                            grade_object.set_grade(grade)
+                            grade_object.save()
+                    except:
+                        # not number
+                        if not grade == "" and not grade == None and not grade == "None":
+                            grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
+                            grade_object.set_grade(grade)
+                            grade_object.save()
+                else:
+                    # override already exists
+                    grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
+                    if grade == "" or grade == None or grade == "None":
+                        grade_object.delete()
+                    else:
+                        grade_object.set_grade(grade)
+                        grade_object.save()
+        except:
+            try:
+                messages.info(request, 'Error in grade for ' + unicode(Student.objects.get(id=input[1])))
+            except:
+                try:
+                    messages.info(request, 'Error in grade for ' + unicode(Grade.objects.get(id=input[1]).student))
+                except:
+                    messages.error(request, 'Unknown error ' + unicode(input))
+                    logger.error('Unable to save grade', exc_info=True, extra={
+                        'request': request,
+                    })
+                    
+    
+@permission_required('schedule.change_grade')
+def student_gradesheet(request, id, year_id=None):
+    student = Student.objects.get(id=id)
+    if request.POST:
+        handle_grade_save(request)
+    courses = student.course_set.filter(graded=True)
+    school_years = SchoolYear.objects.filter(markingperiod__course__enrollments__student=student).distinct()
+    if year_id:
+        school_year = SchoolYear.objects.get(id=year_id)
+    else:
+        school_year = SchoolYear.objects.get(active_year=True)
+    courses = courses.filter(marking_period__school_year=school_year).distinct()
+    for course in courses:
+        for mp in school_year.markingperiod_set.all():
+            grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp, final=True)
+        course.grades = student.grade_set.filter(course=course, final=True, override_final=False)
+        
+        try:
+            override_grade = course.grade_set.get(student=student, override_final=True)
+            course.final = unicode(override_grade.get_grade())
+            course.final_override = True  # effects CSS
+        except:
+            course.final = course.calculate_final_grade(student)
+        
+    return render_to_response('grades/student_gradesheet.html', {
+        'request': request,
+        'student': student,
+        'courses': courses,
+        'school_year': school_year,
+        'school_years': school_years,
+    }, RequestContext(request, {}),)

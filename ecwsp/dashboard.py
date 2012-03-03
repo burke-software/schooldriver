@@ -105,13 +105,19 @@ class CustomIndexDashboard(Dashboard):
         self.children.append(modules.ModelList(
             title='Courses and Grades',
             column=1,
-            models=('ecwsp.schedule.*',),
+            models=('ecwsp.schedule.*','ecwsp.grades.*','ecwsp.benchmark_grade.*'),
         ))
         
         self.children.append(modules.ModelList(
             title='Admissions',
             column=1,
             models=('ecwsp.admissions.*',),
+        ))
+        
+        self.children.append(modules.ModelList(
+            title='Counseling',
+            column=1,
+            models=('ecwsp.counseling.*',),
         ))
         
         self.children.append(modules.ModelList(

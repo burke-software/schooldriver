@@ -27,9 +27,6 @@ class MarkingPeriodSelectForm(forms.Form):
 
 class EngradeSyncForm(MarkingPeriodSelectForm):
     include_comments = forms.BooleanField(required=False)
-    
-class GradeUpload(UploadFileForm, MarkingPeriodSelectForm):
-    pass
 
 
 class StarOrIntField(forms.CharField):

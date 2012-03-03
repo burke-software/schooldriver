@@ -54,9 +54,9 @@ class Calendar:
         course_meets = CourseMeet.objects.filter(course__courseenrollment__user=student, course__marking_period=marking_period).distinct()
         
         if include_asp:
-            asp_periods = Period.objects.filter(course__courseenrollment__user=student, course__asp=True).order_by('start_time').distinct()
+            asp_periods = Period.objects.filter(course__courseenrollment__user=student).order_by('start_time').distinct()
             periods = periods | asp_periods
-            asp_course_meets = CourseMeet.objects.filter(course__courseenrollment__user=student, course__asp=True).distinct()
+            asp_course_meets = CourseMeet.objects.filter(course__courseenrollment__user=student).distinct()
             course_meets = course_meets | asp_course_meets
         
         days = []
