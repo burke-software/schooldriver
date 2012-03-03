@@ -24,6 +24,7 @@ import datetime
 import logging
 
 from ecwsp.sis.models import Student
+from ecwsp.administration.models import Configuration
 
 class FollowUpAction(models.Model):
     name = models.CharField(max_length=100)
