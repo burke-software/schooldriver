@@ -110,6 +110,18 @@
                     </ul>
                 </li>
             {% endif %}
+            <!-- Counseling -->
+            {% if perms.counseling.add_referralform and 'ecwsp.counseling' in settings.INSTALLED_APPS %}
+                <li class="user-options-container collapse closed">
+                    <a href="javascript://" class="user-options-handler collapse-handler"> Counseling </a>
+                    <ul class="user-options">
+                        {% if perms.counseling.change_studentmeeting %}
+                            <li><a href="{% url admin:app_list 'counseling'%}">{% trans 'Counseling Admin' %}</a></li>
+                        {% endif %}
+                        <li><a href="{% url admin:counseling_referralform_add %}">{% trans 'Submit Referral Form' %}</a></li>
+                    </ul>
+                </li>
+            {% endif %}
             <!-- CWSP -->
             {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
                 <li class="user-options-container collapse closed">

@@ -663,8 +663,7 @@ class SchoolYear(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     grad_date = models.DateField(blank=True, null=True)
-    active_year = models.BooleanField(help_text="The active year is used for calculations such as student discipline records number of incidents")
-    # haha! default can be a callable object!
+    active_year = models.BooleanField(help_text="BE CAREFUL! This is the current school year. There can only be one and setting this will remove it from other years. Only the active school year can be used for things like grades and attendance. Non active years should be only for historic and planned years.")
     benchmark_grade = models.BooleanField(default=lambda: str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true",
                                           help_text="The configuration option \"Benchmark-based grading\" sets the default for this field")
     

@@ -20,6 +20,7 @@ from django.contrib.auth.models import User, Group
 from django.db import models
 
 import datetime
+import logging
 
 from ecwsp.sis.models import Student
 
@@ -35,6 +36,7 @@ class StudentMeeting(models.Model):
     follow_up_action = models.ForeignKey(FollowUpAction,blank=True,null=True)
     follow_up_notes = models.CharField(max_length=2024,blank=True)
     reported_by = models.ForeignKey(User,limit_choices_to = {'groups__name': 'faculty'})
+    referral_form = models.ForeignKey('ReferralForm',blank=True,null=True,editable=False)
     def __unicode__(self):
         students = ''
         for student in self.students.all():
@@ -55,7 +57,7 @@ class ReferralReason(models.Model):
     category = models.ForeignKey(ReferralCategory)
     name = models.CharField(max_length=255)
     def __unicode__(self):
-        return '%s: %s' (unicode(self.category), unicode(self.name))
+        return '%s: %s' % (self.category, self.name)
 
 class ReferralForm(models.Model):
     classroom_teacher = models.ForeignKey(User,limit_choices_to = {'groups__name': 'faculty'},related_name='referral_classroom_teacher')
@@ -64,3 +66,21 @@ class ReferralForm(models.Model):
     student = models.ForeignKey(Student)
     comments = models.TextField(blank=True)
     referral_reasons = models.ManyToManyField(ReferralReason, blank=True,null=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.id:
+            new = True
+        else:
+            new = False
+        super(StudentInteraction, self).save(*args, **kwargs)
+        if new:
+            try:
+                subject = 'New counseling referral for %s.' % (self.student)
+                msg = '%s has submitted a counseling referral form for %s. Click <a href="%s">here</a> to view.' % \
+                (self.referred_by,self.student,reverse('admin:counseling_referralform_change',args=(self.id,)),)
+                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
+                to_addr = Configuration.get_or_default("counseling_referral_notice_email_to", "").value.split(',')
+                if to_addr:
+                    send_mail(subject, msg, from_addr, to_addr)
+            except:
+                logging.error('Couldn\'t email counseling referral form', exc_info=True)
