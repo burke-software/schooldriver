@@ -552,7 +552,6 @@ def view_student(request, id=None):
                     except:
                         course.grade_html += '<td> </td>'
                 course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
-        print clientvisits
                 
         return render_to_response('sis/view_student.html', {'form':form, 'show_grades':show_grades, 'date':today, 'student':student, 'emergency_contacts': emergency_contacts,
                                                         'siblings': siblings, 'numbers':numbers, 'location':location, 'disciplines':disciplines, 'attendances':attendances,
