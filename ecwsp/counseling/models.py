@@ -16,6 +16,7 @@
 #   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #   MA 02110-1301, USA.
 
+from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
@@ -79,8 +80,8 @@ class ReferralForm(models.Model):
         if new:
             try:
                 subject = 'New counseling referral for %s.' % (self.student)
-                msg = '%s has submitted a counseling referral form for %s. Click <a href="%s">here</a> to view.' % \
-                (self.referred_by,self.student,reverse('admin:counseling_referralform_change',args=(self.id,)),)
+                msg = '%s has submitted a counseling referral form for %s. Click this link to view \n%s%s' % \
+                (self.referred_by,self.student,settings.BASE_URL,reverse('admin:counseling_referralform_change',args=(self.id,)),)
                 from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 to_addr = Configuration.get_or_default("counseling_referral_notice_email_to", "").value.split(',')
                 if to_addr:
