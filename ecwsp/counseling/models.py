@@ -17,6 +17,7 @@
 #   MA 02110-1301, USA.
 
 from django.contrib.auth.models import User, Group
+from django.core.urlresolvers import reverse
 from django.db import models
 
 import datetime
