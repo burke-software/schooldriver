@@ -72,7 +72,7 @@ class ReferralForm(models.Model):
             new = True
         else:
             new = False
-        super(StudentInteraction, self).save(*args, **kwargs)
+        super(ReferralForm, self).save(*args, **kwargs)
         if new:
             try:
                 subject = 'New counseling referral for %s.' % (self.student)
