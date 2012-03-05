@@ -212,7 +212,7 @@ class Applicant(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         self.__set_level()
-        if self.application_decision.level.all().count() and self.application_decision and not self.level in self.application_decision.level.all():
+        if self.application_decision and self.application_decision.level.all().count() and self.application_decision and not self.level in self.application_decision.level.all():
             raise ValidationError('Decision %s must be on level(s) %s.' % (
                 self.application_decision,
                 self.application_decision.level.all(),

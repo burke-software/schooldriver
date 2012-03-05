@@ -18,6 +18,7 @@
 
 from sis.importer import *
 from ecwsp.benchmark_grade.models import *
+from ecwsp.grades.models import Grade
 
 class BenchmarkGradeImporter(Importer):
     def _is_empty(self, s):

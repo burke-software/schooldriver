@@ -76,7 +76,7 @@
                         {% if perms.schedule.change_course %}
                             <li><a href="{% url admin:schedule_course_changelist %}">{% trans 'Edit Grades/Courses' %}</a></li>
                         {% endif %}
-                        {% if perms.grades.change_own_grade %}
+                        {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
                             <li><a href="{% url ecwsp.grades.views.teacher_grade %}">{% trans 'Submit Grades' %}</a>
                         {% endif %}
                         {% if perms.sis.reports %}
