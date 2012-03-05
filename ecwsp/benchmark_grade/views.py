@@ -35,6 +35,7 @@ from ecwsp.sis.uno_report import *
 from ecwsp.sis.xlsReport import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.forms import *
+from ecwsp.schedule.forms import *
 from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import *
 
