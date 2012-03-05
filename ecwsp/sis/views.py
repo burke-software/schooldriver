@@ -113,7 +113,7 @@ def import_everything(request):
     if request.POST:
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            from ecwsp.sis.importer import *
+            from ecwsp.sis.importer import Importer
             importer = Importer(request.FILES['file'], request.user)
             msg = ""
             msg_to_add, filename = importer.magic_import_everything()
