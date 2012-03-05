@@ -1826,6 +1826,7 @@ class Importer:
     def import_grades(self, course, marking_period):
         """ Special import for teachers to upload grades
         Returns Error Message """ 
+        from ecwsp.grades.models import Grade,GradeComment
         try:
             sheet = self.get_sheet_by_case_insensitive_name(marking_period.name)
         except:
