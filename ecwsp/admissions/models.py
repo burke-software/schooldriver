@@ -211,12 +211,14 @@ class Applicant(models.Model):
     
     def clean(self):
         from django.core.exceptions import ValidationError
-        self.__set_level()
-        if self.application_decision and self.application_decision.level.all().count() and self.application_decision and not self.level in self.application_decision.level.all():
-            raise ValidationError('Decision %s must be on level(s) %s.' % (
-                self.application_decision,
-                self.application_decision.level.all(),
-                ))
+        # Not good, but it's very hard to deal with m2m fields until saved. So just ignore validation. Terrible terrible solution.
+        if self.id:
+            self.__set_level()
+            if self.application_decision and self.application_decision.level.all().count() and self.application_decision and not self.level in self.application_decision.level.all():
+                raise ValidationError('Decision %s must be on level(s) %s.' % (
+                    self.application_decision,
+                    self.application_decision.level.all(),
+                    ))
     
     def save(self, *args, **kwargs):
         if self.id:
