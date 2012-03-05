@@ -336,11 +336,11 @@ def createTest(c):
                         next_line = first_line - line_space*3
                     indent = ((width-left_margin-right_margin)/3)*column
                 if prior_question:
+                    same = False
                     for elem, val in questions[question]:
                         if elem in prior_choices:
                             same = True
                         else:
-                            same = False
                             break
                 prior_choices = []
                 if same:
