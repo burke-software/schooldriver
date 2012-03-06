@@ -1826,13 +1826,13 @@ class Importer:
     def import_grades(self, course, marking_period):
         """ Special import for teachers to upload grades
         Returns Error Message """ 
+        from ecwsp.grades.models import Grade,GradeComment
         try:
             sheet = self.get_sheet_by_case_insensitive_name(marking_period.name)
         except:
             return "Could not find a sheet named %s" % (marking_period,)
         x = 0
         header = sheet.row(x)
-        x += 2 # skip second row
         while x < sheet.nrows:
             try:
                 name = None
@@ -1849,7 +1849,7 @@ class Importer:
                         if name == "username":
                             student = Student.objects.get(username=value)
                             model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
-                        elif name == "final grade %" or name == 'marking period grade (%)':
+                        elif name in ["final grade %",'marking period grade (%)','grade']:
                             grade = value
                         elif name == "comment code" or name == "comment codes" or name == "comment\ncodes":
                             value = unicode.lower(unicode(value))

@@ -11,11 +11,11 @@ from ecwsp.schedule.models import *
 from ecwsp.sis.models import *
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.uno_report import replace_spreadsheet
-import datetime
 from models import *
 from forms import *
-import time
 
+import datetime
+import time
 import logging
 
 @permission_required('grades.change_own_grade')
