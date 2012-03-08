@@ -28,6 +28,7 @@ class ReferralFormAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.ManyToManyField: {'widget': CheckboxSelectMultiple},
     }
+    form = make_ajax_form(ReferralForm, dict(student='student'))
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name in ['referred_by','classroom_teacher']:
             kwargs['initial'] = request.user.id
