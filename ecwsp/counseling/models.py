@@ -21,12 +21,11 @@ from django.contrib.auth.models import User, Group
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 from django.db import models
-
-import datetime
-import logging
-
+from ckeditor.fields import RichTextField
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
+import datetime
+import logging
 
 class FollowUpAction(models.Model):
     name = models.CharField(max_length=100)
@@ -36,11 +35,12 @@ class FollowUpAction(models.Model):
 class StudentMeeting(models.Model):
     students = models.ManyToManyField(Student)
     date = models.DateField(default=datetime.date.today)
-    notes = models.TextField(blank=True)
+    notes = RichTextField(blank=True)
     follow_up_action = models.ForeignKey(FollowUpAction,blank=True,null=True)
     follow_up_notes = models.CharField(max_length=2024,blank=True)
     reported_by = models.ForeignKey(User,limit_choices_to = {'groups__name': 'faculty'})
     referral_form = models.ForeignKey('ReferralForm',blank=True,null=True,editable=False)
+    file = models.FileField(upload_to='student_meetings',blank=True,null=True)
     def __unicode__(self):
         students = ''
         for student in self.students.all():
