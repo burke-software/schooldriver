@@ -347,7 +347,7 @@ def handle_final_grade_save(request, course=None):
                     })
                     
     
-@permission_required('schedule.change_grade')
+@permission_required('grades.change_grade')
 def student_gradesheet(request, id, year_id=None):
     student = Student.objects.get(id=id)
     if request.POST:

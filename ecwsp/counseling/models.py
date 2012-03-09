@@ -51,6 +51,9 @@ class StudentMeeting(models.Model):
         for student in self.students.all():
             txt += '%s, ' % (student)
         return txt[:-2]
+        
+    class Meta:
+        ordering = ('-date',)
 
 class ReferralCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)

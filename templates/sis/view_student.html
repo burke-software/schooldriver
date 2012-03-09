@@ -266,15 +266,19 @@ $(document).ready(function() {
         <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Counseling</a>
         <div class="sv-main">
             <div class="section-div">
-                {% for meeting in student.studentmeeting_set.all %}
-                    {{ meeting.date }}: {{ meeting }} 
-                    {% if perms.counseling.change_studentmeeting %} 
-                        {{ meeting.notes }} {{ meeting.follow_up_action.all }} {{ meeting.follow_up_notes }} 
-                    {% else %} 
-                        Details not shown
-                    {% endif %}
-                    <br/>
-                {% endfor %}
+		<ul>
+		    {% for meeting in student.studentmeeting_set.all %}
+			<li>
+			    <h4>{{ meeting.date }}: {{ meeting }} </h4>
+			    {% if perms.counseling.change_studentmeeting %} 
+				{{ meeting.notes|safe }} {{ meeting.follow_up_action.all }} {{ meeting.follow_up_notes }} 
+			    {% else %} 
+				Details not shown
+			    {% endif %}
+			</li>
+		    {% endfor %}
+		</ul>
+                
             </div> <!-- class="section-div"-->
         </div> <!-- .sv-main -->
         </div> <!-- .sv-section -->
