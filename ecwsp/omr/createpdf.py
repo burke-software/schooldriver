@@ -341,6 +341,7 @@ def createTest(c):
                         if elem in prior_choices:
                             same = True
                         else:
+                            same = False
                             break
                 prior_choices = []
                 if same:

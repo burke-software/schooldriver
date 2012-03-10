@@ -1,4 +1,4 @@
-#       Copyright 2010 Cristo Rey New York High School
+#       Copyright 2010-2012 Burke Software and Consulting LLC
 #        Author David M Burke <david@burkesoftware.com>
 #       
 #       This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from ajax_select import make_ajax_form
 from custom_field.custom_field import CustomFieldAdmin
+import datefilterspec
 
 import logging
     
@@ -310,7 +311,7 @@ class TimeSheetAdmin(admin.ModelAdmin):
             return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
         
     search_fields = ['student__fname', 'student__lname', 'company__team_name']
-    list_filter = ['creation_date', 'approved', 'for_pay', 'make_up', 'company', 'student__inactive']
+    list_filter = ['creation_date', 'date', 'approved','performance','for_pay', 'make_up', 'company', 'student__inactive']
     list_display = ('student', 'date', 'company', 'performance', 'student_Accomplishment_Brief', 'supervisor_Comment_Brief', 'approved', 'for_pay', 'make_up',)
     readonly_fields = ['supervisor_key', 'hours', 'school_net', 'student_net', 'creation_date']
     actions = [approve]

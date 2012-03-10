@@ -31,6 +31,8 @@ from models import *
 from forms import *
 from ecwsp.schedule.models import Course
 from ecwsp.sis.models import Student, UserPreference, Faculty
+from ecwsp.sis.helper_functions import Struct
+from ecwsp.administration.models import Template
 import xlwt
 
 import datetime
@@ -394,6 +396,7 @@ def attendance_report(request):
     
 def attendance_student(id, all_years=False, order_by="Date", include_private_notes=False, type="odt"):
     """ Attendance report on particular student """
+    from ecwsp.sis.report import get_default_data, pod_save
     student = Student.objects.get(id=id)
     if all_years:
         attendances = StudentAttendance.objects.filter(student=student)
@@ -412,7 +415,7 @@ def attendance_student(id, all_years=False, order_by="Date", include_private_not
             notes = unicode(attn.notes) + "  " + unicode(attn.private_notes)
         else:
             notes = unicode(attn.notes)
-        attendance = struct()
+        attendance = Struct()
         attendance.date = attn.date
         attendance.status = attn.status
         attendance.notes = notes

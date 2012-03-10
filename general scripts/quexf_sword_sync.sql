@@ -11,7 +11,8 @@ begin
         (SELECT quexf_crny.boxes.bgid from quexf_crny.boxes WHERE quexf_crny.boxes.bid = NEW.bid);
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET no_more_bids = 1;
     set @test_instance_id = (
-        SELECT `val` *1 from quexf_crny.formboxverifytext where quexf_crny.formboxverifytext.fid = NEW.fid
+        SELECT DISTINCT `val` *1 from quexf_crny.formboxverifychar where quexf_crny.formboxverifychar.fid = NEW.fid
+        and quexf_crb.formboxverifychar.bid = NEW.bid
     );
     set @question_id = (
         SELECT DISTINCT boxgroupstype.varname from quexf_crny.boxgroupstype JOIN quexf_crny.boxes

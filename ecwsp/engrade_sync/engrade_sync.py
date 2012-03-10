@@ -18,6 +18,7 @@
 from ecwsp.engrade_sync.python_engrade import *
 from ecwsp.engrade_sync.models import *
 from ecwsp.schedule.models import *
+from ecwsp.grades.models import Grade
 
 import sys
 import datetime

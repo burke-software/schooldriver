@@ -573,6 +573,9 @@ class TimeSheetPerformanceChoice(models.Model):
     def __unicode__(self):
         return self.name
     
+    
+import datefilterspec
+    
 class TimeSheet(models.Model):
     student = models.ForeignKey(StudentWorker)
     for_pay = models.BooleanField(help_text="Student is working over break and will be paid separately for this work.")
@@ -580,6 +583,7 @@ class TimeSheet(models.Model):
     company = models.ForeignKey(WorkTeam) # Because a student's company can change but this shouldn't.
     creation_date = models.DateTimeField(auto_now_add=True)
     date = models.DateField()
+    date.date_filter = True
     time_in = models.TimeField()
     time_lunch = models.TimeField()
     time_lunch_return = models.TimeField()

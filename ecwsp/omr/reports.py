@@ -92,11 +92,11 @@ class ReportManager(object):
                 row.append(test_instance.answerinstance_set.filter(question__benchmarks=benchmark).aggregate(Sum('points_earned'))['points_earned__sum'])
                 if a <= 122: # 122 = z
                     row.append(xlwt.Formula(chr(a)+str(i)+'/'+chr(a)+'$2'))
-                elif a <= 146:
+                elif a <= 148:
                     row.append(xlwt.Formula('A'+chr(a-26)+str(i)+'/'+'A'+chr(a-26)+'$2'))
-                elif a <= 170:
+                elif a <= 174:
                     row.append(xlwt.Formula('B'+chr(a-52)+str(i)+'/'+'B'+chr(a-52)+'$2'))
-                elif a <= 194:
+                elif a <= 200:
                     row.append(xlwt.Formula('C'+chr(a-78)+str(i)+'/'+'C'+chr(a-78)+'$2'))
                 a += 2 # skip ahead 2 columns
             i += 1
