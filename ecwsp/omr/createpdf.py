@@ -31,7 +31,7 @@ import MySQLdb
 from django.conf import settings
 from django.core.files import File
 from omr.models import Test
-from ecwsp.omr.queXF import import_queXF
+from ecwsp.omr.queXF import import_queXF, pagesetup
 from ecwsp.omr.models import *
 
 def get_db_connection():
@@ -156,10 +156,11 @@ def generate_xml(test_id):
     
     def validate_pdf(testid):
         db_cursor = get_db_connection()
-        db_cursor.execute('select count(*) from pages left join questionnaires on questionnaires.qid=pages.qid where questionnaires.description=%s;', (testid,))
-        if int(db_cursor.fetchone()[0]) == 0:
+        count = db_cursor.execute('select  pages.qid,pid from pages left join questionnaires on questionnaires.qid=pages.qid where questionnaires.description=%s;', (testid,))
+        if not count:
             raise Exception('PDF should have been sent to quexf but was not!')
-        
+        for row in db_cursor.fetchall():
+            pagesetup(row[0],row[1])
         
 
     entiredoc = minidom.Document()
@@ -176,9 +177,6 @@ def generate_xml(test_id):
     pdfName = "QueXF_Test_" + testid + ".pdf"
     test.queXF_pdf.save(pdfName,pdfFile)
     pdfFile.close()
-    
-    
-    
     
     import_queXF(test.queXF_pdf.path, first_banding, test_id)
     

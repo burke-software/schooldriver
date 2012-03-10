@@ -332,7 +332,7 @@ OMR_IS_MASTER_SERVER=True
 SENTRY_MAIL_LEVEL = logging.WARNING
 
 # The "new" url path for quexf.
-QUEXF_URL = "http://quexf.cristoreyny.org/admin/new.php"
+QUEXF_URL = "http://quexf.cristoreyny.org"
 
 # this will load additional settings from the file settings_local.py
 # this is useful when managing multiple sites with different configurations
