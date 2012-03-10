@@ -1,4 +1,4 @@
-#   Copyright 2011 Burke Software and Consulting LLC
+#   Copyright 2011-2012 Burke Software and Consulting LLC
 #   Author Callista Goss <calli@burkesoftware.com>
 #   
 # This program is free software; you can redistribute it and/or modify
@@ -15,7 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-
 from django.conf import settings
 import urllib, urllib2
 from poster.encode import multipart_encode
@@ -24,7 +23,7 @@ import MySQLdb
 
 def import_queXF(pdf,banding,test_id):
         register_openers()
-        url = settings.QUEXF_URL
+        url = '%s/admin/new.php' % (settings.QUEXF_URL,)
         description = str(test_id)
         
         values = {'form':open(pdf, 'r'),
@@ -37,3 +36,14 @@ def import_queXF(pdf,banding,test_id):
         request.unverifiable = True
         response = urllib2.urlopen(request)
         the_page = response.read()
+
+def pagesetup(qid,pid):
+        """
+        Run page setup on quexf, this is required for quexf to function. Typically a human would
+        do this, but there is no need for interaction.
+        qid: Questionairre id for quexf
+        pid: page id for quexf
+        """
+        url = '%s/admin/pagesetup.php?zoom=3&pid=%s&qid=%s&done=done' % (settings.QUEXF_URL,pid,qid)
+        response = urllib2.urlopen(url)
+        
