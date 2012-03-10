@@ -6,7 +6,7 @@ from models import *
 
 class StudentMeetingAdmin(admin.ModelAdmin):
    list_display = ['display_students','date','reported_by']
-   fields = ['students','date','notes','follow_up_action','follow_up_notes','reported_by']
+   fields = ['students','date','notes','file','follow_up_action','follow_up_notes','reported_by']
    form = make_ajax_form(StudentMeeting, dict(students='student'))
    def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'reported_by':
