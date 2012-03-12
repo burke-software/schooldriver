@@ -27,7 +27,7 @@ class inputTimeForm(forms.ModelForm):
     class Meta:
         model = Hours
         widgets = {'date':adminwidgets.AdminDateWidget()}
-        exclude = ['student','site']
+        exclude = ['volunteer_site']
         
 class NewSiteForm(forms.ModelForm):
     class Meta:
@@ -36,10 +36,9 @@ class NewSiteForm(forms.ModelForm):
 
 class ExistingSiteForm(forms.ModelForm):
     class Meta:
-        model = Volunteer
-        fields= ['site', 'job_description', 'student']
-        widgets = {'student':HiddenInput, 'job_description':forms.Textarea(attrs={'rows':3})}
-    site = forms.ModelChoiceField(Site.objects.all(), required=True)
+        model = VolunteerSite
+        fields = ['site','job_description']
+        widgets = {'job_description':forms.Textarea(attrs={'rows':3})}
         
 class SupervisorForm(forms.ModelForm):
     class Meta:

@@ -1,5 +1,5 @@
-#   Copyright 2011 David M Burke
-#   Author Callista Goss <calli@burkesoftware.com>\
+#   Copyright 2011-2012 David M Burke
+#   Author Callista Goss <calli@burkesoftware.com>
 #   Author David Burke <david@burkesoftware.com>
 #   
 #   This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@ from ajax_select import make_ajax_form
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 
-from datetime import datetime, date
+import datetime
 
 def approve_site(modeladmin, request, queryset):
     queryset.update(site_approval = 'Accepted')
@@ -49,7 +49,7 @@ def reject_site(modeladmin, request, queryset):
                 )
     
 def time_fulfilled(modeladmin, request, queryset):
-    queryset.update(hours_record=True)
+    queryset.update(hours_confirmed=True)
     for object in queryset:
         hrsInstance = Hours(student=object.student, date =  date.today)
         if object.hours_completed():
@@ -72,13 +72,23 @@ class HoursInline(admin.TabularInline):
     model = Hours
     extra = 1
 
-class VolunteerAdmin(admin.ModelAdmin):
-    form = make_ajax_form(Volunteer, dict(student='student', site_supervisor='site_supervisor'))
-    list_display = ('student', 'site_supervisor', 'site_approval', 'contract', 'hours_required', 'hours_completed', 'hours_record')
-    list_filter = ['site_supervisor__site', 'student', 'site_approval', 'contract', 'hours_record']
-    search_fields = ['comment', 'student__fname', 'student__lname', 'site_supervisor__site__site_name', 'site_supervisor__name']
-    actions = [approve_site, reject_site, time_fulfilled]
+class VolunteerSiteInline(admin.StackedInline):
+    model = VolunteerSite
+    extra = 1
+
+class VolunteerSiteAdmin(admin.ModelAdmin):
+    form = make_ajax_form(VolunteerSite, dict(supervisor='site_supervisor'))
+    list_display = ('volunteer','supervisor','site_approval','contract','hours_confirmed','inactive')
+    actions = [approve_site,reject_site,time_fulfilled]
     inlines = [HoursInline]
+admin.site.register(VolunteerSite,VolunteerSiteAdmin)
+
+class VolunteerAdmin(admin.ModelAdmin):
+    form = make_ajax_form(Volunteer, dict(student='student'))
+    list_display = ('student','hours_required','hours_completed')
+    list_filter = ['sites', 'student',]
+    search_fields = ['student__fname', 'student__lname',]
+    inlines = [VolunteerSiteInline]
 admin.site.register(Volunteer,VolunteerAdmin)
 
 

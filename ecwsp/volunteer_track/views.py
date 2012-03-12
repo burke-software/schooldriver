@@ -37,19 +37,22 @@ from ecwsp.sis.models import Student
 
 #staff: has_perm instead of filter
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')    
-def student_hours(request):
+def student_hours(request, id):
     try:
         student = Student.objects.get(username=request.user.username)
         volunteer = Volunteer.objects.get(student=student)
+        volunteer_site = VolunteerSite.objects.get(id=id)
+        if not volunteer == volunteer_site.volunteer:
+            raise Exception('Student attempting to log hours for site they are not part of!')
     except:
         return render_to_response('base.html', {'msg': "Student is not set as a volunteer. Please notify a system admin if you believe this is a mistake."}, RequestContext(request, {}))
     
-    if volunteer.site_approval != "Accepted":
+    if volunteer_site.site_approval != "Accepted":
         return render_to_response('volunteer_track/dash.html', {'student': volunteer, 'msg': "Your site must be approved before you may submit hours."}, RequestContext(request, {}))
     
     VolFormSet = modelformset_factory(Hours, inputTimeForm, extra=3)
     
-    formset = VolFormSet(queryset=Hours.objects.filter(student=volunteer))
+    formset = VolFormSet(queryset=Hours.objects.filter(volunteer_site=volunteer_site))
     if request.method == 'POST':
         formset = VolFormSet(request.POST)
         if formset.is_valid():
@@ -57,8 +60,7 @@ def student_hours(request):
             for form in formset:
                 hour_model = form.save(commit=False)
                 if hour_model.date and hour_model.hours:
-                    hour_model.student = volunteer
-                    hour_model.site = volunteer.site
+                    hour_model.volunteer_site = volunteer_site
                     try:
                         hour_model.full_clean()
                         hour_model.save()
@@ -66,7 +68,7 @@ def student_hours(request):
                         msg += " Duplicate date found %s. " % (hour_model.date,)
             return render_to_response('volunteer_track/dash.html', {'student': volunteer, 'msg': msg}, RequestContext(request, {}))
 
-    return render_to_response('volunteer_track/student_volunteer_hours.html', {'student': volunteer, 'form': formset,'hoursReq':volunteer.hours_required,\
+    return render_to_response('volunteer_track/student_volunteer_hours.html', {'volunteer_site':volunteer_site,'student': volunteer, 'form': formset,'hoursReq':volunteer.hours_required,\
                                                                                'hoursComplete':volunteer.hours_completed}, RequestContext(request, {}))
     
     
@@ -76,14 +78,19 @@ def student_site_approval(request):
     student = Student.objects.get(username=request.user.username)
     volunteer, created = Volunteer.objects.get_or_create(student=student)
     
+    existing_site_form = ExistingSiteForm()
+    new_site_form = NewSiteForm(prefix="new")
+    supervisor_form = SupervisorForm(prefix="super")
+    
     if request.method == 'POST':
         if 'existing_site_submit' in request.POST:
-            existing_site_form = ExistingSiteForm(request.POST, instance=volunteer)
+            existing_site_form = ExistingSiteForm(request.POST)
             if existing_site_form.is_valid():
-                volunteer = existing_site_form.save(commit=False)
-                volunteer.site_approval = "Submitted"
-                volunteer.save(saved_by_volunteer=True)
-                return HttpResponseRedirect(reverse(change_supervisor))
+                volunteer_site = existing_site_form.save(commit=False)
+                volunteer_site.site_approval = "Submitted"
+                volunteer_site.volunteer = volunteer
+                volunteer_site.save(saved_by_volunteer=True)
+                return HttpResponseRedirect(reverse(change_supervisor, args=[volunteer_site.id]))
                 
         elif 'new_site_submit' in request.POST:
             new_site_form = NewSiteForm(request.POST, prefix="new")
@@ -93,20 +100,17 @@ def student_site_approval(request):
                 supervisor = supervisor_form.save()
                 supervisor.site = site
                 supervisor.save()
-                volunteer.site = site
-                volunteer.site_supervisor = supervisor
-                volunteer.job_description = new_site_form.cleaned_data['job_description']
-                volunteer.site_approval = "Submitted"
-                volunteer.save(saved_by_volunteer=True)
-                return HttpResponseRedirect(reverse(student_dash))
                 
-    if not 'existing_site_form' in locals():
-        existing_site_form = ExistingSiteForm(instance=volunteer)
-    if not 'new_site_form' in locals():
-        new_site_form = NewSiteForm(prefix="new")
-    if not 'supervisor_form' in locals():
-        supervisor_form = SupervisorForm(prefix="super")
-        
+                volunteer_site = VolunteerSite(
+                    site=site,
+                    supervisor=supervisor,
+                    job_description=new_site_form.cleaned_data['job_description'],
+                    site_approval = "Submitted",
+                    volunteer=volunteer,
+                    )
+                volunteer_site.save( saved_by_volunteer=True)
+                return HttpResponseRedirect(reverse(student_dash))
+    
     return render_to_response('volunteer_track/student_site_approval.html',
                               {'student': volunteer, 'existing_site_form':existing_site_form, 'new_site_form':new_site_form, 'supervisor_form':supervisor_form}, RequestContext(request, {}))
 
@@ -116,39 +120,47 @@ def student_dash(request):
     student = Student.objects.get(username=request.user.username)
     volunteer, created = Volunteer.objects.get_or_create(student=student)
     
-    if not volunteer.site:
+    if not volunteer.volunteersite_set.all().count():
         return HttpResponseRedirect(reverse(student_site_approval))
     
     return render_to_response('volunteer_track/dash.html', {'student': volunteer}, RequestContext(request, {}))
     
 @user_passes_test(lambda u: u.groups.filter(name='students'), login_url='/')    
-def change_supervisor(request):
+def change_supervisor(request, id):
     student = Student.objects.get(username=request.user.username)
     volunteer, created = Volunteer.objects.get_or_create(student=student)
+    volunteer_site = VolunteerSite.objects.get(id=id)
+    if not volunteer == volunteer_site.volunteer:
+        raise Exception('Student attempting to change volunteersite they are not part of!')
     
     if request.method == 'POST':
         supervisor_form = SupervisorForm(request.POST)
         select_supervisor_form = SelectSupervisorForm(request.POST)
         if select_supervisor_form.is_valid() and select_supervisor_form.cleaned_data['select_existing']:
-            volunteer.site_supervisor = select_supervisor_form.cleaned_data['select_existing']
+            volunteer_site.supervisor = select_supervisor_form.cleaned_data['select_existing']
             volunteer.site_approval = "Submitted"
             volunteer.save()
             return HttpResponseRedirect(reverse(student_dash))
         elif supervisor_form.is_valid():
             supervisor = supervisor_form.save()
-            volunteer.site_supervisor = supervisor
-            volunteer.site_approval = "Submitted"
-            volunteer.save()
-            if volunteer.site:
-                supervisor.site = volunteer.site
-                supervisor.save()
+            supervisor.site = volunteer_site.site
+            supervisor.save()
+            
+            volunteer_site.supervisor = supervisor
+            volunteer_site.site_approval = "Submitted"
+            volunteer_site.save()
             return HttpResponseRedirect(reverse(student_dash))
     else:
         supervisor_form = SupervisorForm()
         select_supervisor_form = SelectSupervisorForm()
-        select_supervisor_form.fields['select_existing'].queryset = volunteer.site.sitesupervisor_set.all()
+    select_supervisor_form.fields['select_existing'].queryset = volunteer_site.site.sitesupervisor_set.all()
     
-    return render_to_response('volunteer_track/student_change_supervisor.html', {'student': volunteer, 'supervisor_form':supervisor_form, 'select_supervisor_form': select_supervisor_form}, RequestContext(request, {}))
+    return render_to_response('volunteer_track/student_change_supervisor.html', {
+        'student': volunteer,
+        'site': volunteer_site.site,
+        'supervisor_form':supervisor_form,
+        'select_supervisor_form': select_supervisor_form,
+        }, RequestContext(request, {}))
     
 def approve(request):
     try:

@@ -342,7 +342,7 @@ def handle_final_grade_save(request, course=None):
                     messages.info(request, 'Error in grade for ' + unicode(Grade.objects.get(id=input[1]).student))
                 except:
                     messages.error(request, 'Unknown error ' + unicode(input))
-                    logger.error('Unable to save grade', exc_info=True, extra={
+                    logging.error('Unable to save grade', exc_info=True, extra={
                         'request': request,
                     })
                     
