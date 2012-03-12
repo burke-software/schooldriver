@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block head %}
+    {{ block.super }}
+    <style type="text/css">
+        li {
+            margin-left: 2em;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<h2> Volunteer Dashboard </h2>
+<fieldset>
+    <legend>Student: {{ student }} </legend>
+    Work Site{{ student.volunteersite_set.all.count|pluralize }}:
+    <ul> 
+        {% for volunteersite in student.volunteersite_set.all %}
+            <li>
+                {{ volunteersite.site }} ({{ volunteersite.site_approval }}) <br/>
+                {{ volunteersite.supervisor }} <a href="{% url ecwsp.volunteer_track.views.change_supervisor volunteersite.id %}">Change</a> (Requires approval)<br/>
+                {% if not volunteersite.inactive and volunteersite.site_approval == "Accepted" %}
+                    <a href="{% url ecwsp.volunteer_track.views.student_hours volunteersite.id %}">Log Hours</a><br/>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    Hours Complete: {{ student.hours_completed }} <br/>
+    Hours Required: {{ student.hours_required }} <br/>
+    </fieldset>
+<br/>
+
+<a href="{% url ecwsp.volunteer_track.views.student_site_approval %}">Add New Site</a> (Requires approval)
+
+{% endblock %}

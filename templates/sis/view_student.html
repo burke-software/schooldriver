@@ -269,15 +269,28 @@ $(document).ready(function() {
 		<ul>
 		    {% for meeting in student.studentmeeting_set.all %}
 			<li>
-			    <h4>{{ meeting.date }}: {{ meeting }} </h4>
+			    <h4>
+				{{ meeting.date }}: {{ meeting }}
+				{% if perms.counseling.change_studentmeeting %}
+				- <a href="{% url admin:counseling_studentmeeting_change meeting.id %}">Edit</a>
+				{% endif %}
+			    </h4>
 			    {% if perms.counseling.change_studentmeeting %} 
-				{{ meeting.notes|safe }} {{ meeting.follow_up_action.all }} {{ meeting.follow_up_notes }} 
+				{{ meeting.notes|safe }}
+				{{ meeting.follow_up_action.all }}
+				{{ meeting.follow_up_notes }}
+				{% if meeting.file %}
+				    <a href="{{ meeting.file.url }}">{{ meeting.file }}</a>
+				{% endif %}
 			    {% else %} 
 				Details not shown
 			    {% endif %}
 			</li>
 		    {% endfor %}
 		</ul>
+		{% if perms.counseling.change_studentmeeting %}
+		<a href="{% url admin:counseling_studentmeeting_add %}">Add New</a>
+		{% endif %}
                 
             </div> <!-- class="section-div"-->
         </div> <!-- .sv-main -->
