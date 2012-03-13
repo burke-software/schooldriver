@@ -28,6 +28,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 
+from ecwsp.administration.models import Template
 from ecwsp.omr.createpdf import createpdf,generate_xml
 from ecwsp.omr.models import *
 from ecwsp.omr.forms import *
@@ -392,7 +393,11 @@ def download_test_results(request, test_id):
 def download_student_results(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
-    return report.download_student_results(test, format)
+    template = Template.objects.get_or_create(name="OMR Student Test Result")[0].get_template(request)
+    if not template:
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+    return report.download_student_results(test, format, template)
+    
     
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
 def download_answer_sheets(request, test_id):

@@ -181,10 +181,12 @@ def teacher_submissions(request):
         {'request': request, 'submissions': submissions})
 
 
-def daily_attendance_report(adate, private_notes=False, type="odt"):
+def daily_attendance_report(adate, private_notes=False, type="odt", request=None):
     from ecwsp.sis.report import *
     template = Template.objects.get_or_create(name="Daily Attendance")[0]
-    template = template.file.path
+    template = template.get_template_path(request)
+    if not template:
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
     
     data = get_default_data()
     data['selected_date'] = unicode(adate)
@@ -245,7 +247,9 @@ def attendance_report(request):
                 return daily_attendance_report(
                     daily_form.cleaned_data['date'],
                     daily_form.cleaned_data['include_private_notes'],
-                    type=type)
+                    type=type,
+                    request=request,
+                    )
         elif 'studentlookup' in request.POST:
             lookup_form = AttendanceViewForm(request.POST)
             if lookup_form.is_valid():
@@ -381,7 +385,12 @@ def attendance_report(request):
                     
                     students = Student.objects.filter(inactive=False).count()
                     absents = attendances.filter(status__absent=True).count()
-                    days = SchoolYear.objects.get(active_year=True).get_number_days()
+                    if form.cleaned_data['marking_period']:
+                        days = 0
+                        for mp in form.cleaned_data['marking_period']:
+                            days += mp.get_number_days()
+                    else:
+                        days = SchoolYear.objects.get(active_year=True).get_number_days()
                     #percentage = 1.0 - float(absents) / (float(students) * float(days))
                     percentage = xlwt.Formula("1-(B6/(A6*C6))")
                     data.append(['Students', 'Total Absents', 'School days', 'Absent Percentage'])

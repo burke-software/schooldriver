@@ -258,6 +258,11 @@
       var question_div = $('#question_' + question_id);
       if ( direction == "up" ) {
         var prev_div = question_div.prev();
+        // Don't move into silly places!
+        if (prev_div.attr('id') == "title_h2") {
+            return false;
+        }
+        
         var question_up_id = question_div.attr('id');
         var question_down_id = prev_div.attr('id');
         question_div.css("position", "relative");
@@ -276,6 +281,11 @@
         });
       } else {
         var prev_div = question_div.next();
+        // Don't move into silly places!
+        if (prev_div.attr('id') == "new_question_div") {
+            return false;
+        }
+        
         var question_up_id = prev_div.attr('id');
         var question_down_id = question_div.attr('id');
         question_div.css("position", "relative");
@@ -349,7 +359,7 @@
 {% block content %}
   <h1> Open Metric Recognition </h1>
   
-  <h2>{{ test }} Questions </h2>
+  <h2 id="title_h2">{{ test }} Questions </h2>
   {% for question in questions %}
     <div class="group tabular question_div" id="question_{{ question.id }}">
       <div class="row module">

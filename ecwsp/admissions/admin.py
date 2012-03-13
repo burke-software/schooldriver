@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from django.contrib import messages
 from ajax_select import make_ajax_form
 from ajax_select.fields import autoselect_fields_check_can_add
 
@@ -157,5 +158,11 @@ class ApplicantAdmin(admin.ModelAdmin):
                         change_message  = "Checked " + unicode(check)
                     )
         obj.save()
+        print obj.level
+        if obj.application_decision and obj.application_decision.level.all().count() and obj.application_decision and not obj.level in obj.application_decision.level.all():
+            msg = 'WARNING: Decision %s should be on level(s) ' % (obj.application_decision,)
+            for level in obj.application_decision.level.all():
+                msg += '%s, ' % (level,)
+            messages.warning(request, msg[:-2])
     
 admin.site.register(Applicant, ApplicantAdmin)
