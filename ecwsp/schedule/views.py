@@ -226,7 +226,7 @@ def grade_analytics(request):
                                     match_all = False
                         if data['final_grade_times'] == "*" and not match_all:
                             add_to_list = False    
-                        elif not num_matched >= int(data['final_grade_times']):
+                        elif data['final_grade_times'] != "*" and not num_matched >= int(data['final_grade_times']):
                             add_to_list = False
                     if add_to_list and data['grade'] and data['grade_filter'] and data['grade_times']:
                         # Using just grades for optimization. Rather than for course, for mp, for grade.
