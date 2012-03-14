@@ -297,6 +297,36 @@ $(document).ready(function() {
         </div> <!-- .sv-section -->
         {% endif %}
         
+	
+	{% if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS %}
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Volunteering</a>
+        <div class="sv-main">
+            <div class="section-div">
+		<ul>
+		    {% for volunteer_site in student.volunteer.volunteersite_set.all %}
+			<li>
+			    <h4>
+				{{ volunteer_site }}
+				{% if perms.volunteer_track.change_volunteer_site %}
+				- <a href="{% url admin:volunteer_track_volunteersite_change volunteer_site.id %}">Edit</a>
+				{% endif %}
+			    </h4>
+			    Hours: {{ volunteer_site.hours_at_site }}
+			    <br/>
+			    {{ volunteer_site.job_description }} 
+			</li>
+		    {% endfor %}
+		</ul>
+		{% if perms.counseling.change_studentmeeting %}
+		<a href="{% url admin:volunteer_track_volunteersite_add %}">Add New</a>
+		{% endif %}
+                
+            </div> <!-- class="section-div"-->
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
+        {% endif %}
+	
+	
         {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %}
         <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Work Visits</a>
         <div class="sv-main">

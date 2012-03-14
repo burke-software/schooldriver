@@ -68,10 +68,8 @@ class CustomIndexDashboard(Dashboard):
         self.children.append(modules.ModelList(
             title=('Volunteer Tracking'),
             column=1,
-            models=('ecwsp.volunteer_track.models.Site',
-                'ecwsp.volunteer_track.models.SiteSupervisor',
-                'ecwsp.volunteer_track.models.Hours',
-                'ecwsp.volunteer_track.models.Volunteer',
+            models=(
+                'ecwsp.volunteer_track.*',
             ),
         ))
 
