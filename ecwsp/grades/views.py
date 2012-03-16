@@ -126,6 +126,7 @@ def teacher_grade_upload(request, id):
                 course.save()
     else:
         import_form = GradeUpload()
+        import_form.fields['marking_period'].queryset = import_form.fields['marking_period'].queryset.filter(course=course)
         
     if request.method == 'POST' and 'edit' in request.POST:
         # save grades
