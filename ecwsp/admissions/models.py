@@ -156,7 +156,7 @@ class Applicant(models.Model):
     country_of_birth = models.ForeignKey(CountryOption, blank=True, null=True, default=get_default_country)
     immigration_status = models.ForeignKey(ImmigrationOption, blank=True, null=True)
     ready_for_export = models.BooleanField()
-    sis_student = models.ForeignKey('sis.Student', blank=True, null=True, related_name="appl_student", on_delete=models.SET_NULL)
+    sis_student = models.OneToOneField('sis.Student', blank=True, null=True, related_name="appl_student", on_delete=models.SET_NULL)
     
     total_income = models.DecimalField(max_digits=10, decimal_places=2, blank=True,null=True)
     adjusted_available_income = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
@@ -193,21 +193,17 @@ class Applicant(models.Model):
                 contact.save()
     
     def __set_level(self):
+        prev = None
         for level in AdmissionLevel.objects.all():
-            checks = level.admissioncheck_set.all()
+            checks = level.admissioncheck_set.filter(required=True)
             i = 0
             for check in checks:
                 if check in self.checklist.all():
                     i += 1
-            if i >= checks.count():
-                # verefy required checks are in
-                req_checks = AdmissionCheck.objects.filter(required=True, level__order__lte=level.order)
-                set_level = True
-                for req_check in req_checks:
-                    if not req_check in self.checklist.all():
-                        set_level = False
-                if set_level:
-                    self.level = level
+            if not i >= checks.count():
+                break
+            prev = level
+        self.level = prev
     
     def save(self, *args, **kwargs):
         if self.id:

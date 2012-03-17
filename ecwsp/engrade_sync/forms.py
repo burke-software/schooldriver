@@ -8,3 +8,8 @@ from ecwsp.schedule.models import MarkingPeriod
 
 class SetupCoursesForm(forms.Form):
     marking_period = forms.ModelChoiceField(MarkingPeriod.objects.all())
+    
+class GradeSyncForm(forms.Form):
+    marking_period = forms.ModelChoiceField(MarkingPeriod.objects.all())
+    teachers = forms.ModelMultipleChoiceField(Faculty.objects.filter(inactive=False,teacher=True))
+    include_comments = forms.BooleanField(required=False,initial=True)

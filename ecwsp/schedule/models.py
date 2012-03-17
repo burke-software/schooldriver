@@ -423,6 +423,8 @@ class StandardCategoryGrade(models.Model):
 
 class Award(models.Model):
     name = models.CharField(max_length=255)
+    def __unicode__(self):
+        return unicode(self.name)
 
 class AwardStudent(models.Model):
     award = models.ForeignKey(Award)

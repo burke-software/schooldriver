@@ -49,7 +49,7 @@ def teacher_grade(request):
                         messages.success(request, 'Engrade Sync successful. Please verify each course!')
                 except:
                     messages.info(request, 'Engrade Sync unsuccessful. Contact an administrator.')
-                    logger.error('Engrade Sync unsuccessful', exc_info=True, extra={
+                    logging.error('Engrade Sync unsuccessful', exc_info=True, extra={
                         'request': request,
                     })
             else:

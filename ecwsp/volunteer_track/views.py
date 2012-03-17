@@ -18,16 +18,16 @@
 #   MA 02110-1301, USA.
 
 # Create your views here.
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import Context, loader, RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.forms.formsets import formset_factory
-from django.forms.models import modelformset_factory
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from django.forms.formsets import formset_factory
+from django.forms.models import modelformset_factory
 from django.forms import ValidationError
+from django.http import HttpResponse, HttpResponseRedirect 
+from django.shortcuts import get_object_or_404,render_to_response
+from django.template import Context, loader, RequestContext
 
 from datetime import datetime, date
 
@@ -163,13 +163,10 @@ def change_supervisor(request, id):
         }, RequestContext(request, {}))
     
 def approve(request):
-    try:
-        volunteer = Volunteer.objects.get(secret_key=request.GET['key'])
-    except:
-        volunteer = None
+    volunteer_site = get_object_or_404(VolunteerSite,secret_key=request.GET['key'])
     if request.POST and "approve" in request.POST:
-        volunteer.hours_record = True
-        volunteer.save()
-        return render_to_response('base.html', {'msg': 'Volunteer hours approved for %s' % (volunteer,) }, RequestContext(request, {}))
+        volunteer_site.hours_confirmed = True
+        volunteer_site.save()
+        return render_to_response('base.html', {'msg': 'Volunteer hours approved for %s' % (volunteer_site.volunteer,) }, RequestContext(request, {}))
         
-    return render_to_response('volunteer_track/approve.html', {'volunteer': volunteer, }, RequestContext(request, {}))
+    return render_to_response('volunteer_track/approve.html', {'volunteer_site': volunteer_site, }, RequestContext(request, {}))

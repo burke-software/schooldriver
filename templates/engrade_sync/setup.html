@@ -36,10 +36,17 @@
             <input type="submit" name="generate_teacher" value="Generate Teachers"/>
         </fieldset>
         <br/>
-		<fieldset style="padding: 10px;">
+	<fieldset style="padding: 10px;">
             <legend>Generate All Student's Engrade Accounts</legend>
             Will send an email to students, you should run this about once per year. Student's email highly recommended. Will only create accounts for students<br/>
             <input type="submit" name="generate_student" disabled="disabled" value="Generate Students"/>
+        </fieldset>
+        <br/>
+        <fieldset style="padding: 10px;">
+            <legend>Sync Teacher Grades with Engrade</legend>
+            Sync selected teacher grades from Engrade to SWoRD. Will overwrite current SWoRD grades.<br/>
+            {{ grade_sync_form.as_p }}
+            <input type="submit" name="grade_sync" value="Sync Grades"/>
         </fieldset>
     </form>
 {% endblock %}

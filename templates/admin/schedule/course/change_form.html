@@ -7,8 +7,10 @@
         {% if not is_popup %}
             <ul class="tools">
                 {% if object_id %}
-                    <li><a href="{% url 'ecwsp.grades.views.teacher_grade_download' object_id %}" class="historylink"> Gradesheet Template </a></li>
-                    <li><a href="{% url 'ecwsp.grades.views.teacher_grade_upload' object_id %}" class="historylink"> Grades </a></li>
+                    {% if 'ecwsp.grades' in settings.INSTALLED_APPS %}
+                        <li><a href="{% url 'ecwsp.grades.views.teacher_grade_download' object_id %}" class="historylink"> Gradesheet Template </a></li>
+                        <li><a href="{% url 'ecwsp.grades.views.teacher_grade_upload' object_id %}" class="historylink"> Grades </a></li>
+                    {% endif %}
                     <li><a href="/schedule/enroll/{{ object_id }}" class="historylink">Enroll Students</a></li>
                 {% endif %}
                 <li><a href="history/">{% trans "History" %}</a></li>

@@ -18,15 +18,16 @@
 {% endblock %}
 
 {% block content %}
-<h2> Approve Volunteer Hours for {{ volunteer }} </h2>
+<h2> Approve Volunteer Hours for {{ volunteer_site.volunteer }} </h2>
 
 <table>
     <tr>
         <td>
-            Work Site: {{ volunteer.site }} <br/>
-            Supervisor: {{ volunteer.site_supervisor }} <br/>
-            Hours Complete: {{ volunteer.hours_completed }} <br/>
-            Hours Required: {{ volunteer.hours_required }} <br/>
+            Work Site: {{ volunteer_site.site }} <br/>
+            Supervisor: {{ volunteer_site.supervisor }} <br/>
+	    Hours Complete at Site: {{ volunteer_site.hours_at_site }} <br/>
+            Total Hours Complete: {{ volunteer_site.volunteer.hours_completed }} <br/>
+            Hours Required: {{ volunteer_site.volunteer.hours_required }} <br/>
         </td>
         <td style="padding:30px;">
             <table class="border">
@@ -36,7 +37,7 @@
                     <th class="border">Hours</th>
                     <th class="border">Submited</th>
                 </tr>
-                 {% for hour in volunteer.hours_set.all %}
+                 {% for hour in volunteer_site.hours_set.all %}
                     <tr class="border">
                         <td class="border">{{ hour.date }}</td>
                         <td class="border">{{ hour.site }}</td>
