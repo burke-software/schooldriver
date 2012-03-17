@@ -37,6 +37,7 @@ class CustomIndexDashboard(Dashboard):
                     models=(
                         'ecwsp.work_study.models.Company',
                         'ecwsp.work_study.models.WorkTeam',
+                        'ecwsp.work_study.models.WorkTeamUser',
                         'ecwsp.work_study.models.TimeSheet',
                         'ecwsp.work_study.models.TimeSheetPerformanceChoice',
                         'ecwsp.work_study.models.Contact',
