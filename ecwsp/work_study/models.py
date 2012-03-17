@@ -115,13 +115,23 @@ class Company(models.Model):
     class Meta:
         verbose_name_plural = 'Companies'
         ordering = ('name',)
-    
+
+
+class WorkTeamUser(User):
+    """
+    Exists so that work study users can add and change user accounts but limited only to companies.
+    """
+    class Meta:
+        proxy = True
+    def save(self, *args, **kwargs):
+        super(WorkTeamUser, self).save(*args, **kwargs)
+        self.groups.add(Group.objects.get_or_create(name='Company')[0])
 
 class WorkTeam(models.Model, CustomFieldModel):
     inactive = models.BooleanField(help_text="Will unset student's placements.")
     company = models.ForeignKey(Company, blank=True, null=True)
     team_name = models.CharField(max_length=255, unique=True)
-    login = models.ManyToManyField(User, blank=True, help_text="user from <a href=\"/admin/auth/user/\">here</a> that this company may login with, ensure user is in the \"company\" group so they have correct permissions")
+    login = models.ManyToManyField(WorkTeamUser, blank=True, help_text="user from <a href=\"/admin/auth/user/\">here</a> that this company may login with, ensure user is in the \"company\" group so they have correct permissions")
     paying = models.CharField(max_length=1, choices=(('P', 'Paying'), ('N', 'Non-Paying'), ('F', 'Funded')), blank=True)
     funded_by = models.CharField(max_length=150, blank=True)
     cras = models.ManyToManyField(CraContact, blank=True, null=True)

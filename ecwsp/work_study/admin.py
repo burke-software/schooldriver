@@ -154,6 +154,17 @@ def move_to_former_students(modeladmin, request, queryset):
     for object in queryset:
         object.delete()
 
+from django.contrib.auth.admin import UserAdmin
+class WorkStudyUserAdmin(UserAdmin,admin.ModelAdmin):
+    fields = ('is_active','username','first_name','last_name','password')
+    fieldsets = None
+    list_display = ('username','first_name','last_name','is_active',)
+    list_filter = ('is_active','workteam')
+    def queryset(self,request):
+        return User.objects.filter(groups__name='Company')
+    
+admin.site.register(WorkTeamUser,WorkStudyUserAdmin)
+
 class StudentAdmin(ReadPermissionModelAdmin):
     form = StudentForm
     
