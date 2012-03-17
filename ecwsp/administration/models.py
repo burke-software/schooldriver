@@ -74,6 +74,13 @@ class Template(models.Model):
     def __unicode__(self):
         return self.name
     
+    def get_template(self, request):
+        """ Get template or return False with error message. """
+        if self.file:
+            return self.file
+        messages.error(request, 'Template %s not found!' % (self.name,))
+        return False
+    
     def get_template_path(self, request):
         """ Get template file path, or return False with error message. """
         if self.file:

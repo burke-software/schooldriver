@@ -1832,6 +1832,8 @@ class Importer:
         except:
             return "Could not find a sheet named %s" % (marking_period,)
         x = 0
+        if not sheet:
+            return "Could not find a sheet named %s" % (marking_period,)
         header = sheet.row(x)
         while x < sheet.nrows:
             try:

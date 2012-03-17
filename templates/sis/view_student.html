@@ -265,7 +265,7 @@ $(document).ready(function() {
         {% if 'ecwsp.counseling' in settings.INSTALLED_APPS %}
         <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Counseling</a>
         <div class="sv-main">
-            <div class="section-div">
+        <div class="section-div">
 		<ul>
 		    {% for meeting in student.studentmeeting_set.all %}
 			<li>
@@ -292,11 +292,35 @@ $(document).ready(function() {
 		<a href="{% url admin:counseling_studentmeeting_add %}">Add New</a>
 		{% endif %}
                 
-            </div> <!-- class="section-div"-->
+        </div> <!-- class="section-div"-->
         </div> <!-- .sv-main -->
         </div> <!-- .sv-section -->
         {% endif %}
-        
+    
+    
+    {% if 'ecwsp.admissions' in settings.INSTALLED_APPS and student.appl_student %}
+    {% with appl=student.appl_student %}
+        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Admissions</a>
+        <div class="sv-main">
+            {% if perms.admissions.change_applicant %}
+                <a href="{% url admin:admissions_applicant_change student.appl_student.id %}"> Edit </a><br />
+            {% endif %}
+            <table class="section-table">
+                <tr><td class="thing"> Feeder School </td><td> {{ appl.present_school }} </td></tr>
+                <tr><td class="thing"> Ethnicity </td><td> {{ appl.ethnicity }} </td></tr>
+                <tr><td class="thing"> Religion </td><td> {{ appl.religion }} </td></tr>
+                <tr><td class="thing"> Elem Grad yr </td><td> {{ appl.elem_grad_yr }} </td></tr>
+                <tr><td class="thing"> HS Grad yr </td><td> {{ appl.hs_grad_yr }} </td></tr>
+                <tr><td class="thing"> Total Income </td><td> {{ appl.total_income }} </td></tr>
+                <tr><td class="thing"> Adjusted Available Income </td><td> {{ appl.adjusted_available_income }} </td></tr>
+                <tr><td class="thing"> Calculated Payment </td><td> {{ appl.calculated_payment }} </td></tr>
+                
+            </table>
+        </div> <!-- .sv-main -->
+        </div> <!-- .sv-section -->
+    {% endwith %}
+    {% endif %}
+    
 	
 	{% if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS %}
         <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Volunteering</a>

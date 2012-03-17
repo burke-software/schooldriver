@@ -54,7 +54,7 @@ class MarkingPeriod(models.Model):
     def __unicode__(self):
         return unicode(self.name)
         
-    def get_number_days(self, date):
+    def get_number_days(self, date=date.today()):
         """ Get number of days in a marking period"""
         if (self.school_days or self.school_days == 0) and date >= self.end_date:
             return self.school_days
@@ -423,6 +423,8 @@ class StandardCategoryGrade(models.Model):
 
 class Award(models.Model):
     name = models.CharField(max_length=255)
+    def __unicode__(self):
+        return unicode(self.name)
 
 class AwardStudent(models.Model):
     award = models.ForeignKey(Award)

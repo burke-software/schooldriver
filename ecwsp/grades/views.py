@@ -49,7 +49,7 @@ def teacher_grade(request):
                         messages.success(request, 'Engrade Sync successful. Please verify each course!')
                 except:
                     messages.info(request, 'Engrade Sync unsuccessful. Contact an administrator.')
-                    logger.error('Engrade Sync unsuccessful', exc_info=True, extra={
+                    logging.error('Engrade Sync unsuccessful', exc_info=True, extra={
                         'request': request,
                     })
             else:
@@ -126,6 +126,7 @@ def teacher_grade_upload(request, id):
                 course.save()
     else:
         import_form = GradeUpload()
+        import_form.fields['marking_period'].queryset = import_form.fields['marking_period'].queryset.filter(course=course)
         
     if request.method == 'POST' and 'edit' in request.POST:
         # save grades

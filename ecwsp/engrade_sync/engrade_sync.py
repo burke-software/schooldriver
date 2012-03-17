@@ -121,9 +121,9 @@ class EngradeSync:
                 model.save()
             except:
                 if student:
-                    errors += '%s\'s grade not set! ' % (student,)
+                    errors += '%s: %s\'s grade not set! ' % (course,student,)
                 else:
-                    errors += "Student doesn't exist! "
+                    errors += "%s: Student doesn't exist! " % (course,)
                 print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
         if include_comments:
             students = self.api.class_comments(engrade_course.engrade_course_id)
@@ -137,9 +137,9 @@ class EngradeSync:
                     model.save()
                 except:
                     if student:
-                        errors += '%s\'s comment not set! ' % (student,)
+                        errors += '%s: %s\'s comment not set! ' % (course,student,)
                     else:
-                        errors += "Student doesn't exist! "
+                        errors += "%S: Student doesn't exist! " % (course,)
                     print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
         course.last_grade_submission = datetime.datetime.now()
         course.save()

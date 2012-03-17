@@ -70,19 +70,28 @@ class Grade(models.Model):
                 return True
             return False
     
-    def get_grade(self, letter=False, display=False, rounding=None):
-        """ By default returns simple grade such as 90.03, P, or F"""
+    def get_grade(self, letter=False, display=False, rounding=None, minimum=None):
+        """
+        letter: Does nothing?
+        display: For letter grade - Return display name instead of abbreviation.
+        rounding: Numeric - round to this many decimal places.
+        minimum: Numeric - Minimum allowed grade. Will not return lower than this.
+        Returns grade such as 90.03, P, or F
+        """
         if self.letter_grade:
             if display:
                 return self.get_letter_grade_display()
             else:
                 return self.letter_grade
         elif self.grade:
+            grade = self.grade
+            if minimum:
+                if grade < minimum:
+                    grade = minimum
             if rounding != None:
                 string = '%.' + str(rounding) + 'f'
-                return string % float(str(self.grade))
-            else:
-                return self.grade
+                grade = string % float(str(grade))
+            return self.grade
         else:
             return ""
     

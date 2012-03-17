@@ -83,6 +83,9 @@
                             <li><a href="{% url ecwsp.sis.views.grade_report %}">{% trans 'Reports' %}</a></li>
                             <li><a href="{% url ecwsp.schedule.views.grade_analytics %}">{% trans 'Analytics' %}</a></li>
                         {% endif %}
+                        {% if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS %} {% if perms.engrade_sync.change_coursesync %}
+                            <li><a href="{% url ecwsp.engrade_sync.views.setup %}">{% trans 'Engrade Setup' %}</a></li>
+                        {% endif %}{% endif %}
                     </ul>
                 </li>
             {% endif %}{% endif %}

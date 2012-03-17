@@ -7,8 +7,10 @@ from django.template import RequestContext
 from ecwsp.engrade_sync.models import *
 from ecwsp.engrade_sync.forms import *
 from ecwsp.engrade_sync.engrade_sync import *
+from ecwsp.schedule.models import Course
 
 import sys
+import logging
 
 @permission_required('engrade_sync.change_coursesync')
 def setup(request):
@@ -22,6 +24,9 @@ def setup(request):
         print >> sys.stderr, 'Can\'t connect to Engrade ' + str(sys.exc_info()[0])
     msg = ''
     
+    course_form = SetupCoursesForm()
+    grade_sync_form = GradeSyncForm()
+    
     if request.POST and engrade_sync:
         if 'generate_course' in request.POST:
             course_form = SetupCoursesForm(request.POST)
@@ -29,16 +34,46 @@ def setup(request):
                 ids = engrade_sync.generate_courses(course_form.cleaned_data['marking_period'])
                 msg += "Success. Engrade course ids are " + unicode(ids)
         elif 'generate_teacher' in request.POST:
-            course_form = SetupCoursesForm()
             num_created = engrade_sync.generate_all_teachers()
             msg += "Created %s teachers in Engrade." % (num_created,)
-    else:
-        course_form = SetupCoursesForm()
+        elif 'grade_sync' in request.POST:
+            grade_sync_form = GradeSyncForm(request.POST)
+            if grade_sync_form.is_valid():
+                marking_period = grade_sync_form.cleaned_data['marking_period']
+                teachers = grade_sync_form.cleaned_data['teachers']
+                include_comments = grade_sync_form.cleaned_data['include_comments']
+                try:
+                    courses = Course.objects.filter(marking_period=marking_period,teacher__in=teachers)
+                    es = EngradeSync()
+                    errors = ""
+                    successful = 0
+                    for course in courses:
+                        error = es.sync_course_grades(course, marking_period, include_comments)
+                        if error:
+                            errors += error
+                        else:
+                            successful += 1
+                    if errors:
+                        messages.warning(
+                            request,
+                            'Engrade Sync successful for %s courses, but has some issues: %s' % (str(successful),errors)
+                            )
+                    else:
+                        messages.success(
+                            request,
+                            'Engrade Sync successful for %s courses. Please verify anyway!' % (str(successful,))
+                            )
+                except:
+                    messages.error(request, 'Engrade Sync unsuccessful. Contact an administrator.')
+                    logger.error('Engrade Sync unsuccessful', exc_info=True, extra={
+                        'request': request,
+                    })
     
     return render_to_response('engrade_sync/setup.html', {
         'course_count': course_count,
         'teacher_count': teacher_count,
         'course_form': course_form,
+        'grade_sync_form': grade_sync_form,
         'school_id': school_id,
         'engrade_sync': engrade_sync,
         'msg': msg,

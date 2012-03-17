@@ -105,7 +105,7 @@ class ReportManager(object):
         
         return report.finish()
         
-    def download_student_results(self, test, format):
+    def download_student_results(self, test, format, template):
         """ Make appy based report showing results for each student """
         data = get_default_data()
         
@@ -132,8 +132,6 @@ class ReportManager(object):
                 except:
                     incorrect.right_answer = "No correct answer"
             
-        
-        template = Template.objects.get_or_create(name="OMR Student Test Result")[0].file
         data['test'] = test
         data['tests'] = test_instances
         

@@ -76,17 +76,7 @@
           }
         {% endfor %}
          
-        if ( last_level ) {
-          add_it = true;
-          checks.each(function(index){
-            if (!($(this).attr('checked')) && $(this).attr('level') == last_level ) {
-              add_it = false;
-            }
-          });
-          if ( ! add_it ) {
-            $('#level_' + last_level ).removeClass('level_complete');
-          }
-        }
+        
       }
       
       $(document).ready(function() {
