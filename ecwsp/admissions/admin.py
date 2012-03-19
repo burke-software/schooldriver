@@ -158,7 +158,7 @@ class ApplicantAdmin(admin.ModelAdmin):
                         change_message  = "Checked " + unicode(check)
                     )
         obj.save()
-        print obj.level
+        #print obj.level
         if obj.application_decision and obj.application_decision.level.all().count() and obj.application_decision and not obj.level in obj.application_decision.level.all():
             msg = 'WARNING: Decision %s should be on level(s) ' % (obj.application_decision,)
             for level in obj.application_decision.level.all():
