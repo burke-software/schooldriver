@@ -149,11 +149,8 @@ class CourseEnrollment(models.Model):
         
         
     def delete(self, *args, **kwargs):
-        if self.course.asp and hasattr(self.user, 'student'):
+        if hasattr(self.user, 'student'):
             student = self.user.student
-            from ecwsp.sis.models import ASPHistory
-            asp = ASPHistory(student=student, asp=self.course.shortname)
-            asp.save()
         super(CourseEnrollment, self).delete(*args, **kwargs)
     
 
