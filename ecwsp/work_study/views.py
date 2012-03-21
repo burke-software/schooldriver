@@ -271,8 +271,12 @@ def student_timesheet(request):
         if hasattr(thisStudent,"primary_contact"):
             if thisStudent.primary_contact:
                 initial_primary = thisStudent.primary_contact.id
-        form = TimeSheetForm(initial={'student':thisStudent.id, 'company':thisStudent.placement.id, 'my_supervisor':initial_primary,
-            'date': date.today, 'time_in': "9:30 AM", 'time_lunch': "12:00 PM", 'time_lunch_return': "1:00 PM", 'time_out': "5:00 PM"})
+        if Configuration.get_or_default('work_study_timesheet_initial_time', 'True').value == 'True':
+            form = TimeSheetForm(initial={'student':thisStudent.id, 'company':thisStudent.placement.id, 'my_supervisor':initial_primary,
+                'date': date.today, 'time_in': "9:30 AM", 'time_lunch': "12:00 PM", 'time_lunch_return': "1:00 PM", 'time_out': "5:00 PM"})
+        else:
+            form = TimeSheetForm(initial={'student':thisStudent.id, 'company':thisStudent.placement.id, 'my_supervisor':initial_primary,
+                'date': date.today, 'time_in': "", 'time_lunch': "", 'time_lunch_return': "", 'time_out': ""})
         form.set_supers(compContacts)
         # Should for_pay be an option?
         pay, created = Configuration.objects.get_or_create(name="Allow for pay")
