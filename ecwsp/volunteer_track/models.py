@@ -86,7 +86,7 @@ class VolunteerSite(models.Model):
         
         if saved_by_volunteer:
             if not self.volunteer.email_queue:
-                self.email_queue = ""
+                self.volunteer.email_queue = ""
             self.volunteer.email_queue += "Added Site %s. " % (unicode(self.site))
             self.volunteer.save()
         if self.id:
