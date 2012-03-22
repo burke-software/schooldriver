@@ -32,7 +32,7 @@ from django.db import connection
 from django.http import HttpResponse
 from django import forms
 from django.core import serializers
-from django.core.mail import mail_admins
+from django.core.mail import mail_admins, EmailMessage
 from django.core.urlresolvers import reverse
 from django.db.models import Sum, Count, Avg
 from django import forms
@@ -1076,6 +1076,24 @@ def company_contract3(request, id):
 def company_contract_complete(request, id):
     contract = CompContract.objects.get(id=id)
     company = contract.company
+    email = request.GET.get('email')
+    if email:
+        try:
+            mail = EmailMessage(
+                'Work Study Contract Confirmation for %s.' % (company,),
+                'Contract is attached.',
+                Configuration.get_or_default("work_study_contract_from_address", "donotreply@cristoreyny.org").value,
+                [email],
+                )
+            cc = Configuration.get_or_default("work_study_contract_cc_address", "").value
+            if cc:
+                mail.cc = cc
+            attach = contract.get_contract_as_pdf(response=False)
+            mail.attach('contract.pdf', attach.read(), 'application/pdf')
+            mail.send()
+        except:
+            pass
+    
     return render_to_response('work_study/company_contract_complete.html', {'request': request, 'company':company, 'contract':contract}, RequestContext(request, {}))
     
 def company_contract_pdf(request, id):

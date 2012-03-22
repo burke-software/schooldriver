@@ -309,21 +309,26 @@ class CompContract(models.Model):
         self.contract_file.save(unicode(self.company) + "." + unicode(format), File(open(file)))
     
     #filename, ext, data, template
-    def get_contract_as_pdf(self, ie=False):
-        from ecwsp.sis.uno_report import uno_open, save_to_response
+    def get_contract_as_pdf(self, ie=False, response=True):
+        from ecwsp.sis.uno_report import uno_open, save_to_response, save_as
         """ Returns contract as a pdf file
-        ie: Is the browser a piece of shit? Defaults to False"""
+        ie: Is the browser a piece of shit? Defaults to False
+        response: When true returns an http response when false returns a django File()"""
         if self.contract_file:
-            document = uno_open(self.contract_file.path)
-            response = save_to_response(document, self.contract_file.name.split('.')[0], "pdf")
-            if ie:
-                response['Pragma'] = 'public'
-                response['Expires'] = '0'
-                response['Cache-Control'] = 'must-revalidate, post-check=0, pre-check=0'
-                response['Content-type'] = 'application-download'
-                response['Content-Disposition'] = 'attachment; filename="contract.pdf"'
-                response['Content-Transfer-Encoding'] = 'binary'
-            return response
+            if response:
+                document = uno_open(self.contract_file.path)
+                response = save_to_response(document, self.contract_file.name.split('.')[0], "pdf")
+                if ie:
+                    response['Pragma'] = 'public'
+                    response['Expires'] = '0'
+                    response['Cache-Control'] = 'must-revalidate, post-check=0, pre-check=0'
+                    response['Content-type'] = 'application-download'
+                    response['Content-Disposition'] = 'attachment; filename="contract.pdf"'
+                    response['Content-Transfer-Encoding'] = 'binary'
+                return response
+            else:
+                document = uno_open(self.contract_file.path)
+                return File(save_as(document,self.contract_file.name.split('.')[0], "pdf"))
         else:
             raise Http404
 
