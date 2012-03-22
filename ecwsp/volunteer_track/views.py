@@ -63,6 +63,7 @@ def student_hours(request, id):
                     hour_model.volunteer_site = volunteer_site
                     try:
                         hour_model.full_clean()
+                        hour_model.validate_unique()
                         hour_model.save()
                     except ValidationError, e:
                         msg += " Duplicate date found %s. " % (hour_model.date,)
