@@ -56,7 +56,7 @@ class CollegeEnrollment(models.Model):
         ('W', 'Withdrawn'),
         ('D', 'Deceased'),
     )
-    status = CharField(max_length=1, choices=status_choices, blank=True)
+    status = CharField(max_length=1, choices=status_choices, blank=True,null=True)
     graduated = models.BooleanField()
     graduation_date = models.DateField(blank=True, null=True)
     degree_title = models.CharField(max_length=255, blank=True, null=True)
