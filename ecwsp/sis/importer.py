@@ -613,6 +613,8 @@ class Importer:
                             elif name in ['state', 'college state', 'college_state']:
                                 state = value
                             elif name in ['year', '2-year/4-year', '2-year / 4-year']:
+                                if value == "4-year": value = "4"
+                                elif value == "2-year": value = "2"
                                 year = value
                             elif name in ['type', 'public/private', 'public / private']:
                                 type = value
