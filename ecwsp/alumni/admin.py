@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+from django import forms
 
 from ecwsp.alumni.models import *
 from ecwsp.alumni.forms import *
@@ -25,6 +26,9 @@ class AlumniNoteInline(admin.TabularInline):
     model = AlumniNote
     readonly_fields = ('user', 'date',)
     extra = 1
+    formfield_overrides = {
+        models.TextField: {'widget': forms.Textarea(attrs={'style':'width:450px;',})},
+    }
 
 admin.site.register(AlumniNoteCategory)
     
