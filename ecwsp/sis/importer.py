@@ -156,20 +156,20 @@ class Importer:
     def convert_date(self, value):
         """Tries to convert various ways of storing a date to a python date"""
         try:
-            return datetime.strptime(str(value), "%Y-%m-%d")
+            return datetime.datetime.strptime(str(value), "%Y-%m-%d")
         except: pass
         try:
-            return datetime.strptime(str(value), "%m-%d-%Y")
+            return datetime.datetime.strptime(str(value), "%m-%d-%Y")
         except: pass
         try:
             return date(*(xlrd.xldate_as_tuple(float(value), 0)[0:3]))
         except: pass
         try:
-            return datetime.strptime(str(value), "%Y%m%d")
+            return datetime.datetime.strptime(str(value), "%Y%m%d")
         except: pass
         try:
             date_split = value.split("-")
-            return datetime.strptime(str(date_split[0] + "-" +date_split[1]), "%Y-%m")
+            return datetime.datetime.strptime(str(date_split[0] + "-" +date_split[1]), "%Y-%m")
         except: pass
         return None
     
