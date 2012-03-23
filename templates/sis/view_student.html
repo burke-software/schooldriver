@@ -104,38 +104,38 @@ $(document).ready(function() {
 <div class="sv-main">
 	<!--<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>-->
 	{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img style="max-height: 250px;" src="{{ student.pic.url_530x400 }}"/></a> </div>{% endif %}
-            <table class="section-table">
-                <tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname }} {{ student.lname }} </td></tr>
-                <tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
-                <tr><td class="thing"> Birthdate </td><td> {{ student.bday }} </td></tr>
-                <tr><td class="thing"> Primary Cohort </td><td> {{ student.primary_cohort }} </td></tr>
-                <tr><td class="thing"> Alert </td><td> {{ student.alert }} </td></tr>
-                <tr><td class="thing"> Notes </td><td> {{ student.notes }} </td></tr>
-                <tr><td class="thing"> Parent/Guardian </td><td> {{ student.parent_guardian }} </td></tr>
-                <tr><td class="thing"> Address </td><td> {{ student.street }} <br /> {{ student.city }}, {{ student.state }} {{ student.zip }} </td></tr>
-                <tr><td class="thing"> Parent E-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
-                <tr><td class="thing"> Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
-                </table>
-                
-                <div class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)">Additional Information</a>
+    <table class="section-table">
+        <tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname|default_if_none:"" }} {{ student.lname }} </td></tr>
+        <tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
+        <tr><td class="thing"> Birthdate </td><td> {{ student.bday }} </td></tr>
+        <tr><td class="thing"> Primary Cohort </td><td> {{ student.primary_cohort }} </td></tr>
+        <tr><td class="thing"> Alert </td><td> {{ student.alert }} </td></tr>
+        <tr><td class="thing"> Notes </td><td> {{ student.notes }} </td></tr>
+        <tr><td class="thing"> Parent/Guardian </td><td> {{ student.parent_guardian }} </td></tr>
+        <tr><td class="thing"> Address </td><td> {{ student.street }} <br /> {{ student.city }}, {{ student.state }} {{ student.zip }} </td></tr>
+        <tr><td class="thing"> Parent E-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
+        <tr><td class="thing"> Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
+    </table>
+        
+    <div class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)">Additional Information</a>
      
     <div class="sv-main" style="display:none;">           
-    <table class="subsection-table">
-                {% if perms.sis.view_ssn_student %} <tr><td class="thing"> SSN </td><td> {{ student.ssn }} {% endif %}
-                
-                <tr><td class="thing"> Emergency Contact(s) </td><td> {% for ec in emergency_contacts %}
-				<p> {{ ec.fname }} {{ ec.lname }}<br />
-				{% for number in ec.emergencycontactnumber_set.all %} <span class="thing">{{ number.get_type_display }}:</span> {{ number.number }} {% endfor %} <br />
-				{% endfor %} </td></tr>
-                
-                {% if sib %}
-                <tr><td class="thing"> Sibling(s) </td><td> {% for sib in siblings %} {{ sib }} {% endfor %}</td></tr>
-                {% endif %}
-                
-                {% if cohort %}
-                <tr><td class="thing"> Cohort </td><td>{% for cohort in cohorts %} {{ cohort }} {% endfor %}</td></tr>
-                {% endif %}
-                </table>
+        <table class="subsection-table">
+            {% if perms.sis.view_ssn_student %} <tr><td class="thing"> SSN </td><td> {{ student.ssn }} {% endif %}
+            
+            <tr><td class="thing"> Emergency Contact(s) </td><td> {% for ec in emergency_contacts %}
+            <p> {{ ec.fname }} {{ ec.lname }}<br />
+            {% for number in ec.emergencycontactnumber_set.all %} <span class="thing">{{ number.get_type_display }}:</span> {{ number.number }} {% endfor %} <br />
+            {% endfor %} </td></tr>
+            
+            {% if sib %}
+            <tr><td class="thing"> Sibling(s) </td><td> {% for sib in siblings %} {{ sib }} {% endfor %}</td></tr>
+            {% endif %}
+            
+            {% if cohort %}
+            <tr><td class="thing"> Cohort </td><td>{% for cohort in cohorts %} {{ cohort }} {% endfor %}</td></tr>
+            {% endif %}
+        </table>
     </div> <!-- .sv-main -->
     </div> <!-- .sv-section -->
 </div> <!-- .sv-main -->
@@ -252,14 +252,33 @@ $(document).ready(function() {
         </div> <!-- .sv-section -->
         {% endif %}
         
-        {% if alumni %}
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Alumni</a>
+        {% if 'ecwsp.alumni' in settings.INSTALLED_APPS and student.alumni %}
+        {% with alumni=student.alumni %}
+        <div class="sv-section"><a class="section-header" href="javascript:void(0)">Alumni</a>
         <div class="sv-main">
-            <div class="section-div">
-                Current college: {{ alumni.cache_college }} {% if alumni.cache_graduated %} (Graduated) {% endif %}
-            </div> <!-- class="section-div"-->
+            {% if perms.alumni.change_alumni %}
+                <a href="{% url admin:alumni_alumni_change alumni.id %}"> Edit </a>
+            {% endif %}
+            <table class="section-table">
+                <tr>
+                    <td class="thing"> Current college  </td>
+                    <td> {{ alumni.college }} {% if alumni.graduated %} (Graduated {{ alumni.graduation_date }}) {% endif %} </td>
+                </tr>
+            </table>
+            <div class="sv-section"><a class="section-header subsection sub-expanded" href="javascript:void(0)">Notes</a>
+                <div class="sv-main" style="display: block;"> 
+                <table class="subsection-table">
+                    {% for note in alumni.alumninote_set.all %}
+                    <tr>
+                        <td>{{ note }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                </div>
+            </div>
         </div> <!-- .sv-main -->
         </div> <!-- .sv-section -->
+        {% endwith %}
         {% endif %}
         
         {% if 'ecwsp.counseling' in settings.INSTALLED_APPS %}

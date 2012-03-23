@@ -82,7 +82,7 @@ class ReferralForm(models.Model):
         super(ReferralForm, self).save(*args, **kwargs)
         if new:
             try:
-                subject = 'New counseling referral for %s.' % (self.student)
+                subject = 'New counseling referral for %s.' % (self.student,)
                 msg = '%s has submitted a counseling referral form for %s. Click this link to view \n%s%s' % \
                 (self.referred_by,self.student,settings.BASE_URL,reverse('admin:counseling_referralform_change',args=(self.id,)),)
                 from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
