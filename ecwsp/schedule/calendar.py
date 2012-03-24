@@ -46,7 +46,7 @@ class Calendar:
         course_meet = CourseMeet.objects.filter(course__in=courses, day=day, period__in=periods)
         return course_meet[0].location
         
-    def build_schedule(self, student, marking_period, include_asp=False):
+    def build_schedule(self, student, marking_period, include_asp=False, only_active = False):
         """
         Returns days ['Monday', 'Tuesday'...] and periods
         """
@@ -69,7 +69,10 @@ class Calendar:
         for period in periods:
             period.days = []
             for day in arr_days:
-                course = course_meets.filter(day=day[0], period=period)
+                if only_active:
+                    course = course_meets.filter(day=day[0], period=period, course__active=True)
+                else:
+                    course = course_meets.filter(day=day[0], period=period)
                 if course.count():
                     period.days.append(course[0])
                 else:
