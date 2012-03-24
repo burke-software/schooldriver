@@ -497,7 +497,7 @@ def view_student(request, id=None):
         current_mp = MarkingPeriod.objects.filter(end_date__gte=today).order_by('-start_date')
         if current_mp:
             current_mp = current_mp[0]
-            schedule_days, periods = cal.build_schedule(student, current_mp, include_asp=True, only_active = True)
+            schedule_days, periods = cal.build_schedule(student, current_mp, include_asp=True)
         else:
             schedule_days = None
             periods = None
