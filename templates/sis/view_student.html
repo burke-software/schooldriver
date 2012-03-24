@@ -28,15 +28,6 @@
             }
         {% endif %}
         
-        // If pressing enter, submit form, don't force user to press enter twice!
-        $(document).ready(function() {
-            $('#id_student_text').bind('keyup', function(event) {
-                if(event.keyCode == 13){
-                    $('#form').submit()
-                }
-                });;
-        });
-        
         {% if show_grades %}
             $(document).ready(function() {
                 options_toggle('toggle_section_grade');
@@ -83,10 +74,6 @@ $(document).ready(function() {
 
 {% block content %}
     <h2> Student Record </h2>
-    <form id="form" class="noprint" action="" method="post">
-        {{ form }}
-        <input type="submit" value="Get Record"/>
-    </form>
     {% if student %}
 <div id="student-header">
       <div id="name-and-grade">

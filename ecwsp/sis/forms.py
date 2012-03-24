@@ -69,7 +69,6 @@ class DeletedStudentLookupForm(forms.Form):
 class StudentLookupForm(forms.Form):
     student = AutoCompleteSelectField('dstudent')
 
-
 class UploadFileForm(forms.Form):
     file  = forms.FileField()
     

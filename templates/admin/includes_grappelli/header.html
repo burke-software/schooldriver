@@ -4,6 +4,20 @@
     #user-tools li.user-options-container {
         width: auto;
     }
+    .view_student{
+        padding: 1px 1px 0px 1px;
+        margin: 0px;
+    }
+    div.view_student{
+         width:13%;
+    }
+    input.view_student{
+        height:25px;
+    }
+    .admin-title {
+        padding-left: 8px;
+        padding-right: 4px;
+    }
 </style>
 
 <div id="header">
@@ -11,6 +25,36 @@
     <!-- Title -->
     <div class="admin-title">{% if grappelli_admin_title %}{{ grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}</div>
     {% if user.is_authenticated and user.is_staff %}
+        
+        <!-- View Student -->
+        {% if perms.sis.change_student or perms.sis.view_student %}
+        <div class="admin-title noprint view_student" style="height:30px;">
+            <form id="form_view_student" class="view_student" action="/sis/view_student/" method="post">
+                {% csrf_token %}
+                <input type="text" style="width:100%;" placeholder="Lookup Student" name="student_text" id="id_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
+                
+                <input type="hidden" name="student" id="id_student" value="">
+                <div id="id_student_on_deck" style="visibility: hidden;" class="results_on_deck"><div></div></div>
+                <script type="text/javascript">//<![CDATA[
+                jQuery(document).ready(function($){
+                        addAutoComplete("id_student", function(html_id) {
+                                $("#"+html_id).autocompleteselect({
+                                        minLength: 1,
+                                        source: '/ajax_select/ajax_lookup/dstudent',
+                                });
+                        });
+                $("#id_student_on_deck").bind('added',function() {
+                    $('#form_view_student').submit()
+                });
+                });//]]>
+                </script>
+                <style type="text/css">@import url("/static/ajax_select/css/ajax_select.css");</style><script type="text/javascript" src="/static/ajax_select/js/ajax_select.js"></script>
+            </form>
+        </div>
+        {% endif %}
+        
+        
+        
         <ul id="user-tools">
             <!-- Student  -->
             {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
@@ -19,7 +63,6 @@
                     <ul class="user-options">
                         {% if perms.sis.view_student %}
                             <li><a href="{% url ecwsp.sis.views.photo_flash_card %}">{% trans 'Flashcards' %}</a></li>
-                            <li><a href="{% url ecwsp.sis.views.view_student %}">{% trans 'View' %}</a></li>
                         {% endif %}
                         {% if perms.sis.change_student or perms.sis.view_student %}
                             <li><a href="{% url admin:sis_student_changelist %}">{% trans 'Edit' %}</a></li>
@@ -172,7 +215,7 @@
             {% endif %}
             <!-- Username -->
             <li class="user-options-container collapse closed">
-                <a href="javascript://" class="user-options-handler collapse-handler">{% firstof user.first_name user.username %}</a>
+                <a href="javascript://" class="user-options-handler collapse-handler" style="min-width:80px;">{% firstof user.first_name user.username %}</a>
                 <ul class="user-options">
                     <!--SWORD: added preferences -->
                     <li><a href="/sis/preferences">{% trans 'Preferences' %}</a>
@@ -200,11 +243,6 @@
                 {% url test-index as testindexurl %}
                 {% if testindexurl %}
                     <li><a href="{{ testindexurl }}">{% trans 'Tests' %}</a></li>
-                {% endif %}
-                <!-- Documentation -->
-                {% url django-admindocs-docroot as docsroot %}
-                {% if docsroot %}
-                    <li><a href="{{ docsroot }}">{% trans 'Documentation' %}</a></li>
                 {% endif %}
             {% endblock %}
         </ul>
