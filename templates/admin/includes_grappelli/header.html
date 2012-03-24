@@ -5,14 +5,18 @@
         width: auto;
     }
     .view_student{
-        padding: 1px 5px 0px 5px;
+        padding: 1px 1px 0px 1px;
         margin: 0px;
     }
     div.view_student{
-         width:14%;
+         width:13%;
     }
     input.view_student{
         height:25px;
+    }
+    .admin-title {
+        padding-left: 8px;
+        padding-right: 4px;
     }
 </style>
 
@@ -22,17 +26,15 @@
     <div class="admin-title">{% if grappelli_admin_title %}{{ grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}</div>
     {% if user.is_authenticated and user.is_staff %}
         
-        
-        
+        <!-- View Student -->
         {% if perms.sis.change_student or perms.sis.view_student %}
         <div class="admin-title noprint view_student" style="height:30px;">
-            <!-- View Student -->
             <form id="form_view_student" class="view_student" action="/sis/view_student/" method="post">
                 {% csrf_token %}
                 <input type="text" style="width:100%;" placeholder="Lookup Student" name="student_text" id="id_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
                 
                 <input type="hidden" name="student" id="id_student" value="">
-                <div id="id_student_on_deck" class="results_on_deck"><div></div></div>
+                <div id="id_student_on_deck" style="visibility: hidden;" class="results_on_deck"><div></div></div>
                 <script type="text/javascript">//<![CDATA[
                 jQuery(document).ready(function($){
                         addAutoComplete("id_student", function(html_id) {
@@ -46,8 +48,6 @@
                 });
                 });//]]>
                 </script>
-                
-                
                 <style type="text/css">@import url("/static/ajax_select/css/ajax_select.css");</style><script type="text/javascript" src="/static/ajax_select/js/ajax_select.js"></script>
             </form>
         </div>

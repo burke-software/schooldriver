@@ -22,12 +22,27 @@ from ajax_select.fields import AutoCompleteSelectField
 from django.forms import HiddenInput, ChoiceField
 from django.contrib.admin import widgets as adminwidgets
 
+def clean_unique(form, field, exclude_initial=True, 
+                 format="The %(field)s %(value)s has already been taken."):
+    value = form.cleaned_data.get(field)
+    if value:
+        qs = form._meta.model._default_manager.filter(**{field:value})
+        if exclude_initial and form.initial:
+            initial_value = form.initial.get(field)
+            qs = qs.exclude(**{field:initial_value})
+        if qs.count() > 0:
+            raise forms.ValidationError(format % {'field':field, 'value':value})
+    return value
 
 class inputTimeForm(forms.ModelForm):
     class Meta:
         model = Hours
-        widgets = {'date':adminwidgets.AdminDateWidget()}
+        widgets = {
+            'date':adminwidgets.AdminDateWidget(),
+            }
         exclude = ['volunteer_site']
+    def clean_date(self):
+        return clean_unique(self, 'date')
         
 class NewSiteForm(forms.ModelForm):
     class Meta:
