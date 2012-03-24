@@ -474,7 +474,7 @@ def view_student(request, id=None):
                 show_grades = True
         except: pass
     if 'include_deleted' in request.GET:
-        form = DeletedStudentLookupForm()
+        form = StudentLookupForm()
         include_deleted = True
     else:
         form = StudentLookupForm()

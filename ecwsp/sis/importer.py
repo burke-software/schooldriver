@@ -97,9 +97,6 @@ class Importer:
             value_row += [error]
             self.error_data[name] += [value_row]
             self.errors += 1
-            print >> sys.stderr, str(sys.exc_info())
-        else:
-            print >> sys.stderr, "No column name in an import."
     
     def sanitize_item(self, name, value):
         """ Checks to make sure column and cell have data, if not ignore them
@@ -159,27 +156,28 @@ class Importer:
     def convert_date(self, value):
         """Tries to convert various ways of storing a date to a python date"""
         try:
-            return datetime.strptime(str(value), "%Y-%m-%d")
+            return datetime.datetime.strptime(str(value), "%Y-%m-%d")
         except: pass
         try:
-            return datetime.strptime(str(value), "%m-%d-%Y")
+            return datetime.datetime.strptime(str(value), "%m-%d-%Y")
         except: pass
         try:
             return date(*(xlrd.xldate_as_tuple(float(value), 0)[0:3]))
         except: pass
         try:
-            return datetime.strptime(str(value), "%Y%m%d")
+            return datetime.datetime.strptime(str(value), "%Y%m%d")
         except: pass
         try:
             date_split = value.split("-")
-            return datetime.strptime(str(date_split[0] + "-" +date_split[1]), "%Y-%m")
+            return datetime.datetime.strptime(str(date_split[0] + "-" +date_split[1]), "%Y-%m")
         except: pass
         return None
     
-    def get_student(self, items, allow_none=False):
+    def get_student(self, items, allow_none=False, try_secondary=False):
         """ Lookup a student based on id, unique id, username, or ssn
         items: name and value from the imported data
         allow_none: Allow not finding a student. If False an exceptions
+        try_secondary: 
         is reaised if the student isn't found. default False"""
         for (name, value) in items:
             is_ok, name, value = self.sanitize_item(name, value)
@@ -199,6 +197,34 @@ class Importer:
                     ssn = str(value).translate(None, '- _') # Because student clearing house likes stray _
                     ssn = ssn[:3] + '-' + ssn[3:5] + '-' + ssn[-4:] # xxx-xx-xxxx
                     return Student.objects.get(ssn=ssn)
+        
+        # No ID....try secondary keys.
+        if try_secondary:
+            fname = None
+            lname = None
+            mname = None
+            address = None
+            for (name, value) in items:
+                is_ok, name, value = self.sanitize_item(name, value)
+                if is_ok:
+                    if name in ['first name','first_name','fname']:
+                        fname = value
+                    elif name in ['last name','last_name','lname']:
+                        lname = value
+                    elif name in ['middle name','middle_name','mname']:
+                        mname = value
+                    elif name in ['address','street address', 'street_address']:
+                        address = value
+            if fname and lname:
+                if mname:
+                    if Student.objects.filter(fname=fname,lname=lname,mname=mname).count() == 1:
+                        return Student.objects.get(fname=fname,lname=lname,mname=mname)
+                if address:
+                    if Student.objects.filter(fname=fname,lname=lname,address=address).count() == 1:
+                        return Student.objects.get(fname=fname,lname=lname,address=address)
+                if Student.objects.filter(fname=fname,lname=lname).count() == 1:
+                    return Student.objects.get(fname=fname,lname=lname)
+        
         if not allow_none:
             raise Exception("Could not find student, check unique id, username, or id")
     
@@ -567,7 +593,7 @@ class Importer:
                     name = None
                     row = sheet.row(x)
                     items = zip(header, row)
-                    student = self.get_student(items)
+                    student = self.get_student(items,try_secondary=True)
                     search_date = code = college_name = state = year = type = begin = end = None
                     status = graduated = graduation_date = degree_title = major = None
                     if hasattr(student, 'alumni'):
@@ -580,21 +606,23 @@ class Importer:
                         if is_ok:
                             if name == "search date":
                                 search_date = self.convert_date(value)
-                            elif name in ["college code", 'college code/branch']:
+                            elif name in ["college code", 'college code/branch','college_code/branch']:
                                 code = value
-                            elif name in ['name', 'college name']:
+                            elif name in ['name', 'college name','college_name']:
                                 college_name = value
-                            elif name in ['state', 'college state']:
+                            elif name in ['state', 'college state', 'college_state']:
                                 state = value
                             elif name in ['year', '2-year/4-year', '2-year / 4-year']:
+                                if value == "4-year": value = "4"
+                                elif value == "2-year": value = "2"
                                 year = value
                             elif name in ['type', 'public/private', 'public / private']:
                                 type = value
-                            elif name in ['begin', 'enrollment begin']:
+                            elif name in ['begin', 'enrollment begin','enrollment_begin']:
                                 begin = self.convert_date(value)
-                            elif name in ['end', 'enrollment end']:
+                            elif name in ['end', 'enrollment end','enrollment_end']:
                                 end = self.convert_date(value)
-                            elif name in ['status', 'enrollment status']:
+                            elif name in ['status', 'enrollment status','enrollment_status']:
                                 status = value.strip()
                             elif name in ['graduated', 'graduated?']:
                                 graduated = self.determine_truth(value)
@@ -1364,7 +1392,7 @@ class Importer:
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok and model:
-                            if name == "first name" or name == "fname":
+                            if name in ['first name','first_name','fname']:
                                 model.fname = value
                             elif name == "last name" or name == "lname":
                                 model.lname = value

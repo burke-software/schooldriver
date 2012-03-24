@@ -87,6 +87,14 @@ def uno_save(document, filename, type):
     return tmp, filename, content
 
 
+def save_as(document, filename, type):
+    """
+    Save file as a particular file type.
+    returns just the file using python file()
+    """
+    tmp, filename, content = uno_save(document, filename, type)
+    return file(tmp.name)
+
 def save_to_response(document, filename, type):
     """Saves a file in any format and returns the http response
     type - choices are doc, pdf, ods, xls, and odt"""
