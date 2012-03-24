@@ -61,7 +61,6 @@ class StudentLookupSmall(StudentLookup):
     def format_item_display(self,student):
         return "%s %s" % (student.fname, student.lname)
 
-
 class EmergencyContactLookup(LookupChannel):
     model = EmergencyContact
     
