@@ -532,7 +532,9 @@ class Student(MdlUser, CustomFieldModel):
         if Faculty.objects.filter(id=self.id).count():
             raise ValidationError('Cannot have someone be a student AND faculty!')
         self.cache_cohorts()
-        if self.inactive == True:
+        if self.inactive == True and (Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "True" \
+        or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "true" \
+        or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "T"):
             try:
                 self.studentworker.placement = None
             except: pass

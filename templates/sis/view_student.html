@@ -209,7 +209,9 @@ $(document).ready(function() {
         </div> <!-- .sv-section -->
         {% endif %}
         
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)" >Attendance</a>
+        
+	{% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
+	<div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)" >Attendance</a>
         <div class="sv-main">
             <table class="section-table">
                 <tr>
@@ -223,6 +225,7 @@ $(document).ready(function() {
             </table>
         </div> <!-- .sv-main -->
         </div> <!-- .sv-section -->
+	{% endif %}
         
         {% if student_interactions %}
         <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Student Interactions</a>
@@ -275,6 +278,7 @@ $(document).ready(function() {
 		<ul>
 		    {% for meeting in student.studentmeeting_set.all %}
 			<li>
+			    <p>
 			    <h4>
 				{{ meeting.date }}: {{ meeting }}
 				{% if perms.counseling.change_studentmeeting %}
@@ -291,7 +295,10 @@ $(document).ready(function() {
 			    {% else %} 
 				Details not shown
 			    {% endif %}
+			    <br/>
+			    </p>
 			</li>
+			
 		    {% endfor %}
 		</ul>
 		{% if perms.counseling.change_studentmeeting %}
