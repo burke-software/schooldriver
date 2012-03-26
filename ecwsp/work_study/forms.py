@@ -312,4 +312,6 @@ class CompanyContactForm3(forms.ModelForm):
         fields = (
             'name',
         )
+    email = forms.EmailField()
     i_agree = forms.BooleanField()
+    
