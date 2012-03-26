@@ -254,7 +254,7 @@ class Importer:
     def determine_truth(self, value):
         value = unicode(value)
         value = unicode.lower(value)
-        if value == "true" or value == "yes" or value == True or value == 1 or value == "1" or value == "1.0":
+        if value == "true" or value == "yes" or value == "y" or value == True or value == 1 or value == "1" or value == "1.0":
             return True
         else:
             return False
@@ -595,12 +595,14 @@ class Importer:
                     items = zip(header, row)
                     student = self.get_student(items,try_secondary=True)
                     search_date = code = college_name = state = year = type = begin = end = None
-                    status = graduated = graduation_date = degree_title = major = None
+                    status = graduated = graduation_date = degree_title = major = record_found = None
                     if hasattr(student, 'alumni'):
                         alumni = student.alumni
+                        alumni_created = False
                     else:
                         alumni = Alumni(student=student)
                         alumni.save()
+                        alumni_created = True
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
@@ -632,36 +634,45 @@ class Importer:
                                 degree_title = value
                             elif name in ['major']:
                                 major = value
+                            elif name in ['record_found', 'record_found_y/n']:
+                                record_found = self.determine_truth(value)
                                 
-                    # First get or create college
-                    college, c_created = College.objects.get_or_create(code=code)
-                    if c_created:
-                        college.name = college_name
-                        college.state = state
-                        college.type = type
-                        college.save()
-                    # Get or create enrollment based on secondary key
-                    model, created = CollegeEnrollment.objects.get_or_create(
-                        college=college,
-                        program_years=year,
-                        begin=begin,
-                        end=end,
-                        status=status,
-                        alumni=alumni,
-                    )
-                    model.search_date = search_date
-                    model.graduated = graduated
-                    model.graduation_date = graduation_date
-                    model.degree_title = degree_title
-                    model.major = major
-                    
-                    model.full_clean()
-                    model.save()
-                    self.log_and_commit(model, addition=created)
-                    if created:
-                        inserted += 1
+                    if record_found:
+                        # First get or create college
+                        college, c_created = College.objects.get_or_create(code=code)
+                        if c_created:
+                            college.name = college_name
+                            college.state = state
+                            college.type = type
+                            college.save()
+                        # Get or create enrollment based on secondary key
+                        model, created = CollegeEnrollment.objects.get_or_create(
+                            college=college,
+                            program_years=year,
+                            begin=begin,
+                            end=end,
+                            status=status,
+                            alumni=alumni,
+                        )
+                        model.search_date = search_date
+                        model.graduated = graduated
+                        model.graduation_date = graduation_date
+                        model.degree_title = degree_title
+                        model.major = major
+                        
+                        model.full_clean()
+                        model.save()
+                        self.log_and_commit(model, addition=created)
+                        if created:
+                            inserted += 1
+                        else:
+                            updated += 1
                     else:
-                        updated += 1
+                        self.log_and_commit(alumni, addition=alumni_created)
+                        if alumni_created:
+                            inserted += 1
+                        else:
+                            updated += 1
                 except:
                     if hasattr(sheet, 'name'):
                         self.handle_error(row, name, sys.exc_info(), sheet.name)
