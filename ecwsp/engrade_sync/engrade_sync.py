@@ -108,7 +108,10 @@ class EngradeSync:
     def sync_course_grades(self, course, marking_period, include_comments):
         """ Loads grades from engrade into Course grades for particular marking period.
         Returns: list of errors """
-        engrade_course = CourseSync.objects.get(course=course, marking_period=marking_period)
+        try:
+            engrade_course = CourseSync.objects.get(course=course, marking_period=marking_period)
+        except CourseSync.DoesNotExist:
+            return "%s does not exist in engrade. " % (course,)
         students = self.api.gradebook(engrade_course.engrade_course_id)
         errors = ""
         for engrade_student in students:

@@ -1068,10 +1068,16 @@ def company_contract3(request, id):
             contract.ip_address = request.META['REMOTE_ADDR']
             contract.save()
             contract.generate_contract_file()
-            return HttpResponseRedirect('/work_study/company_contract_complete/%s/' % contract.id)
+            return HttpResponseRedirect('/work_study/company_contract_complete/%s?email=%s' % (contract.id,form.cleaned_data['email']))
     else:
         form = CompanyContactForm3(instance=contract)
-    return render_to_response('work_study/company_contract3.html', {'request': request, 'form':form, 'contact_info': contact_info, 'company':company, 'contract':contract}, RequestContext(request, {}))
+    return render_to_response('work_study/company_contract3.html', {
+        'request': request,
+        'form':form,
+        'contact_info': contact_info,
+        'company':company,
+        'contract':contract,
+    }, RequestContext(request, {}))
     
 def company_contract_complete(request, id):
     contract = CompContract.objects.get(id=id)
