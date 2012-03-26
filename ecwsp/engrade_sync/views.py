@@ -43,7 +43,7 @@ def setup(request):
                 teachers = grade_sync_form.cleaned_data['teachers']
                 include_comments = grade_sync_form.cleaned_data['include_comments']
                 try:
-                    courses = Course.objects.filter(marking_period=marking_period,teacher__in=teachers)
+                    courses = Course.objects.filter(marking_period=marking_period,teacher__in=teachers,graded=True)
                     es = EngradeSync()
                     errors = ""
                     successful = 0
@@ -67,6 +67,7 @@ def setup(request):
                     messages.error(request, 'Engrade Sync unsuccessful. Contact an administrator.')
                     logger.error('Engrade Sync unsuccessful', exc_info=True, extra={
                         'request': request,
+                        'exception':sys.exc_info(),
                     })
     
     return render_to_response('engrade_sync/setup.html', {
