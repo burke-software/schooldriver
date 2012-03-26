@@ -21,6 +21,7 @@ from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
 from ecwsp.sis.models import Student
 from suds.client import Client
+import json
 
 @login_required
 def login(request):
@@ -57,6 +58,7 @@ def login(request):
         '{"highschoolStudentId":"%s"}' % (nav_id,),
     )
     
-    url = result['loginUrl']
-    HttpResponseRedirect(url)
+    url = json.loads(result).get('loginUrl')
+    return HttpResponseRedirect(url)
+
     

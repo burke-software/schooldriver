@@ -32,19 +32,19 @@
         <div class="admin-title noprint view_student" style="height:30px;">
             <form id="form_view_student" class="view_student" action="/sis/view_student/" method="post">
                 {% csrf_token %}
-                <input type="text" style="width:100%;" placeholder="Lookup Student" name="student_text" id="id_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
+                <input type="text" style="width:100%;" placeholder="Lookup Student" name="view_student_text" id="id_view_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
                 
-                <input type="hidden" name="student" id="id_student" value="">
-                <div id="id_student_on_deck" style="visibility: hidden;" class="results_on_deck"><div></div></div>
+                <input type="hidden" name="student" id="id_view_student" value="">
+                <div id="id_view_student_on_deck" style="visibility: hidden;" class="results_on_deck"><div></div></div>
                 <script type="text/javascript">//<![CDATA[
                 jQuery(document).ready(function($){
-                        addAutoComplete("id_student", function(html_id) {
+                        addAutoComplete("id_view_student", function(html_id) {
                                 $("#"+html_id).autocompleteselect({
                                         minLength: 1,
                                         source: '/ajax_select/ajax_lookup/dstudent',
                                 });
                         });
-                $("#id_student_on_deck").bind('added',function() {
+                $("#id_view_student_on_deck").bind('added',function() {
                     $('#form_view_student').submit()
                 });
                 });//]]>
