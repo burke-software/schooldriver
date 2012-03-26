@@ -153,6 +153,7 @@ INSTALLED_APPS = (
     'ecwsp.attendance',
     'ecwsp.grades',
     'ecwsp.counseling',
+    'ecwsp.naviance_sso',
     
     'ajax_select',
     'reversion',
@@ -321,6 +322,13 @@ ENGRADE_LOGIN = ''
 ENGRADE_PASSWORD = ''
 # School UID (admin must be connected to school)
 ENGRADE_SCHOOLID = ''
+
+
+NAVIANCE_USERNAME=''
+NAVIANCE_PASSWORD=''
+# username, id, or unique_id
+NAVIANCE_SWORD_ID='username'
+
 
 ADMISSIONS_DEFAULT_COUNTRY = "United States"
 

@@ -57,7 +57,9 @@ if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^engrade_sync/', include('ecwsp.engrade_sync.urls')), )
 if 'ecwsp.grades' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^grades/', include('ecwsp.grades.urls')), )
-
+if 'ecwsp.naviance_sso' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^naviance_sso/', include('ecwsp.naviance_sso.urls')), )
+    
 if 'sentry' in settings.INSTALLED_APPS:    
     urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)
 

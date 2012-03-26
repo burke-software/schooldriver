@@ -73,6 +73,8 @@ def user_preferences(request):
 def index(request):
     """if student, redirect them to timesheet.  if faculty allow this page
     """
+    if 'next' in request.GET and request.GET['next'] != "/":
+        return HttpResponseRedirect(request.GET['next'])
     if request.user.groups.filter(Q(name='faculty') | Q(name='viewer')).count() > 0:
         try:
             # Warn users of IE and Firefox < 4.0 they are not supported
