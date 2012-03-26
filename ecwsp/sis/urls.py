@@ -13,5 +13,6 @@ urlpatterns = patterns('',
     (r'^preferences/$', user_preferences),
     (r'^view_student/$', view_student),
     (r'^view_student/(?P<id>\d+)/$', view_student),
+    (r'^ajax_include_deleted/$', ajax_include_deleted),
     (r'^student/naviance/$', import_naviance),
 )

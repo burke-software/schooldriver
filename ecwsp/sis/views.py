@@ -458,11 +458,26 @@ def grade_report(request):
                 return report.finish()
     form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
     return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
-    
+
+@login_required
+def ajax_include_deleted(request):
+    checked = request.GET.get('checked')
+    profile = UserPreference.objects.get_or_create(user=request.user)[0]
+    if checked == "true":
+        profile.include_deleted_students = True
+    else:
+        profile.include_deleted_students = False
+    profile.save()
+    print profile.include_deleted_students
+    return HttpResponse('SUCCESS');
+
 @user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')   
 def view_student(request, id=None):
     student = None
     show_grades = False
+    
+    profile = UserPreference.objects.get_or_create(user=request.user)[0]
+    
     if request.method == 'POST':
         form = StudentLookupForm(request.POST)
         if form.is_valid():
@@ -511,12 +526,6 @@ def view_student(request, id=None):
             disciplines = None
         attendances = student.student_attn.all()
         
-        # Alumni
-        if hasattr(student, 'alumni') and request.user.has_perm("alumni.view_alumni"):
-            alumni = student.alumni
-        else:
-            alumni = None
-        
         #### CWSP related
         try:
             clientvisits = student.studentworker.clientvisit_set.all()
@@ -554,11 +563,27 @@ def view_student(request, id=None):
                     except:
                         course.grade_html += '<td> </td>'
                 course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
-                
-        return render_to_response('sis/view_student.html', {'form':form, 'show_grades':show_grades, 'date':today, 'student':student, 'emergency_contacts': emergency_contacts,
-                                                        'siblings': siblings, 'numbers':numbers, 'location':location, 'disciplines':disciplines, 'attendances':attendances,
-                                                        'student_interactions': student_interactions, 'clientvisits':clientvisits, 'supervisors':supervisors,
-                                                        'company_histories':company_histories, 'timesheets':timesheets, 'years': years,
-                                                        'include_deleted': include_deleted, 'current_mp': current_mp, 'schedule_days':schedule_days,
-                                                        'alumni': alumni, 'periods': periods,}, RequestContext(request, {}),)
-    return render_to_response('sis/view_student.html', {'form':form, 'include_deleted': include_deleted}, RequestContext(request, {}),)
+        
+        return render_to_response('sis/view_student.html', {
+            'form':form,
+            'show_grades':show_grades,
+            'date':today,
+            'student':student,
+            'emergency_contacts': emergency_contacts,
+            'siblings': siblings,
+            'numbers':numbers,
+            'location':location,
+            'disciplines':disciplines,
+            'attendances':attendances,
+            'student_interactions': student_interactions,
+            'clientvisits':clientvisits,
+            'supervisors':supervisors,
+            'company_histories':company_histories,
+            'timesheets':timesheets,
+            'years': years,
+            'current_mp': current_mp,
+            'schedule_days':schedule_days,
+            'periods': periods,
+            'include_inactive': profile.include_deleted_students
+        }, RequestContext(request, {}),)
+    return render_to_response('sis/view_student.html', {'include_inactive': profile.include_deleted_students}, RequestContext(request, {}),)
