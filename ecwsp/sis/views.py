@@ -468,7 +468,6 @@ def ajax_include_deleted(request):
     else:
         profile.include_deleted_students = False
     profile.save()
-    print profile.include_deleted_students
     return HttpResponse('SUCCESS');
 
 @user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')   
