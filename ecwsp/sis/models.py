@@ -449,6 +449,7 @@ class Student(MdlUser, CustomFieldModel):
             credit = float(course.credits) / float(course.marking_period.count())
         else:
             grade = float(course.get_final_grade(self, date_report=date_report))
+            #grade = float(grade)
             credit = float(course.get_credits_earned(date_report=date_report))
         return grade, credit
 
@@ -462,11 +463,12 @@ class Student(MdlUser, CustomFieldModel):
         credits = float(0)
         for course in courses.distinct():
             try:
-                grade, credit = _calculate_grade_for_single_course(course, marking_period, date_report)
+                grade, credit = self._calculate_grade_for_single_course(course, marking_period, date_report)
                 credits += credit
                 gpa += float(grade) * credit
             except:
                 pass
+        #print 'credits: ', credits
         if credits > 0:
             gpa = Decimal(str(gpa/credits)).quantize(Decimal("0.01"), ROUND_HALF_UP)
         else:
