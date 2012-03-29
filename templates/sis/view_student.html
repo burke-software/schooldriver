@@ -66,14 +66,30 @@ $(document).ready(function() {
             }, 500);
         }
     });
+    
+    
 });
-		
 });
+
+function ajax_include_deleted(){
+    var checked = $('#id_include_deleted').is(":checked");
+    $.ajax({
+	url: "/sis/ajax_include_deleted?checked=" + checked
+    });
+}
 </script>
 {% endblock %}
 
 {% block content %}
-    <h2> Student Record </h2>
+    <span class="noprint">
+	<input
+	    onclick="ajax_include_deleted()"
+	    id="id_include_deleted"
+	    type="checkbox"
+	    {% if include_inactive %} checked="checked" {% endif %}
+	 />
+	Include inactive in search?
+    </span>
     {% if student %}
 <div id="student-header">
       <div id="name-and-grade">

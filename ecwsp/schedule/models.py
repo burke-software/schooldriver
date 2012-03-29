@@ -280,8 +280,10 @@ class Course(models.Model):
             if final.count():
                 if not date_report or final[0].course.marking_period.filter(end_date__lte=date_report).count():
                     final = final[0].get_grade()
-            else:
+            elif date_report:
                 final = self.calculate_final_grade(student, date_report)
+            else:
+                final = self.calculate_final_grade(student)
             return final
     
     def calculate_final_grade(self, student, date_report=None):
