@@ -55,6 +55,7 @@ import xlwt as pycel
 import random
 import sys
 import re
+import logging
 
 days = (["Monday", "M"],["Tuesday","T"],["Wednesday","W"],["Thursday","TH"],["Friday", "F"])
 class struct(object): pass
@@ -1098,7 +1099,11 @@ def company_contract_complete(request, id):
             mail.attach('contract.pdf', attach.read(), 'application/pdf')
             mail.send()
         except:
-            pass
+            logging.warning(
+                'Could not send email for a contract', 
+                exc_info=True,
+                extra={'request': request,'exception':sys.exc_info()[0]}
+            )
     
     return render_to_response('work_study/company_contract_complete.html', {'request': request, 'company':company, 'contract':contract}, RequestContext(request, {}))
     
