@@ -1102,7 +1102,7 @@ def company_contract_complete(request, id):
             logging.warning(
                 'Could not send email for a contract', 
                 exc_info=True,
-                extra={'request': request,'exception':sys.exc_info()[0]}
+                extra={'request': request,'exception':sys.exc_info()[0],'traceback':sys.exc_info()[2]}
             )
     
     return render_to_response('work_study/company_contract_complete.html', {'request': request, 'company':company, 'contract':contract}, RequestContext(request, {}))
