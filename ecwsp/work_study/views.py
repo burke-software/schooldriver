@@ -1094,7 +1094,7 @@ def company_contract_complete(request, id):
                 )
             cc = Configuration.get_or_default("work_study_contract_cc_address", "").value
             if cc:
-                mail.cc = cc
+                mail.cc = cc.split(',')
             attach = contract.get_contract_as_pdf(response=False)
             mail.attach('contract.pdf', attach.read(), 'application/pdf')
             mail.send()
