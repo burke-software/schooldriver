@@ -236,6 +236,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                 ).exclude(omityeargpa__student=student).distinct().order_by('start_date')
             for year in student.years:
                 year.credits = 0
+                year.possible_credits = 0
                 year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year, show_reports=True).distinct().order_by("start_date")
                 i = 1
                 for mp in year.mps:
@@ -293,6 +294,8 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                     
                     if mp.end_date < for_date and course.is_passing(student) and course.credits:
                         year.credits += course.credits
+                    if course.credits:
+                        year.possible_credits += course.credits
                     
                 
                 # Averages per marking period
