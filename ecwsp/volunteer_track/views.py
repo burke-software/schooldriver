@@ -22,7 +22,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
-from django.forms.formsets import formset_factory
+from django.forms.formsets import formset_factory,BaseFormSet
 from django.forms.models import modelformset_factory
 from django.forms import ValidationError
 from django.http import HttpResponse, HttpResponseRedirect 
@@ -35,7 +35,7 @@ from ecwsp.volunteer_track.models import *
 from ecwsp.volunteer_track.forms import *
 from ecwsp.sis.models import Student
 
-#staff: has_perm instead of filter
+
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')    
 def student_hours(request, id):
     try:
