@@ -97,12 +97,16 @@ class VolunteerSite(models.Model):
                     from_email = Configuration.get_or_default("From Email Address",default="donotreply@change.me").value
                     msg = "Hello %s,\nYour site %s has been approved!" % (self.volunteer, self.site)
                     emailEnd = Configuration.get_or_default("email", default="@change.me").value
+                    subject = "Site approval"
                     send_to = str(self.volunteer.student.username) + emailEnd
                     send_mail(subject, msg, from_email, [send_to])
                 except:
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                     logging.warning(
                         'Unable to send email to volunteer about site approval! %s' % (self,),
-                        exc_info=True
+                        exc_info=True,
+                        extra={'request': request,'exception':exc_type,'traceback':'%s %s' % (fname,exc_tb.tb_lineno)}
                         )
         super(VolunteerSite, self).save(*args, **kwargs)
     
