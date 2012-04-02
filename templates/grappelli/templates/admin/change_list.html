@@ -1,7 +1,8 @@
 {% extends "admin/base_site.html" %}
 
 <!-- LOADING -->
-{% load adminmedia admin_list i18n grp_tags %}
+{% load url from future %}
+{% load admin_list i18n grp_tags %}
 
 <!-- STYLESHEETS -->
 {% block stylesheets %}
@@ -12,6 +13,7 @@
 <!-- JAVASCRIPTS -->
 {% block javascripts %}
     {{ block.super }}
+    {{ media.js }}
     {% if cl.formset or action_form %}
         {% url 'admin:jsi18n' as jsi18nurl %}
         <script type="text/javascript" src="{{ jsi18nurl|default:'../../jsi18n/'}}"></script>
@@ -40,12 +42,12 @@
                     $.each(related_lookup_fields_fk, function() {
                         $("div.changelist-results")
                         .find("input[name^='" + prefix + "'][name$='" + this + "']")
-                        .grp_related_fk({lookup_url:"{% url grp_related_lookup %}"});
+                        .grp_related_fk({lookup_url:"{% url 'grp_related_lookup' %}"});
                     });
                     $.each(related_lookup_fields_m2m, function() {
                         $("div.changelist-results")
                         .find("input[name^='" + prefix + "'][name$='" + this + "']")
-                        .grp_related_m2m({lookup_url:"{% url grp_m2m_lookup %}"});
+                        .grp_related_m2m({lookup_url:"{% url 'grp_m2m_lookup' %}"});
                     });
                     $.each(related_lookup_fields_generic, function() {
                         var content_type = this[0],
@@ -55,7 +57,7 @@
                         .each(function() {
                             var ct_id = "#id_" + prefix + "-" + $(this).attr("id").split("-")[1] + "-" + content_type,
                                 obj_id = "#id_" + prefix + "-" + $(this).attr("id").split("-")[1] + "-" + object_id;
-                            $(this).grp_related_generic({content_type:ct_id, object_id:obj_id, lookup_url:"{% url grp_related_lookup %}"});
+                            $(this).grp_related_generic({content_type:ct_id, object_id:obj_id, lookup_url:"{% url 'grp_related_lookup' %}"});
                         });
                     });
                     $.each(autocomplete_fields_fk, function() {
@@ -63,8 +65,8 @@
                         .find("input[name^='" + prefix + "'][name$='" + this + "']")
                         .each(function() {
                             $(this).grp_autocomplete_fk({
-                                lookup_url:"{% url grp_related_lookup %}",
-                                autocomplete_lookup_url:"{% url grp_autocomplete_lookup %}"
+                                lookup_url:"{% url 'grp_related_lookup' %}",
+                                autocomplete_lookup_url:"{% url 'grp_autocomplete_lookup' %}"
                             });
                         });
                     });
@@ -73,8 +75,8 @@
                         .find("input[name^='" + prefix + "'][name$='" + this + "']")
                         .each(function() {
                             $(this).grp_autocomplete_m2m({
-                                lookup_url:"{% url grp_m2m_lookup %}",
-                                autocomplete_lookup_url:"{% url grp_autocomplete_lookup %}"
+                                lookup_url:"{% url 'grp_m2m_lookup' %}",
+                                autocomplete_lookup_url:"{% url 'grp_autocomplete_lookup' %}"
                             });
                         });
                     });
@@ -91,8 +93,8 @@
                                 $(this).grp_autocomplete_generic({
                                     content_type:ct_id,
                                     object_id:obj_id,
-                                    lookup_url:"{% url grp_related_lookup %}",
-                                    autocomplete_lookup_url:"{% url grp_autocomplete_lookup %}"
+                                    lookup_url:"{% url 'grp_related_lookup' %}",
+                                    autocomplete_lookup_url:"{% url 'grp_autocomplete_lookup' %}"
                                 });
                             }
                         });
