@@ -1091,7 +1091,9 @@ def company_contract_complete(request, id):
         try:
             mail = EmailMessage(
                 'Work Study Contract Confirmation for %s.' % (company,),
-                'Contract is attached.',
+                'Thank you for agreeing to hire Cristo Rey students for the 2012-13 school year.  Your support will help break the cycle of poverty by offering the students a hand up not a handout.\
+                    Attached please find the signed contract.\ \
+                Brian.',
                 Configuration.get_or_default("work_study_contract_from_address", "donotreply@cristoreyny.org").value,
                 [email],
                 )
