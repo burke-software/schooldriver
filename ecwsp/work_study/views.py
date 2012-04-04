@@ -615,7 +615,8 @@ def change_supervisor(request, studentId):
 
 @user_passes_test(lambda u: u.has_perm('work_study.change_studentworker') or u.has_perm('sis.reports'))
 def report_builder_view(request):
-    form = ReportBuilderForm()
+    active_year = SchoolYear.objects.get(active_year=True)
+    form = ReportBuilderForm(initial={'custom_billing_begin':active_year.start_date,'custom_billing_end':active_year.end_date})
     template_form = ReportTemplateForm()
     if request.method == 'POST':
         if 'attnMonday' in request.POST:
@@ -980,23 +981,25 @@ def dol_form(request, id=None):
    
 def dol_xls_report(begin_date, end_date,):
     data = []
-    titles = ["Work Team", "CRA", "Total visits", "DOL visits (in specified dates)", "DOL visit in active year"]
+    titles = ["Work Team", "CRA", "Total visits", "DOL visits (in specified dates)", "Visit in active year?", "Last visited"]
     fileName = "Client_visit_report.xls"
     
     teams = WorkTeam.objects.all().annotate(Count('clientvisit'))
     for team in teams:
         if team.is_active():
+            dol_last = None
             dols = ClientVisit.objects.filter(company=team, dol=True).order_by('-date')
             if begin_date and end_date:
                 dols = dols.filter(date__range=(begin_date, end_date))
             if dols.count() > 0:
                 if dols[0].date > SchoolYear.objects.get(active_year=True).start_date:
-                    dol_this_year = "Yes, last was " + unicode(dols[0].date)
+                    dol_this_year = "Yes" 
                 else: 
-                    dol_this_year = "No, last was " + unicode(dols[0].date)
+                    dol_this_year = "No"
+                dol_last = unicode(dols[0].date)
             else:
-                dol_this_year = "None"
-            data.append([team.team_name, team.cra, team.clientvisit__count, dols.count(), dol_this_year])
+                dol_this_year = "No"
+            data.append([team.team_name, team.cra, team.clientvisit__count, dols.count(), dol_this_year, dol_last])
     
     report = xlsReport(data, titles, fileName, heading="Client Visit Report")
     
