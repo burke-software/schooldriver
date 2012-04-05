@@ -1,20 +1,10 @@
 {% extends "admin/change_list.html" %}
 
-<!-- LOADING -->
-{% load adminmedia admin_list i18n grp_tags %}
-
-<!-- OBJECT-TOOLS -->
-{% block object-tools %}
+{% block object-tools-items %}
     {% if has_add_permission %}
-        <ul class="tools">
-            <li>
-                <a href="{% url ecwsp.work_study.views.student_meeting %}">Students with meetings</a>
-            </li>
-            <li>
-                <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="add-handler focus">
-                    {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
-                </a>
-            </li>
-        </ul>
+        <li>
+            <a href="{% url ecwsp.work_study.views.student_meeting %}">Students with meetings</a>
+        </li> 
+        {{ block.super }}
     {% endif %}
 {% endblock %}

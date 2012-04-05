@@ -633,7 +633,7 @@ class TimeSheet(models.Model):
         alphabet = 'abcdefghijklmnopqrstuvwxyz1234567890_-'
         for x in random.sample(alphabet,20):
             key += x
-        self.supervisor_key = key.strip('-') # Remove - from end as Outlook mangles it.
+        self.supervisor_key = key.strip('-')
         
     def __unicode__(self):
         return unicode(self.student) + " " + unicode(self.date)
