@@ -1,31 +1,21 @@
 {% extends "admin/change_list.html" %}
 
-<!-- LOADING -->
-{% load adminmedia admin_list i18n grp_tags %}
-
-<!-- OBJECT-TOOLS -->
-{% block object-tools %}
+{% block object-tools-items %}
     {% if has_add_permission %}
-        <ul class="tools">
-            {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
-                <li>
-                    <a href="{% url ecwsp.discipline.views.generate_from_attendance %}"> Create from Tardies </a>
-                </li>
-            {% endif %}
+        {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
             <li>
-                <a href="{% url ecwsp.discipline.views.view_discipline %}"> Lookup Student </a>
+                <a href="{% url ecwsp.discipline.views.generate_from_attendance %}"> Create from Tardies </a>
             </li>
-            <li>
+        {% endif %}
+        <li>
+            <a href="{% url ecwsp.discipline.views.view_discipline %}"> Lookup Student </a>
+        </li>
+        <li>
             <a href="{% url ecwsp.discipline.views.discipline_list %}"> Today's List </a>
-          </li>
-          <li>
+        </li>
+        <li>
             <a href="{% url ecwsp.discipline.views.discipline_report_view %}"> Reports </a>
-          </li>
-            <li>
-                <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="add-handler focus">
-                    {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
-                </a>
-            </li>
-        </ul>
+        </li> 
+        {{ block.super }}
     {% endif %}
 {% endblock %}

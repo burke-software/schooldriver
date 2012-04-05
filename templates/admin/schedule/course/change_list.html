@@ -1,22 +1,12 @@
 {% extends "admin/change_list.html" %}
 
-<!-- LOADING -->
-{% load adminmedia admin_list i18n grp_tags %}
-
-<!-- OBJECT-TOOLS -->
-{% block object-tools %}
+{% block object-tools-items %}
     {% if has_add_permission %}
-        <ul class="tools">
-            {% if perms.grades.change_grade %}
-                <li>
-                    <a href="{% url ecwsp.grades.views.teacher_grade_submissions %}"> View Teacher Submissions </a>
-                </li>
-            {% endif %}
+        {% if perms.grades.change_grade %}
             <li>
-                <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="add-handler focus">
-                    {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
-                </a>
+                <a href="{% url ecwsp.grades.views.teacher_grade_submissions %}"> View Teacher Submissions </a>
             </li>
-        </ul>
+        {% endif %}
+        {{ block.super }}
     {% endif %}
 {% endblock %}

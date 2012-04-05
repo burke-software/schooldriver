@@ -111,7 +111,7 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
     def save_model(self, request, obj, form, change):
         super(WorkTeamAdmin, self).save_model(request, obj, form, change)
         form.save_m2m()
-        group = Group.objects.get(name="company")
+        group = Group.objects.get_or_create(name="company")[0]
         for user in obj.login.all():
             user.groups.add(group)
             user.save()
