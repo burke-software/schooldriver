@@ -19,44 +19,24 @@
 #       MA 02110-1301, USA.
 import os,sys, logging
 
-TEMPLATE_DIRS = os.path.join('/opt/sword/templates/')
-staticHead = os.path.dirname(os.path.abspath(''))
+# PATHS
+root_dir = '/opt/sword/'
+TEMPLATE_DIRS = root_dir + 'templates/'
 STATICFILES_DIRS = ((''),
-    '/opt/sword/static_files/',
+    root_dir + 'static_files/',
 )
-staticRootHead = os.path.dirname(os.path.abspath(''))
-STATIC_ROOT = os.path.join(staticRootHead, 'static/')
+STATIC_ROOT = root_dir + 'static/'
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = root_dir + 'media/'
 
 
-LDAP = False
-if LDAP:
-    LDAP_SERVER = 'crnyhs-dc.admin.cristoreyny.org'
-    NT4_DOMAIN = 'ADMIN'
-    LDAP_PORT = 389
-    LDAP_URL = 'ldap://%s:%s' % (LDAP_SERVER, LDAP_PORT)
-    SEARCH_DN = 'DC=admin,DC=cristoreyny,DC=org'
-    SEARCH_FIELDS = ['mail','givenName','sn','sAMAccountName','memberOf', 'cn']
-    BIND_USER = 'ldap'
-    BIND_PASSWORD = ''
-
-# Single Sign On
-CAS = False
-if CAS:
-    CAS_SERVER_URL = "https://cas.cristoreyny.org:443/cas/"
-    AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend','django_cas.backends.CASBackend',)
-elif LDAP:
-    AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend',)
-else:
-    AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
-
+# Django stuff
 LOGIN_REDIRECT_URL = "/"
-
-# admins get emailed if there is an error
 ADMINS = (
     ('Admin', 'someone@example.com'),
 )
-
+MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -65,26 +45,13 @@ DATABASES = {
         'PASSWORD': '1234',
     }
 }
-
-# This section should not normally be edited
-MANAGERS = ADMINS
-
-# SMTP server
 EMAIL_HOST = 'daphne.cristoreyny.org'
-
-# Max number of hours a student can work per day.
-MAX_HOURS_DAY = 10
-
-# Sync data to SugarCRM
-SYNC_SUGAR = False
-
 # Prefered file format, may be changed in user preferences.
 # Default o
 # o = Open Document
 # m = Microsoft Binary
 # x = Microsoft XML
 PREFERED_FORMAT = 'o'
-
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
@@ -92,43 +59,17 @@ DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y')
 #USE_L10N = True
-
-# Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
-
 SITE_ID = 1
 INTERNAL_IPS = ('127.0.0.1',)
-# If you set this to False, Django will make some optimizations so as not
-# to load the internationalization machinery.
 USE_I18N = True
-
-# base URL
-# Example: "www.example.com"
-production = False
-if production:
-    BASE_URL = "http://sis.cristoreyny.org"
-else:
-    BASE_URL = "http://127.0.0.1:8000"
-
-MEDIA_URL = '/media/'
-mediaHead = os.path.dirname(os.path.abspath(''))
-MEDIA_ROOT = os.path.join(mediaHead, 'media/')
-
-ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
-
-# Make this unique, and don't share it with anybody.
 SECRET_KEY = '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y'
-
-# List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#    'django.template.loaders.eggs.load_template_source',
 )
-
 ROOT_URLCONF = 'ecwsp.urls'
-
 INSTALLED_APPS = (
     'grappelli.dashboard',
     'grappelli',
@@ -139,7 +80,6 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.webdesign',
-
     'ecwsp.volunteer_track',
     'ecwsp.sis',
     'ecwsp.schedule',
@@ -153,8 +93,7 @@ INSTALLED_APPS = (
     'ecwsp.attendance',
     'ecwsp.grades',
     'ecwsp.counseling',
-    'ecwsp.naviance_sso',
-    
+    #'ecwsp.naviance_sso',
     'ajax_select',
     'reversion',
     'django_extensions',
@@ -163,12 +102,67 @@ INSTALLED_APPS = (
     'massadmin',
     'admin_export',
     'custom_field',
-    
     #'google_auth',
     #'ldap_groups',
 )
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'pagination.middleware.PaginationMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
+    )
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.request",
+    "django.core.context_processors.i18n",
+    'django.contrib.messages.context_processors.messages',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.media',
+    'ecwsp.sis.context_processors.global_stuff',
+)
+DEBUG = True
+TEMPLATE_DEBUG = True
+AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
-# Google Apps Settings
+
+#GRAPPELLI
+ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
+ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
+GRAPPELLI_INDEX_DASHBOARD = 'ecwsp.dashboard.CustomIndexDashboard'
+GRAPPELLI_ADMIN_TITLE = '<img src="/static/images/logo.png"/ style="height: 30px; margin-left: -10px; margin-top: -8px; margin-bottom: -11px;">'
+
+
+#LDAP
+LDAP = False
+if LDAP:
+    LDAP_SERVER = 'crnyhs-dc.admin.cristoreyny.org'
+    NT4_DOMAIN = 'ADMIN'
+    LDAP_PORT = 389
+    LDAP_URL = 'ldap://%s:%s' % (LDAP_SERVER, LDAP_PORT)
+    SEARCH_DN = 'DC=admin,DC=cristoreyny,DC=org'
+    SEARCH_FIELDS = ['mail','givenName','sn','sAMAccountName','memberOf', 'cn']
+    BIND_USER = 'ldap'
+    BIND_PASSWORD = ''
+
+
+#CAS
+CAS = False
+if CAS:
+    CAS_SERVER_URL = ""
+    AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend','django_cas.backends.CASBackend',)
+    MIDDLEWARE_CLASSES += (
+        'django_cas.middleware.CASMiddleware',
+        'django.middleware.doc.XViewMiddleware',
+        )
+elif LDAP:
+    AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend',)
+else:
+    AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
+    
+    
+#Google Apps
 GAPPS = False
 if GAPPS:
     GAPPS_DOMAIN = ''
@@ -177,33 +171,8 @@ if GAPPS:
     GAPPS_ALWAY_ADD_GROUPS = False
     AUTHENTICATION_BACKENDS += ('ecwsp.google_auth.backends.GoogleAppsBackend',)
 
-MIDDLEWARE_CLASSES = ()
-MIDDLEWARE_CLASSES += (
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'pagination.middleware.PaginationMiddleware',
-    #'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
-if CAS:
-    MIDDLEWARE_CLASSES += (
-        'django_cas.middleware.CASMiddleware',
-        'django.middleware.doc.XViewMiddleware',
-        )
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.request",
-    "django.core.context_processors.i18n",
-    'django.contrib.messages.context_processors.messages',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.media',
-    
-    'ecwsp.sis.context_processors.global_stuff',
-)
-
-
+#Django AJAX selects
 AJAX_LOOKUP_CHANNELS = {
     # the simplest case, pass a DICT with the model and field to search against :
     'student' : ('ecwsp.sis.lookups', 'StudentLookup'),
@@ -225,24 +194,15 @@ AJAX_LOOKUP_CHANNELS = {
     'course': {'model':'schedule.course', 'search_field':'fullname'},
     'day': ('ecwsp.schedule.lookups','DayLookup'),
 }
+if 'ecwsp.omr' in INSTALLED_APPS:
+    AJAX_LOOKUP_CHANNELS['benchmark'] = ('ecwsp.omr.lookups', 'BenchmarkLookup')
 AJAX_SELECT_BOOTSTRAP = False
 AJAX_SELECT_INLINES = 'staticfiles'
 
-if 'ecwsp.omr' in INSTALLED_APPS:
-    AJAX_LOOKUP_CHANNELS['benchmark'] = ('ecwsp.omr.lookups', 'BenchmarkLookup')
 
-DEBUG = True
-TEMPLATE_DEBUG = True
-
-AUTH_PROFILE_MODULE = 'sis.UserPreference'
-
-ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
-GRAPPELLI_INDEX_DASHBOARD = 'ecwsp.dashboard.CustomIndexDashboard'
-GRAPPELLI_ADMIN_TITLE = '<img src="/static/images/logo.png"/ style="height: 30px; margin-left: -10px; margin-top: -8px; margin-bottom: -11px;">'
-
+#CKEDITOR
 CKEDITOR_MEDIA_PREFIX = "/static/ckeditor/"
 CKEDITOR_UPLOAD_PATH = MEDIA_ROOT + "uploads"
-
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': [
@@ -264,12 +224,6 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-#CACHES = {
-#    'default': {
-#        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#        'LOCATION': '127.0.0.1:11211',
-#    }
-#}
 
 LOGGING = {
     'version': 1,
@@ -314,33 +268,33 @@ LOGGING = {
 }
 
 
-
+#Engrade
 # http://ww7.engrade.com/api/key.php
 ENGRADE_APIKEY = ''
-# Admin user login
 ENGRADE_LOGIN = ''
-# Engrade password
 ENGRADE_PASSWORD = ''
 # School UID (admin must be connected to school)
 ENGRADE_SCHOOLID = ''
 
 
+#Naviance
 NAVIANCE_USERNAME=''
 NAVIANCE_PASSWORD=''
 # username, id, or unique_id
 NAVIANCE_SWORD_ID='username'
 
 
+#Admissions
 ADMISSIONS_DEFAULT_COUNTRY = "United States"
 
-# URL of master server that stores questions
-OMR_MASTER_SERVER='localhost'
-# If this instance the master server?
-OMR_IS_MASTER_SERVER=True
 
-SENTRY_MAIL_LEVEL = logging.WARNING
+#Work Study
+MAX_HOURS_DAY = 10
+# Sync data to SugarCRM
+SYNC_SUGAR = False
 
-# The "new" url path for quexf.
+
+#OMR
 QUEXF_URL = "http://quexf.cristoreyny.org"
 
 # this will load additional settings from the file settings_local.py

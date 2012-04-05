@@ -1,210 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/> 
-		<title>Student Worker Relational Database - {{ school_name }} </title>
-		
-		<!-- Internet Explorer HTML5 enabling code: -->
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/> 
+	<title>Student Worker Relational Database - {{ school_name }} </title>
         <!--[if lte IE 9]>
-			<script src="/static/js/html5.js"></script>
-			
-			<style type="text/css">
-			.clear {
-			  zoom: 1;
-			  display: block;
-			}
-			
-			li {
-				float: left;
-			}
-			ul a{
-				padding-right: 32px;
-				padding-left: 32px;
-			}
-			</style>
+            <script src="/static/js/html5.js"></script>
+            <style type="text/css">
+                .clear {
+                  zoom: 1;
+                  display: block;
+                }
+                
+                li {
+                        float: left;
+                }
+                ul a{
+                        padding-right: 32px;
+                        padding-left: 32px;
+                }
+            </style>
         <![endif]-->
         
-		<style type="text/css">
-		*{
-			/* Universal reset: */
-			margin:0;
-			padding:0;
-		}
-			body {
-				font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
-				color: #333;
-				background: #FFF;
-				width:980px;
-				margin:auto;
-			}
-			header{
-				text-align: center
-			}
-			nav{
-				background:url('/static/images/gradient_light.jpg') repeat-x 50% 50% #f8f8f8;
-				padding:0 4px;
-				top:5.1em;
-				border:1px solid #FCFCFC;
-
-				-moz-box-shadow:0px 1px 1px #333333;
-				-webkit-box-shadow:0px 1px 1px #333333;
-				box-shadow:0px 1px 1px #333333;
-			}
-
-			/* The clearfix hack to clear the floats: */
-
-			.clear:after{
-				content: ".";
-				display: block;
-				height: 0;
-				clear: both;
-				visibility: hidden;
-			}
-
-			/* The navigation styling: */
-			nav ul li{
-				display:inline;
-			}
-
-			nav ul li a,
-			nav ul li a:visited{
-				color:#565656;
-				display:block;
-				float:left;
-				font-weight:bold;
-				margin:5px 1px;
-				padding:7px 20px 4px;
-				text-shadow:0 1px 1px white;
-				text-transform:uppercase;
-			}
-
-			nav ul li a:hover{
-				text-decoration:none;
-				background-color:#f0f0f0;
-			}
-
-			nav, article, nav ul li a,figure{
-				/* Applying CSS3 rounded corners: */
-				-moz-border-radius:10px;
-				-webkit-border-radius:10px;
-				border-radius:10px;
-			}
-			h1,h2,h3{
-				font-family:"Myriad Pro","Helvetica Neue",Helvetica,Arial,Sans-Serif;
-			}
-		
-			h2{
-				text-align: center;
-			}
-			
-			.line{
-				/* The dividing line: */
-				height:1px;
-				background-color:#6699CC;
-				border-bottom:1px solid #416371;
-				margin:1em 0;
-				overflow:hidden;
-			}
-			header,footer,
-			article,section,
-			hgroup,nav,
-			figure{
-				/* Giving a display value to the HTML5 rendered elements: */
-				display:block;
-			}
-			
-			footer{
-				text-align: center;
-			}
-			
-			/* Hyperlink Styles: */
-			a, a:visited {
-				text-decoration:none;
-				outline:none;
-			}
-			a:hover{
-				text-decoration:underline;
-			}
-			.errorlist {
-				color: #E41B17;
-				list-style:none
-			}
-			img { 
-				border: none;
-			}
-			table.border{
-				width: 100%; 
-				margin:auto; 
-				border-collapse: collapse;
-				border: 3px solid #666666; 
-			}
-			td.border {
-				border: 2px solid #666666;
-			}
-			tr.border {
-				border: 2px solid #666666;
-				margin-bottom:4px; 
-			}
-			tr.spacer {
-				height: 12px;
-			}
-			{% block css %}{% endblock %}
-		</style>
-		{% block head %}{% endblock %}
+        <link rel="stylesheet" type="text/css" href="/static/css/base.css" />
+        <style type="text/css">
+            {% block css %}{% endblock %}
+        </style>
+	{% block head %}{% endblock %}
     </head>
     <body>
     <section id="page">
-		<header>
-			<a href="/"><img src="{{ header_image }}"/></a>
-			<nav class="clear">
-				<ul>
-					{% if supervisor %}
-					    <li><a href="{% url ecwsp.work_study.views.supervisor_dash %}">Supervisor Dashboard</a></li>
-					    <li><a href="/accounts/password_change">Change Password</a></li>
-					{% endif %}
-					{% if student %}
-					    {% if "ecwsp.work_study" in settings.INSTALLED_APPS %}
-						<li><a href="{% url ecwsp.work_study.views.student_view %}">Submitted Cards</a></li>
-						<li><a href="/">Create Time Card</a></li>
-					    {% endif %}
-					    {% if "ecwsp.volunteer_track" in settings.INSTALLED_APPS %}
-						<li><a href="{% url ecwsp.volunteer_track.views.student_dash %}">Volunteer</a></li>
-					    {% endif %}
-					    {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
-						<li><a href="{% url ecwsp.benchmark_grade.views.student_grade %}">Grades</a></li>
-					    {% endif %}
-					    <li><a href="/accounts/password_change">Change Password</a></li>
-					{% endif %}
-					{% block nav %}
-					{% endblock %}
-					{% if not next %}
-					<li><a href="{% url ecwsp.sis.views.logout_view %}">Log Out</a></li>
-					{% endif %}
-				</ul>
-			</nav>
-		</header>
-		<br/>
-		{{ msg }}
-		{% if msg == "You have been logged out." %}
-			<a href="/">Click here to log in again.</a>
-		{% endif %}
-		{% for e in exceptions %}
-			<br/>
-			{{ e }}
-		{% endfor %}
+        <header>
+            <a href="/"><img src="{{ header_image }}"/></a>
+            <nav class="clear">
+                <ul>
+                    {% if supervisor %}
+                        <li><a href="{% url ecwsp.work_study.views.supervisor_dash %}">Supervisor Dashboard</a></li>
+                        <li><a href="/accounts/password_change">Change Password</a></li>
+                    {% endif %}
+                    {% if student %}
+                        {% if "ecwsp.work_study" in settings.INSTALLED_APPS %}
+                            <li><a href="{% url ecwsp.work_study.views.student_view %}">Submitted Cards</a></li>
+                            <li><a href="/">Create Time Card</a></li>
+                        {% endif %}
+                        {% if "ecwsp.volunteer_track" in settings.INSTALLED_APPS %}
+                            <li><a href="{% url ecwsp.volunteer_track.views.student_dash %}">Volunteer</a></li>
+                        {% endif %}
+                        {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
+                            <li><a href="{% url ecwsp.benchmark_grade.views.student_grade %}">Grades</a></li>
+                        {% endif %}
+                        <li><a href="/accounts/password_change">Change Password</a></li>
+                    {% endif %}
+                    {% block nav %}
+                    {% endblock %}
+                    {% if not next %}
+                    <li><a href="{% url ecwsp.sis.views.logout_view %}">Log Out</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </header>
+        <br/>
+        {{ msg }}
+        {% if msg == "You have been logged out." %}
+                <a href="/">Click here to log in again.</a>
+        {% endif %}
+        {% for e in exceptions %}
+                <br/>
+                {{ e }}
+        {% endfor %}
         {% block content %}{% endblock %}
         <br/><br/>
-   
-		<footer>
-			<div class="line"></div>
-			 <!--[if IE 7]>
-				<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-			 <![endif]-->
-			Copyright 2010-2012 <a href="http://burkesoftware.com">Burke Software and Consulting LLC</a>. This site is for authorized use only. 
-			<br/>
-			Powered by <a href="http://code.google.com/p/student-worker-relational-database/">SWoRD, the open source Student WOrker Relational Database.</a>
-			<a href="http://www.djangoproject.com/"><img src="/static/images/djangomade124x25_grey.gif" border="0" alt="Made with Django." title="Made with Django." /></a>
-		</footer>
+            <footer>
+                <div class="line"></div>
+                 <!--[if IE 7]>
+                    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+                 <![endif]-->
+                Copyright 2010-2012 <a href="http://burkesoftware.com">Burke Software and Consulting LLC</a>. This site is for authorized use only. 
+                <br/>
+                Powered by <a href="http://code.google.com/p/student-worker-relational-database/">SWoRD, the open source Student WOrker Relational Database.</a>
+                <a href="http://www.djangoproject.com/"><img src="/static/images/djangomade124x25_grey.gif" border="0" alt="Made with Django." title="Made with Django." /></a>
+            </footer>
 	</section> 
     </body>
 </html>
