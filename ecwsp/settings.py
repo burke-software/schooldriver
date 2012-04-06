@@ -70,6 +70,7 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 )
 ROOT_URLCONF = 'ecwsp.urls'
+WSGI_APPLICATION = 'ecwsp.wsgi.application'
 INSTALLED_APPS = (
     'grappelli.dashboard',
     'grappelli',
