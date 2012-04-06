@@ -1,0 +1,11 @@
+Installation under Windows or MacOS
+-----------------------------------
+Copy the content of this folder to
+    <where_you_installed_python>\Lib\site-packages\appy
+
+Installation under Linux
+------------------------
+Copy the content of this folder wherever you want (in /opt/appy for example)
+and make a symbolic link in your Python lib folder (for example:
+"ln -s /opt/appy /usr/lib/python2.5/site-packages/appy").
+

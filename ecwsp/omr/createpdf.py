@@ -30,7 +30,7 @@ from tempfile import gettempdir
 import MySQLdb
 from django.conf import settings
 from django.core.files import File
-from omr.models import Test
+from ecwsp.omr.models import Test
 from ecwsp.omr.queXF import import_queXF, pagesetup
 from ecwsp.omr.models import *
 

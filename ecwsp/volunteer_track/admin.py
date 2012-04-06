@@ -18,7 +18,7 @@
 #   MA 02110-1301, USA.
 
 
-from volunteer_track.models import *
+from ecwsp.volunteer_track.models import *
 from django.contrib import admin
 from ajax_select import make_ajax_form
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE

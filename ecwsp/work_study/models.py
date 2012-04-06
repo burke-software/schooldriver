@@ -590,8 +590,6 @@ class TimeSheetPerformanceChoice(models.Model):
         return self.name
     
     
-import datefilterspec
-    
 class TimeSheet(models.Model):
     student = models.ForeignKey(StudentWorker)
     for_pay = models.BooleanField(help_text="Student is working over break and will be paid separately for this work.")

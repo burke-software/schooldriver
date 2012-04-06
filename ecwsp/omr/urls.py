@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 #from django.views.generic import ListView
-from views import *
+from ecwsp.omr.views import *
 from ecwsp.omr.models import QuestionBank, Benchmark
 
 urlpatterns = patterns('',

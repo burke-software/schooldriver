@@ -17,7 +17,7 @@
 #   MA 02110-1301, USA.
 
 from django import forms
-from volunteer_track.models import *
+from ecwsp.volunteer_track.models import *
 from ajax_select.fields import AutoCompleteSelectField
 from django.forms import HiddenInput, ChoiceField
 from django.contrib.admin import widgets as adminwidgets

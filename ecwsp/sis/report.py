@@ -7,7 +7,7 @@ from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
 
-from ecwsp.appy.pod.renderer import Renderer
+from appy.pod.renderer import Renderer
 from django.contrib.auth.decorators import user_passes_test
 import tempfile
 import os
