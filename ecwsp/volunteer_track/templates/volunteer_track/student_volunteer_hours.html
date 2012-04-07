@@ -3,7 +3,17 @@
 
 
 {% block head %}
-    
+<script type="text/javascript" src="/static/js/jquery.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.js"></script>
+<script>
+	$(function() {
+		$(".vDateField").datepicker();
+		$("#format" ).change(function() {
+			$( "#datepicker" ).datepicker( "option", "dateFormat", $( this ).val() );
+		});
+	});
+</script>
+<link rel="stylesheet" href="/static/css/smoothness/jquery-ui.css" type="text/css" />
 {% endblock %}
 
 {% block content %}        
