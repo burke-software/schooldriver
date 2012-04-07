@@ -173,6 +173,10 @@ class CustomIndexDashboard(Dashboard):
                     'external': True,
                 },
                 {
+                    'title': 'Database documentation',
+                    'url': 'admin/doc',
+                },
+                {
                     'title': 'Burke Software',
                     'url': 'http://burkesoftware.com',
                     'external': True,
