@@ -1,0 +1,32 @@
+{% extends "admin/change_list.html" %}
+
+{% block javascripts %}
+    {{ block.super }}
+    function show_filters(){
+        $.post(  
+            "{% url admin_advanced_filter.views.show_filters cl.opts.app_label cl.opts.module_name %}",  
+            '',
+            function(data){  
+                $("#advanced_filter_box").html(data);
+            }  
+        ); 
+        $("#advanced_filter_box").overlay({
+                top: '3',
+                fixed: false
+            });
+        $("#advanced_filter_box").overlay().load();
+        return false;
+    }
+{% endblock %}
+
+{% block object-tools-items %}
+    {% if not is_popup %}
+        <li><a href="">Advanced Filter</a></li>
+    {% endif %}
+    {{block.super}}
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    <div class="modal" id="advanced_filter_box"><button class="close"> Close </button></div>
+{% endblock %}
