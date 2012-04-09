@@ -48,10 +48,35 @@
             });
         });
     </script>
+    <script type="text/javascript">
+        function show_filters(){
+            $.post(  
+                "{% url admin_advanced_filter.views.show_filters cl.opts.app_label cl.opts.module_name %}",  
+                '',
+                function(data){  
+                    $("#advanced_filter_box").html(data);
+                }  
+            ); 
+            $("#advanced_filter_box").overlay({
+                    top: '3',
+                    fixed: false
+                });
+            $("#advanced_filter_box").overlay().load();
+            return false;
+        }
+    </script>
+{% endblock %}
+
+{% block object-tools-items %}
+    {% if not is_popup %}
+        <li><a href="javascript:;" onclick="show_filters()">Advanced Filter</a></li>
+    {% endif %}
+    {{block.super}}
 {% endblock %}
 
 {% block content %}
     {{ block.super }}
     <!-- Overlay -->
     <div class="modal" id="export_xls_form"><button class="close"> Close </button></div>
+    <div class="modal" id="advanced_filter_box"><button class="close"> Close </button></div>
 {% endblock %}
