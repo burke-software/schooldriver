@@ -1,0 +1,9 @@
+<ul>
+    {% for field in fields %}
+        <li>
+            <a href="javascript:;" onclick="show_filter_field()">
+                {{ field.verbose_name }} ({{ field.get_internal_type }})
+            </a>
+        </li>
+    {% endfor %}
+</ul>
