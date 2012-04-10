@@ -300,7 +300,11 @@ class Course(models.Model):
                     final += grade.get_grade()
                     number += 1
                 # otherwise it's a letter grade.
-                except: pass
+                except TypeError:
+                    # I (Incomplete) results in the final grade being I
+                    if grade.get_grade() == "I":
+                        return "I"
+                    
             if number != 0:
                 final = final / number
                 final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)

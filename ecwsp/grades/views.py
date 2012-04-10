@@ -293,9 +293,11 @@ def handle_final_grade_save(request, course=None):
                     except:
                         # not number
                         if not grade == "" and not grade == None and not grade == "None":
-                            grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
-                            grade_object.set_grade(grade)
-                            grade_object.save()
+                            final = course.calculate_final_grade(student)
+                            if grade != final:
+                                grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
+                                grade_object.set_grade(grade)
+                                grade_object.save()
                 else:
                     # override already exists
                     grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
