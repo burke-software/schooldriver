@@ -23,7 +23,7 @@ from ecwsp.schedule.models import MarkingPeriod
 class BenchmarkGradeVerifyForm(forms.Form):
     # whoever instantiates must assign queryset for marking_periods 
     all_students = forms.BooleanField(required=False)
-    students = AutoCompleteSelectMultipleField('refering_course_student', required=False, help_text=u'')
+    students = AutoCompleteSelectMultipleField('refering_course_student', required=False, label=u'Specific students', help_text=u'')
     marking_periods = forms.ModelMultipleChoiceField(queryset=MarkingPeriod.objects.none()) 
     all_demonstrations = forms.BooleanField(required=False)
     def clean(self):

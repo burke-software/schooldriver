@@ -477,7 +477,6 @@ def grade_report(request):
                             gpa[1] = "N/A"
                             count = 2
                             if years[0].start_date.year > (current_year.end_date + timedelta(weeks=-(2*52))).year:
-                                print "12 pt 3"
                                 gpa[2] = "N/A"
                                 count = 3
                     elif student.year.id == 11 and years[0].start_date.year > (current_year.end_date + timedelta(weeks=-(3*52))).year:
