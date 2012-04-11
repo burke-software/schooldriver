@@ -32,19 +32,29 @@
 	    grade = 0;
 	    num_mp_grades = 0;
 	    
+	    add_total = true;
 	    $('input[id^=id_grade_' + course + ']').each(
 		function(i){
-		    mp_grade = parseFloat($(this).val());
+		    mp_grade_value = $(this).val()
+		    mp_grade = parseFloat(mp_grade_value);
 		    if (!(isNaN(mp_grade))) {
 			    grade += mp_grade;
 			    num_mp_grades += 1;
+		    } else if (mp_grade_value == "I" || mp_grade_value == "i") {
+			// If there is an I, the final should be just I
+			final_input.val("I");
+			add_total = false;
+			return;
 		    }
 		}
 	    )
 	    
-	    grade = grade / num_mp_grades;
+	    if (add_total) {
+		grade = grade / num_mp_grades;
 	    grade = Math.round(grade*100)/100;
 	    final_input.val(grade);
+	    }
+	    
 	}
     }
 </script>
