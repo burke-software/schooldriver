@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib import messages
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
@@ -233,7 +234,7 @@ def teacher_grade_download(request, id, type=None):
                 return HttpResponseRedirect(reverse('admin:index'))
             return replace_spreadsheet(template_path, filename, data, type)
         except:
-            logger.warning('LibreOffice crashed?', exc_info=True, extra={
+            logging.warning('LibreOffice crashed?', exc_info=True, extra={
                 'request': request,
             })
             time.sleep(3)
@@ -250,6 +251,13 @@ def handle_grade_save(request, course=None):
                 if grade.get_grade() != value:
                     grade.set_grade(value)
                     grade.save()
+                    LogEntry.objects.log_action(
+                        user_id         = request.user.pk, 
+                        content_type_id = ContentType.objects.get_for_model(grade).pk,
+                        object_id       = grade.pk,
+                        object_repr     = unicode(grade), 
+                        action_flag     = CHANGE
+                    )
             elif input[0] == "comment":
                 grade = Grade.objects.get(id=input[1])
                 if grade.comment != value:
@@ -290,6 +298,17 @@ def handle_final_grade_save(request, course=None):
                             grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
                             grade_object.set_grade(grade)
                             grade_object.save()
+                            if created:
+                                created = ADDITION
+                            else:
+                                created = CHANGE
+                            LogEntry.objects.log_action(
+                                user_id         = request.user.pk, 
+                                content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                                object_id       = grade_object.pk,
+                                object_repr     = unicode(grade_object), 
+                                action_flag     = created
+                            )
                     except:
                         # not number
                         if not grade == "" and not grade == None and not grade == "None":
@@ -298,15 +317,40 @@ def handle_final_grade_save(request, course=None):
                                 grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
                                 grade_object.set_grade(grade)
                                 grade_object.save()
+                                if created:
+                                    created = ADDITION
+                                else:
+                                    created = CHANGE
+                                LogEntry.objects.log_action(
+                                    user_id         = request.user.pk, 
+                                    content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                                    object_id       = grade_object.pk,
+                                    object_repr     = unicode(grade_object), 
+                                    action_flag     = created
+                                )
                 else:
                     # override already exists
                     grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
                     if grade == "" or grade == None or grade == "None":
                         grade_object.delete()
+                        LogEntry.objects.log_action(
+                            user_id         = request.user.pk, 
+                            content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                            object_id       = grade_object.pk,
+                            object_repr     = unicode(grade_object), 
+                            action_flag     = DELETION
+                        )
                     else:
                         grade_object.set_grade(grade)
                         grade_object.save()
-            elif input[0] == "coursefinalform":  # coursefinalform_course.id_student.id    
+                        LogEntry.objects.log_action(
+                            user_id         = request.user.pk, 
+                            content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                            object_id       = grade_object.pk,
+                            object_repr     = unicode(grade_object), 
+                            action_flag     = CHANGE
+                        )
+            elif input[0] == "coursefinalform":  # coursefinalform_course.id_student.id
                 course = Course.objects.get(id=input[1])
                 student = Student.objects.get(id=input[2])
                 grade = value
@@ -323,20 +367,50 @@ def handle_final_grade_save(request, course=None):
                             grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
                             grade_object.set_grade(grade)
                             grade_object.save()
+                            LogEntry.objects.log_action(
+                                user_id         = request.user.pk, 
+                                content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                                object_id       = grade_object.pk,
+                                object_repr     = unicode(grade_object), 
+                                action_flag     = CHANGE
+                            )
                     except:
                         # not number
                         if not grade == "" and not grade == None and not grade == "None":
-                            grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
-                            grade_object.set_grade(grade)
-                            grade_object.save()
+                            final = course.calculate_final_grade(student)
+                            if grade != final:
+                                grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
+                                grade_object.set_grade(grade)
+                                grade_object.save()
+                                LogEntry.objects.log_action(
+                                    user_id         = request.user.pk, 
+                                    content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                                    object_id       = grade_object.pk,
+                                    object_repr     = unicode(grade_object), 
+                                    action_flag     = CHANGE
+                                )
                 else:
                     # override already exists
                     grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
                     if grade == "" or grade == None or grade == "None":
                         grade_object.delete()
+                        LogEntry.objects.log_action(
+                            user_id         = request.user.pk, 
+                            content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                            object_id       = grade_object.pk,
+                            object_repr     = unicode(grade_object), 
+                            action_flag     = DELETE
+                        )
                     else:
                         grade_object.set_grade(grade)
                         grade_object.save()
+                        LogEntry.objects.log_action(
+                            user_id         = request.user.pk, 
+                            content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                            object_id       = grade_object.pk,
+                            object_repr     = unicode(grade_object), 
+                            action_flag     = CHANGE
+                        )
         except:
             try:
                 messages.info(request, 'Error in grade for ' + unicode(Student.objects.get(id=input[1])))
