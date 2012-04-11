@@ -258,7 +258,7 @@ def student_timesheet(request):
             access.ip = request.META['REMOTE_ADDR']
             access.usage = "Student submitted time sheet"
             access.save()
-            return render_to_response('base.html', {'student': True, 'msg': "Timesheet has be successfully submitted, your supervisor has been notified."}, RequestContext(request, {}))
+            return render_to_response('base.html', {'student': True, 'msg': "Timesheet has been successfully submitted, your supervisor has been notified."}, RequestContext(request, {}))
         else:
             pay, created = Configuration.objects.get_or_create(name="Allow for pay")
             if created: 
