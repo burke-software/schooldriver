@@ -51,7 +51,7 @@ def benchmark_grade_upload(request, id):
     message = ''
     mps = ()
     available_mps = course.marking_period.filter(Q(active=True) | Q(start_date__lt=date.today))
-    show_description = True
+    show_descriptions = True
     if request.method == 'POST':
         if 'upload' in request.POST:
             import_form = GradeUpload(request.POST, request.FILES)
@@ -103,7 +103,7 @@ def benchmark_grade_upload(request, id):
         'verify_form': verify_form.as_p(),
         'message': message,
         'mps': mps,
-        'show_description': show_description
+        'show_descriptions': show_descriptions
     }, RequestContext(request, {}),)
 
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
