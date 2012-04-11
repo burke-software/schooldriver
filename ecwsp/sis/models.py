@@ -477,7 +477,8 @@ class Student(MdlUser, CustomFieldModel):
         
     def calculate_gpa(self, date_report=None):
         """ Calculate students gpa
-        date_report: Date for calculation (which effects credit value) defaults to today """
+        date_report: Date for calculation (which effects credit value) defaults to today
+        Note: self is student object"""
         if date_report == None:
             date_report = date.today()
         courses = self.course_set.filter(graded=True, marking_period__show_reports=True).exclude(omitcoursegpa__student=self).exclude(marking_period__school_year__omityeargpa__student=self).distinct()
@@ -488,9 +489,11 @@ class Student(MdlUser, CustomFieldModel):
         """ Calculate students gpa for one year
         year: Defaults to active year.
         date_report: Date for calculation (which effects credit value) defaults to today """
+        print self, year
         if not date_report:
             date_report = date.today()
         courses = self.course_set.filter(graded=True, marking_period__school_year=year)
+        print courses
         x = self.__calculate_grade_for_courses(courses, date_report=date_report)
         return x
     
