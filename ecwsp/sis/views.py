@@ -469,7 +469,7 @@ def grade_report(request):
                 current_year = SchoolYear.objects.get(active_year = True)
                 years = SchoolYear.objects.filter(markingperiod__show_reports=True,start_date__lt=date.today(),markingperiod__course__courseenrollment__user=student
                 ).exclude(omityeargpa__student=student).distinct().order_by('start_date')
-                if years:
+                if years and student.year:
                     if (student.year.id == 12 and years[0].start_date.year > (current_year.end_date + timedelta(weeks=-(4*52))).year):
                         gpa[0] = "N/A"
                         count = 1
