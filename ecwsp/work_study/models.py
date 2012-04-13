@@ -43,6 +43,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
+import logging
 
 from ecwsp.administration.models import Configuration
 from ecwsp.sis.models import Student
@@ -650,10 +651,10 @@ class TimeSheet(models.Model):
             from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
             send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
-            try:
-                print >> sys.stderr, "Could not email " + unicode(self.student)
-            except:
-                pass
+            logging.error('Could not email student', exc_info=True, extra={
+                'request': request,
+                'exception': sys.exc_info()[0]
+            })
         
     def save(self, *args, **kwargs):
         email = False
