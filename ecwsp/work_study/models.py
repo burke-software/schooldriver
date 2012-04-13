@@ -652,7 +652,8 @@ class TimeSheet(models.Model):
             send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
             logging.warning('Could not email student', exc_info=True, extra={
-                'exception': sys.exc_info()[0]
+                'exception': sys.exc_info()[0],
+                'exception2': sys.exc_info()[1],
             })
         
     def save(self, *args, **kwargs):
