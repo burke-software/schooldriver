@@ -74,9 +74,9 @@ def benchmark_grade_upload(request, id):
                     students = course.get_enrolled_students().filter(id__in=verify_form.cleaned_data['students'])
                 categories = Category.objects.filter(item__course=course).distinct()
                 for mp in mps:
-                    mp.students = students
+                    mp.students = students.all() # must have all() to make a copy; loses all optimization gains
                     for student in mp.students:
-                        student.categories = categories
+                        student.categories = categories.all()
                         for category in student.categories:
                             category.marks = Mark.objects.filter(student=student, item__course=course, item__category=category,
                                                                  item__markingPeriod=mp).order_by('-item__date', 'item__name', 'description')
