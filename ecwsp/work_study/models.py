@@ -651,7 +651,7 @@ class TimeSheet(models.Model):
             from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
             send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
-            logging.error('Could not email student', exc_info=True, extra={
+            logging.warning('Could not email student', exc_info=True, extra={
                 'request': request,
                 'exception': sys.exc_info()[0]
             })
