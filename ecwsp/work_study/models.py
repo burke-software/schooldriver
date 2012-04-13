@@ -644,7 +644,7 @@ class TimeSheet(models.Model):
             sendTo = str(self.student.username) + emailEnd
             subject = "Time Sheet approved for " + unicode(self.student)
             if show_comment:
-                msg = "Hello " + unicode(self.student) + ",\nYour time card was approved. Your rating was " + self.performance + " \nYour supervisor's comment was \"" \
+                msg = "Hello " + unicode(self.student) + ",\nYour time card was approved. Your rating was " + unicode(self.performance) + " \nYour supervisor's comment was \"" \
                     + unicode(self.supervisor_comment) + "\""
             else:
                 msg = "Hello " + unicode(self.student) + ",\nYour time card was approved."
