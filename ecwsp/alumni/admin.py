@@ -22,6 +22,14 @@ class WithdrawlInline(admin.TabularInline):
     model = Withdrawl
     extra = 0
 
+class AlumniPhoneNumberInline(admin.TabularInline):
+    model = AlumniPhoneNumber
+    extra = 0
+    
+class AlumniEmailInline(admin.TabularInline):
+    model = AlumniEmail
+    extra = 0
+
 class AlumniNoteInline(admin.TabularInline):
     model = AlumniNote
     readonly_fields = ('user', 'date',)
@@ -29,6 +37,12 @@ class AlumniNoteInline(admin.TabularInline):
     formfield_overrides = {
         models.TextField: {'widget': forms.Textarea(attrs={'style':'width:450px;',})},
     }
+    
+class EnrollmentInline(admin.StackedInline):
+    model = CollegeEnrollment
+    classes = ('collapse closed',)
+    inline_classes = ('collapse open',)
+    extra = 0
 
 admin.site.register(AlumniNoteCategory)
     
@@ -39,10 +53,10 @@ admin.site.register(AlumniAction, AlumniActionAdmin)
 
 class AlumniAdmin(admin.ModelAdmin):
     form = AlumniForm
-    search_fields = ['student__fname', 'student__lname']
-    list_filter = ['graduated', 'program_years']
+    search_fields = ['student__fname', 'student__lname', 'college__name']
+    list_filter = ['graduated', 'program_years', 'college', 'college_override']
     list_display = ['student', 'graduated', 'college']
-    inlines = [WithdrawlInline, AlumniNoteInline]
+    inlines = [AlumniEmailInline,AlumniPhoneNumberInline,WithdrawlInline, AlumniNoteInline,EnrollmentInline]
     
     fieldsets = [
         (None, {
