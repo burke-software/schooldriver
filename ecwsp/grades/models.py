@@ -40,6 +40,7 @@ class Grade(models.Model):
         unique_together = (("student", "course", "marking_period", "final"),)
         permissions = (
             ("change_own_grade", "Change grades for own class"),
+            ('change_own_final_grade','Change final YTD grades for own class'),
         )
         
     def display_grade(self):
