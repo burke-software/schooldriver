@@ -20,6 +20,7 @@ from django.db import models
 from django.db import IntegrityError
 from django.contrib.localflavor.us.models import *
 from django.contrib.auth.models import User
+from django.contrib.localflavor.us.models import PhoneNumberField
 
 from ecwsp.sis.models import *
 
@@ -121,6 +122,19 @@ class AlumniAction(models.Model):
     def __unicode__(self):
         return "%s %s" % (self.title, self.date)
 
+class AlumniEmail(models.Model):
+    email = models.EmailField()
+    type = models.CharField(max_length=255)
+    alumni = models.ForeignKey('Alumni')
+    def __unicode__(self):
+        return self.email
+class AlumniPhoneNumber(models.Model):
+    phone_number = PhoneNumberField()
+    type = models.CharField(max_length=255)
+    alumni = models.ForeignKey('Alumni')
+    def __unicode__(self):
+        return self.phone_number
+
 class Alumni(models.Model):
     student = models.OneToOneField(Student)
     college = models.ForeignKey(College, blank=True, null=True, related_name="college_student")
@@ -138,6 +152,21 @@ class Alumni(models.Model):
     
     def __unicode__(self):
         return unicode(self.student)
+    
+    def save(self, *args, **kwargs):
+        if id:
+            new = False
+        else:
+            new = True
+        super(Alumni, self).save(*args, **kwargs)
+        if new and self.student:
+            # copy old data, we want to keep it for archieval reasons
+            if self.student.alt_email:
+                AlumniEmail.create(email=self.student.alt_email,type="Imported Alt Email",alumni=self)
+            if self.student.email:
+                AlumniEmail.create(email=self.student.alt_email,type="Imported Email",alumni=self)
+            for number in self.student.studentnumber_set.all():
+                AlumniPhoneNumber.create(phone_number=number.number,type=number.type,alumni=self)
     
     def handle_cache(self):
         """ Sets cache and college unless college_override is checked """
@@ -158,9 +187,5 @@ class Alumni(models.Model):
                         transfer.from_enrollment = True
                         transfer.save()
                 prev_enrollment = enrollment
+            self.semesters = str(self.collegeenrollment_set.filter(college=self.college).count())
             self.save()
-    
-    @property
-    def get_college(self):
-        if self.college_cache:
-            return self.college_cache

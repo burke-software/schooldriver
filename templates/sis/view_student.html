@@ -270,6 +270,18 @@ function ajax_include_deleted(){
                     <td class="thing"> Current college  </td>
                     <td> {{ alumni.college }} {% if alumni.graduated %} (Graduated {{ alumni.graduation_date }}) {% endif %} </td>
                 </tr>
+		{% for email in alumni.alumniemail_set.all %}
+                    <tr>
+                        <td class="thing"> Email {{ email.type }} </td>
+                        <td>{{ email }}</td>
+                    </tr>
+                {% endfor %}
+                {% for number in alumni.alumniphonenumber_set.all %}
+                    <tr>
+                        <td class="thing"> Phone Number {{ number.type }} </td>
+                        <td>{{ number }}</td>
+                    </tr>
+                {% endfor %}
             </table>
             <div class="sv-section"><a class="section-header subsection sub-expanded" href="javascript:void(0)">Notes</a>
                 <div class="sv-main" style="display: block;"> 
