@@ -365,7 +365,6 @@ def grade_report(request):
                         marking_period__in=mps,
                         course__teacher=teacher,
                         student__inactive=False,
-                        final=True,
                         override_final=False,
                     ).filter(
                         Q(grade__isnull=False) |
@@ -436,7 +435,6 @@ def grade_report(request):
                             student__inactive=False,
                             student__year__in=[level],   # Shouldn't need __in. Makes no sense at all.
                             grade__lt=passing,
-                            final=True,
                             override_final=False,
                         ).count()
                         total = Grade.objects.filter(
@@ -444,7 +442,6 @@ def grade_report(request):
                             course__department=dept,
                             student__inactive=False,
                             student__year__in=[level],
-                            final=True,
                             override_final=False,
                         ).count()
                         if total:
@@ -613,7 +610,7 @@ def view_student(request, id=None):
                 course.grade_html = ""
                 for mp in year.mps:
                     try:
-                        course.grade_html += '<td> %s </td>' % (Grade.objects.get(student=student, final=True, course=course, marking_period=mp).get_grade(),)
+                        course.grade_html += '<td> %s </td>' % (Grade.objects.get(student=student, course=course, marking_period=mp).get_grade(),)
                     except:
                         course.grade_html += '<td> </td>'
                 course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)

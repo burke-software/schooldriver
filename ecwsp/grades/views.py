@@ -440,8 +440,8 @@ def student_gradesheet(request, id, year_id=None):
     courses = courses.filter(marking_period__school_year=school_year).distinct()
     for course in courses:
         for mp in school_year.markingperiod_set.all():
-            grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp, final=True)
-        course.grades = student.grade_set.filter(course=course, final=True, override_final=False)
+            grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp)
+        course.grades = student.grade_set.filter(course=course, override_final=False)
         
         try:
             override_grade = course.grade_set.get(student=student, override_final=True)
