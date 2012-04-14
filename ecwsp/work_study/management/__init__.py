@@ -13,6 +13,8 @@ def fix_perm_content_type(sender, **kwargs):
         | Q(name="Can delete work team user")
         ):
         perm.content_type = work_user_content_type
-        perm.save()
+        try:
+            perm.save()
+        except: pass # old databases may have this change already and error
 
 post_syncdb.connect(fix_perm_content_type, sender=ecwsp.work_study.models)
