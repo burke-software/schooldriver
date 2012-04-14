@@ -190,7 +190,9 @@ def teacher_grade_upload(request, id):
         except:
             student.final = course.calculate_final_grade(student)
     
-    if request.user.is_superuser or request.user.has_perm('grades.change_own_grade'):
+    if request.user.is_superuser or \
+        request.user.has_perm('grades.change_own_final_grade') or \
+        request.user.has_perm('grades.change_grade'):
         edit = True
     else:
         edit = False
