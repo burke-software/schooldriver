@@ -2,26 +2,31 @@
 {% load i18n %}
 
 {% block extrahead %}
-<link rel="stylesheet" type="text/css" href="/static/css/gradesheet.css" />
-<script type="text/javascript" src="/static/js/gradesheet.js"></script>
-
-<link rel="stylesheet" type="text/css" href="/static/css/fixedHeaderTable_default.css" />
-<script type="text/javascript" src="/static/js/jquery.fixedheadertable.min.js"></script>
-
-<script type="text/javascript"> 
-    $(document).ready(function() {
-        $('.comment').hide();
-	$("#grade_form").mouseup(function(e){
-		e.preventDefault();
-	});
-	$('td.column_0.row_0 input').focus();
+    <script type='text/javascript' >
+	// Make sure this comes before loading other js!
+	var letter_grade_required_for_pass = {{ letter_grade_required_for_pass }}; 
+    </script>
 	
-	fullscreen_table(false);
-	$(window).resize(function() {
-	    fullscreen_table(true);
+    <link rel="stylesheet" type="text/css" href="/static/css/gradesheet.css" />
+    <script type="text/javascript" src="/static/js/gradesheet.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="/static/css/fixedHeaderTable_default.css" />
+    <script type="text/javascript" src="/static/js/jquery.fixedheadertable.min.js"></script>
+    
+    <script type="text/javascript"> 
+	$(document).ready(function() {
+	    $('.comment').hide();
+	    $("#grade_form").mouseup(function(e){
+		    e.preventDefault();
+	    });
+	    $('td.column_0.row_0 input').focus();
+	    
+	    fullscreen_table(false);
+	    $(window).resize(function() {
+		fullscreen_table(true);
+	    });
 	});
-    });
-</script> 
+    </script> 
 {% endblock %}
 
 {% block content %}
@@ -83,7 +88,7 @@
 			    <td class="column_{{ forloop.counter }} row_{{ row_counter }}">
 				{% endif %}
 			    {% endfor %}
-				{% if edit %}
+				{% if edit_final %}
 				    <input
 					id="grade_final_{{ student.id }}"
 					name="gradefinalform_{{ student.id }}"
@@ -110,4 +115,5 @@
 	    <input type="submit" name="edit" value="Save grades"/> 
 	{% endif %}
     </form>
+    <span
 {% endblock %}

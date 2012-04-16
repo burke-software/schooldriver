@@ -2,6 +2,10 @@
 {% load i18n %}
 
 {% block extrahead %}
+    <script type='text/javascript' >
+        // Make sure this comes before loading other js!
+        var letter_grade_required_for_pass = {{ letter_grade_required_for_pass }}; 
+    </script>
     <link rel="stylesheet" type="text/css" href="/static/css/gradesheet.css" />
     <script type="text/javascript" src="/static/js/gradesheet.js"></script>
     <script type="text/javascript">

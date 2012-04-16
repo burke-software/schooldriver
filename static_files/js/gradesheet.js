@@ -56,24 +56,42 @@ function recalc_ytd_grade(mp_grade_inputs, ytd_input) {
         grade = 0;
         num_mp_grades = 0;
         add_total = true;
+        letter_grade = false;
         mp_grade_inputs.each(function(i){
             mp_grade_value = $(this).val()
             mp_grade = parseFloat(mp_grade_value);
             if (!(isNaN(mp_grade))) {
                 grade += mp_grade;
                 num_mp_grades += 1;
-            } else if (mp_grade_value == "I" || mp_grade_value == "i") {
+            } else if (mp_grade_value.toLowerCase() == "i") {
                 // If there is an I, the final should be just I
                 ytd_input.val("I");
                 add_total = false;
                 return;
+            } else if (mp_grade_value.toLowerCase() == "p" ||
+                       mp_grade_value.toLowerCase() == "lp" ||
+                       mp_grade_value.toLowerCase() == "hp") {
+                grade += 100;
+                num_mp_grades += 1;
+                letter_grade = true;
+            } else if (mp_grade_value.toLowerCase() == "f") {
+                num_mp_grades += 1;
+                letter_grade = true;
             }
         });
         
         if (add_total) {
             grade = grade / num_mp_grades;
             grade = Math.round(grade*100)/100;
-            ytd_input.val(grade);
+            if (letter_grade) {
+                if (grade > letter_grade_required_for_pass){
+                    ytd_input.val("P");
+                } else {
+                    ytd_input.val("F");
+                }
+            } else {
+                ytd_input.val(grade);
+            }
         }
     }
 }

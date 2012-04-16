@@ -287,11 +287,15 @@ class Course(models.Model):
             return final
     
     def calculate_final_grade(self, student, date_report=None):
-        """ Calculates final grade. Does not take into account overrides. """
+        """
+        Calculates final grade. Does not take into account overrides.
+        Note that this should match recalc_ytd_grade in gradesheet.js!
+        """
         if 'ecwsp.grades' in settings.INSTALLED_APPS:
             from ecwsp.grades.models import Grade
             final = Decimal(0)
             number = 0
+            letter_grade = False
             grades =  Grade.objects.filter(student=student, course=self)
             if date_report:
                 grades = grades.filter(marking_period__end_date__lte=date_report)
@@ -304,10 +308,22 @@ class Course(models.Model):
                     # I (Incomplete) results in the final grade being I
                     if grade.get_grade() == "I":
                         return "I"
+                    elif grade.get_grade() in ["P","HP","LP"]:
+                        final += 100
+                        number += 1
+                        letter_grade = True
+                    elif grade.get_grade() == 'F':
+                        number += 1
+                        letter_grade = True
                     
             if number != 0:
                 final = final / number
                 final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
+                if letter_grade == True:
+                    if final > int(Configuration.get_or_default('letter_grade_required_for_pass', '60').value):
+                        return "P"
+                    else:
+                        return "F"
             else:
                 final = None
             return final

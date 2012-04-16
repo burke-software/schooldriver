@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect
 from django.template import RequestContext
 from django.db.models import Q
 
+from ecwsp.administration.models import Configuration
 from ecwsp.schedule.models import *
 from ecwsp.sis.models import *
 from ecwsp.sis.helper_functions import Struct
@@ -150,9 +151,17 @@ def teacher_grade_upload(request, id):
     if request.user.is_superuser or \
         request.user.has_perm('grades.change_own_final_grade') or \
         request.user.has_perm('grades.change_grade'):
+        edit_final = True
+    else:
+        edit_final = False
+    if request.user.is_superuser or \
+        request.user.has_perm('grades.change_own_grade') or \
+        request.user.has_perm('grades.change_grade'):
         edit = True
     else:
         edit = False
+    
+    letter_grade_required_for_pass = Configuration.get_or_default('letter_grade_required_for_pass', '60').value
     
     return render_to_response('grades/teacher_grade_upload.html', {
         'request': request, 
@@ -161,6 +170,8 @@ def teacher_grade_upload(request, id):
         'students': students, 
         'import_form': import_form,
         'edit': edit,
+        'edit_final': edit_final,
+        'letter_grade_required_for_pass': letter_grade_required_for_pass
     }, RequestContext(request, {}),)
 
 
@@ -336,6 +347,8 @@ def student_gradesheet(request, id, year_id=None):
     
     marking_periods = MarkingPeriod.objects.filter(course__in=courses).distinct().order_by('start_date')
     
+    letter_grade_required_for_pass = Configuration.get_or_default('letter_grade_required_for_pass', '60').value
+    
     return render_to_response('grades/student_gradesheet.html', {
         'request': request,
         'student': student,
@@ -343,4 +356,5 @@ def student_gradesheet(request, id, year_id=None):
         'marking_periods': marking_periods,
         'school_year': school_year,
         'school_years': school_years,
+        'letter_grade_required_for_pass':letter_grade_required_for_pass,
     }, RequestContext(request, {}),)
