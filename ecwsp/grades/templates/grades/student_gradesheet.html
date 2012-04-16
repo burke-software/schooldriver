@@ -2,73 +2,27 @@
 {% load i18n %}
 
 {% block extrahead %}
-
-<style type="text/css">
-    table.grades tr:nth-child(2n) td {
-        background: #EDF3FE;
-    }
-    input.grade_form {
-        border: 1px dotted rgba(0,0,0,0.4);
-        background-color:rgba(255,255,255,0.6);
-        padding: 0px;
-        margin: 0px;
-        text-align:right;
-        width: 100%;
-        max-width: 45px;
-    }
-    td.comment {
-        text-align: center;
-    }
-	
-    .final_override {
-	    background-color:rgba(255,165,0,0.5) !important;
-    }
-</style>
-
-<script type="text/javascript">
-    function recalc_grade(course) {
-	final_input = $('input[id=id_coursefinalform_' + course + ']');
-	if (final_input.attr('class') != 'grade_form final_override') {
-	    grade = 0;
-	    num_mp_grades = 0;
-	    
-	    add_total = true;
-	    $('input[id^=id_grade_' + course + ']').each(
-		function(i){
-		    mp_grade_value = $(this).val()
-		    mp_grade = parseFloat(mp_grade_value);
-		    if (!(isNaN(mp_grade))) {
-			    grade += mp_grade;
-			    num_mp_grades += 1;
-		    } else if (mp_grade_value == "I" || mp_grade_value == "i") {
-			// If there is an I, the final should be just I
-			final_input.val("I");
-			add_total = false;
-			return;
-		    }
-		}
-	    )
-	    
-	    if (add_total) {
-		grade = grade / num_mp_grades;
-	    grade = Math.round(grade*100)/100;
-	    final_input.val(grade);
-	    }
-	    
-	}
-    }
-</script>
-
+    <link rel="stylesheet" type="text/css" href="/static/css/gradesheet.css" />
+    <script type="text/javascript" src="/static/js/gradesheet.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('.comment').hide();
+            $("#grade_form").mouseup(function(e){
+                    e.preventDefault();
+            });
+            $('td.column_0.row_0 input').focus();
+        });
+    </script>
 {% endblock %}
 
-{% block breadcrumbs %}{% if not is_popup %}
-<div class="breadcrumbs">
-     <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
-     <a href="{% url admin:sis_student_changelist %}"> Courses </a> &rsaquo; 
-     <a href="{% url admin:sis_student_change student.id %}"> {{ student }}  </a> &rsaquo; 
-     Student Gradesheet
-</div>
-{% endif %}{% endblock %}
+{% block breadcrumbs %}
+    <div id="breadcrumbs">
+        <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
+        <a href="{% url admin:sis_student_changelist %}"> Courses </a> &rsaquo; 
+        <a href="{% url admin:sis_student_change student.id %}"> {{ student }}  </a> &rsaquo; 
+        Student Gradesheet
+    </div>
+{% endblock %}
 
 {% block content %}
 	<h2> Grades - {{ student }} - {{ school_year }} </h2>
@@ -76,45 +30,68 @@
 	{% for year in school_years %}
 	    {% if not forloop.first %} &nbsp;&nbsp; &middot; {% endif %} &nbsp;&nbsp; <a href="{{ year.id }}"> {{ year }} </a>
 	{% endfor %}
-    
-    <form action="" method="post">
-        <table class="grades">
+        
+    <form action="" onsubmit="submit_form()" method="post">
+	<table id="gradebook_table">
             <thead>
                 <tr>
-                    <th style="text-align: center;">Course</th>
-                    <th>Marking Period Grades</th>
-                    <th>Final</th>
+                    <th>Course</th>
+		    {% for mp in marking_periods %}
+			<th>{{ mp }}</th>
+		    {% endfor %}
+                    <th>YTD</th>
                 </tr>
             </thead>
             <tbody>
                 {% for course in courses %}
+                    {% with row_counter=forloop.counter0 %}
                     <tr>
-                        <td> {{ course }} </td>
-			<td>
-			    <table>
-				<tr>
-				    {% for grade in course.grades %}
-				    <td>
-					{{ grade.marking_period }} <br/>
-					<input class="grade_form" id="id_grade_{{ course.id }}_{{ grade.id }}" onchange="recalc_grade({{ course.id }})" name="grade_{{ grade.id }}" value="{{ grade.get_grade }}"/> <br/>
-					<input value="{{ grade.comment }}" name="comment_{{ grade.id }}" placeholder="Comment"/>
-				    </td>
-				    {% endfor %}
-				</tr>
-			    </table>
+                        <td>
+			    {{ course }}
 			</td>
-			<td>
+			{% for mp in marking_periods %}
+                            <td class="column_{{ forloop.counter0 }} row_{{ row_counter }}">
+                                {% for grade in course.grades %}
+                                    {% if grade.marking_period == mp %}
+                                        <input
+                                            class="grade_form"
+                                            size="8"
+                                            id="id_grade_{{ course.id }}_{{ grade.id }}"
+                                            onchange="recalc_grade(event, {{ course.id }})"
+                                            name="grade_{{ grade.id }}"
+                                            value="{{ grade.get_grade }}"
+                                            onkeydown="return keyboard_nav(event)"
+                                        />
+                                        <span class="comment">
+                                            <br/>
+                                            <textarea rows="2" onchange="mark_change(event)" name="comment_{{ grade.id }}" placeholder="Comment">{{ grade.comment }}</textarea>
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            {% if forloop.last %}
+                        <td class="column_{{ forloop.counter }} row_{{ row_counter }}">
+                            {% endif %}
+			{% endfor %}
 			    <input class="grade_form {% if course.final_override %}final_override{% endif %}"
 				id="id_coursefinalform_{{ course.id }}"
 				name="coursefinalform_{{ course.id }}_{{ student.id }}"
 				value="{{ course.final }}"
+				size="8"
+				onchange="mark_change(event)"
+                                onkeydown="return keyboard_nav(event)"
 			     />
 			</td>
-                    </tr>
+		    </tr>
+                    {% endwith %}
                 {% endfor %}
             </tbody>
         </table>
+	
         <br/>
+	<a href="javascript:void(0)" onclick="toggle_comments()">Toggle Comments</a>
+	<br/>
+	
         <input type="submit" name="edit" value="Save grades"/> 
         Enter "None" or leave blank to delete grade (thus grade will be calculated instead) <br/> <span class="final_override"> * color indicates final grade has been manually changed. </span>
     </form>

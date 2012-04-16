@@ -141,18 +141,12 @@ def teacher_grade_upload(request, id):
     
     marking_periods = course.marking_period.all().order_by('start_date')
     
-    for mp in marking_periods:
-        if Grade.objects.filter(course=course, marking_period=mp, final=False).count():
-            mp.has_mid = True
-        else:
-            mp.has_mid = False
-    
     x = 0
     y = 0
     for mp in marking_periods:
         y = 0
         for student in students:
-            grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp, final=True)
+            grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp)
             grade_struct = Struct()
             grade_struct.grade = grade.get_grade()
             grade_struct.id = grade.id
@@ -161,20 +155,8 @@ def teacher_grade_upload(request, id):
             student.display_grades.append(grade_struct)
             student.comments.append(grade.comment)
             
-            
-            if mp.has_mid:
-                mid_grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp, final=False)
-                grade_struct = Struct()
-                grade_struct.grade = mid_grade.get_grade()
-                grade_struct.id = mid_grade.id
-                grade_struct.x = x + 1
-                grade_struct.y = y
-                student.display_grades.append(grade_struct)
-                student.comments.append(mid_grade.comment)
-                student.grade_id.append(mid_grade.id)
             y += 1
         x += 1
-        if mp.has_mid: x += 1
         last_y = y - 1
         last_x = x
             
@@ -428,7 +410,7 @@ def handle_final_grade_save(request, course=None):
     
 @permission_required('grades.change_grade')
 def student_gradesheet(request, id, year_id=None):
-    student = Student.objects.get(id=id)
+    student = get_object_or_404(Student, id=id)
     if request.POST:
         handle_grade_save(request)
     courses = student.course_set.filter(graded=True)
@@ -438,6 +420,7 @@ def student_gradesheet(request, id, year_id=None):
     else:
         school_year = SchoolYear.objects.get(active_year=True)
     courses = courses.filter(marking_period__school_year=school_year).distinct()
+    
     for course in courses:
         for mp in school_year.markingperiod_set.all():
             grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp)
@@ -449,11 +432,14 @@ def student_gradesheet(request, id, year_id=None):
             course.final_override = True  # effects CSS
         except:
             course.final = course.calculate_final_grade(student)
-        
+    
+    marking_periods = MarkingPeriod.objects.filter(course__in=courses).distinct().order_by('start_date')
+    
     return render_to_response('grades/student_gradesheet.html', {
         'request': request,
         'student': student,
         'courses': courses,
+        'marking_periods': marking_periods,
         'school_year': school_year,
         'school_years': school_years,
     }, RequestContext(request, {}),)

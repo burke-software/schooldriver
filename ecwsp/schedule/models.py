@@ -292,7 +292,7 @@ class Course(models.Model):
             from ecwsp.grades.models import Grade
             final = Decimal(0)
             number = 0
-            grades =  Grade.objects.filter(student=student, final=True, course=self)
+            grades =  Grade.objects.filter(student=student, course=self)
             if date_report:
                 grades = grades.filter(marking_period__end_date__lte=date_report)
             for grade in grades:
