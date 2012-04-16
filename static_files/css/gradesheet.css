@@ -27,9 +27,25 @@ table#gradebook_table input.changed, textarea.changed {
 
 table#gradebook_table input.final_override, .final_override {
     background-color:rgba(255,246,46,0.5);
+    padding-right: 19px;
+    margin-right: -19px;
 }
 
 table#gradebook_table input:focus {
-    border: 1px solid blue !important;
-    margin: -1px;
+    outline: 1px solid blue !important;
+}
+
+table#gradebook_table img.cancel {
+    margin-top: 2px;
+    padding-right: 1px;
+}
+
+.fht-table-wrapper {
+    /* Hack to make fixedheadertable not create pointless horizontal scroll bar */
+    width: 101% !important;
+}
+
+#content {
+    /* Why does grappelli have this? */
+    margin-bottom: 0px;
 }

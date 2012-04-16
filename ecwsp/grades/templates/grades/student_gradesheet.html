@@ -54,12 +54,12 @@
                                 {% for grade in course.grades %}
                                     {% if grade.marking_period == mp %}
                                         <input
-                                            class="grade_form"
-                                            size="8"
                                             id="id_grade_{{ course.id }}_{{ grade.id }}"
-                                            onchange="recalc_grade(event, {{ course.id }})"
                                             name="grade_{{ grade.id }}"
                                             value="{{ grade.get_grade }}"
+                                            class="grade_form"
+                                            size="7"
+                                            onchange="recalc_student_grade(event, {{ course.id }})"
                                             onkeydown="return keyboard_nav(event)"
                                         />
                                         <span class="comment">
@@ -73,14 +73,18 @@
                         <td class="column_{{ forloop.counter }} row_{{ row_counter }}">
                             {% endif %}
 			{% endfor %}
-			    <input class="grade_form {% if course.final_override %}final_override{% endif %}"
+			    <input
 				id="id_coursefinalform_{{ course.id }}"
 				name="coursefinalform_{{ course.id }}_{{ student.id }}"
 				value="{{ course.final }}"
-				size="8"
+				size="7"
+                                class="grade_form {% if course.final_override %}final_override{% endif %}"
 				onchange="mark_change(event)"
                                 onkeydown="return keyboard_nav(event)"
 			     />
+                            {% if course.final_override %}
+                                <img onclick="remove_grade(event,'id_coursefinalform_{{ course.id }}')" class="cancel" src="/static/images/cancel.png"/>
+                            {% endif %}
 			</td>
 		    </tr>
                     {% endwith %}
@@ -93,7 +97,6 @@
 	<br/>
 	
         <input type="submit" name="edit" value="Save grades"/> 
-        Enter "None" or leave blank to delete grade (thus grade will be calculated instead) <br/> <span class="final_override"> * color indicates final grade has been manually changed. </span>
     </form>
     <script>$(".comment").hide();</script>
 {% endblock %}
