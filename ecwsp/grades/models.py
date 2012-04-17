@@ -20,7 +20,6 @@ class Grade(models.Model):
     marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
     date = models.DateField(auto_now=True)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    final = models.BooleanField(help_text="Yes for final grade. No for mid marking period report. Only final grades are included in the average.")
     override_final = models.BooleanField(help_text="Override final grade for marking period instead of calculating it.")
     comment = models.CharField(max_length=500, blank=True)
     letter_grade_choices = (
@@ -37,9 +36,10 @@ class Grade(models.Model):
     letter_grade = models.CharField(max_length=2, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
     
     class Meta:
-        unique_together = (("student", "course", "marking_period", "final"),)
+        unique_together = (("student", "course", "marking_period"),)
         permissions = (
             ("change_own_grade", "Change grades for own class"),
+            ('change_own_final_grade','Change final YTD grades for own class'),
         )
         
     def display_grade(self):

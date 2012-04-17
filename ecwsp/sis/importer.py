@@ -645,28 +645,42 @@ class Importer:
                             college.state = state
                             college.type = type
                             college.save()
+                        if not graduated and begin:
                         # Get or create enrollment based on secondary key
-                        model, created = CollegeEnrollment.objects.get_or_create(
-                            college=college,
-                            program_years=year,
-                            begin=begin,
-                            end=end,
-                            status=status,
-                            alumni=alumni,
-                        )
-                        model.search_date = search_date
-                        model.graduated = graduated
-                        model.graduation_date = graduation_date
-                        model.degree_title = degree_title
-                        model.major = major
+                            model, created = CollegeEnrollment.objects.get_or_create(
+                                college=college,
+                                program_years=year,
+                                begin=begin,
+                                end=end,
+                                status=status,
+                                alumni=alumni,
+                            )
+                            model.search_date = search_date
+                            model.graduated = graduated
+                            model.graduation_date = graduation_date
+                            model.degree_title = degree_title
+                            model.major = major
                         
-                        model.full_clean()
-                        model.save()
-                        self.log_and_commit(model, addition=created)
-                        if created:
-                            inserted += 1
-                        else:
-                            updated += 1
+                            model.full_clean()
+                            model.save()
+                            self.log_and_commit(model, addition=created)
+                            if created:
+                                inserted += 1
+                            else:
+                                updated += 1
+                        elif not alumni.college_override:
+                            # Graduated but no enrollment data
+                            alumni.graduated  = graduated
+                            alumni.graduation_date = graduation_date
+                            if not alumni.college:
+                                alumni.college = college
+                            alumni.full_clean()
+                            alumni.save()
+                            self.log_and_commit(alumni, addition=alumni_created)
+                            if alumni_created:
+                                inserted += 1
+                            else:
+                                updated += 1
                     else:
                         self.log_and_commit(alumni, addition=alumni_created)
                         if alumni_created:
