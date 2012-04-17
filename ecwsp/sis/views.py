@@ -455,61 +455,80 @@ def grade_report(request):
                 report.addSheet(data, titles=titles, heading="Class Dept aggregate")
                 return report.finish()
         if 'date_based_gpa_report' in request.POST:
-            titles = ["Student", "9th", "10th", "11th","12th", "Current"]
-            students = Student.objects.filter(inactive = False).order_by('-year__id')
-            data = []
-            for student in students:
-                row = []
-                gpa = [None,None,None,None,None]
-                count = 0
-                #years is years that student has courses/grades
+            input = request.POST.copy()
+            input['template'] = 1
+            form = StudentGradeReportWriterForm(input, request.FILES)
+            if form.is_valid():
+                data = form.cleaned_data
+                try:
+                    students = form.get_students(data)
+                except:
+                    students = Student.objects.filter(inactive = False).order_by('-year__id')
+                
+                titles = ["Student", "9th", "10th", "11th","12th", "Current"]
+                data = []
                 current_year = SchoolYear.objects.get(active_year = True)
-                years = SchoolYear.objects.filter(markingperiod__show_reports=True,start_date__lt=date.today(),markingperiod__course__courseenrollment__user=student
-                ).exclude(omityeargpa__student=student).distinct().order_by('start_date')
-                if years and student.year:
-                    if (student.year.id == 12 and years[0].start_date.year > (current_year.end_date + timedelta(weeks=-(4*52))).year):
-                        gpa[0] = "N/A"
-                        count = 1
-                        if years[0].start_date.year > (current_year.end_date + timedelta(weeks=-(3*52))).year:
-                            gpa[1] = "N/A"
-                            count = 2
-                            if years[0].start_date.year > (current_year.end_date + timedelta(weeks=-(2*52))).year:
+                two_years_ago = (current_year.end_date + timedelta(weeks=-(2*52))).year
+                three_years_ago = (current_year.end_date + timedelta(weeks=-(3*52))).year
+                four_years_ago = (current_year.end_date + timedelta(weeks=-(4*52))).year
+                for student in students:
+                    print student
+                    row = []
+                    gpa = [None,None,None,None,None]
+                    count = 0
+                    #years is years that student has courses/grades
+                    years = SchoolYear.objects.filter(markingperiod__show_reports=True,start_date__lt=date.today(),markingperiod__course__courseenrollment__user=student
+                    ).exclude(omityeargpa__student=student).distinct().order_by('start_date')
+                    #if student has courses from any year and is given a grade level (freshman,sophomore, etc.),
+                    #it checks to see if the student's been at cristorey every year or if they transferred in and when
+                    try:
+                        if student.year.id == 12:
+                            if years[0].start_date.year > two_years_ago:
+                                gpa[0] = "N/A"
+                                gpa[1] = "N/A"
                                 gpa[2] = "N/A"
                                 count = 3
-                    elif student.year.id == 11 and years[0].start_date.year > (current_year.end_date + timedelta(weeks=-(3*52))).year:
+                            elif years[0].start_date.year > three_years_ago:
+                                gpa[0] = "N/A"
+                                gpa[1] = "N/A"
+                                count = 2
+                            elif years[0].start_date.year > four_years_ago:
+                                gpa[0] = "N/A"
+                                count = 1
+                        elif student.year.id == 11:
+                            if years[0].start_date.year > two_years_ago:
+                                gpa[1] = "N/A"
+                                gpa[0] = "N/A"
+                                count = 2
+                            elif years[0].start_date.year > three_years_ago:
+                                gpa[0] = "N/A"
+                                count = 1
+                        elif student.year.id == 10 and two_years_ago:
+                            gpa[0] = "N/A"
+                            count = 1
+                    except:pass
+                    
+                    for year in years:
+                        #cumulative gpa per year. Adds one day because it was acting weird and not giving me GPA for first year
+                        gpa[count] = student.calculate_gpa(year.end_date + timedelta(days=1))
+                        count +=1
+                    #if calculate_gpa does not return a value, it is set to "N/A"
+                    if not gpa[0]:
                         gpa[0] = "N/A"
-                        count = 1
-                        if years[0].start_date.year > (current_year.end_date + timedelta(weeks=-(2*52))).year:
-                            gpa[1] = "N/A"
-                            count = 2
-                    elif student.year.id == 10 and years[0].start_date.year > (current_year.end_date + timedelta(weeks=-(2*52))).year:
-                        gpa[0] = "N/A"
-                        count = 1                        
+                    if not gpa[1]:
+                        gpa[1] = "N/A"
+                    if not gpa[2]:
+                        gpa[2] = "N/A"
+                    if not gpa[3]:
+                        gpa[3] = "N/A"
+                    gpa[4] = student.calculate_gpa()
+                    row = [student, gpa[0],gpa[1],gpa[2],gpa[3],gpa[4]]
+                    data.append(row)
+                report = xlsReport(data, titles, "gpas_by_year.xls", heading="GPAs")
+                return report.finish()
                 
-                for year in years:
-                    #if year.start_date
-                    #calculate gpa for each year
-                    #if each year independent
-                    #gpa = student.calculate_gpa_year(year)
-                    #if cumulative per year - most likely. Assuming this until I get confirmation. Adds one day because it was acting weird and not giving me GPA for first year
-                    gpa[count] = student.calculate_gpa(year.end_date + timedelta(days=1))
-                    count +=1
-                if not gpa[0]:
-                    gpa[0] = "N/A"
-                if not gpa[1]:
-                    gpa[1] = "N/A"
-                if not gpa[2]:
-                    gpa[2] = "N/A"
-                if not gpa[3]:
-                    gpa[3] = "N/A"
-                gpa[4] = student.calculate_gpa()
-                row = [student, gpa[0],gpa[1],gpa[2],gpa[3],gpa[4]]
-                data.append(row)
-            report = xlsReport(data, titles, "gpas_by_year.xls", heading="GPAs")
-            return report.finish()
-            
-    form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
-    return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
+        form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
+        return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
 
 @login_required
 def ajax_include_deleted(request):
