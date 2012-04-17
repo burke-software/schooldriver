@@ -198,7 +198,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             courses = courses.filter(marking_period__in=marking_periods).distinct().order_by('department')
             for course in courses:
                 i = 1
-                for grade in course.grade_set.filter(student=student, final=True):
+                for grade in course.grade_set.filter(student=student):
                     # course.grade1, course.grade2, etc
                     setattr(course, "grade" + str(i), grade)
                     i += 1
@@ -246,7 +246,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                     setattr(year, "mp" + str(i), "")
                     i += 1
                 year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year, marking_period__show_reports=True).distinct().order_by('department')
-                year_grades = student.grade_set.filter(final=True, marking_period__show_reports=True, marking_period__end_date__lte=for_date)
+                year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=for_date)
                 # course grades
                 for course in year.courses:
                     # Grades
