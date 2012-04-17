@@ -82,11 +82,7 @@ class StudentHealthRecordInline(admin.TabularInline):
 class StudentAwardInline(admin.TabularInline):
     model = AwardStudent
     extra = 0
-
-class ASPHistoryInline(admin.TabularInline):
-    model = ASPHistory
-    extra = 0
-    
+   
 class StudentCohortInline(admin.TabularInline):
     model = Student.cohorts.through
     extra = 0
@@ -161,7 +157,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     change_list_template = "admin/sis/student/change_list.html"
     form = StudentForm
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
-    inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline, ASPHistoryInline]
+    inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
     actions = [promote_to_worker, mark_inactive, graduate_and_create_alumni]
     list_filter = ['inactive','year']
     list_display = ['__unicode__','year']
