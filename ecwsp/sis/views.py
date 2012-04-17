@@ -528,7 +528,7 @@ def grade_report(request):
                 return report.finish()
                 
         form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
-        return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
+    return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
 
 @login_required
 def ajax_include_deleted(request):
