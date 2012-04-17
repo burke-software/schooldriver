@@ -480,8 +480,10 @@ def grade_report(request):
                     ).exclude(omityeargpa__student=student).distinct().order_by('start_date')
                     #if student has courses from any year and is given a grade level (freshman,sophomore, etc.),
                     #it checks to see if the student's been at cristorey every year or if they transferred in and when
+                    current = 0
                     try:
                         if student.year.id == 12:
+                            current = 3
                             if years[0].start_date.year > two_years_ago:
                                 gpa[0] = "N/A"
                                 gpa[1] = "N/A"
@@ -495,6 +497,7 @@ def grade_report(request):
                                 gpa[0] = "N/A"
                                 count = 1
                         elif student.year.id == 11:
+                            current = 2
                             if years[0].start_date.year > two_years_ago:
                                 gpa[1] = "N/A"
                                 gpa[0] = "N/A"
@@ -502,9 +505,13 @@ def grade_report(request):
                             elif years[0].start_date.year > three_years_ago:
                                 gpa[0] = "N/A"
                                 count = 1
-                        elif student.year.id == 10 and two_years_ago:
-                            gpa[0] = "N/A"
-                            count = 1
+                        elif student.year.id == 10:
+                            current = 1
+                            if two_years_ago:
+                                gpa[0] = "N/A"
+                                count = 1
+                        elif student.year.id == 9:
+                            current = 0
                     except:pass
                     
                     for year in years:
@@ -520,7 +527,7 @@ def grade_report(request):
                         gpa[2] = "N/A"
                     if not gpa[3]:
                         gpa[3] = "N/A"
-                    gpa[4] = student.calculate_gpa()
+                    gpa[4] = gpa[current]
                     row = [student, gpa[0],gpa[1],gpa[2],gpa[3],gpa[4]]
                     data.append(row)
                 report = xlsReport(data, titles, "gpas_by_year.xls", heading="GPAs")
