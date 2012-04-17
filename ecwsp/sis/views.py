@@ -472,7 +472,6 @@ def grade_report(request):
                 three_years_ago = (current_year.end_date + timedelta(weeks=-(3*52))).year
                 four_years_ago = (current_year.end_date + timedelta(weeks=-(4*52))).year
                 for student in students:
-                    print student
                     row = []
                     gpa = [None,None,None,None,None]
                     count = 0
