@@ -1,4 +1,4 @@
-{% extends "grappelli/templates/admin/change_list.html" %}
+{% extends "grappelli:admin/change_list.html" %}
 
 {% block stylesheets %}
     {{ block.super }}
@@ -19,6 +19,9 @@
           -moz-box-shadow: 20px 20px 200px black;
           -webkit-box-shadow: 20px 20px 200px black;
           z-index: 999;
+        }
+        #filter_content_box {
+            text-align: left;
         }
   </style>
 {% endblock %}
@@ -51,10 +54,10 @@
     <script type="text/javascript">
         function show_filters(){
             $.post(  
-                "{% url admin_advanced_filter.views.show_filters cl.opts.app_label cl.opts.module_name %}",  
+                "{% url admin_advanced_filter.views.get_filters cl.opts.app_label cl.opts.module_name %}",  
                 '',
                 function(data){  
-                    $("#advanced_filter_box").html(data);
+                    $("#filter_content_box").html(data);
                 }  
             ); 
             $("#advanced_filter_box").overlay({
@@ -63,6 +66,16 @@
                 });
             $("#advanced_filter_box").overlay().load();
             return false;
+        }
+        
+        function show_filter_field(ct_id, field_name){
+            $.post(  
+                "{% url admin_advanced_filter.views.get_filter_field %}?ct_id=" + ct_id + "&field_name=" + field_name,  
+                '',
+                function(data){  
+                    $("#filter_content_box").html(data);
+                }  
+            );
         }
     </script>
 {% endblock %}
@@ -78,5 +91,9 @@
     {{ block.super }}
     <!-- Overlay -->
     <div class="modal" id="export_xls_form"><button class="close"> Close </button></div>
-    <div class="modal" id="advanced_filter_box"><button class="close"> Cancel </button></div>
+    <div class="modal" id="advanced_filter_box">
+        <div id="filter_content_box">
+            <button class="close"> Close </button>
+        </div>
+    </div>
 {% endblock %}

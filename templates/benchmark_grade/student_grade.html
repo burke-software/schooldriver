@@ -30,15 +30,8 @@
     .categoryAverage {
         font-weight: bold;
     }
-    .markMark {
-        white-space: nowrap;
-    }
     </style>
-    {% if error_message %}
-        <p>{{ error_message }}</p>
-    {% else %}
-        <h1>Grades for {{ student.fname }} {{ student.lname }} as of {{ today }}</h1>
-    {% endif %}
+    <h1>Grades for {{ student.fname }} {{ student.lname }} as of {{ today }}</h1>
     {% for mp in mps %}
 	<h2>{{ mp.name }}</h2>
 	{% for course in mp.courses %}
@@ -63,7 +56,7 @@
 					    {% endif %}
 					    -->
 					</td>
-					<td class="markMark">{{ mark.mark }} <span class="maximumPoints">(of {{ mark.item.scale.maximum }})</span></td>
+					<td>{{ mark.mark }} <span class="maximumPoints">(of {{ mark.item.scale.maximum }})</span></td>
 				    </tr>
 				{% endfor %}
 				</table>

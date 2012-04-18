@@ -66,8 +66,10 @@ class BenchmarkGradeImporter(Importer):
         mark_count = 0
         # as requested, drop all old marks before importing
         Aggregate.objects.filter(singleCourse=course, singleMarkingPeriod=marking_period).delete()
-        Mark.objects.filter(item__course=course, item__markingPeriod=marking_period).delete()
-
+        for oldItem in Item.objects.filter(course=course, markingPeriod=marking_period):
+            Mark.objects.filter(item=oldItem).delete()
+            oldItem.delete()
+        
         # import all data from the Standards sheet
         # should probably discard "Session" columns and calculate ourselves
         
