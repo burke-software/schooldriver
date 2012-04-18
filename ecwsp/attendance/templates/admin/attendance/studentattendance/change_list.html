@@ -1,23 +1,13 @@
 {% extends "admin/change_list.html" %}
 
-<!-- LOADING -->
-{% load adminmedia admin_list i18n grp_tags %}
-
-<!-- OBJECT-TOOLS -->
-{% block object-tools %}
+{% block object-tools-items %}
     {% if has_add_permission %}
-        <ul class="tools">
-            <li>
-                <a href="{% url ecwsp.attendance.views.attendance_report %}"> Reports </a>
-            </li>
-            <li>
-            <a href="{% url ecwsp.attendance.views.teacher_submissions %}"> Today's submissions </a>
-          </li>
-            <li>
-                <a href="add/{% if is_popup %}?_popup=1{% endif %}" class="add-handler focus">
-                    {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
-                </a>
-            </li>
-        </ul>
+        <li>
+            <a href="/sis/studentattendance/report"> Reports </a>
+        </li>
+        <li>
+            <a href="/sis/teacher_submissions/"> Today's submissions </a>
+        </li>
+        {{ block.super }}
     {% endif %}
 {% endblock %}

@@ -24,6 +24,7 @@ from django.http import HttpResponseRedirect
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin import SimpleListFilter, ListFilter
 
 from django import forms
 from ecwsp.work_study.forms import StudentForm, WorkTeamForm
@@ -33,7 +34,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from ajax_select import make_ajax_form
 from custom_field.custom_field import CustomFieldAdmin
-import datefilterspec
+#import datefilterspec
 
 import logging
     
@@ -110,7 +111,7 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
     def save_model(self, request, obj, form, change):
         super(WorkTeamAdmin, self).save_model(request, obj, form, change)
         form.save_m2m()
-        group = Group.objects.get(name="company")
+        group = Group.objects.get_or_create(name="company")[0]
         for user in obj.login.all():
             user.groups.add(group)
             user.save()
@@ -309,8 +310,20 @@ admin.site.register(Contact, ContactAdmin)
 class TimeSheetPerformanceChoiceAdmin(admin.ModelAdmin):
     list_display = ('edit', 'name', 'rank')
     list_editable = ('name', 'rank')
-    
 admin.site.register(TimeSheetPerformanceChoice, TimeSheetPerformanceChoiceAdmin)
+
+
+class DateSelectFilter(ListFilter):
+    template = 'admin/dateselectfilter.html'
+    title = ('Enter Date')
+    def expected_parameters(self):
+        return [self.parameter_name]
+    def has_output(self):
+        return True
+    def choices(self, cl):
+        return "Hello"
+    def queryset(self, request, queryset):
+        return queryset.all()
 
 class TimeSheetAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
@@ -322,7 +335,7 @@ class TimeSheetAdmin(admin.ModelAdmin):
             return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
         
     search_fields = ['student__fname', 'student__lname', 'company__team_name']
-    list_filter = ['creation_date', 'date', 'approved','performance','for_pay', 'make_up', 'company', 'student__inactive']
+    list_filter = [DateSelectFilter, 'creation_date', 'date', 'approved','performance','for_pay', 'make_up', 'company', 'student__inactive']
     list_display = ('student', 'date', 'company', 'performance', 'student_Accomplishment_Brief', 'supervisor_Comment_Brief', 'approved', 'for_pay', 'make_up',)
     readonly_fields = ['supervisor_key', 'hours', 'school_net', 'student_net', 'creation_date']
     actions = [approve]

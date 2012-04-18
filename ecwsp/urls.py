@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     (r'^$', 'ecwsp.sis.views.index'),
 
     (r'^sis/', include('ecwsp.sis.urls')),
+    (r'^admin/jsi18n', 'django.views.i18n.javascript_catalog'),
     
     (r'^accounts/password_change/$', 'django.contrib.auth.views.password_change'),
     (r'^accounts/password_change_done/$', 'django.contrib.auth.views.password_change_done'),
@@ -34,7 +35,9 @@ else:
 
 if 'ldap_groups' in settings.INSTALLED_APPS:
     urlpatterns += patterns('',(r'^ldap_grp/', include('ldap_groups.urls')),)
-
+if 'admin_advanced_filter' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^admin_advanced_filter/', include('admin_advanced_filter.urls')), )
+    
 if 'ecwsp.discipline' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^discipline/', include('ecwsp.discipline.urls')), )
 if 'ecwsp.attendance' in settings.INSTALLED_APPS:

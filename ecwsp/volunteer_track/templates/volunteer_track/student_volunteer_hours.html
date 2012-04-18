@@ -1,24 +1,19 @@
 {% extends "base.html" %}
+{% load admin_static %}{% load url from future %}{% load i18n grp_tags %}
+
 
 {% block head %}
-    {{ block.super }}
-	<script type="text/javascript" src="/static/js/jquery.js"/>
-
-	<script type="text/javascript" src="/static/js/jquery.dimensions.min.js"></script>
-	
-	<link rel="stylesheet" type="text/css" href="/static/css/ptTimeSelect/ui.core.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="/static/css/ptTimeSelect/ui.theme.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="/static/css/ptTimeSelect/jquery.ptTimeSelect.css" />
-	<script type="text/javascript" language="JavaScript" src="/static/js/jquery.ptTimeSelect.js"></script>
-	
-	{% load adminmedia %}
-	<script type="text/javascript" src="/admin/jsi18n/"></script>
-	<script type="text/javascript" src="/static/grappelli/js/core.js"></script>
-	<link rel="stylesheet" type="text/css" href="/static/grappelli/css/widgets.css" media="screen" />
-    <script type="text/javascript">
-		window.__admin_media_prefix__ = "{% filter escapejs %}{% admin_media_prefix %}{% endfilter %}";
-	</script>
-    {{ form.media }}
+<script type="text/javascript" src="/static/js/jquery.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.js"></script>
+<script>
+	$(function() {
+		$(".vDateField").datepicker();
+		$("#format" ).change(function() {
+			$( "#datepicker" ).datepicker( "option", "dateFormat", $( this ).val() );
+		});
+	});
+</script>
+<link rel="stylesheet" href="/static/css/smoothness/jquery-ui.css" type="text/css" />
 {% endblock %}
 
 {% block content %}        

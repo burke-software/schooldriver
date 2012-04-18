@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from views import *
+from ecwsp.volunteer_track.views import *
 
 urlpatterns = patterns('',
     (r'^volunteer/$', student_dash),
