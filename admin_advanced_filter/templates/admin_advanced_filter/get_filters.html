@@ -1,7 +1,8 @@
+<h3>Add a filter</h3>
 <ul>
     {% for field in fields %}
         <li>
-            <a href="javascript:;" onclick="show_filter_field()">
+            <a href="javascript:;" onclick='show_filter_field("{{ content_type.id }}", "{{ field.name }}")'>
                 {{ field.verbose_name }} ({{ field.get_internal_type }})
             </a>
         </li>

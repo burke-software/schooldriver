@@ -11,7 +11,8 @@ apt-get install libapache2-mod-wsgi
 pip install django django-reversion simplejson httpagentparser django-ajax-selects django_extensions django-grappelli django-ckeditor elementtree django-filter poster django-ajax-filtered-fields django-mass-edit django-pagination django-admin-export django-custom-field suds
 
 # people don't submit their fixes to pypi so we have to include them
-pip install ../hatchery/django-filter-0.5.3.tar.gz
+pip install ../hatchery/django-filter-0.5.3.tar.gz ../hatchery/wojas-django-apptemplates-ce738ccb3f02.tar.gz
+
 
 # optional auth related
 pip install django-auth-gapps django_cas

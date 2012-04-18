@@ -5,10 +5,10 @@
     <script type="text/javascript">
         function show_filters(){
             $.post(  
-                "{% url admin_advanced_filter.views.show_filters cl.opts.app_label cl.opts.module_name %}",  
+                "{% url admin_advanced_filter.views.get_filters cl.opts.app_label cl.opts.module_name %}",  
                 '',
                 function(data){  
-                    $("#advanced_filter_box").html(data);
+                    $("#filter_content_box").html(data);
                 }  
             ); 
             $("#advanced_filter_box").overlay({
@@ -17,6 +17,15 @@
                 });
             $("#advanced_filter_box").overlay().load();
             return false;
+        }
+        function show_filter_field(ct_id, field_name){
+            $.post(  
+                "{% url admin_advanced_filter.views.get_filter_field %}?ct_id=" + ct_id + "&field_name=" + field_name,  
+                '',
+                function(data){  
+                    $("#filter_content_box").html(data);
+                }  
+            );
         }
     </script>
 {% endblock %}
@@ -30,5 +39,9 @@
 
 {% block content %}
     {{ block.super }}
-    <div class="modal" id="advanced_filter_box"><button class="close"> Close </button></div>
+    <div class="modal" id="advanced_filter_box">
+        <div id="filter_content_box">
+            <button class="close"> Close </button>
+        </div>
+    </div>
 {% endblock %}

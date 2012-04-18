@@ -99,9 +99,7 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
             numerator += cat_agg
             denominator += benchmark_individual_denom[mp_id][cat_id]
         #print "after individuals, gpa is", numerator / denominator, "(", numerator, "/", denominator, ")"
-        # just because individuals exist for this mp, it doesn't mean that aggregates do too
-        # so don't use [] syntax, use .get(mp_id, {})
-        for (cat_id, cat_agg) in benchmark_aggregate_numer.get(mp_id, {}).items():
+        for (cat_id, cat_agg) in benchmark_aggregate_numer[mp_id].items():
             numerator += cat_agg / benchmark_aggregate_denom[mp_id][cat_id]
             #print "glomming on", Category.objects.get(id=cat_id), cat_agg / benchmark_aggregate_denom[mp_id][cat_id]
             denominator += 1

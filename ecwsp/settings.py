@@ -68,6 +68,7 @@ SECRET_KEY = '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
+    'apptemplates.Loader',
 )
 ROOT_URLCONF = 'ecwsp.urls'
 WSGI_APPLICATION = 'ecwsp.wsgi.application'
