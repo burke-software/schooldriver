@@ -17,6 +17,8 @@
 #   MA 02110-1301, USA.
 
 from django.contrib import admin
+from django.contrib import messages
+from django import forms
 
 from models import *
 
@@ -27,7 +29,15 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
     list_display = ['student', 'date', 'status', 'notes']
     list_filter = ['date', 'status']
     list_editable = ['status', 'notes']
-    search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']    
+    search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
+    def save_model(self, request, obj, form, change):
+        #HACK to work around bug 13091
+        try:
+            obj.full_clean()
+            obj.save()
+        except forms.ValidationError:
+            messages.warning(request, 'Could not save %s' % (obj,))
+        
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 
 admin.site.register(AttendanceLog)
