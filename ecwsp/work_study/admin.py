@@ -230,7 +230,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
             logging.warning("I coudln't create the student worker added info", exc_info=True, extra={
                 'request': request,
             })
-        return super(StudentAdmin, self).render_change_form(request, context, args, kwargs)
+        return super(StudentAdmin, self).render_change_form(request, context, *args, **kwargs)
         
     fieldsets = [
         (None, {'fields': ['inactive', 'fname', 'lname', 'mname', 'sex', 'bday', 'day', 'fax',
