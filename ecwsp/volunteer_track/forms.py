@@ -27,8 +27,8 @@ class inputTimeForm(forms.ModelForm):
         model = Hours
         widgets = {
             'date':adminwidgets.AdminDateWidget(),
+            'volunteer_site':forms.HiddenInput(),
             }
-        exclude = ['volunteer_site']
         
 class NewSiteForm(forms.ModelForm):
     class Meta:
