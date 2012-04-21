@@ -350,9 +350,9 @@ def grade_report(request):
                 return pod_report_grade(template_path, options=data, students=form.get_students(data), format=format, report_card=report_card, transcript=transcript)
         elif 'aggregate_grade_report' in request.POST:
             from ecwsp.grades.models import Grade
-            form = MarkingPeriodForm(request.POST)
-            if form.is_valid():
-                mps = form.cleaned_data['marking_period']
+            mp_form = MarkingPeriodForm(request.POST)
+            if mp_form.is_valid():
+                mps = mp_form.cleaned_data['marking_period']
                 data = []
                 titles = ["Teacher", "Range", "No. Students", ""]
                 for level in GradeLevel.objects.all():
@@ -533,7 +533,7 @@ def grade_report(request):
                 report = xlsReport(data, titles, "gpas_by_year.xls", heading="GPAs")
                 return report.finish()
                 
-        form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
+    form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
     return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
 
 @login_required
