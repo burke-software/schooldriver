@@ -711,4 +711,4 @@ class ImportLog(models.Model):
             os.remove(self.sql_backup.path)
         if self.import_file and os.path.exists(self.import_file.path):
             os.remove(self.import_file.path)
-        super(SchoolYear, self).delete(*args, **kwargs) 
+        super(ImportLog, self).delete(*args, **kwargs) 
