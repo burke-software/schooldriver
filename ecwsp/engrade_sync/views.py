@@ -24,12 +24,12 @@ def setup(request):
         print >> sys.stderr, 'Can\'t connect to Engrade ' + str(sys.exc_info()[0])
     msg = ''
     
-    course_form = SetupCoursesForm()
+    course_form = SetupCoursesForm(prefix="course")
     grade_sync_form = GradeSyncForm()
     
     if request.POST and engrade_sync:
         if 'generate_course' in request.POST:
-            course_form = SetupCoursesForm(request.POST)
+            course_form = SetupCoursesForm(request.POST,prefix="course")
             if course_form.is_valid():
                 ids = engrade_sync.generate_courses(course_form.cleaned_data['marking_period'])
                 msg += "Success. Engrade course ids are " + unicode(ids)
