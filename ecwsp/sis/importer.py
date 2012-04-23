@@ -924,15 +924,12 @@ class Importer:
                                 course = Course.objects.get(fullname=value)
                             elif name == "marking period":
                                 marking_period = MarkingPeriod.objects.get(name=value)
-                            elif name == "final":
-                                final = self.determine_truth(value)
                             elif name == "override final":
                                 override_final = self.determine_truth(value)
                     if student and course and grade:
-                        model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=final, override_final=override_final)
+                        model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, override_final=override_final)
                         model.comment = comment
                         model.set_grade(grade)
-                        model.final = final
                         model.override_final = override_final
                         model.save()
                         if created:
@@ -1952,7 +1949,7 @@ class Importer:
                     if is_ok:
                         if name == "username":
                             student = Student.objects.get(username=value)
-                            model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
+                            model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period)
                         elif name in ["final grade %",'marking period grade (%)','grade']:
                             grade = value
                         elif name == "comment code" or name == "comment codes" or name == "comment\ncodes":
