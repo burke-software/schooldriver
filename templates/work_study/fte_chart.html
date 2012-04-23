@@ -23,7 +23,7 @@
   </head>
   <body>
     <div id="chart_div" style="width: 900px; height: 500px;"></div>
-    {% for industry,companies in workteams_by_industry.items %}
+    {% for industry, companies in workteams_by_industry %}
         <h5>{{ industry }}</h5>
         <ul>
             {% for company in companies %}

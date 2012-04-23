@@ -1123,7 +1123,7 @@ def company_contract_pdf(request, id):
         
         
 def fte_chart(request):
-    workteams = WorkTeam.objects.filter(inactive=False,studentworker__isnull=False).exclude(industry_type="").annotate(no_students=Count('studentworker')).order_by('industry_type')
+    workteams = WorkTeam.objects.filter(inactive=False,studentworker__isnull=False).exclude(industry_type="").annotate(no_students=Count('studentworker')).order_by('industry_type','company__name')
     fte_chart = {}
     fte_per_student = Configuration.get_or_default(name="Students per FTE",default=".2").value
     for workteam in workteams:
@@ -1135,15 +1135,17 @@ def fte_chart(request):
     fte_chart = sorted(fte_chart.iteritems(), key=operator.itemgetter(1))
     fte_chart.reverse()
     
-    workteams_by_industry = {}
+    workteams_by_industry = []
     workteams_in_industry = None
     last_industry = None
     for workteam in workteams:
         if workteam.industry_type != last_industry:
-            last_industry = workteam.industry_type
             if workteams_in_industry:
-                workteams_by_industry[workteam.industry_type] = workteams_in_industry
+                workteams_by_industry.append([last_industry, workteams_in_industry])
+            last_industry = workteam.industry_type
             workteams_in_industry = []
-        workteams_in_industry += [workteam.company]
+        if workteam.company not in workteams_in_industry:
+            workteams_in_industry += [workteam.company]
+    
     
     return render_to_response('work_study/fte_chart.html', {'request': request,'fte_chart': fte_chart, 'workteams_by_industry':workteams_by_industry}, RequestContext(request, {}))
