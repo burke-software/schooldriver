@@ -1,3 +1,7 @@
 #header, .breadcrumbs, #breadcrumbs, .noprint {
     display:none;
 }
+
+.fht-tbody, .fht-table-wrapper {
+    height: auto !important;
+}
