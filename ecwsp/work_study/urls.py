@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     (r'^company_contract3/(?P<id>\d+)/$', company_contract3),
     (r'^company_contract_complete/(?P<id>\d+)/$', company_contract_complete),
     (r'^company_contract_pdf/(?P<id>\d+)/$', company_contract_pdf),
+    (r'^fte_chart/$', fte_chart),
 )
 
 

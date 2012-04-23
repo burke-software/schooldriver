@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Industry', 'FTE'],
+          {% for industry,fte in fte_chart %}
+            ['{{ industry }}', {{ fte|floatformat }}],
+          {% endfor %}
+        ]);
+
+        var options = {
+          title: ''
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+    {% for industry,companies in workteams_by_industry.items %}
+        <h5>{{ industry }}</h5>
+        <ul>
+            {% for company in companies %}
+                <li>{{ company }}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+  </body>
+</html>
