@@ -9,9 +9,9 @@
       var chart;
       function drawChart() {
         var data = google.visualization.arrayToDataTable([
-          ['Industry', 'FTE'],
+          ['Industry', 'FTE']
           {% for industry,fte in fte_chart %}
-            ['{{ industry }}', {{ fte|floatformat }}],
+            ,['{{ industry }}', {{ fte|floatformat }}]
           {% endfor %}
         ]);
 
