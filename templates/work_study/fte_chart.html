@@ -35,7 +35,7 @@
   </head>
   <body>
 {% endif %}
-    <div id="fte_chart_div"></div>
+    <div id="fte_chart_clip_div"><div id="fte_chart_div"></div></div>
     <div id="fte_list_div">
     {% for industry, companies, row in workteams_by_industry %}
         <h5 id="{{ row }}">{{ industry }}</h5>
