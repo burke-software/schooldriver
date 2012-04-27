@@ -587,6 +587,8 @@ def view_student(request, id=None):
             location = None
             print >> sys.stderr, str(sys.exc_info()[0])
         # Guess the mp desired (current or next coming)
+        schedule_days = None
+        periods = None
         current_mp = MarkingPeriod.objects.filter(end_date__gte=today).order_by('-start_date')
         if current_mp:
             current_mp = current_mp[0]
