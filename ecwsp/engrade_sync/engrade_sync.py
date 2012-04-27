@@ -119,7 +119,7 @@ class EngradeSync:
                 student = None
                 student = Student.objects.get(id=engrade_student['stuid'])
                 grade = engrade_student['grade']
-                model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
+                model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period)
                 model.set_grade(grade)
                 model.save()
             except:
@@ -135,7 +135,7 @@ class EngradeSync:
                     student = None
                     student = Student.objects.get(id=engrade_student['stuid'])
                     comment = engrade_student['comment']
-                    model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
+                    model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period)
                     model.comment = comment
                     model.save()
                 except:

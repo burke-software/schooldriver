@@ -305,9 +305,10 @@ class CompContract(models.Model):
             format = "doc"
         else:
             format = "odt"
-        template = Template.objects.get_or_create(name="Work Study Contract")[0].file.path
-        file = pod_save(filename, "." + str(format), data, template, get_tmp_file=True)
-        self.contract_file.save(unicode(self.company) + "." + unicode(format), File(open(file)))
+        template = Template.get_or_make_blank(name="Work Study Contract").file.path
+        if template :
+            file = pod_save(filename, "." + str(format), data, template, get_tmp_file=True)
+            self.contract_file.save(unicode(self.company) + "." + unicode(format), File(open(file)))
     
     #filename, ext, data, template
     def get_contract_as_pdf(self, ie=False, response=True):
