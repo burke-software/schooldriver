@@ -1135,17 +1135,25 @@ def fte_chart(request):
     fte_chart = sorted(fte_chart.iteritems(), key=operator.itemgetter(1))
     fte_chart.reverse()
     
+    # need the row to create anchors for a clickable chart
+    row_index = {}
+    i = 0
+    for industry, fte in fte_chart:
+        row_index[industry] = i
+        i += 1
+    
     workteams_by_industry = []
     workteams_in_industry = None
     last_industry = None
     for workteam in workteams:
         if workteam.industry_type != last_industry:
             if workteams_in_industry:
-                workteams_by_industry.append([last_industry, workteams_in_industry])
+                workteams_by_industry.append([last_industry, workteams_in_industry, row_index[last_industry]])
             last_industry = workteam.industry_type
             workteams_in_industry = []
         if workteam.company not in workteams_in_industry:
             workteams_in_industry += [workteam.company]
     
     
-    return render_to_response('work_study/fte_chart.html', {'request': request,'fte_chart': fte_chart, 'workteams_by_industry':workteams_by_industry}, RequestContext(request, {}))
+    return render_to_response('work_study/fte_chart.html', {'request': request,'fte_chart': fte_chart, 'workteams_by_industry':workteams_by_industry,
+                                                            'embed': 'embed' in request.GET}, RequestContext(request, {}))

@@ -247,7 +247,7 @@ def grade_analytics(request):
                                 course = grade.course
                                 
                                 # data['each_marking_period'] and
-                                if grade.final == True and grade.override_final == False:
+                                if grade.override_final == False:
                                     grade_value = grade.get_grade()
                                     match = check_if_match(grade_value, data['grade_filter'], data['grade'])
                                     if match:
