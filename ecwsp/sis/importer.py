@@ -400,6 +400,10 @@ class Importer:
         if sheet:
             inserted, updated = self.import_admissions_log(sheet)
             msg += "%s admission contact log entries inserted,<br/>" % (inserted,)
+        sheet = self.get_sheet_by_case_insensitive_name("alumni note")
+        if sheet:
+            inserted, updated = self.import_alumni_note(sheet)
+            msg += "%s alumni note entries inserted,<br/>" % (inserted,) 
         sheet = self.get_sheet_by_case_insensitive_name("college enrollment")
         if sheet:
             inserted, updated = self.import_college_enrollment(sheet)
@@ -582,7 +586,53 @@ class Importer:
             x += 1
         return inserted
     
-    #@transaction.commit_manually
+    def import_alumni_note(self, sheet):
+        from ecwsp.alumni.models import Alumni, AlumniNote, AlumniNoteCategory
+        x, header, inserted, updated = self.import_prep(sheet)
+        name = None
+        while x < sheet.nrows:
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    student = self.get_student(items,try_secondary=True)
+                    category = note = date = user = None
+                    if hasattr(student, 'alumni'):
+                        alumni = student.alumni
+                    else:
+                        alumni = Alumni(student=student)
+                        alumni.save()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "category":
+                                category = AlumniNoteCategory.objects.get_or_create(name=value)[0]
+                            elif name == "note":
+                                note = value
+                            elif name == "date":
+                                date = self.convert_date(value)
+                            elif name == "user":
+                                user = User.objects.get(username=value)
+                    note, created = AlumniNote.objects.get_or_create(
+                        category=category,
+                        note=note,
+                        date=date,
+                        user=user,
+                    )
+                    if created:
+                        self.log_and_commit(note, addition=created)
+                        inserted += 1
+                            
+                            
+                except:
+                    if hasattr(sheet, 'name'):
+                        self.handle_error(row, name, sys.exc_info(), sheet.name)
+                    else:
+                        self.handle_error(row, name, sys.exc_info(), "Unknown")
+            x += 1
+        return inserted, updated
+    
     def import_college_enrollment(self, sheet):
         from ecwsp.alumni.models import Alumni, College, CollegeEnrollment
         x, header, inserted, updated = self.import_prep(sheet)
@@ -695,7 +745,6 @@ class Importer:
             x += 1
         return inserted, updated
     
-    #@transaction.commit_manually
     def import_cohort(self, sheet):
         """Import cohorts. Does not allow updates. """
         x, header, inserted, updated = self.import_prep(sheet)
@@ -875,15 +924,12 @@ class Importer:
                                 course = Course.objects.get(fullname=value)
                             elif name == "marking period":
                                 marking_period = MarkingPeriod.objects.get(name=value)
-                            elif name == "final":
-                                final = self.determine_truth(value)
                             elif name == "override final":
                                 override_final = self.determine_truth(value)
                     if student and course and grade:
-                        model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=final, override_final=override_final)
+                        model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, override_final=override_final)
                         model.comment = comment
                         model.set_grade(grade)
-                        model.final = final
                         model.override_final = override_final
                         model.save()
                         if created:
@@ -1903,7 +1949,7 @@ class Importer:
                     if is_ok:
                         if name == "username":
                             student = Student.objects.get(username=value)
-                            model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True)
+                            model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period)
                         elif name in ["final grade %",'marking period grade (%)','grade']:
                             grade = value
                         elif name == "comment code" or name == "comment codes" or name == "comment\ncodes":

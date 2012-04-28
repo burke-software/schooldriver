@@ -1120,3 +1120,40 @@ def company_contract_pdf(request, id):
         return contract.get_contract_as_pdf(ie=True)
     else:
         return contract.get_contract_as_pdf()
+        
+        
+def fte_chart(request):
+    workteams = WorkTeam.objects.filter(inactive=False,studentworker__isnull=False).exclude(industry_type="").annotate(no_students=Count('studentworker')).order_by('industry_type','company__name')
+    fte_chart = {}
+    fte_per_student = Configuration.get_or_default(name="Students per FTE",default=".2").value
+    for workteam in workteams:
+        ftes = fte_chart.get(workteam.industry_type, 0.0)
+        fte_chart[workteam.industry_type] = ftes + (workteam.no_students / float(fte_per_student))
+    
+    # Now order it
+    import operator
+    fte_chart = sorted(fte_chart.iteritems(), key=operator.itemgetter(1))
+    fte_chart.reverse()
+    
+    # need the row to create anchors for a clickable chart
+    row_index = {}
+    i = 0
+    for industry, fte in fte_chart:
+        row_index[industry] = i
+        i += 1
+    
+    workteams_by_industry = []
+    workteams_in_industry = None
+    last_industry = None
+    for workteam in workteams:
+        if workteam.industry_type != last_industry:
+            if workteams_in_industry:
+                workteams_by_industry.append([last_industry, workteams_in_industry, row_index[last_industry]])
+            last_industry = workteam.industry_type
+            workteams_in_industry = []
+        if workteam.company not in workteams_in_industry:
+            workteams_in_industry += [workteam.company]
+    
+    
+    return render_to_response('work_study/fte_chart.html', {'request': request,'fte_chart': fte_chart, 'workteams_by_industry':workteams_by_industry,
+                                                            'embed': 'embed' in request.GET}, RequestContext(request, {}))

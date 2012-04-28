@@ -210,28 +210,29 @@ class StudentAdmin(ReadPermissionModelAdmin):
     
     def render_change_form(self, request, context, *args, **kwargs):
         try:
-            compContacts = Contact.objects.filter(workteam=context['original'].placement)
-            context['adminform'].form.fields['primary_contact'].queryset = compContacts
-            txt = "<span style=\"color:#444;\"><a href=\"/admin/work_study/timesheet/?q=%s+%s\" target=\"_blank\">Time Sheets for this student</a>" % \
-                (context['original'].fname, context['original'].lname)
-            txt += "<br/><a href=\"/admin/work_study/survey/?q=%s+%s\" target=\"_blank\">Surveys for this student</a>" % \
-                (context['original'].fname, context['original'].lname)
-            txt += "<br/>Go to work team " + str(context['original'].company())
-            txt += "<br/>Company Contacts:"
-            for compContact in compContacts:
-                txt += "<br/>%s %s" % (str(compContact.edit_link),compContact.phone)
-            txt += '</span>'
-            context['adminform'].form.fields['placement'].help_text += txt
+            if 'original' in context:
+                compContacts = Contact.objects.filter(workteam=context['original'].placement)
+                context['adminform'].form.fields['primary_contact'].queryset = compContacts
+                txt = "<span style=\"color:#444;\"><a href=\"/admin/work_study/timesheet/?q=%s+%s\" target=\"_blank\">Time Sheets for this student</a>" % \
+                    (context['original'].fname, context['original'].lname)
+                txt += "<br/><a href=\"/admin/work_study/survey/?q=%s+%s\" target=\"_blank\">Surveys for this student</a>" % \
+                    (context['original'].fname, context['original'].lname)
+                txt += "<br/>Go to work team " + str(context['original'].company())
+                txt += "<br/>Company Contacts:"
+                for compContact in compContacts:
+                    txt += "<br/>%s %s" % (str(compContact.edit_link),compContact.phone)
+                txt += '</span>'
+                context['adminform'].form.fields['placement'].help_text += txt
         
-            # add contact info for pri contact
-            if context['original'].primary_contact:
-                txt = '<br/><span style="color:#444;">Number: %s</span>' % (context['original'].primary_contact.phone,)
-                context['adminform'].form.fields['primary_contact'].help_text += txt
+                # add contact info for pri contact
+                if context['original'].primary_contact:
+                    txt = '<br/><span style="color:#444;">Number: %s</span>' % (context['original'].primary_contact.phone,)
+                    context['adminform'].form.fields['primary_contact'].help_text += txt
         except:
             logging.warning("I coudln't create the student worker added info", exc_info=True, extra={
                 'request': request,
             })
-        return super(StudentAdmin, self).render_change_form(request, context, args, kwargs)
+        return super(StudentAdmin, self).render_change_form(request, context, *args, **kwargs)
         
     fieldsets = [
         (None, {'fields': ['inactive', 'fname', 'lname', 'mname', 'sex', 'bday', 'day', 'fax',

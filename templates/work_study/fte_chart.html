@@ -1,0 +1,52 @@
+{% if not embed %}
+<html>
+  <head>
+{% endif %}
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      var chart;
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Industry', 'FTE']
+          {% for industry,fte in fte_chart %}
+            ,['{{ industry }}', {{ fte|floatformat }}]
+          {% endfor %}
+        ]);
+
+        var options = {
+          title: ''
+        };
+
+        chart = new google.visualization.PieChart(document.getElementById('fte_chart_div'));
+        chart.draw(data, options);
+        google.visualization.events.addListener(chart, 'select', selectHandler);
+      }
+      function selectHandler() {
+          // clickable categories
+          // won't work without addListener call and chart global variable
+          var selection = chart.getSelection();
+          var selected = selection[0].row;
+          window.location = "#"+selected;
+      }
+    </script>
+{% if not embed %}
+  </head>
+  <body>
+{% endif %}
+    <div id="fte_chart_clip_div"><div id="fte_chart_div"></div></div>
+    <div id="fte_list_div">
+    {% for industry, companies, row in workteams_by_industry %}
+        <h5 id="{{ row }}">{{ industry }}</h5>
+        <ul>
+            {% for company in companies %}
+                <li>{{ company }}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    </div>
+{% if not embed %}
+  </body>
+</html>
+{% endif %}

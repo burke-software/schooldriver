@@ -21,8 +21,12 @@
 from django.db import models
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.core.files import File
 from datetime import datetime
 import httpagentparser
+import urllib
+import os
 
 from ecwsp.sis.helper_functions import Callable
 
@@ -87,3 +91,17 @@ class Template(models.Model):
             return self.file.path
         messages.error(request, 'Template %s not found!' % (self.name,))
         return False
+    
+    def get_or_make_blank(name):
+        """ Get a template. If it doesn't exist create one that will be a blank document to prevent errors """
+        template, created = Template.objects.get_or_create(name=name)
+        if not template.file:
+            result = settings.MEDIA_ROOT + 'blank.odt'
+            template.file.save(
+                'blank.odt',
+                File(open(result))
+                )
+            template.save()
+        return template
+    get_or_make_blank = Callable(get_or_make_blank)
+        

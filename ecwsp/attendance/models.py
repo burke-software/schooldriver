@@ -59,6 +59,10 @@ class StudentAttendance(models.Model):
     
     def __unicode__(self):
         return unicode(self.student) + " " + unicode(self.date) + " " + unicode(self.status)
+    
+    @property
+    def edit(self):
+        return "Edit"
         
     def save(self, *args, **kwargs):
         """Don't save Present """
