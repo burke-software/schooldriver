@@ -79,7 +79,8 @@ class Importer:
     def make_log_entry(self, user_note=""):
         self.log = ImportLog(user=self.user, user_note=user_note, import_file=self.file)
         file_name = datetime.datetime.now().strftime("%Y%m%d%H%M") + ".sql"
-        self.log.sql_backup.save(file_name, self.do_mysql_backup())
+        if settings.BASE_URL != 'http://localhost:8000':
+            self.log.sql_backup.save(file_name, self.do_mysql_backup())
         self.log.save()
         # Clean up old log files
         for import_log in ImportLog.objects.filter(date__lt=datetime.datetime.now() - datetime.timedelta(60)):
@@ -615,6 +616,7 @@ class Importer:
                             elif name == "user":
                                 user = User.objects.get(username=value)
                     note, created = AlumniNote.objects.get_or_create(
+                        alumni=alumni,
                         category=category,
                         note=note,
                         date=date,
@@ -623,7 +625,6 @@ class Importer:
                     if created:
                         self.log_and_commit(note, addition=created)
                         inserted += 1
-                            
                             
                 except:
                     if hasattr(sheet, 'name'):
