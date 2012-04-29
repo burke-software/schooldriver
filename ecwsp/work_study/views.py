@@ -445,7 +445,7 @@ def student_edit(request, tsid):
                     action_flag     = CHANGE,
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
-            ibj = form.save()
+            obj = form.save()
             log_admin_entry(request,obj,CHANGE,message='Student changed timesheet')
             access = AccessLog()
             access.login = request.user
