@@ -217,9 +217,10 @@ class StudentAdmin(ReadPermissionModelAdmin):
                 txt += "<br/><a href=\"/admin/work_study/survey/?q=%s+%s\" target=\"_blank\">Surveys for this student</a>" % \
                     (context['original'].fname, context['original'].lname)
                 txt += "<br/>Go to work team " + str(context['original'].company())
-                txt += "<br/>Company Contacts:"
-                for compContact in compContacts:
-                    txt += "<br/>%s %s" % (str(compContact.edit_link),compContact.phone)
+                if context['original'].placement:
+                    txt += "<br/>Company Contacts:"
+                    for compContact in compContacts:
+                        txt += "<br/>%s %s" % (str(compContact.edit_link),compContact.phone)
                 txt += '</span>'
                 context['adminform'].form.fields['placement'].help_text += txt
         
