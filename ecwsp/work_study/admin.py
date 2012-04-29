@@ -313,19 +313,25 @@ class TimeSheetPerformanceChoiceAdmin(admin.ModelAdmin):
     
 admin.site.register(TimeSheetPerformanceChoice, TimeSheetPerformanceChoiceAdmin)
 
+
 class TimeSheetAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
-        try:
+        if 'original' in context:
             txt = context['original'].student.primary_contact
             context['adminform'].form.fields['supervisor_comment'].help_text = txt
-            return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
-        except: 
-            return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
+            
+            from django.conf import settings
+            from django.core.urlresolvers import reverse
+            from ecwsp.work_study.views import approve
+            url = settings.BASE_URL + reverse(approve) + '?key=' + context['original'].supervisor_key
+            context['adminform'].form.fields['approved'].help_text = 'Supervisor Approve Link <a href="%s">%s</a>' % (url,url)
+        return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
         
     search_fields = ['student__fname', 'student__lname', 'company__team_name']
     list_filter = ['creation_date', 'date', 'approved','performance','for_pay', 'make_up', 'company', 'student__inactive']
     list_display = ('student', 'date', 'company', 'performance', 'student_Accomplishment_Brief', 'supervisor_Comment_Brief', 'approved', 'for_pay', 'make_up',)
-    readonly_fields = ['supervisor_key', 'hours', 'school_net', 'student_net', 'creation_date']
+    readonly_fields = ['hours', 'school_net', 'student_net', 'creation_date']
+    exclude = ['supervisor_key']
     actions = [approve]
     date_hierarchy = 'date'
 admin.site.register(TimeSheet, TimeSheetAdmin)
