@@ -549,119 +549,101 @@ def ajax_include_deleted(request):
 
 @user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')   
 def view_student(request, id=None):
-    student = None
-    show_grades = False
-    
-    profile = UserPreference.objects.get_or_create(user=request.user)[0]
-    
     if request.method == 'POST':
         form = StudentLookupForm(request.POST)
         if form.is_valid():
-            student = Student.objects.get(id=form.cleaned_data['student'].id)
-    elif request.method == 'GET':
-        try:
-            form = StudentLookupForm(request.GET)
-            if form.is_valid():
-                student = Student.objects.get(id=form.cleaned_data['student'].id)
-            if request.GET['show_grades']:
-                show_grades = True
-        except: pass
-    if 'include_deleted' in request.GET:
-        form = StudentLookupForm()
-        include_deleted = True
-    else:
-        form = StudentLookupForm()
-        include_deleted = False
+            return HttpResponseRedirect('/sis/view_student/' + str(form.cleaned_data['student'].id))
+            
+    profile = UserPreference.objects.get_or_create(user=request.user)[0]
+    
+    student = get_object_or_404(Student, pk=id)
+    
     today = date.today()
-    if student:
-        emergency_contacts = student.emergency_contacts.all()
-        siblings = student.siblings.all()
-        cohorts = student.cohorts.all()
-        numbers = student.studentnumber_set.all()
-        
-        # Schedule
-        cal = Calendar()
-        try:
-            location = cal.find_student(student)
-        except:
-            location = None
-            print >> sys.stderr, str(sys.exc_info()[0])
-        # Guess the mp desired (current or next coming)
+    emergency_contacts = student.emergency_contacts.all()
+    siblings = student.siblings.all()
+    cohorts = student.cohorts.all()
+    numbers = student.studentnumber_set.all()
+    
+    # Schedule
+    cal = Calendar()
+    try:
+        location = cal.find_student(student)
+    except:
+        location = None
+        print >> sys.stderr, str(sys.exc_info()[0])
+    # Guess the mp desired (current or next coming)
+    schedule_days = None
+    periods = None
+    current_mp = MarkingPeriod.objects.filter(end_date__gte=today).order_by('-start_date')
+    if current_mp:
+        current_mp = current_mp[0]
+        schedule_days, periods = cal.build_schedule(student, current_mp, include_asp=True)
+    else:
         schedule_days = None
         periods = None
-        current_mp = MarkingPeriod.objects.filter(end_date__gte=today).order_by('-start_date')
-        if current_mp:
-            current_mp = current_mp[0]
-            schedule_days, periods = cal.build_schedule(student, current_mp, include_asp=True)
+    
+    # Discipline
+    if 'ecwsp.discipline' in settings.INSTALLED_APPS:
+        disciplines = student.studentdiscipline_set.all()
+    else:
+        disciplines = None
+    attendances = student.student_attn.all()
+    
+    #### CWSP related
+    try:
+        clientvisits = student.studentworker.clientvisit_set.all()
+    except: clientvisits = None
+    try:
+        company_histories = student.studentworker.companyhistory_set.all()
+    except:company_histories = None
+    try:
+        timesheets = student.studentworker.timesheet_set.exclude(Q(performance__isnull=True) | Q(performance__exact=''))
+    except: timesheets = None
+    try:
+        if request.user.has_perm("sis.view_mentor_student"):
+            student_interactions = student.studentworker.studentinteraction_set.all()
         else:
-            schedule_days = None
-            periods = None
-        
-        # Discipline
-        if 'ecwsp.discipline' in settings.INSTALLED_APPS:
-            disciplines = student.studentdiscipline_set.all()
-        else:
-            disciplines = None
-        attendances = student.student_attn.all()
-        
-        #### CWSP related
-        try:
-            clientvisits = student.studentworker.clientvisit_set.all()
-        except: clientvisits = None
-        try:
-            company_histories = student.studentworker.companyhistory_set.all()
-        except:company_histories = None
-        try:
-            timesheets = student.studentworker.timesheet_set.exclude(Q(performance__isnull=True) | Q(performance__exact=''))
-        except: timesheets = None
-        try:
-            if request.user.has_perm("sis.view_mentor_student"):
-                student_interactions = student.studentworker.studentinteraction_set.all()
-            else:
-                student_interactions = None
-        except:
             student_interactions = None
-        try:
-            supervisors = student.studentworker.placement.contacts.all()
-        except:
-            supervisors = None
-        ########################################################################
-        
-        years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct()
-        from ecwsp.grades.models import Grade
-        for year in years:
-            year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year).distinct().order_by("start_date")
-            year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year).distinct()
-            for course in year.courses:
-                # Too much logic for the template here, so just generate html.
-                course.grade_html = ""
-                for mp in year.mps:
-                    try:
-                        course.grade_html += '<td> %s </td>' % (Grade.objects.get(student=student, course=course, marking_period=mp).get_grade(),)
-                    except:
-                        course.grade_html += '<td> </td>'
-                course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
-        
-        return render_to_response('sis/view_student.html', {
-            'form':form,
-            'show_grades':show_grades,
-            'date':today,
-            'student':student,
-            'emergency_contacts': emergency_contacts,
-            'siblings': siblings,
-            'numbers':numbers,
-            'location':location,
-            'disciplines':disciplines,
-            'attendances':attendances,
-            'student_interactions': student_interactions,
-            'clientvisits':clientvisits,
-            'supervisors':supervisors,
-            'company_histories':company_histories,
-            'timesheets':timesheets,
-            'years': years,
-            'current_mp': current_mp,
-            'schedule_days':schedule_days,
-            'periods': periods,
-            'include_inactive': profile.include_deleted_students
-        }, RequestContext(request, {}),)
-    return render_to_response('sis/view_student.html', {'include_inactive': profile.include_deleted_students}, RequestContext(request, {}),)
+    except:
+        student_interactions = None
+    try:
+        supervisors = student.studentworker.placement.contacts.all()
+    except:
+        supervisors = None
+    ########################################################################
+    
+    years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct()
+    from ecwsp.grades.models import Grade
+    for year in years:
+        year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year).distinct().order_by("start_date")
+        year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year).distinct()
+        for course in year.courses:
+            # Too much logic for the template here, so just generate html.
+            course.grade_html = ""
+            for mp in year.mps:
+                try:
+                    course.grade_html += '<td> %s </td>' % (Grade.objects.get(student=student, course=course, marking_period=mp).get_grade(),)
+                except:
+                    course.grade_html += '<td> </td>'
+            course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
+    
+    return render_to_response('sis/view_student.html', {
+        'date':today,
+        'student':student,
+        'emergency_contacts': emergency_contacts,
+        'siblings': siblings,
+        'numbers':numbers,
+        'location':location,
+        'disciplines':disciplines,
+        'attendances':attendances,
+        'student_interactions': student_interactions,
+        'clientvisits':clientvisits,
+        'supervisors':supervisors,
+        'company_histories':company_histories,
+        'timesheets':timesheets,
+        'years': years,
+        'current_mp': current_mp,
+        'schedule_days':schedule_days,
+        'periods': periods,
+        'include_inactive': profile.include_deleted_students
+    }, RequestContext(request, {}),)
