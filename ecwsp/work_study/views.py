@@ -69,7 +69,6 @@ def fte_by_ind(request):
         " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
         "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by industry_type;")
     names = cursor.fetchall()
-    print names
     titles = (["Industry", "FTE"])
     report = xlsReport(names, titles, fileName, heading="FTE by Industry Type")
     report.addSheet(student_company_day_report(industry_type=True), heading="Detail")
