@@ -64,9 +64,11 @@ def fte_by_ind(request):
     fileName = "report_fteByInd.xls"
     cursor = connection.cursor()
     fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
-    cursor.execute("select industry_type, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_studentworker.placement_id group by industry_type;")
+    cursor.execute("select industry_type, count(*)/" + str(fte) + \
+        " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by industry_type;")
     names = cursor.fetchall()
+    print names
     titles = (["Industry", "FTE"])
     report = xlsReport(names, titles, fileName, heading="FTE by Industry Type")
     report.addSheet(student_company_day_report(industry_type=True), heading="Detail")
@@ -76,8 +78,9 @@ def fte_by_day(request):
     fileName = "report_fteByDay.xls"
     cursor = connection.cursor()
     fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
-    cursor.execute("select day, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_studentworker.placement_id group by day;")
+    cursor.execute("select day, count(*)/" + str(fte) + \
+        " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by day;")
     names = cursor.fetchall()
     titles = (["Day", "FTE"])
     report = xlsReport(names, titles, fileName, heading="FTE by Day of Week")
@@ -207,8 +210,9 @@ def fte_by_pay(request):
     student_fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     
     cursor = connection.cursor()
-    cursor.execute("select paying, count(*)/" + str(student_fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_studentworker.placement_id group by paying;")
+    cursor.execute("select paying, count(*)/" + str(student_fte) + \
+                   " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by paying;")
     totals = cursor.fetchall()
     
     cursor = connection.cursor()
