@@ -45,6 +45,7 @@ from ecwsp.work_study.forms import *
 from ecwsp.work_study.xlsReport import *
 from ecwsp.sis.models import *
 from ecwsp.sis.report import *
+from ecwsp.sis.helper_functions import log_admin_entry
 
 from itertools import *
 import csv
@@ -255,7 +256,8 @@ def student_timesheet(request):
                     action_flag     = CHANGE,
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
-            form.save()
+            obj = form.save()
+            log_admin_entry(request,obj,ADDITION,message='Student created timesheet')
             access = AccessLog()
             access.login = request.user
             access.ua = request.META['HTTP_USER_AGENT']
@@ -306,6 +308,7 @@ def timesheet_delete(request):
     except:
         return render_to_response('base.html', {'supervisor': True,'msg': "Link not valid. Was this timesheet already approved?"}, RequestContext(request, {}))
     sheet.delete()
+    
     return supervisor_dash(request, "Deleted time card")
         
 def approve(request):
@@ -325,6 +328,7 @@ def approve(request):
             sheet.approved = True
             sheet.supervisor_key = key
             sheet.save()
+            log_admin_entry(request, sheet, CHANGE, 'Supervisor approved timesheet using link (probably from email)')
             if sheet.show_student_comments:
                 sheet.emailStudent()
             else:
@@ -364,6 +368,7 @@ def supervisor_dash(request, msg=""):
                 if str(ts.id) == str(check):
                     ts.approved = True
                     ts.save()
+                    log_admin_entry(request,ts,CHANGE,message='Supervisor mass approval')
     students = StudentWorker.objects.filter(placement=comp)
     timeSheets = TimeSheet.objects.filter(company=comp).filter(approved=False)
     TimeSheetFormSet = modelformset_factory(TimeSheet, fields=('approved',))
@@ -422,7 +427,8 @@ def student_edit(request, tsid):
     """ Student edits own timesheet """
     thisStudent = StudentWorker.objects.get(username=request.user.username)
     timesheet = TimeSheet.objects.get(id=tsid)
-    if (timesheet.student != thisStudent): raise Exception('PermissionDenied',)
+    # Students can only edit their own NON approved time sheets
+    if (timesheet.student != thisStudent or timesheet.approved): raise Exception('PermissionDenied',)
     compContacts = Contact.objects.filter(workteam=thisStudent.placement)
     try:
         supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
@@ -443,7 +449,8 @@ def student_edit(request, tsid):
                     action_flag     = CHANGE,
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
-            form.save()
+            obj = form.save()
+            log_admin_entry(request,obj,CHANGE,message='Student changed timesheet')
             access = AccessLog()
             access.login = request.user
             access.ua = request.META['HTTP_USER_AGENT']
@@ -486,6 +493,7 @@ def create_time_card(request, studentId):
                 sheet.approved = True
                 sheet.genKey()
                 sheet.save()
+                log_admin_entry(request,sheet,ADDITION)
                 if sheet.show_student_comments:
                     sheet.emailStudent()
                 else:

@@ -18,7 +18,27 @@ def copy_model_instance(obj):
                     if not isinstance(f, AutoField) and\
                        not f in obj._meta.parents.values()])
     return obj.__class__(**initial)
-    
+
+def log_admin_entry(request, obj, state, message=""):
+    """
+    Make a log entry in django admin.
+    request: Django request - must have user. Will do nothing without user.
+    obj: Any django object
+    state: django.contrib.admin.models. ADDITION, DELETION, or CHANGE
+    message: optional message for log
+    """
+    from django.contrib.admin.models import LogEntry
+    from django.contrib.contenttypes.models import ContentType
+    if request.user and hasattr(request.user,"pk"):
+        LogEntry.objects.log_action(
+            user_id         = request.user.pk, 
+            content_type_id = ContentType.objects.get_for_model(obj).pk,
+            object_id       = obj.pk,
+            object_repr     = unicode(obj), 
+            action_flag     = state,
+            change_message  = message
+        )
+
 class Struct(object):
     def __unicode__(self):
         return ""
