@@ -1101,7 +1101,7 @@ def company_contract_complete(request, id):
     if email:
         try:
             message = Configuration.get_or_default(
-                name="work_study_contract_complate_email_message", 
+                name="work_study_contract_complete_email_message", 
                 default='Thank you for agreeing to hire Cristo Rey students.',
             ).value
             mail = EmailMessage(
