@@ -1100,12 +1100,17 @@ def company_contract_complete(request, id):
     email = request.GET.get('email')
     if email:
         try:
+            message = Configuration.get_or_default(
+                name="work_study_contract_complate_email_message", 
+                default='Thank you for agreeing to hire Cristo Rey students.',
+            ).value
             mail = EmailMessage(
                 'Work Study Contract Confirmation for %s.' % (company,),
-                'Thank you for agreeing to hire Cristo Rey students for the 2012-13 school year.  Your support will help break the cycle of poverty by offering the students a hand up not a handout.\n\n Attached please find the signed contract.\n\n Brian.',
+                message,
                 Configuration.get_or_default("work_study_contract_from_address", "donotreply@cristoreyny.org").value,
                 [email],
-                )
+            )
+
             cc = Configuration.get_or_default("work_study_contract_cc_address", "").value
             if cc:
                 mail.cc = cc.split(',')
