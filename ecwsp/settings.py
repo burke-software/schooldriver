@@ -163,6 +163,7 @@ INSTALLED_APPS = (
     'massadmin',
     'admin_export',
     'custom_field',
+    'ckeditor',
     
     #'google_auth',
     #'ldap_groups',
