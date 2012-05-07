@@ -8,6 +8,8 @@
     <script type='text/javascript' src='https://www.google.com/jsapi'></script>
     <script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
     <script type='text/javascript'>
+	var alumni_id = {{ student.alumni.id|default_if_none:"" }}
+	
         {% if timesheets %}
             google.load('visualization', '1', {'packages':['annotatedtimeline']});
             google.setOnLoadCallback(drawChart);
@@ -28,86 +30,9 @@
               $('#section_workperformance').hide();
             }
         {% endif %}
-        
-        {% if show_grades %}
-            $(document).ready(function() {
-                options_toggle('toggle_section_grade');
-            });
-        {% endif %}
     </script>
-    <script>
-$(document).ready(function() {
-    // Opens the first section by default.
-    $("a.section-header:first").toggleClass('expanded').next(".sv-main").show();
-    
-    // Switches CSS classes. This controls the right and down arrows.  
-    $("a.section-header").click(function () {
-    $(this).parent().removeClass('noprint');
-    if ($(this).hasClass("subsection")) {
-        $(this).toggleClass('sub-expanded');
-	$(this).toggleClass('noprint');
-    } else {
-        $(this).toggleClass('expanded');
-	$(this).toggleClass('noprint');
-    }
-    
-    // Toggle the section.
-    $(this).next(".sv-main").slideToggle(600, function () {
-        // Get the coordinates of the section in question,
-        topPos = $(this).parent().offset();
-        // the height of the browser window,
-        windowHeight = $(window).height();
-        // and the height of the section.
-        elementHeight = $(this).height();
-        // If the section is taller than the height of the window,
-        if (topPos.top != 0 && topPos.top + elementHeight > windowHeight) {
-            $('html,body').animate({
-            // Scroll to the top of the section (minus 55 pixels to account for the admin bar up top).
-            scrollTop: topPos.top-55
-            }, 500);
-        }
-    });
-    
-    
-});
-});
+    <script type="text/javascript" src="/static/js/view_student.js"></script>
 
-function ajax_include_deleted(){
-    var checked = $('#id_include_deleted').is(":checked");
-    $.ajax({
-	url: "/sis/ajax_include_deleted?checked=" + checked
-    });
-}
-
-function ajax_quick_add_note() {
-    $.post(  
-        "/alumni/ajax_quick_add_note/{{ student.alumni.id }}/",
-        function(data){
-	    html = '<form action="/alumni/ajax_quick_add_note" method="post" id="quick_add_note_form">'
-		+ data
-		+ '<input type="button" value="Save" onclick="ajax_quick_add_note_save()"/></form>';
-	    $("#quick_add_alumni_note").html(html);
-        }
-    );
-}
-
-function ajax_quick_add_note_save() {
-    CKEDITOR.instances['id_note'].updateElement();
-    form_data = $('#quick_add_note_form').serialize();
-    $.post(
-        "/alumni/ajax_quick_add_note/{{ student.alumni.id }}/",
-	form_data,
-        function(note){
-	    CKEDITOR.instances['id_note'].destroy();
-	    button_html = '<a href="javascript:void(0)" onclick="ajax_quick_add_note()">Quick add note</a>';
-	    $("#quick_add_alumni_note").html(button_html);
-	    note_html = '<tr><td>' + note + '</td></tr>';
-	    $('#div_to_insert_new_notes').before(note_html)
-        }
-    );
-}
-
-</script>
 {% endblock %}
 
 {% block content %}
@@ -133,7 +58,7 @@ function ajax_quick_add_note_save() {
       Profile generated on {{ date }}
       </div>
 </div>
-<div class="sv-section"><a class="section-header" href="javascript:void(0)">General Information</a> 
+<div class="sv-section"><a id="a_general" class="section-header" href="javascript:void(0)">General Information</a> 
 <div class="sv-main">
 	<!--<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>-->
 	{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img style="max-height: 250px;" src="{{ student.pic.url_530x400 }}"/></a> </div>{% endif %}
@@ -174,7 +99,7 @@ function ajax_quick_add_note_save() {
 </div> <!-- .sv-main -->
 </div> <!-- .sv-section -->
         
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Grades (GPA: {{ student.gpa }})</a>
+        <div class="sv-section noprint"><a id="a_grades" class="section-header noprint" href="javascript:void(0)">Grades (GPA: {{ student.gpa }})</a>
         <div class="sv-main">
 
         {% for year in years %}
@@ -214,7 +139,7 @@ function ajax_quick_add_note_save() {
 </div> <!-- .sv-section -->
         
         {% if current_mp %}
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">{{ current_mp }} Schedule</a>
+        <div class="sv-section noprint"><a id="a_schedule" class="section-header noprint" href="javascript:void(0)">{{ current_mp }} Schedule</a>
         <div class="sv-main">
 
                 <table class="section-table">
@@ -238,7 +163,7 @@ function ajax_quick_add_note_save() {
         {% endif %}
         
         {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Discipline</a>
+        <div class="sv-section noprint"><a id="a_discipline" class="section-header noprint" href="javascript:void(0)">Discipline</a>
         <div class="sv-main">
                 <table class="section-table">
                     <tr>
@@ -257,7 +182,7 @@ function ajax_quick_add_note_save() {
         
         
 	{% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
-	<div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)" >Attendance</a>
+	<div class="sv-section noprint"><a id="a_attendance" class="section-header noprint" href="javascript:void(0)" >Attendance</a>
         <div class="sv-main">
             <table class="section-table">
                 <tr>
@@ -274,7 +199,7 @@ function ajax_quick_add_note_save() {
 	{% endif %}
         
         {% if student_interactions %}
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Student Interactions</a>
+        <div class="sv-section noprint"><a id="a_student_interactions" class="section-header noprint" href="javascript:void(0)">Student Interactions</a>
         <div class="sv-main">
             <div class="section-div">
                 {% for student_interaction in student_interactions %}
@@ -290,7 +215,7 @@ function ajax_quick_add_note_save() {
         
         {% if 'ecwsp.alumni' in settings.INSTALLED_APPS and student.alumni %}
         {% with alumni=student.alumni %}
-        <div class="sv-section"><a class="section-header" href="javascript:void(0)">Alumni</a>
+        <div class="sv-section"><a id="a_alumni" class="section-header" href="javascript:void(0)">Alumni</a>
         <div class="sv-main">
             {% if perms.alumni.change_alumni %}
                 <a href="{% url admin:alumni_alumni_change alumni.id %}"> Edit </a>
@@ -340,7 +265,7 @@ function ajax_quick_add_note_save() {
         {% endif %}
         
         {% if 'ecwsp.counseling' in settings.INSTALLED_APPS %}
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Counseling</a>
+        <div class="sv-section noprint"><a id="a_counseling" class="section-header noprint" href="javascript:void(0)">Counseling</a>
         <div class="sv-main">
         <div class="section-div">
 		<ul>
@@ -381,7 +306,7 @@ function ajax_quick_add_note_save() {
     
     {% if 'ecwsp.admissions' in settings.INSTALLED_APPS and student.appl_student %}
     {% with appl=student.appl_student %}
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Admissions</a>
+        <div class="sv-section noprint"><a id="a_admissions" class="section-header noprint" href="javascript:void(0)">Admissions</a>
         <div class="sv-main">
             {% if perms.admissions.change_applicant %}
                 <a href="{% url admin:admissions_applicant_change student.appl_student.id %}"> Edit </a><br />
@@ -404,7 +329,7 @@ function ajax_quick_add_note_save() {
     
 	
 	{% if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS %}
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Volunteering</a>
+        <div class="sv-section noprint"><a id="a_volunteer" class="section-header noprint" href="javascript:void(0)">Volunteering</a>
         <div class="sv-main">
             <div class="section-div">
 		<ul>
@@ -433,7 +358,7 @@ function ajax_quick_add_note_save() {
 	
 	
         {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %}
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Work Visits</a>
+        <div class="sv-section noprint"><a id="a_work_study" class="section-header noprint" href="javascript:void(0)">Work Visits</a>
         <div class="sv-main">
             <div class="section-div">
 		    <table>
