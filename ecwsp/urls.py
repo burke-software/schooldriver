@@ -59,6 +59,8 @@ if 'ecwsp.grades' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^grades/', include('ecwsp.grades.urls')), )
 if 'ecwsp.naviance_sso' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^naviance_sso/', include('ecwsp.naviance_sso.urls')), )
+if 'ecwsp.alumni' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^alumni/', include('ecwsp.alumni.urls')), )
     
 if 'sentry' in settings.INSTALLED_APPS:    
     urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)

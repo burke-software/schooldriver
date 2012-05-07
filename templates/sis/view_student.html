@@ -6,6 +6,7 @@
 		<link rel="stylesheet" type= "text/css" href="/static/css/view_student_style.css" />
 		
     <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
     <script type='text/javascript'>
         {% if timesheets %}
             google.load('visualization', '1', {'packages':['annotatedtimeline']});
@@ -77,6 +78,35 @@ function ajax_include_deleted(){
 	url: "/sis/ajax_include_deleted?checked=" + checked
     });
 }
+
+function ajax_quick_add_note() {
+    $.post(  
+        "/alumni/ajax_quick_add_note/{{ student.alumni.id }}/",
+        function(data){
+	    html = '<form action="/alumni/ajax_quick_add_note" method="post" id="quick_add_note_form">'
+		+ data
+		+ '<input type="button" value="Save" onclick="ajax_quick_add_note_save()"/></form>';
+	    $("#quick_add_alumni_note").html(html);
+        }
+    );
+}
+
+function ajax_quick_add_note_save() {
+    CKEDITOR.instances['id_note'].updateElement();
+    form_data = $('#quick_add_note_form').serialize();
+    $.post(
+        "/alumni/ajax_quick_add_note/{{ student.alumni.id }}/",
+	form_data,
+        function(note){
+	    CKEDITOR.instances['id_note'].destroy();
+	    button_html = '<a href="javascript:void(0)" onclick="ajax_quick_add_note()">Quick add note</a>';
+	    $("#quick_add_alumni_note").html(button_html);
+	    note_html = '<tr><td>' + note + '</td></tr>';
+	    $('#div_to_insert_new_notes').before(note_html)
+        }
+    );
+}
+
 </script>
 {% endblock %}
 
@@ -287,10 +317,20 @@ function ajax_include_deleted(){
                 <div class="sv-main" style="display: block;"> 
                 <table class="subsection-table">
                     {% for note in alumni.alumninote_set.all %}
-                    <tr>
-                        <td>{{ note }}</td>
-                    </tr>
-                    {% endfor %}
+			<tr>
+			    <td>
+				<h4>{{ note.category }} {% if note.user %} - {% endif %} {{ note.user }} - {{ note.date }} </h4>
+				{{ note.note|safe }}
+			    </td>
+			</tr>
+		    {% endfor %}
+		    {% if perms.alumni.add_alumninote %}
+			<tr id="div_to_insert_new_notes">
+			    <td id="quick_add_alumni_note">
+				<a href="javascript:void(0)" onclick="ajax_quick_add_note()">Quick add note</a>
+			    </td>
+			</tr>
+		    {% endif %}
                 </table>
                 </div>
             </div>

@@ -5,6 +5,12 @@ from ecwsp.alumni.models import *
 
 import decimal
 
+class AlumniNoteForm(forms.ModelForm):
+    class Meta:
+        model = AlumniNote
+        fields = ('alumni','category','note')
+        widgets = {'alumni': forms.HiddenInput()}
+
 class AlumniForm(forms.ModelForm):
     class Meta:
         model = Alumni
