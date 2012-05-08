@@ -38,15 +38,18 @@ function keyboard_nav(event) {
     if (key == 13 || key == 40 || key == 38 || key == 37 || key == 39) {
         column = $(event.target).parents('td').attr('class').replace(/row_\d*/, '').replace(/column_/,'').trim();
         row = $(event.target).parents('td').attr('class').replace(/^column_\d* row_/, '').trim();
+        var selected_element;
         if(key == 13 || key == 40) { // Down
-            $('td.column_' + column + '.row_' + (parseInt(row)+1)).children('input').select();
+            selected_element = $('td.column_' + column + '.row_' + (parseInt(row)+1)).children('input');
         } else if (key == 38) { // Up
-            $('td.column_' + column + '.row_' + (parseInt(row)-1)).children('input').select();
+            selected_element = $('td.column_' + column + '.row_' + (parseInt(row)-1)).children('input');
         } else if (key == 37) { // Left
-            $('td.column_' + (parseInt(column)-1) + '.row_' + row).children('input').select();
+            selected_element = $('td.column_' + (parseInt(column)-1) + '.row_' + row).children('input');
         } else if (key == 39) { // Right
-            $('td.column_' + (parseInt(column)+1) + '.row_' + row).children('input').select();
+            selected_element = $('td.column_' + (parseInt(column)+1) + '.row_' + row).children('input');
         }
+        $(selected_element).focus();
+        $(selected_element).select();
         return false;
     }
 }
