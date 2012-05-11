@@ -439,7 +439,6 @@ class Importer:
                 filename = None
         return msg, filename
     
-    #@transaction.commit_manually
     def import_just_standard_test(self, test=None):
         inserted = 0
         msg = ""
@@ -468,7 +467,6 @@ class Importer:
                 filename = None
         return msg, filename
     
-    #@transaction.commit_manually
     def import_benchmarks(self, sheet, test=None):
         """Import Standardized tests. Does not allow updates.
         test: if the test named is already known. """
@@ -535,7 +533,6 @@ class Importer:
             x += 1
         return inserted, updated
     
-    #@transaction.commit_manually
     def import_standard_test(self, sheet, known_test=None):
         """Import Standardized tests. Does not allow updates.
         test: if the test named is already known. """
@@ -561,7 +558,7 @@ class Importer:
                             if name == "test name":
                                 test, created = StandardTest.objects.get_or_create(name=value)
                                 model.test = test
-                            elif name == "date" or name == "test_date":
+                            elif name in ["date","test_date","test date"]:
                                 model.date = self.convert_date(value)
                             elif name == "is_plan":
                                 is_plan = self.determine_truth(value)
