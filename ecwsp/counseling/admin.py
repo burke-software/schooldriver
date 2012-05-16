@@ -5,8 +5,8 @@ from ajax_select import make_ajax_form
 from models import *
 
 class StudentMeetingAdmin(admin.ModelAdmin):
-   list_display = ['display_students','date','reported_by']
-   fields = ['students','date','notes','file','follow_up_action','follow_up_notes','reported_by']
+   list_display = ['category','display_students','date','reported_by']
+   fields = ['category','students','date','notes','file','follow_up_action','follow_up_notes','reported_by']
    form = make_ajax_form(StudentMeeting, dict(students='student'))
    def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'reported_by':
@@ -17,6 +17,7 @@ class StudentMeetingAdmin(admin.ModelAdmin):
         )
 
 admin.site.register(StudentMeeting, StudentMeetingAdmin)
+admin.site.register(StudentMeetingCategory)
 admin.site.register(FollowUpAction)
 
 admin.site.register(ReferralCategory)

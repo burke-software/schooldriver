@@ -32,8 +32,14 @@ class FollowUpAction(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
+class StudentMeetingCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    def __unicode__(self):
+        return unicode(self.name)
+
 class StudentMeeting(models.Model):
     students = models.ManyToManyField(Student)
+    category = models.ForeignKey(StudentMeetingCategory,blank=True,null=True)
     date = models.DateField(default=datetime.date.today)
     notes = RichTextField(blank=True)
     follow_up_action = models.ForeignKey(FollowUpAction,blank=True,null=True)
