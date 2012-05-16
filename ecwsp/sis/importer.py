@@ -2001,7 +2001,7 @@ class Importer:
                             if name == "company":
                                 model.company = Company.objects.get_or_create(name=value)[0]
                             elif name == "login":
-                                login = User.objects.get_or_create(username=value)[0]
+                                login = WorkTeamUser.objects.get_or_create(username=value)[0]
                                 group = Group.objects.get_or_create(name="Company")[0]
                                 login.groups.add(group)
                                 model.login.add(login)
