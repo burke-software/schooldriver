@@ -1478,6 +1478,8 @@ class Importer:
                                     model.year = GradeLevel.objects.get(name=value)
                                 except:
                                     model.year = GradeLevel.objects.get(id=value)
+                            elif name == "picture":
+                                model.pic = value
                             
                             elif name == "parent e-mail" or name == "parent email" or name == "parentemail" or name == "parent__email":
                                 model.parent_email = value
