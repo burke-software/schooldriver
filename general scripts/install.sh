@@ -8,7 +8,7 @@ apt-get install libapache2-mod-wsgi
 
 # now install python libs that aren't in deb
 # stable version of ldap-groups may not work with mysql
-pip install django django-reversion simplejson httpagentparser django-ajax-selects django_extensions django-grappelli elementtree django-filter poster django-ajax-filtered-fields django-mass-edit django-pagination django-admin-export django-custom-field suds
+pip install django django-reversion simplejson httpagentparser django-ajax-selects django_extensions django-grappelli elementtree poster django-ajax-filtered-fields django-mass-edit django-pagination django-admin-export django-custom-field suds
 
 # people don't submit their fixes to pypi so we have to include them
 pip install ../hatchery/django-filter-0.5.3.tar.gz ../hatchery/wojas-django-apptemplates-ce738ccb3f02.tar.gz ../django-ckeditor-3.6.2.tar.gz
