@@ -79,7 +79,8 @@ class Importer:
     def make_log_entry(self, user_note=""):
         self.log = ImportLog(user=self.user, user_note=user_note, import_file=self.file)
         file_name = datetime.datetime.now().strftime("%Y%m%d%H%M") + ".sql"
-        self.log.sql_backup.save(file_name, self.do_mysql_backup())
+        if settings.BASE_URL != 'http://localhost:8000':
+            self.log.sql_backup.save(file_name, self.do_mysql_backup())
         self.log.save()
         # Clean up old log files
         for import_log in ImportLog.objects.filter(date__lt=datetime.datetime.now() - datetime.timedelta(60)):
@@ -438,7 +439,6 @@ class Importer:
                 filename = None
         return msg, filename
     
-    #@transaction.commit_manually
     def import_just_standard_test(self, test=None):
         inserted = 0
         msg = ""
@@ -467,7 +467,6 @@ class Importer:
                 filename = None
         return msg, filename
     
-    #@transaction.commit_manually
     def import_benchmarks(self, sheet, test=None):
         """Import Standardized tests. Does not allow updates.
         test: if the test named is already known. """
@@ -534,7 +533,6 @@ class Importer:
             x += 1
         return inserted, updated
     
-    #@transaction.commit_manually
     def import_standard_test(self, sheet, known_test=None):
         """Import Standardized tests. Does not allow updates.
         test: if the test named is already known. """
@@ -560,7 +558,7 @@ class Importer:
                             if name == "test name":
                                 test, created = StandardTest.objects.get_or_create(name=value)
                                 model.test = test
-                            elif name == "date" or name == "test_date":
+                            elif name in ["date","test_date","test date"]:
                                 model.date = self.convert_date(value)
                             elif name == "is_plan":
                                 is_plan = self.determine_truth(value)
@@ -615,6 +613,7 @@ class Importer:
                             elif name == "user":
                                 user = User.objects.get(username=value)
                     note, created = AlumniNote.objects.get_or_create(
+                        alumni=alumni,
                         category=category,
                         note=note,
                         date=date,
@@ -623,7 +622,6 @@ class Importer:
                     if created:
                         self.log_and_commit(note, addition=created)
                         inserted += 1
-                            
                             
                 except:
                     if hasattr(sheet, 'name'):
@@ -1480,6 +1478,8 @@ class Importer:
                                     model.year = GradeLevel.objects.get(name=value)
                                 except:
                                     model.year = GradeLevel.objects.get(id=value)
+                            elif name == "picture":
+                                model.pic = value
                             
                             elif name == "parent e-mail" or name == "parent email" or name == "parentemail" or name == "parent__email":
                                 model.parent_email = value
@@ -2003,7 +2003,7 @@ class Importer:
                             if name == "company":
                                 model.company = Company.objects.get_or_create(name=value)[0]
                             elif name == "login":
-                                login = User.objects.get_or_create(username=value)[0]
+                                login = WorkTeamUser.objects.get_or_create(username=value)[0]
                                 group = Group.objects.get_or_create(name="Company")[0]
                                 login.groups.add(group)
                                 model.login.add(login)

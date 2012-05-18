@@ -22,6 +22,7 @@ from django.contrib.localflavor.us.models import *
 from django.contrib.auth.models import User
 from django.contrib.localflavor.us.models import PhoneNumberField
 
+from ckeditor.fields import RichTextField
 from ecwsp.sis.models import *
 
 import datetime
@@ -104,7 +105,7 @@ class AlumniNoteCategory(models.Model):
 
 class AlumniNote(models.Model):
     category = models.ForeignKey(AlumniNoteCategory, blank=True, null=True)
-    note = models.TextField()
+    note = RichTextField()
     alumni = models.ForeignKey('Alumni')
     date = models.DateField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)

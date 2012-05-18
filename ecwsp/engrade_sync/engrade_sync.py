@@ -142,7 +142,7 @@ class EngradeSync:
                     if student:
                         errors += '%s: %s\'s comment not set! ' % (course,student,)
                     else:
-                        errors += "%S: Student doesn't exist! " % (course,)
+                        errors += "%s: Student doesn't exist! " % (course,)
                     print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
         course.last_grade_submission = datetime.datetime.now()
         course.save()

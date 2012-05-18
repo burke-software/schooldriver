@@ -45,6 +45,7 @@ from ecwsp.work_study.forms import *
 from ecwsp.work_study.xlsReport import *
 from ecwsp.sis.models import *
 from ecwsp.sis.report import *
+from ecwsp.sis.helper_functions import log_admin_entry
 
 from itertools import *
 import csv
@@ -64,8 +65,9 @@ def fte_by_ind(request):
     fileName = "report_fteByInd.xls"
     cursor = connection.cursor()
     fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
-    cursor.execute("select industry_type, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_studentworker.placement_id group by industry_type;")
+    cursor.execute("select industry_type, count(*)/" + str(fte) + \
+        " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by industry_type;")
     names = cursor.fetchall()
     titles = (["Industry", "FTE"])
     report = xlsReport(names, titles, fileName, heading="FTE by Industry Type")
@@ -76,8 +78,9 @@ def fte_by_day(request):
     fileName = "report_fteByDay.xls"
     cursor = connection.cursor()
     fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
-    cursor.execute("select day, count(*)/" + str(fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_studentworker.placement_id group by day;")
+    cursor.execute("select day, count(*)/" + str(fte) + \
+        " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by day;")
     names = cursor.fetchall()
     titles = (["Day", "FTE"])
     report = xlsReport(names, titles, fileName, heading="FTE by Day of Week")
@@ -207,8 +210,9 @@ def fte_by_pay(request):
     student_fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     
     cursor = connection.cursor()
-    cursor.execute("select paying, count(*)/" + str(student_fte) + " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_studentworker.placement_id group by paying;")
+    cursor.execute("select paying, count(*)/" + str(student_fte) + \
+                   " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
+        "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by paying;")
     totals = cursor.fetchall()
     
     cursor = connection.cursor()
@@ -251,7 +255,8 @@ def student_timesheet(request):
                     action_flag     = CHANGE,
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
-            form.save()
+            obj = form.save()
+            log_admin_entry(request,obj,ADDITION,message='Student created timesheet')
             access = AccessLog()
             access.login = request.user
             access.ua = request.META['HTTP_USER_AGENT']
@@ -302,6 +307,7 @@ def timesheet_delete(request):
     except:
         return render_to_response('base.html', {'supervisor': True,'msg': "Link not valid. Was this timesheet already approved?"}, RequestContext(request, {}))
     sheet.delete()
+    
     return supervisor_dash(request, "Deleted time card")
         
 def approve(request):
@@ -321,6 +327,7 @@ def approve(request):
             sheet.approved = True
             sheet.supervisor_key = key
             sheet.save()
+            log_admin_entry(request, sheet, CHANGE, 'Supervisor approved timesheet using link (probably from email)')
             if sheet.show_student_comments:
                 sheet.emailStudent()
             else:
@@ -360,6 +367,7 @@ def supervisor_dash(request, msg=""):
                 if str(ts.id) == str(check):
                     ts.approved = True
                     ts.save()
+                    log_admin_entry(request,ts,CHANGE,message='Supervisor mass approval')
     students = StudentWorker.objects.filter(placement=comp)
     timeSheets = TimeSheet.objects.filter(company=comp).filter(approved=False)
     TimeSheetFormSet = modelformset_factory(TimeSheet, fields=('approved',))
@@ -418,7 +426,8 @@ def student_edit(request, tsid):
     """ Student edits own timesheet """
     thisStudent = StudentWorker.objects.get(username=request.user.username)
     timesheet = TimeSheet.objects.get(id=tsid)
-    if (timesheet.student != thisStudent): raise Exception('PermissionDenied',)
+    # Students can only edit their own NON approved time sheets
+    if (timesheet.student != thisStudent or timesheet.approved): raise Exception('PermissionDenied',)
     compContacts = Contact.objects.filter(workteam=thisStudent.placement)
     try:
         supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
@@ -439,7 +448,8 @@ def student_edit(request, tsid):
                     action_flag     = CHANGE,
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
-            form.save()
+            obj = form.save()
+            log_admin_entry(request,obj,CHANGE,message='Student changed timesheet')
             access = AccessLog()
             access.login = request.user
             access.ua = request.META['HTTP_USER_AGENT']
@@ -482,6 +492,7 @@ def create_time_card(request, studentId):
                 sheet.approved = True
                 sheet.genKey()
                 sheet.save()
+                log_admin_entry(request,sheet,ADDITION)
                 if sheet.show_student_comments:
                     sheet.emailStudent()
                 else:
@@ -1089,12 +1100,17 @@ def company_contract_complete(request, id):
     email = request.GET.get('email')
     if email:
         try:
+            message = Configuration.get_or_default(
+                name="work_study_contract_complete_email_message", 
+                default='Thank you for agreeing to hire Cristo Rey students.',
+            ).value
             mail = EmailMessage(
                 'Work Study Contract Confirmation for %s.' % (company,),
-                'Thank you for agreeing to hire Cristo Rey students for the 2012-13 school year.  Your support will help break the cycle of poverty by offering the students a hand up not a handout.\n\n Attached please find the signed contract.\n\n Brian.',
+                message,
                 Configuration.get_or_default("work_study_contract_from_address", "donotreply@cristoreyny.org").value,
                 [email],
-                )
+            )
+
             cc = Configuration.get_or_default("work_study_contract_cc_address", "").value
             if cc:
                 mail.cc = cc.split(',')
