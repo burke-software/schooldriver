@@ -346,3 +346,7 @@ QUEXF_URL = "http://quexf.cristoreyny.org"
 # this will load additional settings from the file settings_local.py
 # this is useful when managing multiple sites with different configurations
 from settings_local import *
+
+# must do this after importing settings_local
+if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
+    AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
