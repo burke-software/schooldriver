@@ -437,7 +437,7 @@ class StandardCategoryGrade(models.Model):
     """ Grade for a category and result """
     category = models.ForeignKey(StandardCategory)
     result = models.ForeignKey(StandardTestResult)
-    grade = models.IntegerField()
+    grade = models.DecimalField(max_digits=6,decimal_places=2)
 
 
 class Award(models.Model):
