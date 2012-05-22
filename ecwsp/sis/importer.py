@@ -1522,6 +1522,8 @@ class Importer:
                                 work = value
                             elif name in ['parent number', 'parent 1 number', 'parent other number', 'parent 1 other number', 'parent phone', 'parent 1 phone', 'parent other phone', 'parent 1 other phone']:
                                 other = value
+                            elif name == "password":
+                                password = value
                                 
                             # Custom
                             elif name.split() and name.split()[0] == "custom":
@@ -1530,8 +1532,14 @@ class Importer:
                     if not model.username and model.fname and model.lname:
                         model.username = self.gen_username(model.fname, model.lname)
                     model.save()
+                    if password:
+                        user = User.objects.get(username = model.username)
+                        user.set_password(password)
+                        user.save()
+                        model.save()
                     for (custom_field, value) in custom_fields:
                         model.set_custom_value(custom_field, value)
+                    
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
@@ -2122,7 +2130,7 @@ class Importer:
                             created = False
                         else:
                             model.fname =fname
-                            model.lanem = lname
+                            model.lname = lname
                     else:
                         model.fname = fname
                         model.lname = lname
