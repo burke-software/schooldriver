@@ -1426,6 +1426,7 @@ class Importer:
                     items = zip(header, row)
                     created = False
                     model = None
+                    password = None
                     custom_fields = []
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
@@ -2021,7 +2022,7 @@ class Importer:
                                 login.save()
                             elif name == "paying":
                                 if value == "Paying": model.paying = "P"
-                                elif value == "None-Paying": model.paying = "N"
+                                elif value == "Non-Paying": model.paying = "N"
                                 elif value == "Funded": model.paying = "F"
                                 else: model.paying = value
                             elif name == "funded_by" or name =="funded by":
