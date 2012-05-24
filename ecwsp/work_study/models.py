@@ -113,6 +113,14 @@ class Company(models.Model):
     def __unicode__(self):
         return unicode(self.name)
     
+    def fte(self):
+        try:
+            noStudents = StudentWorker.objects.filter(placement__company=self,inactive=False).count()
+            student_fte = Configuration.objects.get_or_create(name="Students per FTE")[0].value
+            return noStudents/float(student_fte)
+        except:
+            return None
+    
     class Meta:
         verbose_name_plural = 'Companies'
         ordering = ('name',)

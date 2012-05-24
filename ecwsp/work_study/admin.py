@@ -74,6 +74,7 @@ class CompanyAdmin(admin.ModelAdmin):
             print >> sys.stderr, "Error in company admin render_change_form"
         return super(CompanyAdmin, self).render_change_form(request, context, args, kwargs)
     search_fields = ('workteam__studentworker__fname', 'workteam__studentworker__lname', 'workteam__team_name')
+    list_display = ('name','fte')
     inlines = [CompContractInline]
 admin.site.register(Company, CompanyAdmin)
 
