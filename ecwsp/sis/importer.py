@@ -417,6 +417,10 @@ class Importer:
         if sheet:
             inserted, updated = self.import_contract_information(sheet)
             msg += "%s contracts inserted, %s contracts updated <br/>" % (inserted, updated)
+        sheet = self.get_sheet_by_case_insensitive_name("student work history")
+        if sheet:
+            inserted, updated = self.import_student_work_history(sheet)
+            msg += "%s student work history records inserted, %s student work history records updated <br/>" % (inserted, updated)
         
         if msg == "":
             msg = "No files found. Check if sheets are named correctly. "
@@ -2070,7 +2074,6 @@ class Importer:
             x += 1
         return inserted, updated
 
-
     #@transaction\.commit_manually
     def import_company_contacts(self, sheet):
         from ecwsp.work_study.models import *
@@ -2155,7 +2158,6 @@ class Importer:
             
         return inserted, updated
 
-
     #@transaction\.commit_manually
     def import_student_workers(self, sheet):
         """ Import students workers """
@@ -2218,6 +2220,53 @@ class Importer:
                 x += 1
         return inserted, updated
 
+    def import_student_work_history(self, sheet):
+        #does not allow updates
+        from ecwsp.work_study.models import *
+        x, header, inserted, updated = self.import_prep(sheet)
+        while x < sheet.nrows:
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    model = CompanyHistory()
+                    try:
+                        student = self.get_student(items)
+                    except:
+                        student = None
+                    created = True
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if student:
+                                if not hasattr(student, 'studentworker'):
+                                    student.promote_to_worker()
+                                model.student = StudentWorker.objects.get(id=student.id)
+                                    
+                            else:
+                                if name == "student unique id" or name == "unique id":
+                                    model.student = StudentWorker(unique_id=value)
+                                elif name == "student username":
+                                    model.student = StudentWorker(username=value)
+                            if name =="placement" or name == "workteam":
+                                model.placement = WorkTeam.objects.get(team_name=value)
+                            elif name == "date" or name== "date left":
+                                model.date = self.convert_date(value)
+                            elif name == "fired":
+                                model.fired = self.determine_truth(value)
+                            
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
+                x += 1
+        return inserted, updated
 
     #@transaction\.commit_manually
     def import_contract_information(self, sheet):
@@ -2231,6 +2280,7 @@ class Importer:
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
+                    
                     created = True
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
