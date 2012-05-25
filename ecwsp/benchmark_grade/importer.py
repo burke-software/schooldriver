@@ -52,7 +52,7 @@ class BenchmarkGradeImporter(Importer):
                     else:
                         a.cachedValue = a.mean(markDescription='Session')
                     # I'd like to avoid re-writing SWORD
-                    g, garbage = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, final=True, override_final=False)
+                    g, garbage = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, override_final=False)
                     g.set_grade(a.cachedValue)
                     g.save() # recalculates a bogus GPA every time. ouch.
                 else:

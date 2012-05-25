@@ -904,7 +904,6 @@ class Importer:
                     letter_grade = None
                     student = self.get_student(items)
                     course = None
-                    final = False
                     marking_period = None
                     override_final = False
                     comment = ""
