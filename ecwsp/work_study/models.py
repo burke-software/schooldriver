@@ -147,8 +147,8 @@ class WorkTeam(models.Model, CustomFieldModel):
     industry_type = models.CharField(max_length=100, blank=True)
     train_line = models.CharField(max_length=50, blank=True)
     stop_location = models.CharField(max_length=150, blank=True)
-    dropoff_location = models.ForeignKey(PickupLocation, blank=True, null=True, related_name="workteamset_dropoff", help_text="Group for morning dropoff. Can be used for work study attendance")
-    pickup_location = models.ForeignKey(PickupLocation, blank=True, null=True, help_text="Group for evening pickup. Can be used for work study attendance. If same as dropoff, you can just not use this field.")
+    am_transport_group = models.ForeignKey(PickupLocation,db_column="dropoff_location_id",blank=True, null=True, related_name="workteamset_dropoff", help_text="Group for morning dropoff. Can be used for work study attendance")
+    pm_transport_group = models.ForeignKey(PickupLocation,blank=True,db_column="pickup_location_id",null=True, help_text="Group for evening pickup. Can be used for work study attendance. If same as dropoff, you can just not use this field.")
     address = models.CharField(max_length=150, blank=True)
     city = models.CharField(max_length=150, blank=True)
     state = models.CharField(max_length=2, blank=True)
@@ -166,6 +166,14 @@ class WorkTeam(models.Model, CustomFieldModel):
     
     def __unicode__(self):
         return unicode(self.team_name)
+    
+    # Legacy compatibility
+    @property
+    def dropoff_location(self):
+        return self.am_transport_group
+    @property
+    def pickup_location(self):
+        return self.pm_transport_group
     
     def save(self, *args, **kwargs):
         if self.use_google_maps:

@@ -110,16 +110,7 @@ def student_company_day_report(industry_type=False, paying=False):
                 row.append(txt)
             data.append(row)
     return data
-
-#@login_required
-#def attendance(request):
-#    pickups = PickupLocation.objects.all()
-#    for pickup in pickups:
-#        gen_attendance_report(str(pickup))
-#    for day in days:
-#        gen_attendance_report_day(day)
-#    return render_to_response('work_study/attendance.html', {'pickup': pickups, 'days': tuple(x[0] for x in days)})
-    
+  
 # Generate attendance by day    
 def gen_attendance_report_day(day, is_pickup=False):
     """
@@ -178,9 +169,9 @@ def gen_attendance_report_day(day, is_pickup=False):
         
         y=2
         if is_pickup == True:
-            students = StudentWorker.objects.filter(day=day[1], placement__pickup_location__location=pickup).filter(inactive=False)
+            students = StudentWorker.objects.filter(day=day[1], placement__pm_transport_group__location=pickup).filter(inactive=False)
         else:
-            students = StudentWorker.objects.filter(day=day[1], placement__dropoff_location__location=pickup).filter(inactive=False)
+            students = StudentWorker.objects.filter(day=day[1], placement__am_transport_group__location=pickup).filter(inactive=False)
         for stu in students:
             if stu.fax:
                 ws.write(y,0,"txt", myFontStyle)                            #Small font fax.
@@ -713,7 +704,7 @@ def report_builder_view(request):
                         sheet['$stop'] = []
                         sheet['$cra'] = []
                         sheet['$cell'] = []
-                        for stu in StudentWorker.objects.filter(day="M", placement__pickup_location__location=pickup): 
+                        for stu in StudentWorker.objects.filter(day="M", placement__pm_transport_group__location=pickup): 
                             sheet['$student'].append(unicode(stu))
                             sheet['$company'].append(unicode(stu.placement))
                             sheet['$train'].append(unicode(stu.placement.train_line))
