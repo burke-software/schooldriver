@@ -179,7 +179,7 @@ def gen_attendance_report_day(day, is_pickup=False):
                 ws.write(y,0," ", myFontStyle)                                #blank for absent/late
             ws.write(y,1,unicode(stu.fname + " " +stu.lname), myFontStyle)    #name
             ws.write(y,2,unicode(stu.placement), myFontStyle)                #placement
-            ws.write(y,3,unicode(stu.placement.train_line), myFontStyle)    #train line
+            ws.write(y,3,unicode(stu.placement.travel_route), myFontStyle)    #train line
             ws.write(y,4,unicode(stu.placement.stop_location), myFontStyle)    #stop Location
             ws.write(y,5,unicode(stu.placement.cra), myFontStyle)            #CRA
             ws.write(y,6," ", myFontStyle)                                    #blank for dress code
@@ -707,7 +707,7 @@ def report_builder_view(request):
                         for stu in StudentWorker.objects.filter(day="M", placement__pm_transport_group__location=pickup): 
                             sheet['$student'].append(unicode(stu))
                             sheet['$company'].append(unicode(stu.placement))
-                            sheet['$train'].append(unicode(stu.placement.train_line))
+                            sheet['$train'].append(unicode(stu.placement.travel_route))
                             sheet['$stop'].append(unicode(stu.placement.stop_location))
                             sheet['$cra'].append(unicode(stu.placement.cra))
                             try:

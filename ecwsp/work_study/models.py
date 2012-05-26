@@ -145,7 +145,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     funded_by = models.CharField(max_length=150, blank=True)
     cras = models.ManyToManyField(CraContact, blank=True, null=True)
     industry_type = models.CharField(max_length=100, blank=True)
-    train_line = models.CharField(max_length=50, blank=True)
+    travel_route = models.CharField(max_length=50,help_text="Train or Van route",blank=True,db_column="train_line")
     stop_location = models.CharField(max_length=150, blank=True)
     am_transport_group = models.ForeignKey(PickupLocation,db_column="dropoff_location_id",blank=True, null=True, related_name="workteamset_dropoff", help_text="Group for morning dropoff. Can be used for work study attendance")
     pm_transport_group = models.ForeignKey(PickupLocation,blank=True,db_column="pickup_location_id",null=True, help_text="Group for evening pickup. Can be used for work study attendance. If same as dropoff, you can just not use this field.")
@@ -174,6 +174,9 @@ class WorkTeam(models.Model, CustomFieldModel):
     @property
     def pickup_location(self):
         return self.pm_transport_group
+    @property
+    def train_line(self):
+        return self.travel_route
     
     def save(self, *args, **kwargs):
         if self.use_google_maps:
