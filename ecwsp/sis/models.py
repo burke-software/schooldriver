@@ -393,9 +393,9 @@ class Student(MdlUser, CustomFieldModel):
     @property
     def phone(self):
         try:
-            parent = self.emergency_contacts.order_by('primary_contact')[0]
+            parent = self.emergency_contacts.order_by('-primary_contact')[0]
             return parent.emergencycontactnumber_set.all()[0].number
-        except:
+        except IndexError:
             return None
     
     @property
