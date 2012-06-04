@@ -72,7 +72,7 @@
         <tr><td class="thing"> Parent/Guardian </td><td> {{ student.parent_guardian }} </td></tr>
         <tr><td class="thing"> Address </td><td> {{ student.street }} <br /> {{ student.city }}, {{ student.state }} {{ student.zip }} </td></tr>
         <tr><td class="thing"> Parent E-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
-        <tr><td class="thing"> Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
+        <tr><td class="thing"> Student Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
     </table>
         
     <div class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)">Additional Information</a>

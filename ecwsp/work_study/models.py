@@ -113,6 +113,14 @@ class Company(models.Model):
     def __unicode__(self):
         return unicode(self.name)
     
+    def fte(self):
+        try:
+            noStudents = StudentWorker.objects.filter(placement__company=self,inactive=False).count()
+            student_fte = Configuration.objects.get_or_create(name="Students per FTE")[0].value
+            return noStudents/float(student_fte)
+        except:
+            return None
+    
     class Meta:
         verbose_name_plural = 'Companies'
         ordering = ('name',)
@@ -137,10 +145,10 @@ class WorkTeam(models.Model, CustomFieldModel):
     funded_by = models.CharField(max_length=150, blank=True)
     cras = models.ManyToManyField(CraContact, blank=True, null=True)
     industry_type = models.CharField(max_length=100, blank=True)
-    train_line = models.CharField(max_length=50, blank=True)
+    travel_route = models.CharField(max_length=50,help_text="Train or Van route",blank=True,db_column="train_line")
     stop_location = models.CharField(max_length=150, blank=True)
-    dropoff_location = models.ForeignKey(PickupLocation, blank=True, null=True, related_name="workteamset_dropoff", help_text="Group for morning dropoff. Can be used for work study attendance")
-    pickup_location = models.ForeignKey(PickupLocation, blank=True, null=True, help_text="Group for evening pickup. Can be used for work study attendance. If same as dropoff, you can just not use this field.")
+    am_transport_group = models.ForeignKey(PickupLocation,db_column="dropoff_location_id",blank=True, null=True, related_name="workteamset_dropoff", help_text="Group for morning dropoff. Can be used for work study attendance")
+    pm_transport_group = models.ForeignKey(PickupLocation,blank=True,db_column="pickup_location_id",null=True, help_text="Group for evening pickup. Can be used for work study attendance. If same as dropoff, you can just not use this field.")
     address = models.CharField(max_length=150, blank=True)
     city = models.CharField(max_length=150, blank=True)
     state = models.CharField(max_length=2, blank=True)
@@ -158,6 +166,17 @@ class WorkTeam(models.Model, CustomFieldModel):
     
     def __unicode__(self):
         return unicode(self.team_name)
+    
+    # Legacy compatibility
+    @property
+    def dropoff_location(self):
+        return self.am_transport_group
+    @property
+    def pickup_location(self):
+        return self.pm_transport_group
+    @property
+    def train_line(self):
+        return self.travel_route
     
     def save(self, *args, **kwargs):
         if self.use_google_maps:

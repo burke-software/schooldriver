@@ -417,6 +417,10 @@ class Importer:
         if sheet:
             inserted, updated = self.import_contract_information(sheet)
             msg += "%s contracts inserted, %s contracts updated <br/>" % (inserted, updated)
+        sheet = self.get_sheet_by_case_insensitive_name("student work history")
+        if sheet:
+            inserted, updated = self.import_student_work_history(sheet)
+            msg += "%s student work history records inserted, %s student work history records updated <br/>" % (inserted, updated)
         
         if msg == "":
             msg = "No files found. Check if sheets are named correctly. "
@@ -900,7 +904,6 @@ class Importer:
                     letter_grade = None
                     student = self.get_student(items)
                     course = None
-                    final = False
                     marking_period = None
                     override_final = False
                     comment = ""
@@ -1426,6 +1429,7 @@ class Importer:
                     items = zip(header, row)
                     created = False
                     model = None
+                    password = None
                     custom_fields = []
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
@@ -1522,6 +1526,8 @@ class Importer:
                                 work = value
                             elif name in ['parent number', 'parent 1 number', 'parent other number', 'parent 1 other number', 'parent phone', 'parent 1 phone', 'parent other phone', 'parent 1 other phone']:
                                 other = value
+                            elif name == "password":
+                                password = value
                                 
                             # Custom
                             elif name.split() and name.split()[0] == "custom":
@@ -1530,8 +1536,14 @@ class Importer:
                     if not model.username and model.fname and model.lname:
                         model.username = self.gen_username(model.fname, model.lname)
                     model.save()
+                    if password:
+                        user = User.objects.get(username = model.username)
+                        user.set_password(password)
+                        user.save()
+                        model.save()
                     for (custom_field, value) in custom_fields:
                         model.set_custom_value(custom_field, value)
+                    
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
@@ -1992,6 +2004,7 @@ class Importer:
                     items = zip(header, row)
                     model = None
                     created = False
+                    cra = None
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
@@ -2013,14 +2026,13 @@ class Importer:
                                 login.save()
                             elif name == "paying":
                                 if value == "Paying": model.paying = "P"
-                                elif value == "None-Paying": model.paying = "N"
+                                elif value == "Non-Paying": model.paying = "N"
                                 elif value == "Funded": model.paying = "F"
                                 else: model.paying = value
                             elif name == "funded_by" or name =="funded by":
                                 model.funded_by = value
                             elif name == "cra":
                                 cra, created = CraContact.objects.get_or_create(name=User.objects.get(username=value))
-                                model.cra = cra
                             elif name == "industry_type" or name == "industry type":
                                 model.industry_type = value
                             elif name == "train_line" or name == "train line":
@@ -2050,6 +2062,8 @@ class Importer:
                             elif name == "job_description" or name == "job description":
                                 model.job_description = value
                     model.save()
+                    if cra:
+                        model.cras.add(cra)
                     if created:
                         self.log_and_commit(model, addition=True)
                         inserted += 1
@@ -2060,7 +2074,6 @@ class Importer:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
-
 
     #@transaction\.commit_manually
     def import_company_contacts(self, sheet):
@@ -2122,7 +2135,7 @@ class Importer:
                             created = False
                         else:
                             model.fname =fname
-                            model.lanem = lname
+                            model.lname = lname
                     else:
                         model.fname = fname
                         model.lname = lname
@@ -2145,7 +2158,6 @@ class Importer:
                 x += 1
             
         return inserted, updated
-
 
     #@transaction\.commit_manually
     def import_student_workers(self, sheet):
@@ -2209,6 +2221,53 @@ class Importer:
                 x += 1
         return inserted, updated
 
+    def import_student_work_history(self, sheet):
+        #does not allow updates
+        from ecwsp.work_study.models import *
+        x, header, inserted, updated = self.import_prep(sheet)
+        while x < sheet.nrows:
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    model = CompanyHistory()
+                    try:
+                        student = self.get_student(items)
+                    except:
+                        student = None
+                    created = True
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if student:
+                                if not hasattr(student, 'studentworker'):
+                                    student.promote_to_worker()
+                                model.student = StudentWorker.objects.get(id=student.id)
+                                    
+                            else:
+                                if name == "student unique id" or name == "unique id":
+                                    model.student = StudentWorker(unique_id=value)
+                                elif name == "student username":
+                                    model.student = StudentWorker(username=value)
+                            if name =="placement" or name == "workteam":
+                                model.placement = WorkTeam.objects.get(team_name=value)
+                            elif name == "date" or name== "date left":
+                                model.date = self.convert_date(value)
+                            elif name == "fired":
+                                model.fired = self.determine_truth(value)
+                            
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
+                x += 1
+        return inserted, updated
 
     #@transaction\.commit_manually
     def import_contract_information(self, sheet):
@@ -2222,6 +2281,7 @@ class Importer:
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
+                    
                     created = True
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)

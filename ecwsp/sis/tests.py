@@ -126,7 +126,6 @@ class AttendanceTest(TestCase):
                 student=self.student,
                 course=self.course2,
                 marking_period=self.mp,
-                final=True,
             )
         grade.set_grade('50')
         grade.save()
@@ -134,7 +133,6 @@ class AttendanceTest(TestCase):
                 student=self.student,
                 course=self.course2,
                 marking_period=self.mp2,
-                final=True,
             )
         grade.set_grade('89.09')
         grade.save()
