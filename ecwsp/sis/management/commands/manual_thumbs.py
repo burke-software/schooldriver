@@ -16,12 +16,23 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         from ecwsp.sis.thumbs import generate_thumb
-        pictures = os.path.join(settings.MEDIA_ROOT,"student_pics/")
+        students = Student.objects.filter(pic__isnull=False)
         if options['format']:
             format = options ['format']
         else:
             format = 'jpeg'
-        for infile in pictures:
-            generate_thumb(infile, (70,65), format)
-            generate_thumb(infile, (530,400), format)
+        for student in students:
+            if student.pic != '':
+                generate_thumb(student.pic, (70,65), format)
+                generate_thumb(student.pic, (530,400), format)
+        #path = os.path.join(settings.MEDIA_ROOT,'student_pics/')
+        #pictures = glob.glob(os.path.join(path,'*.jpg'))
+        #
+        
+        #for infile in pictures:
+        #    print infile
+        #    #file = os.open(infile, os.O_RDWR)
+        #    generate_thumb(infile, (70,65), format)
+        #    generate_thumb(infile, (530,400), format)
+        #    #os.close(infile)
     
