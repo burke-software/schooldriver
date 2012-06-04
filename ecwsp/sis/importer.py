@@ -2006,6 +2006,7 @@ class Importer:
                     items = zip(header, row)
                     model = None
                     created = False
+                    cra = None
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
@@ -2034,7 +2035,6 @@ class Importer:
                                 model.funded_by = value
                             elif name == "cra":
                                 cra, created = CraContact.objects.get_or_create(name=User.objects.get(username=value))
-                                model.cra = cra
                             elif name == "industry_type" or name == "industry type":
                                 model.industry_type = value
                             elif name == "train_line" or name == "train line":
@@ -2064,6 +2064,8 @@ class Importer:
                             elif name == "job_description" or name == "job description":
                                 model.job_description = value
                     model.save()
+                    if cra:
+                        model.cras.add(cra)
                     if created:
                         self.log_and_commit(model, addition=True)
                         inserted += 1
