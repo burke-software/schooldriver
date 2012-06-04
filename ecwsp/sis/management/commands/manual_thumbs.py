@@ -19,6 +19,8 @@ class Command(BaseCommand):
         pictures = os.path.join(settings.MEDIA_ROOT,"student_pics/")
         if options['format']:
             format = options ['format']
+        else:
+            format = 'jpeg'
         for infile in pictures:
             generate_thumb(infile, (70,65), format)
             generate_thumb(infile, (530,400), format)
