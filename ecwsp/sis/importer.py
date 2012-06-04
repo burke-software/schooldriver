@@ -1469,6 +1469,8 @@ class Importer:
                                 model.fname = value
                             elif name == "last name" or name == "lname":
                                 model.lname = value
+                            elif name == "student e-mail" or name == "student email":
+                                model.email = value
                             elif name == "alert":
                                 model.alert = value
                             elif name == "grad date":
