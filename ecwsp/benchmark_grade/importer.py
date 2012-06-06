@@ -16,6 +16,7 @@
 #   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #   MA 02110-1301, USA.
 
+import logging
 from sis.importer import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.grades.models import Grade
@@ -79,16 +80,22 @@ class BenchmarkGradeImporter(Importer):
                 nrow += 1
                 continue
             current_standard = ''
+            last_mark_desc = ''
             ncol = 4
-            while ncol < sheet.ncols and ncol < 105: # stop before the hidden formulas
+            # 20120606 jnm: worksheets are now inconsistent. hidden formulas don't always start at column 105
+            # we'll get around this by assuming that each standard's last mark is called "Session"
+            while ncol < sheet.ncols:
                 standard_name = unicode(sheet.cell_value(3, ncol)).strip()
-                if len(standard_name) > 0:
-                    current_standard = standard_name
+                if last_mark_desc == 'Session': # we're either at a new standard or the last useful column of the sheet
+                    if len(standard_name) > 0: # ok, there's a new standard
+                        current_standard = standard_name
+                    else: # the rest of the sheet is 'logic' garbage
+                        break
+                markVal = sheet.cell_value(nrow, ncol)
+                last_mark_desc = mark_desc = unicode(sheet.cell_value(4, ncol)).strip()
                 if self._is_empty(sheet.cell_value(nrow, ncol)):
                     ncol += 1
                     continue
-                markVal = sheet.cell_value(nrow, ncol)
-                mark_desc = unicode(sheet.cell_value(4, ncol)).strip()
                 try:
                     category, trash = Category.objects.get_or_create(name="Standards")
                     item, trash = Item.objects.get_or_create(name=current_standard,
@@ -102,10 +109,10 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except:
-                    print >> sys.stderr, str(sys.exc_info())
+                    logging.error('benchmark_grade import failure', exc_info=True)
                 ncol += 1
             nrow += 1
-                
+
         # import all data from the Engagement sheet
 
         sheet = self.book.sheet_by_name('Engagement')
