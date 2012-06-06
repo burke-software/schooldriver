@@ -117,13 +117,13 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
             user.save()
     
     search_fields = ['company__name', 'team_name', 'address',]
-    list_filter = ['inactive', 'pickup_location', 'train_line', 'industry_type', 'paying','cras']
+    list_filter = ['inactive', 'pm_transport_group', 'travel_route', 'industry_type', 'paying','cras']
     fieldsets = [
-        (None, {'fields': [('company', 'inactive'), 'team_name', 'job_description', 'company_description', 'login', ('paying', 'funded_by'), 'industry_type', 'cras', ('dropoff_location', 'pickup_location'), 'contacts']}),
-        ("Location", {'fields': ['address', ('city', 'state'), 'zip',('train_line', 'stop_location'), ('map', 'use_google_maps'), 'directions_to', 'directions_pickup'], 'classes': ['collapse']}),
+        (None, {'fields': [('company', 'inactive'), 'team_name', 'job_description', 'company_description', 'login', ('paying', 'funded_by'), 'industry_type', 'cras', ('am_transport_group', 'pm_transport_group'), 'contacts']}),
+        ("Location", {'fields': ['address', ('city', 'state'), 'zip',('travel_route', 'stop_location'), ('map', 'use_google_maps'), 'directions_to', 'directions_pickup'], 'classes': ['collapse']}),
     ]
     filter_horizontal = ('contacts', 'login')
-    list_display = ('team_name', 'company', 'stop_location', 'pickup_location', 'fte', 'paying', 'cra')
+    list_display = ('team_name', 'company', 'stop_location', 'am_transport_group', 'fte', 'paying', 'cra')
 admin.site.register(WorkTeam, WorkTeamAdmin)
 
 class CraContactAdmin(admin.ModelAdmin):
