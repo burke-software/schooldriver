@@ -86,11 +86,11 @@ class BenchmarkGradeImporter(Importer):
             # we'll get around this by assuming that each standard's last mark is called "Session"
             while ncol < sheet.ncols:
                 standard_name = unicode(sheet.cell_value(3, ncol)).strip()
-                if last_mark_desc == 'Session': # we're either at a new standard or the last useful column of the sheet
-                    if len(standard_name) > 0: # ok, there's a new standard
-                        current_standard = standard_name
-                    else: # the rest of the sheet is 'logic' garbage
-                        break
+                if len(standard_name) > 0: # yay, a new standard
+                    current_standard = standard_name
+                elif last_mark_desc == 'Session': # ruh roh, there should've been a new standard but wasn't
+                    # the rest of the sheet is 'logic' garbage
+                    break
                 markVal = sheet.cell_value(nrow, ncol)
                 last_mark_desc = mark_desc = unicode(sheet.cell_value(4, ncol)).strip()
                 if self._is_empty(sheet.cell_value(nrow, ncol)):
@@ -109,7 +109,7 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except:
-                    logging.error('benchmark_grade import failure', exc_info=True)
+                    logging.error('benchmark_grade import failure (standards sheet)', exc_info=True)
                 ncol += 1
             nrow += 1
 
@@ -144,7 +144,7 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except:
-                    print >> sys.stderr, str(sys.exc_info())
+                    logging.error('benchmark_grade import failure (engagement sheet)', exc_info=True)
                 ncol += 1
             nrow += 1
 
@@ -179,7 +179,7 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except:
-                    print >> sys.stderr, str(sys.exc_info())
+                    logging.error('benchmark_grade import failure (organization sheet)', exc_info=True)
                 ncol += 1
             nrow += 1
         
@@ -212,7 +212,7 @@ class BenchmarkGradeImporter(Importer):
                         mark.save()
                         mark_count += 1
                     except:
-                        print >> sys.stderr, str(sys.exc_info())
+                        logging.error('benchmark_grade import failure (daily practice sheet)', exc_info=True)
                     ncol += 1
                 nrow += 1
         
@@ -243,7 +243,7 @@ class BenchmarkGradeImporter(Importer):
                         mark.save()
                         mark_count += 1
                     except:
-                        print >> sys.stderr, str(sys.exc_info())
+                        logging.error('benchmark_grade import failure (precision and accuracy sheet)', exc_info=True)
                     ncol += 1
                 nrow += 1
             
