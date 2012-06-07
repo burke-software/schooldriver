@@ -506,6 +506,7 @@ class CompanyHistory(models.Model):
     class Meta:
         verbose_name_plural = "Companies: history"
         ordering = ('-date',)
+        unique_together = ('student', 'placement', 'date')
 
 
 class PresetComment(models.Model):

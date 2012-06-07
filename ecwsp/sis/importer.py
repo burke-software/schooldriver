@@ -2258,7 +2258,7 @@ class Importer:
                                 model.date = self.convert_date(value)
                             elif name == "fired":
                                 model.fired = self.determine_truth(value)
-                            
+                    model.full_clean()
                     model.save()
                     if created:
                         self.log_and_commit(model, addition=True)
