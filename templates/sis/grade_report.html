@@ -40,7 +40,6 @@
 		{{ form.include_deleted.label }} {{ form.include_deleted }} {{ form.include_deleted.errors }}<br/>
 		{{ form.all_students.label }} {{ form.all_students }} {{ form.all_students.errors }}
 		<br/>{{ form.student.label }} {{ form.student }} {{ form.student.errors }}
-		<input type="submit" name="date_based_gpa_report" value="GPAs per year"/>
 	    </td></tr><tr><td>
 		<a href="#" id="toggle_filter_options" onclick='options_toggle(id)'>Show filter and sort options</a>
 		<div id="filter_options" style="display: none">
@@ -52,12 +51,18 @@
 		{{ form.template.label }} {{ form.template }} {{ form.template.errors }}
 		<br/>
 		{{ form.upload_template.label }} {{ form.upload_template }} {{ form.upload_template.help_text }} {{ form.upload_template.errors }}
-	    <br/>
-	    {{ form.format.label }} {{ form.format }} {{ form.format.errors }}
+		<br/>
+		{{ form.format.label }} {{ form.format }} {{ form.format.errors }}
+		<input type="submit" name="student_grade" value="Generate Template Report"/>
 	    </td>
 	    </tr>
+	    <tr>
+		<td>
+		    <input type="submit" name="date_based_gpa_report" value="GPAs per year"/>
+		    <input type="submit" name="fail_report" value="Student failures by department"/>
+		</td>
+	    </tr>
 	</table>
-	<input type="submit" name="student_grade"/>
     </fieldset>
 </form>
 <br/>

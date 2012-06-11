@@ -454,9 +454,35 @@ def grade_report(request):
                     data.append(row)
                 report.addSheet(data, titles=titles, heading="Class Dept aggregate")
                 return report.finish()
-        if 'date_based_gpa_report' in request.POST:
+        elif 'fail_report' in request.POST:
             input = request.POST.copy()
-            input['template'] = 1
+            input['template'] = 1  # Validation hack
+            form = StudentGradeReportWriterForm(input)
+            if form.is_valid():
+                data = form.cleaned_data
+                try:
+                    students = form.get_students(data)
+                except:
+                    students = Student.objects.filter(inactive = False).order_by('-year__id')
+                titles = ['']
+                departments = Department.objects.filter(course__courseenrollment__user__inactive=False).distinct()
+                
+                for department in departments:
+                    titles += [department]
+                titles += ['Total']
+                
+                data = []
+                for student in students:
+                    row = [student]
+                    for department in departments:
+                        row += ['x']
+                        
+                    data += [row]
+                report = xlsReport(data, titles, "fail_report.xls", heading="Failure Report")
+                return report.finish()
+        elif 'date_based_gpa_report' in request.POST:
+            input = request.POST.copy()
+            input['template'] = 1 # Validation hack
             form = StudentGradeReportWriterForm(input, request.FILES)
             if form.is_valid():
                 data = form.cleaned_data
