@@ -403,6 +403,8 @@ class StudentWorker(Student):
             return ""
     company.allow_tags = True
     
+    
+    
     def get_day_as_iso_date(self):
         if self.day == 'M':
             return 1
@@ -423,6 +425,16 @@ class StudentWorker(Student):
         if contacts:
             return contacts[0]
         return None
+    
+    def contact(self):
+        contact = self.get_contact
+        try:
+            urlRes = urlresolvers.reverse('admin:work_study_contact_change', args = (contact.id,))
+            print "id: ", contact.id, ", contact: ", contact
+            return '<a href="' +urlRes + '">' + str(contact)
+        except:
+            return ""
+    contact.allow_tags = True
     
     def edit_link(self):
         try:
