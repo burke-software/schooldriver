@@ -59,7 +59,6 @@
 	    <tr>
 		<td>
 		    <input type="submit" name="date_based_gpa_report" value="GPAs per year"/>
-		    <input type="submit" name="fail_report" value="Student failures by department"/>
 		</td>
 	    </tr>
 	</table>
@@ -69,11 +68,13 @@
 
 <form action="" method="post" enctype="multipart/form-data">
     <fieldset style="padding:5px;">
-	<legend> Grade Aggregate </legend>
-	Aggreated data on teachers and year.<br/>
+	<legend> Grade Aggregate Reports </legend>
 	{{ mp_form }}
 	<br/>
-	<input type="submit" name="aggregate_grade_report"/>
+	<input type="submit" name="aggregate_grade_report" value="Aggregated data on teachers and year"/>
+	{% if 'ecwsp.grades' in settings.INSTALLED_APPS %}
+	    <input type="submit" name="fail_report" value="Student failures by department"/>
+	{% endif %}
     </fieldset>
 </form>
 {% endblock %}

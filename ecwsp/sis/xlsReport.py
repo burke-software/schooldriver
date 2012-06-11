@@ -16,6 +16,14 @@ def is_number(x):
         return True
     except ValueError:
         return False
+    
+def i_to_column_letter(i):
+    """ Convert iterator into column letter (a,b,c.....aa,ab,etc)
+    1 = a
+    2 = b
+    """
+    i += 96
+    return chr(i)
 
 class xlsReport:
     # Generate a generic xls report based on given data in array.
