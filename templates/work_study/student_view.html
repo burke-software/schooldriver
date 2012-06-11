@@ -1,59 +1,36 @@
 {% extends "base.html" %}
 
-
-
-{% block css %}
-	tr:nth-child(odd)    { background-color:#eee; }
-	tr:nth-child(even)    { background-color:#fff; }
-	
-	table.border{
-		width: 100%; 
-		margin:auto; 
-		border-collapse: collapse;
-		border: 3px solid #666666; 
-	}
-	td.border {
-		padding: 2px;
-		padding-left: 6px;
-		border: 2px solid #666666;
-	}
-	td.right {
-		width: 176px; 
-	}	
-
-	a {
-		color: #339;
-		text-decoration: none;
-	}
-	a:hover {
-		text-decoration: underline;
-	}
-{% endblock %}
-
 {% block content %}
-	<h2> Time Cards for {{ student.fname }} {{ student.lname }} </h2>
-        <table class="border">
-            <tr>
-                <th>Date</th>
-		<th>Company</th>
-                <th>Hours</th>
-		<th>Approved?</th>
-                <th>For Pay?</th>
-                <th>Make Up?</th>
-		<th></th>
-            </tr>
+	<h1>Submitted Time Cards</h1>
+        <div class="subhead-text">
+	    View past time cards and edit time cards that have not yet been approved.
+	</div>
+	
+	<table class="submitted-timecards">
+	<tbody>
+
+	    <tr>
+		<th class="submitted-date">Date</th>
+		<th class="submitted-company">Company</th>
+		<th class="submitted-hours">Hours</th>
+		<th class="submitted-approved">Approved</th>
+		<th class="submitted-pay">For Pay?</th>
+		<th class="submitted-makeup">Make Up?</th>
+		<th class="submitted-edit"></th>
+	    </tr>
+
             {% for timesheet in timeSheets %}
-               <tr>
-                   <td class="border" style="text-align:center;"> {{ timesheet.date }} </td>
-		   <td class="border" style="text-align:center;"> {{ timesheet.company }} </td>
-                   <td class="border" style="text-align:center;"> {{ timesheet.hours }} </td>
-		   <td class="border" style="text-align:center;"> {{ timesheet.approved|yesno }} </td>
-                   <td class="border" style="text-align:center;"> {{ timesheet.for_pay|yesno }} </td>
-                   <td class="border" style="text-align:center;"> {{ timesheet.make_up|yesno }} </td>
+               <tr class="submitted-row{% cycle '1' '2' %}">
+                   <td> {{ timesheet.date }} </td>
+		   <td> {{ timesheet.company }} </td>
+                   <td> {{ timesheet.hours }} </td>
+		   <td> {{ timesheet.approved|yesno }} </td>
+                   <td> {{ timesheet.for_pay|yesno }} </td>
+                   <td> {{ timesheet.make_up|yesno }} </td>
 		   {% if timesheet.approved %}
-			<td class="border" style="text-align:center;"> </td>
+			<td> </td>
 		   {% else %}
-			<td class="border" style="text-align:center;"> <a href="{% url ecwsp.work_study.views.student_edit timesheet.id %}"> Edit </a></td>
+			<td> <span class="submitted-edit-icon"> <a href="{% url ecwsp.work_study.views.student_edit timesheet.id %}"> </a></span></td>
 		   {% endif %}
                 </tr>
             {% endfor %}

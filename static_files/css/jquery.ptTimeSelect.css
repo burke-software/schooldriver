@@ -1,0 +1,85 @@
+/**
+ * FILE: jquery.ptTileSelect.css
+ * 	Default style for the timeselect container.
+ * 
+ *  LAST UPDATED:
+ * 
+ * 		- $Date: 2009/04/12 20:23:02 $
+ * 		- $Author: paulinho4u $
+ * 		- $Revision: 1.1 $
+ */
+#ptTimeSelectCntr {
+	width: 250px; 
+	font-size: .9em;
+	position: absolute;
+	z-index: 10;
+	display: none;
+}
+#ptTimeSelectCntr .ui-widget{
+	padding: .2em;
+}
+#ptTimeSelectCntr .ui-widget-header {
+	padding: .2em;
+}
+#ptTimeSelectCntr #ptTimeSelectUserTime {
+	font-size: larger;
+	padding: .2em;
+	padding-left: 1em;
+	text-align: center;
+}
+#ptTimeSelectCntr {
+	padding: .2em;
+}
+
+#ptTimeSelectCloseCntr { display: none; }
+
+#ptTimeSelectCloseCntr a {
+	display: block;
+	padding: .2em;
+}
+#ptTimeSelectCntr .ui-widget-content {
+	 margin-top: .1em;
+	 margin-bottom: .1em; 
+	 padding: .2em;	
+}
+#ptTimeSelectCntr .ui-widget.ui-widget-content {
+	margin-top: 0;
+}
+#ptTimeSelectCntr .ptTimeSelectLeftPane.ui-widget-content {
+	text-transform: uppercase;
+	font-size: 0.8em;
+	border-right: 0px solid #CCC;
+}
+#ptTimeSelectCntr .ptTimeSelectRightPane.ui-widget-content {
+	text-transform: uppercase;
+	font-size: 0.8em;
+}
+#ptTimeSelectCntr .ptTimeSelectHrCntr a,
+#ptTimeSelectCntr .ptTimeSelectMinCntr a {
+	float: left;
+	padding: .2em;
+	width: 1.9em;
+	margin: 1px;
+	text-align: center;
+	text-decoration: none;
+}
+#ptTimeSelectCntr .ptTimeSelectHrAmPmCntr a {
+	text-align: center;
+	margin: 1px;
+}
+#ptTimeSelectCntr .ptTimeSelectTimeLabelsCntr {
+	font-weight: bold;
+	font-size: .9em;
+}
+#ptTimeSelectCntr #ptTimeSelectSetButton {
+	padding-top: .2em;
+	padding-bottom: .2em;
+}
+#ptTimeSelectCntr #ptTimeSelectSetButton a {
+	padding: .2em;
+	color: #333;
+	font-weight: 700;
+	width: 30%;
+	text-align: center;
+	float: right;
+}

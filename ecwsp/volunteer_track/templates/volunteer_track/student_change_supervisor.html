@@ -1,16 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2> Select Supervisor at {{ site }} </h2>
-You may choose an existing supervisor
+<h1> Select Supervisor at {{ site }} </h1>
+<div class="subhead-text">You may choose an existing supervisor</div>
 <form method="post">
-    <table>
-        {{ select_supervisor_form }}
-    </table>
+    <p>{{ select_supervisor_form }}</p>
     Or add a new one
-    <table>
+    <div>
         {{ supervisor_form }}
-    </table>
-    <input type="submit"/>
+    </div>
+    <input type="submit" class="button gray"/>
 </form>
 {% endblock %}

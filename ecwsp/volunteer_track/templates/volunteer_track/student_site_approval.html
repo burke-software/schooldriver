@@ -1,50 +1,117 @@
 {% extends "base.html" %}
 
-{% block nav %}
-	
-{% endblock %}
-
-{% block css %}
-<style type="text/css">
-textarea {
-    height: 5em;
-}
-</style>
-{% endblock %}
-
-{% block head %}
-	    
-{% endblock %}
-
 {% block content %}
 
-<h2> Choose Existing Site </h2>
+
+<h1>Volunteer (choose an option)</h1>
+
+
+<div class="volunteer-left">
+<div class="subhead-text">
+I want to volunteer at an <strong>existing site</strong>.
+</div>
+
+
 <form method="post">
-<table>
-{{ existing_site_form }}
-</table>
-<input type="submit" name="existing_site_submit" value="Get Existing Site Approval" />
+    <div class="volunteer-field">
+		    {{ existing_site_form.site.label }}
+		    {{ existing_site_form.site }}
+		    {{ existing_site_form.site.errors }}
+    </div>
+    
+    <div class="volunteer-field">
+		    <label for="id_job_description" class="login">Job Description</label>
+		    <textarea id="id_job_description" name="job_description" class="volunteer-description"></textarea>
+    </div>
+    
+    <div class="clear"></div>
+    
+    <div class="submitwrap">
+	<input type="submit" name="existing_site_submit" class="button gray" value="Submit for Approval">
+    </div>
 </form>
 
-<br/><br/><h2>OR</h2><br/><br/>
 
-<h2> Enter a new site </h2>
-<form method="post">
-<fieldset>
-    <legend>Volunteer Site</legend>
-    <table>
-    {{ new_site_form }}
-    {{ job_desc }}
-    </table>
-</fieldset>
-<fieldset>
-    <legend>Supervisor</legend>
-    <table>
-    {{ supervisor_form }}
-    </table>
-</fieldset>
+</div><!-- .LEFT COLUMN -->
 
-<input type="submit" name="new_site_submit" value="Get New Site Approval" />
+<div class="volunteer-right">
+<div class="subhead-text">
+I want to volunteer at a <strong>new site</strong>.
+</div>
+
+<form method="post" action="">
+
+<div class="volunteer-field">
+		<label for="id_{{ new_site_form.site_name.html_name }}" class="login">Site Name</label>
+		<input type="text" id="id_{{ new_site_form.site_name.html_name }}" name="{{ new_site_form.site_name.html_name }}" value="{{ new_site_form.site_name.value|default_if_none:"" }}" class="volunteer">
+		{{ new_site_form.site_name.errors }}
+</div>
+
+<div class="volunteer-field">
+		<label for="id_{{ new_site_form.site_address.html_name }}" class="login">Address</label>
+		<input type="text" id="id_{{ new_site_form.site_address.html_name }}" name="{{ new_site_form.site_address.html_name }}" value="{{ new_site_form.site_address.value|default_if_none:"" }}" class="volunteer">
+		{{ new_site_form.site_address.errors }}
+</div>
+
+
+<div class="volunteer-city">
+		<label for="id_{{ new_site_form.site_city.html_name }}" class="login">City</label>
+		<input type="text" id="id_{{ new_site_form.site_city.html_name }}" name="{{ new_site_form.site_city.html_name }}" value="{{ new_site_form.site_city.value|default_if_none:"" }}" class="volunteer">
+		{{ new_site_form.site_city.errors }}
+</div>
+<div class="volunteer-state">
+		<label for="id_{{ new_site_form.site_state.html_name }}" class="login">State</label>
+		<input type="text" id="id_{{ new_site_form.site_state.html_name }}" name="{{ new_site_form.site_state.html_name }}" value="{{ new_site_form.site_state.value|default_if_none:"" }}" class="volunteer">
+		{{ new_site_form.site_state.errors }}
+</div>
+<div class="volunteer-zip">
+		<label for="id_{{ new_site_form.site_zip.html_name }}" class="login">Zip</label>
+		<input type="text" id="id_{{ new_site_form.site_zip.html_name }}" name="{{ new_site_form.site_zip.html_name }}" value="{{ new_site_form.site_zip.value|default_if_none:"" }}" class="volunteer">
+		{{ new_site_form.site_zip.errors }}
+</div>
+
+
+<div class="volunteer-field">
+		<label for="id_{{ new_site_form.job_description.html_name }}" class="login">Job Description</label>
+		<textarea id="id_{{ new_site_form.job_description.html_name }}" name="{{ new_site_form.job_description.html_name }}" class="volunteer-description">{{ new_site_form.job_description.value|default_if_none:"" }}</textarea>
+		{{ new_site_form.job_description.errors }}
+</div>
+
+<div class="clear"></div>
+<div class="spacer-3"></div>
+
+
+<div class="volunteer-field">
+		<label for="id_{{ supervisor_form.name.html_name }}" class="login">Supervisor Name</label>
+		<input type="text" id="id_{{ supervisor_form.name.html_name }}" name="{{ supervisor_form.name.html_name }}" value="{{ supervisor_form.name.value|default_if_none:"" }}" class="volunteer">
+		{{ supervisor_form.name.errors }}
+</div>
+
+<div class="volunteer-superphone">
+		<label for="id_{{ supervisor_form.phone.html_name }}" class="login">Phone</label>
+		<input type="text" id="id_{{ supervisor_form.phone.html_name }}" name="{{ supervisor_form.phone.html_name }}" value="{{ supervisor_form.phone.value|default_if_none:"" }}" class="volunteer">
+		{{ supervisor_form.phone.errors }}
+</div>
+<div class="volunteer-superemail">
+		<label for="id_{{ supervisor_form.email.html_name }}" class="login">Email</label>
+		<input type="text" id="id_{{ supervisor_form.email.html_name }}" name="{{ supervisor_form.email.html_name }}" value="{{ supervisor_form.email.value|default_if_none:"" }}" class="volunteer">
+		{{ supervisor_form.email.errors }}
+</div>
+
+<div class="clear"></div>
+
+<div class="submitwrap">
+<input type="submit" class="button gray" name="new_site_submit" value="Submit New Site for Approval">
+</div>
+
 </form>
 
+
+</div><!-- .RIGHT COLUMN -->
+
+
+<div class="clear"></div>
+
+
+<div class="spacer-2"></div>
 {% endblock %}

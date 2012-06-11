@@ -288,7 +288,8 @@ def student_thumbnail(request, year):
 
 def logout_view(request):
     logout(request)
-    return render_to_response('base.html', {'msg': "You have been logged out.",}, RequestContext(request, {}))
+    msg = mark_safe('You have been logged out. Click <a href="/">here</a> to log back in.')
+    return render_to_response('base.html', {'msg': msg,}, RequestContext(request, {}))
 
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')

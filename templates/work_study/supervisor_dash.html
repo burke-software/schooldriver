@@ -1,132 +1,77 @@
 {% extends "base.html" %}
 
-
-
-{% block css %}
-	tr:nth-child(odd)    { background-color:#eee; }
-	tr:nth-child(even)    { background-color:#fff; }
-	
-	table.border{
-		width: 100%; 
-		margin:auto; 
-		border-collapse: collapse;
-		border: 3px solid #666666; 
-	}
-	td.border {
-		padding: 2px;
-		padding-left: 6px;
-		border: 2px solid #666666;
-	}
-	td.right {
-		width: 176px; 
-	}	
-
-	a {
-		color: #339;
-		text-decoration: none;
-	}
-	a:hover {
-		text-decoration: underline;
-	}
-	
-	.button {
-		display: inline-block;
-		zoom: 1; /* zoom and *display = ie7 hack for display:inline-block */
-		*display: inline;
-		vertical-align: baseline;
-		margin: 0 2px;
-		outline: none;
-		cursor: pointer;
-		text-align: center;
-		text-decoration: none;
-		font: 14px/100% Arial, Helvetica, sans-serif;
-		padding: .5em 1em .55em;
-		text-shadow: 0 1px 1px rgba(0,0,0,.3);
-		-webkit-border-radius: .5em; 
-		-moz-border-radius: .5em;
-		border-radius: .5em;
-		-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2);
-		-moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
-		box-shadow: 0 1px 2px rgba(0,0,0,.2);
-	}
-	.button:hover {
-		text-decoration: none;
-	}
-	.button:active {
-		position: relative;
-		top: 1px;
-	}
-	
-	.blue {
-		color: #d9eef7;
-		border: solid 1px #0076a3;
-		background: #0095cd;
-		background: -webkit-gradient(linear, left top, left bottom, from(#00adee), to(#0078a5));
-		background: -moz-linear-gradient(top,  #00adee,  #0078a5);
-		filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00adee', endColorstr='#0078a5');
-	}
-	.blue:hover {
-		background: #007ead;
-		background: -webkit-gradient(linear, left top, left bottom, from(#0095cc), to(#00678e));
-		background: -moz-linear-gradient(top,  #0095cc,  #00678e);
-		filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#0095cc', endColorstr='#00678e');
-	}
-	.blue:active {
-		color: #80bed6;
-		background: -webkit-gradient(linear, left top, left bottom, from(#0078a5), to(#00adee));
-		background: -moz-linear-gradient(top,  #0078a5,  #00adee);
-		filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#0078a5', endColorstr='#00adee');
-	}
-
-{% endblock %}
-
 {% block content %}
-	<h2>{{ comp.company_name|capfirst }} Supervisor Dashboard </h2>
-	
-	<h3>Timecards to Approve</h3>
-    <form method="post" action="">
-        <table class="border">
+{{ msg }}
+<h1>Supervisor Dashboard</h1>
+
+<div class="subhead-text">
+Approval Queue
+</div>
+
+    <form method="post" action="/work_study/supervisor/">
+        <table class="submitted-timecards">
             <tr>
-                <th>Student Name</th>
-                <th>Date</th>
-                <th>Hours</th>
-                <th>Action</th>
-                <th>Mass Approve</th>
-            </tr>
+		<th class="supervisor-student">Student Name</th>
+		<th class="supervisor-date">Date</th>
+		<th class="supervisor-hours">Hours</th>
+		<th class="supervisor-action">View / Delete</th>
+		<th class="supervisor-approve">Mass Approve</th>
+	</tr>
             {% for timesheet in timeSheets %}
-               <tr>
-                   <td class="border"> {{ timesheet.student.lname }}, {{ timesheet.student.fname }} </td>
-                   <td class="border"> {{ timesheet.date }} </td>
-                   <td class="border"> {{ timesheet.hours }} </td>
-                   <td class="border" style="text-align:center;"> <a class="button blue" href="{% url ecwsp.work_study.views.approve %}?key={{ timesheet.supervisor_key }}">View and Approve</a><a class="button blue" href="/work_study/supervisor/delete?key={{ timesheet.supervisor_key }}">Delete</a> </td>
-                   <td class="border" style="text-align:center; width:160px;"> <input type="checkbox" name="approved_ckbox{{ timesheet.id }}" value="{{ timesheet.id }}" /> </td>
+               <tr class="submitted-row{% cycle '1' '2' %}">
+                   <td > {{ timesheet.student.lname }}, {{ timesheet.student.fname }} </td>
+                   <td> {{ timesheet.date }} </td>
+                   <td> {{ timesheet.hours }} </td>
+                   <td>
+		    <span class="supervisor-view-icon">
+			<a href="{% url ecwsp.work_study.views.approve %}?key={{ timesheet.supervisor_key }}"></a>
+		    </span>
+		    <span class="supervisor-delete-icon">
+			<a href="/work_study/supervisor/delete?key={{ timesheet.supervisor_key }}"></a>
+		    </span>
+		   </td>
+                   <td> <input type="checkbox" name="approved_ckbox{{ timesheet.id }}" value="{{ timesheet.id }}" /> </td>
                </tr>
             {% endfor %}
         </table>
-        {% if timeSheets %}
-            <p style="text-align:right;"> <input type="submit" class="button blue" name="mass_approve" value="Approve Without Reviewing" /> </p>
-        {% endif %}
-    </form>
-	<br/>
-    <a href="{% url ecwsp.work_study.views.supervisor_view %}" >View Approved Timecards</a>
-    <br/>
-    <br/>
-	<h3>Create New Timecard</h3>
-	<table class="border">
-		<tr>
-			<th>Student Name</th>
-			<th>Work Day</th>
-			<th>Supervisor (click to change)</th>
-			<th>Time Card</th>
-		</tr>
-		{% for student in students %}
-		   <tr>
-			   <td class="border"> {{ student.lname }}, {{ student.fname }} </td>
-			   <td class="border"> {{ student.get_day_display }} </td>
-			   <td class="border"> <a href="{% url ecwsp.work_study.views.change_supervisor student.id %}">{{ student.primary_contact }}</a></td>
-			   <td class="border right" style="text-align:center;"> <a class="button blue" href="{% url ecwsp.work_study.views.create_time_card student.id %}">Create Time Card</a> </td>
-		   </tr>
-		{% endfor %}
-   </table>
+        <div class="spacer-3"></div>
+
+<div class="supervisor-viewapproved">
+<a href="/work_study/supervisor/view/" class="button gray">View Approved Time Cards</a>
+</div>
+<div class="supervisor-submitwithoutapproval">
+    {% if timeSheets %}
+	<input type="submit" class="button gray" name="mass_approve" value="Approve Without Reviewing">
+    {% endif %}
+</div>
+
+</form>
+
+<div class="clear"></div>
+
+<div class="spacer-3"></div>
+
+
+<div class="subhead-text">
+Create New Timecard
+</div>
+    <table class="submitted-timecards">
+	<tbody>
+	    <tr>
+		    <th class="supervisor-create-student">Student Name</th>
+		    <th class="supervisor-create-workday">Work Day</th>
+		    <th class="supervisor-create-supervisor">Supervisor (click to change)</th>
+		    <th class="supervisor-create-timecard">Time Card</th>
+	    </tr>
+	    {% for student in students %}
+	       <tr class="submitted-row{% cycle '1' '2' %}"">
+		       <td> {{ student.lname }}, {{ student.fname }} </td>
+		       <td> {{ student.get_day_display }} </td>
+		       <td> <a href="{% url ecwsp.work_study.views.change_supervisor student.id %}">{{ student.primary_contact }}</a></td>
+		       <td><span class="supervisor-newcard-icon"><a href="{% url ecwsp.work_study.views.create_time_card student.id %}"></a></span></td>
+	       </tr>
+	    {% endfor %}
+	</tbody>
+    </table>
 {% endblock %}
 

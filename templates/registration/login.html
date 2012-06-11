@@ -1,31 +1,56 @@
 {% extends "base.html" %}
 
-{% block nav %}
-<li><a href="/admin/">Admin Interface</a></li>
-{% endblock %}
-
 {% block content %}
+<h1>Hello.</h1>
 
-    {{ form.non_field_errors }}
-	<br/>
-    <form method="post" action="" style="text-align: center">
-    {% csrf_token %}
-    <table style="margin-left: auto; margin-right: auto;">
-    <tr>
-		Please Log In
-        <td>{{ form.username.label_tag }}</td>
-        <td>{{ form.username }} {{ form.username.errors }}</td>
-        
-    </tr>
-    <tr>
-        <td>{{ form.password.label_tag }}</td>
-        <td>{{ form.password }} {{ form.password.errors }}</td>
-        
-    </tr>
-    </table>
+<div class="subhead-text">
+<strong>Welcome to SWoRD, the Student Worker Relational Database.</strong><br />
+Please log in below.
+</div>
 
-    <input type="submit" value="login" />
-    <input type="hidden" name="next" value="{{ next }}" />
-    </form>
 
+<form method="post" action="">
+{{ form.non_field_errors }}    
+{% csrf_token %}
+
+
+
+
+<div class="username-field">
+		<label for="id_username" class="login">Username</label>
+		<input type="text" id="id_{{ form.username.html_name }}" name="{{ form.username.html_name }}" class="username">
+</div>
+
+<div class="clear"></div>
+
+<div class="password-login">
+	<div class="inputfield">
+			<label for="id_password" class="login">Password</label>
+			<input type="password" id="id_{{ form.password.html_name }}" name="{{ form.password.html_name }}" class="password">
+	</div>
+	
+	<div class="loginbuttonwrap">
+		<input type="submit" class="button gray" value="Log In">
+	</div>
+</div>
+
+
+
+
+
+
+    
+<input type="hidden" name="next" value="{{ next }}" />
+</form>
+
+<div class="clear"></div>
+
+<!--[if IE 7]>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<![endif]-->
+
+<div class="subhead-text">
+Switch to <a href="/admin/">Admin Interface</a>.
+</div>
 {% endblock %}

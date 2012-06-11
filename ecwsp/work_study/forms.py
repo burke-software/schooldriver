@@ -121,12 +121,12 @@ class TimeSheetForm(forms.ModelForm):
         model = TimeSheet
 
     my_supervisor = forms.ModelChoiceField(queryset=Contact.objects.all(), required=False)
-    date = forms.DateTimeField(widget=adminwidgets.AdminDateWidget()) 
-    time_in = forms.TimeField()
-    time_lunch = forms.TimeField()
-    time_lunch_return = forms.TimeField()
-    time_out = forms.TimeField()
-    performance = forms.ModelChoiceField(queryset=TimeSheetPerformanceChoice.objects.all(), required=False, empty_label=None, widget=forms.RadioSelect(renderer=TdRadioRenderer))
+    date = forms.DateTimeField(input_formats=settings.DATE_INPUT_FORMATS) 
+    time_in = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
+    time_lunch = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
+    time_lunch_return = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
+    time_out = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
+    performance = forms.ModelChoiceField(queryset=TimeSheetPerformanceChoice.objects.all(),required=False,widget=forms.Select(attrs={'class':'timecard-performance'}))
     edit = forms.BooleanField(required=False)
 
     def set_supers(self, qs):

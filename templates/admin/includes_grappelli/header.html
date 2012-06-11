@@ -24,7 +24,7 @@
 </style>
 
 <div id="grp-navigation">
-    <header id="grp-admin-title"><h1>{% if grappelli_admin_title %}{{ grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}</h1></header>
+    <h1 id="grp-admin-title">{% if grappelli_admin_title %}{{ grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}</h1>
     
     <!-- View Student -->
     {% if perms.sis.change_student or perms.sis.view_student %}

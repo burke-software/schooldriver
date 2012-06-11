@@ -1,84 +1,118 @@
+{% load sis_extras %}
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/> 
-	<title>Student Worker Relational Database - {{ school_name }} </title>
-        <!--[if lte IE 9]>
-            <script src="/static/js/html5.js"></script>
-            <style type="text/css">
-                .clear {
-                  zoom: 1;
-                  display: block;
-                }
-                
-                li {
-                        float: left;
-                }
-                ul a{
-                        padding-right: 32px;
-                        padding-left: 32px;
-                }
-            </style>
-        <![endif]-->
-        
-        <link rel="stylesheet" type="text/css" href="/static/css/base.css" />
-        <style type="text/css">
-            {% block css %}{% endblock %}
-        </style>
-	{% block head %}{% endblock %}
-    </head>
-    <body>
-    <section id="page">
-        <header>
-            <a href="/"><img src="{{ header_image }}"/></a>
-            <nav class="clear">
-                <ul>
-                    {% if supervisor %}
-                        <li><a href="{% url ecwsp.work_study.views.supervisor_dash %}">Supervisor Dashboard</a></li>
-                        <li><a href="/accounts/password_change">Change Password</a></li>
-                    {% endif %}
-                    {% if student %}
-                        {% if "ecwsp.work_study" in settings.INSTALLED_APPS %}
-                            <li><a href="{% url ecwsp.work_study.views.student_view %}">Submitted Cards</a></li>
-                            <li><a href="/">Create Time Card</a></li>
-                        {% endif %}
-                        {% if "ecwsp.volunteer_track" in settings.INSTALLED_APPS %}
-                            <li><a href="{% url ecwsp.volunteer_track.views.student_dash %}">Volunteer</a></li>
-                        {% endif %}
-                        {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
-                            <li><a href="{% url ecwsp.benchmark_grade.views.student_grade %}">Grades</a></li>
-                        {% endif %}
-                        <li><a href="/accounts/password_change">Change Password</a></li>
-                    {% endif %}
-                    {% block nav %}
-                    {% endblock %}
-                    {% if not next %}
-                    <li><a href="{% url ecwsp.sis.views.logout_view %}">Log Out</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
+
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<head>
+
+		<title>Student Worker Relational Database</title>
+
+		<link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
+
+		<!--[if lt IE 8]>
+			<link rel="stylesheet" type="text/css" href="/static/css/styleie6.css" />
+		<![endif]-->
+
+		<script type="text/javascript" src="/static/js/jquery.js"></script>
+		<script type="text/javascript" src="/static/js/jquery.infieldlabel.min.js"></script>
+
+		<style>
+		    .masthead { width: 300px; height: 70px; background: url('{{ header_image }}') no-repeat left; float: left }
+		    .school-color { {% if background: {{ school_color|default_if_none:"#FCB034" }}; }
+		</style>
+
+                {% block head %}{% endblock %}
+</head>
+
+<body>
+
+
+<div id="topbar" class="school-color"></div>
+
+
+<div class="headerwrapper">
+	<header class="header">
+            <div class="masthead">
+            </div>
+            {% if request.user.is_authenticated %}
+                <nav class="menu-container">
+                    <div id="mbtnavbar">
+                        <ul id='mbtnav'>
+                            <li>
+                                <a href='#'>
+                                    {% if user.first_name and user.last_name %}
+                                        {{ user.first_name }} {{ user.last_name }}
+                                    {% else %}
+                                        {{ user }}
+                                    {% endif %}
+                                    <span class="arrowdown">▼</span>
+                                </a>
+                                <ul>
+				    {% if user|in_group:"company" %}
+                                        <li><a href="{% url ecwsp.work_study.views.supervisor_dash %}">Supervisor Dashboard</a></li>
+                                    {% endif %}
+                                    {% if user|in_group:"students" %}
+                                        {% if "ecwsp.work_study" in settings.INSTALLED_APPS %}
+                                            <li><a href="{% url ecwsp.work_study.views.student_view %}">Submitted Cards</a></li>
+                                            <li><a href="/">Create Time Card</a></li>
+                                        {% endif %}
+                                        {% if "ecwsp.volunteer_track" in settings.INSTALLED_APPS %}
+                                            <li><a href="{% url ecwsp.volunteer_track.views.student_dash %}">Volunteer</a></li>
+                                        {% endif %}
+                                        {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
+                                            <li><a href="{% url ecwsp.benchmark_grade.views.student_grade %}">Grades</a></li>
+                                        {% endif %}
+                                    {% endif %}
+				    <li><a href="/accounts/password_change">Change Password</a></li>
+                                    {% if not next %}
+                                        <li><a href="{% url ecwsp.sis.views.logout_view %}">Log Out</a></li>
+                                    {% endif %}
+                                </ul>
+                            </li>
+                            {% block nav %}
+                            {% endblock %}
+                            
+                        </ul>
+                    </div>
+                </nav>
+            {% endif %}
         </header>
-        <br/>
-        {{ msg }}
-        {% if msg == "You have been logged out." %}
-                <a href="/">Click here to log in again.</a>
-        {% endif %}
-        {% for e in exceptions %}
-                <br/>
-                {{ e }}
-        {% endfor %}
-        {% block content %}{% endblock %}
-        <br/><br/>
-            <footer>
-                <div class="line"></div>
-                 <!--[if IE 7]>
-                    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-                 <![endif]-->
-                Copyright 2010-2012 <a href="http://burkesoftware.com">Burke Software and Consulting LLC</a>. This site is for authorized use only. 
-                <br/>
-                Powered by <a href="http://code.google.com/p/student-worker-relational-database/">SWoRD, the open source Student WOrker Relational Database.</a>
-                <a href="http://www.djangoproject.com/"><img src="/static/images/djangomade124x25_grey.gif" border="0" alt="Made with Django." title="Made with Django." /></a>
-            </footer>
-	</section> 
-    </body>
+</div><!-- .headerwrapper-->
+
+<div class="clear"></div>
+<div id="pagewrap">
+        {% block content %}
+	    <div class="spacer-3"></div>
+	    {% if msg %}
+		{{ msg }}
+	    {% else %}
+		{% if request.user.is_authenticated %}
+		    No content. Your user account may not be set up correctly. Please contact an administrator.
+		{% else %}
+		    Please <a href="/">log in</a>.
+		{% endif %}
+	    {% endif %}
+        {% endblock %}
+
+
+<div class="spacer-3"></div>
+
+<div class="footer">
+Copyright 2010-2012 <a href="http://burkesoftware.com">Burke Software and Consulting LLC</a>.<br />
+This site is for authorized use only.<br />
+Powered by <a href="http://code.google.com/p/student-worker-relational-database">SWoRD</a>. Made with <a href="http://www.djangoproject.com">Django</a>.
+</div>
+<div class="spacer-3"></div>
+
+
+</div>
+<!-- .PAGEWRAP -->
+
+<script type="text/javascript">
+jQuery(document).ready(function(){
+  $("label").inFieldLabels();
+});
+</script>
+
+</body>
 </html>

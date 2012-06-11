@@ -57,13 +57,13 @@ TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
 DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
-'%B %d, %Y', '%d %B %Y', '%d %B, %Y')
+'%B %d, %Y', '%d %B %Y', '%d %B, %Y','%b. %d, %Y')
 #USE_L10N = True
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
 INTERNAL_IPS = ('127.0.0.1',)
-USE_I18N = True
+#USE_I18N = True
 SECRET_KEY = '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -105,6 +105,7 @@ INSTALLED_APPS = (
     'admin_export',
     'custom_field',
     'admin_advanced_filter',
+    'ckeditor',
     #'google_auth',
     #'ldap_groups',
 )

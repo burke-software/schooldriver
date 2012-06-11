@@ -230,7 +230,6 @@ def student_timesheet(request):
         supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
     except:
         supervisorName = "No Supervisor"
-    performance_choices = TimeSheetPerformanceChoice.objects.all()
     if request.method == 'POST':
         form = TimeSheetForm(request.POST)
         # check to make sure hidden field POST data isn't tampered with
@@ -255,14 +254,6 @@ def student_timesheet(request):
             access.usage = "Student submitted time sheet"
             access.save()
             return render_to_response('base.html', {'student': True, 'msg': "Timesheet has been successfully submitted, your supervisor has been notified."}, RequestContext(request, {}))
-        else:
-            pay, created = Configuration.objects.get_or_create(name="Allow for pay")
-            if created: 
-                pay.value = "True"
-                pay.save()
-            if pay.value != "True" and pay.value != "true": form.fields['for_pay'].widget = forms.HiddenInput()
-            return render_to_response('work_study/student_timesheet.html', {'student': True, 'form': form, 
-                'studentName': thisStudent, 'supervisorName': supervisorName,'performance_choices':performance_choices,}, RequestContext(request, {}))
     else:
         initial_primary = None
         if hasattr(thisStudent,"primary_contact"):
@@ -274,21 +265,20 @@ def student_timesheet(request):
         else:
             form = TimeSheetForm(initial={'student':thisStudent.id, 'company':thisStudent.placement.id, 'my_supervisor':initial_primary,
                 'date': date.today, 'time_in': "", 'time_lunch': "", 'time_lunch_return': "", 'time_out': ""})
-        form.set_supers(compContacts)
-        # Should for_pay be an option?
-        pay, created = Configuration.objects.get_or_create(name="Allow for pay")
-        if created: 
-            pay.value = "True"
-            pay.save()
-        if pay.value != "True" and pay.value != "true": form.fields['for_pay'].widget = forms.HiddenInput()
-        
-        return render_to_response('work_study/student_timesheet.html', {
-            'student': True,
-            'form': form,
-            'studentName': thisStudent,
-            'supervisorName': supervisorName,
-            'performance_choices': performance_choices,
-            },RequestContext(request, {}))
+    form.set_supers(compContacts)
+    form.fields['performance'].widget.attrs['disabled'] = 'disabled'
+    # Should for_pay be an option?
+    pay, created = Configuration.objects.get_or_create(name="Allow for pay")
+    if created: 
+        pay.value = "True"
+        pay.save()
+    if pay.value != "True" and pay.value != "true": form.fields['for_pay'].widget = forms.HiddenInput()
+    
+    return render_to_response('work_study/student_timesheet.html', {
+        'student': True,
+        'form': form,
+        'supervisorName': supervisorName,
+        },RequestContext(request, {}))
 
 def timesheet_delete(request):
     # first check if key is valid, this replaces the need for login.
