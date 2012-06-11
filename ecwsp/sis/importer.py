@@ -1469,6 +1469,8 @@ class Importer:
                                 model.fname = value
                             elif name == "last name" or name == "lname":
                                 model.lname = value
+                            elif name == "student e-mail" or name == "student email":
+                                model.email = value
                             elif name == "alert":
                                 model.alert = value
                             elif name == "grad date":
@@ -2256,7 +2258,7 @@ class Importer:
                                 model.date = self.convert_date(value)
                             elif name == "fired":
                                 model.fired = self.determine_truth(value)
-                            
+                    model.full_clean()
                     model.save()
                     if created:
                         self.log_and_commit(model, addition=True)

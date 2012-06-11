@@ -254,7 +254,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
 
     inlines = [StudentNumberInline, StudentFileInline, CompanyHistoryInline]
     list_filter = ['day', 'year', 'inactive']
-    list_display = ('fname', 'lname', 'day', 'company', 'pickUp', 'cra', 'primary_contact')
+    list_display = ('fname', 'lname', 'day', 'company', 'pickUp', 'cra', 'contact')
     filter_horizontal = ('handout33',)
     search_fields = ['fname', 'lname', 'unique_id', 'placement__team_name', 'username', 'id']
     readonly_fields = ['inactive', 'fname', 'lname', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']    
