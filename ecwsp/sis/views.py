@@ -20,19 +20,23 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib.auth import logout
+from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from datetime import date
 
-from ecwsp.administration.models import *
-from ecwsp.sis.models import *
-from ecwsp.sis.forms import *
-from ecwsp.sis.report import *
-from ecwsp.schedule.models import *
-from ecwsp.schedule.calendar import *
+from ecwsp.sis.models import Student, UserPreference, GradeLevel, SchoolYear
+from ecwsp.sis.forms import UserPreferenceForm, UploadFileForm, StudentLookupForm, StudentReportWriterForm, UploadNaviance
+from ecwsp.sis.forms import StudentGradeReportWriterForm, MarkingPeriodForm
+from ecwsp.administration.models import Template
+from ecwsp.sis.report import pod_report_grade, pod_report_paper_attendance, pod_report_all
+from ecwsp.sis import grade_reports
+from ecwsp.schedule.calendar import Calendar
+from ecwsp.schedule.models import MarkingPeriod, Course
 
 from tempfile import mkstemp
 import sys
@@ -40,6 +44,8 @@ import httpagentparser
 
 @login_required
 def user_preferences(request):
+    """ Displays user preferences
+    """
     profile = UserPreference.objects.get_or_create(user=request.user)[0]
     if request.POST:
         form = UserPreferenceForm(request.POST, instance=profile)
@@ -71,11 +77,12 @@ def index(request):
             browser_version = httpagentparser.detect(ua)['browser']['version']
             if browser_name == "Microsoft Internet Explorer":
                 messages.warning(request,
-                    mark_safe('Warning Internet Explorer is not supported on the admin site. If you have any trouble, try using a standards compliant browser such as Firefox, Chrome, Opera, or Safari.'))
+                    mark_safe('Warning Internet Explorer is not supported on the admin site. If you ' \
+                              'have any trouble, try using a standards compliant browser such as Firefox, Chrome, Opera, or Safari.'))
             elif browser_name == "Firefox" and int(browser_version.split('.')[0]) < 6:
                 messages.warning(request, 'Warning, your version of Firefox is out of date. Please upgrade.')
         except:
-            pass    
+            pass
         return HttpResponseRedirect('/admin')
     elif request.user.groups.filter(Q(name='students')).count() > 0:
         return student_redirect(request)
@@ -86,13 +93,14 @@ def index(request):
         return render_to_response('base.html', {'msg': "Not authorized", 'request': request,}, RequestContext(request, {}))
 
 def student_redirect(request):
-    """ Redirects student to proper page based on what's installed and if it's possible to display the timesheet """
+    """ Redirects student to proper page based on what's installed and if it's possible to display the timesheet
+    """
     if 'ecwsp.work_study' in settings.INSTALLED_APPS:
         from ecwsp.work_study.views import student_timesheet
         from ecwsp.work_study.models import StudentWorker
         try:
             student = StudentWorker.objects.get(username=request.user.username)
-        except StudentWorker.DoesNotExist:
+        except ObjectDoesNotExist:
             student = None
         if student and hasattr(student, 'placement') and student.placement:
             return student_timesheet(request)
@@ -100,6 +108,8 @@ def student_redirect(request):
 
 @user_passes_test(lambda u: u.groups.filter(name='registrar').count() > 0 or u.is_superuser, login_url='/')
 def import_everything(request):
+    """ View for handeling admin import functionality
+    """
     if request.POST:
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -118,46 +128,57 @@ def import_everything(request):
 
 @user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')    
 def photo_flash_card(request, year=None):
+    """ Simple flash card game
+    """
     students = Student.objects.filter(inactive=False)
     grade_levels = GradeLevel.objects.all()
     try:
         if request.POST:
             form = StudentLookupForm(request.POST, request.FILES)
             if form.is_valid():
-                id = form.cleaned_data['student']
+                student_id = form.cleaned_data['student']
             else:
-                id = students.order_by('?')[0].pk
+                student_id = students.order_by('?')[0].pk
         else:
             form = StudentLookupForm()
             if year:
-                id = students.filter(year=GradeLevel.objects.get(id=year)).order_by('?')[0].pk
+                student_id = students.filter(year=GradeLevel.objects.get(id=year)).order_by('?')[0].pk
             else:
-                id = students.order_by('?')[0].pk
-        student = Student.objects.filter(inactive=False).get(pk=id)
+                student_id = students.order_by('?')[0].pk
+        student = Student.objects.filter(inactive=False).get(pk=student_id)
     except:
         messages.error(request, 'Student not found')
         return HttpResponseRedirect(reverse('admin:index'))
-    return render_to_response('sis/flashcard.html', {'form': form, 'student_name': student, 'grade_levels':grade_levels, 'student_img': student.pic.url_530x400, 'request': request}, RequestContext(request, {}))
+    return render_to_response('sis/flashcard.html',
+                              {'form': form,
+                               'student_name': student,
+                               'grade_levels':grade_levels,
+                               'student_img': student.pic.url_530x400,
+                               'request': request}, RequestContext(request, {}))
 
 @user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')  
-def transcript_nonofficial(request, id):
-    student = Student.objects.filter(id=id)
+def transcript_nonofficial(request, student_id):
+    """ Build a transcripte based on template called "Transcript Nonoffical"
+    """
+    student = Student.objects.filter(id=student_id)
     template = Template.objects.get_or_create(name="Transcript Nonoffical")[0]
     if template.file:
         template = template.file.path
-        format = 'pdf'
+        file_format = 'pdf'
         options = {
             'date': date.today(),
             'student': student,
         }
-        return pod_report_grade(template, transcript=True, options=options, students=student, format=format)
+        return pod_report_grade(template, transcript=True, options=options, students=student, format=file_format)
         
     messages.info(request, 'Please upload a templated called "Transcript Nonoffical"')
     return HttpResponseRedirect(reverse('admin:index'))
 
 
 @permission_required('sis.reports') 
-def school_report_builder_view(request, report=None):
+def school_report_builder_view(request):
+    """ sis report builder view
+    """
     from ecwsp.sis.pdf_reports import student_thumbnail
     if request.method == 'POST':
         if 'thumbs_fresh' in request.POST:
@@ -210,24 +231,32 @@ def school_report_builder_view(request, report=None):
 
 
 def logout_view(request):
+    """ Logout, by sending a message to the base.html template
+    """
     logout(request)
     msg = mark_safe('You have been logged out. Click <a href="/">here</a> to log back in.')
     return render_to_response('base.html', {'msg': msg,}, RequestContext(request, {}))
 
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')
-def student_page_redirect(request, id):
-    """ Redirects user to highest level of permission they have for a student """
-    try: from work_study.models import StudentWorker
-    except: pass
+def student_page_redirect(request, student_id):
+    """ Redirects user to highest level of permission they have for a student
+    """
+    try:
+        from ecwsp.work_study.models import StudentWorker
+    except ImportError:
+        pass
     if request.user.has_perm(StudentWorker):
-        return HttpResponseRedirect(reverse('admin:work_study_studentworker_change', args=(id,)))
-    return HttpResponseRedirect(reverse('admin:sis_student_change', args=(id,)))
+        return HttpResponseRedirect(reverse('admin:work_study_studentworker_change', args=(student_id,)))
+    return HttpResponseRedirect(reverse('admin:sis_student_change', args=(student_id,)))
 
 @permission_required('sis.change_student')
 def import_naviance(request):
-    msg = 'Import a test directly from Naviance such as SAT and ACT. You must have unique id (SWORD) and hs_student_id (Naviance) be the same. You must have already set up the <a href="/admin/schedule/standardtest/"> tests </a> <br/>' +\
-        'In Naviance, click setup, then Import/Export then export the test you want. At this time only SAT and ACT is supported.'
+    """ Import only naviance data
+    """
+    msg = 'Import a test directly from Naviance such as SAT and ACT. You must have unique id (SWORD) and hs_student_id (Naviance)' \
+          ' be the same. You must have already set up the <a href="/admin/schedule/standardtest/"> tests </a> <br/>' \
+          'In Naviance, click setup, then Import/Export then export the test you want. At this time only SAT and ACT is supported.'
     if request.method == 'POST':
         form = UploadNaviance(request.POST, request.FILES)
         if form.is_valid():
@@ -239,10 +268,12 @@ def import_naviance(request):
     else:
         form = UploadNaviance()
     msg = mark_safe(msg)
-    return render_to_response('sis/generic_form.html', {'form':form,'msg':msg}, RequestContext(request, {}),)
+    return render_to_response('sis/generic_form.html', {'form':form, 'msg':msg}, RequestContext(request, {}), )
 
 @user_passes_test(lambda u: u.groups.filter(name="registrar").count() or u.has_perm('sis.reports') or u.is_superuser, login_url='/')   
 def grade_report(request):
+    """ Grade related report builder
+    """
     form = StudentGradeReportWriterForm()
     mp_form = MarkingPeriodForm()
     
@@ -261,6 +292,8 @@ def grade_report(request):
 
 @login_required
 def ajax_include_deleted(request):
+    """ ajax call to enable or disable user preference to search for inactive students
+    """
     checked = request.GET.get('checked')
     profile = UserPreference.objects.get_or_create(user=request.user)[0]
     if checked == "true":
@@ -268,10 +301,12 @@ def ajax_include_deleted(request):
     else:
         profile.include_deleted_students = False
     profile.save()
-    return HttpResponse('SUCCESS');
+    return HttpResponse('SUCCESS')
 
 @user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')   
 def view_student(request, id=None):
+    """ Lookup all student information
+    """
     if request.method == 'POST':
         form = StudentLookupForm(request.POST)
         if form.is_valid():
@@ -284,7 +319,6 @@ def view_student(request, id=None):
     today = date.today()
     emergency_contacts = student.emergency_contacts.all()
     siblings = student.siblings.all()
-    cohorts = student.cohorts.all()
     numbers = student.studentnumber_set.all()
     
     # Schedule
@@ -315,13 +349,16 @@ def view_student(request, id=None):
     #### CWSP related
     try:
         clientvisits = student.studentworker.clientvisit_set.all()
-    except: clientvisits = None
+    except:
+        clientvisits = None
     try:
         company_histories = student.studentworker.companyhistory_set.all()
-    except:company_histories = None
+    except:
+        company_histories = None
     try:
         timesheets = student.studentworker.timesheet_set.exclude(Q(performance__isnull=True) | Q(performance__exact=''))
-    except: timesheets = None
+    except:
+        timesheets = None
     try:
         if request.user.has_perm("sis.view_mentor_student"):
             student_interactions = student.studentworker.studentinteraction_set.all()
@@ -343,9 +380,10 @@ def view_student(request, id=None):
         for course in year.courses:
             # Too much logic for the template here, so just generate html.
             course.grade_html = ""
-            for mp in year.mps:
+            for marking_period in year.mps:
                 try:
-                    course.grade_html += '<td> %s </td>' % (Grade.objects.get(student=student, course=course, marking_period=mp).get_grade(),)
+                    course.grade_html += '<td> %s </td>' % (
+                        Grade.objects.get(student=student, course=course, marking_period=marking_period).get_grade(),)
                 except:
                     course.grade_html += '<td> </td>'
             course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
