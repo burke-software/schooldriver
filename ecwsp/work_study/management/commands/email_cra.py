@@ -31,7 +31,7 @@ class Command(BaseCommand):
             msg = ""
             subject = "SWORD comments"
             send = False
-            timesheets = TimeSheet.objects.filter(company__cras=cra).filter(creation_date__year=date.today().year, creation_date__day=date.today().day, creation_date__month=date.today().month)
+            timesheets = TimeSheet.objects.filter(company__cras=cra).filter(creation_date__year=date.today().year, creation_date__day=date.today().day, creation_date__month=date.today().month).order_by('company__team_name')
             if timesheets.count() > 0:
                 for timesheet in timesheets:
                     if timesheet.supervisor_comment or timesheet.performance or timesheet.student_accomplishment:
@@ -54,7 +54,7 @@ class Command(BaseCommand):
             msg = ""
             subject = "SWORD comments"
             send = False
-            timesheets = TimeSheet.objects.filter(creation_date__year=date.today().year, creation_date__day=date.today().day, creation_date__month=date.today().month)
+            timesheets = TimeSheet.objects.filter(creation_date__year=date.today().year, creation_date__day=date.today().day, creation_date__month=date.today().month).order_by('company__cras','company__team_name')
             if timesheets.count() > 0:
                 for timesheet in timesheets:
                     if timesheet.supervisor_comment or timesheet.performance or timesheet.student_accomplishment:
