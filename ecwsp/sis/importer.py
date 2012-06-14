@@ -1451,7 +1451,7 @@ class Importer:
                                     else:
                                         model = Student(unique_id=value)
                                         created = True
-                            elif name == "username":
+                            elif name in ["username", "student username"]:
                                 if model:
                                     model.username = value
                                 else:

@@ -18,12 +18,8 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
 
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import Context, loader
-from django.conf.urls.defaults import *
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
-from django.contrib.auth.models import User
+from django.shortcuts import render_to_response
+from django.contrib.auth.decorators import user_passes_test, permission_required
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
@@ -31,11 +27,8 @@ from django.db.models import Q
 from django.db import connection
 from django.http import HttpResponse
 from django import forms
-from django.core import serializers
-from django.core.mail import mail_admins, EmailMessage
-from django.core.urlresolvers import reverse
+from django.core.mail import EmailMessage
 from django.db.models import Sum, Count, Avg
-from django import forms
 from django.forms.models import modelformset_factory
 from django.http import HttpResponseRedirect
 
@@ -48,7 +41,6 @@ from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import log_admin_entry
 
 from itertools import *
-import csv
 import copy
 from datetime import date
 from datetime import datetime
