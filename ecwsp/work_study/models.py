@@ -672,15 +672,16 @@ class TimeSheet(models.Model):
     def emailStudent(self, show_comment=True):
         try:
             emailEnd = Configuration.get_or_default("email", default="@change.me").value
-            sendTo = str(self.student.username) + emailEnd
-            subject = "Time Sheet approved for " + unicode(self.student)
-            if show_comment:
-                msg = "Hello " + unicode(self.student) + ",\nYour time card was approved. Your rating was " + unicode(self.performance) + " \nYour supervisor's comment was \"" \
-                    + unicode(self.supervisor_comment) + "\""
-            else:
-                msg = "Hello " + unicode(self.student) + ",\nYour time card was approved."
-            from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
-            send_mail(subject, msg, from_addr, [str(sendTo)])
+            if emailEnd and emailEnd != "@change.me":
+                sendTo = str(self.student.username) + emailEnd
+                subject = "Time Sheet approved for " + unicode(self.student)
+                if show_comment:
+                    msg = "Hello " + unicode(self.student) + ",\nYour time card was approved. Your rating was " + unicode(self.performance) + " \nYour supervisor's comment was \"" \
+                        + unicode(self.supervisor_comment) + "\""
+                else:
+                    msg = "Hello " + unicode(self.student) + ",\nYour time card was approved."
+                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
+                send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
             logging.warning('Could not email student', exc_info=True, extra={
                 'exception': sys.exc_info()[0],
