@@ -1,0 +1,2 @@
+[TYPECHECK]
+generated-members=REQUEST,acl_users,aq_parent,objects,_meta,id,[a-zA-Z]+_set
