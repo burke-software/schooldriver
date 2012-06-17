@@ -30,9 +30,11 @@
   </script>
 {% endblock %}
 
+{% block content_title %}
+    <h1>Open Metric Recognition</h1>
+{% endblock %}
+
 {% block content %}
-  <h1> Open Metric Recognition </h1>
-  
   <h2>New Test</h2>
   {% if add and perms.omr.change_test %} <a href="{% url admin:omr_test_changelist %}">Start by copying existing test</a> {% endif %}
   <form enctype="multipart/form-data" action="" method="post" id="test_form">
@@ -42,18 +44,17 @@
       </div>
     </fieldset>
     
-    <div class="module footer"> 
-      <ul class="submit-row">
+    <footer class="grp-module grp-submit-row grp-fixed-footer"> 
+      <ul>
           {% if add %}
-            <li class="left delete-link-container"><a href="../" class="delete-link">Delete</a></li>
+            <li class="grp-float-left"><a href="../" class="grp-button grp-delete-link">Delete</a></li>
           {% else %}
-            <li class="left delete-link-container"><a href="javascript:confirm_del()" rel="#conform_del" class="delete-link confirm">Delete</a></li>
+            <li class="grp-float-left"><a href="javascript:confirm_del()" rel="#conform_del" class="grp-button grp-delete-link confirm">Delete</a></li>
           {% endif %}
           <li class="submit-button-container"><input type="submit" value="Save and continue to questions" class="default" name="_next" /></li>
           <li class="submit-button-container"><input type="submit" value="Save and continue editing" name="_continue" /></li>
-          <li class="submit-button-container"><input type="submit" value="Save" name="_save" /></li>
           <input style="display:none;" id="hidden_del" type="submit" name="_delete" />
-      </ul><br clear="all" /> 
-    </div>
+      </ul> 
+    </footer>
   </form>
 {% endblock %}

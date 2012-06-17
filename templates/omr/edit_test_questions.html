@@ -62,14 +62,6 @@
       float: right;
       width: 130px;
     }
-    button.delete-link {
-      color: white;
-      border: 1px solid #992626;
-      background: #BF3030;
-      background: -moz-linear-gradient(top, #D93636, #BF3030);
-      background: -webkit-gradient(linear, left top, left bottom, from(#D93636), to(#BF3030));
-      background: -o-linear-gradient(top, #D93636, #BF3030);
-    }
     
     .save_bar {
       border: 0;
@@ -98,8 +90,6 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script type="text/javascript" src="/admin/jsi18n/"></script>
-  <script type="text/javascript" src="/static/grappelli/js/admin/RelatedObjectLookups.js"></script>
   <script type="text/javascript" src="/static/js/jquery.blockUI.js"></script>
   <script type="text/javascript">
     function clean_ckeditor(question_id) {
@@ -356,85 +346,35 @@
   </script>
 {% endblock %}
 
+{% block content_title %}
+    <h1>Open Metric Recognition</h1>
+{% endblock %}
+
 {% block content %}
-  <h1> Open Metric Recognition </h1>
-  
   <h2 id="title_h2">{{ test }} Questions </h2>
   {% for question in questions %}
-    <div class="group tabular question_div" id="question_{{ question.id }}">
-      <div class="row module">
-        <div class="row">
-          <h2 class="collapse-handler">
-            Question <span class="question_order">{{ question.order }}</span>
-            <ul class="tools">
-              {% if not test.finalized %}
-                <li class="open-handler-container"><a href="javascript://" onclick="move_question('down', {{ question.id }})" class="icon open-handler" title="Move Down"></a></li>
-                <li class="close-handler-container"><a href="javascript://" onclick="move_question('up', {{ question.id }})" class="icon close-handler" title="Move Up"></a></li>
-              {% endif %}
-            </ul>
-          </h2>
-          <table style="width:100%; ">
-            <tr>
-              <td>
-                {{ question.question|safe }}
-              </td>
-              <td class="qtable_right">
-                <div>
-                  {{ question.point_value }} Possible Point {{ question.point_value|pluralize }}
-                  <br/>
-                  {{ question.type }}
-                  {% if question.group %} <br/> Group: {{ question.group }} {% endif %}
-                  {% for benchmark in question.benchmarks.all %}
-                    {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Benchmarks </p> {% endif %}
-                    <p style="padding:0px;">{{ benchmark }}</p>
-                  {% endfor %}
-                  {% for theme in question.themes.all %}
-                    {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Themes </p> {% endif %}
-                    {{ theme }}
-                  {% endfor %}
-                </div>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-      <div class="row module">
-        {% for answer in question.answer_set.all %}
-          <div class="row" {% if answer.point_value == question.point_value %} style="background: #a6ffa8;" {% endif %}>
-            <table style="width:99%; ">
-              <tr>
-                <td>
-                  {{ answer.answer|safe }}
-                </td>
-                <td class="qtable_right">
-                  {{ answer.point_value }} Point{{ answer.point_value|pluralize }}
-                  {% if answer.error_type %} <br/> Error Type: {{ answer.error_type }} {% endif %}
-                </td>
-              </tr>
-            </table>
-          </div>
-        {% endfor %}
-      </div>
-        <button onclick="edit_question({{ question.id }});">Edit</button>
-    </div>
+    {% include "omr/edit_test_questions_read_only.html" with question=question %}
   {% endfor %}
   <div id="new_question_div"></div>
   
   {% if not test.finalized %}
-    <button onclick="add_question();">Add Question</button>
-    <a onclick="return showAddAnotherPopup(this);" href="/omr/question_bank/">
-      <button>Add Question from Question Bank</button>
+    <a onclick="add_question();" class="grp-button">Add Question</a>
+    <a onclick="return showAddAnotherPopup(this);" href="/omr/question_bank/" class="grp-button">
+      Add Question from Question Bank
     </a>
   {% endif %}
   
-  <br/><br/>
-  <div class="module save_bar">
-    <a href="download_test" target="_blank"> <button> View Test </button> </a>
-    
-    <span style="float: right;">
-      <button onclick="finalize_test();">Finalize</button>
-    </span>
-  </div>
+  <br/>
   <a href="/sis/preferences?refer={{ request.get_full_path }}">Remember you can change defaults in your preferences</a>
   
+  <footer class="grp-module grp-submit-row grp-fixed-footer">
+    <ul>
+      <li class="grp-float-left">
+        <a href="download_test" target="_blank" class="grp-button"> View Test </a>
+      </li>
+      <li>
+        <button onclick="finalize_test();" class="grp-button">Finalize</button>
+      </li>
+    </ul>
+  </footer>
 {% endblock %}

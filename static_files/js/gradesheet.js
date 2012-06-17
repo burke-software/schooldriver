@@ -14,7 +14,7 @@ function fullscreen_table(destroy){
         }
         window_height = $(window).height()
         needed_height = $('#gradebook_div').height();
-        buffer = 155
+        buffer = 170
         if (window_height-buffer < needed_height) {
             $('#gradebook_table').fixedHeaderTable({height: window_height-buffer});
         }

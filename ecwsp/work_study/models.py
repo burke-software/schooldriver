@@ -160,6 +160,9 @@ class WorkTeam(models.Model, CustomFieldModel):
     contacts = models.ManyToManyField(Contact, blank=True, help_text="All contacts at this company. You must select them here in order to select the primary contact for a student.")
     company_description = models.TextField(blank=True)
     job_description = models.TextField(blank=True)
+    time_earliest = models.TimeField(blank=True, null=True)
+    time_latest = models.TimeField(blank=True, null=True)
+    time_ideal = models.TimeField(blank=True, null=True)
     
     class Meta:
         ordering = ('team_name',)
@@ -371,6 +374,11 @@ class Handout33(models.Model):
     class Meta:
         ordering = ('category', 'like',)
 
+class StudentWorkerRoute(models.Model):
+    name = models.CharField(max_length=100)
+    def __unicode__(self):
+        return unicode(self.name)
+
 class StudentWorker(Student):
     """A student in the database."""
     dayOfWeek = [
@@ -381,7 +389,12 @@ class StudentWorker(Student):
         ['F', 'Friday'],
     ]
     day = models.CharField(max_length=2, choices=dayOfWeek, blank=True, null=True, verbose_name="Working Day")
-    fax = models.BooleanField(help_text="Check if student may fax time sheet instead of going to check-in, shows up on attendance", verbose_name="Text Time Sheet")
+    transport_exception = models.CharField(
+        max_length=2,
+        blank=True,
+        choices = (('AM','No AM'),('PM','No PM'),('NO','None'))
+    )
+    #fax = models.BooleanField(help_text="Check if student may fax time sheet instead of going to check-in, shows up on attendance", verbose_name="Text Time Sheet")
     work_permit_no = CharNullField(max_length=10, blank=True, null=True, unique=True)
     placement = models.ForeignKey(WorkTeam, blank=True, null=True, )
     school_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
@@ -390,6 +403,10 @@ class StudentWorker(Student):
     personality_type = models.ForeignKey(Personality, blank=True, null=True)
     handout33 = models.ManyToManyField(Handout33, blank=True, null=True)
     adp_number = models.CharField(max_length=5, blank=True, verbose_name="ADP Number")
+    
+    am_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="am_student_set")
+    pm_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="pm_student_set")
+    
     
     class Meta:
         ordering = ('inactive','lname','fname',)

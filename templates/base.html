@@ -18,7 +18,7 @@
 
 		<style>
 		    .masthead { width: 300px; height: 70px; background: url('{{ header_image }}') no-repeat left; float: left }
-		    .school-color { {% if background: {{ school_color|default_if_none:"#FCB034" }}; }
+		    .school-color { background: {{ school_color|default_if_none:"#FCB034" }}; }
 		</style>
 
                 {% block head %}{% endblock %}

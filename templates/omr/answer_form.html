@@ -6,10 +6,22 @@
             <span class="answer_span">{{ answer.answer }} {{ answer.answer.errors }}</span>
         </td>
         <td>
-            {{ answer.point_value.label }} <span class="point_value_span">{{ answer.point_value }}</span> {{ answer.point_value.errors }} <br/>
-            {{ answer.error_type.label }}{{ answer.error_type }} {{ answer.error_type.errors }}
-            <a href="/admin/omr/errortype/add/" class="add-another" id="add_id_{{answer.error_type.html_name}}" onclick="return showAddAnotherPopup(this);"><img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"></a>
-            <br/>
+            <div>
+                {{ answer.point_value.label }}
+                <span class="point_value_span">{{ answer.point_value }}</span>
+                {{ answer.point_value.errors }}
+            </div>
+            <div>
+                {{ answer.error_type.label }}{{ answer.error_type }} {{ answer.error_type.errors }}
+                <a
+                    href="/admin/omr/errortype/add/"
+                    class="add-another"
+                    id="add_id_{{answer.error_type.html_name}}"
+                    onclick="return showAddAnotherPopup(this);"
+                    >
+                    <img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another">
+                </a>
+            </div>
         </td>
         {% if not finalized %}
             <td style="text-align: right;">

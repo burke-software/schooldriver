@@ -24,272 +24,135 @@ from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
-from django.db import connection
 from django.http import HttpResponse
 from django import forms
 from django.core.mail import EmailMessage
 from django.db.models import Sum, Count, Avg
 from django.forms.models import modelformset_factory
 from django.http import HttpResponseRedirect
+from django.template import RequestContext
 
-from ecwsp.work_study.models import *
-from ecwsp.administration.models import Configuration, AccessLog, Template
-from ecwsp.work_study.forms import *
-from ecwsp.work_study.xlsReport import *
-from ecwsp.sis.models import *
-from ecwsp.sis.report import *
+from ecwsp.work_study.models import StudentWorker, Contact, TimeSheet, WorkTeam, Company, ClientVisit, StudentInteraction, CompContract
+from ecwsp.work_study.models import PaymentOption, CompanyHistory
+from ecwsp.administration.models import Configuration, AccessLog
+from ecwsp.work_study.forms import ChangeSupervisorForm, TimeSheetForm, ReportTemplateForm, DolForm, CompanyContactForm1
+from ecwsp.work_study.forms import  CompanyContactForm2, CompanyContactForm3, ReportBuilderForm, AddSupervisor
+from ecwsp.work_study.xlsReport import xlsReport
+from ecwsp.work_study.reports import fte_by_day, fte_by_ind, fte_by_pay, am_route_attendance, gen_attendance_report_day, route_attendance
+from ecwsp.work_study.reports import student_company_day_report, supervisor_xls
+from ecwsp.sis.models import StudentNumber, SchoolYear
+from ecwsp.sis.report import pod_report_work_study
 from ecwsp.sis.helper_functions import log_admin_entry
 
-from itertools import *
-import copy
+#from itertools import *
 from datetime import date
 from datetime import datetime
-import xlwt as pycel
-import random
 import sys
 import re
 import logging
+import os
 
-days = (["Monday", "M"],["Tuesday","T"],["Wednesday","W"],["Thursday","TH"],["Friday", "F"])
+days = (["Monday", "M"], ["Tuesday","T"], ["Wednesday","W"], ["Thursday","TH"], ["Friday", "F"])
 class struct(object): pass
 
-def fte_by_ind(request):
-    fileName = "report_fteByInd.xls"
-    cursor = connection.cursor()
-    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
-    cursor.execute("select industry_type, count(*)/" + str(fte) + \
-        " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by industry_type;")
-    names = cursor.fetchall()
-    titles = (["Industry", "FTE"])
-    report = xlsReport(names, titles, fileName, heading="FTE by Industry Type")
-    report.addSheet(student_company_day_report(industry_type=True), heading="Detail")
-    return report.finish()
-
-def fte_by_day(request):
-    fileName = "report_fteByDay.xls"
-    cursor = connection.cursor()
-    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
-    cursor.execute("select day, count(*)/" + str(fte) + \
-        " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by day;")
-    names = cursor.fetchall()
-    titles = (["Day", "FTE"])
-    report = xlsReport(names, titles, fileName, heading="FTE by Day of Week")
-    report.addSheet(student_company_day_report(), heading="Detail")
-    return report.finish()
-    
-def student_company_day_report(industry_type=False, paying=False):
-    data = []
-    data.append(['', '', 'Students Assigned'])
-    data.append(['Work Team', '', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
-    if industry_type: order = 'industry_type'
-    elif paying: order = 'paying'
-    else: order = 'team_name'
-    for team in WorkTeam.objects.all().order_by(order):
-        if team.studentworker_set.all().count():
-            if industry_type:
-                row = [team, team.industry_type]
-            elif paying:
-                row = [team, team.get_paying_display()]
-            else:
-                row = [team, ""]
-            for day in StudentWorker.dayOfWeek:
-                students = team.studentworker_set.filter(day=day[0])
-                txt = ""
-                for student in students:
-                    txt += unicode(student) + " "
-                row.append(txt)
-            data.append(row)
-    return data
-  
-# Generate attendance by day    
-def gen_attendance_report_day(day, is_pickup=False):
-    """
-    Generates a spreadsheet for a student worker based on their pickup or dropoff location.
-    day: day of week
-    is_pickup: Is this a pickup? If false it's a dropoff
-    """
-    wb = pycel.Workbook()
-    
-    # convert to stupid way to storing days.
-    # 'F' -> ['Friday', 'F']
-    for d in days:
-        if d[1] == day:
-            day = d
-            break
-    
-    pickups = PickupLocation.objects.all()
-    for pickup in pickups:
-        ws = wb.add_sheet(pickup.location)
-        ws.portrait = False
-        
-        myFont = pycel.Font()
-        myFont.bold = True
-        myFont.size = 18
-        myFontStyle = pycel.XFStyle()
-        myFontStyle.borders.bottom = 0x02
-        myFontStyle.alignment.wrap = pycel.Alignment.WRAP_AT_RIGHT
-        myFontStyle.font = myFont
-        
-        ws.col(0).width = 0x0a00
-        ws.col(1).width = 0x0d00 + 1000
-        ws.col(2).width = 0x0d00 + 2000
-        ws.col(3).width = 0x0700 - 50
-        ws.col(4).width = 0x0d00 + 1000
-        ws.col(5).width = 0x0d00 + 20
-        ws.col(6).width = 0x0d00 + 80
-        ws.write(0,0,pickup.long_name)
-        
-        ws.write(0,2,"DATE:")
-        ws.write(0,4,day[0])
-        ws.write(1,0,"L=Late\nA=Absent\nX=Present  ")
-        ws.write(1,1,"Student Name", myFontStyle)
-        ws.write(1,2,"Company Name", myFontStyle)
-        ws.write(1,3,"Train Line", myFontStyle)
-        ws.write(1,4,"Stop Location", myFontStyle)
-        ws.write(1,5,"Client", myFontStyle)
-        ws.write(1,6,"Dress Code", myFontStyle)
-        ws.write(1,7,"Phone Number", myFontStyle)
-        
-        myFontStyle = pycel.XFStyle()
-        myFontStyle.alignment.wrap = pycel.Alignment.WRAP_AT_RIGHT
-        myFontStyle.borders.left   = 0x01
-        myFontStyle.borders.right  = 0x01
-        myFontStyle.borders.top    = 0x01
-        myFontStyle.borders.bottom = 0x01
-        
-        y=2
-        if is_pickup == True:
-            students = StudentWorker.objects.filter(day=day[1], placement__pm_transport_group__location=pickup).filter(inactive=False)
-        else:
-            students = StudentWorker.objects.filter(day=day[1], placement__am_transport_group__location=pickup).filter(inactive=False)
-        for stu in students:
-            if stu.fax:
-                ws.write(y,0,"txt", myFontStyle)                            #Small font fax.
-            else:
-                ws.write(y,0," ", myFontStyle)                                #blank for absent/late
-            ws.write(y,1,unicode(stu.fname + " " +stu.lname), myFontStyle)    #name
-            ws.write(y,2,unicode(stu.placement), myFontStyle)                #placement
-            ws.write(y,3,unicode(stu.placement.travel_route), myFontStyle)    #train line
-            ws.write(y,4,unicode(stu.placement.stop_location), myFontStyle)    #stop Location
-            ws.write(y,5,unicode(stu.placement.cra), myFontStyle)            #CRA
-            ws.write(y,6," ", myFontStyle)                                    #blank for dress code
-            try:
-                number = stu.studentnumber_set.filter(type="C")[0]
-            except:
-                number = None
-            ws.write(y,7,unicode(number), myFontStyle)  
-            y += 1
-        
-    response = HttpResponse(mimetype="application/ms-excel")
-    response['Content-Disposition'] = 'attachment; filename=%s' % ('Attendance_' + day[0] + '.xls' ,)
-    wb.save(response)
-    return response
-
-def fte_by_pay(request):
-    fileName = "report_fteByPay.xls"
-    xls = customXls(fileName) 
-    student_fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
-    
-    cursor = connection.cursor()
-    cursor.execute("select paying, count(*)/" + str(student_fte) + \
-                   " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
-        "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by paying;")
-    totals = cursor.fetchall()
-    
-    cursor = connection.cursor()
-    cursor.execute("select team_name, paying, count(*)/" + str(student_fte) + ", funded_by as fte from work_study_studentworker left join work_study_workteam on "+\
-        "work_study_workteam.id = work_study_studentworker.placement_id group by team_name order by paying, team_name;")
-    company = cursor.fetchall()
-
-    titles = (["Paying?","FTE"])
-    xls.addSheet(totals, titles, "Totals")
-    titles = (["WorkTeam", "Paying?","FTE", "Funded by"])
-    xls.addSheet(company, titles, "Companies")
-    xls.addSheet(student_company_day_report(paying=True), heading="Detail")
-    return xls.finish()
 
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
 def student_timesheet(request):
     """ A student's timesheet. """
     try:
-        thisStudent = StudentWorker.objects.get(username=request.user.username)
-        compContacts = Contact.objects.filter(workteam=thisStudent.placement)
+        this_student = StudentWorker.objects.get(username=request.user.username)
+        comp_contacts = Contact.objects.filter(workteam=this_student.placement)
     except:
-        return render_to_response('base.html', {'msg': "Student or Company does not exist. Please notify a system admin if you believe this is a mistake."}, RequestContext(request, {}))
+        return render_to_response(
+            'base.html',
+            {'msg': "Student or Company does not exist. Please notify a system admin if you believe this is a mistake."},
+            RequestContext(request, {}))
     try:
-        supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
+        supervisor_name = this_student.primary_contact.fname + " " + this_student.primary_contact.lname
     except:
-        supervisorName = "No Supervisor"
+        supervisor_name = "No Supervisor"
     if request.method == 'POST':
         form = TimeSheetForm(request.POST)
         # check to make sure hidden field POST data isn't tampered with
-        if form.is_valid() and (request.POST['company'] == str(thisStudent.placement.id)) and (request.POST['student'] == str(thisStudent.id)):
-            if thisStudent.primary_contact != form.cleaned_data['my_supervisor']:
-                thisStudent.primary_contact = form.cleaned_data['my_supervisor']
-                thisStudent.save()
+        if form.is_valid() and \
+        (request.POST['company'] == str(this_student.placement.id)) and \
+        (request.POST['student'] == str(this_student.id)):
+            if this_student.primary_contact != form.cleaned_data['my_supervisor']:
+                this_student.primary_contact = form.cleaned_data['my_supervisor']
+                this_student.save()
                 LogEntry.objects.log_action(
                     user_id         = request.user.pk, 
-                    content_type_id = ContentType.objects.get_for_model(thisStudent).pk,
-                    object_id       = thisStudent.pk,
-                    object_repr     = unicode(thisStudent), 
+                    content_type_id = ContentType.objects.get_for_model(this_student).pk,
+                    object_id       = this_student.pk,
+                    object_repr     = unicode(this_student), 
                     action_flag     = CHANGE,
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
             obj = form.save()
-            log_admin_entry(request,obj,ADDITION,message='Student created timesheet')
+            log_admin_entry(request, obj, ADDITION, message='Student created timesheet')
             access = AccessLog()
             access.login = request.user
             access.ua = request.META['HTTP_USER_AGENT']
             access.ip = request.META['REMOTE_ADDR']
             access.usage = "Student submitted time sheet"
             access.save()
-            return render_to_response('base.html', {'student': True, 'msg': "Timesheet has been successfully submitted, your supervisor has been notified."}, RequestContext(request, {}))
+            return render_to_response(
+                'base.html',
+                {'student': True, 'msg': "Timesheet has been successfully submitted, your supervisor has been notified."},
+                RequestContext(request, {}))
     else:
         initial_primary = None
-        if hasattr(thisStudent,"primary_contact"):
-            if thisStudent.primary_contact:
-                initial_primary = thisStudent.primary_contact.id
+        if hasattr(this_student,"primary_contact"):
+            if this_student.primary_contact:
+                initial_primary = this_student.primary_contact.id
         if Configuration.get_or_default('work_study_timesheet_initial_time', 'True').value == 'True':
-            form = TimeSheetForm(initial={'student':thisStudent.id, 'company':thisStudent.placement.id, 'my_supervisor':initial_primary,
+            form = TimeSheetForm(initial={'student':this_student.id, 'company':this_student.placement.id, 'my_supervisor':initial_primary,
                 'date': date.today, 'time_in': "9:30 AM", 'time_lunch': "12:00 PM", 'time_lunch_return': "1:00 PM", 'time_out': "5:00 PM"})
         else:
-            form = TimeSheetForm(initial={'student':thisStudent.id, 'company':thisStudent.placement.id, 'my_supervisor':initial_primary,
+            form = TimeSheetForm(initial={'student':this_student.id, 'company':this_student.placement.id, 'my_supervisor':initial_primary,
                 'date': date.today, 'time_in': "", 'time_lunch': "", 'time_lunch_return': "", 'time_out': ""})
-    form.set_supers(compContacts)
+    form.set_supers(comp_contacts)
     form.fields['performance'].widget.attrs['disabled'] = 'disabled'
     # Should for_pay be an option?
     pay, created = Configuration.objects.get_or_create(name="Allow for pay")
     if created: 
         pay.value = "True"
         pay.save()
-    if pay.value != "True" and pay.value != "true": form.fields['for_pay'].widget = forms.HiddenInput()
+    if pay.value != "True" and pay.value != "true":
+        form.fields['for_pay'].widget = forms.HiddenInput()
     
     return render_to_response('work_study/student_timesheet.html', {
         'student': True,
         'form': form,
-        'supervisorName': supervisorName,
+        'supervisorName': supervisor_name,
         },RequestContext(request, {}))
 
 def timesheet_delete(request):
-    # first check if key is valid, this replaces the need for login.
+    """first check if key is valid, this replaces the need for login.
+    """
     key = request.GET.get('key', '')
     try:
         sheet = TimeSheet.objects.get(supervisor_key = key)
     except:
-        return render_to_response('base.html', {'supervisor': True,'msg': "Link not valid. Was this timesheet already approved?"}, RequestContext(request, {}))
+        return render_to_response(
+            'base.html',
+            {'supervisor': True,'msg': "Link not valid. Was this timesheet already approved?"},
+            RequestContext(request, {}))
     sheet.delete()
     
     return supervisor_dash(request, "Deleted time card")
         
 def approve(request):
-    # first check if key is valid, this replaces the need for login.
+    """ first check if key is valid, this replaces the need for login.
+    """
     key = request.GET.get('key', '')
     try:
         sheet = TimeSheet.objects.get(supervisor_key = key)
     except:
-        return render_to_response('base.html', {'supervisor': True,'msg': "Link not valid. Was this timesheet already approved?"}, RequestContext(request, {}))
+        return render_to_response(
+            'base.html',
+            {'supervisor': True,'msg': "Link not valid. Was this timesheet already approved?"},
+            RequestContext(request, {}))
     # valid key, check for post
     if request.method == 'POST':
         form = TimeSheetForm(request.POST, request.FILES, instance=sheet)
@@ -305,24 +168,27 @@ def approve(request):
                 sheet.emailStudent()
             else:
                 sheet.emailStudent(show_comment=False)
-            return render_to_response('base.html', {'supervisor': True,'msg':"Time Card Approved!"}, RequestContext(request, {}))
+            return render_to_response('base.html', {'supervisor': True, 'msg':"Time Card Approved!"}, RequestContext(request, {}))
         else:
-            compContacts = Contact.objects.filter(workteam=sheet.student.placement)
-            form.set_supers(compContacts)
+            comp_contacts = Contact.objects.filter(workteam=sheet.student.placement)
+            form.set_supers(comp_contacts)
             return render_to_response('work_study/student_timesheet.html', {'supervisor': True,'approved': sheet.approved, 'form': form, \
                 'studentName': sheet.student, 'supervisorName': sheet.student.primary_contact,}, RequestContext(request, {}))
     else:
-        if sheet.student.primary_contact: initial_primary = sheet.student.primary_contact.id
+        if sheet.student.primary_contact:
+            initial_primary = sheet.student.primary_contact.id
         else: initial_primary = None
         form = TimeSheetForm(instance=sheet, initial={'edit':True, 'my_supervisor':initial_primary,})
-        compContacts = Contact.objects.filter(workteam=sheet.student.placement)
-        form.set_supers(compContacts)
+        comp_contacts = Contact.objects.filter(workteam=sheet.student.placement)
+        form.set_supers(comp_contacts)
         return render_to_response('work_study/student_timesheet.html', {'supervisor': True, 'approved': sheet.approved, 'form': form, \
             'studentName': sheet.student, 'supervisorName': sheet.student.primary_contact,}, RequestContext(request, {}))
     
 
 @user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')
 def supervisor_dash(request, msg=""):
+    """ Supervisor dashboard view to checking and making student time sheets
+    """
     try:
         comp = WorkTeam.objects.filter(login=request.user)[0]
     except IndexError:
@@ -331,20 +197,20 @@ def supervisor_dash(request, msg=""):
             {'msg': "You are a supervisor user but not linked to any specific company. Please notify administrator if you believe this is a mistake."},
             RequestContext(request, {}))
     if 'mass_approve' in request.POST:
-        msg="All checked time sheets approved"
-        timeSheets = TimeSheet.objects.filter(company=comp).filter(approved=False)
+        msg = "All checked time sheets approved"
+        time_sheets = TimeSheet.objects.filter(company=comp).filter(approved=False)
         # for each post value
         for check in request.POST.values():
             # is it an id in the timesheet? Only check this companies timesheets
-            for ts in timeSheets:
+            for ts in time_sheets:
                 if str(ts.id) == str(check):
                     ts.approved = True
                     ts.save()
-                    log_admin_entry(request,ts,CHANGE,message='Supervisor mass approval')
+                    log_admin_entry(request, ts, CHANGE,message='Supervisor mass approval')
     students = StudentWorker.objects.filter(placement=comp)
-    timeSheets = TimeSheet.objects.filter(company=comp).filter(approved=False)
+    time_sheets = TimeSheet.objects.filter(company=comp).filter(approved=False)
     TimeSheetFormSet = modelformset_factory(TimeSheet, fields=('approved',))
-    timeSheetsApprovedForm = TimeSheetFormSet(queryset=timeSheets)
+    time_sheets_approved_form = TimeSheetFormSet(queryset=timeSheets)
     try:
         access = AccessLog()
         access.login = request.user
@@ -354,49 +220,43 @@ def supervisor_dash(request, msg=""):
         access.save()
     except:
         print >> sys.stderr, "error creating access log"
-    return render_to_response('work_study/supervisor_dash.html', {'supervisor': True,'msg': msg, 'comp': comp, 'students': students, \
-        'timeSheets': timeSheets, 'timeSheetsApprovedForm': timeSheetsApprovedForm}, RequestContext(request, {}))
+    return render_to_response('work_study/supervisor_dash.html', {'supervisor': True, 'msg': msg, 'comp': comp, 'students': students, \
+        'timeSheets': time_sheets, 'timeSheetsApprovedForm': time_sheets_approved_form}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')
-def supervisor_xls(request):
-    comp = WorkTeam.objects.filter(login=request.user)[0]
-    timesheets = TimeSheet.objects.filter(approved=True).filter(company=comp).order_by('student', 'date',)
-    data = []
-    titles = ["WorkTeam", "Student", "", "Date", "For Pay?", "Make up?", "Hours Worked", "Company Bill"]
-    fileName = "Billing_Report.xls"
-    company_total = timesheets.aggregate(Sum('school_net'))
-    data.append([comp.team_name, "", "", "", "", "", "", company_total['school_net__sum']])
-    studenti = 0
-    for timesheet in timesheets:
-        data.append(["", timesheet.student.fname, timesheet.student.lname, timesheet.date, timesheet.for_pay, timesheet.make_up, timesheet.hours, timesheet.school_net])
-        studenti += 1
-        if studenti == timesheets.filter(student__id__iexact=timesheet.student.id).count():
-            stu_total = timesheets.filter(student__id__iexact=timesheet.student.id).aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
-            data.append(["", "", "", "Total", "", "", stu_total['hours__sum'], stu_total['school_net__sum']])
-            studenti = 0
-    report = xlsReport(data, titles, fileName, heading="Company Billing")
-    
-    return report.finish()
+
         
 @user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')
 def supervisor_view(request):
+    """ ?
+    """
     comp = WorkTeam.objects.filter(login=request.user)[0]
-    students = StudentWorker.objects.filter(placement=comp)
-    timeSheets = TimeSheet.objects.filter(company=comp).filter(approved=True).order_by('date').reverse()[:100]
-    return render_to_response('work_study/supervisor_view.html', {'supervisor': True, 'timeSheets': timeSheets}, RequestContext(request, {}))
+    time_sheets = TimeSheet.objects.filter(company=comp).filter(approved=True).order_by('date').reverse()[:100]
+    return render_to_response(
+        'work_study/supervisor_view.html',
+        {'supervisor': True, 'timeSheets': time_sheets},
+        RequestContext(request, {}))
     
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
 def student_view(request):
+    """ Student "dashboard"
+    """
     try:
-        thisStudent = StudentWorker.objects.get(username=request.user.username)
+        this_student = StudentWorker.objects.get(username=request.user.username)
     except StudentWorker.DoesNotExist:
-        return render_to_response('base.html', {'msg': "Student does not exist or is not a Student Worker. Please notify a system admin if you believe this is a mistake."}, RequestContext(request, {}))
-    timeSheets = TimeSheet.objects.filter(student=thisStudent).order_by('date').reverse()[:100]
-    return render_to_response('work_study/student_view.html', {'timeSheets': timeSheets, 'student': thisStudent}, RequestContext(request, {}))
+        return render_to_response(
+            'base.html',
+            {'msg': "Student does not exist or is not a Student Worker. Please notify a system admin if you believe this is a mistake."},
+            RequestContext(request, {}))
+    time_sheets = TimeSheet.objects.filter(student=this_student).order_by('date').reverse()[:100]
+    return render_to_response(
+        'work_study/student_view.html',
+        {'timeSheets': time_sheets, 'student': this_student},
+        RequestContext(request, {}))
     
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
 def student_edit(request, tsid):
-    """ Student edits own timesheet """
+    """ Student edits own timesheet
+    """
     thisStudent = StudentWorker.objects.get(username=request.user.username)
     timesheet = TimeSheet.objects.get(id=tsid)
     # Students can only edit their own NON approved time sheets
@@ -642,14 +502,6 @@ def report_builder_view(request):
                     return fte_by_day(request)
                 elif 'ftePay' in request.POST:
                     return fte_by_pay(request)
-                elif 'thumbs_fresh' in request.POST:
-                    return student_thumbnail(request, 1)
-                elif 'thumbs_soph' in request.POST:
-                    return student_thumbnail(request, 2)
-                elif 'thumbs_jun' in request.POST:
-                    return student_thumbnail(request, 3)
-                elif 'thumbs_sen' in request.POST:
-                    return student_thumbnail(request, 4)
                 elif 'history' in request.POST:
                     hist = CompanyHistory.objects.all()
                     data = []
@@ -658,47 +510,10 @@ def report_builder_view(request):
                     titles = (["Student", "WorkTeam left", "Date",])
                     report = xlsReport(data, titles, "company_history.xls", heading="Company History")
                     return report.finish()
-                elif 'hand33' in request.POST:
-                    students = StudentWorker.objects.all()
-                    data = []
-                    titles = ["Student last name", 'Student first name', 'Types']
-                    for student in students:
-                        handout = Handout33.objects.filter(studentworker=student)
-                        traits = []
-                        traits.append(student.fname)
-                        traits.append(student.lname)
-                        for h in handout:
-                            traits.append(h)
-                        data.append(traits)
-                    return xlsReport(data, titles, "Handout_33.xls", heading="Handout33").finish()
                 elif 'dols' in request.POST:
                     return dol_xls_report(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])
                 elif 'contracts' in request.POST:
                     return contracts_report()
-                elif 'attnMonday' in request.POST:
-                    data = {}
-                    for pickup in pickups:
-                        data[unicode(pickup)] = {}
-                        sheet = data[unicode(pickup)]
-                        sheet['$student'] = []
-                        sheet['$company'] = []
-                        sheet['$train'] = []
-                        sheet['$stop'] = []
-                        sheet['$cra'] = []
-                        sheet['$cell'] = []
-                        for stu in StudentWorker.objects.filter(day="M", placement__pm_transport_group__location=pickup): 
-                            sheet['$student'].append(unicode(stu))
-                            sheet['$company'].append(unicode(stu.placement))
-                            sheet['$train'].append(unicode(stu.placement.travel_route))
-                            sheet['$stop'].append(unicode(stu.placement.stop_location))
-                            sheet['$cra'].append(unicode(stu.placement.cra))
-                            try:
-                                number = stu.studentnumber_set.filter(type="C")[0]
-                            except:
-                                number = None
-                            sheet['$cell'].append(unicode(number))
-                    magic_function(data)
-                
                 elif 'attendance' in request.POST:
                     attend = Attendance.objects.filter(absence_date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end']))
                     # Sheet 1 all absences
@@ -1144,5 +959,16 @@ def fte_chart(request):
             workteams_in_industry += [workteam.company]
     
     
-    return render_to_response('work_study/fte_chart.html', {'request': request,'fte_chart': fte_chart, 'workteams_by_industry':workteams_by_industry,
-                                                            'embed': 'embed' in request.GET}, RequestContext(request, {}))
+    return render_to_response(
+        'work_study/fte_chart.html',
+        {'request': request,'fte_chart': fte_chart, 'workteams_by_industry':workteams_by_industry,'embed': 'embed' in request.GET},
+        RequestContext(request, {}))
+
+@user_passes_test(lambda u: u.has_perm('sis.reports'))
+def routes(request):
+    """ Route reports form for Notre Dame Cristo Rey
+    """
+    if request.POST:
+        if 'am_route_attendance' or 'pm_route_attendance' in request.POST:
+            return am_route_attendance(request)
+    return render_to_response('work_study/routes.html', {'request': request}, RequestContext(request, {}))

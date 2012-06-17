@@ -121,7 +121,7 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
     list_filter = ['inactive', 'pm_transport_group', 'travel_route', 'industry_type', 'paying','cras']
     fieldsets = [
         (None, {'fields': [('company', 'inactive'), 'team_name', 'job_description', 'company_description', 'login', ('paying', 'funded_by'), 'industry_type', 'cras', ('am_transport_group', 'pm_transport_group'), 'contacts']}),
-        ("Location", {'fields': ['address', ('city', 'state'), 'zip',('travel_route', 'stop_location'), ('map', 'use_google_maps'), 'directions_to', 'directions_pickup'], 'classes': ['collapse']}),
+        ("Location", {'fields': ['address', ('city', 'state'), 'zip',('travel_route', 'stop_location'), ('map', 'use_google_maps'), 'directions_to', 'directions_pickup', ('time_earliest', 'time_latest', 'time_ideal')], 'classes': ['collapse']}),
     ]
     filter_horizontal = ('contacts', 'login')
     list_display = ('team_name', 'company', 'stop_location', 'am_transport_group', 'fte', 'paying', 'cra')
@@ -237,9 +237,10 @@ class StudentAdmin(ReadPermissionModelAdmin):
         return super(StudentAdmin, self).render_change_form(request, context, *args, **kwargs)
         
     fieldsets = [
-        (None, {'fields': ['inactive', 'fname', 'lname', 'mname', 'sex', 'bday', 'day', 'fax',
+        (None, {'fields': ['inactive', ('fname', 'lname'), 'mname', 'sex', 'bday', 'day', 'transport_exception',
                            'pic', 'unique_id', 'adp_number', 'ssn', 'username', 'work_permit_no',
-                           'year', 'placement', 'school_pay_rate', 'student_pay_rate', 'primary_contact']}),
+                           'year', 'placement', ('school_pay_rate', 'student_pay_rate'),
+                           ('am_route','pm_route'), 'primary_contact']}),
         ('Parent and address', {'fields': ['parent_guardian', 'emergency_contacts', 'street',
                                            'city', 'state', 'zip', 'parent_email', 'alt_email'],
             'classes': ['collapse']}),
@@ -259,7 +260,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
     search_fields = ['fname', 'lname', 'unique_id', 'placement__team_name', 'username', 'id']
     readonly_fields = ['inactive', 'fname', 'lname', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']    
 admin.site.register(StudentWorker, StudentAdmin)
-
+admin.site.register(StudentWorkerRoute)
 admin.site.register(PresetComment)
 
 class StudentInteractionAdmin(admin.ModelAdmin):

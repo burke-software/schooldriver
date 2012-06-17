@@ -39,8 +39,11 @@
     </script>
 {% endblock %}
 
+{% block content_title %}
+    <h1>CWSP Reports</h1>
+{% endblock %}
+
 {% block content %}
-    <h2> Report Builder </h2>
     <form action="" method="post">
 	    {{ form.errors }}
 	 <fieldset style="padding:5px;">
@@ -94,8 +97,14 @@
 	<legend>Date based reports</legend>
 	<table>
 	    <tr>
-		<td> From: {{ form.custom_billing_begin }} {{ form.custom_billing_begin.errors }} <br/>
-		    Until: {{ form.custom_billing_end }} {{ form.custom_billing_end.errors }}</td>
+		<td>
+		    <div>
+			From: {{ form.custom_billing_begin }} {{ form.custom_billing_begin.errors }}
+		    </div>
+		    <div>
+			Until: {{ form.custom_billing_end }} {{ form.custom_billing_end.errors }}
+		    </div>
+		</td>
 	    </tr>
 	    <tr>
 		<td>
@@ -126,8 +135,10 @@
 		    <td> 
 			{{ template_form.include_deleted.label }} {{ template_form.include_deleted }} {{ template_form.include_deleted.errors }}
 		    </td></tr><tr><td>
-			{{ template_form.all_students.label }} {{ template_form.all_students }} {{ template_form.all_students.errors }}
-			<br/>{{ template_form.student.label }} {{ template_form.student }} {{ template_form.student.errors }}
+			<div>
+			    {{ template_form.all_students.label }} {{ template_form.all_students }} {{ template_form.all_students.errors }}
+			</div>
+			{{ template_form.student.label }} {{ template_form.student }} {{ template_form.student.errors }}
 		    </td></tr><tr><td>
 			<a href="javascript:void(0)" id="toggle_filter_options" onclick='options_toggle(id)'>Show filter and sort options</a>
 			<div id="filter_options" style="display: none">
@@ -135,10 +146,12 @@
 			    <br/> {{ template_form.filter_year.label }}  {{ template_form.filter_year }} {{ template_form.filter_year.errors }}
 			</div>
 		    </td></tr><tr><td>
-			{{ template_form.template.label }} {{ template_form.template }} {{ template_form.template.errors }}
-			<br/>
-			{{ template_form.upload_template.label }} {{ template_form.upload_template }} {{ template_form.upload_template.help_text }} {{ template_form.upload_template.errors }}
-			<br/>
+			<div>
+			    {{ template_form.template.label }} {{ template_form.template }} {{ template_form.template.errors }}
+			</div>
+			<div>
+			    {{ template_form.upload_template.label }} {{ template_form.upload_template }} {{ template_form.upload_template.help_text }} {{ template_form.upload_template.errors }}
+			</div>
 			{{ template_form.format.label }} {{ template_form.format }} {{ template_form.format.errors }}
 		    </td>
 		    </tr>

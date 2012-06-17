@@ -11,7 +11,7 @@
         margin: 0px;
     }
     div.view_student{
-         width:13%;
+         width:12.8%;
          float:left;
     }
     input.view_student{
@@ -185,6 +185,9 @@
                         {% endif %}
                         {% if perms.sis.reports %}
                             <li><a href="{% url ecwsp.work_study.views.report_builder_view %}">{% trans 'Reports' %}</a></li>
+                        {% endif %}
+                        {% if perms.sis.reports and settings.CRND_ROUTES %}
+                            <li><a href="{% url ecwsp.work_study.views.routes %}">{% trans 'Route Reports' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>

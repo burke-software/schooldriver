@@ -1,54 +1,46 @@
-<div class="group tabular" id="question_{{ question.id }}">
-      <div class="row module">
-        <div class="row">
-          <h2 class="collapse-handler">
+<div class="grp-group grp-tabular" id="question_{{ question.id }}">
+    <div class="grp-module grp-group grp-tabular">
+        <h2 class="grp-collapse-handler">
             Question <span class="question_order">{{ question.order }}</span>
             <ul class="tools">
               <li class="open-handler-container"><a href="javascript://" onclick="move_question('down', {{ question.id }})" class="icon open-handler" title="Move Down"></a></li>
               <li class="close-handler-container"><a href="javascript://" onclick="move_question('up', {{ question.id }})" class="icon close-handler" title="Move Up"></a></li>
             </ul>
-          </h2>
-          <table style="width:100%; ">
-            <tr>
-              <td>
+        </h2>
+        <div class="grp-row grp-module">
+            <div class="grp-float-left">
                 {{ question.question|safe }}
-              </td>
-              <td class="qtable_right">
+            </div>
+            <div class="grp-float-right">
                 <div>
-                  {{ question.point_value }} Possible Point {{ question.point_value|pluralize }}
-                  <br/>
-                  {{ question.type }}
-                  {% if question.group %} <br/> Group: {{ question.group }} {% endif %}
-                  {% for benchmark in question.benchmarks.all %}
-                    {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Benchmarks </p> {% endif %}
-                    <p style="padding:0px;">{{ benchmark }}</p>
-                  {% endfor %}
-                  {% for theme in question.themes.all %}
-                    {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Themes </p> {% endif %}
-                    {{ theme }}
-                  {% endfor %}
+                    {{ question.point_value }} Possible Point {{ question.point_value|pluralize }}
+                    <br/>
+                    {{ question.type }}
+                    {% if question.group %} <br/> Group: {{ question.group }} {% endif %}
+                    {% for benchmark in question.benchmarks.all %}
+                      {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Benchmarks </p> {% endif %}
+                      <p style="padding:0px;">{{ benchmark }}</p>
+                    {% endfor %}
+                    {% for theme in question.themes.all %}
+                      {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Themes </p> {% endif %}
+                      {{ theme }}
+                    {% endfor %}
                 </div>
-              </td>
-            </tr>
-          </table>
+            </div>
         </div>
-      </div>
-      <div class="row module">
+    </div>
+    <div class="grp-module">
       {% for answer in question.answer_set.all %}
-        <div class="row" {% if answer.point_value == question.point_value %} style="background: #a6ffa8;" {% endif %}>
-          <table style="width:99%; ">
-            <tr>
-              <td>
+        <div class="grp-row" {% if answer.point_value == question.point_value %} style="background: #a6ffa8;" {% endif %}>
+            <div class="grp-float-left">
                 {{ answer.answer|safe }}
-              </td>
-              <td class="qtable_right">
+            </div>
+            <div class="grp-float-right">
                 {{ answer.point_value }} Point{{ answer.point_value|pluralize }}
                 {% if answer.error_type %} <br/> Error Type: {{ answer.error_type }} {% endif %}
-              </td>
-            </tr>
-          </table>
+            </div>
         </div>
       {% endfor %}
       </div>
-      <button onclick="edit_question({{ question.id }})">Edit</button>
+      <a class="grp-button" onclick="edit_question({{ question.id }})">Edit</a>
 </div>

@@ -9,8 +9,10 @@ def global_stuff(request):
     except:
         header_image = None
     school_name = Configuration.get_or_default('School Name', default="Unnamed School")
+    school_color = Configuration.get_or_default('School Color', default="").value
     return {
         "header_image": header_image,
         "school_name": school_name,
         "settings": settings,
+        "school_color": school_color,
     }
