@@ -16,7 +16,11 @@
       }
   </style>
   <script type="text/javascript">
-  grappelli.initFilter = function() {}
+  (function($) {
+            $(document).ready(function() {
+                grappelli.initFilter();
+            });
+        })(django.jQuery);
   </script>
 {% endblock %}
 
@@ -24,10 +28,6 @@
   {{ block.super }}
   <script type="text/javascript" src="/static/js/jquery.truncate.min.js"></script>
   <script type="text/javascript">
-    function filter_toggle() {
-      $('.filter-pulldown').toggle();
-    }
-    
     function choose_benchmark(id, btext) {
       opener.dismissBenchmarkPopup(window, id, btext);
     }
@@ -46,32 +46,38 @@
 {% block content %}
   <h2>Benchmark {% if test %} for {{ test.department }} {% endif %}</h2>
   {% autopaginate filter.qs 50 as filter_list %}
-  <div class="module changelist-filters">
-    <!-- PAGINATION TOP -->
-    <div class="module pagination">
-      <ul class="pagination">
-        <li class="results">
-          <span> {{ filter.qs.count }} total </span>
-        </li>
-        <li>
-          {% paginate %}
-        </li>
-      </ul>
-      
-    </div>
-    <!-- FILTERS -->
-    <div id="filters" class="module filter span-6">
-      <div class="pulldown-container" >
-        <a href="javascript://" class="button toggle-filters" onclick="filter_toggle()">Filter</a>
-        <div class="filter-pulldown" style="width: 325px;">
-          <form action="" method="get">
-            {{ filter.form.as_p }}
-            <input type="submit" />
-          </form>
+  <div class="grp-module grp-changelist-filters">
+    <div class="grp-row">
+        <div class="g-d-c-fluid">
+            <!-- PAGINATION TOP -->
+            <div class="g-d-fluid">
+                <nav class="grp-pagination">
+                    <ul class="grp-horizontal-list">
+                      <li class="results">
+                        <span> {{ filter.qs.count }} total </span>
+                      </li>
+                      <li>
+                        {% paginate %}
+                      </li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- FILTERS -->
+            <aside class="g-d-12 g-d-l">
+                <div id="filters" class="filter g-d-6 g-d-l">
+                  <div class="grp-pulldown-container">
+                    <a href="javascript://" class="grp-button grp-pulldown-handler">Filter</a>
+                    <div class="grp-pulldown-content" style="display: none; width: 325px;">
+                      <form action="" method="get">
+                        {{ filter.form.as_p }}
+                        <input type="submit" />
+                      </form>
+                    </div>
+                  </div>
+                </div>
+            </aside>
         </div>
-      </div>
-    </div>
-    <!-- SEARCH -->
+     </div>
     <br clear="all">
   </div>
   

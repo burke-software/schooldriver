@@ -210,7 +210,7 @@ def supervisor_dash(request, msg=""):
     students = StudentWorker.objects.filter(placement=comp)
     time_sheets = TimeSheet.objects.filter(company=comp).filter(approved=False)
     TimeSheetFormSet = modelformset_factory(TimeSheet, fields=('approved',))
-    time_sheets_approved_form = TimeSheetFormSet(queryset=timeSheets)
+    time_sheets_approved_form = TimeSheetFormSet(queryset=time_sheets)
     try:
         access = AccessLog()
         access.login = request.user

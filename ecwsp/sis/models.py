@@ -94,11 +94,14 @@ class UserPreference(models.Model):
                 return "xlsx"
             
     def get_additional_student_fields(self, row, student, students, titles, buffer=1):
-        """ row: table row """
-        """Get additional fields based on user preferences"""
+        """ row: table row
+        Get additional fields based on user preferences
+        """
         if not self.names:
             self.set_names()
         for name in self.names:
+            # If there is a m2m field we need to pad the titles.
+            # In case the m2m has a max of 5 fields we need five title cells
             buffer = self.get_additional_student_fields_buffer(students, name)
             if self.first:
                 i = 0
@@ -128,6 +131,9 @@ class UserPreference(models.Model):
         self.first = False
     
     def get_additional_student_fields_buffer(self, students, name):
+        """ buffer is the number of columns to use for a "field"
+        Example: A M2M field can return up to 5 fields so buffer is 5
+        """
         buffer = 1
         for student in students:
             try:

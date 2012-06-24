@@ -12,7 +12,7 @@ I want to volunteer at an <strong>existing site</strong>.
 </div>
 
 
-<form method="post">
+<form method="post" class="inline-label">
     <div class="volunteer-field">
 		    {{ existing_site_form.site.label }}
 		    {{ existing_site_form.site }}
@@ -39,7 +39,7 @@ I want to volunteer at an <strong>existing site</strong>.
 I want to volunteer at a <strong>new site</strong>.
 </div>
 
-<form method="post" action="">
+<form method="post" action="" class="inline-label">
 
 <div class="volunteer-field">
 		<label for="id_{{ new_site_form.site_name.html_name }}" class="login">Site Name</label>
