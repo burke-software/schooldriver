@@ -10,6 +10,8 @@ from ecwsp.work_study.models import WorkTeam, TimeSheet, StudentWorker, PickupLo
 import xlwt as pycel
 import datetime
 
+days = (["Monday", "M"], ["Tuesday","T"], ["Wednesday","W"], ["Thursday","TH"], ["Friday", "F"])
+
 def fte_by_ind(request):
     """ FTE by industry
     """
