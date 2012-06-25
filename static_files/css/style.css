@@ -28,7 +28,7 @@ code { position: absolute; visibility: hidden; }
 /* masthead should change depending on school. link to...
 cristoreybkhs.png, cristoreynyhs.png, cristoreyjesuit.png
 */
-.masthead { width: 300px; height: 70px; background: url('images/cristoreyjesuit.png') no-repeat left; float: left }
+.masthead { width: 400px; height: 70px; background: url('images/cristoreyjesuit.png') no-repeat left; float: left; background-size:contain; }
 
 
 
