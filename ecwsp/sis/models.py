@@ -97,12 +97,14 @@ class UserPreference(models.Model):
         """ row: table row
         Get additional fields based on user preferences
         """
+	import copy
+	students_workaround = copy.copy(students) # THIS IS UGLY! But Django will otherwise stop iterating after 100 students
         if not self.names:
             self.set_names()
         for name in self.names:
             # If there is a m2m field we need to pad the titles.
             # In case the m2m has a max of 5 fields we need five title cells
-            buffer = self.get_additional_student_fields_buffer(students, name)
+            buffer = self.get_additional_student_fields_buffer(students_workaround, name)
             if self.first:
                 i = 0
                 while i < buffer:
