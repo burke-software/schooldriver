@@ -1,6 +1,7 @@
 from django.db import connection
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib import messages
 
 from ecwsp.administration.models import Configuration
 from ecwsp.sis.xlsReport import xlsReport
@@ -215,6 +216,9 @@ def am_route_attendance(request):
         fileName = "AM_Routes.xls"
     else:
         fileName = "PM_Routes.xls"
+    if not StudentWorkerRoute.objects.all():
+        messages.error(request, 'You must create at least one route before running this report!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
     for route in StudentWorkerRoute.objects.all():
         data = []
         if 'am_route_attendance' in request.POST:
