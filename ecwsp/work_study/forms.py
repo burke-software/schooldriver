@@ -24,18 +24,15 @@ from ecwsp.sis.forms import StudentReportWriterForm
 from django import forms
 from django.contrib.admin import widgets as adminwidgets
 from django.contrib.localflavor.us.forms import *
-from django.contrib.formtools.wizard import FormWizard
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
-from django.shortcuts import render_to_response
-from django.template import RequestContext
 
 from django.conf import settings
 
 from decimal import Decimal
 from datetime import datetime, date
-from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
+from ajax_select.fields import AutoCompleteSelectMultipleField
 from itertools import chain
 
 class StudentForm(forms.ModelForm):
@@ -49,34 +46,33 @@ class StudentForm(forms.ModelForm):
 
 
 class CustomCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
-  
-   items_per_row = 2 # Number of items per row
-
-   def render(self, name, value, attrs=None, choices=()):
-       if value is None: value = []
-       has_id = attrs and 'id' in attrs
-       final_attrs = self.build_attrs(attrs, name=name)
-       output = ['<table  style="width:99%;"><tr>']
-       # Normalize to strings
-       str_values = set([force_unicode(v) for v in value])
-       for i, (option_value, option_label) in enumerate(chain(self.choices, choices)):
-           # If an ID attribute was given, add a numeric index as a suffix,
-           # so that the checkboxes don't all have the same ID attribute.
-           if has_id:
-               final_attrs = dict(final_attrs, id='%s_%s' % (attrs['id'], i))
-               label_for = ' for="%s"' % final_attrs['id']
-           else:
-               label_for = ''
-
-           cb = forms.CheckboxInput(final_attrs, check_test=lambda value: value in str_values)
-           option_value = force_unicode(option_value)
-           rendered_cb = cb.render(name, option_value)
-           option_label = conditional_escape(force_unicode(option_label))
-           if i != 0 and i % self.items_per_row == 0:
-               output.append('</tr><tr>')
-           output.append('<td nowrap><label%s>%s %s</label></td>' % (label_for, rendered_cb, option_label))
-       output.append('</tr></table>')
-       return mark_safe('\n'.join(output))
+    items_per_row = 2 # Number of items per row
+    
+    def render(self, name, value, attrs=None, choices=()):
+        if value is None: value = []
+        has_id = attrs and 'id' in attrs
+        final_attrs = self.build_attrs(attrs, name=name)
+        output = ['<table  style="width:99%;"><tr>']
+        # Normalize to strings
+        str_values = set([force_unicode(v) for v in value])
+        for i, (option_value, option_label) in enumerate(chain(self.choices, choices)):
+            # If an ID attribute was given, add a numeric index as a suffix,
+            # so that the checkboxes don't all have the same ID attribute.
+            if has_id:
+                final_attrs = dict(final_attrs, id='%s_%s' % (attrs['id'], i))
+                label_for = ' for="%s"' % final_attrs['id']
+            else:
+                label_for = ''
+    
+            cb = forms.CheckboxInput(final_attrs, check_test=lambda value: value in str_values)
+            option_value = force_unicode(option_value)
+            rendered_cb = cb.render(name, option_value)
+            option_label = conditional_escape(force_unicode(option_label))
+            if i != 0 and i % self.items_per_row == 0:
+                output.append('</tr><tr>')
+            output.append('<td nowrap><label%s>%s %s</label></td>' % (label_for, rendered_cb, option_label))
+        output.append('</tr></table>')
+        return mark_safe('\n'.join(output))
 
 
 
@@ -85,8 +81,8 @@ class HorizRadioRenderer(forms.RadioSelect.renderer):
         instead of vertically.
     """
     def render(self):
-            """Outputs radios"""
-            return mark_safe(u'\n'.join([u' %s&nbsp;&nbsp; \n ' % w for w in self]))
+        """Outputs radios"""
+        return mark_safe(u'\n'.join([u' %s&nbsp;&nbsp; \n ' % w for w in self]))
 
 
 class TdRadioRenderer(forms.RadioSelect.renderer):
@@ -94,9 +90,9 @@ class TdRadioRenderer(forms.RadioSelect.renderer):
     this overrides widget method to put radio buttons in td's
     """
     def render(self):
-            """Outputs radios"""
-            #return mark_safe(u'\n'.join([u'%s\n' % w for w in self]))
-            return mark_safe(u'\n'.join([u'<td class="border " style="padding"> %s </td>\n' % w for w in self]))
+        """Outputs radios"""
+        #return mark_safe(u'\n'.join([u'%s\n' % w for w in self]))
+        return mark_safe(u'\n'.join([u'<td class="border " style="padding"> %s </td>\n' % w for w in self]))
 
 class TdNoTextRadioRenderer(forms.RadioSelect.renderer):
     """ 

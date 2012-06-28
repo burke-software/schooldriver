@@ -17,13 +17,20 @@ def is_number(x):
     except ValueError:
         return False
     
-def i_to_column_letter(i):
+def i_to_column_letter(column_number):
     """ Convert iterator into column letter (a,b,c.....aa,ab,etc)
     1 = a
     2 = b
     """
-    i += 96
-    return chr(i)
+    # Since we convert to spreadsheet columns which contain multiple letters we need to build the string of letters
+    column_name = ""
+    dividend = column_number
+    while dividend > 0:
+        # mod division by 26 (letters in alphebet) plus 96 to offset into character range for str converstion
+        modulo = (dividend - 1) % 26
+        column_name = chr(65 + modulo) + column_name
+        dividend = int((dividend - modulo) / 26)
+    return column_name
 
 class xlsReport:
     # Generate a generic xls report based on given data in array.
