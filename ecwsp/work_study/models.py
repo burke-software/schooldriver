@@ -408,7 +408,6 @@ class StudentWorker(Student):
     am_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="am_student_set")
     pm_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="pm_student_set")
     
-    
     class Meta:
         ordering = ('inactive','lname','fname',)
     
@@ -421,7 +420,13 @@ class StudentWorker(Student):
             return ""
     company.allow_tags = True
     
-    
+    @property
+    def fax(self):
+        """ Legacy "fax" support
+        """
+        if self.transport_exception == "PM":
+            return True
+        return False
     
     def get_day_as_iso_date(self):
         if self.day == 'M':
