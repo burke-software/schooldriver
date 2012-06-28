@@ -279,7 +279,9 @@ def grade_report(request):
     
     if request.method == 'POST':
         if 'student_grade' in request.POST:
-            return grade_reports.student_grade(request)
+            form = StudentGradeReportWriterForm(request.POST, request.FILES)
+            if form.is_valid():
+                return grade_reports.student_grade(request, form)
         elif 'aggregate_grade_report' in request.POST:
             return grade_reports.aggregate_grade_report(request)
         elif 'fail_report' in request.POST:

@@ -50,32 +50,30 @@ def fail_report(request):
         report = xlsReport(data, titles, "fail_report.xls", heading="Failure Report")
         return report.finish()
         
-def student_grade(request):
-    form = StudentGradeReportWriterForm(request.POST, request.FILES)
-    if form.is_valid():
-        data = form.cleaned_data
-        if data['template']:
-            # use selected template
-            template = data['template']
-            template_path = template.get_template_path(request)
-            if not template_path:
-                form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
-                return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
-            report_card = template.report_card
-            transcript = template.transcript
-        else:
-            # or use uploaded template, saving it to temp file
-            template = request.FILES['upload_template']
-            tmpfile = mkstemp()[1]
-            f = open(tmpfile, 'wb')
-            f.write(template.read())
-            f.close()
-            template_path = tmpfile
-            report_card = True
-            transcript = True
-        format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
-        return pod_report_grade(template_path, options=data, students=form.get_students(data), format=format, report_card=report_card, transcript=transcript)
-        
+def student_grade(request, form):
+    data = form.cleaned_data
+    if data['template']:
+        # use selected template
+        template = data['template']
+        template_path = template.get_template_path(request)
+        if not template_path:
+            form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
+            #return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
+        report_card = template.report_card
+        transcript = template.transcript
+    else:
+        # or use uploaded template, saving it to temp file
+        template = request.FILES['upload_template']
+        tmpfile = mkstemp()[1]
+        f = open(tmpfile, 'wb')
+        f.write(template.read())
+        f.close()
+        template_path = tmpfile
+        report_card = True
+        transcript = True
+    file_format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
+    return pod_report_grade(template_path, options=data, students=form.get_students(data), format=file_format, report_card=report_card,
+                            transcript=transcript)
 
 def aggregate_grade_report(request):
     from ecwsp.grades.models import Grade
