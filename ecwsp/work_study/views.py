@@ -33,7 +33,7 @@ from django.http import HttpResponseRedirect
 from django.template import RequestContext
 
 from ecwsp.work_study.models import StudentWorker, Contact, TimeSheet, WorkTeam, Company, ClientVisit, StudentInteraction, CompContract
-from ecwsp.work_study.models import PaymentOption, CompanyHistory
+from ecwsp.work_study.models import PaymentOption, CompanyHistory, Attendance
 from ecwsp.administration.models import Configuration, AccessLog
 from ecwsp.work_study.forms import ChangeSupervisorForm, TimeSheetForm, ReportTemplateForm, DolForm, CompanyContactForm1
 from ecwsp.work_study.forms import  CompanyContactForm2, CompanyContactForm3, ReportBuilderForm, AddSupervisor
