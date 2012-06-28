@@ -308,7 +308,8 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                     setattr(year, 'mp' + str(i) + 'ave', "")
                     i += 1
                 
-                year.ave = student.calculate_gpa_year(year)
+                year.ave = student.calculate_gpa_year(year, for_date)
+                print year.ave
                 
                 # Attendance for year
                 year.total_days = year.get_number_days()
