@@ -71,8 +71,6 @@ class Importer:
             args += ["--port=%s" % database['PORT']]
         args += [database['NAME']]
         
-        mysql_as_string = None
-        #below is only available in python 2.7. commented out option does not
         new_version = (2,7)
         current_version = sys.version_info
         if current_version >= new_version:
