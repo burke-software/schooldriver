@@ -92,7 +92,7 @@ class ImageWithThumbsFieldFile(ImageFieldFile):
                 # you can use another thumbnailing function if you like
                 thumb_content = generate_thumb(content, size, split[1])
                 
-                thumb_name_ = self.storage.save(thumb_name, thumb_content)        
+                thumb_name_ = self.storage.save(thumb_name, thumb_content)
                 
                 if not thumb_name == thumb_name_:
                     raise ValueError('There is already a file named %s' % thumb_name)
@@ -161,3 +161,36 @@ class ImageWithThumbsField(ImageField):
         self.height_field=height_field
         self.sizes = sizes
         super(ImageField, self).__init__(**kwargs)
+
+def regenerate_thumbs():
+    """
+    Method that can regenerate all the ImageWithThumbsField instances of
+    a Django installation. This can be ran from the thumbs_regenerate.py
+    script.
+    """
+
+    import settings, os
+    from main.thumbs import ImageWithThumbsField
+    from django.db import models
+
+    thumb_models = []
+    for m in models.get_models():
+        for f in m._meta.fields:
+            if isinstance(f, ImageWithThumbsField):
+                thumb_models.append((m, f))
+   
+    for m,f in thumb_models:
+        for o in m.objects.all():
+            img_file = getattr(o, f.name)
+            print "Converting %s" % img_file.name
+            for size in f.sizes:
+                (w,h) = size
+                split = img_file.name.rsplit('.',1)
+                thumb_name = '%s.%sx%s.%s' % (split[0],w,h,split[1])
+                if os.path.isfile("%s%s" % (settings.MEDIA_ROOT, thumb_name)):
+                    print "\tSize %sx%s already exists" % (w,h)
+                    continue
+
+                thumb_content = generate_thumb(img_file, size, split[1])
+                thumb_name_ = img_file.storage.save(thumb_name, thumb_content)
+                print "\tSize %sx%s created" % (w,h)
