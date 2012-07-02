@@ -71,15 +71,20 @@ class Importer:
             args += ["--port=%s" % database['PORT']]
         args += [database['NAME']]
         
-        #below is only available in python 2.7. Until I have time to talk with David about updating the server, using older coding
-        #mysql_as_string = subprocess.check_output('mysqldump %s' % (' '.join(args),),shell=True)        
-        mysql_as_string = subprocess.Popen('mysqldump %s' % (' '.join(args),),shell=True).communicate()[0]
+        mysql_as_string = None
+        #below is only available in python 2.7. commented out option does not
+        new_version = (2,7)
+        current_version = sys.version_info
+        if current_version >= new_version:
+            mysql_as_string = subprocess.check_output('mysqldump %s' % (' '.join(args),),shell=True)
+        else:
+            mysql_as_string = subprocess.Popen('mysqldump %s' % (' '.join(args),),shell=True).communicate()[0]
         return ContentFile(mysql_as_string)
         
     def make_log_entry(self, user_note=""):
         self.log = ImportLog(user=self.user, user_note=user_note, import_file=self.file)
         file_name = datetime.datetime.now().strftime("%Y%m%d%H%M") + ".sql"
-        if settings.BASE_URL != 'http://localhost:8000':
+        if (hasattr(settings, 'BASE_URL') and settings.BASE_URL != 'http://localhost:8000') or not hasattr(settings, 'BASE_URL'):
             self.log.sql_backup.save(file_name, self.do_mysql_backup())
         self.log.save()
         # Clean up old log files
