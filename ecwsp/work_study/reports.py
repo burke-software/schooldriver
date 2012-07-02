@@ -226,27 +226,43 @@ def am_route_attendance(request):
         else:
             students =  StudentWorker.objects.filter(pm_route=route)
         for student in students:
-            row = [
-                student.placement,
-                student.placement.address,
-                student.placement.city,
-                student.placement.state,
-                student.placement.zip,
-                student.primary_contact.fname,
-                student.primary_contact.lname,
-                student.primary_contact.phone,
+            row = []
+            if hasattr(student,'placement') and student.placement:
+                row += [
+                    student.placement,
+                    student.placement.address,
+                    student.placement.city,
+                    student.placement.state,
+                    student.placement.zip,
+                    ]
+            else:
+                row += ['', '', '', '', '']
+            if hasattr(student,'primary_contact') and student.primary_contact:
+                row += [
+                    student.primary_contact.fname,
+                    student.primary_contact.lname,
+                    student.primary_contact.phone,
+                ]
+            else:
+                row += ['', '', '']
+            row += [
                 student.year,
                 student.day,
                 student.sex,
                 student.fname,
                 student.lname,
                 student.phone,
-                student.placement.time_earliest,
-                student.placement.time_latest,
-                student.placement.time_ideal,
-                student.placement.am_transport_group,
-                student.get_transport_exception_display(),
+            ]
+            if hasattr(student,'placement') and student.placement:
+                row += [
+                    student.placement.time_earliest,
+                    student.placement.time_latest,
+                    student.placement.time_ideal,
+                    student.placement.am_transport_group,
                 ]
+            else:
+                row += ['', '', '', '']
+            row += [student.get_transport_exception_display(), ]
             data.append(row)
         if not report:
             report = xlsReport(data, titles, fileName, heading=unicode(route))
