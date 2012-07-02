@@ -170,7 +170,7 @@ def regenerate_thumbs():
     """
 
     import settings, os
-    from main.thumbs import ImageWithThumbsField
+    from thumbs import ImageWithThumbsField
     from django.db import models
 
     thumb_models = []
