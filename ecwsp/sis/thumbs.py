@@ -187,7 +187,10 @@ def regenerate_thumbs():
             for size in f.sizes:
                 (w,h) = size
                 split = img_file.name.rsplit('.',1)
-                thumb_name = '%s.%sx%s.%s' % (split[0],w,h,split[1])
+                try:
+                    thumb_name = '%s.%sx%s.%s' % (split[0],w,h,split[1])
+                except:
+                    pass
                 if os.path.isfile("%s%s" % (settings.MEDIA_ROOT, thumb_name)):
                     print "\tSize %sx%s already exists" % (w,h)
                     continue
