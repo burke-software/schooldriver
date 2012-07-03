@@ -169,7 +169,8 @@ def regenerate_thumbs():
     script.
     """
 
-    import settings, os
+    import os
+    from django.conf import settings
     from thumbs import ImageWithThumbsField
     from django.db import models
 
