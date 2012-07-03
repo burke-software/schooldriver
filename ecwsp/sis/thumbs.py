@@ -104,8 +104,8 @@ class ImageWithThumbsFieldFile(ImageFieldFile):
             for size in self.field.sizes:
                 (w,h) = size
                 split = name.rsplit('.',1)
-                thumb_name = '%s.%sx%s.%s' % (split[0],w,h,split[1])
                 try:
+                    thumb_name = '%s.%sx%s.%s' % (split[0],w,h,split[1])
                     self.storage.delete(thumb_name)
                 except:
                     pass
