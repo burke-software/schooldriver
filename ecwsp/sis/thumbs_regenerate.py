@@ -7,3 +7,4 @@ from ecwsp.sis import thumbs
 
 setup_environ(settings)
 regenerate_thumbs()
+
