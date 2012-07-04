@@ -50,7 +50,6 @@ def benchmark_grade_upload(request, id):
     """ Grades can only be entered/changed by spreadsheet upload. """
     course = Course.objects.get(id=id)
     message = ''
-<<<<<<< HEAD
     mps = ()
     available_mps = course.marking_period.filter(Q(active=True) | Q(start_date__lt=date.today))
     show_descriptions = True
@@ -92,7 +91,7 @@ def benchmark_grade_upload(request, id):
                                 category.average = agg.scale.spruce(agg.cachedValue)
                             except:
                                 category.average = None
-=======
+
     if request.method == 'POST' and 'upload' in request.POST:
         import_form = GradeUpload(request.POST, request.FILES)
         if import_form.is_valid():
@@ -100,7 +99,6 @@ def benchmark_grade_upload(request, id):
             importer = BenchmarkGradeImporter(request.FILES['file'], request.user)
             mark_count = importer.import_grades(course, import_form.cleaned_data['marking_period'])
             message = str(mark_count) + " marks were imported."
->>>>>>> ee875ffbcbb33e3549c37c4b181d840e07e1b10d
     else:
         import_form = GradeUpload()
         
@@ -127,12 +125,8 @@ def benchmark_grade_upload(request, id):
         'course': course,
         'import_form': import_form,
         'message': message,
-<<<<<<< HEAD
         'mps': mps,
-        'show_descriptions': show_descriptions
-=======
-        'mps': mps
->>>>>>> ee875ffbcbb33e3549c37c4b181d840e07e1b10d
+        'show_descriptions': show_descriptions,
     }, RequestContext(request, {}),)
 
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
