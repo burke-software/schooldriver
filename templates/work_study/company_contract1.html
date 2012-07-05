@@ -17,15 +17,15 @@
 		<form action="." method="post">
 			{{ form.non_field_errors }}
 			<table>
-				<tr><th><label for="id_company_name">{{ form.company_name.label }}:</label></th>
+				<tr><th>{{ form.company_name.label }}:</th>
 					<td>{{ form.company_name }} {{ form.company_name.errors }}</td></tr>
-				<tr><th><label for="id_name">{{ form.name.label }}:</label></th>
+				<tr><th>{{ form.name.label }}:</th>
 					<td>{{ form.name }} {{ form.name.errors }}</td></tr>
-				<tr><th><label for="id_title">{{ form.title.label }}:</label></th>
+				<tr><th>{{ form.title.label }}:</th>
 					<td>{{ form.title }} {{ form.title.errors }}</td></tr>
-				<tr><th><label for="id_date">{{ form.date.label }}:</label></th>
+				<tr><th>{{ form.date.label }}:</th>
 					<td>{{ form.date }} {{ form.date.errors }}</td></tr>
-				<tr><th><label for="id_number_students">{{ form.number_students.label }}:</label></th>
+				<tr><th>{{ form.number_students.label }}:></th>
 					<td>{{ form.number_students }} {{ form.number_students.errors }}</td></tr>
 			</table>
 			<input type="submit" value="Next" style="width:150px;"/>
