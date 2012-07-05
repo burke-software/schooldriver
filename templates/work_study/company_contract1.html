@@ -15,11 +15,20 @@
 	<br/>
 	<div class="contract">
 		<form action="." method="post">
+			{{ form.non_field_errors }}
 			<table>
-			{{ form.as_table }}
+				<tr><th><label for="id_company_name">{{ form.company_name.label }}:</label></th>
+					<td>{{ form.company_name }} {{ form.company_name.errors }}</td></tr>
+				<tr><th><label for="id_name">{{ form.name.label }}:</label></th>
+					<td>{{ form.name }} {{ form.name.errors }}</td></tr>
+				<tr><th><label for="id_title">{{ form.title.label }}:</label></th>
+					<td>{{ form.title }} {{ form.title.errors }}</td></tr>
+				<tr><th><label for="id_date">{{ form.date.label }}:</label></th>
+					<td>{{ form.date }} {{ form.date.errors }}</td></tr>
+				<tr><th><label for="id_number_students">{{ form.number_students.label }}:</label></th>
+					<td>{{ form.number_students }} {{ form.number_students.errors }}</td></tr>
 			</table>
 			<input type="submit" value="Next" style="width:150px;"/>
 		</form>
 	</div>
 {% endblock %}
-
