@@ -394,7 +394,7 @@ def view_student(request, id=None):
     #Standard Tests
     from ecwsp.administration.models import Configuration
     from ecwsp.schedule.models import StandardCategory, StandardCategoryGrade, StandardTest, StandardTestResult
-    std_test_config = Configuration.get_or_default("Standard Tests in View Student",default="True")
+    std_test_config = Configuration.get_or_default("Standard Tests in View Student",default="False")
     if std_test_config.value.lower() == "false" or std_test_config.value.lower == "f":
         std = None
     else:
