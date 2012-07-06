@@ -48,8 +48,8 @@ class CollegeEnrollment(models.Model):
     search_date = models.DateField(blank=True, null=True)
     college = models.ForeignKey(College)
     program_years = models.CharField(max_length=1, choices=program_years_choices, blank=True, null=True)
-    begin = models.DateField()
-    end = models.DateField()
+    begin = models.DateField(blank=True,null=True)
+    end = models.DateField(blank=True,null=True)
     status_choices = (
         ('F', 'Full-time'),
         ('H', 'Half-time'),
@@ -137,7 +137,7 @@ class AlumniPhoneNumber(models.Model):
         return self.phone_number
 
 class Alumni(models.Model):
-    student = models.OneToOneField(Student)
+    student = models.OneToOneField(Student, unique=True)
     college = models.ForeignKey(College, blank=True, null=True, related_name="college_student")
     graduated = models.BooleanField()
     graduation_date = models.DateField(blank=True, null=True, help_text="Expected or actual graduation date")
