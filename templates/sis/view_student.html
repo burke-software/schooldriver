@@ -46,364 +46,364 @@
 	Include inactive in search?
     </span>
     {% if student %}
-<div id="student-header">
-      <div id="name-and-grade">
-        <h1 class="sv-name">{{ student }}</h1>
-        {{ student.year }} {% if location %} at {{ location }} {% endif %}
-      </div>
-      
-      <div id="transcript">   
-      <a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a><br/>
-      {% if perms.sis.change_student %} <a href="{% url admin:sis_student_change student.id %}"> Edit Profile </a><br /> {% endif %}
-      Profile generated on {{ date }}
-      </div>
-</div>
-<div class="sv-section"><a id="a_general" class="section-header" href="javascript:void(0)">General Information</a> 
-<div class="sv-main">
-	<!--<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>-->
-	{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img style="max-height: 250px;" src="{{ student.pic.url_530x400 }}"/></a> </div>{% endif %}
-    <table class="section-table">
-        <tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname|default_if_none:"" }} {{ student.lname }} </td></tr>
-        <tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
-        <tr><td class="thing"> Birthdate </td><td> {{ student.bday }} </td></tr>
-        <tr><td class="thing"> Primary Cohort </td><td> {{ student.primary_cohort }} </td></tr>
-        <tr><td class="thing"> Alert </td><td> {{ student.alert }} </td></tr>
-        <tr><td class="thing"> Notes </td><td> {{ student.notes }} </td></tr>
-        <tr><td class="thing"> Parent/Guardian </td><td> {{ student.parent_guardian }} </td></tr>
-        <tr><td class="thing"> Address </td><td> {{ student.street }} <br /> {{ student.city }}, {{ student.state }} {{ student.zip }} </td></tr>
-        <tr><td class="thing"> Parent E-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
-        <tr><td class="thing"> Student Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
-    </table>
-        
-    <div class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)">Additional Information</a>
-     
-    <div class="sv-main" style="display:none;">           
-        <table class="subsection-table">
-            {% if perms.sis.view_ssn_student %} <tr><td class="thing"> SSN </td><td> {{ student.ssn }} {% endif %}
-            
-            <tr><td class="thing"> Emergency Contact(s) </td><td> {% for ec in emergency_contacts %}
-            <p> {{ ec.fname }} {{ ec.lname }}<br />
-            {% for number in ec.emergencycontactnumber_set.all %} <span class="thing">{{ number.get_type_display }}:</span> {{ number.number }} {% endfor %} <br />
-            {% endfor %} </td></tr>
-            
-            {% if sib %}
-            <tr><td class="thing"> Sibling(s) </td><td> {% for sib in siblings %} {{ sib }} {% endfor %}</td></tr>
-            {% endif %}
-            
-            {% if cohort %}
-            <tr><td class="thing"> Cohort </td><td>{% for cohort in cohorts %} {{ cohort }} {% endfor %}</td></tr>
-            {% endif %}
-        </table>
-    </div> <!-- .sv-main -->
-    </div> <!-- .sv-section -->
-</div> <!-- .sv-main -->
-</div> <!-- .sv-section -->
-        
-        <div class="sv-section noprint"><a id="a_grades" class="section-header noprint" href="javascript:void(0)">Grades (GPA: {{ student.gpa }})</a>
-        <div class="sv-main">
-
-        {% for year in years %}
-				{% if forloop.first %}
-						<div id="toggle_subsection_grade" class="sv-section noprint">
-								<a class="section-header subsection noprint sub-expanded" href="javascript:void(0)" id="toggle_section_grade" onclick='options_toggle(id)'>{{ year }}</a>
-								<div class="sv-main" style="display:block;">
-				
-				{% else %}
-						
-        <div id="toggle_subsection_grade" class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)" id="toggle_section_grade" onclick='options_toggle(id)'>{{ year }}</a>
-				
-        <div class="sv-main">
-				{% endif %}
+	<div id="student-header">
+		  <div id="name-and-grade">
+			<h1 class="sv-name">{{ student }}</h1>
+			{{ student.year }} {% if location %} at {{ location }} {% endif %}
+		  </div>
+		  
+		  <div id="transcript">   
+		  <a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a><br/>
+		  {% if perms.sis.change_student %} <a href="{% url admin:sis_student_change student.id %}"> Edit Profile </a><br /> {% endif %}
+		  Profile generated on {{ date }}
+		  </div>
+	</div>
+	<div class="sv-section"><a id="a_general" class="section-header" href="javascript:void(0)">General Information</a> 
+	<div class="sv-main">
+		<!--<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>-->
+		{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img style="max-height: 250px;" src="{{ student.pic.url_530x400 }}"/></a> </div>{% endif %}
+		<table class="section-table">
+			<tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname|default_if_none:"" }} {{ student.lname }} </td></tr>
+			<tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
+			<tr><td class="thing"> Birthdate </td><td> {{ student.bday }} </td></tr>
+			<tr><td class="thing"> Primary Cohort </td><td> {{ student.primary_cohort }} </td></tr>
+			<tr><td class="thing"> Alert </td><td> {{ student.alert }} </td></tr>
+			<tr><td class="thing"> Notes </td><td> {{ student.notes }} </td></tr>
+			<tr><td class="thing"> Parent/Guardian </td><td> {{ student.parent_guardian }} </td></tr>
+			<tr><td class="thing"> Address </td><td> {{ student.street }} <br /> {{ student.city }}, {{ student.state }} {{ student.zip }} </td></tr>
+			<tr><td class="thing"> Parent E-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
+			<tr><td class="thing"> Student Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
+		</table>
+			
+		<div class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)">Additional Information</a>
+		 
+		<div class="sv-main" style="display:none;">           
 			<table class="subsection-table">
-                    <tr>
-                        <th> Courses </th>
-                        <th> Teacher </th>
-                        {% for mp in year.mps %}
-                            <th> {{ mp }} </th>
-                        {% endfor %}
-                        <th> Final </th>
-                    </tr>
-                    {% for course in year.courses %}
-                    <tr>
-                        <td> {{ course.shortname }} </td>
-                        <td> {{ course.teacher }} </td>
-                        <!-- The logic gets complicated here so html generation is done in python, enjoy your spaghetti -->
-                        {{ course.grade_html|safe }}
-                    </tr>
-                    {% endfor %}
-            </table>
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-        {% endfor %}
-</div> <!-- .sv-main -->
-</div> <!-- .sv-section -->
-        
-        {% if current_mp %}
-        <div class="sv-section noprint"><a id="a_schedule" class="section-header noprint" href="javascript:void(0)">{{ current_mp }} Schedule</a>
-        <div class="sv-main">
-
-                <table class="section-table">
-                    <tr> <th></th>
-                    {% for day in schedule_days %}
-                        <th> {{ day }} </th>
-                    {% endfor %}
-                    </tr>
-                    {% for period in periods %}
-                        <tr>
-                            <td> {{ period.name }} <br/> {{ period.start_time }} - {{ period.end_time }} </td>
-                            {% for pday in period.days %}
-                                <td> {{ pday.course.shortname }} <br/> {{ pday.location }} </td>
-                            {% endfor %}
-                        </tr>
-                    {% endfor %}
-                    </tr>
-                </table>
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-        {% endif %}
-        
-        {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
-        <div class="sv-section noprint"><a id="a_discipline" class="section-header noprint" href="javascript:void(0)">Discipline</a>
-        <div class="sv-main">
-                <table class="section-table">
-                    <tr>
-                        <th>Date</th>
-                        <th>Incident</th>
-                        <th>Teacher</th>
-                        <th>Comments</th>
-                    </tr>
-                    {% for discipline in disciplines %}
-                        <tr><td style="min-width:90px;"> {{ discipline.date }} </td><td> {{ discipline.infraction }} </td><td  style="min-width:92px;"> {{ discipline.teacher }} </td><td> {{ discipline.comments }} </td></tr>
-                    {% endfor %}
-                </table>
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-        {% endif %}
-        
-        
-	{% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
-	<div class="sv-section noprint"><a id="a_attendance" class="section-header noprint" href="javascript:void(0)" >Attendance</a>
-        <div class="sv-main">
-            <table class="section-table">
-                <tr>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Notes</th>
-                </tr>
-                {% for attendance in attendances %}
-                    <tr><td> {{ attendance.date }} </td><td> {{ attendance.status }} </td><td> {{ attendance.notes }} </td></tr>
-                {% endfor %}
-            </table>
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-	{% endif %}
-        
-        {% if student_interactions %}
-        <div class="sv-section noprint"><a id="a_student_interactions" class="section-header noprint" href="javascript:void(0)">Student Interactions</a>
-        <div class="sv-main">
-            <div class="section-div">
-                {% for student_interaction in student_interactions %}
-                    Type {{ student_interaction.type }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reported by: {{ student_interaction.reported_by }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date: {{ student_interaction.date }}
-                    <p style="max-width: 800px;">
-                        {{ student_interaction.comments }}
-                    </p>
-                {% endfor %}
-            </div> <!-- class="section-div" -->
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-        {% endif %}
-        
-        {% if 'ecwsp.alumni' in settings.INSTALLED_APPS and student.alumni %}
-        {% with alumni=student.alumni %}
-        <div class="sv-section"><a id="a_alumni" class="section-header" href="javascript:void(0)">Alumni</a>
-        <div class="sv-main">
-            {% if perms.alumni.change_alumni %}
-                <a href="{% url admin:alumni_alumni_change alumni.id %}"> Edit </a>
-            {% endif %}
-            <table class="section-table">
-                <tr>
-                    <td class="thing"> Current college  </td>
-                    <td> {{ alumni.college }} {% if alumni.graduated %} (Graduated {{ alumni.graduation_date }}) {% endif %} </td>
-                </tr>
-		{% for email in alumni.alumniemail_set.all %}
-                    <tr>
-                        <td class="thing"> Email {{ email.type }} </td>
-                        <td>{{ email }}</td>
-                    </tr>
-                {% endfor %}
-                {% for number in alumni.alumniphonenumber_set.all %}
-                    <tr>
-                        <td class="thing"> Phone Number {{ number.type }} </td>
-                        <td>{{ number }}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-            <div class="sv-section"><a class="section-header subsection sub-expanded" href="javascript:void(0)">Notes</a>
-                <div class="sv-main" style="display: block;"> 
-                <table class="subsection-table">
-                    {% for note in alumni.alumninote_set.all %}
-			<tr>
-			    <td>
-				<h4>{{ note.category }} {% if note.user %} - {% endif %} {{ note.user }} - {{ note.date }} </h4>
-				{{ note.note|safe }}
-			    </td>
-			</tr>
-		    {% endfor %}
-		    {% if perms.alumni.add_alumninote %}
-			<tr id="div_to_insert_new_notes">
-			    <td id="quick_add_alumni_note">
-				<a href="javascript:void(0)" onclick="ajax_quick_add_note()">Quick add note</a>
-			    </td>
-			</tr>
-		    {% endif %}
-                </table>
-                </div>
-            </div>
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-        {% endwith %}
-        {% endif %}
-        
-        {% if 'ecwsp.counseling' in settings.INSTALLED_APPS %}
-        <div class="sv-section noprint"><a id="a_counseling" class="section-header noprint" href="javascript:void(0)">Counseling</a>
-        <div class="sv-main">
-        <div class="section-div">
-		<ul>
-		    {% for meeting in student.studentmeeting_set.all %}
-			<li>
-			    <p>
-			    <h4>
-				{{ meeting.date }}: {{ meeting }}
-				{% if perms.counseling.change_studentmeeting %}
-				- <a href="{% url admin:counseling_studentmeeting_change meeting.id %}">Edit</a>
+				{% if perms.sis.view_ssn_student %} <tr><td class="thing"> SSN </td><td> {{ student.ssn }} {% endif %}
+				
+				<tr><td class="thing"> Emergency Contact(s) </td><td> {% for ec in emergency_contacts %}
+				<p> {{ ec.fname }} {{ ec.lname }}<br />
+				{% for number in ec.emergencycontactnumber_set.all %} <span class="thing">{{ number.get_type_display }}:</span> {{ number.number }} {% endfor %} <br />
+				{% endfor %} </td></tr>
+				
+				{% if sib %}
+				<tr><td class="thing"> Sibling(s) </td><td> {% for sib in siblings %} {{ sib }} {% endfor %}</td></tr>
 				{% endif %}
-			    </h4>
-			    {% if perms.counseling.change_studentmeeting %} 
-				{{ meeting.notes|safe }}
-				{{ meeting.follow_up_action.all }}
-				{{ meeting.follow_up_notes }}
-				{% if meeting.file %}
-				    <a href="{{ meeting.file.url }}">{{ meeting.file }}</a>
+				
+				{% if cohort %}
+				<tr><td class="thing"> Cohort </td><td>{% for cohort in cohorts %} {{ cohort }} {% endfor %}</td></tr>
 				{% endif %}
-			    {% else %} 
-				Details not shown
-			    {% endif %}
-			    <br/>
-			    </p>
-			</li>
-			
-		    {% endfor %}
-		</ul>
-		{% if perms.counseling.change_studentmeeting %}
-		    <a href="{% url admin:counseling_studentmeeting_add %}">Add New</a>
-		{% endif %}
-                
-        </div> <!-- class="section-div"-->
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-        {% endif %}
-    
-    
-    {% if 'ecwsp.admissions' in settings.INSTALLED_APPS and student.appl_student %}
-    {% with appl=student.appl_student %}
-        <div class="sv-section noprint"><a id="a_admissions" class="section-header noprint" href="javascript:void(0)">Admissions</a>
-        <div class="sv-main">
-            {% if perms.admissions.change_applicant %}
-                <a href="{% url admin:admissions_applicant_change student.appl_student.id %}"> Edit </a><br />
-            {% endif %}
-            <table class="section-table">
-                <tr><td class="thing"> Feeder School </td><td> {{ appl.present_school }} </td></tr>
-                <tr><td class="thing"> Ethnicity </td><td> {{ appl.ethnicity }} </td></tr>
-                <tr><td class="thing"> Religion </td><td> {{ appl.religion }} </td></tr>
-                <tr><td class="thing"> Elem Grad yr </td><td> {{ appl.elem_grad_yr }} </td></tr>
-                <tr><td class="thing"> HS Grad yr </td><td> {{ appl.hs_grad_yr }} </td></tr>
-                <tr><td class="thing"> Total Income </td><td> {{ appl.total_income }} </td></tr>
-                <tr><td class="thing"> Adjusted Available Income </td><td> {{ appl.adjusted_available_income }} </td></tr>
-                <tr><td class="thing"> Calculated Payment </td><td> {{ appl.calculated_payment }} </td></tr>
-                
-            </table>
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-    {% endwith %}
-    {% endif %}
-    
-	
-	{% if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS %}
-        <div class="sv-section noprint"><a id="a_volunteer" class="section-header noprint" href="javascript:void(0)">Volunteering</a>
-        <div class="sv-main">
-            <div class="section-div">
-		<ul>
-		    {% for volunteer_site in student.volunteer.volunteersite_set.all %}
-			<li>
-			    <h4>
-				{{ volunteer_site }}
-				{% if perms.volunteer_track.change_volunteer_site %}
-				- <a href="{% url admin:volunteer_track_volunteersite_change volunteer_site.id %}">Edit</a>
-				{% endif %}
-			    </h4>
-			    Hours: {{ volunteer_site.hours_at_site }}
-			    <br/>
-			    {{ volunteer_site.job_description }} 
-			</li>
-		    {% endfor %}
-		</ul>
-		{% if perms.volunteer_track.change_studentmeeting %}
-		<a href="{% url admin:volunteer_track_volunteersite_add %}">Add New</a>
-		{% endif %}
-                
-            </div> <!-- class="section-div"-->
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-        {% endif %}
-	
-	
-        {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %}
-        <div class="sv-section noprint"><a id="a_work_study" class="section-header noprint" href="javascript:void(0)">Work Visits</a>
-        <div class="sv-main">
-            <div class="section-div">
-		    <table>
-		        <tr>
-			        <th>Company</th>
-					<th>Date</th>
-					<th>Notes</th>
-				    <th></th>
-				    
-				</tr>
-				{% for visit in clientvisits %}
-					<tr><td>{{ visit.company }}</td><td>{{ visit.date }}</td><td style="max-width: 800px;">{{ visit.notes }}</td>
-					<td><a href="/admin/work_study/clientvisit/{{ visit.id }}">See More about this visit</tr>
-					{% endfor %}
 			</table>
+		</div> <!-- .sv-main -->
+		</div> <!-- .sv-section -->
+	</div> <!-- .sv-main -->
+	</div> <!-- .sv-section -->
 			
-            </div> <!-- class="section-div"-->
-            
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
-        
-        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Company Placement</a>
-        <div class="sv-main">
-            <div class="section-div">
-                <div class="showoff">Current placement: {{ student.studentworker.placement }} </div>
-                <div class="sv-placement-subhead">Supervisor contact infomation</div>
-                {% if supervisors %}
-                <ul>
-                {% for supervisor in supervisors %}
-                    <li>{{ supervisor }} - {{ supervisor.phone }}</li>
-                {% endfor %}
-                </ul>
-                {% endif %}
-                
-                {% if company_histories %}
-                    <div class="sv-placement-subhead">History</div> <br/>
-                    <ul>
-                    {% for history in company_histories %}
-                        <li>Left {{ history.placement }} on {{ history.date }}</li>
-                    {% endfor %}
-                    </ul>
-                {% endif %}
-            </div> <!-- class="section-div" -->
-        </div> <!-- .sv-main -->
-        </div> <!-- .sv-section -->
+			<div class="sv-section noprint"><a id="a_grades" class="section-header noprint" href="javascript:void(0)">Grades (GPA: {{ student.gpa }})</a>
+			<div class="sv-main">
+	
+			{% for year in years %}
+					{% if forloop.first %}
+							<div id="toggle_subsection_grade" class="sv-section noprint">
+									<a class="section-header subsection noprint sub-expanded" href="javascript:void(0)" id="toggle_section_grade" onclick='options_toggle(id)'>{{ year }}</a>
+									<div class="sv-main" style="display:block;">
+					
+					{% else %}
+							
+			<div id="toggle_subsection_grade" class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)" id="toggle_section_grade" onclick='options_toggle(id)'>{{ year }}</a>
+					
+			<div class="sv-main">
+					{% endif %}
+				<table class="subsection-table">
+						<tr>
+							<th> Courses </th>
+							<th> Teacher </th>
+							{% for mp in year.mps %}
+								<th> {{ mp }} </th>
+							{% endfor %}
+							<th> Final </th>
+						</tr>
+						{% for course in year.courses %}
+						<tr>
+							<td> {{ course.shortname }} </td>
+							<td> {{ course.teacher }} </td>
+							<!-- The logic gets complicated here so html generation is done in python, enjoy your spaghetti -->
+							{{ course.grade_html|safe }}
+						</tr>
+						{% endfor %}
+				</table>
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+			{% endfor %}
+	</div> <!-- .sv-main -->
+	</div> <!-- .sv-section -->
+			
+			{% if current_mp %}
+			<div class="sv-section noprint"><a id="a_schedule" class="section-header noprint" href="javascript:void(0)">{{ current_mp }} Schedule</a>
+			<div class="sv-main">
+	
+					<table class="section-table">
+						<tr> <th></th>
+						{% for day in schedule_days %}
+							<th> {{ day }} </th>
+						{% endfor %}
+						</tr>
+						{% for period in periods %}
+							<tr>
+								<td> {{ period.name }} <br/> {{ period.start_time }} - {{ period.end_time }} </td>
+								{% for pday in period.days %}
+									<td> {{ pday.course.shortname }} <br/> {{ pday.location }} </td>
+								{% endfor %}
+							</tr>
+						{% endfor %}
+						</tr>
+					</table>
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+			{% endif %}
+			
+			{% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
+			<div class="sv-section noprint"><a id="a_discipline" class="section-header noprint" href="javascript:void(0)">Discipline</a>
+			<div class="sv-main">
+					<table class="section-table">
+						<tr>
+							<th>Date</th>
+							<th>Incident</th>
+							<th>Teacher</th>
+							<th>Comments</th>
+						</tr>
+						{% for discipline in disciplines %}
+							<tr><td style="min-width:90px;"> {{ discipline.date }} </td><td> {{ discipline.infraction }} </td><td  style="min-width:92px;"> {{ discipline.teacher }} </td><td> {{ discipline.comments }} </td></tr>
+						{% endfor %}
+					</table>
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+			{% endif %}
+			
+			
+		{% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
+		<div class="sv-section noprint"><a id="a_attendance" class="section-header noprint" href="javascript:void(0)" >Attendance</a>
+			<div class="sv-main">
+				<table class="section-table">
+					<tr>
+						<th>Date</th>
+						<th>Status</th>
+						<th>Notes</th>
+					</tr>
+					{% for attendance in attendances %}
+						<tr><td> {{ attendance.date }} </td><td> {{ attendance.status }} </td><td> {{ attendance.notes }} </td></tr>
+					{% endfor %}
+				</table>
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+		{% endif %}
+			
+			{% if student_interactions %}
+			<div class="sv-section noprint"><a id="a_student_interactions" class="section-header noprint" href="javascript:void(0)">Student Interactions</a>
+			<div class="sv-main">
+				<div class="section-div">
+					{% for student_interaction in student_interactions %}
+						Type {{ student_interaction.type }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reported by: {{ student_interaction.reported_by }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date: {{ student_interaction.date }}
+						<p style="max-width: 800px;">
+							{{ student_interaction.comments }}
+						</p>
+					{% endfor %}
+				</div> <!-- class="section-div" -->
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+			{% endif %}
+			
+			{% if 'ecwsp.alumni' in settings.INSTALLED_APPS and student.alumni %}
+			{% with alumni=student.alumni %}
+			<div class="sv-section"><a id="a_alumni" class="section-header" href="javascript:void(0)">Alumni</a>
+			<div class="sv-main">
+				{% if perms.alumni.change_alumni %}
+					<a href="{% url admin:alumni_alumni_change alumni.id %}"> Edit </a>
+				{% endif %}
+				<table class="section-table">
+					<tr>
+						<td class="thing"> Current college  </td>
+						<td> {{ alumni.college }} {% if alumni.graduated %} (Graduated {{ alumni.graduation_date }}) {% endif %} </td>
+					</tr>
+			{% for email in alumni.alumniemail_set.all %}
+						<tr>
+							<td class="thing"> Email {{ email.type }} </td>
+							<td>{{ email }}</td>
+						</tr>
+					{% endfor %}
+					{% for number in alumni.alumniphonenumber_set.all %}
+						<tr>
+							<td class="thing"> Phone Number {{ number.type }} </td>
+							<td>{{ number }}</td>
+						</tr>
+					{% endfor %}
+				</table>
+				<div class="sv-section"><a class="section-header subsection sub-expanded" href="javascript:void(0)">Notes</a>
+					<div class="sv-main" style="display: block;"> 
+					<table class="subsection-table">
+						{% for note in alumni.alumninote_set.all %}
+				<tr>
+					<td>
+					<h4>{{ note.category }} {% if note.user %} - {% endif %} {{ note.user }} - {{ note.date }} </h4>
+					{{ note.note|safe }}
+					</td>
+				</tr>
+				{% endfor %}
+				{% if perms.alumni.add_alumninote %}
+				<tr id="div_to_insert_new_notes">
+					<td id="quick_add_alumni_note">
+					<a href="javascript:void(0)" onclick="ajax_quick_add_note()">Quick add note</a>
+					</td>
+				</tr>
+				{% endif %}
+					</table>
+					</div>
+				</div>
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+			{% endwith %}
+			{% endif %}
+			
+			{% if 'ecwsp.counseling' in settings.INSTALLED_APPS %}
+			<div class="sv-section noprint"><a id="a_counseling" class="section-header noprint" href="javascript:void(0)">Counseling</a>
+			<div class="sv-main">
+			<div class="section-div">
+			<ul>
+				{% for meeting in student.studentmeeting_set.all %}
+				<li>
+					<p>
+					<h4>
+					{{ meeting.date }}: {{ meeting }}
+					{% if perms.counseling.change_studentmeeting %}
+					- <a href="{% url admin:counseling_studentmeeting_change meeting.id %}">Edit</a>
+					{% endif %}
+					</h4>
+					{% if perms.counseling.change_studentmeeting %} 
+					{{ meeting.notes|safe }}
+					{{ meeting.follow_up_action.all }}
+					{{ meeting.follow_up_notes }}
+					{% if meeting.file %}
+						<a href="{{ meeting.file.url }}">{{ meeting.file }}</a>
+					{% endif %}
+					{% else %} 
+					Details not shown
+					{% endif %}
+					<br/>
+					</p>
+				</li>
+				
+				{% endfor %}
+			</ul>
+			{% if perms.counseling.change_studentmeeting %}
+				<a href="{% url admin:counseling_studentmeeting_add %}">Add New</a>
+			{% endif %}
+					
+			</div> <!-- class="section-div"-->
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+			{% endif %}
+		
+		
+		{% if 'ecwsp.admissions' in settings.INSTALLED_APPS and student.appl_student %}
+		{% with appl=student.appl_student %}
+			<div class="sv-section noprint"><a id="a_admissions" class="section-header noprint" href="javascript:void(0)">Admissions</a>
+			<div class="sv-main">
+				{% if perms.admissions.change_applicant %}
+					<a href="{% url admin:admissions_applicant_change student.appl_student.id %}"> Edit </a><br />
+				{% endif %}
+				<table class="section-table">
+					<tr><td class="thing"> Feeder School </td><td> {{ appl.present_school }} </td></tr>
+					<tr><td class="thing"> Ethnicity </td><td> {{ appl.ethnicity }} </td></tr>
+					<tr><td class="thing"> Religion </td><td> {{ appl.religion }} </td></tr>
+					<tr><td class="thing"> Elem Grad yr </td><td> {{ appl.elem_grad_yr }} </td></tr>
+					<tr><td class="thing"> HS Grad yr </td><td> {{ appl.hs_grad_yr }} </td></tr>
+					<tr><td class="thing"> Total Income </td><td> {{ appl.total_income }} </td></tr>
+					<tr><td class="thing"> Adjusted Available Income </td><td> {{ appl.adjusted_available_income }} </td></tr>
+					<tr><td class="thing"> Calculated Payment </td><td> {{ appl.calculated_payment }} </td></tr>
+					
+				</table>
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+		{% endwith %}
+		{% endif %}
+		
+		
+		{% if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS %}
+			<div class="sv-section noprint"><a id="a_volunteer" class="section-header noprint" href="javascript:void(0)">Volunteering</a>
+			<div class="sv-main">
+				<div class="section-div">
+			<ul>
+				{% for volunteer_site in student.volunteer.volunteersite_set.all %}
+				<li>
+					<h4>
+					{{ volunteer_site }}
+					{% if perms.volunteer_track.change_volunteer_site %}
+					- <a href="{% url admin:volunteer_track_volunteersite_change volunteer_site.id %}">Edit</a>
+					{% endif %}
+					</h4>
+					Hours: {{ volunteer_site.hours_at_site }}
+					<br/>
+					{{ volunteer_site.job_description }} 
+				</li>
+				{% endfor %}
+			</ul>
+			{% if perms.volunteer_track.change_studentmeeting %}
+			<a href="{% url admin:volunteer_track_volunteersite_add %}">Add New</a>
+			{% endif %}
+					
+				</div> <!-- class="section-div"-->
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+			{% endif %}
+		
+		
+			{% if 'ecwsp.work_study' in settings.INSTALLED_APPS %}
+			<div class="sv-section noprint"><a id="a_work_study" class="section-header noprint" href="javascript:void(0)">Work Visits</a>
+			<div class="sv-main">
+				<div class="section-div">
+				<table>
+					<tr>
+						<th>Company</th>
+						<th>Date</th>
+						<th>Notes</th>
+						<th></th>
+						
+					</tr>
+					{% for visit in clientvisits %}
+						<tr><td>{{ visit.company }}</td><td>{{ visit.date }}</td><td style="max-width: 800px;">{{ visit.notes }}</td>
+						<td><a href="/admin/work_study/clientvisit/{{ visit.id }}">See More about this visit</tr>
+						{% endfor %}
+				</table>
+				
+				</div> <!-- class="section-div"-->
+				
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
+			
+			<div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Company Placement</a>
+			<div class="sv-main">
+				<div class="section-div">
+					<div class="showoff">Current placement: {{ student.studentworker.placement }} </div>
+					<div class="sv-placement-subhead">Supervisor contact infomation</div>
+					{% if supervisors %}
+					<ul>
+					{% for supervisor in supervisors %}
+						<li>{{ supervisor }} - {{ supervisor.phone }}</li>
+					{% endfor %}
+					</ul>
+					{% endif %}
+					
+					{% if company_histories %}
+						<div class="sv-placement-subhead">History</div> <br/>
+						<ul>
+						{% for history in company_histories %}
+							<li>Left {{ history.placement }} on {{ history.date }}</li>
+						{% endfor %}
+						</ul>
+					{% endif %}
+				</div> <!-- class="section-div" -->
+			</div> <!-- .sv-main -->
+			</div> <!-- .sv-section -->
         
             {% if timesheets %}
             <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Timesheets</a>
@@ -415,6 +415,30 @@
             </div> <!-- .sv-section -->
             {% endif %}
         {% endif %}
+		{% if tests %}
+			<div class="sv-section noprint"><a id="a_schedule" class="section-header noprint" href="javascript:void(0)">Standard Tests</a>
+            <div class="sv-main">
+			<div class="section-div">
+				<table>
+					<tr>
+						<th>Test</th>
+						<th>Date</th>
+						<th>Total</th>
+						<th>Details</th>
+						
+					</tr>
+					{% for test in tests %}
+						<tr><td>{{ test.test }}</td><td>{{ test.date }}</td><td>{{ test.total }}</td>
+						<td><a href="/admin/schedule/standardtestresult/{{ test.id }}">See More about these results</tr>
+						{% endfor %}
+				</table>
+				{% for test in tests %}
+					{{ test.name }}
+				{% endfor %}
+			</div> <!-- class="section-div" -->
+            </div><!-- .sv-main -->
+            </div><!-- .sv-section -->
+		{% endif %}
         
     {% endif %}
 {% endblock %}
