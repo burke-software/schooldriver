@@ -36,13 +36,23 @@
 			<br/>
 			
 			<h2>Student Worker(s) Functional Responsibilities</h2>
-			{{ form.student_functional_responsibilities }} {{ form.student_functional_responsibilities.errors }}
+			<table style="width:99%;"><tr>
+			{% for responsibility in form.student_functional_responsibilities %}
+				<td nowrap>{{ responsibility }}</td>
+			{% endfor %}
+			{{ form.student_functional_responsibilities.errors }}
+			</tr></table>
 			<br/>
 			Other? <br/> {{ form.student_functional_responsibilities_other }} {{ form.student_functional_responsibilities_other.errors }}
 			<br/>
 			<h2>Work Study Student's Desired Skills</h2>
 			<br/>
-			{{ form.student_desired_skills }} {{ form.student_desired_skills.errors }}
+			<table style="width:99%;"><tr>
+				{% for skill in form.student_desired_skills %}
+					<td nowrap>{{ skill }}</td>
+				{% endfor %}
+			</tr></table>
+			{{ form.student_desired_skills.errors }}
 			<br/>
 			Other? <br/> {{ form.student_desired_skills_other }} {{ form.student_desired_skills_other.errors }}
 			
