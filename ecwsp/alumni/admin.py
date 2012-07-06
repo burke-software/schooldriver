@@ -40,8 +40,8 @@ class AlumniNoteInline(admin.TabularInline):
     
 class EnrollmentInline(admin.StackedInline):
     model = CollegeEnrollment
-    classes = ('collapse closed',)
-    inline_classes = ('collapse open',)
+    classes = ('grp-collapse grp-closed',)
+    inline_classes = ('grp-collapse grp-open',)
     extra = 0
 
 admin.site.register(AlumniNoteCategory)
@@ -70,6 +70,11 @@ class AlumniAdmin(admin.ModelAdmin):
             'fields': ('alumniaction_set',)
         }),
     ]
+    
+    def get_readonly_fields(self, request, obj=None):
+        if obj: # Editing
+            return self.readonly_fields + ('student',)
+        return ()
     
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
