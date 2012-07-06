@@ -229,7 +229,7 @@ input.password { width: 95%; border-radius: 3px; -webkit-border-radius: 3px; out
 /* CHANGE PASSWORD FORM */
 
 .change-password { position:relative; height: 30px; width: 270px; margin-top: 2px; margin-bottom: 2px; float: left; }
-.changepassbuttonwrap { margin-top: 4px; }
+.changepassbuttonwrap { margin-top: 4px; text-align: left;}
 input.changepassword { width: 100%; border-radius: 3px; -webkit-border-radius: 3px; outline: none; display: inline-block; border: 1px solid #CCC; padding: 5px; }
 
 
