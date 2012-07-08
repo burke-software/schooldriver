@@ -61,7 +61,7 @@
 				{{ student }}
 			    </td>
 			    {% for mp in marking_periods %}
-				<td class="column_{{ forloop.counter0 }} row_{{ row_counter }}">
+				<td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}">
 				    {% for grade in student.grades %}
 					{% if grade.marking_period == mp %}
 					    {% if edit %}
@@ -85,7 +85,7 @@
 				    {% endfor %}
 				</td>
 				{% if forloop.last %}
-			    <td class="column_{{ forloop.counter }} row_{{ row_counter }}">
+			    <td id="tdc{{ forloop.counter }}_r{{ row_counter }}">
 				{% endif %}
 			    {% endfor %}
 				{% if edit_final %}

@@ -162,3 +162,13 @@ def student_grade(request):
         'today': date.today(),
         'mps': mps
     }, RequestContext(request, {}),)
+
+def gradebook(request):
+    fifty = []
+    i = 0
+    while i < 40:
+        i += 1
+        fifty += ['foo' + str(i)]
+    return render_to_response('benchmark_grade/gradebook.html', {
+        'fifty':fifty,
+    }, RequestContext(request, {}),)

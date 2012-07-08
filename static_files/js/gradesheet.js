@@ -16,7 +16,7 @@ function fullscreen_table(destroy){
         needed_height = $('#gradebook_div').height();
         buffer = 170
         if (window_height-buffer < needed_height) {
-            $('#gradebook_table').fixedHeaderTable({height: window_height-buffer});
+            $('#gradebook_table').fixedHeaderTable({ height: '300', width: '300', fixedColumn: 1 });
         }
     }
 }
@@ -36,17 +36,18 @@ function remove_grade(event, input_id) {
 function keyboard_nav(event) {
     key = event.which;
     if (key == 13 || key == 40 || key == 38 || key == 37 || key == 39) {
-        column = $(event.target).parents('td').attr('class').replace(/row_\d*/, '').replace(/column_/,'').trim();
-        row = $(event.target).parents('td').attr('class').replace(/^column_\d* row_/, '').trim();
+        column = $(event.target).parents('td').attr('id').replace(/_r\d*/, '').replace(/tdc/,'').trim();
+        row = $(event.target).parents('td').attr('id').replace(/^tdc\d*_r/, '').trim();
+        
         var selected_element;
         if(key == 13 || key == 40) { // Down
-            selected_element = $('td.column_' + column + '.row_' + (parseInt(row)+1)).children('input');
+            selected_element = $('td#tdc' + column + '_r' + (parseInt(row)+1)).children('input');
         } else if (key == 38) { // Up
-            selected_element = $('td.column_' + column + '.row_' + (parseInt(row)-1)).children('input');
+            selected_element = $('td#tdc' + column + '_r' + (parseInt(row)-1)).children('input');
         } else if (key == 37) { // Left
-            selected_element = $('td.column_' + (parseInt(column)-1) + '.row_' + row).children('input');
+            selected_element = $('td#tdc' + (parseInt(column)-1) + '_r' + row).children('input');
         } else if (key == 39) { // Right
-            selected_element = $('td.column_' + (parseInt(column)+1) + '.row_' + row).children('input');
+            selected_element = $('td#tdc' + (parseInt(column)+1) + '_r' + row).children('input');
         }
         $(selected_element).focus();
         $(selected_element).select();
