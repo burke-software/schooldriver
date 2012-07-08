@@ -407,7 +407,7 @@ admin.site.register(StudentDesiredSkill)
 admin.site.register(StudentFunctionalResponsibility)
 
 class CompContractAdmin(admin.ModelAdmin):
-    list_display = ('company', 'name', 'signed', 'date', 'number_students')
-    list_filter = ('signed','date',)
+    list_display = ('company', 'name', 'signed', 'date', 'number_students', 'school_year')
+    list_filter = ('signed','date','school_year')
     search_fields = ('company__name', 'name')
 admin.site.register(CompContract, CompContractAdmin)
