@@ -374,6 +374,7 @@ def view_student(request, id=None):
         supervisors = None
     ########################################################################
     
+    #Grades
     years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct()
     from ecwsp.grades.models import Grade
     for year in years:
@@ -389,6 +390,16 @@ def view_student(request, id=None):
                 except:
                     course.grade_html += '<td> </td>'
             course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
+            
+    #Standard Tests
+    from ecwsp.administration.models import Configuration
+    from ecwsp.schedule.models import StandardCategory, StandardCategoryGrade, StandardTest, StandardTestResult
+    std_test_config = Configuration.get_or_default("Standard Tests in View Student",default="False")
+    if std_test_config.value.lower() == "false" or std_test_config.value.lower == "f":
+        std = None
+    else:
+        std = StandardTestResult.objects.filter(student=student)
+        
     
     return render_to_response('sis/view_student.html', {
         'date':today,
@@ -408,5 +419,6 @@ def view_student(request, id=None):
         'current_mp': current_mp,
         'schedule_days':schedule_days,
         'periods': periods,
-        'include_inactive': profile.include_deleted_students
+        'include_inactive': profile.include_deleted_students,
+        'tests': std
     }, RequestContext(request, {}),)
