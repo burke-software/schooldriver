@@ -344,7 +344,7 @@ class TimeSheetAdmin(admin.ModelAdmin):
         return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
         
     search_fields = ['student__fname', 'student__lname', 'company__team_name']
-    list_filter = [DateSelectFilter, 'creation_date', 'date', 'approved', 'performance', 'for_pay', 'make_up', 'company',
+    list_filter = [DateSelectFilter, 'creation_date', 'approved', 'performance', 'for_pay', 'make_up', 'company',
                    'student__inactive']
     list_display = ('student', 'date', 'company', 'performance', 'student_Accomplishment_Brief', 'supervisor_Comment_Brief',
                     'approved', 'for_pay', 'make_up',)

@@ -1,132 +1,79 @@
-
+{% extends "base.html" %}
 
 {% block head %}
-<script type="text/javascript" src="/static/js/jquery.js"></script>
+      <meta content='width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
+
+
+<meta name="viewport" content="width=device-width" />
     <link rel="stylesheet" type="text/css" href="/static/css/gradesheet.css" />
     <script type="text/javascript" src="/static/js/gradesheet.js"></script>
-<script>
- 
-$(document).ready(function(){
-  fnAdjustTable();
-});
- 
-fnAdjustTable = function(){
- 
-  var colCount = $('#firstTr>td').length; //get total number of column
- 
-  var m = 0;
-  var n = 0;
-  var brow = 'mozilla';
- 
-  jQuery.each(jQuery.browser, function(i, val) {
-    if(val == true){
-      brow = i.toString();
+    
+    <link rel='stylesheet' type='text/css' href='/static/x/xtable.css'>
+    <style type='text/css'>
+    html, body {
+      width: 99%;
+      height: 99%;
     }
-  });
- 
-  $('.tableHeader').each(function(i){
-    if (m < colCount){
- 
-      if (brow == 'mozilla'){
-        $('#firstTd').css("width",$('.tableFirstCol').innerWidth());//for adjusting first td
-        $(this).css('width',$('#table_div td:eq('+m+')').innerWidth());//for assigning width to table Header div
-      }
-      else if (brow == 'msie'){
-        $('#firstTd').css("width",$('.tableFirstCol').width());
-        $(this).css('width',$('#table_div td:eq('+m+')').width()-2);//In IE there is difference of 2 px
-      }
-      else if (brow == 'safari'){
-        $('#firstTd').css("width",$('.tableFirstCol').width());
-        $(this).css('width',$('#table_div td:eq('+m+')').width());
-      }
-      else {
-        $('#firstTd').css("width",$('.tableFirstCol').width());
-        $(this).css('width',$('#table_div td:eq('+m+')').innerWidth());
-      }
+    div.xtRoot { /* override styles in xtable.css */
+      height: 500px;
+      width: 97%
     }
-    m++;
-  });
- 
-  $('.tableFirstCol').each(function(i){
-    if(brow == 'mozilla'){
-      $(this).css('height',$('#table_div td:eq('+colCount*n+')').outerHeight());//for providing height using scrollable table column height
-    }
-    else if(brow == 'msie'){
-      $(this).css('height',$('#table_div td:eq('+colCount*n+')').innerHeight()-2);
-    }
-    else {
-      $(this).css('height',$('#table_div td:eq('+colCount*n+')').height());
-    }
-    n++;
-  });
- 
-}
- 
-//function to support scrolling of title and first column
-fnScroll = function(){
-  $('#divHeader').scrollLeft($('#table_div').scrollLeft());
-  $('#firstcol').scrollTop($('#table_div').scrollTop());
-}
- 
-</script>
-
-<style>
-    input {
-        padding: 0px;
-        margin: 0px;
-    }
-</style>
-
+    </style>
+    <script type='text/javascript' src='/static/x/x.js'></script>
+    <script type='text/javascript' src='/static/x/lib/xfirstchild.js'></script>
+    <script type='text/javascript' src='/static/x/lib/xnextsib.js'></script>
+    <script type='text/javascript' src='/static/x/lib/xtable.js'></script>
+    <script type='text/javascript'>
+    var xt1;
+    xAddEventListener(window, 'load',
+      function() {
+	xt1 = new xTable('table1', 'xtRoot', 'xtCaption', 'xtFzRow', 'xtFRInner', 'xtFRCell', 'xtFzCol', 'xtFCInner', 'xtFCCell', 'xtTblCon', 'xtCellTbl');
+      }, false
+    );
+    </script>
+  
 {% endblock %}
 
+
 {% block content %}
-<table cellspacing="0" cellpadding="0" border="0" >
-  <tr>
-    <td id="firstTd">
-    </td>
-    <td>
-      <div id="divHeader" style="overflow:hidden;width:810px;">
-        <table cellspacing="0" cellpadding="0" border="1" >
-          <tr>
-            {% for th in fifty %}
-            <td>
-              <div class="tableHeader">Title {{ th }}</div><div>moo</div>
-            </td>
-            {% endfor %}
-          </tr>
-        </table>
-      </div>
-    </td>
-  </tr>
-  <tr>
- 
-    <td valign="top">
-      <div id="firstcol" style="overflow: hidden;height:786px">
-        <table width="100px" cellspacing="0" cellpadding="0" border="1" >
-            {% for th in fifty %}
-          <tr>
-            <td class="tableFirstCol">FCol {{ th }} </td>
-          </tr>
-          {% endfor %}
-        </table>
-      </div>
-    </td>
- 
-    <td valign="top">
-      <div id="table_div" style="overflow: scroll;width:824px;height:800px;position:relative" onscroll="fnScroll()" >
-        <table width="500px" cellspacing="0" cellpadding="0" border="1" >
-            {% for tr in fifty %}
-                {% with row_counter=forloop.counter0 %}
-                    <tr id='firstTr'>
-                    {% for td in fifty %}
-                        <td  id="tdc{{ forloop.counter0 }}_r{{ row_counter }}"><input type="text" onkeydown="return keyboard_nav(event)" size="5" onchange="student_grade_change(event,{{ student.id }})"/></td>
-                    {% endfor %}
-                {% endwith %}
-            </tr>
-          {% endfor %}
-        </table>
-      </div>
-    </td>
-  </tr>
-</table>
+<div class="xtRoot">
+    <table id='table1' class='xTable'>
+	<thead>
+	    <tr>
+		<th>Student</th>
+		{% for th in fifty %}
+		    <th>H {{ th }}</th>
+		{% endfor %}
+		<th>Final</th>
+	    </tr>
+	</thead>
+	<tbody>
+	    {% for student in fifty %}
+	    {% with row_counter=forloop.counter0 %}
+	    <tr>
+		<td>
+		    {{ student }}
+		</td>
+		{% for mp in fifty %}
+		    <td class="column_{{ forloop.counter0 }} row_{{ row_counter }}">
+			<input
+			    id="id_grade_{{ student.id }}_{{ grade.id }}"
+			    name="grade_{{ grade.id }}"
+			    value="{{ grade.get_grade }}"
+			    class="grade_form"
+			    size="7"
+			    onkeydown="return keyboard_nav(event)"
+			    onchange="student_grade_change(event,{{ student.id }})"
+			/>
+		    </td>
+		{% endfor %}
+		</td>
+		<td>End</td>
+	    </tr>
+	{% endwith %}
+	
+	{% endfor %}
+	</tbody>
+    </table>
+</div>
 {% endblock %}
