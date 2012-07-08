@@ -254,7 +254,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
         return super(StudentAdmin, self).get_readonly_fields(request, obj=obj)
 
     inlines = [StudentNumberInline, StudentFileInline, CompanyHistoryInline]
-    list_filter = ['day', 'year', 'inactive']
+    list_filter = ['day', 'year', 'inactive','placement__cras']
     list_display = ('fname', 'lname', 'day', 'company', 'pickUp', 'cra', 'contact')
     filter_horizontal = ('handout33',)
     search_fields = ['fname', 'lname', 'unique_id', 'placement__team_name', 'username', 'id']

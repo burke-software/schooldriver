@@ -1,0 +1,132 @@
+
+
+{% block head %}
+<script type="text/javascript" src="/static/js/jquery.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/css/gradesheet.css" />
+    <script type="text/javascript" src="/static/js/gradesheet.js"></script>
+<script>
+ 
+$(document).ready(function(){
+  fnAdjustTable();
+});
+ 
+fnAdjustTable = function(){
+ 
+  var colCount = $('#firstTr>td').length; //get total number of column
+ 
+  var m = 0;
+  var n = 0;
+  var brow = 'mozilla';
+ 
+  jQuery.each(jQuery.browser, function(i, val) {
+    if(val == true){
+      brow = i.toString();
+    }
+  });
+ 
+  $('.tableHeader').each(function(i){
+    if (m < colCount){
+ 
+      if (brow == 'mozilla'){
+        $('#firstTd').css("width",$('.tableFirstCol').innerWidth());//for adjusting first td
+        $(this).css('width',$('#table_div td:eq('+m+')').innerWidth());//for assigning width to table Header div
+      }
+      else if (brow == 'msie'){
+        $('#firstTd').css("width",$('.tableFirstCol').width());
+        $(this).css('width',$('#table_div td:eq('+m+')').width()-2);//In IE there is difference of 2 px
+      }
+      else if (brow == 'safari'){
+        $('#firstTd').css("width",$('.tableFirstCol').width());
+        $(this).css('width',$('#table_div td:eq('+m+')').width());
+      }
+      else {
+        $('#firstTd').css("width",$('.tableFirstCol').width());
+        $(this).css('width',$('#table_div td:eq('+m+')').innerWidth());
+      }
+    }
+    m++;
+  });
+ 
+  $('.tableFirstCol').each(function(i){
+    if(brow == 'mozilla'){
+      $(this).css('height',$('#table_div td:eq('+colCount*n+')').outerHeight());//for providing height using scrollable table column height
+    }
+    else if(brow == 'msie'){
+      $(this).css('height',$('#table_div td:eq('+colCount*n+')').innerHeight()-2);
+    }
+    else {
+      $(this).css('height',$('#table_div td:eq('+colCount*n+')').height());
+    }
+    n++;
+  });
+ 
+}
+ 
+//function to support scrolling of title and first column
+fnScroll = function(){
+  $('#divHeader').scrollLeft($('#table_div').scrollLeft());
+  $('#firstcol').scrollTop($('#table_div').scrollTop());
+}
+ 
+</script>
+
+<style>
+    input {
+        padding: 0px;
+        margin: 0px;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<table cellspacing="0" cellpadding="0" border="0" >
+  <tr>
+    <td id="firstTd">
+    </td>
+    <td>
+      <div id="divHeader" style="overflow:hidden;width:810px;">
+        <table cellspacing="0" cellpadding="0" border="1" >
+          <tr>
+            {% for th in fifty %}
+            <td>
+              <div class="tableHeader">Title {{ th }}</div><div>moo</div>
+            </td>
+            {% endfor %}
+          </tr>
+        </table>
+      </div>
+    </td>
+  </tr>
+  <tr>
+ 
+    <td valign="top">
+      <div id="firstcol" style="overflow: hidden;height:786px">
+        <table width="100px" cellspacing="0" cellpadding="0" border="1" >
+            {% for th in fifty %}
+          <tr>
+            <td class="tableFirstCol">FCol {{ th }} </td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </td>
+ 
+    <td valign="top">
+      <div id="table_div" style="overflow: scroll;width:824px;height:800px;position:relative" onscroll="fnScroll()" >
+        <table width="500px" cellspacing="0" cellpadding="0" border="1" >
+            {% for tr in fifty %}
+                {% with row_counter=forloop.counter0 %}
+                    <tr id='firstTr'>
+                    {% for td in fifty %}
+                        <td  id="tdc{{ forloop.counter0 }}_r{{ row_counter }}"><input type="text" onkeydown="return keyboard_nav(event)" size="5" onchange="student_grade_change(event,{{ student.id }})"/></td>
+                    {% endfor %}
+                {% endwith %}
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </td>
+  </tr>
+</table>
+{% endblock %}
