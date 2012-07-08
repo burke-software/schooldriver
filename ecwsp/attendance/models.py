@@ -47,6 +47,7 @@ class StudentAttendance(models.Model):
     student =  models.ForeignKey(Student, related_name="student_attn", help_text="Start typing a student's first or last name to search")
     date = models.DateField(default=datetime.datetime.now)
     status = models.ForeignKey(AttendanceStatus)
+    time = models.TimeField(blank=True,null=True)
     notes = models.CharField(max_length=500, blank=True)
     private_notes = models.CharField(max_length=500, blank=True)
     

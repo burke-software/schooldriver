@@ -26,7 +26,7 @@ from ajax_select import make_ajax_form
 
 class StudentAttendanceAdmin(admin.ModelAdmin):
     form = make_ajax_form(StudentAttendance, dict(student='attendance_quick_view_student'))
-    list_display = ['student', 'date', 'status', 'notes']
+    list_display = ['student', 'date', 'status', 'notes', 'time']
     list_filter = ['date', 'status']
     list_editable = ['status', 'notes']
     search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
