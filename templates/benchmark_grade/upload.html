@@ -8,6 +8,7 @@
     margin-left: 1em;
     margin-top: 0.5em;
     padding: 0.5em;
+    page-break-after: always; /* requested, but not ideal */
 }
 .student table td {
     padding-top: 0.25em;
@@ -24,17 +25,44 @@
 .categoryAverage {
     font-weight: bold;
 }
+.indent {
+    padding-left: 1em;
+}
+.paddedRuler {
+    background-color: black; /* super ornery */
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+@media print {
+    .noPrint {
+        display: none;
+     }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-    <h2> Grades - {{ course }} </h2>
+    <h1>{{ course }}</h2>
+    <div class="noPrint">
+    <h2>Upload grades</h2>
+    <div class="indent">
     <form action="" method="post" enctype="multipart/form-data">
         {{ import_form }} 
         <input type="submit" value="Upload Grades" name="upload"/>
     </form>
     <p>{{ message }}</p>
+    </div>
+    <hr class="paddedRuler" />
+    <h2>Display and verify grades</h2>
+    <div class="indent">
+    <form action="" method="post">
+        {{ verify_form }}
+        <input type="submit" value="Display Grades" name="verify" />
+    </form>
+    </div>
     <hr />
+    </div>
+    {% spaceless %}
     {% for mp in mps %}
 	<h2>{{ mp.name }}</h2>
 	{% for student in mp.students %}
@@ -53,7 +81,7 @@
 					    {% if mark.item.name != 'None' %}
 						{{ mark.item.name }}
 					    {% endif %}
-					    {% if mark.description %}
+					    {% if mark.description and show_descriptions %}
 						<br /><span class="markDescription">{{ mark.description }}</span>
 					    {% endif %}
 					</td>
@@ -78,4 +106,5 @@
 	    </div>
 	{% endfor %}
     {% endfor %}
+    {% endspaceless %}
 {% endblock %}
