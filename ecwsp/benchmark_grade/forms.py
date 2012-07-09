@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #       Copyright 2012 Burke Software and Consulting LLC
 #       Author John Milner <john@tmoj.net>
 #       
@@ -36,5 +35,3 @@ class BenchmarkGradeVerifyForm(forms.Form):
             del self.data['students']
             del cleaned_data['students']
         return cleaned_data
-=======
->>>>>>> ee875ffbcbb33e3549c37c4b181d840e07e1b10d
