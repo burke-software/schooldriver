@@ -453,7 +453,7 @@ def increment_year_or_graduate(request):
                     row += ' Also make an alumni record.'
             else:
                 try:
-                    new_year = SchoolYear.objects.get(id=student.year.id + 1)
+                    new_year = GradeLevel.objects.get(id=student.year.id + 1)
                     row = '%s - Make a %s.' % (unicode(student), new_year)
                 except SchoolYear.DoesNotExist:
                     pass
