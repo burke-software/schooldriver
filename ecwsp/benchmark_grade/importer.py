@@ -17,7 +17,7 @@
 #   MA 02110-1301, USA.
 
 import logging
-from sis.importer import *
+from ecwsp.sis.importer import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.grades.models import Grade
 
