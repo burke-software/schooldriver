@@ -422,3 +422,42 @@ def view_student(request, id=None):
         'include_inactive': profile.include_deleted_students,
         'tests': std
     }, RequestContext(request, {}),)
+
+def increment_year_or_graduate(request):
+    selected = request.GET['ids'].split(',')
+    students = Student.objects.filter(id__in=selected)
+    subtitle = "Are you sure you want to make the following changes?"
+    
+    if request.POST:
+        for student in students:
+            if student.year:
+                if student.year.id == 12:
+                    student.graduate_and_create_alumni()
+                else:
+                    try:
+                        new_year = GradeLevel.objects.get(id=student.year.id + 1)
+                        student.year = new_year
+                        student.save()
+                    except GradeLevel.DoesNotExist:
+                        pass
+        messages.success(request, 'Successfully incremented student years!')
+        return HttpResponseRedirect(reverse('admin:sis_student_changelist'))
+        
+    item_list = []
+    for student in students:
+        row = None
+        if student.year:
+            if student.year.id == 12:
+                row = '%s - Graduate and mark inactive %s.' % (unicode(student), student.year)
+                if 'ecwsp.alumni' in settings.INSTALLED_APPS:
+                    row += ' Also make an alumni record.'
+            else:
+                try:
+                    new_year = SchoolYear.objects.get(id=student.year.id + 1)
+                    row = '%s - Make a %s.' % (unicode(student), new_year)
+                except SchoolYear.DoesNotExist:
+                    pass
+        if row:
+            item_list += [row]
+    
+    return render_to_response('sis/list_with_confirm.html', {'subtitle': subtitle, 'item_list':item_list}, RequestContext(request, {}),)

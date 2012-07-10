@@ -563,6 +563,8 @@ class Student(MdlUser, CustomFieldModel):
     def graduate_and_create_alumni(self):
         self.inactive = True
         self.reason_left = ReasonLeft.objects.get_or_create(reason="Graduated")[0]
+        if not self.grad_date:
+            self.grad_date = datetime.date.today()
         if 'ecwsp.alumni' in settings.INSTALLED_APPS:
             from ecwsp.alumni.models import Alumni
             Alumni.objects.get_or_create(student=self)

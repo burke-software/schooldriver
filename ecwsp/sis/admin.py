@@ -30,21 +30,6 @@ def promote_to_worker(modeladmin, request, queryset):
                     action_flag     = CHANGE
                 )
         
-
-def graduate_and_create_alumni(modeladmin, request, queryset):
-    i = 0
-    for object in queryset:
-        object.graduate_and_create_alumni()
-        LogEntry.objects.log_action(
-            user_id         = request.user.pk, 
-            content_type_id = ContentType.objects.get_for_model(object).pk,
-            object_id       = object.pk,
-            object_repr     = unicode(object), 
-            action_flag     = CHANGE
-        )
-        i += 1
-    messages.success(request, "%s students were set as graduated, marked inactive, and if installed created in the alumni app." % (i,))
-
 def mark_inactive(modeladmin, request, queryset):
     for object in queryset:
         object.inactive=True
@@ -150,6 +135,13 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
             self.exclude = ("ssn",)
         return form
     
+    def increment_year_or_graduate(modeladmin, request, queryset):
+        selected_int = queryset.values_list('id', flat=True)
+        selected = []
+        for s in selected_int:
+            selected.append(str(s))
+        return HttpResponseRedirect("/sis/increment_year_or_graduate/?ids=%s" % (",".join(selected)))
+    
     fieldsets = [
         (None, {'fields': [('lname', 'fname'), ('mname', 'inactive'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'year',('unique_id','ssn'),
             'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
@@ -158,7 +150,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     form = StudentForm
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
-    actions = [promote_to_worker, mark_inactive, graduate_and_create_alumni]
+    actions = [promote_to_worker, mark_inactive, increment_year_or_graduate]
     list_filter = ['inactive','year']
     list_display = ['__unicode__','year']
 admin.site.register(Student, StudentAdmin)
