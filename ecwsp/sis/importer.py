@@ -114,7 +114,7 @@ class Importer:
         return False, name, value
     
     def gen_username(self, fname, lname):
-        """Generate a unique username for a MdlUser based on first and last name
+        """Generate a unique username for a ***User*** (not MdlUser) based on first and last name
         Try first the first letter of the first name plus the last name
         if fail, try adding more letters of the first name
         if fail, add an incrementing number to the end.
@@ -128,14 +128,14 @@ class Importer:
         try:
             i = 1
             username = unicode(fname[:i]) + unicode(lname)
-            while MdlUser.objects.filter(username=username).count() > 0:
+            while User.objects.filter(username=username).count() > 0:
                 i += 1
                 username = unicode(fname[:i]) + unicode(lname)
                 if username == "": raise UsernameError
         except:
             number = 1
             username = unicode(fname[:i]) + unicode(lname) + unicode(number)
-            while MdlUser.objects.filter(username=username).count() > 0:
+            while User.objects.filter(username=username).count() > 0:
                 number += 1
                 username = unicode(fname[:i]) + unicode(lname) + unicode(number)
         return unicode.lower(username)
