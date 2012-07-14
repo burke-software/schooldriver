@@ -69,7 +69,7 @@ def index(request):
     """
     if 'next' in request.GET and request.GET['next'] != "/":
         return HttpResponseRedirect(request.GET['next'])
-    if request.user.groups.filter(Q(name='faculty') | Q(name='viewer')).count() > 0:
+    if request.user.is_staff:
         try:
             # Warn users of IE and Firefox < 4.0 they are not supported
             ua = request.META['HTTP_USER_AGENT']
@@ -453,7 +453,7 @@ def increment_year_or_graduate(request):
                     row += ' Also make an alumni record.'
             else:
                 try:
-                    new_year = SchoolYear.objects.get(id=student.year.id + 1)
+                    new_year = GradeLevel.objects.get(id=student.year.id + 1)
                     row = '%s - Make a %s.' % (unicode(student), new_year)
                 except SchoolYear.DoesNotExist:
                     pass
