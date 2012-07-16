@@ -3,6 +3,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import cm
 import sys
+from ecwsp.administration.models import *
 
 def student_thumbnail(request, year):
     from ecwsp.sis.models import Student
