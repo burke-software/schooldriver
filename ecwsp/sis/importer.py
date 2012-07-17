@@ -424,6 +424,10 @@ class Importer:
         if sheet:
             inserted, updated = self.import_student_work_history(sheet)
             msg += "%s student work history records inserted, %s student work history records updated <br/>" % (inserted, updated)
+        sheet = self.get_sheet_by_case_insensitive_name("survey")
+        if sheet:
+            inserted, updated = self.import_survey(sheet)
+            msg += "%s survey records inserted, %s survey records updated <br/>" % (inserted, updated)
         
         if msg == "":
             msg = "No files found. Check if sheets are named correctly. "
@@ -2331,6 +2335,55 @@ class Importer:
                                 model.signed = self.determine_truth(value)
                             
                             
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
+                x += 1
+        return inserted, updated
+    def import_survey(self, sheet):
+        #does not allow  updates
+        from ecwsp.work_study.models import Survey, StudentWorker, WorkTeam
+        x, header, inserted, updated = self.import_prep(sheet)
+        while x < sheet.nrows:
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    model = Survey()
+                    try:
+                        student = self.get_student(items)
+                    except:
+                        student = None
+                    created = True
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if student:
+                                model.student = StudentWorker.objects.get(id=student.id)
+                                    
+                            else:
+                                if name == "student unique id" or name == "unique id":
+                                    model.student = StudentWorker(unique_id=value)
+                                elif name == "student username":
+                                    model.student = StudentWorker(username=value)
+                            if name == "survey" or name == "title" or name == "name":
+                                model.survey = value
+                            elif name =="company" or name == "workteam":
+                                model.company = WorkTeam.objects.get(team_name=value)
+                            elif name == "question":
+                                model.question = value
+                            elif name == "answer":
+                                model.answer = value
+                            elif name == "date":
+                                model.date = self.convert_date(value)
+                    model.full_clean()
                     model.save()
                     if created:
                         self.log_and_commit(model, addition=True)
