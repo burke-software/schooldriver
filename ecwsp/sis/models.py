@@ -727,5 +727,6 @@ class MessageToStudent(models.Model):
     message = RichTextField(help_text="This message will be shown to students when they log in.")
     start_date = models.DateField(default=date.today)
     end_date = models.DateField(default=date.today)
+    derp = models.DateField(default=date.today)
     def __unicode__(self):
         return self.message

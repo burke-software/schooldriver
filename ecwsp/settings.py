@@ -107,6 +107,7 @@ INSTALLED_APPS = (
     'ckeditor',
     #'google_auth',
     #'ldap_groups',
+    'south',
 )
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',

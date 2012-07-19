@@ -14,7 +14,7 @@ pip install django django-reversion simplejson httpagentparser django-ajax-selec
 pip install ../hatchery/django-filter-0.5.3.tar.gz
 pip install ../hatchery/wojas-django-apptemplates-ce738ccb3f02.tar.gz
 pip install ../hatchery/django-ckeditor-3.6.2.tar.gz
-
+pip install ../hatchery/South-0.7.5.tar.gz
 
 # optional auth related
 pip install django-auth-gapps django_cas

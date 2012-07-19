@@ -198,3 +198,19 @@ def regenerate_thumbs():
                 thumb_content = generate_thumb(img_file, size, split[1])
                 thumb_name_ = img_file.storage.save(thumb_name, thumb_content)
                 print "\tSize %sx%s created" % (w,h)
+
+
+try:
+    from south.modelsinspector import add_introspection_rules
+except ImportError:
+    0/0
+else:
+    add_introspection_rules([
+        (
+            [ImageWithThumbsField], # Class(es) these apply to
+            [],         # Positional arguments (not used)
+            {           # Keyword argument
+                "sizes": ["sizes", {}],
+            },
+        ),
+    ], ["^ecwsp\.sis\.thumbs\.ImageWithThumbsField"])
