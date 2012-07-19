@@ -2,9 +2,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.conf import settings
-from django.contrib import messages
-from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.models import LogEntry, CHANGE
 
 from ajax_select import make_ajax_form
 from ajax_select.fields import autoselect_fields_check_can_add
@@ -13,10 +11,8 @@ from reversion.admin import VersionAdmin
 
 from ecwsp.sis.models import *
 from ecwsp.sis.forms import *
-from ecwsp.sis.views import *
 from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
 from custom_field.custom_field import CustomFieldAdmin
-from ecwsp.schedule.models import *
 
 # Global actions
 def promote_to_worker(modeladmin, request, queryset):
@@ -224,3 +220,5 @@ class ImportLogAdmin(admin.ModelAdmin):
     list_display = ['user','date','errors']
     search_fields = ['user__username', 'user__first_name', 'user__last_name']
 admin.site.register(ImportLog, ImportLogAdmin)
+
+admin.site.register(MessageToStudent)

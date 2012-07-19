@@ -79,6 +79,12 @@
         </header>
 </div><!-- .headerwrapper-->
 
+<div class="message_area">
+    {% for user_message in user_messages %}
+	{{ user_message|safe }}
+    {% endfor %}
+</div>
+
 <div class="clear"></div>
 <div id="pagewrap">
         {% block content %}

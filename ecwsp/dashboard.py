@@ -48,6 +48,7 @@ class CustomIndexDashboard(Dashboard):
                         'ecwsp.work_study.models.StudentDesiredSkill',
                         'ecwsp.work_study.models.StudentFunctionalResponsibility',
                         'ecwsp.work_study.models.CompContract',
+                        'ecwsp.work_study.models.MessageToSupervisor',
                     ),
                 ),
             ]
@@ -63,6 +64,7 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.sis.models.Cohort',
                 'ecwsp.sis.models.ReasonLeft',
                 'ecwsp.sis.models.Faculty',
+                'ecwsp.sis.models.MessageToStudent',
             ),
         ))
 

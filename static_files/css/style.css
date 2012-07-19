@@ -373,3 +373,9 @@ select.timecard-performance { font: 1.2em Helvetica, sans-serif; }
 /* FOOTER */
 
 .footer { border-top: 1px solid #CCCCCC; padding-top: 15px; font-weight: 400; font-size: 0.8em; letter-spacing: -1px; line-height: 1.2em; }
+
+
+/* message area */
+.message_area {
+    text-align: center;
+}

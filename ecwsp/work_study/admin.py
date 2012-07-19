@@ -411,3 +411,4 @@ class CompContractAdmin(admin.ModelAdmin):
     list_filter = ('signed','date','school_year')
     search_fields = ('company__name', 'name')
 admin.site.register(CompContract, CompContractAdmin)
+admin.site.register(MessageToSupervisor)

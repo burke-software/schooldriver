@@ -860,3 +860,13 @@ class ClientVisit(models.Model):
                 send_mail(subject, msg, from_addr, sendTo)
             except:
                 print >> sys.stderr, "warning: could not email mentors"
+
+
+class MessageToSupervisor(models.Model):
+    """ Stores a message to be shown to students for a specific amount of time
+    """
+    message = RichTextField(help_text="This message will be shown to supervisors when they log in.")
+    start_date = models.DateField(default=date.today)
+    end_date = models.DateField(default=date.today)
+    def __unicode__(self):
+        return self.message

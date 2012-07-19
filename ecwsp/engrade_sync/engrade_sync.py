@@ -67,7 +67,7 @@ class EngradeSync:
         Genererate all courses in Engrade for a given marking period.
         Returns list of engrade course id's
         """
-        courses = Course.objects.filter(coursesync__isnull=False, marking_period=marking_period, teacher__teachersync__isnull=False)
+        courses = Course.objects.filter(marking_period=marking_period)
         course_ids = ""
         for course in courses:
             try:

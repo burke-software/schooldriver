@@ -19,32 +19,30 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import connection
-from django.db.models import Max
 from django.db.models.signals import post_save, m2m_changed
-from django.contrib.localflavor.us.models import *
+from django.contrib.localflavor.us.models import USStateField, PhoneNumberField
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 
 #from ecwsp.schedule.models import CourseEnrollment
 import logging
 from thumbs import ImageWithThumbsField
-from datetime import date, timedelta, datetime
-from decimal import *
-import types
+from datetime import date, datetime
+from decimal import Decimal, ROUND_HALF_UP
 from ecwsp.administration.models import Configuration
-from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
 import os
+from ckeditor.fields import RichTextField
 
 logger = logging.getLogger(__name__)
 
 def create_faculty(instance):
     faculty, created = Faculty.objects.get_or_create(username=instance.username)
     if created:
-        faculty.fname=instance.first_name
-        faculty.lname=instance.last_name
-        faculty.email=instance.email
-        faculty.teacher=True
+        faculty.fname = instance.first_name
+        faculty.lname = instance.last_name
+        faculty.email = instance.email
+        faculty.teacher = True
         faculty.save()
 
 def create_faculty_profile(sender, instance, created, **kwargs):
@@ -97,8 +95,8 @@ class UserPreference(models.Model):
         """ row: table row
         Get additional fields based on user preferences
         """
-	import copy
-	students_workaround = copy.copy(students) # THIS IS UGLY! But Django will otherwise stop iterating after 100 students
+        import copy
+        students_workaround = copy.copy(students) # THIS IS UGLY! But Django will otherwise stop iterating after 100 students
         if not self.names:
             self.set_names()
         for name in self.names:
@@ -193,7 +191,6 @@ class MdlUser(models.Model):
     @property
     def deleted(self):
         # For backwards compatibility
-        logger.WARNING('Depreciated use of MdlUser.deleted which was changed to inactive')
         return self.inactive
         
     def django_user(self):
@@ -721,4 +718,14 @@ class ImportLog(models.Model):
             os.remove(self.sql_backup.path)
         if self.import_file and os.path.exists(self.import_file.path):
             os.remove(self.import_file.path)
-        super(ImportLog, self).delete(*args, **kwargs) 
+        super(ImportLog, self).delete(*args, **kwargs)
+        
+        
+class MessageToStudent(models.Model):
+    """ Stores a message to be shown to students for a specific amount of time
+    """
+    message = RichTextField(help_text="This message will be shown to students when they log in.")
+    start_date = models.DateField(default=date.today)
+    end_date = models.DateField(default=date.today)
+    def __unicode__(self):
+        return self.message
