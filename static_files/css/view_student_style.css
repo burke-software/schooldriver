@@ -118,3 +118,7 @@ th {
 	display: inline-block;
 	width: 200px;
 }
+
+table {
+    border: none;
+}

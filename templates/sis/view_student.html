@@ -5,7 +5,7 @@
 		{% load  adminmedia %}
 		<link rel="stylesheet" type= "text/css" href="/static/css/view_student_style.css" />
 		
-    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type='text/javascript' src='/static/js/jsapi.js'></script>
     <script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
     <script type='text/javascript'>
 	var alumni_id = {{ student.alumni.id|default_if_none:"" }}
@@ -36,17 +36,24 @@
 {% endblock %}
 
 {% block content %}
-    <span class="noprint">
-	<input
-	    onclick="ajax_include_deleted()"
-	    id="id_include_deleted"
-	    type="checkbox"
-	    {% if include_inactive %} checked="checked" {% endif %}
-	 />
-	Include inactive in search?
-    </span>
     {% if student %}
 	<div id="student-header">
+            <div class="noprint" style="float: left;">
+                <a href="?previous=1"> << Previous by alpha </a>
+            </div>
+            <div class="noprint" style="float: right;">
+                <a href="?next=1"> Next by alpha >> </a>
+            </div>
+            <div class="noprint" style="clear: both;">
+                <input
+                    onclick="ajax_include_deleted()"
+                    id="id_include_deleted"
+                    type="checkbox"
+                    {% if include_inactive %} checked="checked" {% endif %}
+                 />
+                Include inactive in search?
+            </div>
+            
 		  <div id="name-and-grade">
 			<h1 class="sv-name">{{ student }}</h1>
 			{{ student.year }} {% if location %} at {{ location }} {% endif %}

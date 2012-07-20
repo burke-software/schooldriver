@@ -309,6 +309,27 @@ def ajax_include_deleted(request):
 def view_student(request, id=None):
     """ Lookup all student information
     """
+    if request.method == "GET":
+        if id and 'next' in request.GET or 'previous' in request.GET:
+            current_student = get_object_or_404(Student, pk=id)
+            found = False
+            preference = UserPreference.objects.get_or_create(user=request.user)[0]
+            if 'next' in request.GET:
+                if preference.include_deleted_students:
+                    students = Student.objects.order_by('lname','fname')
+                else:
+                    students = Student.objects.filter(inactive=False).order_by('lname','fname')
+            elif 'previous' in request.GET:
+                if preference.include_deleted_students:
+                    students = Student.objects.order_by('-lname','-fname')
+                else:
+                    students = Student.objects.filter(inactive=False).order_by('-lname','-fname')
+            for student in students:
+                if found:
+                    return HttpResponseRedirect('/sis/view_student/' + str(student.id))
+                if student == current_student:
+                    found = True
+                    
     if request.method == 'POST':
         form = StudentLookupForm(request.POST)
         if form.is_valid():
