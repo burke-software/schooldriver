@@ -131,7 +131,7 @@ You are logged in as
 {% if student %}
     Please fill out your time card below.
 {% else %}
-    Please review time card below.
+    Please review {{ studentName.fname }} {{ studentName.lname }}'s time card below.
 {% endif %}
 </div>
 
@@ -187,7 +187,7 @@ You are logged in as
 </table>
 
 <div class="subhead-text">
-{% if student %} You {% else %} Student {% endif %} worked <strong><span id="span_hours"></span></strong> total hours.
+{% if student %} You {% else %} {{ studentName.fname }} {{ studentName.lname }} {% endif %} worked <strong><span id="span_hours"></span></strong> total hours.
 </div>
 
 
