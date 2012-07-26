@@ -299,8 +299,18 @@ SYNC_SUGAR = False
 # Strange way of storing routes that Notre Dame High School wanted, default disabled
 CRND_ROUTES = False
 
+
 #OMR
 QUEXF_URL = "http://quexf.cristoreyny.org"
+
+
+#Canvas LMS
+# oauth token, you must make this in Canvas.
+# https://canvas.instructure.com/doc/api/file.oauth.html
+CANVAS_TOKEN = ''
+CANVAS_ACCOUNT_ID = ''
+CANVAS_BASE_URL = ''
+
 
 # this will load additional settings from the file settings_local.py
 # this is useful when managing multiple sites with different configurations

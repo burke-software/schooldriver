@@ -18,12 +18,12 @@
 
 from django.db import models
 from django.db import IntegrityError
-from django.contrib.localflavor.us.models import *
+from django.contrib.localflavor.us.models import USStateField
 from django.contrib.auth.models import User
 from django.contrib.localflavor.us.models import PhoneNumberField
 
 from ckeditor.fields import RichTextField
-from ecwsp.sis.models import *
+from ecwsp.sis.models import Student
 
 import datetime
 
@@ -58,7 +58,7 @@ class CollegeEnrollment(models.Model):
         ('W', 'Withdrawn'),
         ('D', 'Deceased'),
     )
-    status = CharField(max_length=1, choices=status_choices, blank=True,null=True)
+    status = models.CharField(max_length=1, choices=status_choices, blank=True,null=True)
     graduated = models.BooleanField()
     graduation_date = models.DateField(blank=True, null=True)
     degree_title = models.CharField(max_length=255, blank=True, null=True)
@@ -125,13 +125,18 @@ class AlumniAction(models.Model):
 
 class AlumniEmail(models.Model):
     email = models.EmailField()
-    type = models.CharField(max_length=255)
+    type = models.CharField(
+        max_length=255,
+        choices=(('Personal', 'Personal'), ('School', 'School'), ('Work', 'Work'), ('Other', 'Other')))
     alumni = models.ForeignKey('Alumni')
     def __unicode__(self):
         return self.email
 class AlumniPhoneNumber(models.Model):
     phone_number = PhoneNumberField()
-    type = models.CharField(max_length=255)
+    type = models.CharField(
+        max_length=255,
+        choices=(('H', 'Home'), ('C', 'Cell'), ('W', 'Work'), ('O', 'Other'))
+        )
     alumni = models.ForeignKey('Alumni')
     def __unicode__(self):
         return self.phone_number
@@ -141,7 +146,8 @@ class Alumni(models.Model):
     college = models.ForeignKey(College, blank=True, null=True, related_name="college_student")
     graduated = models.BooleanField()
     graduation_date = models.DateField(blank=True, null=True, help_text="Expected or actual graduation date")
-    college_override = models.BooleanField(help_text="If checked, college enrollment data will not set college and graduated automatically.")  
+    college_override = models.BooleanField(
+        help_text="If checked, college enrollment data will not set college and graduated automatically.")  
     status = models.ForeignKey(AlumniStatus, blank=True, null=True)
     program_years = models.CharField(max_length=1, choices=program_years_choices, blank=True, null=True)
     semesters = models.CharField(max_length="5", blank=True, help_text="Number of semesters or trimesters.")
