@@ -54,7 +54,7 @@ admin.site.register(AlumniAction, AlumniActionAdmin)
 class AlumniAdmin(admin.ModelAdmin):
     form = AlumniForm
     search_fields = ['student__fname', 'student__lname', 'college__name']
-    list_filter = ['graduated', 'program_years', 'college', 'college_override']
+    list_filter = ['graduated', 'program_years', 'college', 'college_override', 'student__class_of_year']
     list_display = ['student', 'graduated', 'college']
     inlines = [AlumniEmailInline,AlumniPhoneNumberInline,WithdrawlInline, AlumniNoteInline,EnrollmentInline]
     
