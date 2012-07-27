@@ -566,13 +566,16 @@ class Student(MdlUser, CustomFieldModel):
         """ Set the year (fresh, etc) from the class of XX year.
         """
         if self.class_of_year:
-            active_year = SchoolYear.objects.filter(active_year=True)[0]
-            this_year = active_year.end_date.year
-            school_last_year = GradeLevel.objects.order_by('-id')[0].id
-            class_of_year = self.class_of_year.year
-            
-            target_year = school_last_year - (class_of_year - this_year)
-            self.year = GradeLevel.objects.get(id=target_year)
+            try:
+                active_year = SchoolYear.objects.filter(active_year=True)[0]
+                this_year = active_year.end_date.year
+                school_last_year = GradeLevel.objects.order_by('-id')[0].id
+                class_of_year = self.class_of_year.year
+                
+                target_year = school_last_year - (class_of_year - this_year)
+                self.year = GradeLevel.objects.get(id=target_year)
+            finally:
+                pass
     
     def save(self, *args, **kwargs):
         if Faculty.objects.filter(id=self.id).count():
@@ -738,12 +741,12 @@ class SchoolYear(models.Model):
         return day
     
     def save(self, *args, **kwargs):
+        super(SchoolYear, self).save(*args, **kwargs) 
         if self.active_year:
             all = SchoolYear.objects.exclude(id=self.id).update(active_year=False)
             for student in Student.objects.filter(inactive=False):
                 student.determine_year()
                 student.save()
-        super(SchoolYear, self).save(*args, **kwargs) 
     
     
 class ImportLog(models.Model):
