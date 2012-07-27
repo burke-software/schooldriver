@@ -108,6 +108,7 @@ INSTALLED_APPS = (
     #'google_auth',
     #'ldap_groups',
     'south',
+    'djcelery',
 )
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -130,6 +131,12 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
+
+#Celery
+import djcelery
+djcelery.setup_loader()
+BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+CELERY_IMPORTS = ("ecwsp.canvas_sync.tasks", )
 
 #GRAPPELLI
 ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
