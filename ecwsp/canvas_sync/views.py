@@ -1,4 +1,7 @@
+from django.shortcuts import render_to_response, get_object_or_404
 from django.conf import settings
+from django.http import HttpResponse, HttpResponseRedirect
+from django.template import RequestContext
 
 from ecwsp.sis.models import Student, Faculty, Cohort, SchoolYear
 from ecwsp.schedule.models import Department, MarkingPeriod, Course
@@ -11,6 +14,10 @@ from cStringIO import StringIO
 from django.utils.encoding import smart_str
 import requests
 
+def setup(request):
+    return render_to_response('canvas_sync/setup.html', {
+        'msg':'',
+    }, RequestContext(request, {}),)
 
 class CanvasSync:
     token = settings.CANVAS_TOKEN

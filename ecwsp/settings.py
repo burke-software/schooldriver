@@ -95,6 +95,7 @@ INSTALLED_APPS = (
     'ecwsp.attendance',
     'ecwsp.grades',
     'ecwsp.counseling',
+    'ecwsp.canvas_sync',
     #'ecwsp.naviance_sso',
     'ajax_select',
     'reversion',
@@ -137,6 +138,7 @@ import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_IMPORTS = ("ecwsp.canvas_sync.tasks", )
+CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 
 #GRAPPELLI
 ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'

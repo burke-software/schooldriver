@@ -222,6 +222,9 @@
                         {% if perms.custom_field.change_custom_field %}
                             <li><a href="{% url admin:custom_field_customfield_changelist %}">{% trans 'Custom Fields' %}</a></li>
                         {% endif %}
+                        {% if 'ecwsp.canvas_sync' in settings.INSTALLED_APPS and perms.sis.reports %}
+                            <li><a href="{% url ecwsp.canvas_sync.views.setup %}">{% trans 'Canvas Sync' %}</a></li>
+                        {% endif %}
                     </ul>
                 </li>
             {% endif %}
