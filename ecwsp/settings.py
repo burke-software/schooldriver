@@ -140,7 +140,7 @@ BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_IMPORTS = (
     "ecwsp.canvas_sync.tasks",
     "ecwsp.work_study.tasks",
-    "ecwsp.volunteer_track.trasks",
+    "ecwsp.volunteer_track.tasks",
     )
 CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 
