@@ -3,9 +3,10 @@ from ecwsp.administration.models import Configuration
 from django.core.mail import send_mail
 from datetime import date
 
-from celery import task
+from celery.task.schedules import crontab
+from celery.decorators import periodic_task
 
-@task
+@periodic_task(run_every=crontab(hour=20, minute=27))
 def email_cra_nightly(self, *args, **options):
     """ Email CRA nightly time sheet and student interaction information
     """
