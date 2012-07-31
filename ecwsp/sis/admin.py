@@ -107,6 +107,8 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
                 context['adminform'].form.fields['pic'].help_text += txt
         except:
             print >> sys.stderr, "Error in StudentAdmin render_change_form"
+
+        context['adminform'].form.fields['family_access_users'].queryset = User.objects.filter(groups__name='family')
         
         return super(StudentAdmin, self).render_change_form(request, context,  *args, **kwargs)
     
@@ -122,6 +124,15 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
             'other_courses': other_courses,
         }
         return super(StudentAdmin, self).change_view(request, object_id, extra_context=my_context)
+
+    def save_model(self, request, obj, form, change):
+        super(StudentAdmin, self).save_model(request, obj, form, change)
+        form.save_m2m()
+        group = Group.objects.get_or_create(name='family')[0]
+        for user in obj.family_access_users.all():
+            user.groups.add(group)
+            user.save()
+
         
     def get_form(self, request, obj=None, **kwargs):
         form = super(StudentAdmin,self).get_form(request,obj,**kwargs)
@@ -140,7 +151,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     
     fieldsets = [
         (None, {'fields': [('lname', 'fname'), ('mname', 'inactive'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'year',('unique_id','ssn'),
-            'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
+            'family_preferred_language', 'family_access_users', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
     ]
     change_list_template = "admin/sis/student/change_list.html"
     form = StudentForm
@@ -149,6 +160,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     actions = [promote_to_worker, mark_inactive, increment_year_or_graduate]
     list_filter = ['inactive','year']
     list_display = ['__unicode__','year']
+    filter_horizontal = ('family_access_users',)
 admin.site.register(Student, StudentAdmin)
 
 ### Second student admin just for courses
@@ -222,3 +234,14 @@ class ImportLogAdmin(admin.ModelAdmin):
 admin.site.register(ImportLog, ImportLogAdmin)
 
 admin.site.register(MessageToStudent)
+
+from django.contrib.auth.admin import UserAdmin
+class FamilyAccessUserAdmin(UserAdmin,admin.ModelAdmin):
+    fields = ('is_active','username','first_name','last_name','password')
+    fieldsets = None
+    list_display = ('username','first_name','last_name','is_active',)
+#    list_filter = ('is_active','workteam')
+    def queryset(self,request):
+        return User.objects.filter(groups__name='family')
+
+admin.site.register(FamilyAccessUser,FamilyAccessUserAdmin)

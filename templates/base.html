@@ -48,7 +48,7 @@
                                     <span class="arrowdown">▼</span>
                                 </a>
                                 <ul>
-				    {% if user|in_group:"company" %}
+                                    {% if user|in_group:"company" %}
                                         <li><a href="{% url ecwsp.work_study.views.supervisor_dash %}">Supervisor Dashboard</a></li>
                                     {% endif %}
                                     {% if user|in_group:"students" %}
@@ -61,6 +61,11 @@
                                         {% endif %}
                                         {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
                                             <li><a href="{% url ecwsp.benchmark_grade.views.student_grade %}">Grades</a></li>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if user|in_group:"family" %}
+                                        {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
+                                            <li><a href="{% url ecwsp.benchmark_grade.views.family_grade %}">Grades</a></li>
                                         {% endif %}
                                     {% endif %}
 				    <li><a href="/accounts/password_change">Change Password</a></li>

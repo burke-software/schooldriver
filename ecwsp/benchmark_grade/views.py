@@ -144,6 +144,50 @@ def student_grade(request):
         'error_message': error_message
     }, RequestContext(request, {}),)
 
+@user_passes_test(lambda u: u.groups.filter(name='family').count() > 0 or u.is_superuser, login_url='/')
+def family_grade(request):
+    """ A view for family to see one or more students' grades in detail. """
+    available_students = None
+    student = None
+    mps = None
+    error_message = None
+
+    available_students = Student.objects.filter(family_access_users=request.user)
+    if available_students.count() == 1:
+        student = available_students[0]
+    elif 'student_username' not in request.GET:
+        error_message = "Please select a student."
+    elif available_students.filter(username=request.GET['student_username']).count() == 0:
+        error_message = "Please select a student." # We'll be polite in response to your evil.
+    else:
+        student = available_students.get(username=request.GET['student_username'])
+    if student is not None:
+        mps = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True),
+                                           start_date__lte=date.today()).order_by('-start_date')
+        for mp in mps:
+            mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
+            for course in mp.courses:
+                course.categories = Category.objects.filter(item__course=course).distinct()
+                for category in course.categories:
+                    category.marks = Mark.objects.filter(student=student, item__course=course,
+                                                         item__category=category, item__markingPeriod=mp).order_by('-item__date', 'item__name',
+                                                                                                                   'description')
+                    if category.name == 'Standards':
+                        category.marks = category.marks.filter(description='Session')
+                    try:
+                        agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
+                                                    singleCategory=category, singleMarkingPeriod=mp)
+                        category.average = agg.scale.spruce(agg.cachedValue)
+                    except:
+                        category.average = None
+    return render_to_response('benchmark_grade/family_grade.html', {
+        'student': student,
+        'available_students': available_students,
+        'today': date.today(),
+        'mps': mps,
+        'error_message': error_message
+    }, RequestContext(request, {}),)
+
 def gradebook(request):
     fifty = []
     i = 0

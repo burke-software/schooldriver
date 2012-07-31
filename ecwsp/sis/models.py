@@ -349,6 +349,7 @@ class LanguageChoice(models.Model):
 def get_default_language():
     if LanguageChoice.objects.filter(default=True).count():
         return LanguageChoice.objects.filter(default=True)[0]
+
 class Student(MdlUser, CustomFieldModel):
     """student based on a Moodle user"""
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
@@ -371,6 +372,7 @@ class Student(MdlUser, CustomFieldModel):
     parent_email = models.EmailField(blank=True, editable=False)
     
     family_preferred_language = models.ForeignKey(LanguageChoice, blank=True, null=True, default=get_default_language)
+    family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True)
     alt_email = models.EmailField(blank=True, help_text="Alternative student email that is not their school email.")
     notes = models.TextField(blank=True)
     emergency_contacts = models.ManyToManyField(EmergencyContact, blank=True)
@@ -730,3 +732,14 @@ class MessageToStudent(models.Model):
     derp = models.DateField(default=date.today)
     def __unicode__(self):
         return self.message
+
+class FamilyAccessUser(User):
+    """ A person who can log into the non-admin side and see the same view as a student,
+    except that he/she cannot submit timecards.
+    This proxy model allows non-superuser registrars to update family user accounts.
+    """
+    class Meta:
+        proxy = True
+    def save(self, *args, **kwargs):
+        super(FamilyAccessUser, self).save(*args, **kwargs)
+        self.groups.add(Group.objects.get_or_create(name='family')[0])
