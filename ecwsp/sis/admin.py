@@ -150,7 +150,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         return HttpResponseRedirect("/sis/increment_year_or_graduate/?ids=%s" % (",".join(selected)))
     
     fieldsets = [
-        (None, {'fields': [('lname', 'fname'), ('mname', 'inactive'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'year',('unique_id','ssn'),
+        (None, {'fields': [('lname', 'fname'), ('mname', 'inactive'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'class_of_year',('unique_id','ssn'),
             'family_preferred_language', 'family_access_users', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
     ]
     change_list_template = "admin/sis/student/change_list.html"
@@ -162,6 +162,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     list_display = ['__unicode__','year']
     filter_horizontal = ('family_access_users',)
 admin.site.register(Student, StudentAdmin)
+admin.site.register(ClassYear)
 
 ### Second student admin just for courses
 class StudentCourse(Student):

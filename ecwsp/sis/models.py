@@ -345,6 +345,31 @@ class LanguageChoice(models.Model):
                 language.save()
         super(LanguageChoice, self).save(*args, **kwargs)
 
+class IntegerRangeField(models.IntegerField):
+    def __init__(self, verbose_name=None, name=None, min_value=None, max_value=None, **kwargs):
+        self.min_value, self.max_value = min_value, max_value
+        models.IntegerField.__init__(self, verbose_name, name, **kwargs)
+    def formfield(self, **kwargs):
+        defaults = {'min_value': self.min_value, 'max_value':self.max_value}
+        defaults.update(kwargs)
+        return super(IntegerRangeField, self).formfield(**defaults)
+if 'south' in settings.INSTALLED_APPS:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([], ["^ecwsp\.sis\.models\.IntegerRangeField"])
+    
+class ClassYear(models.Model):
+    """ Class year such as class of 2010.
+    """
+    year = IntegerRangeField(unique=True, min_value=1900, max_value=2200, help_text="Example 2014")
+    full_name = models.CharField(max_length=255, help_text="Example Class of 2014", blank=True)
+    def __unicode__(self):
+        return unicode(self.full_name)
+    
+    def save(self, *args, **kwargs):
+        if not self.full_name:
+            self.full_name = "Class of %s" % (self.year,)
+        super(ClassYear, self).save(*args, **kwargs)
+
 
 def get_default_language():
     if LanguageChoice.objects.filter(default=True).count():
@@ -359,6 +384,7 @@ class Student(MdlUser, CustomFieldModel):
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date")
     year = models.ForeignKey(GradeLevel, blank=True, null=True)
+    class_of_year = models.ForeignKey(ClassYear, blank=True, null=True)
     date_dismissed = models.DateField(blank=True, null=True)
     reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
     unique_id = models.IntegerField(blank=True, null=True, unique=True, help_text="For integration with outside databases")
@@ -538,6 +564,21 @@ class Student(MdlUser, CustomFieldModel):
         else:
             self.cache_cohort = None
     
+    def determine_year(self):
+        """ Set the year (fresh, etc) from the class of XX year.
+        """
+        if self.class_of_year:
+            try:
+                active_year = SchoolYear.objects.filter(active_year=True)[0]
+                this_year = active_year.end_date.year
+                school_last_year = GradeLevel.objects.order_by('-id')[0].id
+                class_of_year = self.class_of_year.year
+                
+                target_year = school_last_year - (class_of_year - this_year)
+                self.year = GradeLevel.objects.get(id=target_year)
+            finally:
+                pass
+    
     def save(self, *args, **kwargs):
         if Faculty.objects.filter(id=self.id).count():
             raise ValidationError('Cannot have someone be a student AND faculty!')
@@ -548,10 +589,14 @@ class Student(MdlUser, CustomFieldModel):
             try:
                 self.studentworker.placement = None
             except: pass
+        # Check year
+        self.determine_year()
+            
         super(Student, self).save(*args, **kwargs)
         user, created = User.objects.get_or_create(username=self.username)
         group, gcreated = Group.objects.get_or_create(name="students")
         user.groups.add(group)
+        
         
     def full_clean(self, *args, **kwargs):
         """ Check if a Faculty exists, can't have someone be a Student and Faculty """
@@ -698,9 +743,12 @@ class SchoolYear(models.Model):
         return day
     
     def save(self, *args, **kwargs):
+        super(SchoolYear, self).save(*args, **kwargs) 
         if self.active_year:
             all = SchoolYear.objects.exclude(id=self.id).update(active_year=False)
-        super(SchoolYear, self).save(*args, **kwargs) 
+            for student in Student.objects.filter(inactive=False):
+                student.determine_year()
+                student.save()
     
     
 class ImportLog(models.Model):

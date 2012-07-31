@@ -13,7 +13,7 @@ def student_thumbnail(request, year):
     
     c = canvas.Canvas(response, pagesize=letter)  
     
-    students = Student.objects.filter(year=year).order_by('lname', 'fname')
+    students = Student.objects.filter(year=year, inactive=False).order_by('lname', 'fname')
     xsize = 6*cm
     ysize = 4.5*cm
     dx = .7*cm + xsize    #space between each pic

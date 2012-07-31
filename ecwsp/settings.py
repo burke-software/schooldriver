@@ -95,6 +95,7 @@ INSTALLED_APPS = (
     'ecwsp.attendance',
     'ecwsp.grades',
     'ecwsp.counseling',
+    'ecwsp.canvas_sync',
     #'ecwsp.naviance_sso',
     'ajax_select',
     'reversion',
@@ -108,6 +109,7 @@ INSTALLED_APPS = (
     #'google_auth',
     #'ldap_groups',
     'south',
+    'djcelery',
 )
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -130,6 +132,17 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
+
+#Celery
+import djcelery
+djcelery.setup_loader()
+BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+CELERY_IMPORTS = (
+    "ecwsp.canvas_sync.tasks",
+    "ecwsp.work_study.tasks",
+    "ecwsp.volunteer_track.tasks",
+    )
+CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 
 #GRAPPELLI
 ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
@@ -299,8 +312,18 @@ SYNC_SUGAR = False
 # Strange way of storing routes that Notre Dame High School wanted, default disabled
 CRND_ROUTES = False
 
+
 #OMR
 QUEXF_URL = "http://quexf.cristoreyny.org"
+
+
+#Canvas LMS
+# oauth token, you must make this in Canvas.
+# https://canvas.instructure.com/doc/api/file.oauth.html
+CANVAS_TOKEN = ''
+CANVAS_ACCOUNT_ID = ''
+CANVAS_BASE_URL = ''
+
 
 # this will load additional settings from the file settings_local.py
 # this is useful when managing multiple sites with different configurations

@@ -205,7 +205,7 @@ You are logged in as
 <div class="timecard-options">
 {% if not form.for_pay.is_hidden %}
     <input type="checkbox" name="{{ form.for_pay.html_name }}" id="id_{{ form.for_pay.html_name }}" {% if form.for_pay.value %}checked="checked"{% endif %}>
-        {% if student %} I {% else %} Student {% endif %}was working over break and should be paid separately for these hours.
+        {% if student %} I {% else %} Student {% endif %}was working over a school break (such as a holiday) and should be paid separately for these hours.
     </label><br />
     {{ form.for_pay.errors }} 
 {% endif %}

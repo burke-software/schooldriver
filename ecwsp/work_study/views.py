@@ -31,6 +31,7 @@ from django.db.models import Sum, Count, Avg
 from django.forms.models import modelformset_factory
 from django.http import HttpResponseRedirect
 from django.template import RequestContext
+from django.core.exceptions import ValidationError
 
 from ecwsp.work_study.models import StudentWorker, Contact, TimeSheet, WorkTeam, Company, ClientVisit, StudentInteraction, CompContract
 from ecwsp.work_study.models import PaymentOption, CompanyHistory, Attendance
@@ -260,7 +261,9 @@ def student_edit(request, tsid):
     thisStudent = StudentWorker.objects.get(username=request.user.username)
     timesheet = TimeSheet.objects.get(id=tsid)
     # Students can only edit their own NON approved time sheets
-    if (timesheet.student != thisStudent or timesheet.approved): raise Exception('PermissionDenied',)
+    if (timesheet.student != thisStudent or timesheet.approved):
+        return render_to_response('base.html', {'student': True, 'msg': "This timesheet has already been approved. You cannot edit it."}, RequestContext(request, {}))
+
     compContacts = Contact.objects.filter(workteam=thisStudent.placement)
     try:
         supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
