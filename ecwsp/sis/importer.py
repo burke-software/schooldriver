@@ -428,6 +428,10 @@ class Importer:
         if sheet:
             inserted, updated = self.import_survey(sheet)
             msg += "%s survey records inserted, %s survey records updated <br/>" % (inserted, updated)
+        sheet = self.get_sheet_by_case_insensitive_name("work study attendance")
+        if sheet:
+            inserted, updated = self.import_work_study_attendance(sheet)
+            msg += "%s work study attendance records inserted, %s work study attendance records updated <br/>" % (inserted, updated)
         
         if msg == "":
             msg = "No files found. Check if sheets are named correctly. "
@@ -546,7 +550,7 @@ class Importer:
     
     def import_standard_test(self, sheet, known_test=None):
         """Import Standardized tests. Does not allow updates.
-        test: if the test named is already known. """
+        test: if the test name is already known. """
         x, header, inserted, updated = self.import_prep(sheet)
         test = known_test
         while x < sheet.nrows:
@@ -2188,9 +2192,10 @@ class Importer:
                     items = zip(header, row)
                     model = None
                     supid = None
-                    created = False
+                    created = True
                     try:
                         student = self.get_student(items)
+                        created = False
                     except:
                         student = None
                     for (name, value) in items:
@@ -2353,6 +2358,7 @@ class Importer:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
                 x += 1
         return inserted, updated
+    
     def import_survey(self, sheet):
         #does not allow  updates
         from ecwsp.work_study.models import Survey, StudentWorker, WorkTeam
@@ -2364,6 +2370,12 @@ class Importer:
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = Survey()
+                    questions = []
+                    answers = []
+                    student = None
+                    survey = None
+                    company = None
+                    date = None
                     try:
                         student = self.get_student(items)
                     except:
@@ -2373,23 +2385,133 @@ class Importer:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
                             if student:
-                                model.student = StudentWorker.objects.get(id=student.id)
+                                student = StudentWorker.objects.get(id=student.id)
                                     
                             else:
                                 if name == "student unique id" or name == "unique id":
-                                    model.student = StudentWorker(unique_id=value)
+                                    student = StudentWorker(unique_id=value)
                                 elif name == "student username":
-                                    model.student = StudentWorker(username=value)
+                                    student = StudentWorker(username=value)
                             if name == "survey" or name == "title" or name == "name":
-                                model.survey = value
+                                survey = value
                             elif name =="company" or name == "workteam":
-                                model.company = WorkTeam.objects.get(team_name=value)
-                            elif name == "question":
-                                model.question = value
-                            elif name == "answer":
-                                model.answer = value
+                                company = WorkTeam.objects.get(team_name=value)
                             elif name == "date":
-                                model.date = self.convert_date(value)
+                                date = self.convert_date(value)
+                            elif name[:9] == "question ":
+                                questions.append(name[9:])
+                                answers.append(value)
+                    ct = 0
+                    for question in questions:
+                        if student: model.student = student
+                        if survey: model.survey = survey
+                        if company: model.company = company
+                        if date: model.date = date
+                        model.question = question
+                        model.answer = answers[ct]
+                        model.full_clean()
+                        model.save()
+                        ct+=1
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                        model = Survey()
+                        
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
+                x += 1
+        return inserted, updated
+    
+    def import_work_study_attendance(self, sheet):
+        from ecwsp.work_study.models import StudentWorker, Attendance, AttendanceFee, AttendanceReason
+        x, header, inserted, updated = self.import_prep(sheet)
+        while x < sheet.nrows:
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    created = True
+                    absence_date = None
+                    tardy = None
+                    tardy_time_in = None
+                    fee = None
+                    paid = None
+                    billed = None
+                    reason = None
+                    waive = None
+                    notes = None
+                    try:
+                        student = self.get_student(items)
+                    except:
+                        student = None
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "id":
+                                id = value
+                            if student:
+                                student = StudentWorker.objects.get(id=student.id)
+                            else:
+                                if name == "student unique id" or name == "unique id":
+                                    student = StudentWorker(unique_id=value)
+                                elif name == "student username":
+                                    student = StudentWorker(username=value)
+                            if name == "date" or name == "absence date":
+                                absence_date = self.convert_date(value)
+                            if name == "tardy" or name == "attendance type":
+                                tardy = value
+                            elif name == "tardy time in" or name == "time in":
+                                tardy_time_in = value
+                            elif name == "fee":
+                                fee = value
+                            elif name == "paid" or name=="amount paid" or name=="student paid":
+                                paid = value
+                            elif name == "billed":
+                                billed = self.determine_truth(value)
+                            elif name == "reason":
+                                reason = value
+                            elif name == "half day":
+                                half_day = self.determine_truth(value)
+                            elif name == "waive" or name == "waive fee":
+                                waive = self.determine_truth(value)
+                            elif name == "notes":
+                                notes = value
+                                
+                    if id:
+                        model, created = Attendance.objects.get_or_create(id=id)
+                    elif student and date:
+                        attendances = EmergencyContact.objects.filter(student=student, date=date)
+                        if attendances.count() == 1:
+                            model = attendances[0]
+                            created = False
+                        else:
+                           model = Attendance()
+                    if student: model.student = student
+                    if absence_date: model.absence_date = absence_date
+                    if tardy_time_in: model.tardy_time_in = self.convert_time(tardy_time_in)
+                    if paid: model.paid = paid
+                    if billed: model.billed = billed
+                    if reason: model.reason, created = AttendanceReason.objects.get_or_create(name = reason)
+                    if half_day:
+                        model.half_day = half_day
+                    if waive: model.waive = waive
+                    if notes: model.notes = notes
+                    if fee:
+                        try:
+                            model.fee = AttendanceFee.objects.get(name = fee)
+                        except:
+                            model.fee = AttendanceFee.objects.get(value = fee)
+                                
+                    if tardy:
+                        if tardy == "A" or tardy == "T":
+                            model.tardy = tardy
+                        elif tardy.lower() == "absent":
+                            model.tardy = "A"
+                        elif tardy.lower() == "half day":
+                            model.tardy = "A"
+                            model.half_day = True
+                        elif tardy.lower() == "tardy" or tardy.lower() == "late":
+                            model.tardy = "T"
                     model.full_clean()
                     model.save()
                     if created:
