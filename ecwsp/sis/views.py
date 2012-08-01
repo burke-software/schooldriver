@@ -86,6 +86,8 @@ def index(request):
         return HttpResponseRedirect('/admin')
     elif request.user.groups.filter(Q(name='students')).count() > 0:
         return student_redirect(request)
+    elif request.user.groups.filter(name='family').count() > 0:
+        return family_redirect(request)
     elif request.user.groups.filter(Q(name='company')).count() > 0:
         from ecwsp.work_study.views import supervisor_dash
         return supervisor_dash(request)
@@ -105,6 +107,12 @@ def student_redirect(request):
         if student and hasattr(student, 'placement') and student.placement:
             return student_timesheet(request)
     return render_to_response('base.html', {'msg': "Welcome!", 'student': 'student', 'request': request,}, RequestContext(request, {}))
+
+def family_redirect(request):
+    if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+        from ecwsp.benchmark_grade.views import family_grade
+        return family_grade(request)
+    return render_to_response('base.html', {'msg': "Welcome!", 'request': request,}, RequestContext(request, {}))
 
 @user_passes_test(lambda u: u.groups.filter(name='registrar').count() > 0 or u.is_superuser, login_url='/')
 def import_everything(request):

@@ -428,10 +428,15 @@ class Importer:
         if sheet:
             inserted, updated = self.import_survey(sheet)
             msg += "%s survey records inserted, %s survey records updated <br/>" % (inserted, updated)
+
         sheet = self.get_sheet_by_case_insensitive_name("work study attendance")
         if sheet:
             inserted, updated = self.import_work_study_attendance(sheet)
             msg += "%s work study attendance records inserted, %s work study attendance records updated <br/>" % (inserted, updated)
+        sheet = self.get_sheet_by_case_insensitive_name("family access")
+        if sheet:
+            inserted, updated = self.import_family_access(sheet)
+            msg += "%s family access records inserted, %s family access records updated <br/>" % (inserted, updated)
         
         if msg == "":
             msg = "No files found. Check if sheets are named correctly. "
@@ -2523,4 +2528,52 @@ class Importer:
                 except:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
                 x += 1
+        return inserted, updated
+
+    def import_family_access(self, sheet):
+        from ecwsp.sis.models import Student, FamilyAccessUser
+        x, header, inserted, updated = self.import_prep(sheet)
+        while x < sheet.nrows:
+            try:
+                with transaction.commit_manually():
+                    name = None
+                    student_username = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+
+                    model = None
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok and name == 'family username':
+                            model, created = FamilyAccessUser.objects.get_or_create(username=value)
+
+                    if model is None:
+                        raise Exception("The column 'family username' must have a value for each row.")
+                        # kills this iteration
+
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name in ['first name','first_name','fname']:
+                                model.first_name = value
+                            elif name in ['last name','last_name','lname']:
+                                model.last_name = value
+                            elif name == 'password':
+                                model.set_password(value)
+                            elif name in ['student username', 'student']:
+                                student_username = value
+                                                    
+                    model.full_clean()
+                    model.save()
+                    if created:
+                        self.log_and_commit(model, addition=True)
+                        inserted += 1
+                    else:
+                        self.log_and_commit(model, addition=False)
+                        updated += 1
+
+                Student.objects.get(username=student_username).family_access_users.add(model)
+            except:
+                self.handle_error(row, name, sys.exc_info(), sheet.name)
+            x += 1
         return inserted, updated

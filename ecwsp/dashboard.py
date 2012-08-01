@@ -65,6 +65,7 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.sis.models.ReasonLeft',
                 'ecwsp.sis.models.Faculty',
                 'ecwsp.sis.models.MessageToStudent',
+                'ecwsp.sis.models.FamilyAccessUser',
             ),
         ))
 
