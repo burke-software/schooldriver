@@ -108,7 +108,8 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         except:
             print >> sys.stderr, "Error in StudentAdmin render_change_form"
 
-        context['adminform'].form.fields['family_access_users'].queryset = User.objects.filter(groups__name='family')
+        if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+            context['adminform'].form.fields['family_access_users'].queryset = User.objects.filter(groups__name='family')
         
         return super(StudentAdmin, self).render_change_form(request, context,  *args, **kwargs)
     
@@ -128,18 +129,23 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     def save_model(self, request, obj, form, change):
         super(StudentAdmin, self).save_model(request, obj, form, change)
         form.save_m2m()
-        group = Group.objects.get_or_create(name='family')[0]
-        for user in obj.family_access_users.all():
-            user.groups.add(group)
-            user.save()
+        if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+            group = Group.objects.get_or_create(name='family')[0]
+            for user in obj.family_access_users.all():
+                user.groups.add(group)
+                user.save()
 
         
     def get_form(self, request, obj=None, **kwargs):
-        form = super(StudentAdmin,self).get_form(request,obj,**kwargs)
-        
-        autoselect_fields_check_can_add(StudentForm, self.model ,request.user)
+        exclude = []
         if not request.user.has_perm('sis.view_ssn_student'):
-            self.exclude = ("ssn",)
+            exclude.append('ssn')
+        if not 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+            exclude.append('family_access_users')
+        if len(exclude):
+            kwargs['exclude'] = exclude
+        form = super(StudentAdmin,self).get_form(request,obj,**kwargs)
+        autoselect_fields_check_can_add(StudentForm, self.model ,request.user)
         return form
     
     def increment_year_or_graduate(modeladmin, request, queryset):
@@ -151,8 +157,10 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     
     fieldsets = [
         (None, {'fields': [('lname', 'fname'), ('mname', 'inactive'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'class_of_year',('unique_id','ssn'),
-            'family_preferred_language', 'family_access_users', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
+            'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
     ]
+    if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+        fieldsets[0][1]['fields'].append('family_access_users')
     change_list_template = "admin/sis/student/change_list.html"
     form = StudentForm
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
@@ -160,7 +168,8 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     actions = [promote_to_worker, mark_inactive, increment_year_or_graduate]
     list_filter = ['inactive','year']
     list_display = ['__unicode__','year']
-    filter_horizontal = ('family_access_users',)
+    if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+        filter_horizontal = ('family_access_users',)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(ClassYear)
 
@@ -244,5 +253,5 @@ class FamilyAccessUserAdmin(UserAdmin,admin.ModelAdmin):
 #    list_filter = ('is_active','workteam')
     def queryset(self,request):
         return User.objects.filter(groups__name='family')
-
-admin.site.register(FamilyAccessUser,FamilyAccessUserAdmin)
+if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+    admin.site.register(FamilyAccessUser,FamilyAccessUserAdmin)
