@@ -18,7 +18,7 @@
 
 from django.db import models
 from django.contrib.localflavor.us.models import *
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
