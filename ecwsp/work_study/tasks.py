@@ -7,7 +7,7 @@ from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
 @periodic_task(run_every=crontab(hour=20, minute=27))
-def email_cra_nightly(self, *args, **options):
+def email_cra_nightly():
     """ Email CRA nightly time sheet and student interaction information
     """
     from_email = Configuration.objects.get_or_create(name="From Email Address")[0].value

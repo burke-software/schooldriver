@@ -7,7 +7,7 @@ from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
 @periodic_task(run_every=crontab(hour=20, minute=29))
-def handle(self, *args, **options):
+def handle():
     """ Emails subscribed volunteer managers daily site submissions
     """
     volunteers = Volunteer.objects.filter(email_queue__isnull=False).exclude(email_queue="")
