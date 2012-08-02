@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.localflavor.us.models import *
 from django.contrib.auth.models import User
-
+from custom_field.custom_field import CustomFieldModel
 from ecwsp.sis.models import *
 
 import datetime
@@ -120,7 +120,7 @@ def get_school_year():
 def get_year():
     if GradeLevel.objects.count():
         return GradeLevel.objects.all()[0]
-class Applicant(models.Model):
+class Applicant(models.Model, CustomFieldModel):
     fname = models.CharField(max_length=255, verbose_name="First Name")
     mname = models.CharField(max_length=255, verbose_name="Middle Name", blank=True)
     lname = models.CharField(max_length=255, verbose_name="Last Name")

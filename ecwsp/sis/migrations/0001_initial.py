@@ -6,7 +6,10 @@ from django.db import models
 
 
 class Migration(SchemaMigration):
-
+    needed_by = (
+        ("schedule", "0001_initial"),
+        ("volunteer_track", "0001_initial"),
+    )
     def forwards(self, orm):
         # Adding model 'UserPreference'
         db.create_table('sis_userpreference', (

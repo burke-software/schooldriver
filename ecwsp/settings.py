@@ -39,10 +39,11 @@ ADMINS = (
 MANAGERS = ADMINS
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'sword',
         'USER': 'sword',
         'PASSWORD': '1234',
+        'HOST': 'localhost', 
     }
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
