@@ -18,7 +18,7 @@
 
 from django.db import models
 from django.contrib.localflavor.us.models import *
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
@@ -43,7 +43,7 @@ class Scale(models.Model):
     def spruce(self, grade):
         try:
             decGrade = Decimal(str(grade)).quantize(Decimal(str(10**(-1 * self.decimalPlaces))), ROUND_HALF_UP)
-        except Decimal.InvalidOperation:
+        except decimal.InvalidOperation:
             # it's not a number, so leave it alone
             return grade
         for mapping in self.mapping_set.all():
