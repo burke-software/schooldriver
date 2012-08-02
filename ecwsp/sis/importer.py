@@ -182,7 +182,7 @@ class Importer:
         items: name and value from the imported data
         allow_none: Allow not finding a student. If False an exceptions
         try_secondary: 
-        is reaised if the student isn't found. default False"""
+        is raised if the student isn't found. default False"""
         for (name, value) in items:
             is_ok, name, value = self.sanitize_item(name, value)
             if is_ok:

@@ -43,7 +43,7 @@ class Scale(models.Model):
     def spruce(self, grade):
         try:
             decGrade = Decimal(str(grade)).quantize(Decimal(str(10**(-1 * self.decimalPlaces))), ROUND_HALF_UP)
-        except decimal.InvalidOperation:
+        except Decimal.InvalidOperation:
             # it's not a number, so leave it alone
             return grade
         for mapping in self.mapping_set.all():
