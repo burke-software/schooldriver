@@ -201,7 +201,7 @@ admin.site.register(LanguageChoice)
 
 class CohortAdmin(admin.ModelAdmin):
     form = CohortForm
-    filter_horizontal = ('students',)
+    #filter_horizontal = ('students',)
     
     def save_model(self, request, obj, form, change):
         if obj.id:
