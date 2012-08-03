@@ -156,7 +156,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     directions_to = models.TextField(blank=True)
     directions_pickup = models.TextField(blank=True)
     map = models.ImageField(upload_to="maps", blank=True)
-    use_google_maps = models.BooleanField(blank=True)
+    use_google_maps = models.BooleanField()
     contacts = models.ManyToManyField(Contact, blank=True, help_text="All contacts at this company. You must select them here in order to select the primary contact for a student.")
     company_description = models.TextField(blank=True)
     job_description = models.TextField(blank=True)
