@@ -5,5 +5,5 @@ Django-sis is a open source school information system build with Django. It reli
 Core application - this is required to do anything.
 ## admissions
 Data about applicants. Can be imported into sis.
-![Alt text](/images/funnel.png)
+![Alt text](https://raw.github.com/burke-software/django-sis/master/screenshots/funnel.png)
 
