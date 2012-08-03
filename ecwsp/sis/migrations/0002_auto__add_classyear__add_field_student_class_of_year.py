@@ -152,7 +152,6 @@ class Migration(SchemaMigration):
         },
         'sis.messagetostudent': {
             'Meta': {'object_name': 'MessageToStudent'},
-            'derp': ('django.db.models.fields.DateField', [], {'default': 'datetime.date.today'}),
             'end_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.date.today'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'message': ('ckeditor.fields.RichTextField', [], {}),

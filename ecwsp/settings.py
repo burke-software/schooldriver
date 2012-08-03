@@ -44,6 +44,13 @@ DATABASES = {
         'USER': 'sword',
         'PASSWORD': '1234',
         'HOST': 'localhost', 
+    },
+    'mysql': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'sword',
+        'USER': 'sword',
+        'PASSWORD': '1234',
+        'HOST': 'localhost', 
     }
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
