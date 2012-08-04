@@ -78,7 +78,12 @@ class MarkingPeriodInline(admin.StackedInline):
 
 class StudentCourseInline(admin.TabularInline):
     model = CourseEnrollment
-    form = make_ajax_form(CourseEnrollment, {'course':'course','exclude_days':'day'})
+    #form = make_ajax_form(CourseEnrollment, {'course':'course','exclude_days':'day'})
+    raw_id_fields = ('course',)
+    # define the autocomplete_lookup_fields
+    autocomplete_lookup_fields = {
+        'fk': ['course'],
+    }
     fields = ['course', 'attendance_note', 'exclude_days']
     extra = 0
 

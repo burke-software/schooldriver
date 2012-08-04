@@ -1,4 +1,4 @@
-a.section-header {
+.section-header {
 	background: #2BC9ED url('/static/images/right-arrow.gif') no-repeat 10px center;
 	padding: 4px 0 4px 32px;
 	text-transform: uppercase;
@@ -8,6 +8,19 @@ a.section-header {
 	font-size: 16px;
 	display: block;
 	text-decoration: none;
+}
+
+.section-header a {
+    color: #ffffff;
+}
+
+a.edit_link {
+    float: right;
+    font-size: 80%;
+}
+
+a.edit_link:hover {
+    color: #444;
 }
 
 a.subsection {

@@ -76,6 +76,11 @@ class AlumniAdmin(admin.ModelAdmin):
             return self.readonly_fields + ('student',)
         return ()
     
+    def lookup_allowed(self, lookup, *args, **kwargs):
+        if lookup in ('student__id__exact',):
+            return True
+        return super(AlumniAdmin, self).lookup_allowed(lookup, *args, **kwargs)
+    
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
         for instance in instances:

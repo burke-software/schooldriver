@@ -35,7 +35,7 @@ $(document).ready(function() {
     }
     
     // Switches CSS classes. This controls the right and down arrows.  
-    $("a.section-header").click(function () {
+    $(".section-header").click(function () {
 	$(this).parent().removeClass('noprint');
 	if ($(this).hasClass("subsection")) {
 	    $(this).toggleClass('sub-expanded');

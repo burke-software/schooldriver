@@ -274,7 +274,7 @@ class StudentInteractionAdmin(admin.ModelAdmin):
     fields = ['type', 'student', 'comments', 'preset_comment','companies', 'reported_by']
     
     def lookup_allowed(self, lookup, *args, **kwargs):
-        if lookup in ('student__student_ptr__exact'):
+        if lookup in ('student__student_ptr__exact', 'student__id__exact',):
             return True
         return super(StudentInteractionAdmin, self).lookup_allowed(lookup, *args, **kwargs)
     

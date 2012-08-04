@@ -35,6 +35,11 @@ class StudentDisciplineAdmin(admin.ModelAdmin):
     list_filter = ['date', 'infraction', 'action',]
     search_fields = ['comments', 'students__fname', 'students__lname']
     inlines = [DisciplineActionInstanceInline]
+    
+    def lookup_allowed(self, lookup, *args, **kwargs):
+        if lookup in ('students','students__id__exact',):
+            return True
+        return super(StudentDisciplineAdmin, self).lookup_allowed(lookup, *args, **kwargs)
 
 admin.site.register(StudentDiscipline, StudentDisciplineAdmin)
 admin.site.register(DisciplineAction)

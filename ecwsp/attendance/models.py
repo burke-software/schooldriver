@@ -64,7 +64,7 @@ class StudentAttendance(models.Model):
     @property
     def edit(self):
         return "Edit"
-        
+    
     def save(self, *args, **kwargs):
         """Don't save Present """
         present, created = AttendanceStatus.objects.get_or_create(name="Present")
