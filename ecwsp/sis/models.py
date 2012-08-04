@@ -289,11 +289,11 @@ class Faculty(MdlUser):
         if Student.objects.filter(id=self.id).count():
             raise ValidationError('Cannot have someone be a student AND faculty!')
         super(Faculty, self).save(*args, **kwargs)
-        """user, created = User.objects.get_or_create(username=self.username)
+        user, created = User.objects.get_or_create(username=self.username)
         group, created = Group.objects.get_or_create(name="faculty")
         if created: group.save()
         user.groups.add(group)
-        user.save()"""
+        user.save()
         
     def full_clean(self, *args, **kwargs):
         """ Check if a Faculty exists, can't have someone be a Student and Faculty """
@@ -593,9 +593,9 @@ class Student(MdlUser, CustomFieldModel):
         self.determine_year()
             
         super(Student, self).save(*args, **kwargs)
-        """user, created = User.objects.get_or_create(username=self.username)
+        user, created = User.objects.get_or_create(username=self.username)
         group, gcreated = Group.objects.get_or_create(name="students")
-        user.groups.add(group)"""
+        user.groups.add(group)
         
         
     def full_clean(self, *args, **kwargs):

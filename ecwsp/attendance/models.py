@@ -20,6 +20,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
+from daterange_filter.fields import DateRangeField
 
 from ecwsp.sis.models import Student, SchoolYear
 from ecwsp.administration.models import Configuration
@@ -45,7 +46,8 @@ class AttendanceStatus(models.Model):
 
 class StudentAttendance(models.Model):
     student =  models.ForeignKey(Student, related_name="student_attn", help_text="Start typing a student's first or last name to search")
-    date = models.DateField(default=datetime.datetime.now)
+    date = DateRangeField(default=datetime.datetime.now)
+    date.daterange_filter = True
     status = models.ForeignKey(AttendanceStatus)
     time = models.TimeField(blank=True,null=True)
     notes = models.CharField(max_length=500, blank=True)
