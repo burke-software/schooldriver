@@ -30,7 +30,7 @@ class StudentDisciplineAdmin(admin.ModelAdmin):
     form = make_ajax_form(StudentDiscipline, dict(students='discstudent'))
 
     list_per_page = 50
-    fields = ['date', 'students', 'teacher', 'infraction', 'comments']
+    fields = ['date', 'students', 'teacher', 'infraction', 'comments', 'private_note']
     list_display = ('show_students', 'date', 'comment_Brief', 'infraction')
     list_filter = ['date', 'infraction', 'action',]
     search_fields = ['comments', 'students__fname', 'students__lname']
