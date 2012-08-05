@@ -97,8 +97,11 @@ class Contact(models.Model):
         if settings.SYNC_SUGAR:
             import warnings
             warnings.filterwarnings("ignore", "No data .*")
-            cursor = connection.cursor()
-            cursor.execute("call sync_contact_to_sugar(\"" + str(self.guid) + "\");")
+            try:
+                cursor = connection.cursor()
+                cursor.execute("call sync_contact_to_sugar(\"" + str(self.guid) + "\");")
+            except DatabaseError:
+                print >> sys.stderr, "warning: could not save contact to sugar."
     
     @property
     def edit_link(self):
