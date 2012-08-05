@@ -206,8 +206,11 @@ class Course(models.Model):
                 enroll, created = CourseEnrollment.objects.get_or_create(course=self, user=self.teacher, role="teacher")
         except: pass
     
+    @staticmethod
+    def autocomplete_search_fields():
+        return ("shortname__icontains", "fullname__icontains",)
+    
     def grades_link(self):
-        
        link = '<a href="/grades/teacher_grade/upload/%s" class="historylink"> Grades </a>' % (self.id,)
        return link
     grades_link.allow_tags = True

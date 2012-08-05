@@ -37,13 +37,14 @@ from ckeditor.fields import RichTextField
 logger = logging.getLogger(__name__)
 
 def create_faculty(instance):
-    faculty, created = Faculty.objects.get_or_create(username=instance.username)
-    if created:
-        faculty.fname = instance.first_name
-        faculty.lname = instance.last_name
-        faculty.email = instance.email
-        faculty.teacher = True
-        faculty.save()
+    if True:
+        faculty, created = Faculty.objects.get_or_create(username=instance.username)
+        if created:
+            faculty.fname = instance.first_name
+            faculty.lname = instance.last_name
+            faculty.email = instance.email
+            faculty.teacher = True
+            faculty.save()
 
 def create_faculty_profile(sender, instance, created, **kwargs):
     if instance.groups.filter(name="teacher").count():
@@ -178,12 +179,12 @@ class MdlUser(models.Model):
     def save(self, *args, **kwargs):
         super(MdlUser, self).save(*args, **kwargs)
         # create a Django user to match
-        user, created = User.objects.get_or_create(username=self.username)
+        """user, created = User.objects.get_or_create(username=self.username)
         if user.first_name == "": user.first_name = self.fname
         if user.last_name == "": user.last_name = self.lname
         if user.email == "": user.email = self.email
         if user.password == "": user.password = "!"
-        user.save()
+        user.save()"""
         
     def __unicode__(self):
         return self.lname + ", " + self.fname
@@ -304,7 +305,7 @@ class Faculty(MdlUser):
 
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
-    students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
+    #students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
     
     def __unicode__(self):
         return unicode(self.name)
@@ -656,9 +657,6 @@ class StudentCohort(models.Model):
     cohort = models.ForeignKey(Cohort)
     primary = models.BooleanField()
     
-    class Meta:
-        managed = False
-    
     def save(self, *args, **kwargs):
         if self.primary:
             for cohort in StudentCohort.objects.filter(student=self.student).exclude(id=self.id):
@@ -777,7 +775,6 @@ class MessageToStudent(models.Model):
     message = RichTextField(help_text="This message will be shown to students when they log in.")
     start_date = models.DateField(default=date.today)
     end_date = models.DateField(default=date.today)
-    derp = models.DateField(default=date.today)
     def __unicode__(self):
         return self.message
 

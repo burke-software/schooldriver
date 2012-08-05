@@ -8,7 +8,7 @@ apt-get install libapache2-mod-wsgi
 
 # now install python libs that aren't in deb
 # stable version of ldap-groups may not work with mysql
-pip install requests django django-reversion simplejson httpagentparser django-ajax-selects django_extensions django-celery django-grappelli elementtree poster django-ajax-filtered-fields django-mass-edit django-pagination django-admin-export django-custom-field suds
+pip install requests django django-reversion simplejson httpagentparser django-daterange-filter django-ajax-selects django_extensions django-celery django-grappelli elementtree poster django-ajax-filtered-fields django-mass-edit django-pagination django-admin-export django-custom-field suds
 
 # people don't submit their fixes to pypi so we have to include them
 # Django 1.4 compatibility

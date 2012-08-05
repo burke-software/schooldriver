@@ -44,6 +44,7 @@ from reportlab.lib.pagesizes import letter
 from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
 import logging
+from daterange_filter.fields import DateRangeField
 
 from ecwsp.administration.models import Configuration
 from ecwsp.sis.models import Student
@@ -89,15 +90,12 @@ class Contact(models.Model):
         ordering = ('lname',)
         verbose_name = 'Contact Supervisor'
         
-    def save(self, *args, **kwargs):
-        if not self.guid:
-            self.guid = hashlib.sha1(str(random.random())).hexdigest()[:-4]
+    def save(self, sync_sugar=True, *args, **kwargs):
         super(Contact, self).save(*args, **kwargs)
-        if settings.SYNC_SUGAR:
-            import warnings
-            warnings.filterwarnings("ignore", "No data .*")
-            cursor = connection.cursor()
-            cursor.execute("call sync_contact_to_sugar(\"" + str(self.guid) + "\");")
+        if settings.SYNC_SUGAR and sync_sugar:
+            from ecwsp.work_study.sugar_sync import SugarSync
+            sugar_sync = SugarSync()
+            sugar_sync.update_contact(self)
     
     @property
     def edit_link(self):
@@ -156,7 +154,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     directions_to = models.TextField(blank=True)
     directions_pickup = models.TextField(blank=True)
     map = models.ImageField(upload_to="maps", blank=True)
-    use_google_maps = models.BooleanField(blank=True)
+    use_google_maps = models.BooleanField()
     contacts = models.ManyToManyField(Contact, blank=True, help_text="All contacts at this company. You must select them here in order to select the primary contact for a student.")
     company_description = models.TextField(blank=True)
     job_description = models.TextField(blank=True)
@@ -652,8 +650,8 @@ class TimeSheet(models.Model):
     make_up = models.BooleanField(help_text="Student is making up a missed day.", verbose_name="makeup")
     company = models.ForeignKey(WorkTeam) # Because a student's company can change but this shouldn't.
     creation_date = models.DateTimeField(auto_now_add=True)
-    date = models.DateField()
-    date.date_filter = True
+    date = DateRangeField()
+    date.daterange_filter = True
     time_in = models.TimeField()
     time_lunch = models.TimeField()
     time_lunch_return = models.TimeField()

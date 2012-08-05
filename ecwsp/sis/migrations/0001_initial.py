@@ -6,7 +6,11 @@ from django.db import models
 
 
 class Migration(SchemaMigration):
-
+    needed_by = (
+        ("schedule", "0001_initial"),
+        ("volunteer_track", "0001_initial"),
+        ("work_study", "0001_initial"),
+    )
     def forwards(self, orm):
         # Adding model 'UserPreference'
         db.create_table('sis_userpreference', (
@@ -251,6 +255,7 @@ class Migration(SchemaMigration):
             ('derp', self.gf('django.db.models.fields.DateField')(default=datetime.date.today)),
         ))
         db.send_create_signal('sis', ['MessageToStudent'])
+        db.add_column('sis_studentcohort', 'primary', self.gf('django.db.models.fields.BooleanField')(default=False))
 
 
     def backwards(self, orm):

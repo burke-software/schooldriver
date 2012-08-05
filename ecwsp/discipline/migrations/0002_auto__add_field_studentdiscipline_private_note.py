@@ -8,26 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'ClassYear'
-        db.create_table('sis_classyear', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('year', self.gf('ecwsp.sis.models.IntegerRangeField')(unique=True)),
-            ('full_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-        ))
-        db.send_create_signal('sis', ['ClassYear'])
-
-        # Adding field 'Student.class_of_year'
-        db.add_column('sis_student', 'class_of_year',
-                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.ClassYear'], null=True, blank=True),
+        # Adding field 'StudentDiscipline.private_note'
+        db.add_column('discipline_studentdiscipline', 'private_note',
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting model 'ClassYear'
-        db.delete_table('sis_classyear')
-
-        # Deleting field 'Student.class_of_year'
-        db.delete_column('sis_student', 'class_of_year_id')
+        # Deleting field 'StudentDiscipline.private_note'
+        db.delete_column('discipline_studentdiscipline', 'private_note')
 
 
     models = {
@@ -67,25 +56,45 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        'sis.asphistory': {
-            'Meta': {'object_name': 'ASPHistory'},
-            'asp': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'date': ('django.db.models.fields.DateField', [], {'default': 'datetime.date.today'}),
-            'enroll': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+        'discipline.disciplineaction': {
+            'Meta': {'object_name': 'DisciplineAction'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.Student']"})
+            'major_offense': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
+        },
+        'discipline.disciplineactioninstance': {
+            'Meta': {'object_name': 'DisciplineActionInstance'},
+            'action': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discipline.DisciplineAction']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'quantity': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
+            'student_discipline': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discipline.StudentDiscipline']"})
+        },
+        'discipline.infraction': {
+            'Meta': {'object_name': 'Infraction'},
+            'comment': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
+        'discipline.studentdiscipline': {
+            'Meta': {'ordering': "('-date',)", 'object_name': 'StudentDiscipline'},
+            'action': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discipline.DisciplineAction']", 'through': "orm['discipline.DisciplineActionInstance']", 'symmetrical': 'False'}),
+            'comments': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 8, 4, 0, 0)'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'infraction': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discipline.Infraction']", 'null': 'True', 'blank': 'True'}),
+            'private_note': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'students': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['sis.Student']", 'symmetrical': 'False'}),
+            'teacher': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.Faculty']", 'null': 'True', 'blank': 'True'})
         },
         'sis.classyear': {
             'Meta': {'object_name': 'ClassYear'},
-            'full_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'full_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'year': ('ecwsp.sis.models.IntegerRangeField', [], {'unique': 'True'})
         },
         'sis.cohort': {
             'Meta': {'object_name': 'Cohort'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'students': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['sis.Student']", 'null': 'True', 'db_table': "'sis_studentcohort'", 'blank': 'True'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         'sis.emergencycontact': {
             'Meta': {'ordering': "('primary_contact', 'emergency_only', 'lname')", 'object_name': 'EmergencyContact'},
@@ -102,14 +111,6 @@ class Migration(SchemaMigration):
             'street': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'zip': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'})
         },
-        'sis.emergencycontactnumber': {
-            'Meta': {'object_name': 'EmergencyContactNumber'},
-            'contact': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.EmergencyContact']"}),
-            'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'number': ('django.contrib.localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
-            'type': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'})
-        },
         'sis.faculty': {
             'Meta': {'ordering': "('lname', 'fname')", 'object_name': 'Faculty', '_ormbases': ['sis.MdlUser']},
             'alt_email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
@@ -122,16 +123,6 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "('id',)", 'object_name': 'GradeLevel'},
             'id': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '150'})
-        },
-        'sis.importlog': {
-            'Meta': {'object_name': 'ImportLog'},
-            'date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'errors': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'import_file': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
-            'sql_backup': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
-            'user_note': ('django.db.models.fields.CharField', [], {'max_length': '1024', 'blank': 'True'})
         },
         'sis.languagechoice': {
             'Meta': {'object_name': 'LanguageChoice'},
@@ -150,32 +141,10 @@ class Migration(SchemaMigration):
             'lname': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
         },
-        'sis.messagetostudent': {
-            'Meta': {'object_name': 'MessageToStudent'},
-            'end_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.date.today'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'message': ('ckeditor.fields.RichTextField', [], {}),
-            'start_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.date.today'})
-        },
         'sis.reasonleft': {
             'Meta': {'object_name': 'ReasonLeft'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'reason': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
-        },
-        'sis.reportfield': {
-            'Meta': {'object_name': 'ReportField'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
-        },
-        'sis.schoolyear': {
-            'Meta': {'ordering': "('-start_date',)", 'object_name': 'SchoolYear'},
-            'active_year': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'benchmark_grade': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'end_date': ('django.db.models.fields.DateField', [], {}),
-            'grad_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
-            'start_date': ('django.db.models.fields.DateField', [], {})
         },
         'sis.student': {
             'Meta': {'ordering': "('lname', 'fname')", 'object_name': 'Student', '_ormbases': ['sis.MdlUser']},
@@ -188,6 +157,7 @@ class Migration(SchemaMigration):
             'cohorts': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['sis.Cohort']", 'symmetrical': 'False', 'through': "orm['sis.StudentCohort']", 'blank': 'True'}),
             'date_dismissed': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'emergency_contacts': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['sis.EmergencyContact']", 'symmetrical': 'False', 'blank': 'True'}),
+            'family_access_users': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.User']", 'symmetrical': 'False', 'blank': 'True'}),
             'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
             'grad_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'individual_education_program': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -213,50 +183,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'student': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.Student']"})
-        },
-        'sis.studentfile': {
-            'Meta': {'object_name': 'StudentFile'},
-            'file': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.Student']"})
-        },
-        'sis.studenthealthrecord': {
-            'Meta': {'object_name': 'StudentHealthRecord'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'record': ('django.db.models.fields.TextField', [], {}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.Student']"})
-        },
-        'sis.studentnumber': {
-            'Meta': {'object_name': 'StudentNumber'},
-            'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'number': ('django.contrib.localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.Student']", 'null': 'True', 'blank': 'True'}),
-            'type': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'})
-        },
-        'sis.transcriptnote': {
-            'Meta': {'object_name': 'TranscriptNote'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'note': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'predefined_note': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.TranscriptNoteChoices']", 'null': 'True', 'blank': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.Student']"})
-        },
-        'sis.transcriptnotechoices': {
-            'Meta': {'object_name': 'TranscriptNoteChoices'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'note': ('django.db.models.fields.TextField', [], {})
-        },
-        'sis.userpreference': {
-            'Meta': {'object_name': 'UserPreference'},
-            'additional_report_fields': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['sis.ReportField']", 'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'include_deleted_students': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'omr_default_number_answers': ('django.db.models.fields.IntegerField', [], {'default': '2', 'blank': 'True'}),
-            'omr_default_point_value': ('django.db.models.fields.IntegerField', [], {'default': '1', 'blank': 'True'}),
-            'omr_default_save_question_to_bank': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'prefered_file_format': ('django.db.models.fields.CharField', [], {'default': "'o'", 'max_length': "'1'"}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'unique': 'True'})
         }
     }
 
-    complete_apps = ['sis']
+    complete_apps = ['discipline']

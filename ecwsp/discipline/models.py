@@ -63,6 +63,7 @@ class StudentDiscipline(models.Model):
     infraction = models.ForeignKey(Infraction, blank=True, null=True)
     action = models.ManyToManyField(DisciplineAction, through='DisciplineActionInstance')
     comments = models.TextField(blank=True)
+    private_note = models.TextField(blank=True)
     teacher = models.ForeignKey(Faculty, blank=True, null=True)
     
     def show_students(self):
