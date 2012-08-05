@@ -6,7 +6,10 @@ from django.db import models
 
 
 class Migration(SchemaMigration):
-
+    depends_on = (
+        ("attendance", "0001_initial"),
+    )
+    
     def forwards(self, orm):
         # Adding model 'CraContact'
         db.create_table('work_study_cracontact', (

@@ -78,26 +78,27 @@ class StudentAttendance(models.Model):
 
 def post_save_attendance_handler(sender, instance, **kwargs):
     """ Check for any triggers we should run """
-    try:
-        # Create work study attendance if student's workday is today
-        if ('ecwsp.work_study' in settings.INSTALLED_APPS and
-            Configuration.get_or_default("attendance_create_work_attendance", "False").value == "True" and
-            instance.date == datetime.date.today() and
-            instance.status.absent and
-            hasattr(instance.student, 'studentworker') and
-            instance.student.studentworker and
-            datetime.date.today().isoweekday() == instance.student.studentworker.get_day_as_iso_date()
-           ):
-            from ecwsp.work_study.models import Attendance
-            attn, created = Attendance.objects.get_or_create(
-                student=instance.student.studentworker,
-                absence_date = datetime.date.today(),
-            )
-            if created:
-                attn.sis_attendance = instance
-                attn.save()
-    except:
-        logging.error('Attendance trigger error', exc_info=True)
+    if True:
+        try:
+            # Create work study attendance if student's workday is today
+            if ('ecwsp.work_study' in settings.INSTALLED_APPS and
+                Configuration.get_or_default("attendance_create_work_attendance", "False").value == "True" and
+                instance.date == datetime.date.today() and
+                instance.status.absent and
+                hasattr(instance.student, 'studentworker') and
+                instance.student.studentworker and
+                datetime.date.today().isoweekday() == instance.student.studentworker.get_day_as_iso_date()
+               ):
+                from ecwsp.work_study.models import Attendance
+                attn, created = Attendance.objects.get_or_create(
+                    student=instance.student.studentworker,
+                    absence_date = datetime.date.today(),
+                )
+                if created:
+                    attn.sis_attendance = instance
+                    attn.save()
+        except:
+            logging.error('Attendance trigger error', exc_info=True)
         
 post_save.connect(post_save_attendance_handler, sender=StudentAttendance)
 

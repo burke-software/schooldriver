@@ -90,15 +90,12 @@ class Contact(models.Model):
         ordering = ('lname',)
         verbose_name = 'Contact Supervisor'
         
-    def save(self, *args, **kwargs):
-        if not self.guid:
-            self.guid = hashlib.sha1(str(random.random())).hexdigest()[:-4]
+    def save(self, sync_sugar=True, *args, **kwargs):
         super(Contact, self).save(*args, **kwargs)
-        if settings.SYNC_SUGAR:
-            import warnings
-            warnings.filterwarnings("ignore", "No data .*")
-            cursor = connection.cursor()
-            cursor.execute("call sync_contact_to_sugar(\"" + str(self.guid) + "\");")
+        if settings.SYNC_SUGAR and sync_sugar:
+            from ecwsp.work_study.sugar_sync import SugarSync
+            sugar_sync = SugarSync()
+            sugar_sync.update_contact(self)
     
     @property
     def edit_link(self):
