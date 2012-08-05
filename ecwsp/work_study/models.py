@@ -100,8 +100,8 @@ class Contact(models.Model):
             try:
                 cursor = connection.cursor()
                 cursor.execute("call sync_contact_to_sugar(\"" + str(self.guid) + "\");")
-            except DatabaseError:
-                print >> sys.stderr, "warning: could not save contact to sugar."
+            except Exception, e:
+                print >> sys.stderr, "An error has occurred. %s" %e
     
     @property
     def edit_link(self):
