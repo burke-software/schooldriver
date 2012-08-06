@@ -31,7 +31,14 @@ This module tracks any volunteer work a student is required to do. Site informat
 Counseling: This tracks students’ counseling meetings and referrals. It allows teachers to submit online referral forms that notify the counselor. It also tracks follow up actions after the meeting.
 
 ##Work Study 
-This module involves many different facets. Students from the School Information module can be converted to Student Workers so that more specialized information can be tracked in the Work Study module. Work attendance can be tracked. Basic company information is stored, and students  are separated into “workteams” – groups of students that split a full time equivalent job. Companies can have many workteams. Students can enter timesheets for supervisors to approve and make notes on, as well as evaluate the student. Company Visits can also be tracked, and Department of Labor forms are able to be inputted electronically.
+This module involves many different facets. Students from the School Information module can be converted to Student Workers so that more specialized information can be tracked in the Work Study module. 
+  Work attendance can be tracked. 
+  Basic company information is stored
+  Students  are separated into “workteams” – groups of students that split a full time equivalent job. 
+  Companies can have many workteams. 
+  Students can enter timesheets for supervisors to approve and make notes on and evaluate the student. 
+  Company Visits can also be tracked
+  Department of Labor forms are able to be inputted electronically
 
 
 
