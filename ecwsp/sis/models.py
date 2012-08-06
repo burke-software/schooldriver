@@ -37,13 +37,14 @@ from ckeditor.fields import RichTextField
 logger = logging.getLogger(__name__)
 
 def create_faculty(instance):
-    faculty, created = Faculty.objects.get_or_create(username=instance.username)
-    if created:
-        faculty.fname = instance.first_name
-        faculty.lname = instance.last_name
-        faculty.email = instance.email
-        faculty.teacher = True
-        faculty.save()
+    if True:
+        faculty, created = Faculty.objects.get_or_create(username=instance.username)
+        if created:
+            faculty.fname = instance.first_name
+            faculty.lname = instance.last_name
+            faculty.email = instance.email
+            faculty.teacher = True
+            faculty.save()
 
 def create_faculty_profile(sender, instance, created, **kwargs):
     if instance.groups.filter(name="teacher").count():
@@ -655,9 +656,6 @@ class StudentCohort(models.Model):
     student = models.ForeignKey(Student)
     cohort = models.ForeignKey(Cohort)
     primary = models.BooleanField()
-    
-    class Meta:
-        managed = False
     
     def save(self, *args, **kwargs):
         if self.primary:

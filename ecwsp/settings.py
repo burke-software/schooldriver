@@ -303,10 +303,11 @@ ENGRADE_SCHOOLID = ''
 
 
 #Naviance
-NAVIANCE_USERNAME=''
-NAVIANCE_PASSWORD=''
+NAVIANCE_USERNAME = ''
+NAVIANCE_PASSWORD = ''
 # username, id, or unique_id
-NAVIANCE_SWORD_ID='username'
+NAVIANCE_SWORD_ID = 'username'
+NAVIANCE_IMPORT_KEY = ''
 
 
 #Admissions
@@ -317,6 +318,9 @@ ADMISSIONS_DEFAULT_COUNTRY = "United States"
 MAX_HOURS_DAY = 10
 # Sync data to SugarCRM
 SYNC_SUGAR = False
+SUGAR_URL = ''
+SUGAR_USERNAME = ''
+SUGAR_PASSWORD = ''
 # Strange way of storing routes that Notre Dame High School wanted, default disabled
 CRND_ROUTES = False
 
