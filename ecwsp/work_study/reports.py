@@ -210,7 +210,7 @@ def am_route_attendance(request):
     data = []
     titles = ["Company", "Address", "City", "State", "Zip", "Contact First", "Contact Last",
               "Phone", "Grade",'Workday','Gender','Student First','Student Last',
-              'Cell','Earliest','Latest','Ideal','Schedule', datetime.date.today(), 'Notes']
+              'Cell','Earliest','Latest','Ideal','Schedule', 'Notes', datetime.date.today()]
     report = None
     if 'am_route_attendance' in request.POST:
         fileName = "AM_Routes.xls"
