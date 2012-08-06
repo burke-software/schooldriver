@@ -32,6 +32,14 @@
 
 {% block javascripts %}
     {{ block.super }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            grappelli.initDateAndTimePicker();
+        });
+    </script>
+    
+    
+    
     <script src="/static/js/jquery.tools.min.js" type="text/javascript"></script>
     <!-- Edited grappelli/js/actions.min.js to show overlaw when needed -->
     <script type="text/javascript"> 

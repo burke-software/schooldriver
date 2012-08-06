@@ -20,6 +20,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
+from daterange_filter.fields import DateRangeField
 
 from ecwsp.sis.models import Student, SchoolYear
 from ecwsp.administration.models import Configuration
@@ -45,7 +46,8 @@ class AttendanceStatus(models.Model):
 
 class StudentAttendance(models.Model):
     student =  models.ForeignKey(Student, related_name="student_attn", help_text="Start typing a student's first or last name to search")
-    date = models.DateField(default=datetime.datetime.now)
+    date = DateRangeField(default=datetime.datetime.now)
+    date.daterange_filter = True
     status = models.ForeignKey(AttendanceStatus)
     time = models.TimeField(blank=True,null=True)
     notes = models.CharField(max_length=500, blank=True)
@@ -64,7 +66,7 @@ class StudentAttendance(models.Model):
     @property
     def edit(self):
         return "Edit"
-        
+    
     def save(self, *args, **kwargs):
         """Don't save Present """
         present, created = AttendanceStatus.objects.get_or_create(name="Present")
@@ -76,26 +78,27 @@ class StudentAttendance(models.Model):
 
 def post_save_attendance_handler(sender, instance, **kwargs):
     """ Check for any triggers we should run """
-    try:
-        # Create work study attendance if student's workday is today
-        if ('ecwsp.work_study' in settings.INSTALLED_APPS and
-            Configuration.get_or_default("attendance_create_work_attendance", "False").value == "True" and
-            instance.date == datetime.date.today() and
-            instance.status.absent and
-            hasattr(instance.student, 'studentworker') and
-            instance.student.studentworker and
-            datetime.date.today().isoweekday() == instance.student.studentworker.get_day_as_iso_date()
-           ):
-            from ecwsp.work_study.models import Attendance
-            attn, created = Attendance.objects.get_or_create(
-                student=instance.student.studentworker,
-                absence_date = datetime.date.today(),
-            )
-            if created:
-                attn.sis_attendance = instance
-                attn.save()
-    except:
-        logging.error('Attendance trigger error', exc_info=True)
+    if True:
+        try:
+            # Create work study attendance if student's workday is today
+            if ('ecwsp.work_study' in settings.INSTALLED_APPS and
+                Configuration.get_or_default("attendance_create_work_attendance", "False").value == "True" and
+                instance.date == datetime.date.today() and
+                instance.status.absent and
+                hasattr(instance.student, 'studentworker') and
+                instance.student.studentworker and
+                datetime.date.today().isoweekday() == instance.student.studentworker.get_day_as_iso_date()
+               ):
+                from ecwsp.work_study.models import Attendance
+                attn, created = Attendance.objects.get_or_create(
+                    student=instance.student.studentworker,
+                    absence_date = datetime.date.today(),
+                )
+                if created:
+                    attn.sis_attendance = instance
+                    attn.save()
+        except:
+            logging.error('Attendance trigger error', exc_info=True)
         
 post_save.connect(post_save_attendance_handler, sender=StudentAttendance)
 

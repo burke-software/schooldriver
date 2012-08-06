@@ -2,6 +2,7 @@ from django.db.models import AutoField
 from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.contrib import admin
+from django.conf import settings
 
 class Callable:
     def __init__(self, anycallable):
@@ -57,6 +58,10 @@ class CharNullField(models.CharField):
             return None
        else:
             return super(CharNullField, self).get_db_prep_value(value, *args, **kwargs)
+    
+if 'south' in settings.INSTALLED_APPS:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([], ["^ecwsp\.sis\.helper_functions\.CharNullField"])
     
 class ReadPermissionModelAdmin(admin.ModelAdmin):
     """ based on http://gremu.net/blog/2010/django-admin-read-only-permission/

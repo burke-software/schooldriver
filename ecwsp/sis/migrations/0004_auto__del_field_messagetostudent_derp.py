@@ -8,26 +8,23 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'ClassYear'
-        db.create_table('sis_classyear', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('year', self.gf('ecwsp.sis.models.IntegerRangeField')(unique=True)),
-            ('full_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-        ))
-        db.send_create_signal('sis', ['ClassYear'])
-
-        # Adding field 'Student.class_of_year'
-        db.add_column('sis_student', 'class_of_year',
-                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.ClassYear'], null=True, blank=True),
-                      keep_default=False)
+        # Deleting field 'MessageToStudent.derp'
+        db.delete_column('sis_messagetostudent', 'derp')
 
 
     def backwards(self, orm):
-        # Deleting model 'ClassYear'
-        db.delete_table('sis_classyear')
+        # Adding field 'MessageToStudent.derp'
+        db.add_column('sis_messagetostudent', 'derp',
+                      self.gf('django.db.models.fields.DateField')(default=datetime.date.today),
+                      keep_default=False)
 
-        # Deleting field 'Student.class_of_year'
-        db.delete_column('sis_student', 'class_of_year_id')
+        # Adding M2M table for field students on 'Cohort'
+        #db.create_table('sis_studentcohort', (
+        #    ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+        #    ('cohort', models.ForeignKey(orm['sis.cohort'], null=False)),
+        #    ('student', models.ForeignKey(orm['sis.student'], null=False))
+        #))
+        #db.create_unique('sis_studentcohort', ['cohort_id', 'student_id'])
 
 
     models = {
@@ -77,15 +74,14 @@ class Migration(SchemaMigration):
         },
         'sis.classyear': {
             'Meta': {'object_name': 'ClassYear'},
-            'full_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'full_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'year': ('ecwsp.sis.models.IntegerRangeField', [], {'unique': 'True'})
         },
         'sis.cohort': {
             'Meta': {'object_name': 'Cohort'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'students': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['sis.Student']", 'null': 'True', 'db_table': "'sis_studentcohort'", 'blank': 'True'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         'sis.emergencycontact': {
             'Meta': {'ordering': "('primary_contact', 'emergency_only', 'lname')", 'object_name': 'EmergencyContact'},
@@ -188,6 +184,7 @@ class Migration(SchemaMigration):
             'cohorts': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['sis.Cohort']", 'symmetrical': 'False', 'through': "orm['sis.StudentCohort']", 'blank': 'True'}),
             'date_dismissed': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'emergency_contacts': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['sis.EmergencyContact']", 'symmetrical': 'False', 'blank': 'True'}),
+            'family_access_users': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.User']", 'symmetrical': 'False', 'blank': 'True'}),
             'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
             'grad_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'individual_education_program': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -208,7 +205,7 @@ class Migration(SchemaMigration):
             'zip': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'})
         },
         'sis.studentcohort': {
-            'Meta': {'object_name': 'StudentCohort', 'managed': 'False'},
+            'Meta': {'object_name': 'StudentCohort'},
             'cohort': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.Cohort']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),

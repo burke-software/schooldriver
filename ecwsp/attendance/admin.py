@@ -19,6 +19,7 @@
 from django.contrib import admin
 from django.contrib import messages
 from django import forms
+from daterange_filter import filter #https://github.com/tzulberti/django-datefilterspec
 
 from models import *
 
@@ -37,6 +38,11 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
             obj.save()
         except forms.ValidationError:
             messages.warning(request, 'Could not save %s' % (obj,))
+    
+    def lookup_allowed(self, lookup, *args, **kwargs):
+        if lookup in ('student','student__id__exact',):
+            return True
+        return super(StudentAttendanceAdmin, self).lookup_allowed(lookup, *args, **kwargs)
         
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 

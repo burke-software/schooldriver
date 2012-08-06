@@ -30,11 +30,16 @@ class StudentDisciplineAdmin(admin.ModelAdmin):
     form = make_ajax_form(StudentDiscipline, dict(students='discstudent'))
 
     list_per_page = 50
-    fields = ['date', 'students', 'teacher', 'infraction', 'comments']
+    fields = ['date', 'students', 'teacher', 'infraction', 'comments', 'private_note']
     list_display = ('show_students', 'date', 'comment_Brief', 'infraction')
     list_filter = ['date', 'infraction', 'action',]
     search_fields = ['comments', 'students__fname', 'students__lname']
     inlines = [DisciplineActionInstanceInline]
+    
+    def lookup_allowed(self, lookup, *args, **kwargs):
+        if lookup in ('students','students__id__exact',):
+            return True
+        return super(StudentDisciplineAdmin, self).lookup_allowed(lookup, *args, **kwargs)
 
 admin.site.register(StudentDiscipline, StudentDisciplineAdmin)
 admin.site.register(DisciplineAction)
