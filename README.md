@@ -1,21 +1,6 @@
 Django-sis is a open source school information system build with Django. It relies heavily on the django admin interface for backend usage (registrar, etc).
 
 # Apps
-## sis
-Core application - this is required to do anything.
-## alumi
-Keep track of graduated students. Import National Student Clearinghouse data. Add notes.
-
-## admissions
-Data about applicants. Can be imported into sis.
-![Alt text](https://raw.github.com/burke-software/django-sis/master/screenshots/funnel.png)
-## attendance
-Teachers can take attendance, adminstrative staff can view and edit.
-![Alt text](https://raw.github.com/burke-software/django-sis/master/screenshots/attendance.png)
-## discipline
-![Alt text](https://raw.github.com/burke-software/django-sis/master/screenshots/discipline.png)
-## schedule
-This app conains class schedules and is requires for other apps such as grades. 
 
 ##School Information (sis)
 This tracks the students’ information and their parent/guardian/contact information. This module also records cohorts (groupings of students for easier class enrollment), basic faculty information, and school year information. This is the central module for SWoRD and is required for use of any other module. All other modules are optional.
@@ -28,7 +13,14 @@ This module involves many different facets. Students from the School Information
 
 ##Attendance 
 This tracks students’ daily attendances. It allows for homeroom teachers to take attendance each day.
-Discipline: This tracks students’ discipline information, which includes infractions and actions to be taken, as well as the teacher who reported the infraction (if necessary)
+
+![Alt text](https://raw.github.com/burke-software/django-sis/master/screenshots/attendance.png)
+
+##Discipline
+This tracks students’ discipline information, which includes infractions and actions to be taken, as well as the teacher who reported the infraction (if necessary)
+
+![Alt text](https://raw.github.com/burke-software/django-sis/master/screenshots/discipline.png)
+
 
 ##Volunteer Tracking
 This module tracks any volunteer work a student is required to do. Site information and site supervisor information are tracked. A student can volunteer at multiple sites.
@@ -36,6 +28,8 @@ Counseling: This tracks students’ counseling meetings and referrals. It allows
 
 ##Admissions
 This tracks potential students and their registration process. It allows various admission levels to be added, as well as steps that need to be completed before moving onto the next level. It also tracks any open houses a student has attended and how the student heard about the school.
+
+![Alt text](https://raw.github.com/burke-software/django-sis/master/screenshots/funnel.png)
 
 ##Alumni 
 This tracks what college a student has enrolled in after graduating, and any alumni actions (such as reunions). Information can be imported from National Student Clearinghouse (http://www.studentclearinghouse.org/).
