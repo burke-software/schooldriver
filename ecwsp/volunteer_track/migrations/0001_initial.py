@@ -6,7 +6,9 @@ from django.db import models
 
 
 class Migration(SchemaMigration):
-
+    depends_on = (
+    	 ("sis", "0001_initial"),
+    )
     def forwards(self, orm):
         # Adding model 'Hours'
         db.create_table('volunteer_track_hours', (

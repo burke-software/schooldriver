@@ -8,7 +8,6 @@ from django.db import models
 class Migration(SchemaMigration):
     needed_by = (
         ("schedule", "0001_initial"),
-        ("volunteer_track", "0001_initial"),
         ("work_study", "0001_initial"),
     )
     def forwards(self, orm):
