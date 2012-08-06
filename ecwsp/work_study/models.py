@@ -74,7 +74,7 @@ class PickupLocation(models.Model):
 
 class Contact(models.Model):
     #guid is for sugarcrm.  We just use 2 primary keys so both programs are happy.
-    guid = models.CharField(unique=True, max_length=36, blank=True)
+    guid = models.CharField(unique=True, max_length=36, blank=True, null=True)
     fname = models.CharField(max_length=150, blank=True, null=True)
     lname = models.CharField(max_length=150, blank=True, null=True)
     title = models.CharField(max_length=150, blank=True, null=True)
