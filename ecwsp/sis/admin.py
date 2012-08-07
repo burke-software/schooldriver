@@ -210,7 +210,7 @@ class CohortAdmin(admin.ModelAdmin):
     
     def save_model(self, request, obj, form, change):
         if obj.id:
-            prev_students = Cohort.objects.get(id=obj.id).students.all()
+            prev_students = Cohort.objects.get(id=obj.id).student_set.all()
         else:
             prev_students = Student.objects.none()
             
