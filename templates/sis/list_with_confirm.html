@@ -15,7 +15,8 @@
 
 {% block content %}
     <h1> {{ subtitle }} </h1>
-    {{ msg }}
+    {% if msg %} <p>{{ msg }}</p><br/> {% endif %}
+    
     
     <ol>
         {% for row in item_list %}
