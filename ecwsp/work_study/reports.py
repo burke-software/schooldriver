@@ -210,7 +210,7 @@ def am_route_attendance(request):
     data = []
     titles = ["Company", "Address", "City", "State", "Zip", "Contact First", "Contact Last",
               "Phone", "Grade",'Workday','Gender','Student First','Student Last',
-              'Cell','Earliest','Latest','Ideal','Schedule', datetime.date.today()]
+              'Cell','Earliest','Latest','Ideal','Schedule', 'Notes', datetime.date.today()]
     report = None
     if 'am_route_attendance' in request.POST:
         fileName = "AM_Routes.xls"
@@ -259,9 +259,10 @@ def am_route_attendance(request):
                     student.placement.time_latest,
                     student.placement.time_ideal,
                     student.placement.am_transport_group,
+                    student.placement.directions_to,
                 ]
             else:
-                row += ['', '', '', '']
+                row += ['', '', '', '','']
             row += [student.get_transport_exception_display(), ]
             data.append(row)
         if not report:
