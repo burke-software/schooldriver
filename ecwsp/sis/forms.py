@@ -120,6 +120,9 @@ class TimeBasedForm(forms.Form):
             end = date(2980, 1, 1)
         return (start, end)
 
+class YearSelectForm(forms.Form):
+    school_year = forms.ModelChoiceField(queryset=SchoolYear.objects.all())
+
 class StudentSelectForm(TimeBasedForm):
     """ Generic student selection form."""
     all_students = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':''}))

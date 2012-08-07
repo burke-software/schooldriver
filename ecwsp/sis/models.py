@@ -305,7 +305,7 @@ class Faculty(MdlUser):
 
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
-    #students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
+    students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
     
     def __unicode__(self):
         return unicode(self.name)
@@ -565,20 +565,29 @@ class Student(MdlUser, CustomFieldModel):
         else:
             self.cache_cohort = None
     
+    def get_year(self, active_year):
+        """ get the year (fresh, etc) from the class of XX year.
+        """
+        if self.class_of_year:
+            try:
+                this_year = active_year.end_date.year
+                school_last_year = GradeLevel.objects.order_by('-id')[0].id
+                class_of_year = self.class_of_year.year
+                
+                target_year = school_last_year - (class_of_year - this_year)
+                return GradeLevel.objects.get(id=target_year)
+            except:
+                return None
+        
     def determine_year(self):
         """ Set the year (fresh, etc) from the class of XX year.
         """
         if self.class_of_year:
             try:
                 active_year = SchoolYear.objects.filter(active_year=True)[0]
-                this_year = active_year.end_date.year
-                school_last_year = GradeLevel.objects.order_by('-id')[0].id
-                class_of_year = self.class_of_year.year
-                
-                target_year = school_last_year - (class_of_year - this_year)
-                self.year = GradeLevel.objects.get(id=target_year)
-            finally:
-                pass
+                self.year = self.get_year(active_year)
+            except:
+                return None
     
     def save(self, *args, **kwargs):
         if Faculty.objects.filter(id=self.id).count():
@@ -720,7 +729,9 @@ class SchoolYear(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     grad_date = models.DateField(blank=True, null=True)
-    active_year = models.BooleanField(help_text="BE CAREFUL! This is the current school year. There can only be one and setting this will remove it from other years. Only the active school year can be used for things like grades and attendance. Non active years should be only for historic and planned years.")
+    active_year = models.BooleanField(
+        help_text="DANGER!! This is the current school year. There can only be one and setting this will remove it from other years. " \
+                  "If you want to change the active year you almost certainly want to click Admin, Change School Year.")
     benchmark_grade = models.BooleanField(default=lambda: str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true",
                                           help_text="The configuration option \"Benchmark-based grading\" sets the default for this field")
     
@@ -744,9 +755,6 @@ class SchoolYear(models.Model):
         super(SchoolYear, self).save(*args, **kwargs) 
         if self.active_year:
             all = SchoolYear.objects.exclude(id=self.id).update(active_year=False)
-            for student in Student.objects.filter(inactive=False):
-                student.determine_year()
-                student.save()
     
     
 class ImportLog(models.Model):
