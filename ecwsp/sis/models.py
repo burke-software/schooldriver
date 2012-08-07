@@ -305,7 +305,7 @@ class Faculty(MdlUser):
 
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
-    #students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
+    students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
     
     def __unicode__(self):
         return unicode(self.name)
