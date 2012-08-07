@@ -223,7 +223,7 @@ class CohortAdmin(admin.ModelAdmin):
         super(CohortAdmin, self).save_model(request, obj, form, change)
         form.save_m2m()
         
-        for student in obj.students.all() | Student.objects.filter(id__in=student_ids):
+        for student in obj.student_set.all() | Student.objects.filter(id__in=student_ids):
             student.cache_cohorts()
             student.save()
     
