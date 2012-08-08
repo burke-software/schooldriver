@@ -1,6 +1,6 @@
 from django.conf.urls import patterns
 from views import student_page_redirect, school_report_builder_view, transcript_nonofficial, photo_flash_card, grade_report
-from views import import_everything, user_preferences, view_student, ajax_include_deleted, import_naviance, increment_year_or_graduate
+from views import import_everything, user_preferences, view_student, ajax_include_deleted, import_naviance, increment_year, increment_year_confirm
 
 urlpatterns = patterns('',
     (r'^get_student/(?P<student_id>\d+)/$', student_page_redirect),
@@ -15,5 +15,6 @@ urlpatterns = patterns('',
     (r'^view_student/(?P<id>\d+)/$', view_student),
     (r'^ajax_include_deleted/$', ajax_include_deleted),
     (r'^student/naviance/$', import_naviance),
-    (r'^increment_year_or_graduate/$', increment_year_or_graduate),
+    (r'^increment_year/$', increment_year),
+    (r'^increment_year_confirm/(?P<year_id>\d+)/$', increment_year_confirm),
 )

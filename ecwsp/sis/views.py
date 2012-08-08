@@ -24,6 +24,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.db import transaction
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.safestring import mark_safe
@@ -31,7 +32,7 @@ from datetime import date
 
 from ecwsp.sis.models import Student, UserPreference, GradeLevel, SchoolYear
 from ecwsp.sis.forms import UserPreferenceForm, UploadFileForm, StudentLookupForm, StudentReportWriterForm, UploadNaviance
-from ecwsp.sis.forms import StudentGradeReportWriterForm, MarkingPeriodForm
+from ecwsp.sis.forms import StudentGradeReportWriterForm, MarkingPeriodForm, YearSelectForm
 from ecwsp.administration.models import Template
 from ecwsp.sis.report import pod_report_grade, pod_report_paper_attendance, pod_report_all
 from ecwsp.sis import grade_reports
@@ -452,41 +453,58 @@ def view_student(request, id=None):
         'tests': std
     }, RequestContext(request, {}),)
 
-def increment_year_or_graduate(request):
-    selected = request.GET['ids'].split(',')
-    students = Student.objects.filter(id__in=selected)
-    subtitle = "Are you sure you want to make the following changes?"
-    
+@permission_required('sis.change_student') 
+def increment_year(request):
+    subtitle = "You can use this tool to change school years. It will change students year (fresh, soph, etc) and graudate as needed. "\
+        "There will be confirmation screen before any changes are made."
+    message = "Select the school year you wish to make active"
+    form = YearSelectForm()
     if request.POST:
+        form = YearSelectForm(request.POST)
+        if form.is_valid():
+            year = form.cleaned_data['school_year']
+            return HttpResponseRedirect(reverse(increment_year_confirm, args=[year.id]))
+    return render_to_response('sis/generic_form.html', {'subtitle': subtitle, 'form':form, 'msg': message}, RequestContext(request, {}),)
+
+@transaction.commit_on_success
+def increment_year_confirm(request, year_id):
+    """ Show user a preview of what increment year will do before making it
+    """
+    students = Student.objects.filter(inactive=False)
+    subtitle = "Are you sure you want to make the following changes?"
+    msg = "You can always change some manually later if you want to hold them back a year. Maybe you want to open them in new tabs now."
+    year = get_object_or_404(SchoolYear, pk=year_id)
+    school_last_year = GradeLevel.objects.order_by('-id')[0].id
+    if request.POST:
+        year.active_year = True
+        year.save()
         for student in students:
-            if student.year:
-                if student.year.id == 12:
+            if student.class_of_year:
+                new_year = student.get_year(year)
+                if not new_year:
                     student.graduate_and_create_alumni()
                 else:
-                    try:
-                        new_year = GradeLevel.objects.get(id=student.year.id + 1)
-                        student.year = new_year
-                        student.save()
-                    except GradeLevel.DoesNotExist:
-                        pass
+                    student.year = new_year
+                    student.save()
         messages.success(request, 'Successfully incremented student years!')
         return HttpResponseRedirect(reverse('admin:sis_student_changelist'))
-        
-    item_list = []
+    
+    old_active_year = SchoolYear.objects.get(active_year = True)
+    item_list = ["Change active year from %s to %s" % (old_active_year, year)]
     for student in students:
         row = None
-        if student.year:
-            if student.year.id == 12:
-                row = '%s - Graduate and mark inactive %s.' % (unicode(student), student.year)
+        if student.class_of_year:
+            new_year = student.get_year(year)
+            if not new_year:
+                row = '<a target="_blank" href="/admin/sis/student/%s">%s</a> (%s) - Graduate and mark inactive.' % (student.id, unicode(student), unicode(student.year))
                 if 'ecwsp.alumni' in settings.INSTALLED_APPS:
                     row += ' Also make an alumni record.'
             else:
                 try:
-                    new_year = GradeLevel.objects.get(id=student.year.id + 1)
-                    row = '%s - Make a %s.' % (unicode(student), new_year)
+                    row = '<a target="_blank" href="/admin/sis/student/%s">%s</a> (%s) - Make a %s.' % (student.id, unicode(student), unicode(student.year), new_year)
                 except SchoolYear.DoesNotExist:
                     pass
         if row:
-            item_list += [row]
+            item_list += [mark_safe(row)]
     
-    return render_to_response('sis/list_with_confirm.html', {'subtitle': subtitle, 'item_list':item_list}, RequestContext(request, {}),)
+    return render_to_response('sis/list_with_confirm.html', {'subtitle': subtitle, 'item_list':item_list, 'msg':msg}, RequestContext(request, {}),)

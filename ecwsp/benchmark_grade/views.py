@@ -191,9 +191,11 @@ def family_grade(request):
 def gradebook(request):
     fifty = []
     i = 0
-    while i < 40:
+    while i < 100:
         i += 1
         fifty += ['foo' + str(i)]
+    students = Student.objects.filter(inactive=False)[:100]
     return render_to_response('benchmark_grade/gradebook.html', {
         'fifty':fifty,
+        'students':students,
     }, RequestContext(request, {}),)
