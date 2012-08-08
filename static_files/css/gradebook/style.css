@@ -1,0 +1,255 @@
+body {
+	margin: 0px;
+	letter-spacing: -1px;
+}
+
+.wrapper {
+ width: 1180px;
+}
+
+.topbar {
+	margin: 0 auto;
+	background: #82001a;
+	height: 60px;
+}
+
+.logo {
+	font: bold 50px Helvetica;
+	color: #FFFFFF;
+	letter-spacing: -5px;
+	vertical-align: bottom;
+	position: relative;
+}
+
+.clear {
+	clear: both;
+}
+
+.menu {
+	background: #f3f3f3;
+	font: 600 14px Helvetica;
+	color: #000;
+	width: 200px;
+	margin-right: 5px;
+	margin-top: 2px;
+	padding: 5px;
+	float: left;
+}
+
+.fixedTable {
+	float: left;
+}
+		.fixedColumn .fixedTable td
+        {
+            color: #000;
+            background-color: #FFF;
+            font: 600 14px Helvetica;
+			height: 35px;
+            padding: 0px;
+        }
+        .fixedHead td
+        {
+            color: #000;
+            background-color: #F3F3F3;
+            font: 600 14px Helvetica;
+            padding: 0px;
+			height: 50px;
+            border: 0px solid #FFF;
+        }
+		.assignment
+		{
+			font-size: 10px;
+			line-height: 1em;
+			width: 80px;
+			margin: 0;
+			padding: 0;
+		}
+		.assignment a
+		{
+			text-decoration: none;
+			color: #000;
+		}
+		.assignment a:hover
+		{
+			text-decoration: none;
+		}
+		.assignment a:visited
+		{
+			text-decoration: none;
+			color: #000;
+		}
+        .fixedTable td
+        {
+            font: 12px Helvetica;
+            background-color: #FFF;
+            padding: 0px;
+            text-align: left;
+			height: 35px;
+			width: 100px;
+            border: 0px;
+        }
+
+.spacer { height: 25px; }
+
+.dropdownlist {
+	padding-top: 15px;
+	padding-bottom: 15px;
+}
+
+.dropdownlist select {
+	background: transparent;
+	font-size: 14px;
+	width: 200px;
+	border: 1px solid #ccc;
+}
+
+.redbar { height: 1px; background: #82001a; margin-top: 5px; margin-bottom: 5px; }
+
+
+/* DROPDOWN MENU */
+
+.menu-container { width: 200px; float: right; margin-right: 25px; text-align: right; }
+
+#mbtnavbar .arrowdown { font-size: 10px; }
+#mbtnavbar { 
+    width: 100%; 
+	float: right;
+	text-align: left;
+    color: #000; 
+    margin: 20px 0; 
+    padding: 0; 
+    position: relative; 
+    border-top:0px; 
+    height:35px;
+}
+
+#mbtnav { 
+	float: right;
+    margin: 0; 
+    padding: 0; 
+} 
+#mbtnav ul { 
+    float: right; 
+    list-style: none; 
+    margin: 0; 
+    padding: 0;
+	box-shadow: 0 1px 2px rgba(0,0,0,.2);
+} 
+#mbtnav li { 
+	float: right;
+    list-style: none; 
+	letter-spacing: -1px;
+    margin: 0; 
+    padding: 0; 
+       
+} 
+#mbtnav li a, #mbtnav li a:link, #mbtnav li a:visited { 
+    color: #FFF; 
+    display: block; 
+    font:700 1em Helvetica, sans-serif; 
+    margin: 0; 
+    padding: 9px 12px 11px 12px; 
+    text-decoration: none; 
+    border-right:0px;
+} 
+#mbtnav li a:hover, #mbtnav li a:active { 
+    color: #FFF; 
+    display: block; 
+    text-decoration: none; 
+    margin: 0; 
+    padding: 9px 12px 11px 12px; 
+}
+#mbtnav li { 
+    float: left; 
+    padding: 0; 
+} 
+#mbtnav li ul { 
+    z-index: 9999; 
+    position: absolute; 
+    left: -999em; 
+    height: auto; 
+    width: 150px; 
+    margin: 0; 
+    padding: 0; 
+} 
+#mbtnav li ul a { 
+    width: 140px; 
+} 
+#mbtnav li ul ul { 
+    margin: 0 0 0 140px; 
+}
+#mbtnav li:hover ul ul, #mbtnav li:hover ul ul ul, #mbtnav li.sfhover ul ul, #mbtnav li.sfhover ul ul ul { 
+    left: -999em; 
+} 
+#mbtnav li:hover ul, #mbtnav li li:hover ul, #mbtnav li li li:hover ul, #mbtnav li.sfhover ul, #mbtnav li li.sfhover ul, #mbtnav li li li.sfhover ul { 
+    left: auto; 
+} 
+#mbtnav li:hover, #mbtnav li.sfhover { 
+    position: static; 
+	float: right;
+} 
+#mbtnav li li a, #mbtnav li li a:link, #mbtnav li li a:visited { 
+    background: #FFFFFF; 
+    width: 140px; 
+    color: #333; 
+    display: block; 
+    font:normal 0.8em Helvetica, sans-serif; 
+    margin: 0; 
+    padding: 5px; 
+	text-decoration: none; 
+	z-index:9999; 
+   
+} 
+#mbtnav li li a:hover, #mbtnav li li a:active { 
+    background: #333; 
+    color: #FFF; 
+    display: block; 
+   
+}
+
+#mbtnav li li li a, #mbtnav li li li a:link, #mbtnav li li li a:visited {
+    width: 120px; 
+    display: block; 
+    font:normal 0.8em Helvetica, sans-serif; 
+    padding: 5px; 
+	text-decoration: none; 
+	z-index:9999; 
+    margin: 0; 
+   
+   
+} 
+#mbtnav li li li a:hover, #mbtnav li li li a:active { 
+    color: #FFF; 
+    display: block; 
+}
+
+
+/* GRADE TOOLTIP */
+
+
+div.tooltip {
+	display: none;
+	position: absolute;
+	margin-top: 20px;
+	border: 1px solid #CCC;
+	width: 300px;
+	letter-spacing: -.06em;
+}
+
+.tooltip-title { padding: 3px; background: #82001a; font: 900 18px Helvetica; color: #fff; }
+.tooltip-info { padding: 3px; background: #F8F8F8; font: 200 11px Helvetica; }
+
+
+/* EDITS */
+
+.edit_active { background: #00FF00 !important; }
+
+input.grade_input {
+    padding: 0;
+    margin: 0;
+    width: 30px;
+}
+
+.saving {
+    background-color: rgba(0, 10, 255, 0.1);
+}

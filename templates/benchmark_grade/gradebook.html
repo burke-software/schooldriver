@@ -1,79 +1,166 @@
-{% extends "base.html" %}
+{% extends "admin/base_site.html" %}
 
-{% block head %}
-      <meta content='width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
+{% block extrahead %}
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/gradebook/sh_main.min.js"></script>
+    <script type="text/javascript" src="j/static/js/gradebook/sh_javascript.js"></script>
+    <script type="text/javascript" src="/static/js/gradebook/fixedtable.js"></script>
+    <script type="text/javascript" src="/static/js/gradebook/gradebook.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            sh_highlightDocument();
 
+            $(".tableDiv").each(function() {
+                var Id = $(this).get(0).id;
+                var maintbheight = 600;
+                var maintbwidth = 800;
 
-<meta name="viewport" content="width=device-width" />
-    <link rel="stylesheet" type="text/css" href="/static/css/gradesheet.css" />
-    <script type="text/javascript" src="/static/js/gradesheet.js"></script>
-    
-    <link rel='stylesheet' type='text/css' href='/static/x/xtable.css'>
-    <style type='text/css'>
-    html, body {
-      width: 99%;
-      height: 99%;
-    }
-    div.xtRoot { /* override styles in xtable.css */
-      height: 500px;
-      width: 97%
-    }
-    </style>
-    <script type='text/javascript' src='/static/x/x.js'></script>
-    <script type='text/javascript' src='/static/x/lib/xfirstchild.js'></script>
-    <script type='text/javascript' src='/static/x/lib/xnextsib.js'></script>
-    <script type='text/javascript' src='/static/x/lib/xtable.js'></script>
-    <script type='text/javascript'>
-    var xt1;
-    xAddEventListener(window, 'load',
-      function() {
-	xt1 = new xTable('table1', 'xtRoot', 'xtCaption', 'xtFzRow', 'xtFRInner', 'xtFRCell', 'xtFzCol', 'xtFCInner', 'xtFCCell', 'xtTblCon', 'xtCellTbl');
-      }, false
-    );
+                $("#" + Id + " .FixedTables").fixedTable({
+                    width: maintbwidth,
+                    height: maintbheight,
+                    fixedColumns: 1,
+                    classHeader: "fixedHead",
+                    classFooter: "fixedFoot",
+                    classColumn: "fixedColumn",
+                    fixedColumnWidth: 175,
+                    outerId: Id,
+                    Contentbackcolor: "#FFFFFF",
+                    Contenthovercolor: "#F3F3F3",
+                    fixedColumnbackcolor:"#FFF",
+                    fixedColumnhovercolor:"#F3F3F3"
+                });
+            });
+        });
     </script>
-  
+
+    <script type="text/javascript">
+      $(document).ready(function() {
+        //If Javascript is running, change css on product-description to display:block
+        //then hide the div, ready to animate
+        $("div.tooltip").css({'display':'block','opacity':'0'})
+
+        $("a.trigger").hover(
+          function () {
+            $(this).prev().stop().animate({
+              opacity: 1
+            }, 500);
+          },
+          function () {
+            $(this).prev().stop().animate({
+              opacity: 0
+            }, 200);
+          }
+        )
+      });
+    </script>
+
+    <link rel="stylesheet" href="/static/css/gradebook/style.css" type="text/css" media="screen">
 {% endblock %}
 
-
 {% block content %}
-<div class="xtRoot">
-    <table id='table1' class='xTable'>
-	<thead>
-	    <tr>
-		<th>Student</th>
-		{% for th in fifty %}
-		    <th>H {{ th }}</th>
-		{% endfor %}
-		<th>Final</th>
-	    </tr>
-	</thead>
-	<tbody>
-	    {% for student in fifty %}
-	    {% with row_counter=forloop.counter0 %}
-	    <tr>
-		<td>
-		    {{ student }}
-		</td>
-		{% for mp in fifty %}
-		    <td class="column_{{ forloop.counter0 }} row_{{ row_counter }}">
-			<input
-			    id="id_grade_{{ student.id }}_{{ grade.id }}"
-			    name="grade_{{ grade.id }}"
-			    value="{{ grade.get_grade }}"
-			    class="grade_form"
-			    size="7"
-			    onkeydown="return keyboard_nav(event)"
-			    onchange="student_grade_change(event,{{ student.id }})"
-			/>
-		    </td>
-		{% endfor %}
-		</td>
-		<td>End</td>
-	    </tr>
-	{% endwith %}
-	
-	{% endfor %}
-	</tbody>
-    </table>
+<div class="topbar">
+
+	<span class="logo">CRTC</span>
+
+
+</div><!-- topbar -->
+
+<div class="clear"></div>
+
+<div class="spacer"></div>
+
+
+<!-- wraps the menu and gradebook -->
+<div class="wrapper">
+
+
+<div class="menu">
+
+<div class="dropdownlist">
+Student Cohort
+<div class="redbar"></div>
+	<select name="student_cohort" id="id_student_cohort">
+		<option>Group Number 1</option>
+		<option>Group Number 2</option>
+		<option>Group Number 3</option>
+	</select>
 </div>
+
+<div class="dropdownlist">
+Session
+<div class="redbar"></div>
+	<select name="session" id="id_session">
+		<option>Session Number 1</option>
+		<option>Session Number 2</option>
+		<option>Session Number 3</option>
+	</select>
+</div>
+
+<div class="dropdownlist">
+Benchmark
+<div class="redbar"></div>
+	<select name="benchmark" id="id_benchmark">
+		<option>Benchmark Number 1</option>
+		<option>Benchmark Number 2</option>
+		<option>Benchmark Number 3</option>
+	</select>
+</div>
+
+<p>&nbsp;</p>
+
+</div><!-- .menu -->
+
+    <div id="tableDiv_General" class="tableDiv">
+        <table id="Open_Text_General" class="FixedTables">
+            <thead>
+                <tr>
+                    <th>
+                        Name
+                    </th>
+
+{% for assignment in fifty %}
+    <th><div class="assignment">Assignment 1<br/>100 Points</div></th>
+{% endfor %}
+                    <th>
+                        Total
+                    </th>
+                    <th>
+                        Average
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+
+            {% for student in students %}
+                {% with row_counter=forloop.counter0 %}
+                <tr>
+                    <td>{{ student }}</td>
+                    {% for grade in fifty %}
+                        <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}" onclick="select_cell(event)">
+                            <div>90</div>
+                        </td>
+                    {% endfor %}>
+                    <td>900</td><td>90%</td>
+                </tr>
+                {% endwith %}
+            {% endfor %}
+            
+            </tbody>
+        </table>
+    </div>
+
+</div><!-- .wrapper -->
+
+
+<script type="text/javascript">
+jQuery("li").bind("mousemove", function(event) {
+    $(this).find("div.tooltip").css({
+        top: event.pageY + 5 + "px",
+        left: event.pageX + 5 + "px"
+    }).show();
+}).bind("mouseout", function() {
+    $("div.tooltip").hide();
+});
+</script>
+
 {% endblock %}
