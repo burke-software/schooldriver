@@ -153,13 +153,6 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         autoselect_fields_check_can_add(StudentForm, self.model ,request.user)
         return form
     
-    def increment_year_or_graduate(modeladmin, request, queryset):
-        selected_int = queryset.values_list('id', flat=True)
-        selected = []
-        for s in selected_int:
-            selected.append(str(s))
-        return HttpResponseRedirect("/sis/increment_year_or_graduate/?ids=%s" % (",".join(selected)))
-    
     fieldsets = [
         (None, {'fields': [('lname', 'fname'), ('mname', 'inactive'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'class_of_year',('unique_id','ssn'),
             'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
@@ -170,7 +163,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     form = StudentForm
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
-    actions = [promote_to_worker, mark_inactive, increment_year_or_graduate]
+    actions = [promote_to_worker, mark_inactive]
     list_filter = ['inactive','year']
     list_display = ['__unicode__','year']
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:

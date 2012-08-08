@@ -225,6 +225,9 @@
                         {% if 'ecwsp.canvas_sync' in settings.INSTALLED_APPS and perms.sis.reports %}
                             <li><a href="{% url ecwsp.canvas_sync.views.setup %}">{% trans 'Canvas Sync' %}</a></li>
                         {% endif %}
+                        {% if perms.sis.change_student %}
+                            <li><a href="{% url ecwsp.sis.views.increment_year %}">{% trans 'Change School Year' %}</a></li>
+                        {% endif %}
                     </ul>
                 </li>
             {% endif %}
