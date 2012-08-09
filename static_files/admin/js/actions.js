@@ -13,11 +13,11 @@
             if (checked) {
                 showQuestion();
                 $(actionCheckboxes).attr("checked", true)
-                    .parent().parent().addClass(options.selectedClass);
+                    .parent().parent().toggleClass(options.selectedClass, checked);
             } else {
                 reset();
                 $(actionCheckboxes).attr("checked", false)
-                    .parent().parent().removeClass(options.selectedClass);
+                    .parent().parent().toggleClass(options.selectedClass, checked);
             }
         };
         updateCounter = function() {
@@ -114,8 +114,32 @@
         // TRUSTED EDITORS SHOULD KNOW WHAT TO DO
         
         // GRAPPELLI CUSTOM: submit on select
+        // SWoRD CUSTOM: HA YEA right trusted editors will fuck up stuff
         $(options.actionSelect).attr("autocomplete", "off").change(function(evt){
-            $(this).parents("form").submit();
+            if (
+                !($("option[value=export_simple_selected_objects]:selected").length
+                && $("input:checked").length)
+            ) {
+                if ( $("option[value=mark_inactive]:selected").length ) {
+                    var answer = confirm("Are you sure you want to mark selected as inactive?")
+                    if (answer) {
+                        $(this).parents("form").submit();
+                    } else {
+                        $("select[name=action]").val("")
+                        return false
+                    }
+                }
+                if ( $("option[value=graduate_and_create_alumni]:selected").length ) {
+                    var answer = confirm("Are you sure you want to mark students as graduated? It will set them as inactive and create Alumni records in the Alumni app is installed.")
+                    if (answer) {
+                        $(this).parents("form").submit();
+                    } else {
+                        $("select[name=action]").val("")
+                        return false
+                    }
+                }
+                $(this).parents("form").submit();
+            }
         });
         
     };
@@ -131,5 +155,5 @@
         selectedClass: "grp-selected",
         actionSelect: "div.grp-changelist-actions select"
     };
-})(grp.jQuery);
+})(django.jQuery);
 
