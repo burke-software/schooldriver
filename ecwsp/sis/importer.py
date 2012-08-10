@@ -2235,6 +2235,8 @@ class Importer:
                                 supid = value
                                 if Contact.objects.get(id=supid):
                                     model.primary_contact = Contact.objects.get(id=supid)
+                    if model.work_permit_no == "":
+                        model.work_permit_no = None
                     model.save()
                     if created:
                         self.log_and_commit(model, addition=True)
