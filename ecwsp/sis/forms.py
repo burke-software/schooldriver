@@ -31,18 +31,6 @@ from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
 from ecwsp.administration.models import * 
 
-class CohortForm(forms.ModelForm):
-    class Meta:
-        model = Cohort
-    class Media:
-        js = (
-            settings.ADMIN_MEDIA_PREFIX + "js/SelectBox.js",
-            settings.ADMIN_MEDIA_PREFIX + "js/SelectFilter2.js",
-            '/static/js/jquery.js',
-            '/static/js/ajax_filtered_fields.js',
-        )
-    students = ManyToManyByRelatedField(Student, 'year', include_blank=False)
-
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Student
