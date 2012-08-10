@@ -634,7 +634,7 @@ class Student(MdlUser, CustomFieldModel):
         """ Promote student object to a student worker keeping all fields, does nothing on duplicate. """
         try:
             cursor = connection.cursor()
-            cursor.execute("insert into work_study_studentworker (student_ptr_id) values (" + str(self.id) + ";")
+            cursor.execute("insert into work_study_studentworker (student_ptr_id) values (" + str(self.id) + ");")
         except:
             return
 def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
