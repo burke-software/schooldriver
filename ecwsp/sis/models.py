@@ -291,6 +291,9 @@ class Faculty(MdlUser):
             raise ValidationError('Cannot have someone be a student AND faculty!')
         super(Faculty, self).save(*args, **kwargs)
         user, created = User.objects.get_or_create(username=self.username)
+        if created:
+            user.password = "!"
+            user.save()
         group, created = Group.objects.get_or_create(name="faculty")
         if created: group.save()
         user.groups.add(group)
@@ -604,6 +607,9 @@ class Student(MdlUser, CustomFieldModel):
             
         super(Student, self).save(*args, **kwargs)
         user, created = User.objects.get_or_create(username=self.username)
+        if created:
+            user.password = "!"
+            user.save()
         group, gcreated = Group.objects.get_or_create(name="students")
         user.groups.add(group)
         
