@@ -2198,6 +2198,7 @@ class Importer:
                     model = None
                     supid = None
                     created = True
+                    work_permit_no = None
                     try:
                         student = self.get_student(items)
                         created = False
