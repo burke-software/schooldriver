@@ -171,7 +171,7 @@ class MdlUser(models.Model):
     username = models.CharField(unique=True, max_length=255)
     fname = models.CharField(max_length=300, verbose_name="First Name")
     lname = models.CharField(max_length=300, verbose_name="Last Name")
-    email = models.EmailField(blank=True)
+    email = models.EmailField(blank=True, null=True)
     city = models.CharField(max_length=360, blank=True)
     class Meta:
         ordering = ('lname','fname')
