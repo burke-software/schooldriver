@@ -2230,13 +2230,13 @@ class Importer:
                             elif name == "workteam name" or name == "placement":
                                 model.placement = WorkTeam.objects.get(team_name=value)
                             elif name == "work permit" or name == "work permit number":
-                                model.work_permit_no = value
+                                work_permit_no = value
                             elif name == "primary supervisor id" or name == "supervisor id":
                                 supid = value
                                 if Contact.objects.get(id=supid):
                                     model.primary_contact = Contact.objects.get(id=supid)
-                    if model.work_permit_no == "":
-                        model.work_permit_no = None
+                    if work_permit_no:
+                        model.work_permit_no = work_permit_no
                     model.save()
                     if created:
                         self.log_and_commit(model, addition=True)
