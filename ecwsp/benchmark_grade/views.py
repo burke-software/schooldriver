@@ -39,6 +39,7 @@ from ecwsp.grades.forms import *
 from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.forms import *
+from ecwsp.omr.models import Benchmark
 
 from decimal import Decimal, ROUND_HALF_UP
 import time
@@ -188,16 +189,37 @@ def family_grade(request):
         'error_message': error_message
     }, RequestContext(request, {}),)
 
-def gradebook(request):
+def gradebook(request, course_id):
+    course = get_object_or_404(Course, pk=course_id)
     fifty = []
     i = 0
     while i < 50:
         i += 1
         fifty += ['foo' + str(i)]
-    students = Student.objects.filter(inactive=False)[:50]
+    students = Student.objects.filter(inactive=False,course=course)
+    
+    cohorts = Cohort.objects.filter(student__in=students).distinct()
+    marking_periods = MarkingPeriod.objects.filter(school_year__active_year=True)
+    benchmarks = Benchmark.objects.all()[:30]
+    
+    
     return render_to_response('benchmark_grade/gradebook.html', {
         'fifty':fifty,
         'students':students,
+        'course': course,
+        'cohorts': cohorts,
+        'marking_periods': marking_periods,
+        'benchmarks': benchmarks,
+    }, RequestContext(request, {}),)
+
+def ajax_get_item_form(request, item_id=None):
+    if item_id:
+        item = get_object_or_404(Item, pk=item_id)
+        form = ItemForm(instance=item)
+    else:
+        form = ItemForm()
+    return render_to_response('benchmark_grade/item_form.html', {
+        'form': form,
     }, RequestContext(request, {}),)
 
 def ajax_save_grade(request):

@@ -50,11 +50,17 @@
     <tr>
         <th>Course</th>
         <th>Download Blank Gradebook</th>
+        {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
+            <th>Online Gradebook</th>
+        {% endif %}
     </tr>
     {% for course in courses %}
         <tr>
             <td style="text-align: left;"> <a href="upload/{{ course.id }}"> {{ course }}  </a> </td>
             <td> <a href="download/{{ course.id }}/"> Download XLS </a> </td>
+            {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
+                <td><a href="{% url ecwsp.benchmark_grade.views.gradebook course.id %}">Gradebook</a></td>
+            {% endif %}
         </tr>
     {% endfor %}
     </table>

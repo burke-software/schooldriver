@@ -7,7 +7,7 @@ function select_cell(event){
 }
 
 function make_into_input(element){
-    value = 90
+    value = 90;
     parent = $(element).parent('td');
     $(element).replaceWith('<input onblur="mark_change(event)" onkeydown="return keyboard_nav(event)" class="grade_input" prev_value="'+value+'" value="'+value+'"/>');
     $(parent).children('input').focus();

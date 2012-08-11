@@ -19,6 +19,7 @@
 from django import forms
 from ajax_select.fields import AutoCompleteSelectMultipleField
 from ecwsp.schedule.models import MarkingPeriod
+from ecwsp.benchmark_grade.models import Item
 
 class BenchmarkGradeVerifyForm(forms.Form):
     # whoever instantiates must assign queryset for marking_periods 
@@ -35,3 +36,7 @@ class BenchmarkGradeVerifyForm(forms.Form):
             del self.data['students']
             del cleaned_data['students']
         return cleaned_data
+
+class ItemForm(forms.ModelForm):
+    class Meta:
+        model = Item

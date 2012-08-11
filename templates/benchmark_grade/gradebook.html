@@ -80,9 +80,10 @@
 Student Cohort
 <div class="redbar"></div>
 	<select name="student_cohort" id="id_student_cohort">
-		<option>Group Number 1</option>
-		<option>Group Number 2</option>
-		<option>Group Number 3</option>
+            <option>-----</option>
+            {% for cohort in cohorts %}
+                <option value="{{ cohort.id }}">{{ cohort }}</option>
+            {% endfor %}
 	</select>
 </div>
 
@@ -90,9 +91,10 @@ Student Cohort
 Session
 <div class="redbar"></div>
 	<select name="session" id="id_session">
-		<option>Session Number 1</option>
-		<option>Session Number 2</option>
-		<option>Session Number 3</option>
+            <option>-----</option>
+	    {% for marking_period in marking_periods %}
+                <option value="{{ marking_period.id }}">{{ marking_period }}</option>
+            {% endfor %}
 	</select>
 </div>
 
@@ -100,15 +102,20 @@ Session
 Benchmark
 <div class="redbar"></div>
 	<select name="benchmark" id="id_benchmark">
-		<option>Benchmark Number 1</option>
-		<option>Benchmark Number 2</option>
-		<option>Benchmark Number 3</option>
+            <option>-----</option>
+	    {% for benchmark in benchmarks %}
+                <option value="{{ benchmark.id }}">{{ benchmark }}</option>
+            {% endfor %}
 	</select>
 </div>
+<div class="redbar"></div>
+<input type="button" value="Create New Assignment"/>
 
 <p>&nbsp;</p>
 
 </div><!-- .menu -->
+
+<h2>{{ course }}</h2>
 
     <div id="tableDiv_General" class="tableDiv">
         <table id="Open_Text_General" class="FixedTables">
@@ -139,7 +146,7 @@ Benchmark
                         <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}" onclick="select_cell(event)">
                             <div>90</div>
                         </td>
-                    {% endfor %}>
+                    {% endfor %}
                     <td>900</td><td>90%</td>
                 </tr>
                 {% endwith %}
