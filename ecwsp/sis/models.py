@@ -171,7 +171,7 @@ class MdlUser(models.Model):
     username = models.CharField(unique=True, max_length=255)
     fname = models.CharField(max_length=300, verbose_name="First Name")
     lname = models.CharField(max_length=300, verbose_name="Last Name")
-    email = models.EmailField(blank=True)
+    email = models.EmailField(blank=True, null=True)
     city = models.CharField(max_length=360, blank=True)
     class Meta:
         ordering = ('lname','fname')
@@ -634,7 +634,7 @@ class Student(MdlUser, CustomFieldModel):
         """ Promote student object to a student worker keeping all fields, does nothing on duplicate. """
         try:
             cursor = connection.cursor()
-            cursor.execute("insert into work_study_studentworker (student_ptr_id, fax) values (" + str(self.id) + ", 0);")
+            cursor.execute("insert into work_study_studentworker (student_ptr_id) values (" + str(self.id) + ");")
         except:
             return
 def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
