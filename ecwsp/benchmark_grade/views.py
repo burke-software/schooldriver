@@ -191,11 +191,14 @@ def family_grade(request):
 def gradebook(request):
     fifty = []
     i = 0
-    while i < 100:
+    while i < 50:
         i += 1
         fifty += ['foo' + str(i)]
-    students = Student.objects.filter(inactive=False)[:100]
+    students = Student.objects.filter(inactive=False)[:50]
     return render_to_response('benchmark_grade/gradebook.html', {
         'fifty':fifty,
         'students':students,
     }, RequestContext(request, {}),)
+
+def ajax_save_grade(request):
+    return HttpResponse('SUCCESS');

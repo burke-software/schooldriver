@@ -4,19 +4,34 @@ function select_cell(event){
     } else if ($(event.target).is("div")) {
         make_into_input($(event.target));
     }
-    
-    
 }
 
 function make_into_input(element){
+    value = 90
     parent = $(element).parent('td');
-    $(element).replaceWith('<input onchange="mark_change(event)" onkeydown="return keyboard_nav(event)" class="grade_input" value="90"/>');
+    $(element).replaceWith('<input onblur="mark_change(event)" onkeydown="return keyboard_nav(event)" class="grade_input" prev_value="'+value+'" value="'+value+'"/>');
     $(parent).children('input').focus();
     $(parent).children('input').select();
 }
 
 function mark_change(event) {
-    $(event.target).addClass('saving');
+    $prev_value = $(event.target).attr('prev_value');
+    if ( $prev_value != $(event.target).val() ) {
+        $(event.target).removeClass('save_success');
+        $(event.target).addClass('saving');
+        $.post(  
+          "gradebook/ajax_save_grade/",
+          function(data){
+            if (data == "SUCCESS") {
+                $new_value = $(event.target).val();
+                $(event.target).replaceWith('<div class="save_success">' + $new_value + '</div>');
+            }
+          }  
+        );
+    } else {
+        $(event.target).replaceWith('<div>' + $(event.target).val() + '</div>');
+    }
+    
 } 
 
 function keyboard_nav(event) {

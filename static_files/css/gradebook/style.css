@@ -245,11 +245,16 @@ div.tooltip {
 .edit_active { background: #00FF00 !important; }
 
 input.grade_input {
-    padding: 0;
-    margin: 0;
+    padding: 0px;
+    margin: 0px;
     width: 30px;
+    border: 0px;
 }
 
 .saving {
     background-color: rgba(0, 10, 255, 0.1);
+}
+
+.save_success {
+    background-color: rgba(40, 255, 0, 0.1);
 }
