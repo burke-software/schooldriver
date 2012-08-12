@@ -22,6 +22,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
+from ecwsp.omr.models import Benchmark
 
 import sys
 
@@ -95,15 +96,25 @@ class Category(models.Model):
         return self.name
     class Meta:
         verbose_name_plural = "categories"
+
+class AssignmentType(models.Model):
+    name = models.CharField(max_length=255)
     
 class Item(models.Model):
     name = models.CharField(max_length=255)
     course = models.ForeignKey('schedule.Course')
     date = models.DateField(blank=True, null=True)
     markingPeriod = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
+    @property
+    def marking_period(self): return self.markingPeriod # need to get with the naming convention
     category = models.ForeignKey('Category')
-    scale = models.ForeignKey('Scale')
-    multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1)
+    scale = models.ForeignKey('Scale') # this is going away
+    points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    assignment_type = models.ForeignKey('AssignmentType', blank=True, null=True)
+    benchmark = models.ForeignKey('omr.Benchmark', blank=True, null=True)
+    @property
+    def benchmark_description(self): return self.benchmark.name
+    multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1) # not used yet
     def __unicode__(self):
         return self.name + " - " + self.category.name + " (" + self.course.fullname + ")"
 
