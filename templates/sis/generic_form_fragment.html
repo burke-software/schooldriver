@@ -1,0 +1,9 @@
+<!-- Just plain HTML, no admin stuff. Useful for ajax -->
+<h2> {{ subtitle }} </h2>
+{{ msg }}
+<form method="post" enctype="multipart/form-data" action="">
+            <table>
+    {{ form.as_table }}
+            </table>
+    <input type="submit" value="Submit"/>    
+</form>

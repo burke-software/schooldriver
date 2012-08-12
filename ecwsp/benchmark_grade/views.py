@@ -212,13 +212,14 @@ def gradebook(request, course_id):
         'benchmarks': benchmarks,
     }, RequestContext(request, {}),)
 
-def ajax_get_item_form(request, item_id=None):
+def ajax_get_item_form(request, course_id, item_id=None):
+    course = get_object_or_404(Course, pk=course_id)
     if item_id:
         item = get_object_or_404(Item, pk=item_id)
         form = ItemForm(instance=item)
     else:
-        form = ItemForm()
-    return render_to_response('benchmark_grade/item_form.html', {
+        form = ItemForm(initial={'course': course})
+    return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
     }, RequestContext(request, {}),)
 

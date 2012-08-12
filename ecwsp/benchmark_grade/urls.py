@@ -6,5 +6,6 @@ urlpatterns = patterns('',
     (r'^student_grade$', views.student_grade),
     (r'^family_grade$', views.family_grade),
     (r'^gradebook/(?P<course_id>\d+)/$', views.gradebook),
-    (r'^gradebook/ajax_save_grade/$', views.ajax_save_grade),    
+    (r'^gradebook/ajax_save_grade/$', views.ajax_save_grade),
+    (r'^gradebook/(?P<course_id>\d+)/ajax_get_item_form/$', views.ajax_get_item_form),
 )
