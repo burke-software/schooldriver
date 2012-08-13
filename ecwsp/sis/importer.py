@@ -2061,7 +2061,7 @@ class Importer:
                             elif name == "industry_type" or name == "industry type":
                                 model.industry_type = value
                             elif name == "train_line" or name == "train line":
-                                model.train_line = value
+                                model.travel_route = value
                             elif name == "industry_type" or name == "industry type":
                                 model.industry_type = value
                             elif name == "stop_location" or name == "stop location":
@@ -2190,15 +2190,14 @@ class Importer:
         from ecwsp.work_study.models import *
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            with transaction.commit_manually():
-                try:
+            #with transaction.commit_manually():
+                #try:
                     name = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     model = None
                     supid = None
                     created = True
-                    work_permit_no = None
                     try:
                         student = self.get_student(items)
                         created = False
@@ -2231,13 +2230,13 @@ class Importer:
                             elif name == "workteam name" or name == "placement":
                                 model.placement = WorkTeam.objects.get(team_name=value)
                             elif name == "work permit" or name == "work permit number":
-                                work_permit_no = value
+                                model.work_permit_no = value
                             elif name == "primary supervisor id" or name == "supervisor id":
                                 supid = value
                                 if Contact.objects.get(id=supid):
                                     model.primary_contact = Contact.objects.get(id=supid)
-                    if work_permit_no:
-                        model.work_permit_no = work_permit_no
+                    model.full_clean()                
+                    model.work_permit_no.clean()
                     model.save()
                     if created:
                         self.log_and_commit(model, addition=True)
@@ -2245,9 +2244,9 @@ class Importer:
                     else:
                         self.log_and_commit(model, addition=False)
                         updated += 1
-                except:
-                    self.handle_error(row, name, sys.exc_info(), sheet.name)
-                x += 1
+                #except:
+                    #self.handle_error(row, name, sys.exc_info(), sheet.name)
+        x += 1
         return inserted, updated
 
     def import_student_work_history(self, sheet):
