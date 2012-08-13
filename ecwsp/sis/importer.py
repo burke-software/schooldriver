@@ -2067,9 +2067,9 @@ class Importer:
                             elif name == "stop_location" or name == "stop location":
                                 model.stop_location = value
                             elif name == "dropoff_location" or name == "dropoff location":
-                                model.dropoff_location = PickupLocation.objects.get_or_create(location=value)[0]
+                                model.am_transport_group = PickupLocation.objects.get_or_create(location=value)[0]
                             elif name == "pickup_location" or name == "pickup location":
-                                model.pickup_location = PickupLocation.objects.get_or_create(location=value)[0]
+                                model.pm_transport_group = PickupLocation.objects.get_or_create(location=value)[0]
                             elif name == "address":
                                 model.address = value
                             elif name == "city":
