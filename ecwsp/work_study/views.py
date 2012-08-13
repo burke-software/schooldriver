@@ -18,7 +18,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
 
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test, permission_required
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -832,7 +832,7 @@ def student_meeting(request):
     return render_to_response('work_study/student_meeting.html', {'request': request, 'meetings': meetings}, RequestContext(request, {}))
 
 def company_contract1(request, id):
-    company = Company.objects.get(id=id)
+    company = get_object_or_404(Company, pk=id)
     
     if request.method == 'POST':
         form = CompanyContactForm1(request.POST)

@@ -1,4 +1,5 @@
 function select_cell(event){
+    // User clicks or navigates to a cell.
     if ($(event.target).is("td")) {
         make_into_input($(event.target).children('div'));
     } else if ($(event.target).is("div")) {
@@ -7,6 +8,7 @@ function select_cell(event){
 }
 
 function make_into_input(element){
+    // Make text grade into input for grade entry
     value = 90;
     parent = $(element).parent('td');
     $(element).replaceWith('<input onblur="mark_change(event)" onkeydown="return keyboard_nav(event)" class="grade_input" prev_value="'+value+'" value="'+value+'"/>');
@@ -15,6 +17,7 @@ function make_into_input(element){
 }
 
 function mark_change(event) {
+    // Mark a changed grade. It will save then come back as save success.
     $prev_value = $(event.target).attr('prev_value');
     if ( $prev_value != $(event.target).val() ) {
         $(event.target).removeClass('save_success');
@@ -32,7 +35,22 @@ function mark_change(event) {
         $(event.target).replaceWith('<div>' + $(event.target).val() + '</div>');
     }
     
-} 
+}
+
+function get_new_assignment_form(event){
+    // Get a new assignment form to display of modal overlay
+    $.post(
+        "ajax_get_item_form/",
+        function(data){  
+            $("#new_assignment_form").html(data);
+        }  
+    ); 
+    $("#new_assignment_form").overlay({
+            top: '3',
+            fixed: false
+        });
+    $("#new_assignment_form").overlay().load();
+}
 
 function keyboard_nav(event) {
     key = event.which;
