@@ -52,6 +52,24 @@ function get_new_assignment_form(event){
     $("#new_assignment_form").overlay().load();
 }
 
+function handle_form_fragment_submit(form) {
+    // Handle submit for an assignment with ajax
+    form_data = $(form).serialize();
+    $.post(  
+        "ajax_get_item_form/",
+        form_data,
+        function(data){
+            if ( data == "SUCCESS" ){
+                alert('Great Job!');
+                location.reload();
+            } else {
+                $("#new_assignment_form").html(data);
+            }
+        }  
+    );
+    return false;
+}
+
 function keyboard_nav(event) {
     key = event.which;
     if (key == 13 || key == 40 || key == 38 || key == 37 || key == 39) {

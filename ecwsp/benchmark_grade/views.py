@@ -214,14 +214,33 @@ def gradebook(request, course_id):
 
 def ajax_get_item_form(request, course_id, item_id=None):
     course = get_object_or_404(Course, pk=course_id)
-    if item_id:
-        item = get_object_or_404(Item, pk=item_id)
-        form = ItemForm(instance=item)
+    
+    print request.POST
+    if request.POST:
+        if item_id:
+            form = ItemForm(request.POST, instance=item)
+        else:
+            form = ItemForm(request.POST)
+        if form.is_valid():
+            item = form.save()
+            # Should I use the django message framework to inform the user?
+            # This would not work in ajax unless we make some sort of ajax
+            # message handler.
+            messages.success(request, '%s saved' % (item,))
+            return HttpResponse('SUCCESS'); 
+        
     else:
-        form = ItemForm(initial={'course': course})
+        if item_id:
+            item = get_object_or_404(Item, pk=item_id)
+            form = ItemForm(instance=item)
+        else:
+            form = ItemForm(initial={'course': course})
+    
+    print "oh hai"
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
     }, RequestContext(request, {}),)
 
-def ajax_save_grade(request):
+# Please add security checks
+def ajax_save_grade(request, mark_id=None):
     return HttpResponse('SUCCESS');

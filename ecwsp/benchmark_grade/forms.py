@@ -18,6 +18,8 @@
 
 from django import forms
 from ajax_select.fields import AutoCompleteSelectMultipleField
+from django.contrib.admin import widgets as adminwidgets
+
 from ecwsp.schedule.models import MarkingPeriod
 from ecwsp.benchmark_grade.models import Item
 
@@ -40,3 +42,12 @@ class BenchmarkGradeVerifyForm(forms.Form):
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
+        widgets = {
+            'course': forms.HiddenInput,
+            'date': adminwidgets.AdminDateWidget(),
+        }
+        
+class GradebookFilterForm(forms.Form):
+    cohort = forms.ModelChoiceField(queryset=None)
+    session = forms.ModelChoiceField(queryset=None)
+    benchmark = forms.ModelChoiceField(queryset=None)
