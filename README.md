@@ -1,4 +1,5 @@
-Django-sis is a open source school information system build with Django. It relies heavily on the django admin interface for backend usage (registrar, etc).
+#Django-sis 
+This is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc). Below you will find a list of apps included in the software with a brief description of each.
 
 # Apps
 
