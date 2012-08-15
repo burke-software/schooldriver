@@ -255,7 +255,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                     if year.benchmark_grade:
                         course_aggregates = Aggregate.objects.filter(singleCourse=course, singleStudent=student)
                     i = 1
-                    for mp in year.mps:
+                    for mp in year.mps.filter(id__in=course.marking_period.all()): # Obey the registrar! Don't include grades from marking periods when the course didn't meet.
                         if year.benchmark_grade:
                             try:
                                 standards = course_aggregates.get(singleCategory=Category.objects.get(name='Standards'), singleMarkingPeriod=mp)
