@@ -4,7 +4,7 @@ This is an open source school information system built with Django. It relies he
 # Apps
 
 ##School Information (sis)
-This tracks the students’ information and their parent/guardian/contact information. This module also records cohorts (groupings of students for easier class enrollment), basic faculty information, and school year information. This is the central module for SWoRD and is required for use of any other module. All other modules are optional.
+This tracks the students’ information and their parent/guardian/contact information. This module also records cohorts (groupings of students for easier class enrollment), basic faculty information, and school year information. This is the central module for django-sis and is required for use of any other module. All other modules are optional.
 
 ##Admissions
 This tracks potential students and their registration process. It allows various admission levels to be added, as well as steps that need to be completed before moving onto the next level. It also tracks any open houses a student has attended and how the student heard about the school.
