@@ -17,9 +17,95 @@
 #   MA 02110-1301, USA.
 
 from ecwsp.benchmark_grade.models import *
+from django.db.models import Avg, Sum, Min
+import logging
+
+def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period=None, date_report=None):
+    # student: a single student
+    # courses: all courses involved in the GPA calculation
+    # marking_period: restricts GPA calculation to a _single_ marking period
+    # date_report: restricts GPA calculation to marking periods _ending_ on or before a date
+
+    mps = None
+    if marking_period is not None:
+        mps = MarkingPeriod.objects.filter(id=(marking_period.id))
+    else:
+        mps = MarkingPeriod.objects.filter(id__in=courses.values('marking_period').distinct())
+        if date_report is not None:
+            mps = mps.filter(end_date__lte=date_report)
+        else:
+            mps = course.marking_period.all()
+
+    student_numer = student_denom = float(0)
+    for mp in mps.filter(school_year__benchmark_grade=True):
+        mp_numer = mp_denom = float(0)
+        rules = CalculationRule.objects.filter(first_year_effective=mp.school_year)
+        if rules.count():
+            # We have a rule explicitly matching this marking period's school year
+            rule = rules[0]
+        else:
+            # No explicit match, so find the most recent rule that went into effect *before* this marking period's school year
+            rules = CalculationRule.objects.filter(first_year_effective__start_date__lt=mp.school_year.start_date).order_by('-first_year_effective__start_date')
+            if rules.count():
+                rule = rules[0]
+            else:
+                raise Exception('There is no suitable calculation rule for the school year {}.'.format(mp.school_year))
+
+        for course in courses.filter(marking_period=mp).exclude(credits=None).distinct(): # IMO, Course.credits should be required, and we should not treat None as 0.
+            # Handle per-course categories according to the calculation rule
+            course_numer = course_denom = float(0)
+            for category in rule.per_course_category_set.filter(apply_to_departments=course.department):
+                category_aggregate = Aggregate.objects.get(singleStudent=student, singleMarkingPeriod=mp, singleCourse=course, singleCategory=category.category).cachedValue
+                if category_aggregate is not None:
+                    course_numer += float(category.weight) * float(category_aggregate)
+                    course_denom += float(category.weight)
+            if course_denom > 0:
+                credits = float(course.credits) / course.marking_period.count()
+                mp_numer += credits * course_numer / course_denom
+                mp_denom += credits
+
+        # Handle aggregates of categories that are counted as courses
+        # TODO: Change CalculationRule model to have a field for the weight of each category. For now, assume 1.
+        # Categories as courses shouldn't increase the weight of a marking period!
+        mp_denom_before_categories = mp_denom
+        for category in rule.category_as_course_set.all():
+            category_numer = category_denom = float(0)
+            for course in courses.filter(marking_period=mp, department__in=category.include_departments.all()).distinct():
+                credits = float(course.credits) / course.marking_period.count()
+                grade = Aggregate.objects.get(singleStudent=student, singleMarkingPeriod=mp, singleCategory=category.category, singleCourse=course).cachedValue
+                if grade is not None:
+                    category_numer += credits * float(grade)
+                    category_denom += credits
+            if category_denom > 0:
+                mp_numer += category_numer / category_denom
+                mp_denom += 1
+
+        if mp_denom > 0:
+            student_numer += mp_numer / mp_denom * mp_denom_before_categories 
+            student_denom += mp_denom_before_categories
+            mp_denom = mp_denom_before_categories # in this version, mp_denom isn't used again, but this may save someone pain in the future.
+
+    # Handle non-benchmark-grade years. Calculation rules don't apply.
+    legacy_courses = courses.filter(marking_period__in=mps.filter(school_year__benchmark_grade=False))
+    for course in legacy_courses.exclude(credits=None).distinct(): # IMO, Course.credits should be required, and we should not treat None as 0.
+        try:
+            grade, credits = student._calculate_grade_for_single_course(course, marking_period, date_report)
+            student_numer += grade * credits
+            student_denom += credits
+        except:
+            logging.warning('Legacy course grade calculation failed for student {}, course {}, marking_period {}, date_report {}'.format(student, course, marking_period, date_report), exc_info=True)
+            
+    if student_denom > 0:
+        return Decimal(student_numer / student_denom).quantize(Decimal('0.01'), ROUND_HALF_UP)
+    else:
+        return 'N/A'
 
 def benchmark_calculate_grade_for_courses(student, courses, marking_period=None, date_report=None):
     #print "b_c_g_f_c(", student, courses, marking_period, date_report, ")"
+    return benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period, date_report)
+
+    ''' HEY, THE REST OF THIS FUNCTION IS OBSOLETE AND WILL BE TRASHED SOON!!! '''
+
     # trying to rewrite this for the fourth time.
     # student: guess what? a student!
     # courses: all courses involved in the GPA calculation
@@ -46,8 +132,10 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
         benchmark_aggregate_cat.append(Category.objects.get(name=cat_name))
 
     for course in courses.distinct():
+        #@!print 'Course', course
         if course.marking_period.order_by('-start_date')[0].school_year.benchmark_grade:
             # a benchmark_grade course!
+            #@!print '\tIs a benchmark_grade course'
             mps = None
             if marking_period is not None:
                 mps = (marking_period, )
@@ -56,10 +144,13 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
             else:
                 mps = course.marking_period.all()
             for mp in mps:
+                #@!print '\tMP', mp
                 try: weight = float(course.credits) / course.marking_period.count()
                 except TypeError: weight = 0
                 benchmark_mp_weight[mp.id] = benchmark_mp_weight.get(mp.id, 0) + weight
+                #@!print '\t\tWeight:', benchmark_mp_weight[mp.id], '(added', weight, '=', float(course.credits), '/', course.marking_period.count(), ')'
                 for cat in benchmark_individual_cat:
+                    #@!print '\t\tIndividual Category:', cat
                     try: agg = Aggregate.objects.get(singleStudent = student, singleCourse = course, singleCategory = cat, singleMarkingPeriod = mp)
                     except: continue
                     if agg.cachedValue is None: continue
@@ -68,9 +159,12 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
                     mp_denom_dict = benchmark_individual_denom.get(mp.id, {})
                     mp_numer_dict[cat.id] = mp_numer_dict.get(cat.id, 0) + weight * float(agg.cachedValue)
                     mp_denom_dict[cat.id] = mp_denom_dict.get(cat.id, 0) + weight
+                    #@!print '\t\t\tNumerator:', mp_numer_dict[cat.id], '(added', weight * float(agg.cachedValue), '=', weight, '*', float(agg.cachedValue), ')'
+                    #@!print '\t\t\tDenominator:', mp_denom_dict[cat.id], '(added', weight, ')'
                     benchmark_individual_numer[mp.id] = mp_numer_dict
                     benchmark_individual_denom[mp.id] = mp_denom_dict
                 for cat in benchmark_aggregate_cat:
+                    #@!print '\t\tAggregate Category:', cat
                     try: agg = Aggregate.objects.get(singleStudent = student, singleCourse = course, singleCategory = cat, singleMarkingPeriod = mp)
                     except: continue
                     if agg.cachedValue is None: continue
@@ -78,39 +172,50 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
                     mp_denom_dict = benchmark_aggregate_denom.get(mp.id, {})
                     mp_numer_dict[cat.id] = mp_numer_dict.get(cat.id, 0) + weight * float(agg.cachedValue)
                     mp_denom_dict[cat.id] = mp_denom_dict.get(cat.id, 0) + weight
+                    #@!print '\t\t\tNumerator:', mp_numer_dict[cat.id], '(added', weight * float(agg.cachedValue), '=', weight, '*', float(agg.cachedValue), ')'
+                    #@!print '\t\t\tDenominator:', mp_denom_dict[cat.id], '(added', weight, ')'
                     benchmark_aggregate_numer[mp.id] = mp_numer_dict
                     benchmark_aggregate_denom[mp.id] = mp_denom_dict
         else:
             # legacy calculation
+            #print '\tIs a legacy course'
             try:
                 grade, credit = student._calculate_grade_for_single_course(course, marking_period, date_report)
-                legacy_denominator += credit
                 legacy_numerator += float(grade) * credit
+                legacy_denominator += credit
+                #print '"{}" {} {} {}'.format(course, grade, credit, float(grade) * credit)
+                #print '\t\tNumerator:', legacy_numerator, '(added', float(grade) * credit, '=', credit, '*', float(grade), ')'
+                #print '\t\tDenominator:', legacy_denominator, '(added', credit, ')'
             except Exception as e:
-                #print e
+                #@!print 'Legacy course exception:', e 
+                import traceback
+                #@!print traceback.format_exc()
                 pass
 
+    #@!print 'Starting final calculation loop...'
     gpa_numerator = 0
     gpa_denominator = 0
     for (mp_id, mp_individual_numer) in benchmark_individual_numer.items():
+        #@!print '\tMP:', mp_id, '(', MarkingPeriod.objects.get(id=mp_id), ')'
         numerator = 0
         denominator = 0
         for (cat_id, cat_agg) in mp_individual_numer.items():
             numerator += cat_agg
             denominator += benchmark_individual_denom[mp_id][cat_id]
-        #print "after individuals, gpa is", numerator / denominator, "(", numerator, "/", denominator, ")"
+        #@!print "\t\tafter individuals, gpa is", numerator / denominator, "(", numerator, "/", denominator, ")"
         # just because individuals exist for this mp, it doesn't mean that aggregates do too
         # so don't use [] syntax, use .get(mp_id, {})
         for (cat_id, cat_agg) in benchmark_aggregate_numer.get(mp_id, {}).items():
             numerator += cat_agg / benchmark_aggregate_denom[mp_id][cat_id]
-            #print "glomming on", Category.objects.get(id=cat_id), cat_agg / benchmark_aggregate_denom[mp_id][cat_id]
+            #@!print "\t\tglomming on", Category.objects.get(id=cat_id), cat_agg / benchmark_aggregate_denom[mp_id][cat_id]
             denominator += 1
         #print numerator, denominator
         if denominator > 0:
             gpa_numerator += (numerator / denominator) * benchmark_mp_weight[mp_id]
             gpa_denominator += benchmark_mp_weight[mp_id]
-    #print "new", gpa_numerator, gpa_denominator
-    #print "legacy", legacy_numerator, legacy_denominator
+    #print benchmark_mp_weight
+    #print "\tnew", gpa_numerator, gpa_denominator
+    #print "\tlegacy", legacy_numerator, legacy_denominator
     gpa_numerator += legacy_numerator
     gpa_denominator += legacy_denominator
     if gpa_denominator > 0:

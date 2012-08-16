@@ -35,6 +35,31 @@ MAXOPERATOR_CHOICES = (
     (u'<', u'Less than')
 )
 
+
+class CalculationRule(models.Model):
+    ''' A per-year GPA calculation rule. It should also be applied to future years unless a more current rule exists.
+    '''
+    # Potential calculation components: career, year, marking period, course
+    first_year_effective = models.ForeignKey('sis.SchoolYear', help_text='Rule also applies to subsequent years unless a more recent rule exists.')
+    
+    def __unicode__(self):
+        return u'Rule of ' + self.first_year_effective.name
+
+class CalculationRulePerCourseCategory(models.Model):
+    ''' A weight assignment for a category within each course.
+    '''
+    category = models.ForeignKey('Category')
+    weight = models.DecimalField(max_digits=5, decimal_places=4, default=1)
+    apply_to_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
+    calculation_rule = models.ForeignKey('CalculationRule', related_name='per_course_category_set')
+
+class CalculationRuleCategoryAsCourse(models.Model):
+    ''' A category whose average is given the same weight as a course in a marking period's average
+    '''
+    category = models.ForeignKey('Category')
+    include_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
+    calculation_rule = models.ForeignKey('CalculationRule', related_name='category_as_course_set')
+
 class Scale(models.Model):
     name = models.CharField(max_length=127)
     minimum = models.DecimalField(max_digits=8, decimal_places=2)
