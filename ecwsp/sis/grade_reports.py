@@ -19,7 +19,7 @@ def fail_report(request):
             titles += [department]
         titles += ['Total', '', 'Username', 'Year','GPA', '', 'Failed courses']
         
-        passing_grade = int(Configuration.get_or_default('Passing Grade','70').value)
+        passing_grade = float(Configuration.get_or_default('Passing Grade','70').value)
         
         data = []
         iy=3
