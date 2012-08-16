@@ -96,15 +96,6 @@
                         {% endfor %}
                         <td>900</td><td>90%</td>
                     </tr>
-                    <tr>
-                        <td>{{ student }}</td>
-                        {% for grade in fifty %}
-                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}" onclick="select_cell(event)">
-                                <div>90</div>
-                            </td>
-                        {% endfor %}
-                        <td>900</td><td>90%</td>
-                    </tr>
                     {% endwith %}
                 {% endfor %}
                 
