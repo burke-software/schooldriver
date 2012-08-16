@@ -45,7 +45,7 @@ class Benchmark(models.Model):
             return txt[:-2]
     
     def __unicode__(self):
-        return '%s %s' % (self.number, self.name)
+        return unicode('%s %s' % (self.number, self.name)) 
         
     class Meta:
         unique_together = ('number','name')

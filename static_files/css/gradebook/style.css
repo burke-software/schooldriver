@@ -247,7 +247,7 @@ div.tooltip {
 input.grade_input {
     padding: 0px;
     margin: 0px;
-    width: 30px;
+    width: 90%;
     border: 0px;
 }
 
@@ -263,4 +263,16 @@ input[type="button"] {
     margin: 1px;
     width: 100%;
     color: black;
+}
+
+.form_table select {
+    max-width: 370px;
+}
+
+/* Grappelli resets */
+table {
+    border: 0px;
+}
+.wrapper {
+    width: 100%;
 }

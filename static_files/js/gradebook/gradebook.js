@@ -1,3 +1,49 @@
+$(document).ready(function() {
+    sh_highlightDocument();
+
+    $(".tableDiv").each(function() {
+        var Id = $(this).get(0).id;
+        
+        window_width = $(window).width()
+        window_height = $(window).height()
+        
+        var maintbheight = window_height - 200;
+        var maintbwidth = window_width - 300;
+
+        $("#" + Id + " .FixedTables").fixedTable({
+            width: maintbwidth,
+            height: maintbheight,
+            fixedColumns: 1,
+            classHeader: "fixedHead",
+            classFooter: "fixedFoot",
+            classColumn: "fixedColumn",
+            fixedColumnWidth: 175,
+            outerId: Id,
+            Contentbackcolor: "#FFFFFF",
+            Contenthovercolor: "#F3F3F3",
+            fixedColumnbackcolor:"#FFF",
+            fixedColumnhovercolor:"#F3F3F3"
+        });
+    });
+    
+    //If Javascript is running, change css on product-description to display:block
+    //then hide the div, ready to animate
+    $("div.tooltip").css({'display':'block','opacity':'0'})
+
+    $("a.trigger").hover(
+      function () {
+        $(this).prev().stop().animate({
+          opacity: 1
+        }, 500);
+      },
+      function () {
+        $(this).prev().stop().animate({
+          opacity: 0
+        }, 200);
+      }
+    )
+});
+
 function select_cell(event){
     // User clicks or navigates to a cell.
     if ($(event.target).is("td")) {

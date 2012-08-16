@@ -7,53 +7,6 @@
     <script type="text/javascript" src="/static/js/gradebook/fixedtable.js"></script>
     <script type="text/javascript" src="/static/js/gradebook/gradebook.js"></script>
     <script type="text/javascript" src="/static/js/jquery.tools.min.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function() {
-            sh_highlightDocument();
-
-            $(".tableDiv").each(function() {
-                var Id = $(this).get(0).id;
-                var maintbheight = 600;
-                var maintbwidth = 800;
-
-                $("#" + Id + " .FixedTables").fixedTable({
-                    width: maintbwidth,
-                    height: maintbheight,
-                    fixedColumns: 1,
-                    classHeader: "fixedHead",
-                    classFooter: "fixedFoot",
-                    classColumn: "fixedColumn",
-                    fixedColumnWidth: 175,
-                    outerId: Id,
-                    Contentbackcolor: "#FFFFFF",
-                    Contenthovercolor: "#F3F3F3",
-                    fixedColumnbackcolor:"#FFF",
-                    fixedColumnhovercolor:"#F3F3F3"
-                });
-            });
-        });
-    </script>
-
-    <script type="text/javascript">
-      $(document).ready(function() {
-        //If Javascript is running, change css on product-description to display:block
-        //then hide the div, ready to animate
-        $("div.tooltip").css({'display':'block','opacity':'0'})
-
-        $("a.trigger").hover(
-          function () {
-            $(this).prev().stop().animate({
-              opacity: 1
-            }, 500);
-          },
-          function () {
-            $(this).prev().stop().animate({
-              opacity: 0
-            }, 200);
-          }
-        )
-      });
-    </script>
 
     <link rel="stylesheet" href="/static/css/gradebook/style.css" type="text/css" media="screen">
     <link rel="stylesheet" href="/static/css/modal.css" type="text/css" media="screen">
@@ -81,35 +34,27 @@
     <div class="dropdownlist">
     Student Cohort
     <div class="redbar"></div>
-            <select name="student_cohort" id="id_student_cohort">
-                <option>-----</option>
-                {% for cohort in cohorts %}
-                    <option value="{{ cohort.id }}">{{ cohort }}</option>
-                {% endfor %}
-            </select>
+            {{ filter_form.cohort }}
     </div>
     
     <div class="dropdownlist">
     Session
     <div class="redbar"></div>
-            <select name="session" id="id_session">
-                <option>-----</option>
-                {% for marking_period in marking_periods %}
-                    <option value="{{ marking_period.id }}">{{ marking_period }}</option>
-                {% endfor %}
-            </select>
+            {{ filter_form.marking_period }}
     </div>
     
     <div class="dropdownlist">
     Benchmark
     <div class="redbar"></div>
-            <select name="benchmark" id="id_benchmark">
-                <option>-----</option>
-                {% for benchmark in benchmarks %}
-                    <option value="{{ benchmark.id }}">{{ benchmark }}</option>
-                {% endfor %}
-            </select>
+            {{ filter_form.benchmark }}
     </div>
+    
+    <div class="dropdownlist">
+    Assignment Type
+    <div class="redbar"></div>
+            {{ filter_form.assignment_type }}
+    </div>
+    
     <div class="redbar"></div>
     <input type="button" value="Create New Assignment" onclick="get_new_assignment_form(event)"/>
     
@@ -142,6 +87,15 @@
     
                 {% for student in students %}
                     {% with row_counter=forloop.counter0 %}
+                    <tr>
+                        <td>{{ student }}</td>
+                        {% for grade in fifty %}
+                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}" onclick="select_cell(event)">
+                                <div>90</div>
+                            </td>
+                        {% endfor %}
+                        <td>900</td><td>90%</td>
+                    </tr>
                     <tr>
                         <td>{{ student }}</td>
                         {% for grade in fifty %}

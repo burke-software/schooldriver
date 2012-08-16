@@ -198,24 +198,22 @@ def gradebook(request, course_id):
         fifty += ['foo' + str(i)]
     students = Student.objects.filter(inactive=False,course=course)
     
-    cohorts = Cohort.objects.filter(student__in=students).distinct()
-    marking_periods = MarkingPeriod.objects.filter(school_year__active_year=True)
-    benchmarks = Benchmark.objects.all()[:30]
-    
+    filter_form = GradebookFilterForm()
+    filter_form.fields['cohort'].queryset = Cohort.objects.filter(student__in=students).distinct()
+    filter_form.fields['marking_period'].queryset = MarkingPeriod.objects.filter(school_year__active_year=True)
+    filter_form.fields['benchmark'].queryset = Benchmark.objects.all()[:30]
+    filter_form.fields['assignment_type'].queryset = AssignmentType.objects.none()
     
     return render_to_response('benchmark_grade/gradebook.html', {
         'fifty':fifty,
         'students':students,
         'course': course,
-        'cohorts': cohorts,
-        'marking_periods': marking_periods,
-        'benchmarks': benchmarks,
+        'filter_form':filter_form,
     }, RequestContext(request, {}),)
 
 def ajax_get_item_form(request, course_id, item_id=None):
     course = get_object_or_404(Course, pk=course_id)
     
-    print request.POST
     if request.POST:
         if item_id:
             form = ItemForm(request.POST, instance=item)
@@ -234,9 +232,13 @@ def ajax_get_item_form(request, course_id, item_id=None):
             item = get_object_or_404(Item, pk=item_id)
             form = ItemForm(instance=item)
         else:
-            form = ItemForm(initial={'course': course})
+            active_mps = course.marking_period.filter(active=True)
+            if active_mps:
+                form = ItemForm(initial={'course': course, 'markingPeriod':active_mps[0]})
+            else:
+                form = ItemForm(initial={'course': course})
     
-    print "oh hai"
+    form.fields['markingPeriod'].queryset = course.marking_period.all()
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
     }, RequestContext(request, {}),)

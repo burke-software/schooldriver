@@ -21,3 +21,11 @@
 .export_table {
     border: none;
 }
+
+.close {
+    background-image:url(/static/images/close.png);
+    position:absolute; right:5px; top:5px;
+    cursor:pointer;
+    height:35px;
+    width:35px;
+}

@@ -49,5 +49,7 @@ class ItemForm(forms.ModelForm):
         
 class GradebookFilterForm(forms.Form):
     cohort = forms.ModelChoiceField(queryset=None)
-    session = forms.ModelChoiceField(queryset=None)
+    marking_period = forms.ModelChoiceField(queryset=None)
     benchmark = forms.ModelChoiceField(queryset=None)
+    assignment = forms.ModelChoiceField(queryset=None)
+    assignment_type = forms.ModelChoiceField(queryset=None)
