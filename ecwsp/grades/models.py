@@ -91,7 +91,7 @@ class Grade(models.Model):
             if rounding != None:
                 string = '%.' + str(rounding) + 'f'
                 grade = string % float(str(grade))
-            return self.grade
+            return grade
         else:
             return ""
     
