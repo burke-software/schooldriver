@@ -1502,14 +1502,14 @@ class Importer:
                                     model.year = GradeLevel.objects.get(id=value)
                             elif name == "picture":
                                 model.pic = value
-                            elif name in ["class of year", "class of", "class_of_year"]:
+                            elif name in ["class of year", "class of", "class_of_year", "graduation year", "grad year"]:
                                 try:
                                     year = int(value)
                                     year = ClassYear.objects.get_or_create(year=year)[0]
-                                    self.class_of_year = year
+                                    model.class_of_year = year
                                 except:
                                     year = ClassYear.objects.get(full_name=value)
-                                    self.class_of_year = year
+                                    model.class_of_year = year
                             elif name == "parent e-mail" or name == "parent email" or name == "parentemail" or name == "parent__email":
                                 model.parent_email = value
                             elif name == "middle name" or name == "mname":
