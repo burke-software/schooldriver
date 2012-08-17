@@ -175,16 +175,6 @@ class MdlUser(models.Model):
     city = models.CharField(max_length=360, blank=True)
     class Meta:
         ordering = ('lname','fname')
-    
-    def save(self, *args, **kwargs):
-        super(MdlUser, self).save(*args, **kwargs)
-        # create a Django user to match
-        """user, created = User.objects.get_or_create(username=self.username)
-        if user.first_name == "": user.first_name = self.fname
-        if user.last_name == "": user.last_name = self.lname
-        if user.email == "": user.email = self.email
-        if user.password == "": user.password = "!"
-        user.save()"""
         
     def __unicode__(self):
         return self.lname + ", " + self.fname

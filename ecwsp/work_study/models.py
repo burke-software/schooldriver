@@ -465,6 +465,12 @@ class StudentWorker(Student):
             return ""
     edit_link.allow_tags = True
     
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if not self.id:
+            if Student.objects.filter(username=self.username):
+                raise ValidationError('Username must be unique.')
+    
     # Override save, if placement changes record change in history table
     def save(self, *args, **kwargs):
         try:
