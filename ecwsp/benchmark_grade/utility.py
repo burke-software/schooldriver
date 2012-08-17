@@ -21,6 +21,7 @@ from django.db.models import Avg, Sum, Min
 import logging
 
 def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period=None, date_report=None):
+    # TODO: Add a maximum points field to CalculationRule; have Aggregate convert between scales; remove hard-coded 4.0
     # student: a single student
     # courses: all courses involved in the GPA calculation
     # marking_period: restricts GPA calculation to a _single_ marking period
@@ -55,9 +56,12 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
             # Handle per-course categories according to the calculation rule
             course_numer = course_denom = float(0)
             for category in rule.per_course_category_set.filter(apply_to_departments=course.department):
-                category_aggregate = Aggregate.objects.get(singleStudent=student, singleMarkingPeriod=mp, singleCourse=course, singleCategory=category.category).cachedValue
-                if category_aggregate is not None:
-                    course_numer += float(category.weight) * float(category_aggregate)
+                try: category_aggregate = Aggregate.objects.get(singleStudent=student, singleMarkingPeriod=mp, singleCourse=course, singleCategory=category.category)
+                except Aggregate.DoesNotExist: category_aggregate = None
+                if category_aggregate is not None and category_aggregate.cachedValue is not None:
+                    # simplified normalization; assumes minimum is 0
+                    normalized_value = category_aggregate.cachedValue / category_aggregate.scale.maximum
+                    course_numer += float(category.weight) * float(normalized_value)
                     course_denom += float(category.weight)
             if course_denom > 0:
                 credits = float(course.credits) / course.marking_period.count()
@@ -72,15 +76,19 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
             category_numer = category_denom = float(0)
             for course in courses.filter(marking_period=mp, department__in=category.include_departments.all()).distinct():
                 credits = float(course.credits) / course.marking_period.count()
-                grade = Aggregate.objects.get(singleStudent=student, singleMarkingPeriod=mp, singleCategory=category.category, singleCourse=course).cachedValue
-                if grade is not None:
-                    category_numer += credits * float(grade)
+                try: category_aggregate = Aggregate.objects.get(singleStudent=student, singleMarkingPeriod=mp, singleCategory=category.category, singleCourse=course)
+                except Aggregate.DoesNotExist: category_aggregate = None
+                if category_aggregate is not None and category_aggregate.cachedValue is not None:
+                    # simplified normalization; assumes minimum is 0
+                    normalized_value  = category_aggregate.cachedValue / category_aggregate.scale.maximum
+                    category_numer += credits * float(normalized_value)
                     category_denom += credits
             if category_denom > 0:
                 mp_numer += category_numer / category_denom
                 mp_denom += 1
 
         if mp_denom > 0:
+            mp_numer *= 4 # HARD CODED 4.0 SCALE!!!
             student_numer += mp_numer / mp_denom * mp_denom_before_categories 
             student_denom += mp_denom_before_categories
             mp_denom = mp_denom_before_categories # in this version, mp_denom isn't used again, but this may save someone pain in the future.
