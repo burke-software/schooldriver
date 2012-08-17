@@ -60,7 +60,7 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
                 except Aggregate.DoesNotExist: category_aggregate = None
                 if category_aggregate is not None and category_aggregate.cachedValue is not None:
                     # simplified normalization; assumes minimum is 0
-                    normalized_value = category_aggregate.cachedValue / category_aggregate.scale.maximum
+                    normalized_value = category_aggregate.cachedValue / rule.points_possible
                     course_numer += float(category.weight) * float(normalized_value)
                     course_denom += float(category.weight)
             if course_denom > 0:
@@ -80,7 +80,7 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
                 except Aggregate.DoesNotExist: category_aggregate = None
                 if category_aggregate is not None and category_aggregate.cachedValue is not None:
                     # simplified normalization; assumes minimum is 0
-                    normalized_value  = category_aggregate.cachedValue / category_aggregate.scale.maximum
+                    normalized_value  = category_aggregate.cachedValue / rule.points_possible
                     category_numer += credits * float(normalized_value)
                     category_denom += credits
             if category_denom > 0:
@@ -104,7 +104,7 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
             logging.warning('Legacy course grade calculation failed for student {}, course {}, marking_period {}, date_report {}'.format(student, course, marking_period, date_report), exc_info=True)
             
     if student_denom > 0:
-        return Decimal(student_numer / student_denom).quantize(Decimal('0.01'), ROUND_HALF_UP)
+        return Decimal(student_numer / student_denom).quantize(Decimal(10) ** (-1 * rule.decimal_places), ROUND_HALF_UP)
     else:
         return 'N/A'
 

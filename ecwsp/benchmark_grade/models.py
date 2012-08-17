@@ -41,6 +41,8 @@ class CalculationRule(models.Model):
     '''
     # Potential calculation components: career, year, marking period, course
     first_year_effective = models.ForeignKey('sis.SchoolYear', help_text='Rule also applies to subsequent years unless a more recent rule exists.')
+    points_possible = models.DecimalField(max_digits=8, decimal_places=2, default=4)
+    decimal_places = models.IntegerField(default=2)
     
     def __unicode__(self):
         return u'Rule of ' + self.first_year_effective.name
@@ -124,6 +126,8 @@ class Category(models.Model):
 
 class AssignmentType(models.Model):
     name = models.CharField(max_length=255)
+    def __unicode__(self):
+        return self.name
     
 class Item(models.Model):
     name = models.CharField(max_length=255)
