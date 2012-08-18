@@ -44,6 +44,10 @@ $(document).ready(function() {
     )
 });
 
+function submit_filter_form(form){
+    $(form).submit();
+}
+
 function select_cell(event){
     // User clicks or navigates to a cell.
     if ($(event.target).is("td")) {

@@ -21,7 +21,9 @@ from ajax_select.fields import AutoCompleteSelectMultipleField
 from django.contrib.admin import widgets as adminwidgets
 
 from ecwsp.schedule.models import MarkingPeriod
-from ecwsp.benchmark_grade.models import Item
+from ecwsp.benchmark_grade.models import Item, AssignmentType
+from ecwsp.sis.models import Cohort
+from ecwsp.omr.models import Benchmark
 
 class BenchmarkGradeVerifyForm(forms.Form):
     # whoever instantiates must assign queryset for marking_periods 
@@ -48,8 +50,13 @@ class ItemForm(forms.ModelForm):
         }
         
 class GradebookFilterForm(forms.Form):
-    cohort = forms.ModelChoiceField(queryset=None)
-    marking_period = forms.ModelChoiceField(queryset=None)
-    benchmark = forms.ModelChoiceField(queryset=None)
-    assignment = forms.ModelChoiceField(queryset=None)
-    assignment_type = forms.ModelChoiceField(queryset=None)
+    cohort = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}))
+    marking_period = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}))
+    benchmark = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}))
+    assignment_type = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}))
+    
+    def update_querysets(self, course):
+        self.fields['cohort'].queryset = Cohort.objects.filter(student__course=course).distinct()
+        self.fields['marking_period'].queryset = MarkingPeriod.objects.filter(course=course)
+        self.fields['benchmark'].queryset = Benchmark.objects.filter(item__course=course)
+        self.fields['assignment_type'].queryset = AssignmentType.objects.filter(item__course=course)

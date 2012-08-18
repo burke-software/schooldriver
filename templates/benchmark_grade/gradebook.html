@@ -17,49 +17,43 @@
     
             <span class="logo">CRTC</span>
     
-    
     </div><!-- topbar -->
     
     <div class="clear"></div>
-    
     <div class="spacer"></div>
-    
     
     <!-- wraps the menu and gradebook -->
     <div class="wrapper">
-    
-    
+        
     <div class="menu">
-    
-    <div class="dropdownlist">
-    Student Cohort
-    <div class="redbar"></div>
-            {{ filter_form.cohort }}
-    </div>
-    
-    <div class="dropdownlist">
-    Session
-    <div class="redbar"></div>
-            {{ filter_form.marking_period }}
-    </div>
-    
-    <div class="dropdownlist">
-    Benchmark
-    <div class="redbar"></div>
-            {{ filter_form.benchmark }}
-    </div>
-    
-    <div class="dropdownlist">
-    Assignment Type
-    <div class="redbar"></div>
-            {{ filter_form.assignment_type }}
-    </div>
-    
-    <div class="redbar"></div>
-    <input type="button" value="Create New Assignment" onclick="get_new_assignment_form(event)"/>
-    
-    <p>&nbsp;</p>
-    
+        <form action="" method="get">
+            <div class="dropdownlist">
+                Student Cohort
+                <div class="redbar"></div>
+                {{ filter_form.cohort }}
+            </div>
+            
+            <div class="dropdownlist">
+                Session
+                <div class="redbar"></div>
+                {{ filter_form.marking_period }}
+            </div>
+            
+            <div class="dropdownlist">
+                Benchmark
+                <div class="redbar"></div>
+                {{ filter_form.benchmark }}
+            </div>
+            
+            <div class="dropdownlist">
+                Assignment Type
+                <div class="redbar"></div>
+                {{ filter_form.assignment_type }}
+            </div>
+            
+            <div class="redbar"></div>
+            <input type="button" value="Create New Assignment" onclick="get_new_assignment_form(event)"/>
+        </form>
     </div><!-- .menu -->
     
     <h2>{{ course }}</h2>

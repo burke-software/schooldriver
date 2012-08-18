@@ -198,11 +198,14 @@ def gradebook(request, course_id):
         fifty += ['foo' + str(i)]
     students = Student.objects.filter(inactive=False,course=course)
     
-    filter_form = GradebookFilterForm()
-    filter_form.fields['cohort'].queryset = Cohort.objects.filter(student__in=students).distinct()
-    filter_form.fields['marking_period'].queryset = MarkingPeriod.objects.filter(school_year__active_year=True)
-    filter_form.fields['benchmark'].queryset = Benchmark.objects.all()[:30]
-    filter_form.fields['assignment_type'].queryset = AssignmentType.objects.none()
+    if request.GET:
+        filter_form = GradebookFilterForm(request.GET)
+        filter_form.update_querysets(course)
+        if filter_form.is_valid():
+            pass # Filter the items here!!
+    else:
+        filter_form = GradebookFilterForm()
+        filter_form.update_querysets(course)
     
     return render_to_response('benchmark_grade/gradebook.html', {
         'fifty':fifty,
