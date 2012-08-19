@@ -69,18 +69,25 @@ function make_into_input(element){
 
 function mark_change(event) {
     // Mark a changed grade. It will save then come back as save success.
-    $prev_value = $(event.target).attr('prev_value');
-    if ( $prev_value != $(event.target).val() ) {
+    prev_value = $(event.target).attr('prev_value');
+    cur_value = $(event.target).val()
+    if (prev_value != cur_value) {
         $(event.target).removeClass('save_success');
         $(event.target).addClass('saving');
+        mark_id = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r\d+_mark(\d+)$/, '$1').trim()
         $.post(  
-          "gradebook/ajax_save_grade/",
-          function(data){
-            if (data == "SUCCESS") {
-                $new_value = $(event.target).val();
-                $(event.target).replaceWith('<div class="save_success">' + $new_value + '</div>');
+          "../../gradebook/ajax_save_grade/",
+          {mark_id: mark_id, value: cur_value},
+          function(data) {
+            if (data.success == "SUCCESS") {
+                new_value = data.value;
+                $(event.target).replaceWith('<div class="save_success">' + new_value + '</div>');
             }
-          }  
+          }, "json"  
+        )
+        .error(function() {
+                $(event.target).replaceWith('<div class="save_failure">' + prev_value + '</div>');
+            }
         );
     } else {
         $(event.target).replaceWith('<div>' + $(event.target).val() + '</div>');

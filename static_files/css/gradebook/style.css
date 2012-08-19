@@ -259,6 +259,10 @@ input.grade_input {
     background-color: rgba(40, 255, 0, 0.1);
 }
 
+.save_failure { 
+    background-color: rgba(255, 0, 0, 0.5);
+}
+
 input[type="button"] {
     margin: 1px;
     width: 100%;

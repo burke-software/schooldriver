@@ -44,6 +44,7 @@ from ecwsp.omr.models import Benchmark
 from decimal import Decimal, ROUND_HALF_UP
 import time
 import logging
+import json
 
 @user_passes_test(lambda u: u.groups.filter(Q(name='teacher') | Q(name="registrar")).count() > 0 or u.is_superuser, login_url='/')
 def benchmark_grade_upload(request, id):
@@ -189,8 +190,13 @@ def family_grade(request):
         'error_message': error_message
     }, RequestContext(request, {}),)
 
+@login_required
 def gradebook(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
+    if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
+        and request.user.username != course.teacher.username and not course.secondary_teachers.filter(username=request.user.username).count():
+        return HttpResponse(status=403)
+
     students = Student.objects.filter(inactive=False,course=course)
     items = Item.objects.filter(course=course)
 
@@ -271,6 +277,24 @@ def ajax_get_item_form(request, course_id, item_id=None):
         'form': form,
     }, RequestContext(request, {}),)
 
-# Please add security checks
-def ajax_save_grade(request, mark_id=None):
-    return HttpResponse('SUCCESS');
+def ajax_save_grade(request):
+    if 'mark_id' in request.POST and 'value' in request.POST:
+        mark_id = request.POST['mark_id'].strip()
+        value = request.POST['value'].strip()
+        try: mark = Mark.objects.get(id=mark_id)
+        except Mark.DoesNotExist: return HttpResponse('NO MARK WITH ID ' + mark_id, status=404) 
+        if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
+            and request.user.username != mark.item.course.teacher.username and not mark.item.course.secondary_teachers.filter(username=request.user.username).count():
+            return HttpResponse(status=403)
+
+        if len(value) and value.lower != 'none':
+            mark.mark = value
+        else:
+            mark.mark = None
+            value = 'None'
+        try: mark.save()
+        except Exception as e: return HttpResponse(e, status=400)
+        # TODO: handle decimal validation
+        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value}))
+    else:
+        return HttpResponse('POST DATA INCOMPLETE', status=400) 
