@@ -48,6 +48,7 @@ class ItemForm(forms.ModelForm):
             'course': forms.HiddenInput,
             'date': adminwidgets.AdminDateWidget(),
         }
+        exclude = ('scale','multiplier',)
         
 class GradebookFilterForm(forms.Form):
     cohort = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)

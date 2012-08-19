@@ -67,7 +67,7 @@
                         </th>
     
     {% for item in items %}
-        <th><div class="assignment">{{ item.name}}<br/>foo</div></th>
+        <th><div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.name}}<br/>foo</div></th>
     {% endfor %}
                         <th>
                             Total

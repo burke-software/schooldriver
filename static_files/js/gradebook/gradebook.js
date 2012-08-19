@@ -110,15 +110,31 @@ function get_new_assignment_form(event){
     $("#new_assignment_form").overlay().load();
 }
 
+function get_edit_assignment_form(event){
+    // Get a new assignment form to display of modal overlay
+    item_id = $(event.target).attr('item_id');
+    $.post(
+        "ajax_get_item_form/" + item_id + "/",
+        function(data){
+            $("#new_assignment_form").html(data);
+        }
+    ); 
+    $("#new_assignment_form").overlay({
+            top: '3',
+            fixed: false
+        });
+    $("#new_assignment_form").overlay().load();
+}
+
 function handle_form_fragment_submit(form) {
     // Handle submit for an assignment with ajax
     form_data = $(form).serialize();
-    $.post(  
-        "ajax_get_item_form/",
+    item_id = $(form).attr('item_id');
+    $.post(
+        "ajax_get_item_form/" + item_id + "/",
         form_data,
         function(data){
             if ( data == "SUCCESS" ){
-                alert('Great Job!');
                 location.reload();
             } else {
                 $("#new_assignment_form").html(data);

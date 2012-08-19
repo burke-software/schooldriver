@@ -250,6 +250,7 @@ def ajax_get_item_form(request, course_id, item_id=None):
     
     if request.POST:
         if item_id:
+            item = get_object_or_404(Item, pk=item_id)
             form = ItemForm(request.POST, instance=item)
         else:
             form = ItemForm(request.POST)
@@ -275,7 +276,9 @@ def ajax_get_item_form(request, course_id, item_id=None):
     form.fields['markingPeriod'].queryset = course.marking_period.all()
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
+        'item_id': item_id,
     }, RequestContext(request, {}),)
+
 
 def ajax_save_grade(request):
     if 'mark_id' in request.POST and 'value' in request.POST:
