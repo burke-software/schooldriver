@@ -173,7 +173,8 @@ class Aggregate(models.Model):
     category = models.ManyToManyField('Category', blank=True, null=True)
     aggregate = models.ManyToManyField('self', blank=True, null=True)
     singleMarkingPeriod = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
-    
+    points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+
     # rudimentary for now
     # no m2m, multipliers
     # also untested
