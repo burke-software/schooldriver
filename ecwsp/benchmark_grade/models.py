@@ -137,10 +137,10 @@ class Item(models.Model):
     @property
     def marking_period(self): return self.markingPeriod # need to get with the naming convention
     category = models.ForeignKey('Category')
-    scale = models.ForeignKey('Scale') # this is going away
+    scale = models.ForeignKey('Scale', blank=True, null=True) # this is going away
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     assignment_type = models.ForeignKey('AssignmentType', blank=True, null=True)
-    benchmark = models.ForeignKey('omr.Benchmark', blank=True, null=True)
+    benchmark = models.ForeignKey('omr.Benchmark', blank=True, null=True, verbose_name='standard')
     @property
     def benchmark_description(self): return self.benchmark.name
     multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1) # not used yet

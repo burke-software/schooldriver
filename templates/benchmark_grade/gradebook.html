@@ -40,7 +40,7 @@
             </div>
             
             <div class="dropdownlist">
-                Benchmark
+                Standard
                 <div class="redbar"></div>
                 {{ filter_form.benchmark }}
             </div>
@@ -67,7 +67,7 @@
                         </th>
     
     {% for item in items %}
-        <th><div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.name}}<br/>foo</div></th>
+        <th><div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.markingPeriod.shortname }}<br />{{ item.category }}<br />{{ item.name}}<br/>{{ item.benchmark }}</div></th>
     {% endfor %}
                         <th>
                             Total
