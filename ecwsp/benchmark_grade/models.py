@@ -162,7 +162,7 @@ class Aggregate(models.Model):
     # come back interwebs,
     # so i can find a less ugly way to do this
     name = models.CharField(max_length=255)
-    scale = models.ForeignKey('Scale')
+    scale = models.ForeignKey('Scale', blank=True, null=True)
     manualMark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     cachedValue = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     singleStudent = models.ForeignKey('sis.Student', blank=True, null=True, related_name="single_student")
