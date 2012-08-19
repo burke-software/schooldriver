@@ -21,7 +21,8 @@ from django.db.models import Avg, Sum, Min
 import logging
 
 def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period=None, date_report=None):
-    # TODO: Add a maximum points field to CalculationRule; have Aggregate convert between scales; remove hard-coded 4.0
+    # TODO: Decimal places configuration value
+    DECIMAL_PLACES = 2
     # student: a single student
     # courses: all courses involved in the GPA calculation
     # marking_period: restricts GPA calculation to a _single_ marking period
@@ -104,7 +105,7 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
             logging.warning('Legacy course grade calculation failed for student {}, course {}, marking_period {}, date_report {}'.format(student, course, marking_period, date_report), exc_info=True)
             
     if student_denom > 0:
-        return Decimal(student_numer / student_denom).quantize(Decimal(10) ** (-1 * rule.decimal_places), ROUND_HALF_UP)
+        return Decimal(student_numer / student_denom).quantize(Decimal(10) ** (-1 * DECIMAL_PLACES), ROUND_HALF_UP)
     else:
         return 'N/A'
 

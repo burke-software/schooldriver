@@ -191,25 +191,50 @@ def family_grade(request):
 
 def gradebook(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
-    fifty = []
-    i = 0
-    while i < 50:
-        i += 1
-        fifty += ['foo' + str(i)]
     students = Student.objects.filter(inactive=False,course=course)
-    
+    items = Item.objects.filter(course=course)
+
     if request.GET:
         filter_form = GradebookFilterForm(request.GET)
         filter_form.update_querysets(course)
         if filter_form.is_valid():
-            pass # Filter the items here!!
+            for filter_key, filter_value in filter_form.cleaned_data.iteritems():
+                if filter_value is not None:
+                    if filter_key == 'cohort': 
+                        students = students.filter(cohorts=filter_value)
+                    if filter_key == 'marking_period':
+                       items = items.filter(markingPeriod=filter_value)
+                    if filter_key == 'benchmark':
+                        items = items.filter(benchmark=filter_value)
+                    if filter_key == 'assignment_type':
+                        items = items.filter(assignment_type=filter_value)
     else:
         filter_form = GradebookFilterForm()
         filter_form.update_querysets(course)
     
+    standards_category = Category.objects.get(name='Standards')
+    for student in students:
+        # this is really terrible
+        student.tidy_marks = []
+        for item in items:
+            mark = Mark.objects.filter(item=item, student=student)
+            if item.category == standards_category:
+                mark = mark.filter(description='Session')
+            if mark.count() == 1:
+                student.tidy_marks.append(mark[0])
+            if mark.count() > 1:
+                #print 'TOO MANY MARKS!', mark.values_list('mark') 
+                student.tidy_marks.append(mark.order_by('-id')[0]) # newest?
+            if mark.count() == 0:
+                #print 'MISSING MARK', course.id, student.id, item.id
+                new = Mark.objects.create(item=item, student=student)
+                if item.category == standards_category:
+                    new.description = 'Session'
+                new.save()
+                student.tidy_marks.append(new)
     return render_to_response('benchmark_grade/gradebook.html', {
-        'fifty':fifty,
-        'students':students,
+        'items': items,
+        'students': students,
         'course': course,
         'filter_form':filter_form,
     }, RequestContext(request, {}),)

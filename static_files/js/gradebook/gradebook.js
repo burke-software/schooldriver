@@ -59,7 +59,8 @@ function select_cell(event){
 
 function make_into_input(element){
     // Make text grade into input for grade entry
-    value = 90;
+    value = element.text(); 
+    console.log(element)
     parent = $(element).parent('td');
     $(element).replaceWith('<input onblur="mark_change(event)" onkeydown="return keyboard_nav(event)" class="grade_input" prev_value="'+value+'" value="'+value+'"/>');
     $(parent).children('input').focus();
@@ -123,19 +124,21 @@ function handle_form_fragment_submit(form) {
 function keyboard_nav(event) {
     key = event.which;
     if (key == 13 || key == 40 || key == 38 || key == 37 || key == 39) {
-        column = $(event.target).parents('td').attr('id').replace(/_r\d*/, '').replace(/tdc/,'').trim();
-        row = $(event.target).parents('td').attr('id').replace(/^tdc\d*_r/, '').trim();
+        column = $(event.target).parents('td').attr('id').replace(/^tdc(\d+)_.*$/, '$1').trim();
+        row = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r(\d+)_.*$/, '$1').trim();
         
-        var selected_element;
+        var selected_id = 'td[id^=td';
         if(key == 13 || key == 40) { // Down
-            selected_element = $('td#tdc' + column + '_r' + (parseInt(row)+1));
+            selected_id += 'c' + column + '_r' + (parseInt(row)+1);
         } else if (key == 38) { // Up
-            selected_element = $('td#tdc' + column + '_r' + (parseInt(row)-1));
+            selected_id += 'c' + column + '_r' + (parseInt(row)-1);
         } else if (key == 37) { // Left
-            selected_element = $('td#tdc' + (parseInt(column)-1) + '_r' + row);
+            selected_id += 'c' + (parseInt(column)-1) + '_r' + row;
         } else if (key == 39) { // Right
-            selected_element = $('td#tdc' + (parseInt(column)+1) + '_r' + row);
+            selected_id += 'c' + (parseInt(column)+1) + '_r' + row;
         }
+        selected_id += '_]';
+        selected_element = $(selected_id);
         make_into_input($(selected_element).children('div'));
         $(selected_element).children('input').focus();
         $(selected_element).children('input').select();

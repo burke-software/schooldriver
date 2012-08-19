@@ -66,8 +66,8 @@
                             Name
                         </th>
     
-    {% for assignment in fifty %}
-        <th><div class="assignment">Assignment 1<br/>100 Points</div></th>
+    {% for item in items %}
+        <th><div class="assignment">{{ item.name}}<br/>foo</div></th>
     {% endfor %}
                         <th>
                             Total
@@ -83,9 +83,9 @@
                     {% with row_counter=forloop.counter0 %}
                     <tr>
                         <td>{{ student }}</td>
-                        {% for grade in fifty %}
-                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}" onclick="select_cell(event)">
-                                <div>90</div>
+                        {% for mark in student.tidy_marks %}
+                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)">
+                                <div>{{ mark.mark }}</div>
                             </td>
                         {% endfor %}
                         <td>900</td><td>90%</td>
