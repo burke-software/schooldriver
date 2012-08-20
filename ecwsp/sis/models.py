@@ -36,6 +36,10 @@ from ckeditor.fields import RichTextField
 
 logger = logging.getLogger(__name__)
 
+if 'south' in settings.INSTALLED_APPS:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
+
 def create_faculty(instance):
     if True:
         faculty, created = Faculty.objects.get_or_create(username=instance.username)
@@ -299,9 +303,19 @@ class Faculty(MdlUser):
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
     students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
+    primary = models.BooleanField(blank=True, help_text="If set true - all students in this cohort will have it set as primary!")
     
     def __unicode__(self):
         return unicode(self.name)
+    
+def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
+    if instance.primary:
+        for student in instance.students.all():
+            student_cohort = student.studentcohort_set.get(cohort__id=instance.id)
+            student_cohort.primary = True
+            student_cohort.save()
+
+m2m_changed.connect(after_cohort_m2m, sender=Cohort.students.through)
     
 
 class ReasonLeft(models.Model):
