@@ -21,7 +21,7 @@ from ajax_select.fields import AutoCompleteSelectMultipleField
 from django.contrib.admin import widgets as adminwidgets
 
 from ecwsp.schedule.models import MarkingPeriod
-from ecwsp.benchmark_grade.models import Item, AssignmentType
+from ecwsp.benchmark_grade.models import Item, AssignmentType, Category
 from ecwsp.sis.models import Cohort
 from ecwsp.omr.models import Benchmark
 
@@ -54,6 +54,7 @@ class GradebookFilterForm(forms.Form):
     cohort = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
     marking_period = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
     benchmark = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
+    category = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
     assignment_type = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
     name = forms.CharField(required=False)
     date_begin = forms.DateField(required=False, widget=adminwidgets.AdminDateWidget(attrs={'placeholder':'Later than'}))
@@ -64,3 +65,4 @@ class GradebookFilterForm(forms.Form):
         self.fields['marking_period'].queryset = MarkingPeriod.objects.filter(course=course)
         self.fields['benchmark'].queryset = Benchmark.objects.filter(item__course=course)
         self.fields['assignment_type'].queryset = AssignmentType.objects.filter(item__course=course)
+        self.fields['category'].queryset = Category.objects.filter(item__course=course).distinct()
