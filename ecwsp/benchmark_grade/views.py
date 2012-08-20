@@ -198,7 +198,8 @@ def gradebook(request, course_id):
         and request.user.username != course.teacher.username and not course.secondary_teachers.filter(username=request.user.username).count():
         return HttpResponse(status=403)
 
-    students = Student.objects.filter(inactive=False,course=course)
+    #students = Student.objects.filter(inactive=False,course=course)
+    students = Student.objects.filter(course=course)
     items = Item.objects.filter(course=course)
 
     if request.GET:
@@ -284,6 +285,9 @@ def ajax_get_item_form(request, course_id, item_id=None):
                 form = ItemForm(initial={'course': course})
     
     form.fields['marking_period'].queryset = course.marking_period.all()
+    form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
+    form.fields['benchmark'].queryset = Benchmark.objects.all()
+
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
         'item_id': item_id,
