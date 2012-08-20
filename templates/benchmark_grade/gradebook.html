@@ -7,6 +7,7 @@
     <script type="text/javascript" src="/static/js/gradebook/fixedtable.js"></script>
     <script type="text/javascript" src="/static/js/gradebook/gradebook.js"></script>
     <script type="text/javascript" src="/static/js/jquery.tools.min.js"></script>
+    <script type="text/javascript" src="/static/js/init_admin_datepicker.js"></script>
 
     <link rel="stylesheet" href="/static/css/gradebook/style.css" type="text/css" media="screen">
     <link rel="stylesheet" href="/static/css/modal.css" type="text/css" media="screen">
@@ -17,49 +18,62 @@
     
             <span class="logo">CRTC</span>
     
-    
     </div><!-- topbar -->
     
     <div class="clear"></div>
-    
     <div class="spacer"></div>
-    
     
     <!-- wraps the menu and gradebook -->
     <div class="wrapper">
-    
-    
+        
     <div class="menu">
-    
-    <div class="dropdownlist">
-    Student Cohort
-    <div class="redbar"></div>
-            {{ filter_form.cohort }}
-    </div>
-    
-    <div class="dropdownlist">
-    Session
-    <div class="redbar"></div>
-            {{ filter_form.marking_period }}
-    </div>
-    
-    <div class="dropdownlist">
-    Benchmark
-    <div class="redbar"></div>
-            {{ filter_form.benchmark }}
-    </div>
-    
-    <div class="dropdownlist">
-    Assignment Type
-    <div class="redbar"></div>
-            {{ filter_form.assignment_type }}
-    </div>
-    
-    <div class="redbar"></div>
-    <input type="button" value="Create New Assignment" onclick="get_new_assignment_form(event)"/>
-    
-    <p>&nbsp;</p>
-    
+        <form action="" method="get">
+            <div class="filter_item">
+                Student Cohort
+                <div class="redbar"></div>
+                {{ filter_form.cohort }}
+            </div>
+            
+            <div class="filter_item">
+                Session
+                <div class="redbar"></div>
+                {{ filter_form.marking_period }}
+            </div>
+            
+            <div class="filter_item">
+                Standard
+                <div class="redbar"></div>
+                {{ filter_form.benchmark }}
+            </div>
+            
+            <div class="filter_item">
+                {{ filter_form.category.label }}
+                <div class="redbar"></div>
+                {{ filter_form.category }}
+            </div>
+            
+            <div class="filter_item">
+                Assignment Type
+                <div class="redbar"></div>
+                {{ filter_form.assignment_type }}
+            </div>
+            
+            <div class="filter_item">
+                {{ filter_form.name.label }}
+                <div class="redbar"></div>
+                {{ filter_form.name }}
+            </div>
+            
+            <div class="filter_item">
+                Dates
+                <div class="redbar"></div>
+                {{ filter_form.date_begin }}
+                {{ filter_form.date_end }}
+                <input type="submit" value="Filter"/>
+            </div>
+            <div class="redbar"></div>
+            <input type="button" value="Create New Assignment" onclick="get_new_assignment_form(event)"/>
+        </form>
     </div><!-- .menu -->
     
     <h2>{{ course }}</h2>
@@ -72,12 +86,9 @@
                             Name
                         </th>
     
-    {% for assignment in fifty %}
-        <th><div class="assignment">Assignment 1<br/>100 Points</div></th>
+    {% for item in items %}
+        <th><div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.markingPeriod.shortname }}<br />{{ item.category }}<br />{{ item.name}}<br/>{{ item.benchmark }}</div></th>
     {% endfor %}
-                        <th>
-                            Total
-                        </th>
                         <th>
                             Average
                         </th>
@@ -89,12 +100,12 @@
                     {% with row_counter=forloop.counter0 %}
                     <tr>
                         <td>{{ student }}</td>
-                        {% for grade in fifty %}
-                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}" onclick="select_cell(event)">
-                                <div>90</div>
+                        {% for mark in student.marks %}
+                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)">
+                                <div>{{ mark.mark }}</div>
                             </td>
                         {% endfor %}
-                        <td>900</td><td>90%</td>
+                        <td id="average{{ row_counter }}">TBD</td>
                     </tr>
                     {% endwith %}
                 {% endfor %}

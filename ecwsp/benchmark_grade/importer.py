@@ -26,6 +26,7 @@ class BenchmarkGradeImporter(Importer):
         return len(unicode(s).strip()) == 0
         
     def _make_aggregates(self, course, marking_period):
+        raise Exception('_make_aggregates(): under construction.')
         # clear out schedule grades; they'll be copied from the standards averages
         Grade.objects.filter(course=course, marking_period=marking_period).delete()
         
@@ -39,35 +40,36 @@ class BenchmarkGradeImporter(Importer):
             category_scale['Daily Practice'] = 'Percent'
         for student in course.get_enrolled_students(show_deleted=True):
             for categoryName, scaleName in category_scale.iteritems():
-                a, garbage = Aggregate.objects.get_or_create(singleStudent=student,
-                                                             singleCourse=course,
-                                                             singleMarkingPeriod=marking_period,
-                                                             singleCategory=Category.objects.get(name=categoryName),
+                a, garbage = Aggregate.objects.get_or_create(student=student,
+                                                             course=course,
+                                                             marking_period=marking_period,
+                                                             category=Category.objects.get(name=categoryName),
                                                              scale=Scale.objects.get(name=scaleName))
                 if categoryName == 'Standards':
                     weakest = a.min(markDescription='Session')
                     # A YTD for you if any of your standards are below 3.0
                     # except Hire4Ed gets a free pass
                     if weakest is not None and weakest < 3 and course.department.name != "Hire4Ed":
-                        a.cachedValue = 0 # better luck next time
+                        a.cached_value = 0 # better luck next time
                     else:
-                        a.cachedValue = a.mean(markDescription='Session')
+                        a.cached_value = a.mean(markDescription='Session')
                     # I'd like to avoid re-writing SWORD
                     g, garbage = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, override_final=False)
-                    g.set_grade(a.cachedValue)
+                    g.set_grade(a.cached_value)
                     g.save() # recalculates a bogus GPA every time. ouch.
                 else:
-                    a.cachedValue = a.mean()
-                a.name = unicode(a.cachedValue) + u' - ' + unicode(student) + u' - ' + unicode(categoryName)  + u' (' + unicode(course.fullname) + u')'
+                    a.cached_value = a.mean()
+                a.name = unicode(a.cached_value) + u' - ' + unicode(student) + u' - ' + unicode(categoryName)  + u' (' + unicode(course.fullname) + u')'
                 a.save()
         
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
+        raise Exception('import_grades(): under construction.')
         """ This is all completely hard-coded for the Twin Cities school. """
         mark_count = 0
         # as requested, drop all old marks before importing
-        Aggregate.objects.filter(singleCourse=course, singleMarkingPeriod=marking_period).delete()
-        Mark.objects.filter(item__course=course, item__markingPeriod=marking_period).delete()
+        Aggregate.objects.filter(course=course, marking_period=marking_period).delete()
+        Mark.objects.filter(item__course=course, item__marking_period=marking_period).delete()
 
         # import all data from the Standards sheet
         # should probably discard "Session" columns and calculate ourselves
@@ -99,7 +101,7 @@ class BenchmarkGradeImporter(Importer):
                 try:
                     category, trash = Category.objects.get_or_create(name="Standards")
                     item, trash = Item.objects.get_or_create(name=current_standard,
-                                                             course=course, markingPeriod=marking_period, category=category,
+                                                             course=course, marking_period=marking_period, category=category,
                                                              scale=Scale.objects.get(name="Four-Oh"))
                     mark = Mark()
                     mark.item = item
@@ -135,7 +137,7 @@ class BenchmarkGradeImporter(Importer):
                 try:
                     category, trash = Category.objects.get_or_create(name="Engagement")
                     item, trash = Item.objects.get_or_create(name=name, date=item_date,
-                                                             course=course, markingPeriod=marking_period, category=category,
+                                                             course=course, marking_period=marking_period, category=category,
                                                              scale=Scale.objects.get(name="Four-Oh"))
                     mark = Mark()
                     mark.item = item
@@ -170,7 +172,7 @@ class BenchmarkGradeImporter(Importer):
                 try:
                     category, trash = Category.objects.get_or_create(name="Organization")
                     item, trash = Item.objects.get_or_create(name=name, date=item_date,
-                                                             course=course, markingPeriod=marking_period, category=category,
+                                                             course=course, marking_period=marking_period, category=category,
                                                              scale=Scale.objects.get(name="Four-Oh"))
                     mark = Mark()
                     mark.item = item
@@ -204,7 +206,7 @@ class BenchmarkGradeImporter(Importer):
                         category, trash = Category.objects.get_or_create(name="Daily Practice")
                         scale, trash = Scale.objects.get_or_create(name="Daily Practice " + str(scale_max), minimum=0, maximum=scale_max)
                         item, trash = Item.objects.get_or_create(name=name, scale=scale,
-                                                                 course=course, markingPeriod=marking_period, category=category)
+                                                                 course=course, marking_period=marking_period, category=category)
                         mark = Mark()
                         mark.item = item
                         mark.student = Student.objects.get(username=username)
@@ -234,7 +236,7 @@ class BenchmarkGradeImporter(Importer):
                     name = sheet.cell_value(3, ncol)
                     try:
                         category, trash = Category.objects.get_or_create(name="Precision and Accuracy")
-                        item, trash = Item.objects.get_or_create(name=name, course=course, markingPeriod=marking_period, category=category,
+                        item, trash = Item.objects.get_or_create(name=name, course=course, marking_period=marking_period, category=category,
                                                                  scale=Scale.objects.get(name="Four-Oh"))
                         mark = Mark()
                         mark.item = item

@@ -8,25 +8,16 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding field 'Cohort.primary'
+        db.add_column('sis_cohort', 'primary',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
 
-        # Changing field 'MdlUser.email'
-        db.alter_column('sis_mdluser', 'email', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True))
-        db.create_unique('sis_studentcohort', ['cohort_id', 'student_id'])
-
-
-        # Changing field 'Student.year'
-        db.alter_column('sis_student', 'year_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.GradeLevel'], null=True, on_delete=models.SET_NULL))
 
     def backwards(self, orm):
+        # Deleting field 'Cohort.primary'
+        db.delete_column('sis_cohort', 'primary')
 
-        # Changing field 'MdlUser.email'
-        db.alter_column('sis_mdluser', 'email', self.gf('django.db.models.fields.EmailField')(default='', max_length=75))
-        # Removing M2M table for field students on 'Cohort'
-        db.delete_table('sis_studentcohort')
-
-
-        # Changing field 'Student.year'
-        db.alter_column('sis_student', 'year_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.GradeLevel'], null=True))
 
     models = {
         'auth.group': {
@@ -83,6 +74,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Cohort'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'students': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['sis.Student']", 'null': 'True', 'db_table': "'sis_studentcohort'", 'blank': 'True'})
         },
         'sis.emergencycontact': {

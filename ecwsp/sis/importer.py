@@ -407,7 +407,18 @@ class Importer:
         sheet = self.get_sheet_by_case_insensitive_name("alumni note")
         if sheet:
             inserted, updated = self.import_alumni_note(sheet)
-            msg += "%s alumni note entries inserted,<br/>" % (inserted,) 
+            msg += "%s alumni note entries inserted,<br/>" % (inserted,)
+            
+        sheet = self.get_sheet_by_case_insensitive_name("alumni email")
+        if sheet:
+            inserted, updated = self.import_alumni_email(sheet)
+            msg += "%s alumni email inserted,<br/>" % (inserted,)
+        sheet = self.get_sheet_by_case_insensitive_name("alumni number")
+        if sheet:
+            inserted, updated = self.import_alumni_number(sheet)
+            msg += "%s alumni numbers inserted,<br/>" % (inserted,)
+        import_alumni_number
+            
         sheet = self.get_sheet_by_case_insensitive_name("college enrollment")
         if sheet:
             inserted, updated = self.import_college_enrollment(sheet)
@@ -650,6 +661,90 @@ class Importer:
                         self.handle_error(row, name, sys.exc_info(), "Unknown")
             x += 1
         return inserted, updated
+    
+    def import_alumni_email(self, sheet):
+        from ecwsp.alumni.models import Alumni, AlumniEmail
+        x, header, inserted, updated = self.import_prep(sheet)
+        name = None
+        while x < sheet.nrows:
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    student = self.get_student(items,try_secondary=True)
+                    email = email_type = None
+                    if hasattr(student, 'alumni'):
+                        alumni = student.alumni
+                    else:
+                        alumni = Alumni(student=student)
+                        alumni.save()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name == "email":
+                                email = AlumniEmail.objects.get_or_create(email=value)[0]
+                            elif name == "type":
+                                email_type = value
+                    note, created = AlumniEmail.objects.get_or_create(
+                        alumni=alumni,
+                        email=email,
+                        type=email_type,
+                    )
+                    if created:
+                        self.log_and_commit(note, addition=created)
+                        inserted += 1
+                            
+                except:
+                    if hasattr(sheet, 'name'):
+                        self.handle_error(row, name, sys.exc_info(), sheet.name)
+                    else:
+                        self.handle_error(row, name, sys.exc_info(), "Unknown")
+            x += 1
+        return inserted, updated
+    
+    
+    def import_alumni_number(self, sheet):
+        from ecwsp.alumni.models import Alumni, AlumniPhoneNumber
+        x, header, inserted, updated = self.import_prep(sheet)
+        name = None
+        while x < sheet.nrows:
+            with transaction.commit_manually():
+                try:
+                    name = None
+                    row = sheet.row(x)
+                    items = zip(header, row)
+                    student = self.get_student(items,try_secondary=True)
+                    phone_number = phone_number_type = None
+                    if hasattr(student, 'alumni'):
+                        alumni = student.alumni
+                    else:
+                        alumni = Alumni(student=student)
+                        alumni.save()
+                    for (name, value) in items:
+                        is_ok, name, value = self.sanitize_item(name, value)
+                        if is_ok:
+                            if name in ["phone number", 'number']:
+                                phone_number = AlumniEmail.objects.get_or_create(email=value)[0]
+                            elif name == "type":
+                                phone_number_type = value
+                    note, created = AlumniPhoneNumber.objects.get_or_create(
+                        alumni=alumni,
+                        phone_number=phone_number,
+                        type=phone_number_type,
+                    )
+                    if created:
+                        self.log_and_commit(note, addition=created)
+                        inserted += 1
+                            
+                except:
+                    if hasattr(sheet, 'name'):
+                        self.handle_error(row, name, sys.exc_info(), sheet.name)
+                    else:
+                        self.handle_error(row, name, sys.exc_info(), "Unknown")
+            x += 1
+        return inserted, updated
+    
     
     def import_college_enrollment(self, sheet):
         from ecwsp.alumni.models import Alumni, College, CollegeEnrollment

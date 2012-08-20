@@ -9,7 +9,6 @@ from ecwsp.schedule.calendar import *
 from ecwsp.sis.report import *
 from ecwsp.benchmark_grade.models import *
 
-from ecwsp.appy.pod.renderer import Renderer
 import tempfile
 import os
 import uno
@@ -55,45 +54,45 @@ def benchmark_report_card(template, options, students, format="odt"):
             Hire4Ed = False
             if course.department is not None:
                 Hire4Ed = course.department.name == "Hire4Ed" # this seems expensive
-            for aggregate in Aggregate.objects.filter(singleStudent=student, singleCourse=course, singleMarkingPeriod=marking_period):
-                aggName = re.sub("[^A-Za-z]", "", aggregate.singleCategory.name)
+            for aggregate in Aggregate.objects.filter(student=student, course=course, marking_period=marking_period):
+                aggName = re.sub("[^A-Za-z]", "", aggregate.category.name)
                 aggStruct = struct()
                 aggStruct.name = aggregate.name # has become ugly; not used in template
-                aggStruct.mark = aggregate.scale.spruce(aggregate.cachedValue)
+                aggStruct.mark = aggregate.cached_value
                 setattr(course, aggName, aggStruct)
                 # Hire4Ed does not count toward student averages across academic classes
-                if aggregate.cachedValue is not None:
+                if aggregate.cached_value is not None:
                     # don't double-count standards
-                    if Hire4Ed and aggregate.singleCategory.name != "Standards":
+                    if Hire4Ed and aggregate.category.name != "Standards":
                         try:
-                            course.average += aggregate.cachedValue
+                            course.average += aggregate.cached_value
                             course.averageDenom += 1
                         except AttributeError:
-                            course.average = aggregate.cachedValue
+                            course.average = aggregate.cached_value
                             course.averageDenom = 1
                     try:
-                        averages[aggName] += aggregate.cachedValue
+                        averages[aggName] += aggregate.cached_value
                         denominators[aggName] += 1
                     except KeyError:
-                        averages[aggName] = aggregate.cachedValue
+                        averages[aggName] = aggregate.cached_value
                         denominators[aggName] = 1
             if not Hire4Ed:
                 try:
-                    courseAverageAgg = Aggregate.objects.get(singleCategory__name="Standards", singleStudent=student, singleCourse=course,
-                                                             singleMarkingPeriod=marking_period)
-                    course.average = courseAverageAgg.scale.spruce(courseAverageAgg.cachedValue)
+                    courseAverageAgg = Aggregate.objects.get(category__name="Standards", student=student, course=course,
+                                                             marking_period=marking_period)
+                    course.average = courseAverageAgg.cached_value
                     #GAHH ALL SPRUCING AT THE END
-                    course.usAverage = courseAverageAgg.cachedValue
+                    course.usAverage = courseAverageAgg.cached_value
                 except:
                     pass
             items = []
             standards_category = Category.objects.get(name="Standards") # save time, move to top and do this once?
             for mark in Mark.objects.filter(item__category=standards_category, item__course=course,
-                                            item__markingPeriod=marking_period,
+                                            item__marking_period=marking_period,
                                             student=student, description="Session"):
                 markItem = struct()
                 markItem.name = mark.item.name
-                markItem.range = mark.item.scale.range()
+                markItem.range = ''
                 markItem.mark = mark.mark
                 if markItem.mark is not None:
                     items.append(markItem)
@@ -110,7 +109,6 @@ def benchmark_report_card(template, options, students, format="odt"):
                         except KeyError:
                             averages["Hire4Ed"] = markItem.mark
                             denominators["Hire4Ed"] = 1
-                markItem.mark = mark.item.scale.spruce(markItem.mark)
             course.items = items
             try:
                 if Hire4Ed and course.averageDenom > 0:

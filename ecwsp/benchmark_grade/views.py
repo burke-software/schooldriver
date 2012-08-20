@@ -18,6 +18,7 @@
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
@@ -44,6 +45,7 @@ from ecwsp.omr.models import Benchmark
 from decimal import Decimal, ROUND_HALF_UP
 import time
 import logging
+import json
 
 @user_passes_test(lambda u: u.groups.filter(Q(name='teacher') | Q(name="registrar")).count() > 0 or u.is_superuser, login_url='/')
 def benchmark_grade_upload(request, id):
@@ -80,15 +82,15 @@ def benchmark_grade_upload(request, id):
                         student.categories = categories.all()
                         for category in student.categories:
                             category.marks = Mark.objects.filter(student=student, item__course=course, item__category=category,
-                                                                 item__markingPeriod=mp).order_by('-item__date', 'item__name', 'description')
+                                                                 item__marking_period=mp).order_by('-item__date', 'item__name', 'description')
                             if not verify_form.cleaned_data['all_demonstrations']:
                                 category.marks = category.marks.filter(Q(description='Session') | Q(description=''))
                                 # If all_demonstrations aren't shown, "Session" is assumed; description is unnecessary
                                 show_descriptions = False
                             try:
-                                agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
-                                                            singleCategory=category, singleMarkingPeriod=mp)
-                                category.average = agg.scale.spruce(agg.cachedValue)
+                                agg = Aggregate.objects.get(student=student, course=course,
+                                                            category=category, marking_period=mp)
+                                category.average = agg.cached_value
                             except:
                                 category.average = None
     else:
@@ -126,14 +128,14 @@ def student_grade(request):
             course.categories = Category.objects.filter(item__course=course).distinct()
             for category in course.categories:
                 category.marks = Mark.objects.filter(student=student, item__course=course,
-                                                     item__category=category, item__markingPeriod=mp).order_by('-item__date', 'item__name',
+                                                     item__category=category, item__marking_period=mp).order_by('-item__date', 'item__name',
                                                                                                                'description')
                 if category.name == 'Standards':
                     category.marks = category.marks.filter(description='Session')
                 try:
-                    agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
-                                                singleCategory=category, singleMarkingPeriod=mp)
-                    category.average = agg.scale.spruce(agg.cachedValue)
+                    agg = Aggregate.objects.get(student=student, course=course,
+                                                category=category, marking_period=mp)
+                    category.average = agg.cached_value
                 except:
                     category.average = None
     
@@ -171,14 +173,14 @@ def family_grade(request):
                 course.categories = Category.objects.filter(item__course=course).distinct()
                 for category in course.categories:
                     category.marks = Mark.objects.filter(student=student, item__course=course,
-                                                         item__category=category, item__markingPeriod=mp).order_by('-item__date', 'item__name',
+                                                         item__category=category, item__marking_period=mp).order_by('-item__date', 'item__name',
                                                                                                                    'description')
                     if category.name == 'Standards':
                         category.marks = category.marks.filter(description='Session')
                     try:
-                        agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
-                                                    singleCategory=category, singleMarkingPeriod=mp)
-                        category.average = agg.scale.spruce(agg.cachedValue)
+                        agg = Aggregate.objects.get(student=student, course=course,
+                                                    category=category, marking_period=mp)
+                        category.average = agg.cached_value
                     except:
                         category.average = None
     return render_to_response('benchmark_grade/family_grade.html', {
@@ -189,38 +191,73 @@ def family_grade(request):
         'error_message': error_message
     }, RequestContext(request, {}),)
 
+@staff_member_required
 def gradebook(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
-    fifty = []
-    i = 0
-    while i < 50:
-        i += 1
-        fifty += ['foo' + str(i)]
-    students = Student.objects.filter(inactive=False,course=course)
+    if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
+        and request.user.username != course.teacher.username and not course.secondary_teachers.filter(username=request.user.username).count():
+        return HttpResponse(status=403)
+
+    #students = Student.objects.filter(inactive=False,course=course)
+    students = Student.objects.filter(course=course)
+    items = Item.objects.filter(course=course)
+
+    if request.GET:
+        filter_form = GradebookFilterForm(request.GET)
+        filter_form.update_querysets(course)
+        if filter_form.is_valid():
+            for filter_key, filter_value in filter_form.cleaned_data.iteritems():
+                if filter_value is not None:
+                    if filter_key == 'cohort': 
+                        students = students.filter(cohorts=filter_value)
+                    if filter_key == 'marking_period':
+                       items = items.filter(marking_period=filter_value)
+                    if filter_key == 'benchmark':
+                        items = items.filter(benchmark=filter_value)
+                    if filter_key == 'category':
+                        items = items.filter(category=filter_value)
+                    if filter_key == 'assignment_type':
+                        items = items.filter(assignment_type=filter_value)
+                    if filter_key == 'name':
+                        items = items.filter(name__icontains=filter_value)
+                    if filter_key == 'date_begin':
+                        items = items.filter(date__gt=filter_value)
+                    if filter_key == 'date_end':
+                        items = items.filter(date__lt=filter_value)
+    else:
+        filter_form = GradebookFilterForm()
+        filter_form.update_querysets(course)
     
-    filter_form = GradebookFilterForm()
-    filter_form.fields['cohort'].queryset = Cohort.objects.filter(student__in=students).distinct()
-    filter_form.fields['marking_period'].queryset = MarkingPeriod.objects.filter(school_year__active_year=True)
-    filter_form.fields['benchmark'].queryset = Benchmark.objects.all()[:30]
-    filter_form.fields['assignment_type'].queryset = AssignmentType.objects.none()
-    
+    items = items.order_by('marking_period', 'name', 'date', 'id')
+    for student in students:
+        # precarious; sorting must match items exactly
+        marks = Mark.objects.filter(student=student, item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id')
+        if marks.count() != items.count():
+            logging.error('The number of Marks per Item per Student is incorrect.', exc_info=True)
+        student.marks = marks
     return render_to_response('benchmark_grade/gradebook.html', {
-        'fifty':fifty,
-        'students':students,
+        'items': items,
+        'students': students,
         'course': course,
         'filter_form':filter_form,
     }, RequestContext(request, {}),)
 
+@staff_member_required
 def ajax_get_item_form(request, course_id, item_id=None):
     course = get_object_or_404(Course, pk=course_id)
     
     if request.POST:
         if item_id:
+            item = get_object_or_404(Item, pk=item_id)
             form = ItemForm(request.POST, instance=item)
         else:
             form = ItemForm(request.POST)
         if form.is_valid():
             item = form.save()
+            # must create blank marks for each student
+            for student in Student.objects.filter(course=course):
+                Mark(item=item, student=student).save()
+
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax
             # message handler.
@@ -234,15 +271,40 @@ def ajax_get_item_form(request, course_id, item_id=None):
         else:
             active_mps = course.marking_period.filter(active=True)
             if active_mps:
-                form = ItemForm(initial={'course': course, 'markingPeriod':active_mps[0]})
+                form = ItemForm(initial={'course': course, 'marking_period':active_mps[0]})
             else:
                 form = ItemForm(initial={'course': course})
     
-    form.fields['markingPeriod'].queryset = course.marking_period.all()
+    form.fields['marking_period'].queryset = course.marking_period.all()
+    form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
+    form.fields['benchmark'].queryset = Benchmark.objects.all()
+
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
+        'item_id': item_id,
     }, RequestContext(request, {}),)
 
-# Please add security checks
-def ajax_save_grade(request, mark_id=None):
-    return HttpResponse('SUCCESS');
+@staff_member_required
+def ajax_save_grade(request):
+    if 'mark_id' in request.POST and 'value' in request.POST:
+        mark_id = request.POST['mark_id'].strip()
+        value = request.POST['value'].strip()
+        try: mark = Mark.objects.get(id=mark_id)
+        except Mark.DoesNotExist: return HttpResponse('NO MARK WITH ID ' + mark_id, status=404) 
+        if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
+            and request.user.username != mark.item.course.teacher.username and not mark.item.course.secondary_teachers.filter(username=request.user.username).count():
+            return HttpResponse(status=403)
+
+        if len(value) and value.lower != 'none':
+            mark.mark = value
+        else:
+            mark.mark = None
+            value = 'None'
+        # temporarily log who's changing stuff since i'll have to manually recalculate averages later
+        mark.description += ',' + request.user.username
+        try: mark.save()
+        except Exception as e: return HttpResponse(e, status=400)
+        # TODO: handle decimal validation
+        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value}))
+    else:
+        return HttpResponse('POST DATA INCOMPLETE', status=400) 
