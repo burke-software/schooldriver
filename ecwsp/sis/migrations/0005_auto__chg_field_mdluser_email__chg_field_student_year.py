@@ -11,12 +11,6 @@ class Migration(SchemaMigration):
 
         # Changing field 'MdlUser.email'
         db.alter_column('sis_mdluser', 'email', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True))
-        # Adding M2M table for field students on 'Cohort'
-        db.create_table('sis_studentcohort', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('cohort', models.ForeignKey(orm['sis.cohort'], null=False)),
-            ('student', models.ForeignKey(orm['sis.student'], null=False))
-        ))
         db.create_unique('sis_studentcohort', ['cohort_id', 'student_id'])
 
 
