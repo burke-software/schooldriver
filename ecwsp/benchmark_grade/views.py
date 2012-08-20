@@ -18,6 +18,7 @@
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
@@ -190,7 +191,7 @@ def family_grade(request):
         'error_message': error_message
     }, RequestContext(request, {}),)
 
-@login_required
+@staff_member_required
 def gradebook(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
@@ -214,6 +215,12 @@ def gradebook(request, course_id):
                         items = items.filter(benchmark=filter_value)
                     if filter_key == 'assignment_type':
                         items = items.filter(assignment_type=filter_value)
+                    if filter_key == 'name':
+                        items = items.filter(name__icontains=filter_value)
+                    if filter_key == 'date_begin':
+                        items = items.filter(date__gt=filter_value)
+                    if filter_key == 'date_end':
+                        items = items.filter(date__lt=filter_value)
     else:
         filter_form = GradebookFilterForm()
         filter_form.update_querysets(course)
@@ -245,6 +252,7 @@ def gradebook(request, course_id):
         'filter_form':filter_form,
     }, RequestContext(request, {}),)
 
+@staff_member_required
 def ajax_get_item_form(request, course_id, item_id=None):
     course = get_object_or_404(Course, pk=course_id)
     
@@ -279,7 +287,7 @@ def ajax_get_item_form(request, course_id, item_id=None):
         'item_id': item_id,
     }, RequestContext(request, {}),)
 
-
+@staff_member_required
 def ajax_save_grade(request):
     if 'mark_id' in request.POST and 'value' in request.POST:
         mark_id = request.POST['mark_id'].strip()

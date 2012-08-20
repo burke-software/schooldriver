@@ -91,12 +91,12 @@ body {
 
 .spacer { height: 25px; }
 
-.dropdownlist {
+.filter_item {
 	padding-top: 15px;
 	padding-bottom: 15px;
 }
 
-.dropdownlist select {
+.filter_item select, .filter_item input[type="text"] {
 	background: transparent;
 	font-size: 14px;
 	width: 200px;

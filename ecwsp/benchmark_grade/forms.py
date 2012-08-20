@@ -55,6 +55,9 @@ class GradebookFilterForm(forms.Form):
     marking_period = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
     benchmark = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
     assignment_type = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
+    name = forms.CharField(required=False)
+    date_begin = forms.DateField(required=False, widget=adminwidgets.AdminDateWidget(attrs={'placeholder':'Later than'}))
+    date_end = forms.DateField(required=False, widget=adminwidgets.AdminDateWidget(attrs={'placeholder':'Earlier than'}))
     
     def update_querysets(self, course):
         self.fields['cohort'].queryset = Cohort.objects.filter(student__course=course).distinct()
