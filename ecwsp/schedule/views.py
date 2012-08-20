@@ -137,8 +137,8 @@ def grade_analytics(request):
                 courses = courses.filter(marking_period__school_year=SchoolYear.objects.get(active_year=True))
             elif not data['all_years']:
                 courses = courses.filter(
-                    marking_period__start_date_gte=data['date_begin'],
-                    marking_period__end_date_lte=data['date_end'],
+                    marking_period__start_date__gte=data['date_begin'],
+                    marking_period__end_date__lte=data['date_end'],
                 )
             if data['marking_period']:
                 courses = courses.filter(marking_period__in=data['marking_period'])
