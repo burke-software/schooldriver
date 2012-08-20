@@ -62,6 +62,7 @@ class CalculationRuleCategoryAsCourse(models.Model):
     include_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
     calculation_rule = models.ForeignKey('CalculationRule', related_name='category_as_course_set')
 
+'''
 class Scale(models.Model):
     name = models.CharField(max_length=127)
     minimum = models.DecimalField(max_digits=8, decimal_places=2)
@@ -88,7 +89,8 @@ class Scale(models.Model):
         return s
     def __unicode__(self):
         return self.name
-
+'''
+'''
 class Mapping(models.Model):
     # what about substitutions of numbers for letter grades to allow averaging?
     name = models.CharField(max_length=127)
@@ -112,7 +114,7 @@ class Mapping(models.Model):
         return self.name + " (" + self.scale.name + ")"
     class Meta: # this isn't really enough to keep grossness away
         unique_together = ("name", "scale")
-    
+'''    
 class Category(models.Model):
     name = models.CharField(max_length=255)
     weight = models.DecimalField(max_digits=8, decimal_places=2, default=1)
@@ -137,7 +139,7 @@ class Item(models.Model):
     @property
     def marking_period(self): return self.markingPeriod # need to get with the naming convention
     category = models.ForeignKey('Category')
-    scale = models.ForeignKey('Scale', blank=True, null=True) # this is going away
+    #scale = models.ForeignKey('Scale', blank=True, null=True) # this is going away
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     assignment_type = models.ForeignKey('AssignmentType', blank=True, null=True)
     benchmark = models.ForeignKey('omr.Benchmark', blank=True, null=True, verbose_name='standard')
@@ -162,7 +164,7 @@ class Aggregate(models.Model):
     # come back interwebs,
     # so i can find a less ugly way to do this
     name = models.CharField(max_length=255)
-    scale = models.ForeignKey('Scale', blank=True, null=True)
+    #scale = models.ForeignKey('Scale', blank=True, null=True)
     manualMark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     cachedValue = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     singleStudent = models.ForeignKey('sis.Student', blank=True, null=True, related_name="single_student")
