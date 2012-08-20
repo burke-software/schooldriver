@@ -59,7 +59,7 @@ def benchmark_report_card(template, options, students, format="odt"):
                 aggName = re.sub("[^A-Za-z]", "", aggregate.singleCategory.name)
                 aggStruct = struct()
                 aggStruct.name = aggregate.name # has become ugly; not used in template
-                aggStruct.mark = aggregate.scale.spruce(aggregate.cachedValue)
+                aggStruct.mark = aggregate.cachedValue
                 setattr(course, aggName, aggStruct)
                 # Hire4Ed does not count toward student averages across academic classes
                 if aggregate.cachedValue is not None:
@@ -81,7 +81,7 @@ def benchmark_report_card(template, options, students, format="odt"):
                 try:
                     courseAverageAgg = Aggregate.objects.get(singleCategory__name="Standards", singleStudent=student, singleCourse=course,
                                                              singleMarkingPeriod=marking_period)
-                    course.average = courseAverageAgg.scale.spruce(courseAverageAgg.cachedValue)
+                    course.average = courseAverageAgg.cachedValue
                     #GAHH ALL SPRUCING AT THE END
                     course.usAverage = courseAverageAgg.cachedValue
                 except:
@@ -93,7 +93,7 @@ def benchmark_report_card(template, options, students, format="odt"):
                                             student=student, description="Session"):
                 markItem = struct()
                 markItem.name = mark.item.name
-                markItem.range = mark.item.scale.range()
+                markItem.range = ''
                 markItem.mark = mark.mark
                 if markItem.mark is not None:
                     items.append(markItem)
@@ -110,7 +110,6 @@ def benchmark_report_card(template, options, students, format="odt"):
                         except KeyError:
                             averages["Hire4Ed"] = markItem.mark
                             denominators["Hire4Ed"] = 1
-                markItem.mark = mark.item.scale.spruce(markItem.mark)
             course.items = items
             try:
                 if Hire4Ed and course.averageDenom > 0:
