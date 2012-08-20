@@ -1,10 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 
-from ecwsp.benchmark_grade.models import Scale, Mapping, Category, Item, Mark, Aggregate, CalculationRulePerCourseCategory, CalculationRuleCategoryAsCourse, CalculationRule, AssignmentType 
+from ecwsp.benchmark_grade.models import Category, Item, Mark, Aggregate, CalculationRulePerCourseCategory, CalculationRuleCategoryAsCourse, CalculationRule, AssignmentType 
 
-admin.site.register(Scale)
-admin.site.register(Mapping)
 admin.site.register(Category)
 admin.site.register(Item)
 admin.site.register(Mark)

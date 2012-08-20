@@ -89,7 +89,7 @@ def benchmark_grade_upload(request, id):
                             try:
                                 agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
                                                             singleCategory=category, singleMarkingPeriod=mp)
-                                category.average = agg.scale.spruce(agg.cachedValue)
+                                category.average = agg.cachedValue
                             except:
                                 category.average = None
     else:
@@ -134,7 +134,7 @@ def student_grade(request):
                 try:
                     agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
                                                 singleCategory=category, singleMarkingPeriod=mp)
-                    category.average = agg.scale.spruce(agg.cachedValue)
+                    category.average = agg.cachedValue
                 except:
                     category.average = None
     
@@ -179,7 +179,7 @@ def family_grade(request):
                     try:
                         agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
                                                     singleCategory=category, singleMarkingPeriod=mp)
-                        category.average = agg.scale.spruce(agg.cachedValue)
+                        category.average = agg.cachedValue
                     except:
                         category.average = None
     return render_to_response('benchmark_grade/family_grade.html', {

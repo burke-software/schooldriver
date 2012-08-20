@@ -118,6 +118,7 @@ class Mapping(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=255)
     weight = models.DecimalField(max_digits=8, decimal_places=2, default=1)
+    display_in_gradebook = models.BooleanField(default=True)
     # some categories will be school-wide.
     # to do: search courses' individual categories first, then the global ones.
     course = models.ForeignKey('schedule.Course', blank=True, null=True)

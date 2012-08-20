@@ -265,19 +265,20 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                             i += 1
                             continue
                         if year.benchmark_grade:
+                            # TODO: deal with rounding
                             try:
                                 standards = course_aggregates.get(singleCategory=Category.objects.get(name='Standards'), singleMarkingPeriod=mp)
-                                standards = standards.scale.spruce(standards.cachedValue)
+                                standards = standards.cachedValue
                             except:
                                 standards = ""
                             try:
                                 engagement = course_aggregates.get(singleCategory=Category.objects.get(name='Engagement'), singleMarkingPeriod=mp)
-                                engagement = engagement.scale.spruce(engagement.cachedValue)
+                                engagement = engagement.cachedValue
                             except:
                                 engagement = ""
                             try:
                                 organization = course_aggregates.get(singleCategory=Category.objects.get(name='Organization'), singleMarkingPeriod=mp)
-                                organization = organization.scale.spruce(organization.cachedValue)
+                                organization = organization.cachedValue
                             except:
                                 organization = ""
                             setattr(course, "grade" + str(i), standards)

@@ -26,6 +26,7 @@ class BenchmarkGradeImporter(Importer):
         return len(unicode(s).strip()) == 0
         
     def _make_aggregates(self, course, marking_period):
+        raise Exception('_make_aggregates(): under construction.')
         # clear out schedule grades; they'll be copied from the standards averages
         Grade.objects.filter(course=course, marking_period=marking_period).delete()
         
@@ -63,6 +64,7 @@ class BenchmarkGradeImporter(Importer):
         
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
+        raise Exception('import_grades(): under construction.')
         """ This is all completely hard-coded for the Twin Cities school. """
         mark_count = 0
         # as requested, drop all old marks before importing
