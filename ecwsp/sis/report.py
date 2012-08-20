@@ -253,7 +253,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                     course_grades = year_grades.filter(course=course).distinct()
                     course_aggregates = None
                     if year.benchmark_grade:
-                        course_aggregates = Aggregate.objects.filter(singleCourse=course, singleStudent=student)
+                        course_aggregates = Aggregate.objects.filter(course=course, student=student)
                     i = 1
                     for mp in year.mps:
                         if mp not in course.marking_period.all():
@@ -267,18 +267,18 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                         if year.benchmark_grade:
                             # TODO: deal with rounding
                             try:
-                                standards = course_aggregates.get(singleCategory=Category.objects.get(name='Standards'), singleMarkingPeriod=mp)
-                                standards = standards.cachedValue
+                                standards = course_aggregates.get(category=Category.objects.get(name='Standards'), marking_period=mp)
+                                standards = standards.cached_value
                             except:
                                 standards = ""
                             try:
-                                engagement = course_aggregates.get(singleCategory=Category.objects.get(name='Engagement'), singleMarkingPeriod=mp)
-                                engagement = engagement.cachedValue
+                                engagement = course_aggregates.get(category=Category.objects.get(name='Engagement'), marking_period=mp)
+                                engagement = engagement.cached_value
                             except:
                                 engagement = ""
                             try:
-                                organization = course_aggregates.get(singleCategory=Category.objects.get(name='Organization'), singleMarkingPeriod=mp)
-                                organization = organization.cachedValue
+                                organization = course_aggregates.get(category=Category.objects.get(name='Organization'), marking_period=mp)
+                                organization = organization.cached_value
                             except:
                                 organization = ""
                             setattr(course, "grade" + str(i), standards)

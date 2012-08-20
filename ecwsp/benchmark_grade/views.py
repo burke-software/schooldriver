@@ -82,15 +82,15 @@ def benchmark_grade_upload(request, id):
                         student.categories = categories.all()
                         for category in student.categories:
                             category.marks = Mark.objects.filter(student=student, item__course=course, item__category=category,
-                                                                 item__markingPeriod=mp).order_by('-item__date', 'item__name', 'description')
+                                                                 item__marking_period=mp).order_by('-item__date', 'item__name', 'description')
                             if not verify_form.cleaned_data['all_demonstrations']:
                                 category.marks = category.marks.filter(Q(description='Session') | Q(description=''))
                                 # If all_demonstrations aren't shown, "Session" is assumed; description is unnecessary
                                 show_descriptions = False
                             try:
-                                agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
-                                                            singleCategory=category, singleMarkingPeriod=mp)
-                                category.average = agg.cachedValue
+                                agg = Aggregate.objects.get(student=student, course=course,
+                                                            category=category, marking_period=mp)
+                                category.average = agg.cached_value
                             except:
                                 category.average = None
     else:
@@ -128,14 +128,14 @@ def student_grade(request):
             course.categories = Category.objects.filter(item__course=course).distinct()
             for category in course.categories:
                 category.marks = Mark.objects.filter(student=student, item__course=course,
-                                                     item__category=category, item__markingPeriod=mp).order_by('-item__date', 'item__name',
+                                                     item__category=category, item__marking_period=mp).order_by('-item__date', 'item__name',
                                                                                                                'description')
                 if category.name == 'Standards':
                     category.marks = category.marks.filter(description='Session')
                 try:
-                    agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
-                                                singleCategory=category, singleMarkingPeriod=mp)
-                    category.average = agg.cachedValue
+                    agg = Aggregate.objects.get(student=student, course=course,
+                                                category=category, marking_period=mp)
+                    category.average = agg.cached_value
                 except:
                     category.average = None
     
@@ -173,14 +173,14 @@ def family_grade(request):
                 course.categories = Category.objects.filter(item__course=course).distinct()
                 for category in course.categories:
                     category.marks = Mark.objects.filter(student=student, item__course=course,
-                                                         item__category=category, item__markingPeriod=mp).order_by('-item__date', 'item__name',
+                                                         item__category=category, item__marking_period=mp).order_by('-item__date', 'item__name',
                                                                                                                    'description')
                     if category.name == 'Standards':
                         category.marks = category.marks.filter(description='Session')
                     try:
-                        agg = Aggregate.objects.get(singleStudent=student, singleCourse=course,
-                                                    singleCategory=category, singleMarkingPeriod=mp)
-                        category.average = agg.cachedValue
+                        agg = Aggregate.objects.get(student=student, course=course,
+                                                    category=category, marking_period=mp)
+                        category.average = agg.cached_value
                     except:
                         category.average = None
     return render_to_response('benchmark_grade/family_grade.html', {
@@ -210,7 +210,7 @@ def gradebook(request, course_id):
                     if filter_key == 'cohort': 
                         students = students.filter(cohorts=filter_value)
                     if filter_key == 'marking_period':
-                       items = items.filter(markingPeriod=filter_value)
+                       items = items.filter(marking_period=filter_value)
                     if filter_key == 'benchmark':
                         items = items.filter(benchmark=filter_value)
                     if filter_key == 'assignment_type':
@@ -277,11 +277,11 @@ def ajax_get_item_form(request, course_id, item_id=None):
         else:
             active_mps = course.marking_period.filter(active=True)
             if active_mps:
-                form = ItemForm(initial={'course': course, 'markingPeriod':active_mps[0]})
+                form = ItemForm(initial={'course': course, 'marking_period':active_mps[0]})
             else:
                 form = ItemForm(initial={'course': course})
     
-    form.fields['markingPeriod'].queryset = course.marking_period.all()
+    form.fields['marking_period'].queryset = course.marking_period.all()
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
         'item_id': item_id,

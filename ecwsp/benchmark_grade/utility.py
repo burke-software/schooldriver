@@ -57,11 +57,11 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
             # Handle per-course categories according to the calculation rule
             course_numer = course_denom = float(0)
             for category in rule.per_course_category_set.filter(apply_to_departments=course.department):
-                try: category_aggregate = Aggregate.objects.get(singleStudent=student, singleMarkingPeriod=mp, singleCourse=course, singleCategory=category.category)
+                try: category_aggregate = Aggregate.objects.get(student=student, marking_period=mp, course=course, category=category.category)
                 except Aggregate.DoesNotExist: category_aggregate = None
-                if category_aggregate is not None and category_aggregate.cachedValue is not None:
+                if category_aggregate is not None and category_aggregate.cached_value is not None:
                     # simplified normalization; assumes minimum is 0
-                    normalized_value = category_aggregate.cachedValue / rule.points_possible
+                    normalized_value = category_aggregate.cached_value / rule.points_possible
                     course_numer += float(category.weight) * float(normalized_value)
                     course_denom += float(category.weight)
             if course_denom > 0:
@@ -77,11 +77,11 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
             category_numer = category_denom = float(0)
             for course in courses.filter(marking_period=mp, department__in=category.include_departments.all()).distinct():
                 credits = float(course.credits) / course.marking_period.count()
-                try: category_aggregate = Aggregate.objects.get(singleStudent=student, singleMarkingPeriod=mp, singleCategory=category.category, singleCourse=course)
+                try: category_aggregate = Aggregate.objects.get(student=student, marking_period=mp, category=category.category, course=course)
                 except Aggregate.DoesNotExist: category_aggregate = None
-                if category_aggregate is not None and category_aggregate.cachedValue is not None:
+                if category_aggregate is not None and category_aggregate.cached_value is not None:
                     # simplified normalization; assumes minimum is 0
-                    normalized_value  = category_aggregate.cachedValue / rule.points_possible
+                    normalized_value  = category_aggregate.cached_value / rule.points_possible
                     category_numer += credits * float(normalized_value)
                     category_denom += credits
             if category_denom > 0:
@@ -160,28 +160,28 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
                 #@!print '\t\tWeight:', benchmark_mp_weight[mp.id], '(added', weight, '=', float(course.credits), '/', course.marking_period.count(), ')'
                 for cat in benchmark_individual_cat:
                     #@!print '\t\tIndividual Category:', cat
-                    try: agg = Aggregate.objects.get(singleStudent = student, singleCourse = course, singleCategory = cat, singleMarkingPeriod = mp)
+                    try: agg = Aggregate.objects.get(student=student, course=course, category=cat, marking_period=mp)
                     except: continue
-                    if agg.cachedValue is None: continue
+                    if agg.cached_value is None: continue
                     # awfulness to avoid throwing KeyErrors
                     mp_numer_dict = benchmark_individual_numer.get(mp.id, {})
                     mp_denom_dict = benchmark_individual_denom.get(mp.id, {})
-                    mp_numer_dict[cat.id] = mp_numer_dict.get(cat.id, 0) + weight * float(agg.cachedValue)
+                    mp_numer_dict[cat.id] = mp_numer_dict.get(cat.id, 0) + weight * float(agg.cached_value)
                     mp_denom_dict[cat.id] = mp_denom_dict.get(cat.id, 0) + weight
-                    #@!print '\t\t\tNumerator:', mp_numer_dict[cat.id], '(added', weight * float(agg.cachedValue), '=', weight, '*', float(agg.cachedValue), ')'
+                    #@!print '\t\t\tNumerator:', mp_numer_dict[cat.id], '(added', weight * float(agg.cached_value), '=', weight, '*', float(agg.cached_value), ')'
                     #@!print '\t\t\tDenominator:', mp_denom_dict[cat.id], '(added', weight, ')'
                     benchmark_individual_numer[mp.id] = mp_numer_dict
                     benchmark_individual_denom[mp.id] = mp_denom_dict
                 for cat in benchmark_aggregate_cat:
                     #@!print '\t\tAggregate Category:', cat
-                    try: agg = Aggregate.objects.get(singleStudent = student, singleCourse = course, singleCategory = cat, singleMarkingPeriod = mp)
+                    try: agg = Aggregate.objects.get(student=student, course=course, category=cat, marking_period=mp)
                     except: continue
-                    if agg.cachedValue is None: continue
+                    if agg.cached_value is None: continue
                     mp_numer_dict = benchmark_aggregate_numer.get(mp.id, {})
                     mp_denom_dict = benchmark_aggregate_denom.get(mp.id, {})
-                    mp_numer_dict[cat.id] = mp_numer_dict.get(cat.id, 0) + weight * float(agg.cachedValue)
+                    mp_numer_dict[cat.id] = mp_numer_dict.get(cat.id, 0) + weight * float(agg.cached_value)
                     mp_denom_dict[cat.id] = mp_denom_dict.get(cat.id, 0) + weight
-                    #@!print '\t\t\tNumerator:', mp_numer_dict[cat.id], '(added', weight * float(agg.cachedValue), '=', weight, '*', float(agg.cachedValue), ')'
+                    #@!print '\t\t\tNumerator:', mp_numer_dict[cat.id], '(added', weight * float(agg.cached_value), '=', weight, '*', float(agg.cached_value), ')'
                     #@!print '\t\t\tDenominator:', mp_denom_dict[cat.id], '(added', weight, ')'
                     benchmark_aggregate_numer[mp.id] = mp_numer_dict
                     benchmark_aggregate_denom[mp.id] = mp_denom_dict

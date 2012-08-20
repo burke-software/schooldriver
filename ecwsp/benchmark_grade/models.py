@@ -62,59 +62,6 @@ class CalculationRuleCategoryAsCourse(models.Model):
     include_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
     calculation_rule = models.ForeignKey('CalculationRule', related_name='category_as_course_set')
 
-'''
-class Scale(models.Model):
-    name = models.CharField(max_length=127)
-    minimum = models.DecimalField(max_digits=8, decimal_places=2)
-    maximum = models.DecimalField(max_digits=8, decimal_places=2)
-    decimalPlaces = models.IntegerField(default=2)
-    symbol = models.CharField(max_length=7, blank=True)
-    def spruce(self, grade):
-        try:
-            decGrade = Decimal(str(grade)).quantize(Decimal(str(10**(-1 * self.decimalPlaces))), ROUND_HALF_UP)
-        except InvalidOperation:
-            # it's not a number, so leave it alone
-            return grade
-        for mapping in self.mapping_set.all():
-            if mapping.applies(decGrade):
-                return mapping.name
-        if self.symbol is not None:
-            return str(decGrade) + self.symbol
-        else:
-            return str(decGrade)
-    def range(self):
-        s = str(self.minimum) + "-" + str(self.maximum)
-        if self.symbol is not None:
-            s += self.symbol
-        return s
-    def __unicode__(self):
-        return self.name
-'''
-'''
-class Mapping(models.Model):
-    # what about substitutions of numbers for letter grades to allow averaging?
-    name = models.CharField(max_length=127)
-    scale = models.ForeignKey('Scale')
-    minOperator = models.CharField(max_length=2, choices=MINOPERATOR_CHOICES)
-    minimum = models.DecimalField(max_digits=8, decimal_places=2)
-    maxOperator = models.CharField(max_length=2, choices=MAXOPERATOR_CHOICES)
-    maximum = models.DecimalField(max_digits=8, decimal_places=2)
-    def applies(self, grade):
-        if self.minOperator == '>':
-            def minCompare(n): return n > self.minimum
-        if self.minOperator == '>=':
-            def minCompare(n): return n >= self.minimum
-        if self.maxOperator == '<':
-            def maxCompare(n): return n < self.maximum
-        if self.maxOperator == '<=':
-            def maxCompare(n): return n <= self.maximum
-        # to do: raise an exception if the operator isn't valid
-        return minCompare(grade) and maxCompare(grade)
-    def __unicode__(self):
-        return self.name + " (" + self.scale.name + ")"
-    class Meta: # this isn't really enough to keep grossness away
-        unique_together = ("name", "scale")
-'''    
 class Category(models.Model):
     name = models.CharField(max_length=255)
     weight = models.DecimalField(max_digits=8, decimal_places=2, default=1)
@@ -136,9 +83,7 @@ class Item(models.Model):
     name = models.CharField(max_length=255)
     course = models.ForeignKey('schedule.Course')
     date = models.DateField(blank=True, null=True)
-    markingPeriod = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
-    @property
-    def marking_period(self): return self.markingPeriod # need to get with the naming convention
+    marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     category = models.ForeignKey('Category')
     #scale = models.ForeignKey('Scale', blank=True, null=True) # this is going away
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
@@ -166,29 +111,25 @@ class Aggregate(models.Model):
     # so i can find a less ugly way to do this
     name = models.CharField(max_length=255)
     #scale = models.ForeignKey('Scale', blank=True, null=True)
-    manualMark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-    cachedValue = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-    singleStudent = models.ForeignKey('sis.Student', blank=True, null=True, related_name="single_student")
-    student = models.ManyToManyField('sis.Student', blank=True, null=True)
-    singleCourse = models.ForeignKey('schedule.Course', blank=True, null=True, related_name="single_course")
-    course = models.ManyToManyField('schedule.Course', blank=True, null=True)
-    singleCategory = models.ForeignKey('Category', blank=True, null=True, related_name="single_category")
-    category = models.ManyToManyField('Category', blank=True, null=True)
-    aggregate = models.ManyToManyField('self', blank=True, null=True)
-    singleMarkingPeriod = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
+    manual_mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    cached_value = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    student = models.ForeignKey('sis.Student', blank=True, null=True)
+    course = models.ForeignKey('schedule.Course', blank=True, null=True)
+    category = models.ForeignKey('Category', blank=True, null=True)
+    marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 
     # rudimentary for now
     # no m2m, multipliers
     # also untested
-    def max(self, normalize=False, markDescription=None):
+    def max(self, normalize=False, mark_description=None):
         highest = None
-        items = Item.objects.filter(course=self.singleCourse, category=self.singleCategory, markingPeriod=self.singleMarkingPeriod)
+        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
         for item in items:
-            if markDescription is not None:
-                marks = Mark.objects.filter(item=item, student=self.singleStudent, description=markDescription)
+            if mark_description is not None:
+                marks = Mark.objects.filter(item=item, student=self.student, description=mark_description)
             else:
-                marks = Mark.objects.filter(item=item, student=self.singleStudent)
+                marks = Mark.objects.filter(item=item, student=self.student)
             for mark in marks:
                 if normalize:
                     # score between 0 and 1
@@ -204,14 +145,14 @@ class Aggregate(models.Model):
             return None
         else:
             return Decimal(str(highest))
-    def min(self, normalize=False, markDescription=None):
+    def min(self, normalize=False, mark_description=None):
         lowest = None
-        items = Item.objects.filter(course=self.singleCourse, category=self.singleCategory, markingPeriod=self.singleMarkingPeriod)
+        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
         for item in items:
-            if markDescription is not None:
-                marks = Mark.objects.filter(item=item, student=self.singleStudent, description=markDescription)
+            if mark_description is not None:
+                marks = Mark.objects.filter(item=item, student=self.student, description=mark_description)
             else:
-                marks = Mark.objects.filter(item=item, student=self.singleStudent)
+                marks = Mark.objects.filter(item=item, student=self.student)
             for mark in marks:
                 if normalize:
                     # score between 0 and 1
@@ -227,15 +168,15 @@ class Aggregate(models.Model):
             return None
         else:
             return Decimal(str(lowest))
-    def mean(self, normalize=False, markDescription=None):
+    def mean(self, normalize=False, mark_description=None):
         numerator = 0
         denominator = 0
-        items = Item.objects.filter(course=self.singleCourse, category=self.singleCategory, markingPeriod=self.singleMarkingPeriod)
+        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
         for item in items:
-            if markDescription is not None:
-                marks = Mark.objects.filter(item=item, student=self.singleStudent, description=markDescription)
+            if mark_description is not None:
+                marks = Mark.objects.filter(item=item, student=self.student, description=mark_description)
             else:
-                marks = Mark.objects.filter(item=item, student=self.singleStudent)
+                marks = Mark.objects.filter(item=item, student=self.student)
             for mark in marks:
                 if normalize:
                     # score between 0 and 1
