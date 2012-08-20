@@ -130,8 +130,13 @@ function handle_form_fragment_submit(form) {
     // Handle submit for an assignment with ajax
     form_data = $(form).serialize();
     item_id = $(form).attr('item_id');
+    if (item_id == 'None') {
+        url = "ajax_get_item_form/"
+    } else {
+        url = "ajax_get_item_form/" + item_id + "/"
+    }
     $.post(
-        "ajax_get_item_form/" + item_id + "/",
+        url,
         form_data,
         function(data){
             if ( data == "SUCCESS" ){
