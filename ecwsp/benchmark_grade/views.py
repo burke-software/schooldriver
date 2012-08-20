@@ -228,26 +228,13 @@ def gradebook(request, course_id):
         filter_form = GradebookFilterForm()
         filter_form.update_querysets(course)
     
-    standards_category = Category.objects.get(name='Standards')
+    items = items.order_by('marking_period', 'name', 'date', 'id')
     for student in students:
-        # this is really terrible
-        student.tidy_marks = []
-        for item in items:
-            mark = Mark.objects.filter(item=item, student=student)
-            if item.category == standards_category:
-                mark = mark.filter(description='Session')
-            if mark.count() == 1:
-                student.tidy_marks.append(mark[0])
-            if mark.count() > 1:
-                #print 'TOO MANY MARKS!', mark.values_list('mark') 
-                student.tidy_marks.append(mark.order_by('-id')[0]) # newest?
-            if mark.count() == 0:
-                #print 'MISSING MARK', course.id, student.id, item.id
-                new = Mark.objects.create(item=item, student=student)
-                if item.category == standards_category:
-                    new.description = 'Session'
-                new.save()
-                student.tidy_marks.append(new)
+        # precarious; sorting must match items exactly
+        marks = Mark.objects.filter(student=student, item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id')
+        if marks.count() != items.count():
+            logging.error('The number of Marks per Item per Student is incorrect.', exc_info=True)
+        student.marks = marks
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
         'students': students,
@@ -267,6 +254,10 @@ def ajax_get_item_form(request, course_id, item_id=None):
             form = ItemForm(request.POST)
         if form.is_valid():
             item = form.save()
+            # must create blank marks for each student
+            for student in Student.objects.filter(course=course):
+                Mark(item=item, student=student).save()
+
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax
             # message handler.
@@ -309,6 +300,8 @@ def ajax_save_grade(request):
         else:
             mark.mark = None
             value = 'None'
+        # temporarily log who's changing stuff since i'll have to manually recalculate averages later
+        mark.description += ',' + request.user.username
         try: mark.save()
         except Exception as e: return HttpResponse(e, status=400)
         # TODO: handle decimal validation

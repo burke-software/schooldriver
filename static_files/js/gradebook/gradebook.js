@@ -75,6 +75,7 @@ function mark_change(event) {
         $(event.target).removeClass('save_success');
         $(event.target).addClass('saving');
         mark_id = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r\d+_mark(\d+)$/, '$1').trim()
+        row = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r(\d+)_.*$/, '$1').trim();
         $.post(  
           "../../gradebook/ajax_save_grade/",
           {mark_id: mark_id, value: cur_value},
@@ -82,6 +83,7 @@ function mark_change(event) {
             if (data.success == "SUCCESS") {
                 new_value = data.value;
                 $(event.target).replaceWith('<div class="save_success">' + new_value + '</div>');
+                $('#average' + row).replaceWith('<div class="save_success">Changed!</div>');
             }
           }, "json"  
         )

@@ -90,9 +90,6 @@
         <th><div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.markingPeriod.shortname }}<br />{{ item.category }}<br />{{ item.name}}<br/>{{ item.benchmark }}</div></th>
     {% endfor %}
                         <th>
-                            Total
-                        </th>
-                        <th>
                             Average
                         </th>
                     </tr>
@@ -103,12 +100,12 @@
                     {% with row_counter=forloop.counter0 %}
                     <tr>
                         <td>{{ student }}</td>
-                        {% for mark in student.tidy_marks %}
+                        {% for mark in student.marks %}
                             <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)">
                                 <div>{{ mark.mark }}</div>
                             </td>
                         {% endfor %}
-                        <td>900</td><td>90%</td>
+                        <td id="average{{ row_counter }}">TBD</td>
                     </tr>
                     {% endwith %}
                 {% endfor %}
