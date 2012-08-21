@@ -62,8 +62,7 @@ def benchmark_grade_upload(request, id):
             if import_form.is_valid():
                 from ecwsp.benchmark_grade.importer import BenchmarkGradeImporter
                 importer = BenchmarkGradeImporter(request.FILES['file'], request.user)
-                mark_count = importer.import_grades(course, import_form.cleaned_data['marking_period'])
-                message = str(mark_count) + " marks were imported."
+                message = importer.import_grades(course, import_form.cleaned_data['marking_period'])
         if 'verify' in request.POST:
             verify_form = BenchmarkGradeVerifyForm(request.POST)
             verify_form.fields['marking_periods'].queryset = available_mps 
