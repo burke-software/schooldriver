@@ -1813,6 +1813,10 @@ class Importer:
                                 model.present_school = FeederSchool.objects.get_or_create(name=value)[0]
                             elif name == "present_school type" or name == "present school type":
                                 school_type = SchoolType.objects.get_or_create(name=value)[0]
+                            
+                            elif name == "place of worship":
+                                model.place_of_worship = PlaceOfWorship.objects.get_or_create(name=value)[0]
+                            
                             elif name == "religion":
                                 model.religion = ReligionChoice.objects.get_or_create(name=value)[0]
                             elif name == "heard_about_us" or name == "heard about us":

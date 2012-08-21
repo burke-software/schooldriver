@@ -20,6 +20,7 @@ admin.site.register(OpenHouse)
 admin.site.register(ContactLog)
 admin.site.register(HeardAboutUsOption)
 admin.site.register(FirstContactOption)
+admin.site.register(PlaceOfWorship)
 admin.site.register(ApplicationDecisionOption)
 admin.site.register(WithdrawnChoices)
 admin.site.register(BoroughOption)
@@ -54,7 +55,7 @@ class ApplicantAdmin(CustomFieldAdmin):
     fieldsets = [
         (None, {'fields': ['ready_for_export', 'lname', 'fname', 'mname', 'bday', 'present_school', 'heard_about_us', 'first_contact',
                     'application_decision', 'application_decision_by', 'withdrawn_note', 'total_income', 'adjusted_available_income', 'calculated_payment']}),
-        ('About applicant', {'fields': [('ssn', 'sex'), ('ethnicity', 'religion'), ('year', 'school_year'), ('hs_grad_yr',
+        ('About applicant', {'fields': [('ssn', 'sex'), ('ethnicity',), 'follow_up_date', ('religion','place_of_worship'), ('year', 'school_year'), ('hs_grad_yr',
                                       'elem_grad_yr'), 'email', 'notes', 'siblings', 
                                       'borough', ('country_of_birth','immigration_status'), 'parent_guardians', 'open_house_attended'],
             'classes': ['collapse']}),

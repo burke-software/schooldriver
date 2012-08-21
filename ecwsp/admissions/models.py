@@ -78,6 +78,11 @@ class SchoolType(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
+class PlaceOfWorship(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    def __unicode__(self):
+        return unicode(self.name)
+
 class FeederSchool(models.Model):
     name = models.CharField(max_length=255)
     school_type = models.ForeignKey(SchoolType, blank=True, null=True)
@@ -152,6 +157,8 @@ class Applicant(models.Model, CustomFieldModel):
     elem_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)
     present_school = models.ForeignKey(FeederSchool, blank=True, null=True)
     religion = models.ForeignKey(ReligionChoice, blank=True, null=True)
+    place_of_worship = models.ForeignKey(PlaceOfWorship, blank=True, null=True)
+    follow_up_date = models.DateField(blank=True, null=True)
     open_house_attended = models.ManyToManyField(OpenHouse, blank=True, null=True)
     parent_guardian_first_name = models.CharField(max_length=150, blank=True)
     parent_guardian_last_name = models.CharField(max_length=150, blank=True)
