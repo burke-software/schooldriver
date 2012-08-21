@@ -50,7 +50,7 @@
         {{ import_form }} 
         <input type="submit" value="Upload Grades" name="upload"/>
     </form>
-    <p>{{ message }}</p>
+    {{ message|safe }}
     </div>
     <hr class="paddedRuler" />
     <h2>Display and verify grades</h2>
