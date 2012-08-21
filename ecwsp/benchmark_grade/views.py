@@ -232,7 +232,9 @@ def gradebook(request, course_id):
         # precarious; sorting must match items exactly
         marks = Mark.objects.filter(student=student, item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id')
         if marks.count() != items.count():
-            logging.error('The number of Marks per Item per Student is incorrect.', exc_info=True)
+            # SERIOUSLY, STOP LOADING THE GRADEBOOK NOW.
+            #logging.error('The number of Marks per Item per Student is incorrect.', exc_info=True)
+            raise Exception('The number of Marks per Item per Student is incorrect.')
         student.marks = marks
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
