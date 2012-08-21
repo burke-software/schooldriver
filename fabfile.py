@@ -14,6 +14,10 @@ from django.conf import settings
 
 all_instances = ['boston', 'chicago', 'crb', 'crny', 'dbcr', 'demo', 'depaul', 'ndhslaw', 'philly', 'waukegan']
 
+def syncdb():
+    for instance in all_instances:
+        local('/opt/sword/manage.py syncdb --migrate --settings=%s.settings --pythonpath=/opt/sword/' % instance)
+
 def convert_to_south():
     local("./manage.py syncdb")
     # This first!
