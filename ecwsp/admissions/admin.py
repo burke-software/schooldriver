@@ -15,6 +15,7 @@ import re
 admin.site.register(EthnicityChoice)
 admin.site.register(ReligionChoice)
 admin.site.register(FeederSchool)
+admin.site.register(SchoolType)
 admin.site.register(OpenHouse)
 admin.site.register(ContactLog)
 admin.site.register(HeardAboutUsOption)

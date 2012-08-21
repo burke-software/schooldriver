@@ -73,8 +73,14 @@ class BoroughOption(models.Model):
     class Meta:
         ordering = ['name']
 
+class SchoolType(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    def __unicode__(self):
+        return unicode(self.name)
+
 class FeederSchool(models.Model):
     name = models.CharField(max_length=255)
+    school_type = models.ForeignKey(SchoolType, blank=True, null=True)
     def __unicode__(self):
         return unicode(self.name)
     class Meta:
