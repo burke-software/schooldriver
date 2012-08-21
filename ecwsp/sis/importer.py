@@ -2468,7 +2468,7 @@ class Importer:
                 x += 1
         return inserted, updated
     
-    def import_survey(self, sheet):
+    """def import_survey(self, sheet):
         #does not allow  updates
         from ecwsp.work_study.models import Survey, StudentWorker, WorkTeam
         x, header, inserted, updated = self.import_prep(sheet)
@@ -2528,7 +2528,7 @@ class Importer:
                 except:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
                 x += 1
-        return inserted, updated
+        return inserted, updated"""
     
     def import_work_study_attendance(self, sheet):
         from ecwsp.work_study.models import StudentWorker, Attendance, AttendanceFee, AttendanceReason
