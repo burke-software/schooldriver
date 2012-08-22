@@ -20,13 +20,6 @@ class Migration(SchemaMigration):
         db.add_column('admissions_applicant', 'place_of_worship',
                       self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.PlaceOfWorship'], null=True, blank=True),
                       keep_default=False)
-        
-        group = Group.objects.get_or_create(name="admissions")[0]
-        content_type = ContentType.objects.get_or_create(app_label='admissions', model='PlaceOfWorship')[0]
-        for permission in Permission.objects.filter(content_type=content_type):
-            group.permissions.add(permission)
-        group.save()
-        
 
 
     def backwards(self, orm):
