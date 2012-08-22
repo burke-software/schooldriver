@@ -62,8 +62,7 @@ def benchmark_grade_upload(request, id):
             if import_form.is_valid():
                 from ecwsp.benchmark_grade.importer import BenchmarkGradeImporter
                 importer = BenchmarkGradeImporter(request.FILES['file'], request.user)
-                mark_count = importer.import_grades(course, import_form.cleaned_data['marking_period'])
-                message = str(mark_count) + " marks were imported."
+                message = importer.import_grades(course, import_form.cleaned_data['marking_period'])
         if 'verify' in request.POST:
             verify_form = BenchmarkGradeVerifyForm(request.POST)
             verify_form.fields['marking_periods'].queryset = available_mps 
@@ -233,7 +232,9 @@ def gradebook(request, course_id):
         # precarious; sorting must match items exactly
         marks = Mark.objects.filter(student=student, item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id')
         if marks.count() != items.count():
-            logging.error('The number of Marks per Item per Student is incorrect.', exc_info=True)
+            # SERIOUSLY, STOP LOADING THE GRADEBOOK NOW.
+            #logging.error('The number of Marks per Item per Student is incorrect.', exc_info=True)
+            raise Exception('The number of Marks per Item per Student is incorrect.')
         student.marks = marks
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,

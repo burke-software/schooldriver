@@ -311,7 +311,8 @@ class Cohort(models.Model):
 def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     if instance.primary:
         for student in instance.students.all():
-            student_cohort = student.studentcohort_set.get(cohort__id=instance.id)
+            # Should be a get, but somehow there are sometimes more than one! Not so good.
+            student_cohort = student.studentcohort_set.filter(cohort__id=instance.id)[0]
             student_cohort.primary = True
             student_cohort.save()
 

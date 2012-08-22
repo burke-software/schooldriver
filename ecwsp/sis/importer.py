@@ -417,7 +417,6 @@ class Importer:
         if sheet:
             inserted, updated = self.import_alumni_number(sheet)
             msg += "%s alumni numbers inserted,<br/>" % (inserted,)
-        import_alumni_number
             
         sheet = self.get_sheet_by_case_insensitive_name("college enrollment")
         if sheet:
@@ -1750,7 +1749,7 @@ class Importer:
                     p_fname = p_mname = p_lname = p_relationship_to_student = p_street = p_city = None
                     p_state = p_zip = p_email = home = cell = work = other = None
                     p2_fname = p2_mname = p2_lname = p2_relationship_to_student = p2_street = p2_city = None
-                    p2_state = p2_zip = p2_email = home2 = cell2 = work2 = other2 = None
+                    p2_state = p2_zip = p2_email = home2 = cell2 = work2 = other2 = school_type = None
                     row = sheet.row(x)
                     items = zip(header, row)
                     created = True
@@ -1811,6 +1810,10 @@ class Importer:
                                 model.elem_grad_yr = value
                             elif name == "present_school" or name == "present school":
                                 model.present_school = FeederSchool.objects.get_or_create(name=value)[0]
+                            elif name == "present_school type" or name == "present school type":
+                                school_type = SchoolType.objects.get_or_create(name=value)[0]
+                            elif name == "place of worship":
+                                model.place_of_worship = PlaceOfWorship.objects.get_or_create(name=value)[0]
                             elif name == "religion":
                                 model.religion = ReligionChoice.objects.get_or_create(name=value)[0]
                             elif name == "heard_about_us" or name == "heard about us":
@@ -1964,6 +1967,10 @@ class Importer:
                                 ecNumber.contact = ec2
                                 ecNumber.save()
                             model.parent_guardians.add(ec2)
+                    
+                    if model.present_school:
+                        model.present_school.type = school_type
+                        
                     model.save()
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
@@ -2461,7 +2468,7 @@ class Importer:
                 x += 1
         return inserted, updated
     
-    def import_survey(self, sheet):
+    """def import_survey(self, sheet):
         #does not allow  updates
         from ecwsp.work_study.models import Survey, StudentWorker, WorkTeam
         x, header, inserted, updated = self.import_prep(sheet)
@@ -2521,7 +2528,7 @@ class Importer:
                 except:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
                 x += 1
-        return inserted, updated
+        return inserted, updated"""
     
     def import_work_study_attendance(self, sheet):
         from ecwsp.work_study.models import StudentWorker, Attendance, AttendanceFee, AttendanceReason

@@ -11,7 +11,7 @@ from celery.decorators import periodic_task
 def handle():
     """ Emails subscribed volunteer managers daily site submissions
     """
-    if 'volunteer_track' in settings.INSTALLED_APPS:
+    if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS:
         volunteers = Volunteer.objects.filter(email_queue__isnull=False).exclude(email_queue="")
         if volunteers:
             from_email = Configuration.objects.get_or_create(name="From Email Address")[0].value

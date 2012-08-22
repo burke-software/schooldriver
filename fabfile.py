@@ -14,6 +14,10 @@ from django.conf import settings
 
 all_instances = ['boston', 'chicago', 'crb', 'crny', 'dbcr', 'demo', 'depaul', 'ndhslaw', 'philly', 'waukegan']
 
+def syncdb():
+    for instance in all_instances:
+        local('/opt/sword/manage.py syncdb --migrate --settings=%s.settings --pythonpath=/opt/sword/' % instance)
+
 def convert_to_south():
     local("./manage.py syncdb")
     # This first!
@@ -58,7 +62,7 @@ priority=998
 ; ==========================================
 
 [program:celerybeat_sword_<site>]
-command=/opt/sword/manage.py celerybeat --schedule=/var/lib/celery/celerybeat-schedule --loglevel=INFO --settings=<site>.settings --pythonpath=/opt/sword/
+command=/opt/sword/manage.py celerybeat -S djcelery.schedulers.DatabaseScheduler --loglevel=INFO --settings=<site>.settings --pythonpath=/opt/sword/
 directory=/opt/sword/<site>
 user=www-data
 numprocs=1
