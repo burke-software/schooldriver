@@ -77,6 +77,9 @@ class BenchmarkGradeImporter(Importer):
         
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
+        # this function really isn't stringent enough to work with the online gradebook
+        # specifically, it doesn't ensure that for every course, there is one mark per student per item
+        raise Exception('import_grades() under construction.')
         """ This is all completely hard-coded for the Twin Cities school. """
         mark_count = 0
         # as requested, drop all old marks before importing
