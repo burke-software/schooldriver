@@ -2,6 +2,7 @@ from ecwsp.work_study.models import StudentInteraction, CraContact, TimeSheet
 from ecwsp.administration.models import Configuration
 from django.core.mail import send_mail
 from datetime import date
+from django.conf import settings
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
