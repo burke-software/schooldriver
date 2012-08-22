@@ -189,6 +189,7 @@ class EmergencyContactAdmin(admin.ModelAdmin):
         ('Address', {'fields': ['street', ('city', 'state'), 'zip'],
             'classes': ['collapse']}),
     ]
+    list_filter = ['primary_contact', 'emergency_only']
     inlines = [EmergencyContactInline, StudentECInline]
     search_fields = ['fname', 'lname', 'email', 'student__fname', 'student__lname']
 admin.site.register(EmergencyContact, EmergencyContactAdmin)
