@@ -30,6 +30,7 @@ from django.db.models import Count
 from django.views.generic.simple import redirect_to
 from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
+from django.db import transaction
 
 from ecwsp.sis.models import *
 from ecwsp.sis.uno_report import *
@@ -41,6 +42,7 @@ from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.forms import *
 from ecwsp.omr.models import Benchmark
+from ecwsp.benchmark_grade.utility import gradebook_recalculate
 
 from decimal import Decimal, ROUND_HALF_UP
 import time
@@ -251,7 +253,11 @@ def gradebook(request, course_id):
     }, RequestContext(request, {}),)
 
 @staff_member_required
+@transaction.commit_on_success
 def ajax_get_item_form(request, course_id, item_id=None):
+    ''' the transaction decorator helps, but people can still hammer the submit button
+    and create tons of assignments. for some reason, only one shows up right away, and the rest
+    don't appear until reload '''
     course = get_object_or_404(Course, pk=course_id)
     
     if request.POST:
@@ -316,6 +322,7 @@ def ajax_save_grade(request):
         try: mark.save()
         except Exception as e: return HttpResponse(e, status=400)
         # TODO: handle decimal validation
-        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value}))
+        average = gradebook_recalculate(mark)
+        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': str(average)}))
     else:
         return HttpResponse('POST DATA INCOMPLETE', status=400) 
