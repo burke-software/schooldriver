@@ -227,15 +227,22 @@ def gradebook(request, course_id):
         filter_form = GradebookFilterForm()
         filter_form.update_querysets(course)
     
+    # Freeze these now in case someone else gets in here!
     items = items.order_by('marking_period', 'name', 'date', 'id')
+    marks = Mark.objects.filter(item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id') # precarious; sorting must match items exactly
+    items_count = items.count()
     for student in students:
-        # precarious; sorting must match items exactly
-        marks = Mark.objects.filter(student=student, item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id')
-        if marks.count() != items.count():
-            # SERIOUSLY, STOP LOADING THE GRADEBOOK NOW.
-            #logging.error('The number of Marks per Item per Student is incorrect.', exc_info=True)
-            raise Exception('The number of Marks per Item per Student is incorrect.')
-        student.marks = marks
+        student_marks = marks.filter(student=student)
+        if student_marks.count() < items_count:
+            # maybe student enrolled after assignments were created
+            for item in items:
+                mark, created = Mark.objects.get_or_create(item=item, student=student)
+                if created:
+                    mark.save()
+        elif student_marks.count() > items_count:
+            # Yikes, there are multiple marks per student per item. Stop loading the gradebook now.
+            raise Exception('Multiple marks per student per item.')
+        student.marks = student_marks
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
         'students': students,
@@ -257,7 +264,9 @@ def ajax_get_item_form(request, course_id, item_id=None):
             item = form.save()
             # must create blank marks for each student
             for student in Student.objects.filter(course=course):
-                Mark(item=item, student=student).save()
+                mark, created = Mark.objects.get_or_create(item=item, student=student)
+                if created:
+                    mark.save()
 
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax

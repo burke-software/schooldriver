@@ -20,6 +20,33 @@ from ecwsp.benchmark_grade.models import *
 from django.db.models import Avg, Sum, Min
 import logging
 
+def find_calculation_rule(school_year):
+    rules = CalculationRule.objects.filter(first_year_effective=school_year)
+    if rules.count():
+        # We have a rule explicitly matching this marking period's school year
+        rule = rules[0]
+    else:
+        # No explicit match, so find the most recent rule that went into effect *before* this marking period's school year
+        rules = CalculationRule.objects.filter(first_year_effective__start_date__lt=school_year.start_date).order_by('-first_year_effective__start_date')
+        if rules.count():
+            rule = rules[0]
+        else:
+            raise Exception('There is no suitable calculation rule for the school year {}.'.format(mp.school_year))
+    return rule
+
+''' construyendo
+def gradebook_recalculate(mark):
+    student = mark.item.student
+    course = mark.item.course
+    category = mark.item.category
+    marking_period = mark.item.marking_period
+    calculation_rule = find_calculation_rule(course.marking_period.all()[0].school_year)
+
+    # Recalculate individual category
+    for category in changed_categories:
+        a = Aggregate.objects.get_or_create(name='G! {} - {} ({})'.format(student, category, course), student=student, course=course, category=category, marking_period=marking_period)
+'''
+
 def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period=None, date_report=None):
     # TODO: Decimal places configuration value
     DECIMAL_PLACES = 2
@@ -41,18 +68,7 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
     student_numer = student_denom = float(0)
     for mp in mps.filter(school_year__benchmark_grade=True):
         mp_numer = mp_denom = float(0)
-        rules = CalculationRule.objects.filter(first_year_effective=mp.school_year)
-        if rules.count():
-            # We have a rule explicitly matching this marking period's school year
-            rule = rules[0]
-        else:
-            # No explicit match, so find the most recent rule that went into effect *before* this marking period's school year
-            rules = CalculationRule.objects.filter(first_year_effective__start_date__lt=mp.school_year.start_date).order_by('-first_year_effective__start_date')
-            if rules.count():
-                rule = rules[0]
-            else:
-                raise Exception('There is no suitable calculation rule for the school year {}.'.format(mp.school_year))
-
+        rule = find_calculation_rule(mp.school_year)
         for course in courses.filter(marking_period=mp).exclude(credits=None).distinct(): # IMO, Course.credits should be required, and we should not treat None as 0.
             # Handle per-course categories according to the calculation rule
             course_numer = course_denom = float(0)
