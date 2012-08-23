@@ -262,11 +262,12 @@ def ajax_get_item_form(request, course_id, item_id=None):
             form = ItemForm(request.POST)
         if form.is_valid():
             item = form.save()
-            # must create blank marks for each student
-            for student in Student.objects.filter(course=course):
-                mark, created = Mark.objects.get_or_create(item=item, student=student)
-                if created:
-                    mark.save()
+            if item_id is None:
+                # a new item; must create blank marks for each student
+                for student in Student.objects.filter(course=course):
+                    mark, created = Mark.objects.get_or_create(item=item, student=student)
+                    if created:
+                        mark.save()
 
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax
