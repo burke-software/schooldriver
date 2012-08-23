@@ -30,6 +30,7 @@ from django.db.models import Count
 from django.views.generic.simple import redirect_to
 from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
+from django.db import transaction
 
 from ecwsp.sis.models import *
 from ecwsp.sis.uno_report import *
@@ -41,6 +42,7 @@ from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.forms import *
 from ecwsp.omr.models import Benchmark
+from ecwsp.benchmark_grade.utility import gradebook_recalculate
 
 from decimal import Decimal, ROUND_HALF_UP
 import time
@@ -227,15 +229,22 @@ def gradebook(request, course_id):
         filter_form = GradebookFilterForm()
         filter_form.update_querysets(course)
     
+    # Freeze these now in case someone else gets in here!
     items = items.order_by('marking_period', 'name', 'date', 'id')
+    marks = Mark.objects.filter(item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id') # precarious; sorting must match items exactly
+    items_count = items.count()
     for student in students:
-        # precarious; sorting must match items exactly
-        marks = Mark.objects.filter(student=student, item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id')
-        if marks.count() != items.count():
-            # SERIOUSLY, STOP LOADING THE GRADEBOOK NOW.
-            #logging.error('The number of Marks per Item per Student is incorrect.', exc_info=True)
-            raise Exception('The number of Marks per Item per Student is incorrect.')
-        student.marks = marks
+        student_marks = marks.filter(student=student)
+        if student_marks.count() < items_count:
+            # maybe student enrolled after assignments were created
+            for item in items:
+                mark, created = Mark.objects.get_or_create(item=item, student=student)
+                if created:
+                    mark.save()
+        elif student_marks.count() > items_count:
+            # Yikes, there are multiple marks per student per item. Stop loading the gradebook now.
+            raise Exception('Multiple marks per student per item.')
+        student.marks = student_marks
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
         'students': students,
@@ -244,7 +253,11 @@ def gradebook(request, course_id):
     }, RequestContext(request, {}),)
 
 @staff_member_required
+@transaction.commit_on_success
 def ajax_get_item_form(request, course_id, item_id=None):
+    ''' the transaction decorator helps, but people can still hammer the submit button
+    and create tons of assignments. for some reason, only one shows up right away, and the rest
+    don't appear until reload '''
     course = get_object_or_404(Course, pk=course_id)
     
     if request.POST:
@@ -255,9 +268,12 @@ def ajax_get_item_form(request, course_id, item_id=None):
             form = ItemForm(request.POST)
         if form.is_valid():
             item = form.save()
-            # must create blank marks for each student
-            for student in Student.objects.filter(course=course):
-                Mark(item=item, student=student).save()
+            if item_id is None:
+                # a new item; must create blank marks for each student
+                for student in Student.objects.filter(course=course):
+                    mark, created = Mark.objects.get_or_create(item=item, student=student)
+                    if created:
+                        mark.save()
 
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax
@@ -306,6 +322,7 @@ def ajax_save_grade(request):
         try: mark.save()
         except Exception as e: return HttpResponse(e, status=400)
         # TODO: handle decimal validation
-        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value}))
+        average = gradebook_recalculate(mark)
+        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': str(average)}))
     else:
         return HttpResponse('POST DATA INCOMPLETE', status=400) 

@@ -2220,6 +2220,7 @@ class Importer:
                     phone_cell = None
                     fax = None
                     email = None
+                    title = None
                     workteam = None
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
@@ -2251,6 +2252,8 @@ class Importer:
                                 fax = value
                             elif name == "work team":
                                 workteam = WorkTeam.objects.get(team_name=value)
+                            elif name == "title" or name == "position":
+                                title = value
                     existing_contacts = Contact.objects.filter(fname=fname,lname=lname)
                     if existing_contacts.count()==1:
                         model = Contact.objects.get(id = existing_contacts[0].id)
@@ -2270,6 +2273,7 @@ class Importer:
                     if phone_cell: model.phone_cell = phone_cell
                     if fax: model.fax = fax
                     if email: model.email = email
+                    if title: model.title = title
                     model.save()
                     if workteam: model.workteam_set.add(workteam)
                         
