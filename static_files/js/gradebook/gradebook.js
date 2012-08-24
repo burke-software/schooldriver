@@ -83,7 +83,7 @@ function mark_change(event) {
             if (data.success == "SUCCESS") {
                 new_value = data.value;
                 $(event.target).replaceWith('<div class="save_success">' + new_value + '</div>');
-                $('#average' + row).replaceWith('<div class="save_success">Changed!</div>');
+                $('#average' + row).html('<div class="save_success">' + data.average + '</div>');
             }
           }, "json"  
         )

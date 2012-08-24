@@ -1,6 +1,8 @@
 from django.conf import settings
+from django.core.exceptions import SuspiciousOperation
 import suds
 import md5
+import datetime
 
 class SugarSync:
     username = settings.SUGAR_USERNAME
@@ -47,3 +49,21 @@ class SugarSync:
         if not contact.guid:
             contact.guid = result['id']
             contact.save(sync_sugar=False)
+        
+    def get_recent_sugar_contacts(self, modify_date=None):
+        """ Get a list of recently updated sugarcrm contacts
+        modify_date: find contacts modified after this datetime
+        defaults to one hour ago
+        returns list of contact data
+        """
+        if not modify_date:
+            modify_date = datetime.datetime.now() - datetime.timedelta(hours=1)
+        elif not isinstance(modify_date, datetime.datetime):
+            raise SuspiciousOperation('Date that is not a date. Possible SQL injection attempt?')
+        
+        result = self.client.service.get_entry_list(
+            session=self.session,
+            module_name='Contacts',
+            query='contacts.date_modified > "%s"' % (str(modify_date),)
+        )
+        return result[2]
