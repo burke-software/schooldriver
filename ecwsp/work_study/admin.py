@@ -222,7 +222,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
                 if context['original'].placement:
                     txt += "<br/>Company Contacts:"
                     for compContact in compContacts:
-                        txt += "<br/>%s %s" % (str(compContact.edit_link),compContact.phone)
+                        txt += "<br/>%s %s" % (unicode(compContact.edit_link),compContact.phone)
                 txt += '</span>'
                 context['adminform'].form.fields['placement'].help_text += txt
         
