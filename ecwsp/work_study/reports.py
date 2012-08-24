@@ -258,7 +258,7 @@ def am_route_attendance(request):
                     student.placement.time_earliest,
                     student.placement.time_latest,
                     student.placement.time_ideal,
-                    student.placement.am_transport_group,
+                    unicode(student.placement.am_transport_group),
                     student.placement.directions_to,
                 ]
             else:

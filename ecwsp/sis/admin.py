@@ -168,6 +168,13 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     list_display = ['__unicode__','year']
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
         filter_horizontal = ('family_access_users',)
+        
+try:
+    from admin_import.options import add_import
+except ImportError:
+    pass
+else:
+    add_import(StudentAdmin, add_button=True)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(ClassYear)
 
@@ -182,6 +189,8 @@ class StudentCourseAdmin(admin.ModelAdmin):
     list_filter = ['inactive','year']
     readonly_fields = fields
 admin.site.register(StudentCourse, StudentCourseAdmin)
+
+
 
 class EmergencyContactAdmin(admin.ModelAdmin):
     fieldsets = [
