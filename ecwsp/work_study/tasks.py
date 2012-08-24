@@ -13,9 +13,9 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
     if settings.SYNC_SUGAR:
         modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
         @periodic_task(run_every=crontab(minute='*/%s' % (modify_date_minutes,)))
-        def update_contacts_from_sugarcrm(self):
+        def update_contacts_from_sugarcrm():
             sugar_sync = SugarSync()
-            sugar_sync.update_contacts_from_sugarcrm()
+            sugar_sync.update_contacts_from_sugarcrm(sugar_sync)
     
     @periodic_task(run_every=crontab(hour=20, minute=27))
     def email_cra_nightly():
