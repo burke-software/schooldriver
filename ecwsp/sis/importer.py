@@ -1754,6 +1754,7 @@ class Importer:
                     items = zip(header, row)
                     created = True
                     model = Applicant()
+                    custom_fields = []
                     model.save()
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
@@ -1886,7 +1887,9 @@ class Importer:
                                 work2 = value
                             elif name in ['parent 2 number', 'parent 2 other number', 'parent 2 phone', 'parent 2 other phone']:
                                 other2 = value
-                                
+                            # Custom
+                            elif name.split() and name.split()[0] == "custom":
+                                custom_fields.append([name.split()[1], value])
                     model.save()
                     # add emergency contacts (parents)
                     if p_lname and p_fname:
@@ -1972,6 +1975,8 @@ class Importer:
                         model.present_school.type = school_type
                         
                     model.save()
+                    for (custom_field, value) in custom_fields:
+                        model.set_custom_value(custom_field, value)
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
