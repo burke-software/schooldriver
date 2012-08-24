@@ -1754,6 +1754,7 @@ class Importer:
                     items = zip(header, row)
                     created = True
                     model = Applicant()
+                    custom_fields = []
                     model.save()
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
@@ -1886,7 +1887,9 @@ class Importer:
                                 work2 = value
                             elif name in ['parent 2 number', 'parent 2 other number', 'parent 2 phone', 'parent 2 other phone']:
                                 other2 = value
-                                
+                            # Custom
+                            elif name.split() and name.split()[0] == "custom":
+                                custom_fields.append([name.split()[1], value])
                     model.save()
                     # add emergency contacts (parents)
                     if p_lname and p_fname:
@@ -1972,6 +1975,8 @@ class Importer:
                         model.present_school.type = school_type
                         
                     model.save()
+                    for (custom_field, value) in custom_fields:
+                        model.set_custom_value(custom_field, value)
                     for (name, value) in items:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
@@ -2296,8 +2301,8 @@ class Importer:
         from ecwsp.work_study.models import *
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            #with transaction.commit_manually():
-                #try:
+            with transaction.commit_manually():
+                try:
                     name = None
                     row = sheet.row(x)
                     items = zip(header, row)
@@ -2319,9 +2324,9 @@ class Importer:
                                     student.promote_to_worker()
                                     student = StudentWorker.objects.get(id=student.id)
                             else:
-                                if name == "student unique id":
+                                if name in ["student unique id", "unique id"]:
                                     model = StudentWorker(unique_id=value)
-                                elif name == "student username":
+                                elif name in ["student username", "username"]:
                                     model = StudentWorker(username=value)
                             if name == "day" or name == "work day":
                                 value = unicode.lower(value)
@@ -2350,8 +2355,8 @@ class Importer:
                     else:
                         self.log_and_commit(model, addition=False)
                         updated += 1
-                #except:
-                    #self.handle_error(row, name, sys.exc_info(), sheet.name)
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
         x += 1
         return inserted, updated
 

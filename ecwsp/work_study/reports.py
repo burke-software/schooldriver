@@ -206,7 +206,7 @@ def route_attendance(request):
         
 
 def am_route_attendance(request):
-    # TO DO Impliment workday selection!!!!
+    # TO DO Implement workday selection!!!!
     data = []
     titles = ["Company", "Address", "City", "State", "Zip", "Contact First", "Contact Last",
               "Phone", "Grade",'Workday','Gender','Student First','Student Last',
@@ -222,9 +222,9 @@ def am_route_attendance(request):
     for route in StudentWorkerRoute.objects.all():
         data = []
         if 'am_route_attendance' in request.POST:
-            students =  StudentWorker.objects.filter(am_route=route)
+            students =  StudentWorker.objects.filter(am_route=route, inactive = False)
         else:
-            students =  StudentWorker.objects.filter(pm_route=route)
+            students =  StudentWorker.objects.filter(pm_route=route, inactive = False)
         for student in students:
             row = []
             if hasattr(student,'placement') and student.placement:
