@@ -1,4 +1,5 @@
 from ecwsp.work_study.models import StudentInteraction, CraContact, TimeSheet
+from ecwsp.work_study.sugar_sync import SugarSync
 from ecwsp.administration.models import Configuration
 from django.core.mail import send_mail
 from datetime import date
@@ -7,11 +8,19 @@ from django.conf import settings
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
-@periodic_task(run_every=crontab(hour=20, minute=27))
-def email_cra_nightly():
-    """ Email CRA nightly time sheet and student interaction information
-    """
-    if 'ecwsp.work_study' in settings.INSTALLED_APPS:
+if 'ecwsp.work_study' in settings.INSTALLED_APPS:
+    
+    if settings.SYNC_SUGAR:
+        modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
+        @periodic_task(run_every=crontab(minute='*/%s' % (modify_date_minutes,)))
+        def update_contacts_from_sugarcrm(self):
+            sugar_sync = SugarSync()
+            sugar_sync.update_contacts_from_sugarcrm()
+    
+    @periodic_task(run_every=crontab(hour=20, minute=27))
+    def email_cra_nightly():
+        """ Email CRA nightly time sheet and student interaction information
+        """
         from_email = Configuration.objects.get_or_create(name="From Email Address")[0].value
         cras = CraContact.objects.filter(email=True)
         for cra in cras:

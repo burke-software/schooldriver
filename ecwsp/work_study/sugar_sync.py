@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
+from ecwsp.administration.models import Configuration
+from ecwsp.work_study.models import Contact
 import suds
 import md5
 import datetime
@@ -50,6 +52,15 @@ class SugarSync:
             contact.guid = result['id']
             contact.save(sync_sugar=False)
         
+    def update_contacts_from_sugarcrm(self):
+        """ Query recently changed contacts in SugarCRM and sync them to django-sis
+        """
+        modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
+        modify_date = datetime.datetime.now() - datetime.timedelta(minutes=modify_date_minutes + 1)
+        contacts = self.get_recent_sugar_contacts(modify_date)
+        for contact in contacts:
+            self.set_django_sis_contact(contact)
+        
     def get_recent_sugar_contacts(self, modify_date=None):
         """ Get a list of recently updated sugarcrm contacts
         modify_date: find contacts modified after this datetime
@@ -64,6 +75,34 @@ class SugarSync:
         result = self.client.service.get_entry_list(
             session=self.session,
             module_name='Contacts',
-            query='contacts.date_modified > "%s"' % (str(modify_date),)
+            query='supervisor_c = 1 and contacts.date_modified > "%s"' % (str(modify_date),)
         )
         return result[2]
+    
+    def set_django_sis_contact(self, contact):
+        """ Set django-sis contact from sugarcrm contact data
+        """
+        guid = contact[0]
+        
+        if Contact.objects.filter(guid=guid):
+            sis_contact = Contact.objects.get(guid=guid)
+        else:
+            sis_contact = Contact(guid=guid)
+        
+        for field in contact[2]:
+            if field.name == "first_name":
+                sis_contact.fname = field.value
+            elif field.name == "last_name":
+                sis_contact.lname = field.value
+            elif field.name == "title":
+                sis_contact.title = field.value
+            elif field.name == "phone_work":
+                sis_contact.phone = field.value
+            elif field.name == "phone_mobile":
+                sis_contact.phone_cell = field.value
+            elif field.name == "phone_fax":
+                sis_contact.fax = field.value
+            elif field.name == "email1":
+                sis_contact.email = field.value
+                
+        sis_contact.save()
