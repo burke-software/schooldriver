@@ -42,6 +42,8 @@ $(document).ready(function() {
         }, 200);
       }
     )
+    
+    $("#id_benchmark").multiselect();
 });
 
 function submit_filter_form(form){

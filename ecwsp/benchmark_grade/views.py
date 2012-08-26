@@ -214,7 +214,7 @@ def gradebook(request, course_id):
                     if filter_key == 'marking_period':
                        items = items.filter(marking_period=filter_value)
                     if filter_key == 'benchmark':
-                        items = items.filter(benchmark=filter_value)
+                        items = items.filter(benchmark__in=filter_value)
                     if filter_key == 'category':
                         items = items.filter(category=filter_value)
                     if filter_key == 'assignment_type':
