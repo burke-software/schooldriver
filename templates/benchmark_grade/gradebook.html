@@ -15,10 +15,15 @@
 
 {% block content %}
     <div class="topbar">
-    
-            <span class="logo">CRTC</span>
-    
+        <span class="logo">{{ course.shortname }} Gradebook</span>
     </div><!-- topbar -->
+    
+    <div class="courseSelect">
+        <ul>
+            <li class="courseSelected">{{ course.shortname }}</li>
+            <li>Other courses here</li>
+        </ul>
+    </div>
     
     <div class="clear"></div>
     <div class="spacer"></div>
@@ -30,53 +35,51 @@
         <form action="" method="get">
             <div class="filter_item">
                 Student Cohort
-                <div class="redbar"></div>
+                <div class="blackbar"></div>
                 {{ filter_form.cohort }}
             </div>
             
             <div class="filter_item">
                 Session
-                <div class="redbar"></div>
+                <div class="blackbar"></div>
                 {{ filter_form.marking_period }}
             </div>
             
             <div class="filter_item">
                 Standard
-                <div class="redbar"></div>
+                <div class="blackbar"></div>
                 {{ filter_form.benchmark }}
             </div>
             
             <div class="filter_item">
                 {{ filter_form.category.label }}
-                <div class="redbar"></div>
+                <div class="blackbar"></div>
                 {{ filter_form.category }}
             </div>
             
             <div class="filter_item">
                 Assignment Type
-                <div class="redbar"></div>
+                <div class="blackbar"></div>
                 {{ filter_form.assignment_type }}
             </div>
             
             <div class="filter_item">
                 {{ filter_form.name.label }}
-                <div class="redbar"></div>
+                <div class="blackbar"></div>
                 {{ filter_form.name }}
             </div>
             
             <div class="filter_item">
                 Dates
-                <div class="redbar"></div>
+                <div class="blackbar"></div>
                 {{ filter_form.date_begin }}
                 {{ filter_form.date_end }}
                 <input type="submit" value="Filter"/>
             </div>
-            <div class="redbar"></div>
+            <div class="blackbar"></div>
             <input type="button" value="Create New Assignment" onclick="get_new_assignment_form(event)"/>
         </form>
     </div><!-- .menu -->
-    
-    <h2>{{ course }}</h2>
     
         <div id="tableDiv_General" class="tableDiv">
             <table id="Open_Text_General" class="FixedTables">
@@ -87,7 +90,13 @@
                         </th>
     
     {% for item in items %}
-        <th><div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.markingPeriod.shortname }}<br />{{ item.category }}<br />{{ item.name}}<br/>{{ item.benchmark }}</div></th>
+        <th>
+            <div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">
+                <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.category }}</div>
+                <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.name}}</div>
+                <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.benchmark }}</div>
+            </div>
+        </th>
     {% endfor %}
                         <th>
                             Average
