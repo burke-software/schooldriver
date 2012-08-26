@@ -8,17 +8,16 @@ body {
 }
 
 .topbar {
-	margin: 0 auto;
-	background: #82001a;
-	height: 60px;
+    margin: 0 auto;
+    height: 60px;
+    border-bottom: 1px solid #000;
 }
 
 .logo {
-	font: bold 50px Helvetica;
-	color: #FFFFFF;
-	letter-spacing: -5px;
-	vertical-align: bottom;
-	position: relative;
+    font: bold 50px Helvetica;
+    color: black;
+    letter-spacing: -5px;
+    position: relative;
 }
 
 .clear {
@@ -31,21 +30,22 @@ body {
 	color: #000;
 	width: 200px;
 	margin-right: 5px;
-	margin-top: 2px;
 	padding: 5px;
 	float: left;
+        margin-top: 0px;
 }
 
 .fixedTable {
 	float: left;
 }
-		.fixedColumn .fixedTable td
+	    .fixedColumn .fixedTable td
         {
             color: #000;
             background-color: #FFF;
             font: 600 14px Helvetica;
-			height: 35px;
+	    height: 35px;
             padding: 0px;
+            vertical-align: middle;
         }
         .fixedHead td
         {
@@ -53,8 +53,9 @@ body {
             background-color: #F3F3F3;
             font: 600 14px Helvetica;
             padding: 0px;
-			height: 50px;
             border: 0px solid #FFF;
+            vertical-align: middle;
+            height: 45px;
         }
 		.assignment
 		{
@@ -85,15 +86,20 @@ body {
             padding: 0px;
             text-align: left;
 			height: 35px;
-			width: 100px;
+			width: 60px;
             border: 0px;
         }
+
+.assignment:hover {
+    color: #464646;
+    cursor: pointer;
+}
 
 .spacer { height: 25px; }
 
 .filter_item {
-	padding-top: 15px;
-	padding-bottom: 15px;
+    padding-bottom: 5px;
+    padding-top: 5px;
 }
 
 .filter_item select, .filter_item input[type="text"] {
@@ -103,7 +109,12 @@ body {
 	border: 1px solid #ccc;
 }
 
-.redbar { height: 1px; background: #82001a; margin-top: 5px; margin-bottom: 5px; }
+.blackbar {
+    height: 1px;
+    background: #000;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
 
 
 /* DROPDOWN MENU */
@@ -273,6 +284,38 @@ input[type="button"] {
     max-width: 370px;
 }
 
+.courseSelect {
+    font: 400 14px Helvetica;
+    margin-top: 5px;
+    color: #000;
+}
+.courseSelect ul {
+    background: #f3f3f3;
+    display: inline;
+    padding: 5px 0px 5px;
+    border: 1px solid #000;
+}
+.courseSelect ul li {
+    display: inline;
+    padding: 5px 10px 5px;
+    list-style: none;
+}
+.courseSelect .courseSelected {
+    background: #000;
+    color: #FFF;
+}
+
+.headerItem {
+    text-overflow: ellipsis;
+    white-space:nowrap;  
+    overflow:hidden; 
+}
+
+.ui-multiselect {
+    margin-left: 0px;
+    max-width: 100% !important;
+}
+
 /* Grappelli resets */
 table {
     border: 0px;
@@ -284,4 +327,8 @@ table {
 /* Ugh overriding !important is hard */
 table td input[type="text"] {
     margin-top: 1px !important;
+}
+
+#grp-content {
+    padding: 0px 20px 0px;
 }

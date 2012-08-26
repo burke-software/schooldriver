@@ -214,7 +214,7 @@ def gradebook(request, course_id):
                     if filter_key == 'marking_period':
                        items = items.filter(marking_period=filter_value)
                     if filter_key == 'benchmark':
-                        items = items.filter(benchmark=filter_value)
+                        items = items.filter(benchmark__in=filter_value)
                     if filter_key == 'category':
                         items = items.filter(category=filter_value)
                     if filter_key == 'assignment_type':
@@ -251,6 +251,15 @@ def gradebook(request, course_id):
         'course': course,
         'filter_form':filter_form,
     }, RequestContext(request, {}),)
+
+@staff_member_required
+@transaction.commit_on_success
+def ajax_delete_item_form(request, course_id, item_id):
+    item = get_object_or_404(Item, pk=item_id)
+    message = '%s deleted' % (item,)
+    item.delete()
+    messages.success(request, message)
+    return HttpResponse('SUCCESS'); 
 
 @staff_member_required
 @transaction.commit_on_success
