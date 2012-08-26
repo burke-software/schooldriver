@@ -39,7 +39,7 @@ class BenchmarkGradeImporter(Importer):
         return colname + str(rownum)
         
     def _make_aggregates(self, course, marking_period):
-        raise Exception('_make_aggregates(): under construction.')
+        #raise Exception('_make_aggregates(): under construction.')
         # clear out schedule grades; they'll be copied from the standards averages
         Grade.objects.filter(course=course, marking_period=marking_period).delete()
         
@@ -57,15 +57,17 @@ class BenchmarkGradeImporter(Importer):
                                                              course=course,
                                                              marking_period=marking_period,
                                                              category=Category.objects.get(name=categoryName),
-                                                             scale=Scale.objects.get(name=scaleName))
+                                                             points_possible=4)
                 if categoryName == 'Standards':
-                    weakest = a.min(markDescription='Session')
+                    #weakest = a.min(mark_description='Session')
+                    weakest = a.min()
                     # A YTD for you if any of your standards are below 3.0
                     # except Hire4Ed gets a free pass
                     if weakest is not None and weakest < 3 and course.department.name != "Hire4Ed":
                         a.cached_value = 0 # better luck next time
                     else:
-                        a.cached_value = a.mean(markDescription='Session')
+                        #a.cached_value = a.mean(mark_description='Session')
+                        a.cached_value = a.mean()
                     # I'd like to avoid re-writing SWORD
                     g, garbage = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, override_final=False)
                     g.set_grade(a.cached_value)
