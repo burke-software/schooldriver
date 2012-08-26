@@ -151,6 +151,23 @@ function handle_form_fragment_submit(form) {
     return false;
 }
 
+function confirm_assignment_delete(item_id){
+    if (confirm("Are you sure you want to delete this assignment?")) {
+        $.post(
+            "ajax_get_item_form/" + item_id + "/delete/",
+            function(data){
+                if ( data == "SUCCESS" ){
+                    location.reload();
+                } else {
+                    alert("Unexpected error");
+                }
+            }  
+        );
+        
+    }
+    return false;
+}
+
 function keyboard_nav(event) {
     key = event.which;
     if (key == 13 || key == 40 || key == 38 || key == 37 || key == 39) {

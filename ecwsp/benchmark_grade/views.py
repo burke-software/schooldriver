@@ -254,6 +254,15 @@ def gradebook(request, course_id):
 
 @staff_member_required
 @transaction.commit_on_success
+def ajax_delete_item_form(request, course_id, item_id):
+    item = get_object_or_404(Item, pk=item_id)
+    message = '%s deleted' % (item,)
+    item.delete()
+    messages.success(request, message)
+    return HttpResponse('SUCCESS'); 
+
+@staff_member_required
+@transaction.commit_on_success
 def ajax_get_item_form(request, course_id, item_id=None):
     ''' the transaction decorator helps, but people can still hammer the submit button
     and create tons of assignments. for some reason, only one shows up right away, and the rest
