@@ -195,6 +195,14 @@ def family_grade(request):
 @staff_member_required
 def gradebook(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
+    try:
+        teacher = Faculty.objects.get(username=request.user.username)
+        teacher_courses = Course.objects.filter(
+            graded=True,
+            marking_period__school_year__active_year=True,
+        ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+    except:
+        teacher_courses = None
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
         and request.user.username != course.teacher.username and not course.secondary_teachers.filter(username=request.user.username).count():
         return HttpResponse(status=403)
@@ -249,6 +257,7 @@ def gradebook(request, course_id):
         'items': items,
         'students': students,
         'course': course,
+        'teacher_courses': teacher_courses,
         'filter_form':filter_form,
     }, RequestContext(request, {}),)
 

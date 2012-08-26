@@ -26,7 +26,11 @@
     <div class="courseSelect">
         <ul>
             <li class="courseSelected">{{ course.shortname }}</li>
-            <li>Other courses here</li>
+            {% for teacher_course in teacher_courses %}
+                {% if teacher_course != course %}
+                    <li><a href="/benchmark_grade/gradebook/{{ teacher_course.id }}/">{{ teacher_course.shortname }}</a></li>
+                {% endif %}
+            {% endfor %}
         </ul>
     </div>
     
