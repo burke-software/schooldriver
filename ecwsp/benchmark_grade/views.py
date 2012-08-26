@@ -272,9 +272,9 @@ def ajax_get_item_form(request, course_id, item_id=None):
     if request.POST:
         if item_id:
             item = get_object_or_404(Item, pk=item_id)
-            form = ItemForm(request.POST, instance=item)
+            form = ItemForm(request.POST, instance=item, prefix="item")
         else:
-            form = ItemForm(request.POST)
+            form = ItemForm(request.POST, prefix="item")
         if form.is_valid():
             item = form.save()
             if item_id is None:
@@ -293,17 +293,17 @@ def ajax_get_item_form(request, course_id, item_id=None):
     else:
         if item_id:
             item = get_object_or_404(Item, pk=item_id)
-            form = ItemForm(instance=item)
+            form = ItemForm(instance=item, prefix="item")
         else:
             active_mps = course.marking_period.filter(active=True)
             if active_mps:
-                form = ItemForm(initial={'course': course, 'marking_period':active_mps[0]})
+                form = ItemForm(initial={'course': course, 'marking_period':active_mps[0]}, prefix="item")
             else:
-                form = ItemForm(initial={'course': course})
+                form = ItemForm(initial={'course': course}, prefix="item")
     
     form.fields['marking_period'].queryset = course.marking_period.all()
     form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
-    form.fields['benchmark'].queryset = Benchmark.objects.all()
+    form.fields['benchmark'].queryset = Benchmark.objects.filter()
 
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
