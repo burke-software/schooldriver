@@ -42,6 +42,8 @@ $(document).ready(function() {
         }, 200);
       }
     )
+    
+    $("#id_benchmark").multiselect();
 });
 
 function submit_filter_form(form){
@@ -148,6 +150,23 @@ function handle_form_fragment_submit(form) {
             }
         }  
     );
+    return false;
+}
+
+function confirm_assignment_delete(item_id){
+    if (confirm("Are you sure you want to delete this assignment?")) {
+        $.post(
+            "ajax_get_item_form/" + item_id + "/delete/",
+            function(data){
+                if ( data == "SUCCESS" ){
+                    location.reload();
+                } else {
+                    alert("Unexpected error");
+                }
+            }  
+        );
+        
+    }
     return false;
 }
 

@@ -682,7 +682,7 @@ class Importer:
                         is_ok, name, value = self.sanitize_item(name, value)
                         if is_ok:
                             if name == "email":
-                                email = AlumniEmail.objects.get_or_create(email=value)[0]
+                                email = value
                             elif name == "type":
                                 email_type = value
                     note, created = AlumniEmail.objects.get_or_create(

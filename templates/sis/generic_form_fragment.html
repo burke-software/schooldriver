@@ -3,9 +3,18 @@
 <h2> {{ subtitle }} </h2>
 {{ msg }}
 <form method="post" onsubmit="handle_form_fragment_submit(this); return false;" item_id="{{ item_id }}" id="form_fragment" enctype="multipart/form-data" action="">
-            <table class="form_table">
-    {{ form.as_table }}
-            </table>
+    <table class="form_table">
+        {{ form.as_table }}
+    </table>
+    {% if form.name.value %}
+        <a class="grp-button grp-delete-link" onclick="confirm_assignment_delete({{ item_id }});">Delete</a>
+    {% endif %}
     <input type="submit" value="Submit" />    
 </form>
 <script type="text/javascript" src="/static/js/init_admin_datepicker.js"></script>
+<script type="text/javascript">
+    $("#id_item-benchmark").multiselect({
+        multiple: false,
+        selectedList: 1
+     }).multiselectfilter();;
+</script>

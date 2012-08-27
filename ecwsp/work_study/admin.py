@@ -22,6 +22,7 @@ from ecwsp.sis.admin import StudentFileInline
 from reversion.admin import VersionAdmin
 from django.http import HttpResponseRedirect
 from django.contrib import admin
+from django.utils.encoding import smart_unicode
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from daterange_filter import filter #https://github.com/tzulberti/django-datefilterspec
@@ -222,7 +223,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
                 if context['original'].placement:
                     txt += "<br/>Company Contacts:"
                     for compContact in compContacts:
-                        txt += "<br/>%s %s" % (str(compContact.edit_link),compContact.phone)
+                        txt += "<br/>%s %s" % (smart_unicode(compContact.edit_link),compContact.phone)
                 txt += '</span>'
                 context['adminform'].form.fields['placement'].help_text += txt
         

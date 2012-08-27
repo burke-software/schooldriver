@@ -195,6 +195,14 @@ def family_grade(request):
 @staff_member_required
 def gradebook(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
+    try:
+        teacher = Faculty.objects.get(username=request.user.username)
+        teacher_courses = Course.objects.filter(
+            graded=True,
+            marking_period__school_year__active_year=True,
+        ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+    except:
+        teacher_courses = None
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
         and request.user.username != course.teacher.username and not course.secondary_teachers.filter(username=request.user.username).count():
         return HttpResponse(status=403)
@@ -214,7 +222,7 @@ def gradebook(request, course_id):
                     if filter_key == 'marking_period':
                        items = items.filter(marking_period=filter_value)
                     if filter_key == 'benchmark':
-                        items = items.filter(benchmark=filter_value)
+                        items = items.filter(benchmark__in=filter_value)
                     if filter_key == 'category':
                         items = items.filter(category=filter_value)
                     if filter_key == 'assignment_type':
@@ -249,8 +257,18 @@ def gradebook(request, course_id):
         'items': items,
         'students': students,
         'course': course,
+        'teacher_courses': teacher_courses,
         'filter_form':filter_form,
     }, RequestContext(request, {}),)
+
+@staff_member_required
+@transaction.commit_on_success
+def ajax_delete_item_form(request, course_id, item_id):
+    item = get_object_or_404(Item, pk=item_id)
+    message = '%s deleted' % (item,)
+    item.delete()
+    messages.success(request, message)
+    return HttpResponse('SUCCESS'); 
 
 @staff_member_required
 @transaction.commit_on_success
@@ -263,9 +281,9 @@ def ajax_get_item_form(request, course_id, item_id=None):
     if request.POST:
         if item_id:
             item = get_object_or_404(Item, pk=item_id)
-            form = ItemForm(request.POST, instance=item)
+            form = ItemForm(request.POST, instance=item, prefix="item")
         else:
-            form = ItemForm(request.POST)
+            form = ItemForm(request.POST, prefix="item")
         if form.is_valid():
             item = form.save()
             if item_id is None:
@@ -284,17 +302,17 @@ def ajax_get_item_form(request, course_id, item_id=None):
     else:
         if item_id:
             item = get_object_or_404(Item, pk=item_id)
-            form = ItemForm(instance=item)
+            form = ItemForm(instance=item, prefix="item")
         else:
             active_mps = course.marking_period.filter(active=True)
             if active_mps:
-                form = ItemForm(initial={'course': course, 'marking_period':active_mps[0]})
+                form = ItemForm(initial={'course': course, 'marking_period':active_mps[0]}, prefix="item")
             else:
-                form = ItemForm(initial={'course': course})
+                form = ItemForm(initial={'course': course}, prefix="item")
     
     form.fields['marking_period'].queryset = course.marking_period.all()
     form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
-    form.fields['benchmark'].queryset = Benchmark.objects.all()
+    form.fields['benchmark'].queryset = Benchmark.objects.filter()
 
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,

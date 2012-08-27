@@ -127,7 +127,10 @@ class AlumniEmail(models.Model):
     email = models.EmailField()
     type = models.CharField(
         max_length=255,
-        choices=(('Personal', 'Personal'), ('School', 'School'), ('Work', 'Work'), ('Other', 'Other')))
+        choices=(('Personal', 'Personal'), ('School', 'School'), ('Work', 'Work'), ('Other', 'Other')),
+        blank=True,
+        null=True,
+        )
     alumni = models.ForeignKey('Alumni')
     def __unicode__(self):
         return self.email
@@ -135,7 +138,9 @@ class AlumniPhoneNumber(models.Model):
     phone_number = PhoneNumberField()
     type = models.CharField(
         max_length=255,
-        choices=(('H', 'Home'), ('C', 'Cell'), ('W', 'Work'), ('O', 'Other'))
+        choices=(('H', 'Home'), ('C', 'Cell'), ('W', 'Work'), ('O', 'Other')),
+        blank=True,
+        null=True,
         )
     alumni = models.ForeignKey('Alumni')
     def __unicode__(self):

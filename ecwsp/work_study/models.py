@@ -68,7 +68,7 @@ class PickupLocation(models.Model):
     long_name = models.CharField(max_length=255, blank=True)
     directions = models.TextField(blank=True)
     def __unicode__(self):
-        return self.location
+        return unicode(self.location)
     class Meta:
         verbose_name = "Companies: pickup"
 

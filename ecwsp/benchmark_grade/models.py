@@ -17,6 +17,7 @@
 #   MA 02110-1301, USA.
 
 from django.db import models
+from django.db.models import Min, Max, Sum, Avg
 from django.contrib.localflavor.us.models import *
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 
@@ -85,7 +86,6 @@ class Item(models.Model):
     date = models.DateField(blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     category = models.ForeignKey('Category')
-    #scale = models.ForeignKey('Scale', blank=True, null=True) # this is going away
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     assignment_type = models.ForeignKey('AssignmentType', blank=True, null=True)
     benchmark = models.ForeignKey('omr.Benchmark', blank=True, null=True, verbose_name='standard')
@@ -100,17 +100,18 @@ class Mark(models.Model):
     item = models.ForeignKey('Item')
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    normalized_mark = models.DecimalField(max_digits=8, decimal_places=7, blank=True, null=True)
     description = models.CharField(max_length=255)
-    excused = models.BooleanField(default=False)
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
+    def save(self, *args, **kwargs):
+        if self.mark is not None and self.item.points_possible is not None:
+            self.normalized_mark = self.mark / self.item.points_possible # value between 0 and 1
+        super(Mark, self).save(*args, **kwargs)
     def __unicode__(self):
         return unicode(self.mark) + u' - ' + unicode(self.student) + u'; ' + unicode(self.item)
     
 class Aggregate(models.Model):
-    # come back interwebs,
-    # so i can find a less ugly way to do this
     name = models.CharField(max_length=255)
-    #scale = models.ForeignKey('Scale', blank=True, null=True)
     manual_mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     cached_value = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     student = models.ForeignKey('sis.Student', blank=True, null=True)
@@ -119,79 +120,48 @@ class Aggregate(models.Model):
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 
-    # rudimentary for now
-    # no m2m, multipliers
-    # also untested
-    def max(self, normalize=False, mark_description=None):
-        highest = None
+    def max(self):
+        if self.points_possible is None:
+            return None
         items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
-        for item in items:
-            if mark_description is not None:
-                marks = Mark.objects.filter(item=item, student=self.student, description=mark_description)
-            else:
-                marks = Mark.objects.filter(item=item, student=self.student)
-            for mark in marks:
-                if normalize:
-                    # score between 0 and 1
-                    unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
-                    if highest is None or unscaled > highest:
-                        highest = unscaled
-                else:
-                    if highest is None or mark.mark > highest:
-                        highest = mark.mark
+        marks = Mark.objects.filter(item__in=items, student=self.student).exclude(normalized_mark=None)
+        if not marks:
+            return None
+        highest = marks.aggregate(Max('normalized_mark'))['normalized_mark__max']
+        highest *= self.points_possible
+        return highest
+
+    def min(self):
+        if self.points_possible is None:
+            return None
+        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
+        marks = Mark.objects.filter(item__in=items, student=self.student).exclude(normalized_mark=None)
+        if not marks:
+            return None
+        lowest = marks.aggregate(Min('normalized_mark'))['normalized_mark__min']
+        lowest *= self.points_possible
+        return lowest
+
+    def mean(self, normalize=False):
+        if self.points_possible is None:
+            return None
+        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
+        if normalize: # mark should always == normalized_mark, but meh
+            marks = Mark.objects.filter(item__in=items, student=self.student).exclude(normalized_mark=None)
+        else:
+            marks = Mark.objects.filter(item__in=items, student=self.student).exclude(mark=None)
+        if not marks:
+            return None
         if normalize:
-            highest = highest * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
-        if highest is None:
-            return None
+            mean = Decimal(marks.aggregate(Avg('normalized_mark'))['normalized_mark__avg']) # angry that the DB/ORM returns a float
         else:
-            return Decimal(str(highest))
-    def min(self, normalize=False, mark_description=None):
-        lowest = None
-        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
-        for item in items:
-            if mark_description is not None:
-                marks = Mark.objects.filter(item=item, student=self.student, description=mark_description)
-            else:
-                marks = Mark.objects.filter(item=item, student=self.student)
-            for mark in marks:
-                if normalize:
-                    # score between 0 and 1
-                    unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
-                    if lowest is None or unscaled < lowest:
-                        lowest = unscaled
-                else:
-                    if lowest is None or mark.mark < lowest:
-                        lowest = mark.mark
-        if normalize:                        
-            lowest = lowest * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
-        if lowest is None:
-            return None
-        else:
-            return Decimal(str(lowest))
-    def mean(self, normalize=False, mark_description=None):
-        numerator = 0
-        denominator = 0
-        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
-        for item in items:
-            if mark_description is not None:
-                marks = Mark.objects.filter(item=item, student=self.student, description=mark_description)
-            else:
-                marks = Mark.objects.filter(item=item, student=self.student)
-            for mark in marks:
-                if normalize:
-                    # score between 0 and 1
-                    unscaled = (mark.mark - mark.item.scale.minimum) / (mark.item.scale.maximum - mark.item.scale.minimum)
-                    numerator += unscaled
-                    denominator += 1
-                else:
-                    numerator += mark.mark
-                    denominator += mark.item.scale.maximum
-        if denominator == 0:
-            return None
-        result = numerator / denominator
-        result = result * (self.scale.maximum - self.scale.minimum) + self.scale.minimum
-        return Decimal(str(result))
+            numerator = marks.aggregate(Sum('mark'))['mark__sum']
+            denominator = marks.aggregate(Sum('item__points_possible'))['item__points_possible__sum']
+            if denominator == 0:
+                return None
+            mean = numerator / denominator
+        mean *= self.points_possible
+        return mean
         
-    # to do: deal with squashing to zero marks below a threshold
     def __unicode__(self):
         return self.name # not useful
