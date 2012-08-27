@@ -2347,7 +2347,6 @@ class Importer:
                                 if Contact.objects.get(id=supid):
                                     model.primary_contact = Contact.objects.get(id=supid)
                     model.full_clean()                
-                    model.work_permit_no.clean()
                     model.save()
                     if created:
                         self.log_and_commit(model, addition=True)
