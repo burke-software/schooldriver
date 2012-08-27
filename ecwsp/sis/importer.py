@@ -1743,8 +1743,8 @@ class Importer:
     def import_applicants(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
-            #with transaction.commit_manually():
-                #try:
+            with transaction.commit_manually():
+                try:
                     name = None
                     p_fname = p_mname = p_lname = p_relationship_to_student = p_street = p_city = None
                     p_state = p_zip = p_email = home = cell = work = other = None
@@ -1996,9 +1996,9 @@ class Importer:
                                 model.checklist.add(check)
                     
                     inserted, updated = self.log_and_commit(model, inserted, updated, created)
-                #except:
-                    #self.handle_error(row, name, sys.exc_info(), sheet.name)
-            #x += 1
+                except:
+                    self.handle_error(row, name, sys.exc_info(), sheet.name)
+            x += 1
         return inserted, updated
     
     #@transaction\.commit_manually
