@@ -105,7 +105,7 @@ class Mark(models.Model):
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def save(self, *args, **kwargs):
         if self.mark is not None and self.item.points_possible is not None:
-            self.normalized_mark = self.mark / self.item.points_possible # value between 0 and 1
+            self.normalized_mark = Decimal(self.mark) / Decimal(self.item.points_possible) # value between 0 and 1
         super(Mark, self).save(*args, **kwargs)
     def __unicode__(self):
         return unicode(self.mark) + u' - ' + unicode(self.student) + u'; ' + unicode(self.item)

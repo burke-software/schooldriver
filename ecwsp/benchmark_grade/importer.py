@@ -81,9 +81,10 @@ class BenchmarkGradeImporter(Importer):
     def import_grades(self, course, marking_period):
         # this function really isn't stringent enough to work with the online gradebook
         # specifically, it doesn't ensure that for every course, there is one mark per student per item
-        raise Exception('import_grades() under construction.')
+        #raise Exception('import_grades() under construction.')
         """ This is all completely hard-coded for the Twin Cities school. """
         mark_count = 0
+        errors = []
         # as requested, drop all old marks before importing
         Aggregate.objects.filter(course=course, marking_period=marking_period).delete()
         Mark.objects.filter(item__course=course, item__marking_period=marking_period).delete()
@@ -127,13 +128,21 @@ class BenchmarkGradeImporter(Importer):
                 try:
                     mark = Mark()
                     mark.item = item
-                    mark.student = Student.objects.get(username=username)
+                    try:
+                        mark.student = Student.objects.get(username=username)
+                    except Student.DoesNotExist:
+                        if markVal == None:
+                            # invalid student and no mark is okay; just skip it
+                            nrow += 1
+                            continue
+                        else:
+                            raise
                     mark.description = mark_desc
                     mark.mark = markVal
                     mark.save()
                     mark_count += 1
                 except Exception as e:
-                    return '<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>'
+                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
                 nrow += 1
             if not has_marks:
                 # nothing valid for this Item, so trash it
@@ -171,12 +180,20 @@ class BenchmarkGradeImporter(Importer):
                 try:
                     mark = Mark()
                     mark.item = item
-                    mark.student = Student.objects.get(username=username)
+                    try:
+                        mark.student = Student.objects.get(username=username)
+                    except Student.DoesNotExist:
+                        if markVal == None:
+                            # invalid student and no mark is okay; just skip it
+                            nrow += 1
+                            continue
+                        else:
+                            raise
                     mark.mark = markVal
                     mark.save()
                     mark_count += 1
                 except Exception as e:
-                    return '<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>'
+                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
                 nrow += 1
             if not has_marks:
                 # nothing valid for this Item, so trash it
@@ -214,12 +231,20 @@ class BenchmarkGradeImporter(Importer):
                 try:
                     mark = Mark()
                     mark.item = item
-                    mark.student = Student.objects.get(username=username)
+                    try:
+                        mark.student = Student.objects.get(username=username)
+                    except Student.DoesNotExist:
+                        if markVal == None:
+                            # invalid student and no mark is okay; just skip it
+                            nrow += 1
+                            continue
+                        else:
+                            raise
                     mark.mark = markVal
                     mark.save()
                     mark_count += 1
                 except Exception as e:
-                    return '<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>'
+                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
                 nrow += 1
             if not has_marks:
                 # nothing valid for this Item, so trash it
@@ -261,12 +286,20 @@ class BenchmarkGradeImporter(Importer):
                     try:
                         mark = Mark()
                         mark.item = item
-                        mark.student = Student.objects.get(username=username)
+                        try:
+                            mark.student = Student.objects.get(username=username)
+                        except Student.DoesNotExist:
+                            if markVal == None:
+                                # invalid student and no mark is okay; just skip it
+                                nrow += 1
+                                continue
+                            else:
+                                raise
                         mark.mark = markVal
                         mark.save()
                         mark_count += 1
                     except Exception as e:
-                        return '<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>'
+                        errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
                     nrow += 1
                 if not has_marks:
                     # nothing valid for this Item, so trash it
@@ -304,12 +337,20 @@ class BenchmarkGradeImporter(Importer):
                     try:
                         mark = Mark()
                         mark.item = item
-                        mark.student = Student.objects.get(username=username)
+                        try:
+                            mark.student = Student.objects.get(username=username)
+                        except Student.DoesNotExist:
+                            if markVal == None:
+                                # invalid student and no mark is okay; just skip it
+                                nrow += 1
+                                continue
+                            else:
+                                raise
                         mark.mark = markVal
                         mark.save()
                         mark_count += 1
                     except Exception as e:
-                        return '<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>'
+                        errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
                     nrow += 1
                 if not has_marks:
                     # nothing valid for this Item, so trash it
@@ -317,8 +358,38 @@ class BenchmarkGradeImporter(Importer):
                     item.mark_set.all().delete()
                     item.delete() # we make 'em, we break 'em
                 ncol += 1
-            
+
+        # YUCKY: Remove non-enrolled
+        enrolled = course.get_enrolled_students(show_deleted=True)
+        non_enrolled_count = 0
+        for i in Item.objects.filter(course=course):
+            delete_me = Mark.objects.filter(item=i).exclude(student__in=enrolled)
+            non_enrolled_count += delete_me.count()
+            delete_me.delete()
+
+        # YUCKY: Fill holes
+        filler_count = 0
+        for s in enrolled:
+            for i in Item.objects.filter(course=course):
+                if Mark.objects.filter(item=i, student=s):
+                    continue
+                else:
+                    m = Mark(item=i, student=s, description='___FILLER_AUTO___')
+                    m.save()
+                    filler_count += 1
+
         # make aggregates for this course
-        #self._make_aggregates(course, marking_period)
+        self._make_aggregates(course, marking_period)
         
-        return 'OK! ' + str(mark_count) + ' marks imported.'
+        output = '<p>{} marks were imported.</p>'.format(mark_count)
+        if non_enrolled_count or filler_count:
+            if non_enrolled_count:
+                output += '<p>Ignored {} marks for students not enrolled in this course. This is okay.</p>'.format(non_enrolled_count)
+            if filler_count:
+                output += '<p>Added {} missing marks (set to None) to ensure one mark per student per item. This is okay.</p>'.format(filler_count)
+        if len(errors):
+            output += '<p>There were errors that may have prevented some data from importing!</p><ul style="font-size: smaller; list-style-type: disc; margin-left: 3em">'
+            for e in errors:
+                output += '<li>' + e + '</li>'
+            output += '</ul>'
+        return output
