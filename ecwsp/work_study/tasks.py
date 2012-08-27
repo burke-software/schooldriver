@@ -1,5 +1,4 @@
 from ecwsp.work_study.models import StudentInteraction, CraContact, TimeSheet
-from ecwsp.work_study.sugar_sync import SugarSync
 from ecwsp.administration.models import Configuration
 from django.core.mail import send_mail
 from datetime import date
@@ -11,6 +10,7 @@ from celery.decorators import periodic_task
 if 'ecwsp.work_study' in settings.INSTALLED_APPS:
     
     if settings.SYNC_SUGAR:
+        from ecwsp.work_study.sugar_sync import SugarSync
         modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
         @periodic_task(run_every=crontab(minute='*/%s' % (modify_date_minutes,)))
         def update_contacts_from_sugarcrm():
