@@ -142,7 +142,7 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except Exception as e:
-                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
+                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
                 nrow += 1
             if not has_marks:
                 # nothing valid for this Item, so trash it
@@ -193,7 +193,7 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except Exception as e:
-                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
+                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
                 nrow += 1
             if not has_marks:
                 # nothing valid for this Item, so trash it
@@ -244,7 +244,7 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except Exception as e:
-                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
+                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
                 nrow += 1
             if not has_marks:
                 # nothing valid for this Item, so trash it
@@ -299,7 +299,7 @@ class BenchmarkGradeImporter(Importer):
                         mark.save()
                         mark_count += 1
                     except Exception as e:
-                        errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
+                        errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
                     nrow += 1
                 if not has_marks:
                     # nothing valid for this Item, so trash it
@@ -350,7 +350,7 @@ class BenchmarkGradeImporter(Importer):
                         mark.save()
                         mark_count += 1
                     except Exception as e:
-                        errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '"' + username + '"</p>')
+                        errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
                     nrow += 1
                 if not has_marks:
                     # nothing valid for this Item, so trash it
