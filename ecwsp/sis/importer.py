@@ -1887,9 +1887,12 @@ class Importer:
                                 work2 = value
                             elif name in ['parent 2 number', 'parent 2 other number', 'parent 2 phone', 'parent 2 other phone']:
                                 other2 = value
+                            
                             # Custom
-                            elif name.split() and name.split()[0] == "custom":
-                                custom_fields.append([name.split()[1], value])
+                            elif name.partition(" "):
+                                custom, split, field = name.partition(" ")
+                                if custom == "custom":
+                                    custom_fields.append([field, value])
                     model.save()
                     # add emergency contacts (parents)
                     if p_lname and p_fname:
