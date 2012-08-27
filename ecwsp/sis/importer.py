@@ -2356,7 +2356,7 @@ class Importer:
                         updated += 1
                 except:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
-        x += 1
+                x += 1
         return inserted, updated
 
     def import_student_work_history(self, sheet):
