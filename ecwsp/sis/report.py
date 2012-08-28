@@ -50,6 +50,10 @@ def get_school_day_number(date):
 
 def pod_save(filename, ext, data, template, get_tmp_file=False):
     import time
+    
+    # strip comma's from filename
+    filename = filename.replace(",", "")
+    
     file_name = tempfile.gettempdir() + '/appy' + str(time.time()) + ext
     renderer = Renderer(template, data, file_name)
     renderer.run()
