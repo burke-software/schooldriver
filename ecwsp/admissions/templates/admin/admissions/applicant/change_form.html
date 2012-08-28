@@ -162,7 +162,9 @@
                 </div>
              {% endif %}
           {% endfor %}
-          {% block after_field_sets %}{% endblock %}
+         {% block after_field_sets %}
+            {% include "admin/includes/custom_field_fieldset.html" with custom_form=custom_form %}
+         {% endblock %}
                     
                     <!-- Inlines -->
                     {% for inline_admin_formset in inline_admin_formsets %}
