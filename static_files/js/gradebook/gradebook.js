@@ -71,22 +71,23 @@ function make_into_input(element){
 
 function mark_change(event) {
     // Mark a changed grade. It will save then come back as save success.
-    prev_value = $(event.target).attr('prev_value');
-    cur_value = $(event.target).val()
+    // OMG use var or variables will be global
+    var prev_value = $(event.target).attr('prev_value');
+    var cur_value = $(event.target).val()
     if (prev_value != cur_value) {
         $(event.target).removeClass('save_success');
         $(event.target).addClass('saving');
-        mark_id = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r\d+_mark(\d+)$/, '$1').trim()
-        row = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r(\d+)_.*$/, '$1').trim();
-        average_cell = $('#average' + row)
-        average_cell.removeClass('save_success');
-        average_cell.addClass('saving');
+        var mark_id = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r\d+_mark(\d+)$/, '$1').trim()
+        var row = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r(\d+)_.*$/, '$1').trim();
+        var average_cell = $('#average' + row)
+        average_cell.children().removeClass('save_success');
+        average_cell.children().addClass('saving');
         $.post(  
           "../../gradebook/ajax_save_grade/",
           {mark_id: mark_id, value: cur_value},
           function(data) {
             if (data.success == "SUCCESS") {
-                new_value = data.value;
+                var new_value = data.value;
                 $(event.target).replaceWith('<div class="save_success">' + new_value + '</div>');
                 average_cell.html('<div class="save_success">' + data.average + '</div>');
             }

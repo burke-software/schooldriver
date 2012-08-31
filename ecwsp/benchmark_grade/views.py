@@ -217,7 +217,6 @@ def gradebook(request, course_id):
         if filter_form.is_valid():
             for filter_key, filter_value in filter_form.cleaned_data.iteritems():
                 if filter_value is not None:
-                    print 'FILTERING ON', filter_key, filter_value
                     if filter_key == 'cohort': 
                         students = students.filter(cohorts=filter_value)
                     if filter_key == 'marking_period':
