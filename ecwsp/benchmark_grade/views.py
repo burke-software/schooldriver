@@ -217,12 +217,15 @@ def gradebook(request, course_id):
         if filter_form.is_valid():
             for filter_key, filter_value in filter_form.cleaned_data.iteritems():
                 if filter_value is not None:
+                    print 'FILTERING ON', filter_key, filter_value
                     if filter_key == 'cohort': 
                         students = students.filter(cohorts=filter_value)
                     if filter_key == 'marking_period':
                        items = items.filter(marking_period=filter_value)
                     if filter_key == 'benchmark':
-                        items = items.filter(benchmark__in=filter_value)
+                        if len(filter_value):
+                            # make sure we're not trying to filter on an empty list
+                            items = items.filter(benchmark__in=filter_value)
                     if filter_key == 'category':
                         items = items.filter(category=filter_value)
                     if filter_key == 'assignment_type':
@@ -238,9 +241,10 @@ def gradebook(request, course_id):
         filter_form.update_querysets(course)
     
     # Freeze these now in case someone else gets in here!
-    items = items.order_by('marking_period', 'name', 'date', 'id')
-    marks = Mark.objects.filter(item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id') # precarious; sorting must match items exactly
-    items_count = items.count()
+    items = items.order_by('marking_period', 'name', 'date', 'id').all()
+    # whoa, super roll of the dice. is Item.demonstration_set really guaranteed to be ordered by id?
+    marks = Mark.objects.filter(item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id', 'demonstration__id').all() # precarious; sorting must match items (and demonstrations!) exactly
+    items_count = items.filter(demonstration=None).count() + Demonstration.objects.filter(item__in=items).count()
     for student in students:
         student_marks = marks.filter(student=student)
         if student_marks.count() < items_count:
@@ -251,7 +255,10 @@ def gradebook(request, course_id):
                     mark.save()
         elif student_marks.count() > items_count:
             # Yikes, there are multiple marks per student per item. Stop loading the gradebook now.
-            raise Exception('Multiple marks per student per item.')
+            if 'dangerous' in request.GET:
+                pass
+            else:
+                raise Exception('Multiple marks per student per item.')
         student.marks = student_marks
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
@@ -287,9 +294,17 @@ def ajax_get_item_form(request, course_id, item_id=None):
         if form.is_valid():
             item = form.save()
             if item_id is None:
-                # a new item; must create blank marks for each student
+                # a new item!
+                dem = None
+                if item.category.allow_multiple_demonstrations:
+                    # must have at least one demonstration; create a new one
+                    dem = Demonstration()
+                    dem.name = 'Dem. 1'
+                    dem.item = item
+                    dem.save()
+                # must create blank marks for each student
                 for student in Student.objects.filter(course=course):
-                    mark, created = Mark.objects.get_or_create(item=item, student=student)
+                    mark, created = Mark.objects.get_or_create(item=item, student=student, demonstration=dem)
                     if created:
                         mark.save()
 
@@ -317,6 +332,65 @@ def ajax_get_item_form(request, course_id, item_id=None):
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
         'item_id': item_id,
+    }, RequestContext(request, {}),)
+
+@staff_member_required
+@transaction.commit_on_success
+def ajax_delete_demonstration_form(request, course_id, demonstration_id):
+    demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
+    item = demonstration.item
+    message = '%s deleted' % (demonstration,)
+    demonstration.delete()
+    if not Demonstration.objects.filter(item=item):
+        if Mark.objects.filter(item=item):
+            raise Exception('Stray marks found after attempting to delete last demonstration.')
+        else:
+            # the last demonstration is dead. kill the item.
+            item.delete()
+    messages.success(request, message)
+    return HttpResponse('SUCCESS'); 
+
+@staff_member_required
+@transaction.commit_on_success
+def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
+    ''' the transaction decorator helps, but people can still hammer the submit button
+    and create tons of assignments. for some reason, only one shows up right away, and the rest
+    don't appear until reload '''
+    course = get_object_or_404(Course, pk=course_id)
+    
+    if request.POST:
+        if demonstration_id:
+            demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
+            form = DemonstrationForm(request.POST, instance=demonstration, prefix="demonstration")
+        else:
+            form = DemonstrationForm(request.POST, prefix="demonstration")
+        if form.is_valid():
+            demonstration = form.save()
+            if demonstration_id is None:
+                # a new demonstration; must create blank marks for each student
+                for student in Student.objects.filter(course=course):
+                    mark, created = Mark.objects.get_or_create(item=demonstration.item, demonstration=demonstration, student=student)
+                    if created:
+                        mark.save()
+
+            # Should I use the django message framework to inform the user?
+            # This would not work in ajax unless we make some sort of ajax
+            # message handler.
+            messages.success(request, '%s saved' % (demonstration,))
+            return HttpResponse('SUCCESS'); 
+        
+    else:
+        if demonstration_id:
+            demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
+            form = DemonstrationForm(instance=demonstration, prefix="demonstration")
+        else:
+            form = DemonstrationForm(initial={'course': course}, prefix="demonstration")
+    
+    form.fields['item'].queryset = Item.objects.filter(course=course, category__display_in_gradebook=True, category__allow_multiple_demonstrations=True)
+
+    return render_to_response('benchmark_grade/demonstration_form_fragment.html', {
+        'form': form,
+        'demonstration_id': demonstration_id,
     }, RequestContext(request, {}),)
 
 @staff_member_required

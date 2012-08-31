@@ -1,0 +1,13 @@
+<!-- Just plain HTML, no admin stuff. Useful for ajax -->
+<a class="close" onclick='$("#new_demonstration_form").overlay().close();'></a>
+<h2> {{ subtitle }} </h2>
+{{ msg }}
+<form method="post" onsubmit="handle_demonstration_form_fragment_submit(this); return false;" demonstration_id="{{ demonstration_id }}" id="form_fragment" enctype="multipart/form-data" action="">
+    <table class="form_table">
+        {{ form.as_table }}
+    </table>
+    {% if form.name.value %}
+        <a class="grp-button grp-delete-link" onclick="confirm_demonstration_delete({{ demonstration_id }});">Delete</a>
+    {% endif %}
+    <input type="submit" value="Submit" />    
+</form>

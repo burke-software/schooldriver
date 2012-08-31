@@ -65,8 +65,11 @@ class CalculationRuleCategoryAsCourse(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
-    weight = models.DecimalField(max_digits=8, decimal_places=2, default=1)
+    weight = models.DecimalField(max_digits=8, decimal_places=2, default=1) # remove this?
+    allow_multiple_demonstrations = models.BooleanField(default=False)
     display_in_gradebook = models.BooleanField(default=True)
+    fixed_points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    fixed_granularity = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     # some categories will be school-wide.
     # to do: search courses' individual categories first, then the global ones.
     course = models.ForeignKey('schedule.Course', blank=True, null=True)
@@ -82,6 +85,7 @@ class AssignmentType(models.Model):
     
 class Item(models.Model):
     name = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, blank=True, null=True)
     course = models.ForeignKey('schedule.Course')
     date = models.DateField(blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
@@ -95,9 +99,13 @@ class Item(models.Model):
     def __unicode__(self):
         return self.name + " - " + self.category.name + " (" + self.course.fullname + ")"
 
+class Demonstration(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    item = models.ForeignKey('Item')
 
 class Mark(models.Model):
     item = models.ForeignKey('Item')
+    demonstration = models.ForeignKey('Demonstration', blank=True, null=True) # lax for the moment
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     normalized_mark = models.DecimalField(max_digits=8, decimal_places=7, blank=True, null=True)

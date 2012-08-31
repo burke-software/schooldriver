@@ -21,7 +21,7 @@ from ajax_select.fields import AutoCompleteSelectMultipleField
 from django.contrib.admin import widgets as adminwidgets
 
 from ecwsp.schedule.models import MarkingPeriod
-from ecwsp.benchmark_grade.models import Item, AssignmentType, Category
+from ecwsp.benchmark_grade.models import Item, AssignmentType, Category, Demonstration
 from ecwsp.sis.models import Cohort
 from ecwsp.omr.models import Benchmark
 
@@ -49,7 +49,11 @@ class ItemForm(forms.ModelForm):
             'date': adminwidgets.AdminDateWidget(),
         }
         exclude = ('scale','multiplier',)
-        
+
+class DemonstrationForm(forms.ModelForm):
+    class Meta:
+        model = Demonstration
+       
 class GradebookFilterForm(forms.Form):
     cohort = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
     marking_period = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
