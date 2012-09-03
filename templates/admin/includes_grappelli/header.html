@@ -23,12 +23,12 @@
     }
 </style>
 
-<div id="grp-navigation">
+<div id="grp-navigation" class="noprint">
     <h1 id="grp-admin-title">{% if grappelli_admin_title %}{{ grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}</h1>
     
     <!-- View Student -->
     {% if perms.sis.change_student or perms.sis.view_student %}
-        <div class="admin-title noprint view_student" style="height:30px;">
+        <div class="admin-title view_student" style="height:30px;">
             <form id="form_view_student" class="view_student" action="/sis/view_student/" method="post">
                 {% csrf_token %}
                 <input type="text" style="width:100%;" placeholder="Lookup Student" name="view_student_text" id="id_view_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
