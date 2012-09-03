@@ -163,7 +163,7 @@ def applicants_to_students(request, year_id):
             for contact in student.emergency_contacts.filter(primary_contact=True):
                 contact.cache_student_addresses()
             msg += "Imported <a href='/admin/sis/student/%s'>%s</a>, %s<br/>" % (student.id, student, student.username)
-        msg += "<br/>Maybe you want to save this list to add students to Active Dictory or Google Apps?<br/><br/>"
+        msg += "<br/>Maybe you want to save this list to add students to Active Directory or Google Apps?<br/><br/>"
     
     num = Applicant.objects.filter(ready_for_export=True, sis_student=None, school_year=school_year).count()
     msg += "There are currently %s applicants marked as ready for export. This is not a reversable process! Note usernames will be generated, you may change them later.<br/>" % str(num)
