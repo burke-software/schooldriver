@@ -39,7 +39,7 @@ class BenchmarkGradeImporter(Importer):
         return colname + str(rownum)
         
     def _make_aggregates(self, course, marking_period):
-        #raise Exception('_make_aggregates(): under construction.')
+        raise Exception('_make_aggregates(): under construction.')
         # clear out schedule grades; they'll be copied from the standards averages
         Grade.objects.filter(course=course, marking_period=marking_period).delete()
         
@@ -79,9 +79,8 @@ class BenchmarkGradeImporter(Importer):
         
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
-        # this function really isn't stringent enough to work with the online gradebook
-        # specifically, it doesn't ensure that for every course, there is one mark per student per item
-        #raise Exception('import_grades() under construction.')
+        # now this has to be redone AGAIN to work with the Demonstration model
+        raise Exception('import_grades() under construction.')
         """ This is all completely hard-coded for the Twin Cities school. """
         mark_count = 0
         errors = []

@@ -434,10 +434,11 @@ class Importer:
         if sheet:
             inserted, updated = self.import_student_work_history(sheet)
             msg += "%s student work history records inserted, %s student work history records updated <br/>" % (inserted, updated)
-        sheet = self.get_sheet_by_case_insensitive_name("survey")
-        if sheet:
-            inserted, updated = self.import_survey(sheet)
-            msg += "%s survey records inserted, %s survey records updated <br/>" % (inserted, updated)
+        #commenting out because David decided to remove it.
+        #sheet = self.get_sheet_by_case_insensitive_name("survey")
+        #if sheet:
+        #    inserted, updated = self.import_survey(sheet)
+        #    msg += "%s survey records inserted, %s survey records updated <br/>" % (inserted, updated)
 
         sheet = self.get_sheet_by_case_insensitive_name("work study attendance")
         if sheet:
