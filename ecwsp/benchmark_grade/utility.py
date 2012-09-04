@@ -35,24 +35,41 @@ def find_calculation_rule(school_year):
     return rule
 
 def calculate_category(student, course, category, marking_period):
+    incomplete = False # TODO: remove this hack
     a, created = Aggregate.objects.get_or_create(name='G! {} - {} ({})'.format(student, category, course), student=student, course=course, category=category, marking_period=marking_period)
     category_numer = category_denom = Decimal(0)
-    for category_mark in Mark.objects.filter(student=student, item__course=course, item__category=category).exclude(mark=None):
-        category_numer += category_mark.mark
-        category_denom += category_mark.item.points_possible
+    if category.allow_multiple_demonstrations:
+        for category_item in Item.objects.filter(course=course, category=category):
+            best = Mark.objects.filter(student=student, item=category_item).aggregate(Max('mark'))['mark__max']
+            if best is not None:
+                category_numer += best
+                category_denom += category_item.points_possible
+                if best < 3: # TODO: remove this hack
+                    incomplete = True
+    else:
+        for category_mark in Mark.objects.filter(student=student, item__course=course, item__category=category).exclude(mark=None):
+            category_numer += category_mark.mark
+            category_denom += category_mark.item.points_possible
     if category_denom:
         a.cached_value = category_numer / category_denom * 4
     else:
         a.cached_value = None
     a.save()
-    return a.cached_value
+    return a.cached_value, incomplete
 
-def gradebook_recalculate(mark):
+def gradebook_recalculate_all_students(course, category, marking_period):
+    marking_period = None # TODO: remove this hack
+    for s in course.get_enrolled_students():
+        gradebook_recalculate(mark=None, student=s, course=course, category=category, marking_period=marking_period)
+
+def gradebook_recalculate(mark, student=None, course=None, category=None, marking_period=None):
     # gee sounds a lot like mark.save(), doesn't it?
-    student = mark.student
-    course = mark.item.course
-    category = mark.item.category
-    marking_period = mark.item.marking_period
+    incomplete = False # TODO: remove this hack
+    if mark:
+        student = mark.student
+        course = mark.item.course
+        category = mark.item.category
+        marking_period = mark.item.marking_period
     calculation_rule = find_calculation_rule(course.marking_period.all()[0].school_year)
 
     marking_period = None # meh... just calculate the entire year for now
@@ -61,18 +78,26 @@ def gradebook_recalculate(mark):
         # need to recalculate the whole course
         course_numer = course_denom = Decimal(0)
         for rule_category in calculation_rule.per_course_category_set.filter(apply_to_departments=course.department):
-            cat_value = calculate_category(student, course, rule_category.category, marking_period)
+            cat_value, cat_incomplete = calculate_category(student, course, rule_category.category, marking_period)
+            incomplete |= cat_incomplete
             if cat_value is not None:
                 course_numer += rule_category.weight * cat_value
                 course_denom += rule_category.weight
         if course_denom:
             a.cached_value = course_numer / course_denom
-            a.save()
+        else:
+            a.cached_value = None
+        a.save()
     else:
         # just recalculate this category and return unchanged course average
         cat_value = calculate_category(student, course, category, marking_period)
-
-    return a.cached_value.quantize(Decimal('0.01'))
+    
+    if incomplete:
+        return 'INC'
+    if a.cached_value is not None:
+        return a.cached_value.quantize(Decimal('0.01'))
+    else:
+        return None
 
 
 def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period=None, date_report=None):

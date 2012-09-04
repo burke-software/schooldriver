@@ -27,13 +27,13 @@ from ecwsp.omr.models import Benchmark
 
 import sys
 
-MINOPERATOR_CHOICES = (
+OPERATOR_CHOICES = (
     (u'>', u'Greater than'),
-    (u'>=', u'Greater than or equal to')
-)
-MAXOPERATOR_CHOICES = (
+    (u'>=', u'Greater than or equal to'),
     (u'<=', u'Less than or equal to'),
-    (u'<', u'Less than')
+    (u'<', u'Less than'),
+    (u'!=', u'Not equal to'),
+    (u'==', u'Equal to')
 )
 
 
@@ -44,7 +44,13 @@ class CalculationRule(models.Model):
     first_year_effective = models.ForeignKey('sis.SchoolYear', help_text='Rule also applies to subsequent years unless a more recent rule exists.')
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, default=4)
     decimal_places = models.IntegerField(default=2)
-    
+
+    def substitute(self, value):
+        for s in self.substitution_set.all():
+            if s.applies_to(value):
+                return s.display_as, s.calculate_as
+        return value, value
+
     def __unicode__(self):
         return u'Rule of ' + self.first_year_effective.name
 
@@ -62,7 +68,29 @@ class CalculationRuleCategoryAsCourse(models.Model):
     category = models.ForeignKey('Category')
     include_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
     calculation_rule = models.ForeignKey('CalculationRule', related_name='category_as_course_set')
-
+'''
+class CalculationRuleSubstitution(models.Model):
+    operator = models.CharField(max_length=2, choices=OPERATOR_CHOICES)
+    match_value = models.DecimalField(max_digits=8, decimal_places=2)
+    display_as = models.CharField(max_length=16)
+    calculate_as = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    apply_to_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
+    calculation_rule = models.ForeignKey('CalculationRule', related_name='substitution_set')
+    def applies_to(self, value):
+        if self.operator == '>':
+            return value > self.match_value
+        if self.operator == '>=':
+            return value >= self.match_value
+        if self.operator == '<=':
+            return value <= self.match_value
+        if self.operator == '<':
+            return value < self.match_value
+        if self.operator == '!=':
+            return value != self.match_value
+        if self.operator == '==':
+            return value == self.match_value
+        raise Exception('CalculationRuleSubstitution with id={} has invalid operator.'.format(self.id))
+'''
 class Category(models.Model):
     name = models.CharField(max_length=255)
     weight = models.DecimalField(max_digits=8, decimal_places=2, default=1) # remove this?
