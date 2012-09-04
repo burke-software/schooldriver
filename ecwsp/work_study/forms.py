@@ -117,7 +117,7 @@ class TimeSheetForm(forms.ModelForm):
         model = TimeSheet
 
     my_supervisor = forms.ModelChoiceField(queryset=Contact.objects.all(), required=False)
-    date = forms.DateTimeField(input_formats=settings.DATE_INPUT_FORMATS) 
+    date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS) 
     time_in = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
     time_lunch = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
     time_lunch_return = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))

@@ -66,6 +66,7 @@ TIME_FORMAT = 'h:i A'
 DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y','%b. %d, %Y')
+DATE_FORMAT = 'b. d, Y'
 #USE_L10N = True
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
