@@ -62,6 +62,7 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.sis.models.Student',
                 'ecwsp.sis.models.EmergencyContact',
                 'ecwsp.sis.models.Cohort',
+                'ecwsp.sis.models.PerCourseCohort',
                 'ecwsp.sis.models.ReasonLeft',
                 'ecwsp.sis.models.Faculty',
                 'ecwsp.sis.models.MessageToStudent',

@@ -317,6 +317,9 @@ def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs)
             student_cohort.save()
 
 m2m_changed.connect(after_cohort_m2m, sender=Cohort.students.through)
+
+class PerCourseCohort(Cohort):
+    course = models.ForeignKey('schedule.Course')
     
 
 class ReasonLeft(models.Model):

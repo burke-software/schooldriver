@@ -210,6 +210,11 @@ admin.site.register(LanguageChoice)
 class CohortAdmin(admin.ModelAdmin):
     filter_horizontal = ('students',)
     
+    def queryset(self, request):
+        # exclude PerCourseCohorts from Cohort admin
+        qs = super(CohortAdmin, self).queryset(request)
+        return qs.filter(percoursecohort=None)
+
     def save_model(self, request, obj, form, change):
         if obj.id:
             prev_students = Cohort.objects.get(id=obj.id).students.all()
@@ -230,6 +235,37 @@ class CohortAdmin(admin.ModelAdmin):
             student.save()
     
 admin.site.register(Cohort, CohortAdmin)
+
+class PerCourseCohortAdmin(CohortAdmin):
+    exclude = ('primary',)
+
+    def __get_teacher_courses(self, username):
+        from django.db.models import Q 
+        from ecwsp.schedule.models import Course
+        try:
+            teacher = Faculty.objects.get(username=username)
+            teacher_courses = Course.objects.filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+        except:
+            teacher_courses = []
+            import traceback
+            print traceback.format_exc()
+        return teacher_courses
+
+    def queryset(self, request):
+        qs = super(CohortAdmin, self).queryset(request)
+        if request.user.is_superuser or request.user.groups.filter(name='registrar').count():
+            return qs
+        return qs.filter(course__in=self.__get_teacher_courses(request.user.username))
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # TODO: use a wizard or something and filter by THIS COHORT'S COURSE instead of all the teacher's courses
+        if db_field.name == 'students':
+            if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count():
+                kwargs['queryset'] = Student.objects.filter(course__in=self.__get_teacher_courses(request.user.username))
+        return super(PerCourseCohortAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
+
+    
+admin.site.register(PerCourseCohort, PerCourseCohortAdmin)
 
 admin.site.register(ReasonLeft)
 admin.site.register(ReportField)
