@@ -38,6 +38,9 @@ body {
 .fixedTable {
 	float: left;
 }
+.fixedTable td { /* jnm */
+    vertical-align: middle;
+}
 	    .fixedColumn .fixedTable td
         {
             color: #000;
