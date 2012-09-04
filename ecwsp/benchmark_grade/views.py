@@ -42,7 +42,7 @@ from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.forms import *
 from ecwsp.omr.models import Benchmark
-from ecwsp.benchmark_grade.utility import gradebook_recalculate
+from ecwsp.benchmark_grade.utility import gradebook_recalculate, gradebook_recalculate_all_students
 
 from decimal import Decimal, ROUND_HALF_UP
 import time
@@ -259,6 +259,10 @@ def gradebook(request, course_id):
             else:
                 raise Exception('Multiple marks per student per item.')
         student.marks = student_marks
+        try:
+            student.average = Aggregate.objects.get(student=student, course=course, category=None, marking_period=None).cached_value
+        except Aggregate.DoesNotExist:
+            student.average = None
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
         'students': students,
@@ -273,6 +277,7 @@ def ajax_delete_item_form(request, course_id, item_id):
     item = get_object_or_404(Item, pk=item_id)
     message = '%s deleted' % (item,)
     item.delete()
+    gradebook_recalculate_all_students(item.course, item.category, item.marking_period)
     messages.success(request, message)
     return HttpResponse('SUCCESS'); 
 
@@ -346,6 +351,8 @@ def ajax_delete_demonstration_form(request, course_id, demonstration_id):
         else:
             # the last demonstration is dead. kill the item.
             item.delete()
+
+    gradebook_recalculate_all_students(item.course, item.category, item.marking_period)
     messages.success(request, message)
     return HttpResponse('SUCCESS'); 
 
@@ -410,9 +417,11 @@ def ajax_save_grade(request):
             value = 'None'
         # temporarily log who's changing stuff since i'll have to manually recalculate averages later
         mark.description += ',' + request.user.username
-        try: mark.save()
-        except Exception as e: return HttpResponse(e, status=400)
-        # TODO: handle decimal validation
+        try:
+            mark.full_clean()
+            mark.save()
+        except Exception as e:
+            return HttpResponse(e, status=400)
         average = gradebook_recalculate(mark)
         return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': str(average)}))
     else:
