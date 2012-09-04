@@ -172,7 +172,7 @@ class CanvasSync:
         """
         result = u"course_id,user_id,role,status\n"
         for course in Course.objects.filter(marking_period__school_year__active_year=True).distinct():
-            for enrollment in course.enrollments.all():
+            for enrollment in course.enrollments.filter(inactive=False):
                 line = u'"%s","%s","%s","%s"' % (
                     course.id,
                     enrollment.id,
