@@ -25,7 +25,7 @@ class SugarSync:
                 'password':self.password,
             })
             self.session = result['id']
-            
+        
         def update_contact(self,contact):
             """ create or update a contact in sugarcrm
             contact: a django-sis.work_study contact who we want to

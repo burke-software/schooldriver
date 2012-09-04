@@ -93,9 +93,8 @@ class Contact(models.Model):
     def save(self, sync_sugar=True, *args, **kwargs):
         super(Contact, self).save(*args, **kwargs)
         if settings.SYNC_SUGAR and sync_sugar:
-            from ecwsp.work_study.sugar_sync import SugarSync
-            sugar_sync = SugarSync()
-            sugar_sync.update_contact(self)
+            from ecwsp.work_study.tasks import update_contact_to_sugarcrm
+            update_contact_to_sugarcrm.delay(self)
     
     @property
     def edit_link(self):
