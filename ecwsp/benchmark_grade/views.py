@@ -410,9 +410,11 @@ def ajax_save_grade(request):
             value = 'None'
         # temporarily log who's changing stuff since i'll have to manually recalculate averages later
         mark.description += ',' + request.user.username
-        try: mark.save()
-        except Exception as e: return HttpResponse(e, status=400)
-        # TODO: handle decimal validation
+        try:
+            mark.full_clean()
+            mark.save()
+        except Exception as e:
+            return HttpResponse(e, status=400)
         average = gradebook_recalculate(mark)
         return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': str(average)}))
     else:

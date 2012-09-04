@@ -105,7 +105,7 @@ class Demonstration(models.Model):
 
 class Mark(models.Model):
     item = models.ForeignKey('Item')
-    demonstration = models.ForeignKey('Demonstration', blank=True, null=True) # lax for the moment
+    demonstration = models.ForeignKey('Demonstration', blank=True, null=True)
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     normalized_mark = models.DecimalField(max_digits=8, decimal_places=7, blank=True, null=True)
@@ -115,6 +115,10 @@ class Mark(models.Model):
         if self.mark is not None and self.item.points_possible is not None:
             self.normalized_mark = Decimal(self.mark) / Decimal(self.item.points_possible) # value between 0 and 1
         super(Mark, self).save(*args, **kwargs)
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.item.category.fixed_granularity and self.mark and self.mark % self.item.category.fixed_granularity != 0:
+            raise ValidationError('Mark does not conform fixed granularity of {}.'.format(self.item.category.fixed_granularity))
     def __unicode__(self):
         return unicode(self.mark) + u' - ' + unicode(self.student) + u'; ' + unicode(self.item)
     
