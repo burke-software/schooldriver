@@ -1,5 +1,6 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.conf import settings
+from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
@@ -15,6 +16,11 @@ from django.utils.encoding import smart_str
 import requests
 
 def setup(request):
+    if request.POST:
+        if 'download' in request.POST:
+            cs = CanvasSync()
+            return cs.run_sync()
+    
     return render_to_response('canvas_sync/setup.html', {
         'msg':'',
     }, RequestContext(request, {}),)
@@ -25,8 +31,10 @@ class CanvasSync:
     base_url = settings.CANVAS_BASE_URL
     
     def run_sync(self):
-        buf = StringIO()
-        zip_file = zipfile.ZipFile(buf, mode='w')
+        #buf = StringIO()
+        response = HttpResponse(mimetype="application/zip")
+        response['Content-Disposition'] = 'attachment; filename="%s"' % 'canvas_import_files.zip'
+        zip_file = zipfile.ZipFile(response, mode='w')
         zip_file.writestr('users.csv', smart_str(self.gen_users()))
         zip_file.writestr('accounts.csv', smart_str(self.gen_accounts()))
         zip_file.writestr('terms.csv', smart_str(self.gen_terms()))
@@ -36,21 +44,27 @@ class CanvasSync:
         zip_file.writestr('groups_membership.csv', smart_str(self.gen_groups_membership()))
         zip_file.close()
         
+        
+        
+        return response
+        
+        
+        
+        
         temp_file = tempfile.TemporaryFile()
         temp_file.write(buf.getvalue())
         
-        debug = True
-        
-        if not debug:
+        if False:
             params = {'access_token':self.token, 'extention':'zip'}
             #files = {'attachment': ('import.zip', temp_file)}
             files = {'attachment': ('import.zip', open('foo.zip','rb'))}
             response = requests.post(url,params=params,files=files)
             temp_file.close()
-        else:
-            output = open('foo.zip', 'wb')
-            output.write(buf.getvalue())
-            output.close()
+        
+        return response
+            #output = open('foo.zip', 'wb')
+            #output.write(buf.getvalue())
+            #output.close()
         
         buf.close()
     
