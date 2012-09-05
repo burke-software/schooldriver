@@ -66,6 +66,7 @@ TIME_FORMAT = 'h:i A'
 DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y','%b. %d, %Y')
+DATE_FORMAT = 'b. d, Y'
 #USE_L10N = True
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
@@ -140,17 +141,6 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
-
-#Celery
-import djcelery
-djcelery.setup_loader()
-BROKER_URL = 'amqp://guest:guest@localhost:5672/'
-CELERY_IMPORTS = (
-    "ecwsp.canvas_sync.tasks",
-    "ecwsp.work_study.tasks",
-    "ecwsp.volunteer_track.tasks",
-    )
-CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 
 #GRAPPELLI
 ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
@@ -344,3 +334,20 @@ from settings_local import *
 # must do this after importing settings_local
 if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
+
+
+#Celery
+if 'djcelery' in INSTALLED_APPS:
+    import djcelery
+    djcelery.setup_loader()
+    BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+    CELERY_IMPORTS = ()
+    if "ecwsp.canvas_sync" in INSTALLED_APPS:
+        CELERY_IMPORTS += ("ecwsp.canvas_sync.tasks",)
+    if "ecwsp.work_study" in INSTALLED_APPS:
+        CELERY_IMPORTS += ("ecwsp.work_study.tasks",)
+    if "ecwsp.volunteer_track" in INSTALLED_APPS:
+        CELERY_IMPORTS += ("ecwsp.volunteer_track.tasks",)
+    CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
+
+
