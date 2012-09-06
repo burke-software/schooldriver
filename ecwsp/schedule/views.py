@@ -46,19 +46,14 @@ def schedule_enroll(request, id):
     if request.method == 'POST':
         form = EnrollForm(request.POST)
         if form.is_valid():
+            CourseEnrollment.objects.filter(course=course, role='student').delete() # start afresh; only students passed in from the form should be enrolled
             # add manually select students first
             selected = form.cleaned_data['students']
-            for student in Student.objects.filter(inactive=False):
-                if student in selected:
-                    # add
-                    enroll, created = CourseEnrollment.objects.get_or_create(user=student, course=course, role="student")
-                    if created: enroll.save()
-                else:
-                    # remove
-                    try:
-                        enroll = CourseEnrollment.objects.get(user=student, course=course, role="student")
-                        enroll.delete()
-                    except: pass
+            for student in selected:
+                # add
+                enroll, created = CourseEnrollment.objects.get_or_create(user=student, course=course, role="student")
+                # left get_or_create in case another schedule_enroll() is running simultaneously
+                if created: enroll.save()
             # add cohort students second
             cohorts = form.cleaned_data['cohorts']
             for cohort in cohorts:

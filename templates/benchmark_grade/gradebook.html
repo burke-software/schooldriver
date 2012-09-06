@@ -1,4 +1,5 @@
 {% extends "admin/base_site.html" %}
+{% load dajaxice_templatetags %}
 
 {% block extrahead %}
     {{ block.super }}
@@ -16,6 +17,10 @@
 
     <link rel="stylesheet" href="/static/css/gradebook/style.css" type="text/css" media="screen">
     <link rel="stylesheet" href="/static/css/modal.css" type="text/css" media="screen">
+
+    {% dajaxice_js_import %}
+    {% load staticfiles %}
+    <script type="text/javascript" src="{% static "dajax/jquery.dajax.core.js" %}"></script>
 {% endblock %}
 
 {% block content %}

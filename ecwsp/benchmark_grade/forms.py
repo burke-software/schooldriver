@@ -66,7 +66,7 @@ class GradebookFilterForm(forms.Form):
     
     def update_querysets(self, course):
         self.fields['cohort'].queryset = Cohort.objects.filter(student__course=course).distinct()
-        self.fields['marking_period'].queryset = MarkingPeriod.objects.filter(course=course)
-        self.fields['benchmark'].queryset = Benchmark.objects.filter(item__course=course)
-        self.fields['assignment_type'].queryset = AssignmentType.objects.filter(item__course=course)
+        self.fields['marking_period'].queryset = MarkingPeriod.objects.filter(course=course).distinct()
+        self.fields['benchmark'].queryset = Benchmark.objects.filter(item__course=course).distinct()
+        self.fields['assignment_type'].queryset = AssignmentType.objects.filter(item__course=course).distinct()
         self.fields['category'].queryset = Category.objects.filter(item__course=course).distinct()
