@@ -288,6 +288,7 @@ def ajax_get_item_form(request, course_id, item_id=None):
     and create tons of assignments. for some reason, only one shows up right away, and the rest
     don't appear until reload '''
     course = get_object_or_404(Course, pk=course_id)
+    item = None
     
     if request.POST:
         if item_id:
@@ -332,6 +333,10 @@ def ajax_get_item_form(request, course_id, item_id=None):
     form.fields['marking_period'].queryset = course.marking_period.all()
     form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
     form.fields['benchmark'].queryset = Benchmark.objects.filter()
+
+    form.fields['category'].widget.attrs = {'onchange': "Dajaxice.ecwsp.benchmark_grade.check_fixed_points_possible(Dajax.process, {'category':this.value})"}
+    if item and item.category.fixed_points_possible:
+        form.fields['points_possible'].widget.attrs = {'disabled': 'true'}
 
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,

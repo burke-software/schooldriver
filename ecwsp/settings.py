@@ -78,6 +78,7 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
     'apptemplates.Loader',
+    'django.template.loaders.eggs.Loader',
 )
 ROOT_URLCONF = 'ecwsp.urls'
 WSGI_APPLICATION = 'ecwsp.wsgi.application'
@@ -119,6 +120,8 @@ INSTALLED_APPS = (
     #'ldap_groups',
     'south',
     'djcelery',
+    'dajaxice',
+    'dajax',
 )
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -136,6 +139,12 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
     'django.core.context_processors.media',
     'ecwsp.sis.context_processors.global_stuff',
+    'django.core.context_processors.static',
+)
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'dajaxice.finders.DajaxiceFinder',
 )
 DEBUG = True
 TEMPLATE_DEBUG = True

@@ -335,3 +335,8 @@ table td input[type="text"] {
 #grp-content {
     padding: 0px 20px 0px;
 }
+
+/* jnm */
+input:disabled {
+    background-color: #EBEBE4;
+}
