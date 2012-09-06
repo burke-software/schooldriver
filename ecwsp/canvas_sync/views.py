@@ -224,7 +224,7 @@ class CanvasSync:
                 line = u'"%s","%s","%s"' % (
                     cohort.id,
                     cohort_student.id,
-                    'active',
+                    'accepted',
                 )
                 result += line + u'\n'
         return result
