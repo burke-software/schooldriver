@@ -240,9 +240,9 @@ def gradebook(request, course_id):
         filter_form.update_querysets(course)
     
     # Freeze these now in case someone else gets in here!
-    items = items.order_by('marking_period', 'name', 'date', 'id').all()
+    items = items.order_by('id').all()
     # whoa, super roll of the dice. is Item.demonstration_set really guaranteed to be ordered by id?
-    marks = Mark.objects.filter(item__in=items).order_by('item__marking_period', 'item__name', 'item__date', 'item__id', 'demonstration__id').all() # precarious; sorting must match items (and demonstrations!) exactly
+    marks = Mark.objects.filter(item__in=items).order_by('item__id', 'demonstration__id').all() # precarious; sorting must match items (and demonstrations!) exactly
     items_count = items.filter(demonstration=None).count() + Demonstration.objects.filter(item__in=items).count()
     for student in students:
         student_marks = marks.filter(student=student)
