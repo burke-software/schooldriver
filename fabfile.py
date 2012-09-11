@@ -16,30 +16,30 @@ all_instances = ['boston', 'chicago', 'crb', 'crny', 'dbcr', 'demo', 'depaul', '
 
 def syncdb():
     for instance in all_instances:
-        local('/opt/sword/manage.py syncdb --migrate --settings=%s.settings --pythonpath=/opt/sword/' % instance)
+        run('/opt/sword/manage.py syncdb --migrate --settings=%s.settings --pythonpath=/opt/sword/' % instance)
 
 def convert_to_south():
-    local("./manage.py syncdb")
+    run("./manage.py syncdb")
     # This first!
-    local('python manage.py convert_to_south sis')
+    run('python manage.py convert_to_south sis')
     for app in settings.INSTALLED_APPS:
         if app not in ['sis'] and 0 == app.find('ecwsp.'):
             _app = app.split('ecwsp.')[1]
-            local('python manage.py convert_to_south %s' % _app)
+            run('python manage.py convert_to_south %s' % _app)
             
 def add_new_celery_user(site_name):
     """ Create a new rabbitmq vhost and celeryd
     """
-    local('rabbitmqctl add_user sword_%s sword_%s' % (site_name, site_name))
-    local('rabbitmqctl add_vhost sword_%s' % (site_name,))
-    local('rabbitmqctl set_permissions -p sword_%s sword_%s ".*" ".*" ".*"' % (site_name, site_name,))
+    run('rabbitmqctl add_user sword_%s sword_%s' % (site_name, site_name))
+    run('rabbitmqctl add_vhost sword_%s' % (site_name,))
+    run('rabbitmqctl set_permissions -p sword_%s sword_%s ".*" ".*" ".*"' % (site_name, site_name,))
     
     conf_file = """; =======================================
 ;  celeryd supervisor example for Django
 ; =======================================
 [program:celery_sword_<site>]
 command=/opt/sword/manage.py celeryd --autoreload --loglevel=INFO --settings=<site>.settings --pythonpath=/opt/sword/
-directory=/opt/sword
+directory=/opt/sword/<site>
 user=www-data
 numprocs=1
 stdout_logfile=/var/log/celeryd.log
@@ -62,7 +62,7 @@ priority=998
 ; ==========================================
 
 [program:celerybeat_sword_<site>]
-command=/opt/sword/manage.py celerybeat -S djcelery.schedulers.DatabaseScheduler --loglevel=INFO --settings=<site>.settings --pythonpath=/opt/sword/
+command=/opt/sword/manage.py celerybeat --loglevel=INFO --settings=<site>.settings --pythonpath=/opt/sword/
 directory=/opt/sword/<site>
 user=www-data
 numprocs=1

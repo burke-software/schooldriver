@@ -2,6 +2,7 @@ from ecwsp.work_study.models import StudentInteraction, CraContact, TimeSheet
 from ecwsp.administration.models import Configuration
 from django.core.mail import send_mail
 from datetime import date
+import logging
 from django.conf import settings
 
 from celery.task.schedules import crontab
@@ -42,7 +43,13 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                     msg += "\n"
                     for preset in interaction.preset_comment.all():
                         msg += unicode(preset) + "\n"
-                    send_mail(subject, msg, from_email, [unicode(cra.name.email)])
+                    try:
+                        send_mail(subject, msg, from_email, [unicode(cra.name.email)])
+                    except:
+                        logging.warning('Could not email interactions', exc_info=True, extra={
+                            'exception': sys.exc_info()[0],
+                            'exception2': sys.exc_info()[1],
+                        })
         
         cras = CraContact.objects.filter(email=True).filter(email_all=False)
         for cra in cras:
@@ -66,7 +73,13 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                             msg += "Timesheet approved by supervisor\n\n"
                         else:
                             msg += "Timesheet not yet approved by supervisor\n\n"
-                send_mail(subject, msg, from_email, [unicode(cra.name.email)])
+                try:
+                    send_mail(subject, msg, from_email, [unicode(cra.name.email)])
+                except:
+                    logging.warning('Could not email CRA', exc_info=True, extra={
+                        'exception': sys.exc_info()[0],
+                        'exception2': sys.exc_info()[1],
+                    })
         cras = CraContact.objects.filter(email_all=True)
         for cra in cras:
             msg = ""
@@ -84,4 +97,10 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                             msg += "Timesheet approved by supervisor\n\n"
                         else:
                             msg += "Timesheet not yet approved by supervisor\n\n"
-                send_mail(subject, msg, from_email, [unicode(cra.name.email)])
+                try:
+                    send_mail(subject, msg, from_email, [unicode(cra.name.email)])
+                except:
+                    logging.warning('Could not email CRA all comments', exc_info=True, extra={
+                        'exception': sys.exc_info()[0],
+                        'exception2': sys.exc_info()[1],
+                    })

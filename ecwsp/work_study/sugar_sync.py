@@ -107,4 +107,4 @@ class SugarSync:
                 elif field.name == "email1":
                     sis_contact.email = field.value
                     
-            sis_contact.save()
+            sis_contact.save(sync_sugar=False)

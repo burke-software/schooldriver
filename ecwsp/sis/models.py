@@ -622,11 +622,11 @@ class Student(MdlUser, CustomFieldModel):
         user.groups.add(group)
         
         
-    def full_clean(self, *args, **kwargs):
+    def clean(self, *args, **kwargs):
         """ Check if a Faculty exists, can't have someone be a Student and Faculty """
         if Faculty.objects.filter(id=self.id).count():
             raise ValidationError('Cannot have someone be a student AND faculty!')
-        super(Student, self).full_clean(*args, **kwargs)
+        super(Student, self).clean(*args, **kwargs)
         
     def graduate_and_create_alumni(self):
         self.inactive = True
