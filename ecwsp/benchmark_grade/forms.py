@@ -22,7 +22,7 @@ from django.contrib.admin import widgets as adminwidgets
 
 from ecwsp.schedule.models import MarkingPeriod
 from ecwsp.benchmark_grade.models import Item, AssignmentType, Category, Demonstration
-from ecwsp.sis.models import Cohort
+from ecwsp.sis.models import PerCourseCohort, Cohort
 from ecwsp.omr.models import Benchmark
 
 class BenchmarkGradeVerifyForm(forms.Form):
@@ -65,7 +65,8 @@ class GradebookFilterForm(forms.Form):
     date_end = forms.DateField(required=False, widget=adminwidgets.AdminDateWidget(attrs={'placeholder':'Earlier than'}))
     
     def update_querysets(self, course):
-        self.fields['cohort'].queryset = Cohort.objects.filter(student__course=course).distinct()
+        self.fields['cohort'].queryset = Cohort.objects.filter(student__course=course, percoursecohort=None).distinct()
+        self.fields['cohort'].queryset |= Cohort.objects.filter(percoursecohort__course=course).distinct().order_by('percoursecohort', 'name')
         self.fields['marking_period'].queryset = MarkingPeriod.objects.filter(course=course).distinct()
         self.fields['benchmark'].queryset = Benchmark.objects.filter(item__course=course).distinct()
         self.fields['assignment_type'].queryset = AssignmentType.objects.filter(item__course=course).distinct()
