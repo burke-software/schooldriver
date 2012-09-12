@@ -62,7 +62,6 @@ function select_cell(event){
 function make_into_input(element){
     // Make text grade into input for grade entry
     value = element.text(); 
-    console.log(element)
     parent = $(element).parent('td');
     $(element).replaceWith('<input onblur="mark_change(event)" onkeydown="return keyboard_nav(event)" class="grade_input" prev_value="'+value+'" value="'+value+'"/>');
     $(parent).children('input').focus();
@@ -100,7 +99,6 @@ function mark_change(event) {
     } else {
         $(event.target).replaceWith('<div>' + $(event.target).val() + '</div>');
     }
-    
 }
 
 function get_new_assignment_form(event){
@@ -257,6 +255,8 @@ function confirm_demonstration_delete(demonstration_id){
 function keyboard_nav(event) {
     key = event.which;
     if (key == 13 || key == 40 || key == 38 || key == 37 || key == 39) {
+        // jnm 20120912 we're leaving this cell, so trigger mouseleave to remove highlighting
+        $(event.target).closest('td').trigger('mouseleave')
         column = $(event.target).parents('td').attr('id').replace(/^tdc(\d+)_.*$/, '$1').trim();
         row = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r(\d+)_.*$/, '$1').trim();
         
@@ -275,6 +275,8 @@ function keyboard_nav(event) {
         make_into_input($(selected_element).children('div'));
         $(selected_element).children('input').focus();
         $(selected_element).children('input').select();
+        // jnm 20120912 trigger :hover highlighting of newly focused cell
+        $(selected_element).trigger('mouseenter');
         return false;
     }
 }
