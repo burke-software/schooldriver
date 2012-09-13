@@ -36,7 +36,14 @@ def find_calculation_rule(school_year):
 
 def calculate_category(student, course, category, marking_period):
     incomplete = False # TODO: remove this hack
-    a, created = Aggregate.objects.get_or_create(name='G! {} - {} ({})'.format(student, category, course), student=student, course=course, category=category, marking_period=marking_period)
+    try:
+        a, created = Aggregate.objects.get_or_create(name='G! {} - {} ({})'.format(student, category, course), student=student, course=course, category=category, marking_period=marking_period)
+    except Aggregate.MultipleObjectsReturned:
+        bad = Aggregate.objects.filter(name='G! {} - {} ({})'.format(student, category, course), student=student, course=course, category=category, marking_period=marking_period)
+        logging.error("calculate_category() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
+        bad.delete()
+        a, created = Aggregate.objects.get_or_create(name='G! {} - {} ({})'.format(student, category, course), student=student, course=course, category=category, marking_period=marking_period)
+
     category_numer = category_denom = Decimal(0)
     if category.allow_multiple_demonstrations:
         for category_item in Item.objects.filter(course=course, category=category):
@@ -74,6 +81,13 @@ def gradebook_recalculate(mark, student=None, course=None, category=None, markin
 
     marking_period = None # meh... just calculate the entire year for now
     a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
+    try:
+        a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
+    except Aggregate.MultipleObjectsReturned:
+        bad = Aggregate.objects.filter(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
+        logging.error("calculate_category() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
+        bad.delete()
+        a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
     if created or calculation_rule.per_course_category_set.filter(category=category, apply_to_departments=course.department):
         # need to recalculate the whole course
         course_numer = course_denom = Decimal(0)
