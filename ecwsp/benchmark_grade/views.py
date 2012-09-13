@@ -42,7 +42,7 @@ from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.forms import *
 from ecwsp.omr.models import Benchmark
-from ecwsp.benchmark_grade.utility import gradebook_recalculate, gradebook_recalculate_all_students
+from ecwsp.benchmark_grade.utility import gradebook_recalculate, gradebook_recalculate_all_students, gradebook_calculate_course_average
 
 from decimal import Decimal, ROUND_HALF_UP
 import time
@@ -263,6 +263,13 @@ def gradebook(request, course_id):
             student.average = Aggregate.objects.get(student=student, course=course, category=None, marking_period=None).cached_value
         except Aggregate.DoesNotExist:
             student.average = None
+        except Aggregate.MultipleObjectsReturned:
+            bad = Aggregate.objects.filter(student=student, course=course, category=None, marking_period=None)
+            logging.error("views.gradebook() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
+            bad.delete()
+            student.average = gradebook_calculate_course_average(student, course, marking_period=None)[0].cached_value
+
+
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
         'students': students,

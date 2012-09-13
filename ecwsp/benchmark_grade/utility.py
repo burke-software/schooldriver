@@ -69,6 +69,31 @@ def gradebook_recalculate_all_students(course, category, marking_period):
     for s in course.get_enrolled_students():
         gradebook_recalculate(mark=None, student=s, course=course, category=category, marking_period=marking_period)
 
+def gradebook_calculate_course_average(student, course, marking_period):
+    calculation_rule = find_calculation_rule(course.marking_period.all()[0].school_year)
+    incomplete = False # doesn't actually do anything
+    a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
+    try:
+        a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
+    except Aggregate.MultipleObjectsReturned:
+        bad = Aggregate.objects.filter(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
+        logging.error("gradebook_calculate_course_average() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
+        bad.delete()
+        a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
+    course_numer = course_denom = Decimal(0)
+    for rule_category in calculation_rule.per_course_category_set.filter(apply_to_departments=course.department):
+        cat_value, cat_incomplete = calculate_category(student, course, rule_category.category, marking_period)
+        incomplete |= cat_incomplete
+        if cat_value is not None:
+            course_numer += rule_category.weight * cat_value
+            course_denom += rule_category.weight
+    if course_denom:
+        a.cached_value = course_numer / course_denom
+    else:
+        a.cached_value = None
+    a.save()
+    return a, incomplete
+
 def gradebook_recalculate(mark, student=None, course=None, category=None, marking_period=None):
     # gee sounds a lot like mark.save(), doesn't it?
     incomplete = False # TODO: remove this hack
@@ -85,23 +110,12 @@ def gradebook_recalculate(mark, student=None, course=None, category=None, markin
         a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
     except Aggregate.MultipleObjectsReturned:
         bad = Aggregate.objects.filter(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
-        logging.error("calculate_category() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
+        logging.error("gradebook_recalculate() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
         bad.delete()
         a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
     if created or calculation_rule.per_course_category_set.filter(category=category, apply_to_departments=course.department):
         # need to recalculate the whole course
-        course_numer = course_denom = Decimal(0)
-        for rule_category in calculation_rule.per_course_category_set.filter(apply_to_departments=course.department):
-            cat_value, cat_incomplete = calculate_category(student, course, rule_category.category, marking_period)
-            incomplete |= cat_incomplete
-            if cat_value is not None:
-                course_numer += rule_category.weight * cat_value
-                course_denom += rule_category.weight
-        if course_denom:
-            a.cached_value = course_numer / course_denom
-        else:
-            a.cached_value = None
-        a.save()
+        a, incomplete = gradebook_calculate_course_average(student, course, marking_period)
     else:
         # just recalculate this category and return unchanged course average
         cat_value = calculate_category(student, course, category, marking_period)
