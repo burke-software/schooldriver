@@ -703,6 +703,7 @@ def report_builder_view(request):
                     workers = (StudentWorker.objects.all()).exclude(inactive=True)
                     data = []
                     for worker in workers:
+                        eFname = eLname = eHome = eWork = eCell = ""
                         try:
                             number = (StudentNumber.objects.filter(student=worker)).filter(type='C')[0]
                         except:
@@ -710,25 +711,16 @@ def report_builder_view(request):
                                 number = (StudentNumber.objects.filter(student=worker))[0]
                             except:
                                 number = "none"
-                        try:
-                            eContacts = (EmergencyContact.objects.filter(student=worker))
-                            try:
-                                eContact = eContacts.get(primary_contact=True)
-                            except:
-                                eContact = eContacts[0]
-                            eFname = eContact.fname
-                            try:
-                                eNumbers = EmergencyContactNumber.objects.filter(contact = eContact)
-                            except:
-                                eNumbers = [("none"), ("none")]
-                            try:
-                                eNumbers[1]
-                            except IndexError:
-                                eNumbers = [eNumbers[0],("none")]
-                        except:
-                            eFname = "No contact assigned"
-                            eNumbers = [("none"), ("none")]
-                            
+                        if worker.emergency_contacts.filter(primary_contact=True):
+                            primary_ec = worker.emergency_contacts.filter(primary_contact=True)[0]
+                            eFname = primary_ec.fname
+                            eLname = primary_ec.lname
+                            if primary_ec.emergencycontactnumber_set.filter(type="H"):
+                                eHome = primary_ec.emergencycontactnumber_set.filter(type="H")[0].number
+                            if primary_ec.emergencycontactnumber_set.filter(type="W"):
+                                eWork = primary_ec.emergencycontactnumber_set.filter(type="W")[0].number
+                            if primary_ec.emergencycontactnumber_set.filter(type="C"):
+                                eCell = primary_ec.emergencycontactnumber_set.filter(type="C")[0].number
 
                         if worker.primary_contact:
                             supFname = worker.primary_contact.fname
@@ -744,10 +736,10 @@ def report_builder_view(request):
                             supEmail =" "
                         
                         data.append([worker.fname, worker.lname, worker.mname, worker.year, worker.day, supFname,\
-                            supLname,supPhone, supCell,supEmail,number,eFname,eNumbers[0],eNumbers[1]])   
+                            supLname,supPhone, supCell,supEmail,number,eFname,eLname,eHome,eCell,eWork])   
                     fileName = "StudentMasterContactList.xls"
                     titles = ['First Name', 'Last Name', 'Middle Name','Year', 'Work Day', 'Supervisor First Name', 'Supervisor Last Name', 'Supervisor Phone', \
-                        'Supervisor Cell', 'Supervisor Email', 'Student Cell', 'Parent First Name', 'Parent Number', 'Parent Secondary Number']
+                        'Supervisor Cell', 'Supervisor Email', 'Student Cell', 'Parent First Name', 'Parent Last Name', 'Parent Home', 'Parent Cell', 'Parent Work']
                     report = xlsReport(data, titles, fileName, heading="Custom Report")
                     return report.finish()
             else:
