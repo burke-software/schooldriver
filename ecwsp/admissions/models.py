@@ -135,7 +135,7 @@ class Applicant(models.Model, CustomFieldModel):
     fname = models.CharField(max_length=255, verbose_name="First Name")
     mname = models.CharField(max_length=255, verbose_name="Middle Name", blank=True)
     lname = models.CharField(max_length=255, verbose_name="Last Name")
-    pic = models.ImageField(upload_to="/applicant_pics",blank=True, null=True)
+    pic = models.ImageField(upload_to="applicant_pics",blank=True, null=True)
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date")
     unique_id = models.IntegerField(blank=True, null=True, unique=True)
