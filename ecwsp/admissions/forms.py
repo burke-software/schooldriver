@@ -33,9 +33,5 @@ class ApplicantForm(forms.ModelForm):
     application_decision_by = AutoCompleteSelectField('faculty_user',required=False)
     
         
-class ContactLogForm(forms.ModelForm):
-    class Meta:
-        model = ContactLog
-        
 class ReportForm(forms.Form):
     school_year = forms.ModelMultipleChoiceField(SchoolYear.objects.all())

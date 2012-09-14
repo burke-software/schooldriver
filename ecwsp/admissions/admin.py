@@ -41,13 +41,12 @@ admin.site.register(AdmissionLevel,AdmissionLevelAdmin)
 
 class ContactLogInline(admin.TabularInline):
     model = ContactLog
-    form = ContactLogForm
     extra = 1
-    readonly_fields = ('user','date')
+    readonly_fields = ('user',)
 
 class ApplicantAdmin(CustomFieldAdmin):
     form = ApplicantForm
-    list_display = ('lname', 'fname', 'present_school', 'city', 'level', 'application_decision', 'school_year', 'ready_for_export',)
+    list_display = ('lname', 'fname', 'present_school', 'city', 'level', 'application_decision', 'school_year', 'ready_for_export','follow_up_date')
     list_filter = ['school_year', 'level', 'checklist', 'ready_for_export', 'application_decision','present_school','ethnicity', 'heard_about_us', 'first_contact', 'year']
     search_fields = ['lname', 'fname', 'present_school__name']
     inlines = [ContactLogInline]
@@ -106,7 +105,7 @@ class ApplicantAdmin(CustomFieldAdmin):
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
         for instance in instances:
-            if isinstance(instance, ContactLog): #Check if it is the correct type of inline
+            if isinstance(instance, ContactLog) and instance.note: #Check if it is the correct type of inline
                 if(not instance.user):
                     instance.user = request.user        
                 instance.save()

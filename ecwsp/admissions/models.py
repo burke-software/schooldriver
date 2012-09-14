@@ -135,6 +135,7 @@ class Applicant(models.Model, CustomFieldModel):
     fname = models.CharField(max_length=255, verbose_name="First Name")
     mname = models.CharField(max_length=255, verbose_name="Middle Name", blank=True)
     lname = models.CharField(max_length=255, verbose_name="Last Name")
+    pic = models.ImageField(upload_to="/applicant_pics",blank=True, null=True)
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date")
     unique_id = models.IntegerField(blank=True, null=True, unique=True)
@@ -241,7 +242,7 @@ m2m_changed.connect(cache_applicant_m2m, sender=Applicant.parent_guardians.throu
 
 class ContactLog(models.Model):
     applicant = models.ForeignKey(Applicant)
-    date = models.DateField(editable=False)
+    date = models.DateField()
     user = models.ForeignKey(User, blank=True, null=True)
     note = models.TextField()
     
