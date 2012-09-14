@@ -759,7 +759,7 @@ class SchoolYear(models.Model):
         """ Returns number of active school days in this year, based on
         each marking period of the year.
         date: Defaults to today, date to count towards. Used to get days up to a certain date"""
-        mps = self.markingperiod_set.all().order_by('start_date')
+        mps = self.markingperiod_set.filter(show_reports=True).order_by('start_date')
         day = 0
         for mp in mps:
             day += mp.get_number_days(date)
