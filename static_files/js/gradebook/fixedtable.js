@@ -26,7 +26,10 @@
         $(".fixedContainer .fixedTable", layout).css({
             "float": "left",
             width: (w) + "px",
-            "overflow": "auto"
+            /* if overflow-x is auto, then either the last student's name is partially cut off, or the names don't align properly with the grades */
+            /* forcing a horizontal scrollbar fixes #42 */
+            "overflow-x": "scroll",
+            "overflow-y": "auto"
         });
         $(".fixedContainer", layout).css({
             width: (w) + "px",

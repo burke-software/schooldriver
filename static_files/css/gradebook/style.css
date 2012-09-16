@@ -34,64 +34,63 @@ body {
 	float: left;
         margin-top: 0px;
 }
-
 .fixedTable {
 	float: left;
 }
 .fixedTable td { /* jnm */
     vertical-align: middle;
 }
-	    .fixedColumn .fixedTable td
-        {
-            color: #000;
-            background-color: #FFF;
-            font: 600 14px Helvetica;
-	    height: 35px;
-            padding: 0px;
-            vertical-align: middle;
-        }
-        .fixedHead td
-        {
-            color: #000;
-            background-color: #F3F3F3;
-            font: 600 14px Helvetica;
-            padding: 0px;
-            border: 0px solid #FFF;
-            vertical-align: middle;
-            height: 45px;
-        }
-		.assignment
-		{
-			font-size: 10px;
-			line-height: 1em;
-			width: 80px;
-			margin: 0;
-			padding: 0;
-		}
-		.assignment a
-		{
-			text-decoration: none;
-			color: #000;
-		}
-		.assignment a:hover
-		{
-			text-decoration: none;
-		}
-		.assignment a:visited
-		{
-			text-decoration: none;
-			color: #000;
-		}
-        .fixedTable td
-        {
-            font: 12px Helvetica;
-            background-color: #FFF;
-            padding: 0px;
-            text-align: left;
-			height: 35px;
-			width: 60px;
-            border: 0px;
-        }
+.fixedColumn .fixedTable td
+{
+    color: #000;
+    background-color: #FFF;
+    font: 600 14px Helvetica;
+height: 35px;
+    padding: 0px;
+    vertical-align: middle;
+}
+.fixedHead td
+{
+    color: #000;
+    background-color: #F3F3F3;
+    font: 600 14px Helvetica;
+    padding: 0px;
+    border: 0px solid #FFF;
+    vertical-align: middle;
+    height: 45px;
+}
+.assignment
+{
+    font-size: 10px;
+    line-height: 1em;
+    width: 80px;
+    margin: 0;
+    padding: 0;
+}
+.assignment a
+{
+    text-decoration: none;
+    color: #000;
+}
+.assignment a:hover
+{
+    text-decoration: none;
+}
+.assignment a:visited
+{
+    text-decoration: none;
+    color: #000;
+}
+.fixedTable td
+{
+    font: 12px Helvetica;
+    background-color: #FFF;
+    padding: 0px;
+    text-align: left;
+    height: 35px;
+    width: 60px;
+    border: 0px;
+}
 
 .assignment:hover {
     color: #464646;
