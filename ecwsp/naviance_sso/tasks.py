@@ -47,7 +47,7 @@ if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_
         
         params = {
             'account':settings.NAVIANCE_ACCOUNT,
-            'username':settings.NAVIANCE_USERNAME,
+            'username':settings.NAVIANCE_IMPORT_USERNAME,
             'key':settings.NAVIANCE_IMPORT_KEY,
             'type':'1',
             'format':'CSV',
@@ -62,7 +62,7 @@ if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_
         
         params = {
             'account':settings.NAVIANCE_ACCOUNT,
-            'username':settings.NAVIANCE_USERNAME,
+            'username':settings.NAVIANCE_IMPORT_USERNAME,
             'key':settings.NAVIANCE_IMPORT_KEY,
             'type':'11',
             'format':'CSV',

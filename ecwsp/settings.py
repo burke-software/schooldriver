@@ -303,6 +303,7 @@ ENGRADE_SCHOOLID = ''
 
 #Naviance
 NAVIANCE_ACCOUNT = ''
+NAVIANCE_IMPORT_USERNAME = ''
 NAVIANCE_USERNAME = ''
 NAVIANCE_PASSWORD = ''
 # username, id, or unique_id
