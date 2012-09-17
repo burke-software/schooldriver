@@ -62,6 +62,8 @@ if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_
         if response.text != 'Success.\n':
             raise Exception("Error in Naviance Data create import: %s" % (response.text,))
         
+        temp.seek(0)
+        files = {'datafile': ('import.csv',temp)}
         params = {
             'account':settings.NAVIANCE_ACCOUNT,
             'username':settings.NAVIANCE_IMPORT_USERNAME,
