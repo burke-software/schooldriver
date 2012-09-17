@@ -251,8 +251,10 @@ def am_route_attendance(request):
                 student.sex,
                 student.fname,
                 student.lname,
-                student.phone,
             ]
+            # all the student's personal numbers, comma-separated
+            row += [','.join(map(str, student.studentnumber_set.all())),]
+
             if hasattr(student,'placement') and student.placement:
                 row += [
                     student.placement.time_earliest,
