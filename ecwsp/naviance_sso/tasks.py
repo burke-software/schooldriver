@@ -1,5 +1,7 @@
 from django.conf import settings
 
+from ecwsp.sis.models import Student
+
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
