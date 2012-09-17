@@ -261,7 +261,8 @@ def am_route_attendance(request):
                     student.placement.time_latest,
                     student.placement.time_ideal,
                 ]
-                if 'am_route_attendance' in request.POST:
+                # help text for pm_transport_group says it can be left blank if not different than am_transport_group
+                if 'am_route_attendance' in request.POST or student.placement.pm_transport_group is None:
                     row += [unicode(student.placement.am_transport_group),]
                 else:
                     row += [unicode(student.placement.pm_transport_group),]
