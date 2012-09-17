@@ -258,9 +258,12 @@ def am_route_attendance(request):
                     student.placement.time_earliest,
                     student.placement.time_latest,
                     student.placement.time_ideal,
-                    unicode(student.placement.am_transport_group),
-                    student.placement.directions_to,
                 ]
+                if 'am_route_attendance' in request.POST:
+                    row += [unicode(student.placement.am_transport_group),]
+                else:
+                    row += [unicode(student.placement.pm_transport_group),]
+                row += [student.placement.directions_to,]
             else:
                 row += ['', '', '', '','']
             row += [student.get_transport_exception_display(), ]
