@@ -309,6 +309,7 @@ NAVIANCE_PASSWORD = ''
 # username, id, or unique_id
 NAVIANCE_SWORD_ID = 'username'
 NAVIANCE_IMPORT_KEY = ''
+NAVIANCE_EMAILS = ''
 
 
 #Admissions
