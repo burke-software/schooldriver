@@ -26,7 +26,6 @@ from django.contrib.sessions.models import Session
 from ecwsp.sis.models import Student
 from suds.client import Client
 import json
-import csv
 
 @login_required
 def login(request):
@@ -68,33 +67,4 @@ def login(request):
         if s.get_decoded().get('_auth_user_id') == request.user.id:
             s.delete()
     return HttpResponseRedirect(url)
-
-def create_new_naviance_students():
-    """ Naviance has no update or create. So this must be seperate.
-    """
-    data = [['Student_ID','Class_Year','Last Name','First Name','Middle Name','Gender','Birthdate','GPA']]
-    for student in Student.objects.filter(inactive=False):
-        row = []
-        if settings.NAVIANCE_SWORD_ID == "username":
-            row += student.username
-        elif settings.NAVIANCE_SWORD_ID == "unique_id":
-            row += student.unique_id
-        else:
-            row += student.id
-        if student.class_of_year:
-            row += student.class_of_year.year
-        else:
-            row += ''
-        row += [
-            student.lname,
-            student.fname,
-            student.mname,
-            student.sex,
-            student.bday,
-            student.gpa,
-        ]
-        data += [row]
-    myfile = open('foo.csv', 'wb')
-    wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-    wr.writerow(mylist)
     

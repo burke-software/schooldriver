@@ -302,6 +302,7 @@ ENGRADE_SCHOOLID = ''
 
 
 #Naviance
+NAVIANCE_ACCOUNT = ''
 NAVIANCE_USERNAME = ''
 NAVIANCE_PASSWORD = ''
 # username, id, or unique_id
@@ -349,7 +350,7 @@ if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
 if 'djcelery' in INSTALLED_APPS:
     import djcelery
     djcelery.setup_loader()
-    BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+    #BROKER_URL = 'amqp://guest:guest@localhost:5672/'
     CELERY_IMPORTS = ()
     if "ecwsp.canvas_sync" in INSTALLED_APPS:
         CELERY_IMPORTS += ("ecwsp.canvas_sync.tasks",)
@@ -357,6 +358,8 @@ if 'djcelery' in INSTALLED_APPS:
         CELERY_IMPORTS += ("ecwsp.work_study.tasks",)
     if "ecwsp.volunteer_track" in INSTALLED_APPS:
         CELERY_IMPORTS += ("ecwsp.volunteer_track.tasks",)
+    if "ecwsp.naviance_sso" in INSTALLED_APPS and NAVIANCE_IMPORT_KEY:
+        CELERY_IMPORTS += ("ecwsp.naviance_sso.tasks",)
     CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 
 
