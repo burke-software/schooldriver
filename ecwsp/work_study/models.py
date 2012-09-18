@@ -44,7 +44,6 @@ from reportlab.lib.pagesizes import letter
 from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
 import logging
-from daterange_filter.fields import DateRangeField
 
 from ecwsp.administration.models import Configuration
 from ecwsp.sis.models import Student
@@ -655,8 +654,7 @@ class TimeSheet(models.Model):
     make_up = models.BooleanField(help_text="Student is making up a missed day.", verbose_name="makeup")
     company = models.ForeignKey(WorkTeam) # Because a student's company can change but this shouldn't.
     creation_date = models.DateTimeField(auto_now_add=True)
-    date = DateRangeField()
-    date.daterange_filter = True
+    date = models.DateField()
     time_in = models.TimeField()
     time_lunch = models.TimeField()
     time_lunch_return = models.TimeField()

@@ -25,7 +25,7 @@ from django.contrib import admin
 from django.utils.encoding import smart_unicode
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
-from daterange_filter import filter #https://github.com/tzulberti/django-datefilterspec
+from daterange_filter.filter import DateRangeFilter
 
 from django import forms
 from ecwsp.work_study.forms import StudentForm, WorkTeamForm
@@ -35,7 +35,6 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from ajax_select import make_ajax_form
 from custom_field.custom_field import CustomFieldAdmin
-#import datefilterspec
 
 import logging
     
@@ -332,7 +331,7 @@ class TimeSheetAdmin(admin.ModelAdmin):
         return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
         
     search_fields = ['student__fname', 'student__lname', 'company__team_name']
-    list_filter = ['date','creation_date', 'approved', 'performance', 'for_pay', 'make_up', 'company',
+    list_filter = [('date', DateRangeFilter),'creation_date', 'approved', 'performance', 'for_pay', 'make_up', 'company',
                    'student__inactive']
     list_display = ('student', 'date', 'company', 'performance', 'student_Accomplishment_Brief', 'supervisor_Comment_Brief',
                     'approved', 'for_pay', 'make_up',)

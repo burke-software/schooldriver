@@ -111,6 +111,7 @@ INSTALLED_APPS = (
     'reversion',
     'django_extensions',
     'django_filters',
+    'daterange_filter',
     'pagination',
     'massadmin',
     'admin_export',

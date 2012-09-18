@@ -6,29 +6,36 @@ import StringIO
 current_path = os.path.dirname(inspect.getfile(inspect.currentframe()))
 sys.path.append(current_path)
 
-from fabric.api import local, run, sudo, put, cd
+from fabric.api import *
 from fabric.contrib import django
 
 django.settings_module('ecwsp.settings')
 from django.conf import settings
 
-all_instances = ['boston', 'chicago', 'crb', 'crny', 'dbcr', 'demo', 'depaul', 'ndhslaw', 'philly', 'waukegan']
-
-install_dir = "/opt/sword/"
+def sword_crny():
+    env.all_instances = ['boston', 'chicago', 'crb', 'crny', 'dbcr', 'demo', 'depaul', 'ndhslaw', 'philly', 'waukegan']
+    env.hosts = ['sis.cristoreyny.org']
+    env.install_dir = "/opt/sword/"
+    env.user = 'root'
+    
+def sword_tc():
+    env.all_instances = ['crjhs']
+    env.hosts = ['sis.cristoreytc.org']
+    env.install_dir = "/opt/sword/"
 
 def upgrade():
-    cd(install_dir)
-    sudo('git pull')
-    cd('install')
-    sudo('pip install --upgrade -r dependencies.txt')
+    with cd(env.install_dir):
+        sudo('git pull')
+        with cd('install'):
+            sudo('pip install --upgrade -r dependencies.txt')
     syncdb()
     #TODO Collect static!
-    sudo('supervisorctl reload')
-    sudo('service apache2 reload')
+    #sudo('supervisorctl reload')
+    #sudo('service apache2 reload')
 
 def syncdb():
-    for instance in all_instances:
-        run('%smanage.py syncdb --migrate --settings=%s.settings --pythonpath=/opt/sword/' % (install_dir, instance))
+    for instance in env.all_instances:
+        run('%smanage.py syncdb --migrate --settings=%s.settings --pythonpath=/opt/sword/' % (env.install_dir, instance))
 
 def convert_to_south():
     run("./manage.py syncdb")
