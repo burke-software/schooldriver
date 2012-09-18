@@ -24,7 +24,7 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
             sugar_sync = SugarSync()
             sugar_sync.update_contact(contact)
     
-    @periodic_task(run_every=crontab(hour=15, minute=27)) # really want this to run at 20:27, but celery sucks at dealing with timezones.
+    @periodic_task(run_every=crontab(hour=20, minute=27))
     def email_cra_nightly():
         """ Email CRA nightly time sheet and student interaction information
         """

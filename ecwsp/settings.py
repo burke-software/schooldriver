@@ -363,5 +363,4 @@ if 'djcelery' in INSTALLED_APPS:
     if "ecwsp.naviance_sso" in INSTALLED_APPS and NAVIANCE_IMPORT_KEY:
         CELERY_IMPORTS += ("ecwsp.naviance_sso.tasks",)
     CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
-
-
+    CELERY_ENABLE_UTC = False

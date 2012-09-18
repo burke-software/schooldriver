@@ -251,16 +251,22 @@ def am_route_attendance(request):
                 student.sex,
                 student.fname,
                 student.lname,
-                student.phone,
             ]
+            # all the student's personal numbers, comma-separated
+            row += [','.join(map(str, student.studentnumber_set.all())),]
+
             if hasattr(student,'placement') and student.placement:
                 row += [
                     student.placement.time_earliest,
                     student.placement.time_latest,
                     student.placement.time_ideal,
-                    unicode(student.placement.am_transport_group),
-                    student.placement.directions_to,
                 ]
+                # help text for pm_transport_group says it can be left blank if not different than am_transport_group
+                if 'am_route_attendance' in request.POST or student.placement.pm_transport_group is None:
+                    row += [unicode(student.placement.am_transport_group),]
+                else:
+                    row += [unicode(student.placement.pm_transport_group),]
+                row += [student.placement.directions_to,]
             else:
                 row += ['', '', '', '','']
             row += [student.get_transport_exception_display(), ]
