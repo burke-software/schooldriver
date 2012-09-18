@@ -80,7 +80,7 @@ class CanvasSync:
                 '',
                 student.fname,
                 student.lname,
-                student.email,
+                student.get_email,
             )
             if student.inactive:
                 line += u'"deleted"'
