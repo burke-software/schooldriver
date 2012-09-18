@@ -463,6 +463,23 @@ class Student(MdlUser, CustomFieldModel):
         """ returns "son" or "daughter" """
         return self.gender_to_word("son", "daughter")
     
+    @property
+    def get_email(self):
+        """ Returns email address using various configurable methods """
+        email_method = Configuration.get_or_default(
+            "How to obtain student email",
+            default="append",
+            help_text="append, user, or student.").value
+        if email_method == "append":
+            email_end = Configuration.get_or_default("email", default="@change.me").value
+            return '%s%s' % (self.student.username, email_end)
+        elif email_method == "user":
+            if User.objects.filter(username=self.student.username):
+                return User.objects.filter(username=self.student.username)[0].email
+            return None
+        return self.email
+
+    
     def get_disciplines(self, mps, action_name=None, count=True):
         """ Shortcut to look up discipline records
         mp: Marking Period
