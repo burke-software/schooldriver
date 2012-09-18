@@ -6,7 +6,7 @@ import StringIO
 current_path = os.path.dirname(inspect.getfile(inspect.currentframe()))
 sys.path.append(current_path)
 
-from fabric.api import local, run, sudo, put
+from fabric.api import local, run, sudo, put, cd
 from fabric.contrib import django
 
 django.settings_module('ecwsp.settings')
@@ -14,9 +14,21 @@ from django.conf import settings
 
 all_instances = ['boston', 'chicago', 'crb', 'crny', 'dbcr', 'demo', 'depaul', 'ndhslaw', 'philly', 'waukegan']
 
+install_dir = "/opt/sword/"
+
+def upgrade():
+    cd(install_dir)
+    sudo('git pull')
+    cd('install')
+    sudo('pip install --upgrade -r dependencies.txt')
+    syncdb()
+    #TODO Collect static!
+    sudo('supervisorctl reload')
+    sudo('service apache2 reload')
+
 def syncdb():
     for instance in all_instances:
-        run('/opt/sword/manage.py syncdb --migrate --settings=%s.settings --pythonpath=/opt/sword/' % instance)
+        run('%smanage.py syncdb --migrate --settings=%s.settings --pythonpath=/opt/sword/' % (install_dir, instance))
 
 def convert_to_south():
     run("./manage.py syncdb")
@@ -42,8 +54,8 @@ command=/opt/sword/manage.py celeryd --autoreload --loglevel=INFO --settings=<si
 directory=/opt/sword/<site>
 user=www-data
 numprocs=1
-stdout_logfile=/var/log/celeryd.log
-stderr_logfile=/var/log/celeryd.log
+stdout_logfile=/var/log/celeryd_<site>.log
+stderr_logfile=/var/log/celeryd_<site>.log
 autostart=true
 autorestart=true
 startsecs=10
@@ -66,8 +78,8 @@ command=/opt/sword/manage.py celerybeat --loglevel=INFO --settings=<site>.settin
 directory=/opt/sword/<site>
 user=www-data
 numprocs=1
-stdout_logfile=/var/log/celerybeat.log
-stderr_logfile=/var/log/celerybeat.log
+stdout_logfile=/var/log/celerybeat_<site>.log
+stderr_logfile=/var/log/celerybeat_<site>.log
 autostart=true
 autorestart=true
 startsecs=10
