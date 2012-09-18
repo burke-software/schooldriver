@@ -95,7 +95,10 @@
         $("." + options.classColumn + " > .fixedTable", layout).height(h);  //make sure the row area of the fixed column matches the height of the main table, with the scrollbar
 
         // Apply the scroll handlers
-        $(".fixedContainer > .fixedTable", layout).scroll(function() { handleScroll(mainid, options); });
+        $(".fixedContainer > .fixedTable").scroll(function(event) { handleScroll(mainid, options, event); });
+        $("." + options.classColumn + " > .fixedTable").scroll(function(event) { handleScroll(mainid, options, event); });
+        $(".fixedContainer > ." + options.classHeader).scroll(function(event) { handleScroll(mainid, options, event); });
+        $(".fixedContainer > ." + options.classFooter).scroll(function(event) { handleScroll(mainid, options, event); });
         //the handleScroll() method is defined near the bottom of this file.
 
         //$.fn.fixedTable.adjustSizes(mainid);
@@ -191,15 +194,41 @@
 
     // ***********************************************
     // Handle the scroll events
-    function handleScroll(mainid, options) {
-        //Find the scrolling offsets
-        var tblarea = $(mainid + " .fixedContainer > .fixedTable");
-        var x = tblarea[0].scrollLeft;
-        var y = tblarea[0].scrollTop;
-
-        $(mainid + " ." + options.classColumn + " > .fixedTable")[0].scrollTop = y;
-        $(mainid + " .fixedContainer > ." + options.classHeader)[0].scrollLeft = x;
-        $(mainid + " .fixedContainer > ." + options.classFooter)[0].scrollLeft = x;
+    function handleScroll(mainid, options, event) {
+        // jnm 20120918
+        // handle all scrolling, even that caused by ctrl+f on elements without scrollbars!
+        var tableArea = $(mainid + " .fixedContainer > .fixedTable");
+        var fixedColumn = $(mainid + " ." + options.classColumn + " > .fixedTable");
+        var header = $(mainid + " .fixedContainer > ." + options.classHeader);
+        var footer = $(mainid + " .fixedContainer > ." + options.classFooter);
+        var target = $(event.target);
+        var x = target.scrollLeft();
+        var y = target.scrollTop();
+        if(target.is(tableArea)) {
+            if(header.scrollLeft() != x)
+                header.scrollLeft(x);
+            if(footer.scrollLeft() != x)
+                footer.scrollLeft(x);
+            if(fixedColumn.scrollTop() != y)
+                fixedColumn.scrollTop(y);
+        }
+        else if(target.is(fixedColumn)) {
+            // FF 15 bogs down if we do this unconditionally
+            if(tableArea.scrollTop() != y)
+                tableArea.scrollTop(y);
+        }
+        else if(target.is(header)) {
+            if(tableArea.scrollLeft() != x)
+                tableArea.scrollLeft(x);
+            if(footer.scrollLeft() != x)
+                footer.scrollLeft(x);
+        }
+        else if(target.is(footer)) {
+            if(tableArea.scrollLeft() != x)
+                tableArea.scrollLeft(x);
+            if(header.scrollLeft() != x )
+                header.scrollLeft(x);
+        }
     }
 
     // ***********************************************
