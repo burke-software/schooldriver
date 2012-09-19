@@ -30,8 +30,8 @@ def upgrade():
             sudo('pip install --upgrade -r dependencies.txt')
     syncdb()
     #TODO Collect static!
-    #sudo('supervisorctl reload')
-    #sudo('service apache2 reload')
+    sudo('supervisorctl reload')
+    sudo('service apache2 reload')
 
 def syncdb():
     for instance in env.all_instances:

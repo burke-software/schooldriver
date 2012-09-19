@@ -82,6 +82,8 @@ TEMPLATE_LOADERS = (
 )
 ROOT_URLCONF = 'ecwsp.urls'
 WSGI_APPLICATION = 'ecwsp.wsgi.application'
+
+# Optional these you can copy into settings_local and change or maybe they need to come first.
 INSTALLED_APPS = (
     'grappelli.dashboard',
     'grappelli',
@@ -110,20 +112,13 @@ INSTALLED_APPS = (
     'ajax_select',
     'reversion',
     'django_extensions',
-    'django_filters',
-    'daterange_filter',
-    'pagination',
-    'massadmin',
-    'admin_export',
-    'custom_field',
-    'ckeditor',
     #'google_auth',
     #'ldap_groups',
     'south',
     'djcelery',
-    'dajaxice',
-    'dajax',
+    
 )
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -365,3 +360,16 @@ if 'djcelery' in INSTALLED_APPS:
         CELERY_IMPORTS += ("ecwsp.naviance_sso.tasks",)
     CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
     CELERY_ENABLE_UTC = False
+
+# These are required add ons that we always want to have
+INSTALLED_APPS += (
+    'dajaxice',
+    'dajax',
+    'daterange_filter',
+    'django_filters',
+    'pagination',
+    'massadmin',
+    'admin_export',
+    'custom_field',
+    'ckeditor',
+)
