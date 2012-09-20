@@ -20,7 +20,7 @@ from ecwsp.benchmark_grade.models import *
 from django.db.models import Avg, Sum, Min
 import logging
 
-def find_calculation_rule(school_year):
+def benchmark_find_calculation_rule(school_year):
     rules = CalculationRule.objects.filter(first_year_effective=school_year)
     if rules.count():
         # We have a rule explicitly matching this marking period's school year
@@ -34,99 +34,156 @@ def find_calculation_rule(school_year):
             raise Exception('There is no suitable calculation rule for the school year {}.'.format(mp.school_year))
     return rule
 
-def calculate_category(student, course, category, marking_period):
-    incomplete = False # TODO: remove this hack
+def benchmark_get_create_or_flush(model_base, **kwargs):
+    # make sure there is one and only one object matching our criteria
     try:
-        a, created = Aggregate.objects.get_or_create(name='G! {} - {} ({})'.format(student, category, course), student=student, course=course, category=category, marking_period=marking_period)
-    except Aggregate.MultipleObjectsReturned:
-        bad = Aggregate.objects.filter(name='G! {} - {} ({})'.format(student, category, course), student=student, course=course, category=category, marking_period=marking_period)
-        logging.error("calculate_category() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
+        model, created = model_base.objects.get_or_create(**kwargs)
+    except model_base.MultipleObjectsReturned:
+        # unsure why this happens, but it does
+        bad = model_base.objects.filter(**kwargs)
+        logging.error('Expected 0 or 1 {} but found {}; flushing them all!'.format(str(model_base).split("'")[1], bad.count()), exc_info=True)
         bad.delete()
-        a, created = Aggregate.objects.get_or_create(name='G! {} - {} ({})'.format(student, category, course), student=student, course=course, category=category, marking_period=marking_period)
+        model, created = model_base.objects.get_or_create(**kwargs)
+    return model, created
 
+def benchmark_get_or_flush(model_base, **kwargs):
+    # make sure there is at most one object matching our criteria
+    # if there are two or more, don't try to guess at the correct one; just delete them
+    try:
+        model = model_base.objects.get(**kwargs)
+    except model_base.MultipleObjectsReturned:
+        # unsure why this happens, but it does
+        bad = model_base.objects.filter(**kwargs)
+        logging.error('Expected 1 {} but found {}; flushing them all!'.format(str(model_base).split("'")[1], bad.count()), exc_info=True)
+        bad.delete()
+        raise model_base.DoesNotExist
+    return model
+
+def benchmark_calculate_course_category_aggregate(student, course, category, marking_period, items=None):
+    if items is None:
+        items = Item.objects.all()
+        save = True
+    else:
+        # don't store aggregates for every one-off combination of items
+        save = False
+
+    calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
+
+    # initialize attributes
+    criteria = {'student': student, 'course': course, 'category': category, 'marking_period': marking_period}
+    # silly name is silly, and should not be part of the criteria
+    silly_name = 'G! {} - {} ({}, {})'.format(student, category, course, marking_period)
+    
+    agg, created = benchmark_get_create_or_flush(Aggregate, **criteria)
+    agg.cached_substitution = None
     category_numer = category_denom = Decimal(0)
     if category.allow_multiple_demonstrations:
-        for category_item in Item.objects.filter(course=course, category=category):
+        for category_item in items.filter(course=course, category=category):
+            # Find the highest mark amongst demonstrations and count it as the grade for the item
             best = Mark.objects.filter(student=student, item=category_item).aggregate(Max('mark'))['mark__max']
             if best is not None:
-                category_numer += best
+                calculate_as, display_as = calculation_rule.substitute(category_item, best)
+                category_numer += calculate_as
                 category_denom += category_item.points_possible
-                if best < 3: # TODO: remove this hack
-                    incomplete = True
+                # yes, agg will just end up with the last substitution, but tough
+                if display_as is not None:
+                    agg.cached_substitution = display_as
+
     else:
         for category_mark in Mark.objects.filter(student=student, item__course=course, item__category=category).exclude(mark=None):
-            category_numer += category_mark.mark
+            calculate_as, display_as = calculation_rule.substitute(category_mark.item, category_mark.mark)
+            category_numer += calculate_as
             category_denom += category_mark.item.points_possible
+            if display_as is not None:
+                agg.cached_substitution = display_as
     if category_denom:
-        a.cached_value = category_numer / category_denom * 4
+        agg.cached_value = category_numer / category_denom * 4
     else:
-        a.cached_value = None
-    a.save()
-    return a.cached_value, incomplete
+        agg.cached_value = None
+    agg.name = silly_name
+    if save:
+        agg.save()
+    return agg, created
 
-def gradebook_recalculate_all_students(course, category, marking_period):
-    marking_period = None # TODO: remove this hack
-    for s in course.get_enrolled_students():
-        gradebook_recalculate(mark=None, student=s, course=course, category=category, marking_period=marking_period)
+def benchmark_calculate_course_aggregate(student, course, marking_period, items=None, recalculate_all_categories=False):
+    # doesn't recalculate component aggregates by default
+    if items is None:
+        items = Item.objects.all()
+        save = True
+    else:
+        # don't store aggregates for every one-off combination of items
+        save = False
 
-def gradebook_calculate_course_average(student, course, marking_period):
-    calculation_rule = find_calculation_rule(course.marking_period.all()[0].school_year)
-    incomplete = False # doesn't actually do anything
-    a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
-    try:
-        a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
-    except Aggregate.MultipleObjectsReturned:
-        bad = Aggregate.objects.filter(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
-        logging.error("gradebook_calculate_course_average() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
-        bad.delete()
-        a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
+    calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
+
+    # initialize attributes
+    criteria = {'student': student, 'course': course, 'category': None, 'marking_period': marking_period}
+    # silly name is silly, and should not be part of the criteria
+    silly_name = 'G! {} - Course Average ({}, {})'.format(student, course, marking_period)
+
+    # begin the actual calculations!
+    agg, created = benchmark_get_create_or_flush(Aggregate, **criteria)
+    agg.cached_substitution = None
     course_numer = course_denom = Decimal(0)
     for rule_category in calculation_rule.per_course_category_set.filter(apply_to_departments=course.department):
-        cat_value, cat_incomplete = calculate_category(student, course, rule_category.category, marking_period)
-        incomplete |= cat_incomplete
-        if cat_value is not None:
-            course_numer += rule_category.weight * cat_value
+        cat_agg, cat_created = benchmark_get_create_or_flush(Aggregate, student=student, course=course, category=rule_category.category, marking_period=marking_period)
+        if cat_created or recalculate_all_categories:
+            cat_agg, cat_created = benchmark_calculate_course_category_aggregate(student, course, rule_category.category, marking_period, items)
+        if cat_agg.cached_value is not None:
+            course_numer += rule_category.weight * cat_agg.cached_value
             course_denom += rule_category.weight
+            # yes, agg will just end up with the last substitution, but tough
+            if cat_agg.cached_substitution is not None:
+                agg.cached_substitution = cat_agg.cached_substitution
     if course_denom:
-        a.cached_value = course_numer / course_denom
+        agg.cached_value = course_numer / course_denom
     else:
-        a.cached_value = None
-    a.save()
-    return a, incomplete
+        agg.cached_value = None
+    agg.name = silly_name
+    if save:
+        agg.save()
+    return agg, created
 
-def gradebook_recalculate(mark, student=None, course=None, category=None, marking_period=None):
-    # gee sounds a lot like mark.save(), doesn't it?
-    incomplete = False # TODO: remove this hack
-    if mark:
-        student = mark.student
-        course = mark.item.course
-        category = mark.item.category
-        marking_period = mark.item.marking_period
-    calculation_rule = find_calculation_rule(course.marking_period.all()[0].school_year)
+def gradebook_recalculate_on_item_change(item, students=None):
+    if students is None:
+        students = item.course.get_enrolled_students()
+    course = item.course
+    category = item.category
+    marking_period = item.marking_period
+    calculation_rule = benchmark_find_calculation_rule(item.course.marking_period.all()[0].school_year)
+    affects_overall = calculation_rule.per_course_category_set.filter(category=category, apply_to_departments=course.department).count() > 0
 
-    marking_period = None # meh... just calculate the entire year for now
-    a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
+    for student in students:
+        # always recalculate the aggregate for this category and marking period
+        benchmark_calculate_course_category_aggregate(student, course, category, marking_period)
+        if affects_overall:
+           benchmark_calculate_course_aggregate(student, course, marking_period) 
+        # always recalculate the course-long (i.e. marking_period=None) aggregate for this category
+        benchmark_calculate_course_category_aggregate(student, course, category, None)
+        if affects_overall:
+           benchmark_calculate_course_aggregate(student, course, None) 
+
+def gradebook_recalculate_on_mark_change(mark):
+    gradebook_recalculate_on_item_change(mark.item, (mark.student, ))
+
+def gradebook_get_average(student, course, category, marking_period, items):
     try:
-        a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
-    except Aggregate.MultipleObjectsReturned:
-        bad = Aggregate.objects.filter(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
-        logging.error("gradebook_recalculate() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
-        bad.delete()
-        a, created = Aggregate.objects.get_or_create(name='G! {} - ___ALL___ ({})'.format(student, course), student=student, course=course, marking_period=marking_period)
-    if created or calculation_rule.per_course_category_set.filter(category=category, apply_to_departments=course.department):
-        # need to recalculate the whole course
-        a, incomplete = gradebook_calculate_course_average(student, course, marking_period)
-    else:
-        # just recalculate this category and return unchanged course average
-        cat_value = calculate_category(student, course, category, marking_period)
-    
-    if incomplete:
-        return 'INC'
-    if a.cached_value is not None:
-        return a.cached_value.quantize(Decimal('0.01'))
+        agg = benchmark_get_or_flush(Aggregate, student=student, course=course, category=category, marking_period=marking_period)
+    except Aggregate.DoesNotExist:
+        if category is None:
+            agg, created = benchmark_calculate_course_aggregate(student, course, marking_period, items)
+        else:
+            agg, created = benchmark_calculate_course_category_aggregate(student, course, category, marking_period, items)
+    if agg.cached_substitution is not None:
+        return agg.cached_substitution
+    elif agg.cached_value is not None:
+        calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
+        return agg.cached_value.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP)
     else:
         return None
 
+
+''' ye olde belowe '''
 
 def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period=None, date_report=None):
     # TODO: Decimal places configuration value
@@ -149,7 +206,7 @@ def benchmark_ruled_calculate_grade_for_courses(student, courses, marking_period
     student_numer = student_denom = float(0)
     for mp in mps.filter(school_year__benchmark_grade=True):
         mp_numer = mp_denom = float(0)
-        rule = find_calculation_rule(mp.school_year)
+        rule = benchmark_find_calculation_rule(mp.school_year)
         for course in courses.filter(marking_period=mp).exclude(credits=None).distinct(): # IMO, Course.credits should be required, and we should not treat None as 0.
             # Handle per-course categories according to the calculation rule
             course_numer = course_denom = float(0)

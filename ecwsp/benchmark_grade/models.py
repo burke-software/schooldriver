@@ -45,11 +45,16 @@ class CalculationRule(models.Model):
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, default=4)
     decimal_places = models.IntegerField(default=2)
 
-    def substitute(self, value):
-        for s in self.substitution_set.all():
+    def substitute(self, item, value):
+        calculate_as = value
+        display_as = None
+        for s in self.substitution_set.filter(apply_to_departments=item.course.department, apply_to_categories=item.category):
             if s.applies_to(value):
-                return s.display_as, s.calculate_as
-        return value, value
+                if s.calculate_as is not None:
+                    calculate_as = s.calculate_as
+                display_as = s.display_as
+                return calculate_as, display_as
+        return calculate_as, display_as
 
     def __unicode__(self):
         return u'Rule of ' + self.first_year_effective.name
@@ -68,13 +73,14 @@ class CalculationRuleCategoryAsCourse(models.Model):
     category = models.ForeignKey('Category')
     include_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
     calculation_rule = models.ForeignKey('CalculationRule', related_name='category_as_course_set')
-'''
+
 class CalculationRuleSubstitution(models.Model):
     operator = models.CharField(max_length=2, choices=OPERATOR_CHOICES)
     match_value = models.DecimalField(max_digits=8, decimal_places=2)
     display_as = models.CharField(max_length=16)
     calculate_as = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     apply_to_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
+    apply_to_categories = models.ManyToManyField('Category', blank=True, null=True)
     calculation_rule = models.ForeignKey('CalculationRule', related_name='substitution_set')
     def applies_to(self, value):
         if self.operator == '>':
@@ -90,7 +96,7 @@ class CalculationRuleSubstitution(models.Model):
         if self.operator == '==':
             return value == self.match_value
         raise Exception('CalculationRuleSubstitution with id={} has invalid operator.'.format(self.id))
-'''
+
 class Category(models.Model):
     name = models.CharField(max_length=255)
     weight = models.DecimalField(max_digits=8, decimal_places=2, default=1) # remove this?
@@ -163,6 +169,7 @@ class Aggregate(models.Model):
     name = models.CharField(max_length=255)
     manual_mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     cached_value = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    cached_substitution = models.CharField(max_length=16, blank=True, null=True)
     student = models.ForeignKey('sis.Student', blank=True, null=True)
     course = models.ForeignKey('schedule.Course', blank=True, null=True)
     category = models.ForeignKey('Category', blank=True, null=True)

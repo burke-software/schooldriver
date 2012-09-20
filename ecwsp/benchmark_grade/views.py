@@ -42,7 +42,7 @@ from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.forms import *
 from ecwsp.omr.models import Benchmark
-from ecwsp.benchmark_grade.utility import gradebook_recalculate, gradebook_recalculate_all_students, gradebook_calculate_course_average
+from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
 
 from decimal import Decimal, ROUND_HALF_UP
 import time
@@ -203,13 +203,14 @@ def gradebook(request, course_id):
         ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
     except:
         teacher_courses = None
-    if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
-        and request.user.username != course.teacher.username and not course.secondary_teachers.filter(username=request.user.username).count():
+
+    if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and (teacher_courses is None or course not in teacher_courses):
         return HttpResponse(status=403)
 
     #students = Student.objects.filter(inactive=False,course=course)
     students = Student.objects.filter(course=course)
     items = Item.objects.filter(course=course)
+    filtered = False
 
     if request.GET:
         filter_form = GradebookFilterForm(request.GET)
@@ -217,14 +218,18 @@ def gradebook(request, course_id):
         if filter_form.is_valid():
             for filter_key, filter_value in filter_form.cleaned_data.iteritems():
                 if filter_value is not None:
+                    try:
+                        if not len(filter_value):
+                            continue
+                    except TypeError:
+                        # not everything has a len
+                        pass
                     if filter_key == 'cohort': 
                         students = students.filter(cohorts=filter_value)
                     if filter_key == 'marking_period':
-                       items = items.filter(marking_period=filter_value)
+                        items = items.filter(marking_period=filter_value)
                     if filter_key == 'benchmark':
-                        if len(filter_value):
-                            # make sure we're not trying to filter on an empty list
-                            items = items.filter(benchmark__in=filter_value)
+                        items = items.filter(benchmark__in=filter_value)
                     if filter_key == 'category':
                         items = items.filter(category=filter_value)
                     if filter_key == 'assignment_type':
@@ -235,6 +240,7 @@ def gradebook(request, course_id):
                         items = items.filter(date__gt=filter_value)
                     if filter_key == 'date_end':
                         items = items.filter(date__lt=filter_value)
+                    filtered = True
     else:
         filter_form = GradebookFilterForm()
         filter_form.update_querysets(course)
@@ -249,9 +255,17 @@ def gradebook(request, course_id):
         if student_marks.count() < items_count:
             # maybe student enrolled after assignments were created
             for item in items:
-                mark, created = Mark.objects.get_or_create(item=item, student=student)
-                if created:
-                    mark.save()
+                if len(item.demonstration_set.all()):
+                    # must create mark for each demonstration
+                    for demonstration in item.demonstration_set.all():
+                        mark, created = Mark.objects.get_or_create(item=item, demonstration=demonstration, student=student)
+                        if created:
+                            mark.save()
+                else:
+                    # a regular item without demonstrations; make only one mark
+                    mark, created = Mark.objects.get_or_create(item=item, student=student)
+                    if created:
+                        mark.save()
         elif student_marks.count() > items_count:
             # Yikes, there are multiple marks per student per item. Stop loading the gradebook now.
             if 'dangerous' in request.GET:
@@ -259,32 +273,30 @@ def gradebook(request, course_id):
             else:
                 raise Exception('Multiple marks per student per item.')
         student.marks = student_marks
-        try:
-            student.average = Aggregate.objects.get(student=student, course=course, category=None, marking_period=None).cached_value
-        except Aggregate.DoesNotExist:
-            student.average = None
-        except Aggregate.MultipleObjectsReturned:
-            bad = Aggregate.objects.filter(student=student, course=course, category=None, marking_period=None)
-            logging.error("views.gradebook() found {} Aggregates instead of 1; flushing them all!".format(bad.count()), exc_info=True)
-            bad.delete()
-            student.average = gradebook_calculate_course_average(student, course, marking_period=None)[0].cached_value
-
+        student.average = gradebook_get_average(student, course, None, None, None)
+        if filtered:
+            student.filtered_average = gradebook_get_average(student, course, filter_form.cleaned_data['category'], filter_form.cleaned_data['marking_period'], items)
 
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
         'students': students,
         'course': course,
         'teacher_courses': teacher_courses,
-        'filter_form':filter_form,
+        'filtered' : filtered,
+        'filter_form': filter_form,
     }, RequestContext(request, {}),)
 
 @staff_member_required
 @transaction.commit_on_success
 def ajax_delete_item_form(request, course_id, item_id):
     item = get_object_or_404(Item, pk=item_id)
+    ghost_item = Item()
+    ghost_item.course = item.course
+    ghost_item.category = item.category
+    ghost_item.marking_period = item.marking_period
     message = '%s deleted' % (item,)
     item.delete()
-    gradebook_recalculate_all_students(item.course, item.category, item.marking_period)
+    gradebook_recalculate_on_item_change(ghost_item)
     messages.success(request, message)
     return HttpResponse('SUCCESS'); 
 
@@ -355,6 +367,10 @@ def ajax_get_item_form(request, course_id, item_id=None):
 def ajax_delete_demonstration_form(request, course_id, demonstration_id):
     demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
     item = demonstration.item
+    ghost_item = Item()
+    ghost_item.course = item.course
+    ghost_item.category = item.category
+    ghost_item.marking_period = item.marking_period
     message = '%s deleted' % (demonstration,)
     demonstration.delete()
     if not Demonstration.objects.filter(item=item):
@@ -364,7 +380,7 @@ def ajax_delete_demonstration_form(request, course_id, demonstration_id):
             # the last demonstration is dead. kill the item.
             item.delete()
 
-    gradebook_recalculate_all_students(item.course, item.category, item.marking_period)
+    gradebook_recalculate_on_item_change(ghost_item)
     messages.success(request, message)
     return HttpResponse('SUCCESS'); 
 
@@ -434,7 +450,10 @@ def ajax_save_grade(request):
             mark.save()
         except Exception as e:
             return HttpResponse(e, status=400)
-        average = gradebook_recalculate(mark)
+        gradebook_recalculate_on_mark_change(mark)
+        # just the whole course average for now
+        # TODO: update filtered average
+        average = gradebook_get_average(mark.student, mark.item.course, None, None, None) 
         return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': str(average)}))
     else:
         return HttpResponse('POST DATA INCOMPLETE', status=400) 
