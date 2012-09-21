@@ -44,6 +44,11 @@
 {% block content %}
     <h1>{{ course }}</h2>
     <div class="noPrint">
+    <form action="/benchmark_grade/gradebook/{{ course.id }}" method="get">
+    <input type="submit" value="Online Gradebook" />
+    </form>
+    <hr class="paddedRuler" />
+    <!-- importer disabled for now
     <h2>Upload grades</h2>
     <div class="indent">
     <form action="" method="post" enctype="multipart/form-data">
@@ -53,6 +58,7 @@
     {{ message|safe }}
     </div>
     <hr class="paddedRuler" />
+    -->
     <h2>Display and verify grades</h2>
     <div class="indent">
     <form action="" method="post">
