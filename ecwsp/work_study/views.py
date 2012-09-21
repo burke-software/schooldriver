@@ -272,7 +272,7 @@ def student_edit(request, tsid):
     if request.method == 'POST':
         form = TimeSheetForm(request.POST, request.FILES, instance=timesheet)
         # check to make sure hidden field POST data isn't tampered with
-        if form.is_valid() and (request.POST['company'] == str(thisStudent.placement.id)) and (request.POST['student'] == str(thisStudent.id)):
+        if form.is_valid() and thisStudent.placement and (request.POST['company'] == str(thisStudent.placement.id)) and (request.POST['student'] == str(thisStudent.id)):
             if thisStudent.primary_contact != form.cleaned_data['my_supervisor']:
                 thisStudent.primary_contact = form.cleaned_data['my_supervisor']
                 thisStudent.save()
