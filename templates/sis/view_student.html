@@ -217,16 +217,28 @@
                     
 			<div class="sv-main">
                             {% if perms.attendance.change_studentattendance %} <a class="edit_link" href="{% url admin:attendance_studentattendance_changelist %}?student__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
-				<table class="section-table">
-					<tr>
-						<th>Date</th>
-						<th>Status</th>
-						<th>Notes</th>
-					</tr>
-					{% for attendance in attendances %}
-						<tr><td> {{ attendance.date }} </td><td> {{ attendance.status }} </td><td> {{ attendance.notes }} </td></tr>
-					{% endfor %}
-				</table>
+				{% for year in years %}
+                                    {% if forloop.first %}
+                                        <div id="toggle_subsection_attendance" class="sv-section noprint">
+                                        <a class="section-header subsection noprint sub-expanded" href="javascript:void(0)" id="toggle_section_attendance" onclick='options_toggle(id)'>{{ year }}</a>
+                                        <div class="sv-main" style="display:block;">
+                                    {% else %}
+                                        <div id="toggle_subsection_attendance" class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)" id="toggle_section_attendance" onclick='options_toggle(id)'>{{ year }}</a>
+                                        <div class="sv-main">
+                                    {% endif %}
+                                    Total Absent: {{ year.attendance_absense }}
+                                    Total Tardy: {{ year.attendance_tardy }}
+                                    <table class="section-table">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                        {% for attendance in year.attendances %}
+                                                <tr><td> {{ attendance.date }} </td><td> {{ attendance.status }} </td><td> {{ attendance.notes }} </td></tr>
+                                        {% endfor %}
+                                    </table>
+                                {% endfor %}
 			</div> <!-- .sv-main -->
 			</div> <!-- .sv-section -->
 		{% endif %}

@@ -385,7 +385,6 @@ def view_student(request, id=None):
         disciplines = student.studentdiscipline_set.all()
     else:
         disciplines = None
-    attendances = student.student_attn.all()
     
     #### CWSP related
     try:
@@ -429,6 +428,13 @@ def view_student(request, id=None):
                 except:
                     course.grade_html += '<td> </td>'
             course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
+        
+        # Attendance
+        if 'ecwsp.attendance' in settings.INSTALLED_APPS:
+            attendances = student.student_attn.filter(date__range=(year.start_date, year.end_date))
+            year.attendances = attendances
+            year.attendance_tardy = attendances.filter(status__tardy=True).count
+            year.attendance_absense = attendances.filter(status__absent=True).count()
             
     #Standard Tests
     from ecwsp.administration.models import Configuration
@@ -438,7 +444,6 @@ def view_student(request, id=None):
         std = None
     else:
         std = StandardTestResult.objects.filter(student=student)
-        
     
     return render_to_response('sis/view_student.html', {
         'date':today,
@@ -448,7 +453,6 @@ def view_student(request, id=None):
         'numbers':numbers,
         'location':location,
         'disciplines':disciplines,
-        'attendances':attendances,
         'student_interactions': student_interactions,
         'clientvisits':clientvisits,
         'supervisors':supervisors,
