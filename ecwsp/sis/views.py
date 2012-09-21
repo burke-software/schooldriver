@@ -210,7 +210,11 @@ def school_report_builder_view(request):
                 day = "4"
             if request.POST['p_attendance'] == "Friday":
                 day = "5"
-            return pod_report_paper_attendance(day, format=format)
+            result = pod_report_paper_attendance(day, format=format)
+            if result:
+                return result
+            else:
+                messages.error(request, 'Problem making paper attendance, does the template exist?')
         elif 'pod_report' in request.POST:
             form = StudentReportWriterForm(request.POST, request.FILES)
             if form.is_valid():
@@ -233,10 +237,9 @@ def school_report_builder_view(request):
                 return pod_report_all(template, options=data, students=form.get_students(data), format=format)
             else:
                 return render_to_response('sis/reportBuilder.html', {'request':request, 'form':form})
-    else:
-        form = StudentReportWriterForm()
-        form.fields['template'].queryset = Template.objects.filter(general_student=True)
-        return render_to_response('sis/reportBuilder.html', {'request':request, 'form':form}, RequestContext(request, {}))
+    form = StudentReportWriterForm()
+    form.fields['template'].queryset = Template.objects.filter(general_student=True)
+    return render_to_response('sis/reportBuilder.html', {'request':request, 'form':form}, RequestContext(request, {}))
 
 
 def logout_view(request):

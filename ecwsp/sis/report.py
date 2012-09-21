@@ -121,8 +121,11 @@ def pod_report_all(template, options=None, students=None, format="odt"):
     return pod_save(filename, "." + str(format), data, template)
 
 def pod_report_paper_attendance(day, format="odt"):
-    """ Print paper attendance. Monday = 1, etc """
+    """ Print paper attendance. Monday = 1, etc
+    Returns false on no template """
     template = Template.objects.get_or_create(name="Paper Attendance")[0].file
+    if not template:
+        return False
     cm = CourseMeet.objects.filter(day=day)
     courses = Course.objects.filter(coursemeet__in=cm, homeroom=True).distinct()
     data = get_default_data()
