@@ -349,7 +349,13 @@ def view_student(request, id=None):
             
     profile = UserPreference.objects.get_or_create(user=request.user)[0]
     
-    student = get_object_or_404(Student, pk=id)
+    if id:
+        student = get_object_or_404(Student, pk=id)
+    else:
+        messages.warning(request, 'No Student Selected')
+        return render_to_response('sis/view_student.html', {
+            'include_inactive': profile.include_deleted_students,
+        }, RequestContext(request, {}),)
     
     today = date.today()
     emergency_contacts = student.emergency_contacts.all()
