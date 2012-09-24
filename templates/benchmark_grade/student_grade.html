@@ -43,7 +43,7 @@
             {% if a == student %}
             <strong>{{ a.fname }} {{ a.lname }}</strong>
             {% else %}
-            <a href="?student_username={{ a.username|urlencode }}">{{ a.fname }} {{ a.lname }}</a>
+            <a href="/benchmark_grade/family_grade?student_username={{ a.username|urlencode }}">{{ a.fname }} {{ a.lname }}</a>
             {% endif %}
             {% if not forloop.last %} | {% endif %}
             </li>
@@ -61,9 +61,9 @@
 	    <div class="course">
 		<h3>
             {% if available_students %}
-                <a href="family_grade_course_detail/{{ course.id }}/{{ mp.id }}?student_username={{ student.username|urlencode }}">
+                <a href="/benchmark_grade/family_grade_course_detail/{{ course.id }}/{{ mp.id }}?student_username={{ student.username|urlencode }}">
             {% else %}
-                <a href="student_grade_course_detail/{{ course.id }}/{{ mp.id }}">
+                <a href="/benchmark_grade/student_grade_course_detail/{{ course.id }}/{{ mp.id }}">
             {% endif %}
             {{ course.fullname }} <span class="yesIamAhyperlink">(click for more detail)</span></a></h3>
 		<table>

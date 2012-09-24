@@ -129,7 +129,7 @@ def student_family_grade_common(student):
                 counts['total'] = items.exclude(best_mark=None).distinct().count()
                 counts['missing'] = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
                 counts['passing'] = items.filter(best_mark__gte=PASSING_GRADE).distinct().count()
-                if counts['percentage']:
+                if counts['total']:
                     counts['percentage'] = (Decimal(counts['passing']) / counts['total'] * 100).quantize(Decimal('0'))
                 course.category_by_name[category.name] = counts
             course.average = gradebook_get_average(student, course, None, mp, None)

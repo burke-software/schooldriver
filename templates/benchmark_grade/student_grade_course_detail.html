@@ -47,7 +47,7 @@
             {% if a == student %}
             <strong>{{ a.fname }} {{ a.lname }}</strong>
             {% else %}
-            <a href="../../family_grade?student_username={{ a.username|urlencode }}">{{ a.fname }} {{ a.lname }}</a>
+            <a href="/benchmark_grade/family_grade?student_username={{ a.username|urlencode }}">{{ a.fname }} {{ a.lname }}</a>
             {% endif %}
             {% if not forloop.last %} | {% endif %}
             </li>
