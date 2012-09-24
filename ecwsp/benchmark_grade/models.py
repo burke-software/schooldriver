@@ -99,18 +99,18 @@ class CalculationRuleSubstitution(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
-    weight = models.DecimalField(max_digits=8, decimal_places=2, default=1) # remove this?
     allow_multiple_demonstrations = models.BooleanField(default=False)
     display_in_gradebook = models.BooleanField(default=True)
     fixed_points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     fixed_granularity = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-    # some categories will be school-wide.
-    # to do: search courses' individual categories first, then the global ones.
-    course = models.ForeignKey('schedule.Course', blank=True, null=True)
+    display_order = models.IntegerField(unique=True, blank=True, null=True)
+    display_scale = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    display_symbol = models.CharField(max_length=7, blank=True, null=True)
     def __unicode__(self):
         return self.name
     class Meta:
-        verbose_name_plural = "categories"
+        verbose_name_plural = 'categories'
+        ordering = ['display_order']
 
 class AssignmentType(models.Model):
     name = models.CharField(max_length=255)

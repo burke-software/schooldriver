@@ -42,7 +42,7 @@ from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.forms import *
 from ecwsp.omr.models import Benchmark
-from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
+from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change, benchmark_find_calculation_rule
 
 from decimal import Decimal, ROUND_HALF_UP
 import time
@@ -110,47 +110,86 @@ def benchmark_grade_upload(request, id):
         'show_descriptions': show_descriptions
     }, RequestContext(request, {}),)
 
+def student_family_grade_common(student):
+    PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
+    school_year = SchoolYear.objects.get(active_year=True)
+    mps = MarkingPeriod.objects.filter(school_year=school_year, start_date__lte=date.today()).order_by('-start_date')
+    calculation_rule = benchmark_find_calculation_rule(school_year)
+    for mp in mps:
+        mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
+        for course in mp.courses:
+            course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
+            course.category_by_name = {}
+            for category in course.categories:
+                category.percentage = calculation_rule.per_course_category_set.get(category=category).weight * 100
+                category.percentage = category.percentage.quantize(Decimal('0'))
+                category.average = gradebook_get_average(student, course, category, mp, None)
+                items = Item.objects.filter(course=course, category=category, mark__student=student).annotate(best_mark=Max('mark__mark'))
+                counts = {}
+                counts['total'] = items.exclude(best_mark=None).distinct().count()
+                counts['missing'] = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
+                counts['passing'] = items.filter(best_mark__gte=PASSING_GRADE).distinct().count()
+                counts['percentage'] = (Decimal(counts['passing']) / counts['total'] * 100).quantize(Decimal('0'))
+                course.category_by_name[category.name] = counts
+            course.average = gradebook_get_average(student, course, None, mp, None)
+    return mps
+
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
 def student_grade(request):
-    """ A view for students to see their own grades in detail. """
+    """ A view for students to see their own grades in summary. """
     error_message = None
-    mps = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True),
-                                       start_date__lte=date.today()).order_by('-start_date')
     try:
         student = Student.objects.get(username=request.user.username)
-    except:
+        mps = student_family_grade_common(student)
+    except Student.DoesNotExist:
         logging.warning('No student found for user "' + request.user.username + '"', exc_info=True)
         student = None
         mps = () 
         error_message = 'Sorry, a student record was not found for the username, ' + request.user.username + ', that you provided. Please contact the school registrar.'
-    for mp in mps:
-        mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
-        for course in mp.courses:
-            course.categories = Category.objects.filter(item__course=course).distinct()
-            for category in course.categories:
-                category.marks = Mark.objects.filter(student=student, item__course=course,
-                                                     item__category=category, item__marking_period=mp).order_by('-item__date', 'item__name',
-                                                                                                               'description')
-                if category.name == 'Standards':
-                    category.marks = category.marks.filter(description='Session')
-                try:
-                    agg = Aggregate.objects.get(student=student, course=course,
-                                                category=category, marking_period=mp)
-                    category.average = agg.cached_value
-                except:
-                    category.average = None
     
     #return HttpResponse(s)
     return render_to_response('benchmark_grade/student_grade.html', {
         'student': student,
-        'today': date.today(),
         'mps': mps,
-        'error_message': error_message
+        'error_message': error_message,
+    }, RequestContext(request, {}),)
+
+def student_family_grade_course_detail_common(student, course, mp):
+    course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
+    for category in course.categories:
+        items = Item.objects.filter(course=course, category=category, mark__student=student).annotate(best_mark=Max('mark__mark'))
+        item_names = items.values_list('name').distinct()
+        category.item_groups = {}
+        for item_name_tuple in item_names:
+            item_name = item_name_tuple[0]
+            category.item_groups[item_name] = items.filter(name=item_name).distinct() 
+        category.average = gradebook_get_average(student, course, category, mp, None)
+    return course
+    
+@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
+def student_grade_course_detail(request, course_id, marking_period_id):
+    """ A view for students to see their own grades in detail. """
+    course = get_object_or_404(Course, pk=course_id)
+    mp = get_object_or_404(MarkingPeriod, pk=marking_period_id)
+    error_message = None
+    try:
+        student = Student.objects.get(username=request.user.username)
+        course = student_family_grade_course_detail_common(student, course, mp)
+    except Student.DoesNotExist:
+        logging.warning('No student found for user "' + request.user.username + '"', exc_info=True)
+        student = None
+        error_message = 'Sorry, a student record was not found for the username, ' + request.user.username + ', that you provided. Please contact the school registrar.'
+
+    #return HttpResponse(s)
+    return render_to_response('benchmark_grade/student_grade_course_detail.html', {
+        'course': course,
+        'mp': mp,
+        'error_message': error_message,
     }, RequestContext(request, {}),)
 
 @user_passes_test(lambda u: u.groups.filter(name='family').count() > 0 or u.is_superuser, login_url='/')
 def family_grade(request):
-    """ A view for family to see one or more students' grades in detail. """
+    """ A view for family to see one or more students' grades in summary. """
     available_students = None
     student = None
     mps = None
@@ -165,30 +204,46 @@ def family_grade(request):
         error_message = "Please select a student." # We'll be polite in response to your evil.
     else:
         student = available_students.get(username=request.GET['student_username'])
+
     if student is not None:
-        mps = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.get(active_year=True),
-                                           start_date__lte=date.today()).order_by('-start_date')
-        for mp in mps:
-            mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
-            for course in mp.courses:
-                course.categories = Category.objects.filter(item__course=course).distinct()
-                for category in course.categories:
-                    category.marks = Mark.objects.filter(student=student, item__course=course,
-                                                         item__category=category, item__marking_period=mp).order_by('-item__date', 'item__name',
-                                                                                                                   'description')
-                    if category.name == 'Standards':
-                        category.marks = category.marks.filter(description='Session')
-                    try:
-                        agg = Aggregate.objects.get(student=student, course=course,
-                                                    category=category, marking_period=mp)
-                        category.average = agg.cached_value
-                    except:
-                        category.average = None
-    return render_to_response('benchmark_grade/family_grade.html', {
+        mps = student_family_grade_common(student)
+    return render_to_response('benchmark_grade/student_grade.html', {
         'student': student,
         'available_students': available_students,
-        'today': date.today(),
         'mps': mps,
+        'error_message': error_message
+    }, RequestContext(request, {}),)
+
+@user_passes_test(lambda u: u.groups.filter(name='family').count() > 0 or u.is_superuser, login_url='/')
+def family_grade_course_detail(request, course_id, marking_period_id):
+    """ A view for family to see one or more students' grades in summary. """
+    course = get_object_or_404(Course, pk=course_id)
+    mp = get_object_or_404(MarkingPeriod, pk=marking_period_id)
+    available_students = None
+    student = None
+    error_message = None
+
+    available_students = Student.objects.filter(family_access_users=request.user)
+    if available_students.count() == 1:
+        student = available_students[0]
+    elif 'student_username' not in request.GET:
+        error_message = "Please select a student."
+    elif available_students.filter(username=request.GET['student_username']).count() == 0:
+        error_message = "Please select a student." # We'll be polite in response to your evil.
+    else:
+        student = available_students.get(username=request.GET['student_username'])
+
+    if student is not None:
+        course = student_family_grade_course_detail_common(student, course, mp)
+    else:
+        course = None
+        mp = None
+
+    return render_to_response('benchmark_grade/student_grade_course_detail.html', {
+        'student': student,
+        'available_students': available_students,
+        'course': course,
+        'mp': mp,
         'error_message': error_message
     }, RequestContext(request, {}),)
 

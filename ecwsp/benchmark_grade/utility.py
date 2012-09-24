@@ -178,7 +178,12 @@ def gradebook_get_average(student, course, category, marking_period, items):
         return agg.cached_substitution
     elif agg.cached_value is not None:
         calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
-        return agg.cached_value.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP)
+        if category is not None and category.display_scale is not None:
+            pretty = agg.cached_value / 4 * category.display_scale # TODO: use agg.points_possible (and actually set it when aggregates are calculated)
+            pretty = '{}{}'.format(pretty.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP), category.display_symbol)
+        else:
+            pretty = agg.cached_value.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP)
+        return pretty
     else:
         return None
 
