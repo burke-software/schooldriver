@@ -145,6 +145,7 @@ def applicants_to_students(request, year_id):
                 email=appl.email,
                 year=appl.year,
                 pic=appl.pic,
+                family_preferred_language=appl.family_preferred_language,
             )
             if not student.username:
                 student.username = imp.gen_username(student.fname, student.lname)

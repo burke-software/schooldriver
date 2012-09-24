@@ -7,8 +7,12 @@ from ajax_select import make_ajax_form
 from ajax_select.fields import autoselect_fields_check_can_add
 
 from custom_field.custom_field import CustomFieldAdmin
-from ecwsp.admissions.models import *
-from ecwsp.admissions.forms import *
+from ecwsp.admissions.models import AdmissionCheck, ContactLog, EthnicityChoice, ReligionChoice, FeederSchool
+from ecwsp.admissions.models import SchoolType, OpenHouse, HeardAboutUsOption, FirstContactOption
+from ecwsp.admissions.models import PlaceOfWorship, ApplicationDecisionOption, WithdrawnChoices
+from ecwsp.admissions.models import BoroughOption, CountryOption, ImmigrationOption, AdmissionLevel
+from ecwsp.admissions.models import Applicant
+from ecwsp.admissions.forms import ApplicantForm
 
 import re
 
@@ -46,18 +50,30 @@ class ContactLogInline(admin.TabularInline):
 
 class ApplicantAdmin(CustomFieldAdmin):
     form = ApplicantForm
-    list_display = ('lname', 'fname', 'present_school', 'city', 'level', 'application_decision', 'school_year', 'ready_for_export','follow_up_date')
-    list_filter = ['school_year', 'level', 'checklist', 'ready_for_export', 'application_decision','present_school','ethnicity', 'heard_about_us', 'first_contact', 'year']
+    list_display = ('lname', 'fname', 'present_school', 'city', 'level', 'application_decision',
+                    'school_year', 'ready_for_export','follow_up_date')
+    list_filter = ['school_year', 'level', 'checklist', 'ready_for_export',
+                   'application_decision','present_school','ethnicity', 'heard_about_us', 'first_contact', 'year']
     search_fields = ['lname', 'fname', 'present_school__name']
     inlines = [ContactLogInline]
     ordering = ('-id',)
     fieldsets = [
-        (None, {'fields': ['ready_for_export', 'lname', 'fname', 'mname', 'pic', 'bday', 'present_school', 'heard_about_us', 'first_contact',
-                    'application_decision', 'application_decision_by', 'withdrawn_note', 'total_income', 'adjusted_available_income', 'calculated_payment']}),
-        ('About applicant', {'fields': [('ssn', 'sex'), ('ethnicity',), 'follow_up_date', ('religion','place_of_worship'), ('year', 'school_year'), ('hs_grad_yr',
-                                      'elem_grad_yr'), 'email', 'notes', 'siblings', 
-                                      'borough', ('country_of_birth','immigration_status'), 'parent_guardians', 'open_house_attended'],
-            'classes': ['collapse']}),
+        (
+            None,
+            {'fields': [
+                'ready_for_export', 'lname', 'fname', 'mname', 'pic', 'bday', 'present_school', 'heard_about_us', 'first_contact',
+                'application_decision', 'application_decision_by', 'withdrawn_note', 'total_income', 'adjusted_available_income',
+                'calculated_payment']
+            }
+        ),
+        (
+            'About applicant',
+            {'fields': [
+                ('ssn', 'sex'), ('ethnicity',), 'follow_up_date', ('religion','place_of_worship'), ('year', 'school_year'),
+                ('hs_grad_yr','elem_grad_yr'), 'email', 'notes', 'siblings', 'borough', ('country_of_birth','immigration_status'),
+                'family_preferred_language','parent_guardians', 'open_house_attended'],
+            'classes': ['collapse']}
+        ),
     ]
     
     def get_form(self, request, obj=None, **kwargs):
@@ -160,8 +176,8 @@ class ApplicantAdmin(CustomFieldAdmin):
                         change_message  = "Checked " + unicode(check)
                     )
         obj.save()
-        #print obj.level
-        if obj.application_decision and obj.application_decision.level.all().count() and obj.application_decision and not obj.level in obj.application_decision.level.all():
+        if obj.application_decision and obj.application_decision.level.all().count() \
+        and obj.application_decision and not obj.level in obj.application_decision.level.all():
             msg = 'WARNING: Decision %s should be on level(s) ' % (obj.application_decision,)
             for level in obj.application_decision.level.all():
                 msg += '%s, ' % (level,)

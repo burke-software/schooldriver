@@ -210,7 +210,11 @@ def school_report_builder_view(request):
                 day = "4"
             if request.POST['p_attendance'] == "Friday":
                 day = "5"
-            return pod_report_paper_attendance(day, format=format)
+            result = pod_report_paper_attendance(day, format=format)
+            if result:
+                return result
+            else:
+                messages.error(request, 'Problem making paper attendance, does the template exist?')
         elif 'pod_report' in request.POST:
             form = StudentReportWriterForm(request.POST, request.FILES)
             if form.is_valid():
@@ -233,10 +237,9 @@ def school_report_builder_view(request):
                 return pod_report_all(template, options=data, students=form.get_students(data), format=format)
             else:
                 return render_to_response('sis/reportBuilder.html', {'request':request, 'form':form})
-    else:
-        form = StudentReportWriterForm()
-        form.fields['template'].queryset = Template.objects.filter(general_student=True)
-        return render_to_response('sis/reportBuilder.html', {'request':request, 'form':form}, RequestContext(request, {}))
+    form = StudentReportWriterForm()
+    form.fields['template'].queryset = Template.objects.filter(general_student=True)
+    return render_to_response('sis/reportBuilder.html', {'request':request, 'form':form}, RequestContext(request, {}))
 
 
 def logout_view(request):
@@ -346,7 +349,13 @@ def view_student(request, id=None):
             
     profile = UserPreference.objects.get_or_create(user=request.user)[0]
     
-    student = get_object_or_404(Student, pk=id)
+    if id:
+        student = get_object_or_404(Student, pk=id)
+    else:
+        messages.warning(request, 'No Student Selected')
+        return render_to_response('sis/view_student.html', {
+            'include_inactive': profile.include_deleted_students,
+        }, RequestContext(request, {}),)
     
     today = date.today()
     emergency_contacts = student.emergency_contacts.all()
@@ -376,7 +385,6 @@ def view_student(request, id=None):
         disciplines = student.studentdiscipline_set.all()
     else:
         disciplines = None
-    attendances = student.student_attn.all()
     
     #### CWSP related
     try:
@@ -420,6 +428,13 @@ def view_student(request, id=None):
                 except:
                     course.grade_html += '<td> </td>'
             course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
+        
+        # Attendance
+        if 'ecwsp.attendance' in settings.INSTALLED_APPS:
+            attendances = student.student_attn.filter(date__range=(year.start_date, year.end_date))
+            year.attendances = attendances
+            year.attendance_tardy = attendances.filter(status__tardy=True).count
+            year.attendance_absense = attendances.filter(status__absent=True).count()
             
     #Standard Tests
     from ecwsp.administration.models import Configuration
@@ -429,7 +444,6 @@ def view_student(request, id=None):
         std = None
     else:
         std = StandardTestResult.objects.filter(student=student)
-        
     
     return render_to_response('sis/view_student.html', {
         'date':today,
@@ -439,7 +453,6 @@ def view_student(request, id=None):
         'numbers':numbers,
         'location':location,
         'disciplines':disciplines,
-        'attendances':attendances,
         'student_interactions': student_interactions,
         'clientvisits':clientvisits,
         'supervisors':supervisors,

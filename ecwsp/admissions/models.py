@@ -1,8 +1,10 @@
-from django.db import models
 from django.contrib.localflavor.us.models import *
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.db import models
+from django.db.models.signals import m2m_changed
 from custom_field.custom_field import CustomFieldModel
-from ecwsp.sis.models import *
+from ecwsp.sis.models import get_default_language, GradeLevel
 
 import datetime
 
@@ -26,7 +28,10 @@ class AdmissionLevel(models.Model):
 class AdmissionCheck(models.Model):
     name = models.CharField(max_length=255)
     level = models.ForeignKey(AdmissionLevel)
-    required = models.BooleanField(default=True, help_text="When true, applicant cannot meet any level beyond this. When false, applicant can leapfrog check items.")
+    required = models.BooleanField(
+        default=True,
+        help_text="When true, applicant cannot meet any level beyond this. When false, "\
+                  "applicant can leapfrog check items.")
     class Meta:
         ordering = ('level','name')
     def __unicode__(self):
@@ -62,7 +67,11 @@ class FirstContactOption(models.Model):
 
 class ApplicationDecisionOption(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    level = models.ManyToManyField(AdmissionLevel, blank=True, null=True, help_text="This decision can apply for these levels.")
+    level = models.ManyToManyField(
+        AdmissionLevel,
+        blank=True,
+        null=True,
+        help_text="This decision can apply for these levels.")
     def __unicode__(self):
         return unicode(self.name)
 
@@ -149,9 +158,19 @@ class Applicant(models.Model, CustomFieldModel):
     parent_email = models.EmailField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     notes = models.TextField(blank=True)
+    family_preferred_language = models.ForeignKey(
+        'sis.LanguageChoice',
+        blank=True,
+        null=True,
+        default=get_default_language)
     siblings = models.ManyToManyField('sis.Student', blank=True)
-    year = models.ForeignKey(GradeLevel, blank=True, null=True, help_text="Applying for this grade level", default=get_year)
-    school_year = models.ForeignKey(SchoolYear, blank=True, null=True, default=get_school_year)
+    year = models.ForeignKey(
+        'sis.GradeLevel',
+        blank=True,
+        null=True,
+        help_text="Applying for this grade level",
+        default=get_year)
+    school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True, default=get_school_year)
     parent_guardians = models.ManyToManyField('sis.EmergencyContact', blank=True, null=True)
     ethnicity = models.ForeignKey(EthnicityChoice, blank=True, null=True)
     hs_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)
@@ -170,7 +189,12 @@ class Applicant(models.Model, CustomFieldModel):
     country_of_birth = models.ForeignKey(CountryOption, blank=True, null=True, default=get_default_country)
     immigration_status = models.ForeignKey(ImmigrationOption, blank=True, null=True)
     ready_for_export = models.BooleanField()
-    sis_student = models.OneToOneField('sis.Student', blank=True, null=True, related_name="appl_student", on_delete=models.SET_NULL)
+    sis_student = models.OneToOneField(
+        'sis.Student',
+        blank=True,
+        null=True,
+        related_name="appl_student",
+        on_delete=models.SET_NULL)
     
     total_income = models.DecimalField(max_digits=10, decimal_places=2, blank=True,null=True)
     adjusted_available_income = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
@@ -236,7 +260,7 @@ class Applicant(models.Model, CustomFieldModel):
         
 def cache_applicant_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     for ec in instance.parent_guardians.filter(primary_contact=True):
-            ec.cache_student_addresses()
+        ec.cache_student_addresses()
 
 m2m_changed.connect(cache_applicant_m2m, sender=Applicant.parent_guardians.through)
 
