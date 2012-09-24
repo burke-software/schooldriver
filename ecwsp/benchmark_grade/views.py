@@ -129,7 +129,8 @@ def student_family_grade_common(student):
                 counts['total'] = items.exclude(best_mark=None).distinct().count()
                 counts['missing'] = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
                 counts['passing'] = items.filter(best_mark__gte=PASSING_GRADE).distinct().count()
-                counts['percentage'] = (Decimal(counts['passing']) / counts['total'] * 100).quantize(Decimal('0'))
+                if counts['percentage']:
+                    counts['percentage'] = (Decimal(counts['passing']) / counts['total'] * 100).quantize(Decimal('0'))
                 course.category_by_name[category.name] = counts
             course.average = gradebook_get_average(student, course, None, mp, None)
     return mps
@@ -216,7 +217,7 @@ def family_grade(request):
 
 @user_passes_test(lambda u: u.groups.filter(name='family').count() > 0 or u.is_superuser, login_url='/')
 def family_grade_course_detail(request, course_id, marking_period_id):
-    """ A view for family to see one or more students' grades in summary. """
+    """ A view for family to see a student's grades in detail. """
     course = get_object_or_404(Course, pk=course_id)
     mp = get_object_or_404(MarkingPeriod, pk=marking_period_id)
     available_students = None
