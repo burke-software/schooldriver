@@ -31,7 +31,7 @@ class CourseAdmin(admin.ModelAdmin):
     
     list_display = ['__unicode__', 'teacher', 'grades_link']
     search_fields = ['fullname', 'shortname', 'description', 'teacher__username']
-    list_filter = ['homeroom', 'graded', 'teacher', 'marking_period', 'active']
+    list_filter = ['teacher', 'level', 'marking_period', 'marking_period__school_year', 'active', 'graded', 'homeroom']
     inlines = [CourseMeetInline]
     actions = [copy]
     
