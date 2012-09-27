@@ -54,7 +54,7 @@ def benchmark_report_card(template, options, students, format="odt"):
             Hire4Ed = False
             if course.department is not None:
                 Hire4Ed = course.department.name == "Hire4Ed" # this seems expensive
-            for aggregate in Aggregate.objects.filter(student=student, course=course, marking_period=marking_period):
+            for aggregate in Aggregate.objects.filter(student=student, course=course, marking_period=marking_period).exclude(category=None):
                 aggName = re.sub("[^A-Za-z]", "", aggregate.category.name)
                 aggStruct = struct()
                 aggStruct.name = aggregate.name # has become ugly; not used in template

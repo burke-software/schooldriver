@@ -66,6 +66,11 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
     else:
         # don't store aggregates for every one-off combination of items
         save = False
+    items = items.filter(course=course, category=category)
+    # if we're passed marking_period=None, we should consider items across the entire duration of the course
+    # if we're passed a specific marking period instead, we should consider items matching only that marking period
+    if marking_period is not None:
+        items = items.filter(marking_period=marking_period)
 
     calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
 
@@ -78,7 +83,7 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
     agg.cached_substitution = None
     category_numer = category_denom = Decimal(0)
     if category.allow_multiple_demonstrations:
-        for category_item in items.filter(course=course, category=category):
+        for category_item in items:
             # Find the highest mark amongst demonstrations and count it as the grade for the item
             best = Mark.objects.filter(student=student, item=category_item).aggregate(Max('mark'))['mark__max']
             if best is not None:
@@ -90,7 +95,7 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
                     agg.cached_substitution = display_as
 
     else:
-        for category_mark in Mark.objects.filter(student=student, item__course=course, item__category=category).exclude(mark=None):
+        for category_mark in Mark.objects.filter(student=student, item__in=items).exclude(mark=None):
             calculate_as, display_as = calculation_rule.substitute(category_mark.item, category_mark.mark)
             category_numer += calculate_as
             category_denom += category_mark.item.points_possible
@@ -108,7 +113,8 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
 def benchmark_calculate_course_aggregate(student, course, marking_period, items=None, recalculate_all_categories=False):
     # doesn't recalculate component aggregates by default
     if items is None:
-        items = Item.objects.all()
+        # just leave items alone--we don't actually consider it here; we only pass it to benchmark_calculate_course_category_aggregate
+        # setting items here will prevent benchmark_calculate_course_category_aggregate from saving anything
         save = True
     else:
         # don't store aggregates for every one-off combination of items
@@ -126,7 +132,8 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
     agg.cached_substitution = None
     course_numer = course_denom = Decimal(0)
     for rule_category in calculation_rule.per_course_category_set.filter(apply_to_departments=course.department):
-        cat_agg, cat_created = benchmark_get_create_or_flush(Aggregate, student=student, course=course, category=rule_category.category, marking_period=marking_period)
+        criteria['category'] = rule_category.category
+        cat_agg, cat_created = benchmark_get_create_or_flush(Aggregate, **criteria)
         if cat_created or recalculate_all_categories:
             cat_agg, cat_created = benchmark_calculate_course_category_aggregate(student, course, rule_category.category, marking_period, items)
         if cat_agg.cached_value is not None:
@@ -166,7 +173,7 @@ def gradebook_recalculate_on_item_change(item, students=None):
 def gradebook_recalculate_on_mark_change(mark):
     gradebook_recalculate_on_item_change(mark.item, (mark.student, ))
 
-def gradebook_get_average(student, course, category, marking_period, items):
+def gradebook_get_average(student, course, category=None, marking_period=None, items=None):
     try:
         agg = benchmark_get_or_flush(Aggregate, student=student, course=course, category=category, marking_period=marking_period)
     except Aggregate.DoesNotExist:
