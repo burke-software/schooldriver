@@ -16,7 +16,7 @@ httpagentparser>=1.0.2
 elementtree>=1.2.7-20070827-preview
 poster>=0.8.1
 suds>=0.4
+south>=0.7.6
 file:../install/hatchery/django-filter-0.5.3.tar.gz
 file:../install/hatchery/django-ckeditor-3.6.2.tar.gz
-file:../install/hatchery/South-0.7.5.tar.gz
 file:../install/hatchery/django-ldap-groups-0.1.3.tar.gz
