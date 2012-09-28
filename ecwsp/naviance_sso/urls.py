@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
-from views import *
+from ecwsp.naviance_sso import views
 
 urlpatterns = patterns('',
-    (r'^login/$', login),
+    (r'^login/$', views.login),
 )

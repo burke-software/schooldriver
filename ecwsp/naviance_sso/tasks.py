@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.encoding import smart_unicode
 
 from ecwsp.sis.models import Student
 
@@ -30,9 +31,9 @@ if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_
             else:
                 row += ['']
             row += [
-                student.lname,
-                student.fname,
-                student.mname,
+                smart_unicode(student.lname),
+                smart_unicode(student.fname),
+                smart_unicode(student.mname),
                 student.sex,
             ]
             if student.bday:
