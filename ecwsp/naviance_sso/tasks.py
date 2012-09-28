@@ -1,7 +1,6 @@
 from django.conf import settings
-from django.utils.encoding import smart_unicode
-
 from ecwsp.sis.models import Student
+from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
@@ -31,9 +30,9 @@ if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_
             else:
                 row += ['']
             row += [
-                smart_unicode(student.lname),
-                smart_unicode(student.fname),
-                smart_unicode(student.mname),
+                strip_unicode_to_ascii(student.lname),
+                strip_unicode_to_ascii(student.fname),
+                strip_unicode_to_ascii(student.mname),
                 student.sex,
             ]
             if student.bday:

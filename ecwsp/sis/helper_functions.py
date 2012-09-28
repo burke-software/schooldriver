@@ -3,10 +3,20 @@ from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.contrib import admin
 from django.conf import settings
+from django.utils.encoding import smart_unicode
+import unicodedata
 
 class Callable:
     def __init__(self, anycallable):
         self.__call__ = anycallable
+
+def strip_unicode_to_ascii(string):
+    """ Returns a ascii string that doesn't contain utf8
+    Don't use this unless you have to it remove data!
+    You're probably rascist if you do use this.
+    But nice for working with systems that can't deal with utf8
+    """
+    return unicodedata.normalize('NFKD', smart_unicode(string)).encode('ascii','ignore')
 
 def copy_model_instance(obj):
     """ Django snippit 1040
