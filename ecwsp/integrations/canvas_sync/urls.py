@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from ecwsp.canvas_sync import views
+from ecwsp.integrations.canvas_sync import views
 
 urlpatterns = patterns('',
     (r'^setup/$', views.setup),

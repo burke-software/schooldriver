@@ -1,12 +1,9 @@
 from django.http import HttpResponse
 from django.core.servers.basehttp import FileWrapper
 
-import uno
 import os
 import string
 import tempfile
-from com.sun.star.beans import PropertyValue
-from com.sun.star.style.BreakType import PAGE_BEFORE, PAGE_AFTER
 from copy import deepcopy
 
 def findandreplace(document, search, find, replace):
@@ -25,7 +22,9 @@ def uno_open(file):
     """This function should really just be in uno
     file -- Location of the file to open
     returns an uno document
-    """      
+    """
+    import uno
+    from com.sun.star.beans import PropertyValue
     local = uno.getComponentContext()
     resolver = local.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", local)
     context = resolver.resolve("uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
@@ -39,6 +38,8 @@ def uno_save(document, filename, type):
     filename: filename of output without ext
     type: extension, example odt
     """
+    import uno
+    from com.sun.star.beans import PropertyValue
     tmp = tempfile.NamedTemporaryFile()
     if type == "doc":
         properties = ( 
@@ -116,7 +117,7 @@ def replace_once_report(infile, outfile, data, type="doc"):
     It replaces the first instance of $TEST with first, second with second, etc
     returns a django HttpResponse of the file
     """
-    
+    import uno
     local = uno.getComponentContext()
     resolver = local.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", local)
     context = resolver.resolve("uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
@@ -249,6 +250,7 @@ def mail_merge(infile, outfile, data, type="doc"):
         data.append(page1)
         data.append(page2)
     """
+    import uno
     local = uno.getComponentContext()
     resolver = local.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", local)
     context = resolver.resolve("uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")

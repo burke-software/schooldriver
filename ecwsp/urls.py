@@ -64,8 +64,10 @@ if 'ecwsp.naviance_sso' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^naviance_sso/', include('ecwsp.naviance_sso.urls')), )
 if 'ecwsp.alumni' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^alumni/', include('ecwsp.alumni.urls')), )
-if 'ecwsp.canvas_sync' in settings.INSTALLED_APPS:
-    urlpatterns += patterns('', (r'^canvas_sync/', include('ecwsp.canvas_sync.urls')), )
+if 'ecwsp.integrations.canvas_sync' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^canvas_sync/', include('ecwsp.integrations.canvas_sync.urls')), )
+if 'ecwsp.integrations.schoolreach' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^schoolreach/', include('ecwsp.integrations.schoolreach.urls')), )
     
 if 'sentry' in settings.INSTALLED_APPS:    
     urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)

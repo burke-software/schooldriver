@@ -11,7 +11,6 @@ from appy.pod.renderer import Renderer
 from django.contrib.auth.decorators import user_passes_test
 import tempfile
 import os
-import uno
 from decimal import *
 
 class struct(object):
