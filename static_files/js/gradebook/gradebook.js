@@ -235,7 +235,7 @@ function confirm_assignment_delete(item_id){
 
 function confirm_demonstration_delete(demonstration_id){
     // another stupid warning that will confuse people
-    if (confirm("Are you sure you want to delete this demonstration? If its item has no other demonstrations, the item will be deleted as well.")) {
+    if (confirm("Are you sure you want to delete this demonstration?")) {
         $.post(
             "ajax_get_demonstration_form/" + demonstration_id + "/delete/",
             function(data){
