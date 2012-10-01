@@ -71,7 +71,7 @@ class ApplicantAdmin(CustomFieldAdmin):
             {'fields': [
                 ('ssn', 'sex'), ('ethnicity',), 'follow_up_date', ('religion','place_of_worship'), ('year', 'school_year'),
                 ('hs_grad_yr','elem_grad_yr'), 'email', 'notes', 'siblings', 'borough', ('country_of_birth','immigration_status'),
-                'family_preferred_language','parent_guardians', 'open_house_attended'],
+                'family_preferred_language', ('lives_with', 'first_to_college'), 'individual_education_plan', 'parent_guardians', 'open_house_attended'],
             'classes': ['collapse']}
         ),
     ]

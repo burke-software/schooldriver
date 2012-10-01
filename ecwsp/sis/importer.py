@@ -1810,6 +1810,15 @@ class Importer:
                                 model.hs_grad_yr = value
                             elif name == "elem_grad_yr" or name == "elem grad year":
                                 model.elem_grad_yr = value
+                            
+                            elif name in ["first_to_college", "first to college"]:
+                                model.first_to_college = value
+                            elif name in ["individual_education_plan", "individual education plan"]:
+                                model.individual_education_plan = value
+                            elif name in ["lives_with", "lives with"]:
+                                model.lives_with = value
+                            
+                            
                             elif name == "present_school" or name == "present school":
                                 model.present_school = FeederSchool.objects.get_or_create(name=value)[0]
                             elif name == "present_school type" or name == "present school type":

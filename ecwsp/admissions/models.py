@@ -207,6 +207,13 @@ class Applicant(models.Model, CustomFieldModel):
     application_decision_by = models.ForeignKey(User, blank=True, null=True)
     withdrawn = models.ForeignKey(WithdrawnChoices, blank=True, null=True)
     withdrawn_note = models.CharField(max_length=500, blank=True)
+    first_to_college = models.BooleanField(blank=True)
+    individual_education_plan = models.BooleanField(blank=True)
+    lives_with = models.CharField(
+        blank=True,
+        max_length=50,
+        choices=(('Both Parents','Both Parents'),('Mother','Mother'),('Father','Father'),('Guardian(s)','Guardian(s)'),),
+    )
     
     class Meta:
         ordering = ('lname','fname',)
