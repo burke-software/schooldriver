@@ -46,7 +46,7 @@ class SchoolReach:
         m3s = []
         m4s = []
         m5s = []
-        for student in Student.objects.filter(inactive=False,id__gt=550):
+        for student in Student.objects.filter(inactive=False):
             student_number = student.get_phone_number()
             if student_number:
                 numbers += [student_number.number]
