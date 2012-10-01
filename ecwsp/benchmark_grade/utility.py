@@ -83,7 +83,7 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
     agg.cached_substitution = None
     category_numer = category_denom = Decimal(0)
     if category.allow_multiple_demonstrations:
-        for category_item in items:
+        for category_item in items.exclude(points_possible=None):
             # Find the highest mark amongst demonstrations and count it as the grade for the item
             best = Mark.objects.filter(student=student, item=category_item).aggregate(Max('mark'))['mark__max']
             if best is not None:
@@ -95,14 +95,14 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
                     agg.cached_substitution = display_as
 
     else:
-        for category_mark in Mark.objects.filter(student=student, item__in=items).exclude(mark=None):
+        for category_mark in Mark.objects.filter(student=student, item__in=items).exclude(mark=None).exclude(item__points_possible=None):
             calculate_as, display_as = calculation_rule.substitute(category_mark.item, category_mark.mark)
             category_numer += calculate_as
             category_denom += category_mark.item.points_possible
             if display_as is not None:
                 agg.cached_substitution = display_as
     if category_denom:
-        agg.cached_value = category_numer / category_denom * 4
+        agg.cached_value = category_numer / category_denom * 4 # TODO: don't hard code this
     else:
         agg.cached_value = None
     agg.name = silly_name
