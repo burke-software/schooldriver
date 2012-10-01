@@ -10,6 +10,7 @@ import requests
 import re
 
 from ecwsp.sis.models import Student
+from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
 
 @staff_member_required
@@ -97,28 +98,28 @@ class SchoolReach:
             xml_exts += '<ext>%s</ext>' % re.sub("[^0-9]", "", data_string)
         xml_fnames= ''
         for data_string in fnames:
-            xml_fnames += '<first>%s</first>' % data_string
+            xml_fnames += '<first>%s</first>' % strip_unicode_to_ascii(data_string)
         xml_lnames = ''
         for data_string in lnames:
-            xml_lnames += '<last>%s</last>' % data_string
+            xml_lnames += '<last>%s</last>' % strip_unicode_to_ascii(data_string)
         xml_emails = ''
         for data_string in emails:
             xml_emails += '<email>%s</email>' % data_string
         xml_m1s = ''
         for data_string in m1s:
-            xml_m1s += '<mField1>%s</mField1>' % data_string
+            xml_m1s += '<mField1>%s</mField1>' % strip_unicode_to_ascii(data_string)
         xml_m2s = ''
         for data_string in m2s:
-            xml_m2s += '<mField2>%s</mField2>' % data_string
+            xml_m2s += '<mField2>%s</mField2>' % strip_unicode_to_ascii(data_string)
         xml_m3s = ''
         for data_string in m3s:
-            xml_m3s += '<mField3>%s</mField3>' % data_string
+            xml_m3s += '<mField3>%s</mField3>' % strip_unicode_to_ascii(data_string)
         xml_m4s = ''
         for data_string in m4s:
-            xml_m4s += '<mField4>%s</mField4>' % data_string
+            xml_m4s += '<mField4>%s</mField4>' % strip_unicode_to_ascii(data_string)
         xml_m5s = ''
         for data_string in m5s:
-            xml_m5s += '<mField5>%s</mField5>' % data_string
+            xml_m5s += '<mField5>%s</mField5>' % strip_unicode_to_ascii(data_string)
         
         url = 'https://app.groupcast.com/WARP/GroupcastWARP.asmx?op=SetList&wsdl'
         xml_dict = {
