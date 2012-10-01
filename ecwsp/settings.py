@@ -307,6 +307,11 @@ NAVIANCE_SWORD_ID = 'username'
 NAVIANCE_IMPORT_KEY = ''
 NAVIANCE_EMAILS = ''
 
+#SchoolReach
+SCHOOLREACH_USERID = ''
+SCHOOLREACH_PIN = ''
+# The id of the list we want to integrate, don't edit this list by hand in SR
+SCHOOLREACH_LIST_ID = ''
 
 #Admissions
 ADMISSIONS_DEFAULT_COUNTRY = "United States"

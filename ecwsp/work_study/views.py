@@ -704,13 +704,7 @@ def report_builder_view(request):
                     data = []
                     for worker in workers:
                         eFname = eLname = eHome = eWork = eCell = ""
-                        try:
-                            number = (StudentNumber.objects.filter(student=worker)).filter(type='C')[0]
-                        except:
-                            try:
-                                number = (StudentNumber.objects.filter(student=worker))[0]
-                            except:
-                                number = "none"
+                        number = worker.get_phone_number()
                         if worker.emergency_contacts.filter(primary_contact=True):
                             primary_ec = worker.emergency_contacts.filter(primary_contact=True)[0]
                             eFname = primary_ec.fname

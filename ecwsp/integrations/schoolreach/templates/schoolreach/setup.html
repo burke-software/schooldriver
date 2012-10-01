@@ -11,8 +11,7 @@
 
 {% block content %}    
     <h2> SchoolReach Sync Setup </h2>
-    <a href="{% url admin:administration_configuration_changelist %}?q=SchoolReach">Configuration settings</a>
-    <form>
+    <form method="post">
         <input type="submit" name="sync_now" value="Sync Now"/>
     </form>
 {% endblock %}

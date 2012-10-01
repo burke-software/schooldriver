@@ -479,7 +479,16 @@ class Student(MdlUser, CustomFieldModel):
             return None
         return self.email
 
+    def get_phone_number(self):
+        if self.studentnumber_set.filter(type="C"):
+            return self.studentnumber_set.filter(type="C")[0]
+        elif self.studentnumber_set.all():
+            return self.studentnumber_set.all()[0]
     
+    def get_primary_emergency_contact(self):
+        if self.emergency_contacts.filter(primary_contact=True):
+            return self.emergency_contacts.filter(primary_contact=True)[0]
+
     def get_disciplines(self, mps, action_name=None, count=True):
         """ Shortcut to look up discipline records
         mp: Marking Period
