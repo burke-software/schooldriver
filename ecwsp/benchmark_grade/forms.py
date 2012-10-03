@@ -24,7 +24,7 @@ from django.db.models import Q
 from ecwsp.schedule.models import MarkingPeriod
 from ecwsp.benchmark_grade.models import Item, AssignmentType, Category, Demonstration
 from ecwsp.sis.models import Cohort
-from ecwsp.omr.models import Benchmark
+from ecwsp.benchmarks.models import Benchmark
 
 class BenchmarkGradeVerifyForm(forms.Form):
     # whoever instantiates must assign queryset for marking_periods 

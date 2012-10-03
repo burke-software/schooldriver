@@ -11,47 +11,12 @@ from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.contrib.localflavor.us.models import *
 
-from ecwsp.sis.models import SchoolYear, Student
+from ecwsp.sis.models import SchoolYear, Student    
 
-class Department(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    def __unicode__(self):
-        return self.name
+from django.core.exceptions import ImproperlyConfigured
+if not 'ecwsp.benchmarks' in settings.INSTALLED_APPS:
+    raise ImproperlyConfigured('omr depends on benchmarks but it is not in installed apps')
     
-class MeasurementTopic(models.Model):
-    name = models.CharField(max_length=700)
-    description = models.TextField(blank=True)
-    department = models.ForeignKey(Department, blank=True, null=True)
-    def __unicode__(self):
-        if self.department:
-            return unicode(self.department) + " - " + unicode(self.name)
-        else:
-            return unicode(self.name)
-    class Meta:
-        unique_together = ('name', 'department')
-        ordering  = ('department','name')
-    
-class Benchmark(models.Model):
-    measurement_topics = models.ManyToManyField(MeasurementTopic)
-    number = models.CharField(max_length=10, blank=True, null=True)
-    name = models.CharField(max_length=700)
-    year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
-    
-    def display_measurement_topics(self):
-        txt = ""
-        for topic in self.measurement_topics.all():
-            txt += unicode(topic) + ", "
-        if txt:
-            return txt[:-2]
-    
-    def __unicode__(self):
-        return unicode('%s %s' % (self.number, self.name)) 
-        
-    class Meta:
-        unique_together = ('number','name')
-        ordering = ('number', 'name',)
-        
-        
 class Theme(models.Model):
     """ Used by teachers, not an official benchmark """
     name = models.CharField(max_length=255, unique=True)
@@ -70,7 +35,7 @@ class Test(models.Model):
     teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True)
     school_year = models.ForeignKey('sis.SchoolYear', default=get_active_year, blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
-    department = models.ForeignKey(Department, blank=True, null=True)
+    department = models.ForeignKey('benchmarks.Department', blank=True, null=True)
     courses = models.ManyToManyField('schedule.Course', blank=True, null=True, help_text="Enroll an entire course, students will not show until saving.")
     students = models.ManyToManyField('sis.Student', blank=True, null=True, through='TestInstance')
     finalized = models.BooleanField(help_text="This test is finished and should no longer be edited!")
@@ -171,7 +136,7 @@ class QuestionAbstract(models.Model):
         blank=True,
         null=True,
     )
-    benchmarks = models.ManyToManyField(Benchmark, blank=True, null=True)
+    benchmarks = models.ManyToManyField('benchmarks.Benchmark', blank=True, null=True)
     themes = models.ManyToManyField(Theme, blank=True, null=True)
     type_choices = (
         ('Multiple Choice','Multiple Choice'), # Simple

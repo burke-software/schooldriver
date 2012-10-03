@@ -102,6 +102,7 @@ INSTALLED_APPS = (
     'ecwsp.admissions',
     'ecwsp.engrade_sync',
     'ecwsp.alumni',
+    'ecwsp.benchmarks',
     'ecwsp.omr',
     'ecwsp.discipline',
     'ecwsp.attendance',

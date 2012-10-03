@@ -23,9 +23,13 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
-from ecwsp.omr.models import Benchmark
+from ecwsp.benchmarks.models import Benchmark
 
 import sys
+
+from django.core.exceptions import ImproperlyConfigured
+if not 'ecwsp.benchmarks' in settings.INSTALLED_APPS:
+    raise ImproperlyConfigured('benchmark_grade depends on benchmarks but it is not in installed apps')
 
 OPERATOR_CHOICES = (
     (u'>', u'Greater than'),
@@ -35,7 +39,6 @@ OPERATOR_CHOICES = (
     (u'!=', u'Not equal to'),
     (u'==', u'Equal to')
 )
-
 
 class CalculationRule(models.Model):
     ''' A per-year GPA calculation rule. It should also be applied to future years unless a more current rule exists.
@@ -126,7 +129,7 @@ class Item(models.Model):
     category = models.ForeignKey('Category')
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     assignment_type = models.ForeignKey('AssignmentType', blank=True, null=True)
-    benchmark = models.ForeignKey('omr.Benchmark', blank=True, null=True, verbose_name='standard')
+    benchmark = models.ForeignKey('benchmarks.Benchmark', blank=True, null=True, verbose_name='standard')
     @property
     def benchmark_description(self): return self.benchmark.name
     multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1) # not used yet

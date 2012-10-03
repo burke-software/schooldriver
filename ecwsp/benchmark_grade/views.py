@@ -41,7 +41,7 @@ from ecwsp.grades.forms import *
 from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.forms import *
-from ecwsp.omr.models import Benchmark
+from ecwsp.benchmarks.models import Benchmark
 from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change, benchmark_find_calculation_rule
 
 from decimal import Decimal, ROUND_HALF_UP

@@ -1,7 +1,8 @@
 from django.conf.urls.defaults import *
 #from django.views.generic import ListView
 from ecwsp.omr.views import *
-from ecwsp.omr.models import QuestionBank, Benchmark
+from ecwsp.omr.models import QuestionBank
+from ecwsp.benchmarks.models import Benchmark
 
 urlpatterns = patterns('',
     (r'^test/$', my_tests),

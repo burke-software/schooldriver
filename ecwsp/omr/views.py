@@ -36,6 +36,7 @@ from ecwsp.omr.reports import *
 from ecwsp.sis.models import Faculty, UserPreference
 from ecwsp.sis.helper_functions import *
 from ecwsp.schedule.models import Course
+from ecwsp.benchmarks.models import Benchmark
 
 from elementtree.SimpleXMLWriter import XMLWriter
 import django_filters

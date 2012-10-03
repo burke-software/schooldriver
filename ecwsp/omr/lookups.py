@@ -1,5 +1,6 @@
 from django.db.models import Q
-from ecwsp.omr.models import *
+from ecwsp.benchmarks.models import Benchmark
+from ecwsp.omr.models import Theme, Test
 from ajax_select import LookupChannel
 
 class BenchmarkLookup(LookupChannel):
