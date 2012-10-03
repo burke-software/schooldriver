@@ -180,6 +180,7 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
     # but they have some additional data
     if (transcript and "ecwsp.benchmark_grade" in settings.INSTALLED_APPS):
         from ecwsp.benchmark_grade.models import Aggregate, Category
+        from ecwsp.benchmark_grade.utility import gradebook_get_average, benchmark_find_calculation_rule, gradebook_get_category_average
     
     marking_periods = MarkingPeriod.objects.filter(
         school_year=SchoolYear.objects.filter(
@@ -265,31 +266,10 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                         if mp not in course.marking_period.all():
                             # Obey the registrar! Don't include grades from marking periods when the course didn't meet.
                             setattr(course, "grade" + str(i), "")
-                            if year.benchmark_grade:
-                                setattr(course, "engagement" + str(i), "")
-                                setattr(course, "organization" + str(i), "")
                             i += 1
                             continue
                         if year.benchmark_grade:
-                            # TODO: deal with rounding
-                            try:
-                                standards = course_aggregates.get(category=Category.objects.get(name='Standards'), marking_period=mp)
-                                standards = standards.cached_value
-                            except:
-                                standards = ""
-                            try:
-                                engagement = course_aggregates.get(category=Category.objects.get(name='Engagement'), marking_period=mp)
-                                engagement = engagement.cached_value
-                            except:
-                                engagement = ""
-                            try:
-                                organization = course_aggregates.get(category=Category.objects.get(name='Organization'), marking_period=mp)
-                                organization = organization.cached_value
-                            except:
-                                organization = ""
-                            setattr(course, "grade" + str(i), standards)
-                            setattr(course, "engagement" + str(i), engagement)
-                            setattr(course, "organization" + str(i), organization)
+                            setattr(course, "grade" + str(i), gradebook_get_average(student, course, None, mp))
                         else:
                             # We can't overwrite cells, so we have to get seperate variables for each mp grade.
                             try:
@@ -301,9 +281,6 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                         i += 1
                     while i <= 6:
                         setattr(course, "grade" + str(i), "")
-                        if year.benchmark_grade:
-                            setattr(course, "engagement" + str(i), "")
-                            setattr(course, "organization" + str(i), "")
                         i += 1
                     course.final = course.get_final_grade(student, date_report=for_date)
                     
@@ -311,7 +288,16 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                         year.credits += course.credits
                     if course.credits:
                         year.possible_credits += course.credits
-                    
+
+                year.categories_as_courses = []
+                if year.benchmark_grade:
+                    calculation_rule = benchmark_find_calculation_rule(year)
+                    for category_as_course in calculation_rule.category_as_course_set.filter(include_departments=course.department):
+                        i = 1
+                        for mp in year.mps:
+                            setattr(category_as_course.category, 'grade{}'.format(i), gradebook_get_category_average(student, category_as_course.category, mp))
+                            i += 1
+                        year.categories_as_courses.append(category_as_course.category)
                 
                 # Averages per marking period
                 i = 1
