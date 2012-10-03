@@ -14,7 +14,7 @@ def global_stuff(request):
     
     # Only show messages if user just logged in
     user_messages = None
-    if not request.session.get('has_seen_message', False):
+    if not request.session.get('has_seen_message', False) and request.user.is_authenticated():
         today = datetime.date.today()
         if request.user.groups.filter(name='students'):
             user_messages = MessageToStudent.objects.filter(start_date__lte=today, end_date__gte=today)
@@ -22,7 +22,7 @@ def global_stuff(request):
             from ecwsp.work_study.models import MessageToSupervisor
             user_messages = MessageToSupervisor.objects.filter(start_date__lte=today, end_date__gte=today)
         request.session['has_seen_message'] = True
-            
+
     return {
         "header_image": header_image,
         "school_name": school_name,
