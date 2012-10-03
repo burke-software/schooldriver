@@ -9,6 +9,8 @@ from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 from celery import task
 
+import sys
+
 if 'ecwsp.work_study' in settings.INSTALLED_APPS:
     
     if settings.SYNC_SUGAR:
