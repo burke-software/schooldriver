@@ -8,6 +8,7 @@ from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
 from ecwsp.sis.report import *
 from ecwsp.benchmark_grade.models import *
+from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule, gradebook_get_average
 
 import tempfile
 import os
@@ -21,6 +22,79 @@ class struct(object):
         return ""
 
 def benchmark_report_card(template, options, students, format="odt"):
+    PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
+
+    data = get_default_data()
+    for_date = options['date']
+    school_year = SchoolYear.objects.filter(start_date__lt=for_date).order_by('-start_date')[0]
+    calculation_rule = benchmark_find_calculation_rule(school_year)
+    attendance_marking_periods = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.filter(start_date__lt=for_date)[0],
+                                                  start_date__lt=for_date,
+                                                  show_reports=True)
+    marking_period = attendance_marking_periods.order_by('-start_date')[0]
+    for student in students:
+        student.courses = Course.objects.filter(
+            courseenrollment__user=student,
+            graded=True,
+            marking_period=marking_period,
+        ).distinct().order_by('department')
+        for course in student.courses:
+            course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
+            course.category_by_name = {}
+            for category in course.categories:
+                category.weight_percentage = calculation_rule.per_course_category_set.get(category=category, apply_to_departments=course.department).weight * 100
+                category.weight_percentage = category.weight_percentage.quantize(Decimal('0'))
+                category.average = gradebook_get_average(student, course, category, marking_period, None)
+
+                items = Item.objects.filter(course=course, category=category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+                category.count_total = items.exclude(best_mark=None).distinct().count()
+                category.count_missing = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
+                category.count_passing = items.filter(best_mark__gte=PASSING_GRADE).distinct().count()
+                if category.count_total:
+                    category.count_percentage = (Decimal(category.count_passing) / category.count_total * 100).quantize(Decimal('0'))
+
+                item_names = items.values_list('name').distinct()
+                category.item_groups = []
+                for item_name_tuple in item_names:
+                    item_name = item_name_tuple[0]
+                    item_group = struct()
+                    item_group.name = item_name
+                    item_group.items = items.filter(name=item_name).distinct()
+                    category.item_groups.append(item_group)
+
+                course.category_by_name[category.name] = category
+
+            course.average = gradebook_get_average(student, course, None, marking_period, None)
+
+        #Attendance for marking period
+        i = 1
+        student.absent_total = 0
+        student.tardy_total = 0
+        student.dismissed_total = 0
+        student.attendance_marking_periods = []
+        for mp in attendance_marking_periods.order_by('start_date'):
+            absent = student.student_attn.filter(status__absent=True, date__range=(mp.start_date, mp.end_date)).count()
+            tardy = student.student_attn.filter(status__tardy=True, date__range=(mp.start_date, mp.end_date)).count()
+            dismissed = student.student_attn.filter(status__code="D", date__range=(mp.start_date, mp.end_date)).count()
+            student.absent_total += absent
+            student.tardy_total += tardy
+            student.dismissed_total += dismissed
+            amp = struct()
+            amp.absent = absent
+            amp.tardy = tardy
+            amp.dismissed = dismissed
+            amp.number = i
+            student.attendance_marking_periods.append(amp)
+            i += 1
+
+    data['students'] = students
+    data['school_year'] = school_year
+    data['marking_period'] = marking_period.name # just passing object makes appy think it's undefined
+    filename = 'output'
+    #return pod_save(filename, ".pdf", data, template)
+    return pod_save(filename, "." + str(format), data, template)
+
+def bleh_benchmark_report_card(template, options, students, format="odt"):
     """ A TC-exclusive benchmark-based report card generator for a single marking period """
     """ lots of crap commented out is obsoleted by legit gpa calculator and will be removed soon """
 
