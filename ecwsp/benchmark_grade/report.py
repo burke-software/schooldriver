@@ -28,7 +28,7 @@ def benchmark_report_card(template, options, students, format="odt"):
     for_date = options['date']
     school_year = SchoolYear.objects.filter(start_date__lt=for_date).order_by('-start_date')[0]
     calculation_rule = benchmark_find_calculation_rule(school_year)
-    attendance_marking_periods = MarkingPeriod.objects.filter(school_year=SchoolYear.objects.filter(start_date__lt=for_date)[0],
+    attendance_marking_periods = MarkingPeriod.objects.filter(school_year=school_year,
                                                   start_date__lt=for_date,
                                                   show_reports=True)
     marking_period = attendance_marking_periods.order_by('-start_date')[0]
@@ -38,33 +38,62 @@ def benchmark_report_card(template, options, students, format="odt"):
             graded=True,
             marking_period=marking_period,
         ).distinct().order_by('department')
+        student.count_total = 0
+        student.count_missing = 0
+        student.count_passing = 0
         for course in student.courses:
+            course.average = gradebook_get_average(student, course, None, marking_period, None)
+            course.current_marking_periods = course.marking_period.filter(start_date__lt=for_date).order_by('start_date')
             course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
             course.category_by_name = {}
             for category in course.categories:
                 category.weight_percentage = calculation_rule.per_course_category_set.get(category=category, apply_to_departments=course.department).weight * 100
-                category.weight_percentage = category.weight_percentage.quantize(Decimal('0'))
-                category.average = gradebook_get_average(student, course, category, marking_period, None)
+                category.weight_percentage = category.weight_percentage.quantize(Decimal('0'), ROUND_HALF_UP)
+                category.overall_count_total = 0
+                category.overall_count_missing = 0
+                category.overall_count_passing = 0
+                for course_marking_period in course.current_marking_periods:
+                    course_marking_period.category = category
+                    course_marking_period.category.average = gradebook_get_average(student, course, category, marking_period, None)
+                    items = Item.objects.filter(course=course, marking_period=marking_period, category=category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+                    course_marking_period.category.count_total = items.exclude(best_mark=None).distinct().count()
+                    course_marking_period.category.count_missing = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
+                    course_marking_period.category.count_passing = items.filter(best_mark__gte=PASSING_GRADE).distinct().count()
+                    if course_marking_period.category.count_total:
+                        course_marking_period.category.count_percentage = (Decimal(course_marking_period.category.count_passing) / course_marking_period.category.count_total * 100).quantize(Decimal('0', ROUND_HALF_UP))
+                    category.overall_count_total += course_marking_period.category.count_total
+                    category.overall_count_missing += course_marking_period.category.count_missing
+                    category.overall_count_passing += course_marking_period.category.count_passing
 
-                items = Item.objects.filter(course=course, category=category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
-                category.count_total = items.exclude(best_mark=None).distinct().count()
-                category.count_missing = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
-                category.count_passing = items.filter(best_mark__gte=PASSING_GRADE).distinct().count()
-                if category.count_total:
-                    category.count_percentage = (Decimal(category.count_passing) / category.count_total * 100).quantize(Decimal('0'))
+                    item_names = items.values_list('name').distinct()
+                    course_marking_period.category.item_groups = []
+                    for item_name_tuple in item_names:
+                        item_name = item_name_tuple[0]
+                        item_group = struct()
+                        item_group.name = item_name
+                        item_group.items = items.filter(name=item_name).distinct()
+                        course_marking_period.category.item_groups.append(item_group)
 
-                item_names = items.values_list('name').distinct()
-                category.item_groups = []
-                for item_name_tuple in item_names:
-                    item_name = item_name_tuple[0]
-                    item_group = struct()
-                    item_group.name = item_name
-                    item_group.items = items.filter(name=item_name).distinct()
-                    category.item_groups.append(item_group)
+                    course_marking_period.category_by_name = getattr(course_marking_period, 'category_by_name', {})
+                    course_marking_period.category_by_name[category.name] = course_marking_period.category
+                    # the last time through the loop is the most current marking period,
+                    # so give that to anyone who doesn't request an explicit marking period
+                    #category = course_marking_period.category
 
                 course.category_by_name[category.name] = category
+                if category.overall_count_total:
+                    category.overall_count_percentage = (Decimal(category.overall_count_passing) / category.overall_count_total * 100).quantize(Decimal('0', ROUND_HALF_UP))
+                student.count_total += category.overall_count_total
+                student.count_missing += category.overall_count_missing
+                student.count_passing += category.overall_count_passing
 
-            course.average = gradebook_get_average(student, course, None, marking_period, None)
+        if student.count_total:
+            student.count_percentage = (Decimal(student.count_passing) / student.count_total * 100).quantize(Decimal('0', ROUND_HALF_UP))
+            
+        student.session_gpa = student.calculate_gpa_mp(marking_period)
+        # Cannot just rely on student.gpa for the cumulative GPA; it does not reflect report's date
+        student.current_report_cumulative_gpa = student.calculate_gpa(for_date)
+
 
         #Attendance for marking period
         i = 1
