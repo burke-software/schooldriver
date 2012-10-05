@@ -501,8 +501,8 @@ class Importer:
     def import_benchmarks(self, sheet, test=None):
         """Import Standardized tests. Does not allow updates.
         test: if the test named is already known. """
-        from ecwsp.omr.models import Benchmark, MeasurementTopic
-        from ecwsp.omr.models import Department as omrDepartment
+        from ecwsp.benchmarks.models import Benchmark, MeasurementTopic
+        from ecwsp.benchmarks.models import Department as omrDepartment
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
             with transaction.commit_manually():
