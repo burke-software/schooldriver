@@ -121,7 +121,7 @@ def student_family_grade_common(student):
             course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
             course.category_by_name = {}
             for category in course.categories:
-                category.percentage = calculation_rule.per_course_category_set.get(category=category).weight * 100
+                category.percentage = calculation_rule.per_course_category_set.get(category=category, apply_to_departments=course.department).weight * 100
                 category.percentage = category.percentage.quantize(Decimal('0'))
                 category.average = gradebook_get_average(student, course, category, mp, None)
                 items = Item.objects.filter(course=course, category=category, mark__student=student).annotate(best_mark=Max('mark__mark'))

@@ -30,6 +30,8 @@ from django.http import Http404
 from django.dispatch import dispatcher
 from django.db.models import signals
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.utils.html import strip_tags
+import re
 
 from datetime import datetime
 from datetime import timedelta
@@ -870,4 +872,6 @@ class MessageToSupervisor(models.Model):
     start_date = models.DateField(default=date.today)
     end_date = models.DateField(default=date.today)
     def __unicode__(self):
-        return self.message
+        # django.utils.html has a strip_entities(), but it's undocumented
+        # so snatch up it's regular expression and use it here!
+        return re.sub(r'&(?:\w+|#\d+);', '', strip_tags(self.message))

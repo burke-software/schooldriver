@@ -477,7 +477,7 @@ class Student(MdlUser, CustomFieldModel):
             if User.objects.filter(username=self.student.username):
                 return User.objects.filter(username=self.student.username)[0].email
             return None
-        return self.email
+        return self.alt_email
 
     def get_phone_number(self):
         if self.studentnumber_set.filter(type="C"):

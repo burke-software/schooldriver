@@ -86,7 +86,7 @@
 
 <div class="message_area">
     {% for user_message in user_messages %}
-	{{ user_message|safe }}
+	{{ user_message.message|safe }}
     {% endfor %}
 </div>
 
