@@ -38,9 +38,9 @@ def benchmark_report_card(template, options, students, format="odt"):
             graded=True,
             marking_period=marking_period,
         ).distinct().order_by('department')
-        student.count_total = 0
-        student.count_missing = 0
-        student.count_passing = 0
+        student.count_total_by_category_name = {}
+        student.count_missing_by_category_name = {}
+        student.count_passing_by_category_name = {}
         for course in student.courses:
             course.average = gradebook_get_average(student, course, None, marking_period, None)
             course.current_marking_periods = course.marking_period.filter(start_date__lt=for_date).order_by('start_date')
@@ -83,12 +83,16 @@ def benchmark_report_card(template, options, students, format="odt"):
                 course.category_by_name[category.name] = category
                 if category.overall_count_total:
                     category.overall_count_percentage = (Decimal(category.overall_count_passing) / category.overall_count_total * 100).quantize(Decimal('0', ROUND_HALF_UP))
-                student.count_total += category.overall_count_total
-                student.count_missing += category.overall_count_missing
-                student.count_passing += category.overall_count_passing
+                student.count_total_by_category_name[category.name] = student.count_total_by_category_name.get(category.name, 0) + category.overall_count_total
+                student.count_missing_by_category_name[category.name] = student.count_missing_by_category_name.get(category.name, 0) + category.overall_count_missing
+                student.count_passing_by_category_name[category.name] = student.count_passing_by_category_name.get(category.name, 0) + category.overall_count_passing
 
-        if student.count_total:
-            student.count_percentage = (Decimal(student.count_passing) / student.count_total * 100).quantize(Decimal('0', ROUND_HALF_UP))
+        student.count_percentage_by_category_name = {}
+        for category_name, value in student.count_total_by_category_name.items():
+            if value:
+                student.count_percentage_by_category_name[category_name] = (Decimal(student.count_passing_by_category_name[category_name]) / value * 100).quantize(Decimal('0', ROUND_HALF_UP))
+
+        # make categories available 
             
         student.session_gpa = student.calculate_gpa_mp(marking_period)
         # Cannot just rely on student.gpa for the cumulative GPA; it does not reflect report's date
