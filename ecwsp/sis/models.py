@@ -223,6 +223,7 @@ class EmergencyContact(models.Model):
     email = models.EmailField(blank=True, null=True)
     primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to.")
     emergency_only = models.BooleanField(help_text="Only contact in case of emergency")
+    sync_schoolreach = models.BooleanField(help_text="Sync this contact with schoolreach",default=True)
     
     class Meta:
         ordering = ('primary_contact', 'emergency_only', 'lname') 
@@ -263,6 +264,15 @@ class EmergencyContact(models.Model):
 
 class EmergencyContactNumber(PhoneNumber):
     contact = models.ForeignKey(EmergencyContact)
+    primary = models.BooleanField()
+    
+    def save(self, *args, **kwargs):
+        if self.primary:
+            for contact in self.contact.emergencycontactnumber_set.exclude(id=self.id).filter(primary=True):
+                contact.primary = False
+                contact.save()
+        super(EmergencyContactNumber, self).save(*args, **kwargs)
+    
     def __unicode__(self):
         if self.ext:
             return self.get_type_display() + ":" + self.number + "x" + self.ext

@@ -46,6 +46,7 @@ class StudentNumberInline(admin.TabularInline):
 class EmergencyContactInline(admin.TabularInline):
     model = EmergencyContactNumber
     extra = 1
+    classes = ('grp-collapse grp-open',)
     
 class TranscriptNoteInline(admin.TabularInline):
     model = TranscriptNote
@@ -70,7 +71,9 @@ class StudentCohortInline(admin.TabularInline):
 
 class StudentECInline(admin.TabularInline):
     model = Student.emergency_contacts.through
-    extra = 1
+    extra = 0
+    classes = ('grp-collapse grp-closed',)
+    
 
 class MarkingPeriodInline(admin.StackedInline):
     model = MarkingPeriod
@@ -198,6 +201,8 @@ class EmergencyContactAdmin(admin.ModelAdmin):
         ('Address', {'fields': ['street', ('city', 'state'), 'zip'],
             'classes': ['collapse']}),
     ]
+    if 'ecwsp.integrations.schoolreach' in settings.INSTALLED_APPS:
+        fieldsets[0][1]['fields'].append('sync_schoolreach')
     list_filter = ['primary_contact', 'emergency_only']
     inlines = [EmergencyContactInline, StudentECInline]
     search_fields = ['fname', 'lname', 'email', 'student__fname', 'student__lname']

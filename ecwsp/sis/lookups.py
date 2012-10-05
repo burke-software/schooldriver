@@ -82,7 +82,11 @@ class EmergencyContactLookup(LookupChannel):
             result = "<table style=\"width: auto;\"><tr><td colspan=3><a href=\"/admin/sis/emergencycontact/%s/\" target=\"_blank\">%s %s - %s</a></td></tr>" \
                 % (emergency_contact.id, emergency_contact.fname, emergency_contact.lname, emergency_contact.relationship_to_student)
         for number in emergency_contact.emergencycontactnumber_set.all():
-            result += "<tr><td style=\"border-bottom: none;\"> %s </td><td style=\"border-bottom: none;\"> %s </td></tr>" % (number.full_number(), number.get_type_display())
+            if number.primary:
+                primary = "<td>Primary</td>"
+            else:
+                primary = ""
+            result += "<tr><td style=\"border-bottom: none;\"> %s </td><td style=\"border-bottom: none;\"> %s </td>%s</tr>" % (number.full_number(), number.get_type_display(), primary)
         result += "</table>"
         return result
     
