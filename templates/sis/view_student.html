@@ -226,11 +226,18 @@
                                         <div id="toggle_subsection_attendance" class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)" id="toggle_section_attendance" onclick='options_toggle(id)'>{{ year }}</a>
                                         <div class="sv-main">
                                     {% endif %}
-                                    Total Absent: {{ year.attendance_absense }}
-                                    {% if year.attendance_absense_with_half %}
-                                        ({{ year.attendance_absense_with_half }} with half days)
-                                    {% endif %}
-                                    Total Tardy: {{ year.attendance_tardy }}
+                                    <span class="spacer">
+                                        Total Absent: {{ year.attendance_absense }}
+                                        {% if year.attendance_absense_with_half %}
+                                            ({{ year.attendance_absense_with_half }} with half days)
+                                        {% endif %}
+                                    </span>
+                                    <span class="spacer">
+                                        Total Tardy: {{ year.attendance_tardy }}
+                                    </span>
+                                    <span class="spacer">
+                                        Total Present and on time: {{ year.present }} (of {{ year.total }} school days)
+                                    </span>
                                     <table class="section-table">
                                         <tr>
                                             <th>Date</th>

@@ -92,6 +92,7 @@ h1 {
 
 .sv-main {
 	display: none;
+        padding-left: 16px;
 }
 
 th {
@@ -134,4 +135,9 @@ th {
 
 table {
     border: none;
+}
+
+.spacer {
+    padding-left: 10px;
+    padding-right: 10px;
 }
