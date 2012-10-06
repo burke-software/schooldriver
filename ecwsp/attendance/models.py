@@ -35,7 +35,7 @@ class AttendanceStatus(models.Model):
     excused = models.BooleanField()
     absent = models.BooleanField(help_text="Some statistics need to add various types of absent statuses, such as the number in parathesis in daily attendance")
     tardy = models.BooleanField(help_text="Some statistics need to add various types of tardy statuses, such as the number in parathesis in daily attendance")
-    half = models.BooleanField(help_text="Counts as half attendance when counting. So 2 half absents and equals 1 normal. Also check of absent")
+    half = models.BooleanField(help_text="Half attendance when counting. DO NOT check off absent otherwise it will double count!")
     
     class Meta:
         verbose_name_plural = 'Attendance Statuses'
@@ -47,7 +47,6 @@ class AttendanceStatus(models.Model):
 class StudentAttendance(models.Model):
     student =  models.ForeignKey(Student, related_name="student_attn", help_text="Start typing a student's first or last name to search")
     date = models.DateField(default=datetime.datetime.now)
-    #date.daterange_filter = True
     status = models.ForeignKey(AttendanceStatus)
     time = models.TimeField(blank=True,null=True)
     notes = models.CharField(max_length=500, blank=True)

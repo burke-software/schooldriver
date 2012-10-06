@@ -227,6 +227,9 @@
                                         <div class="sv-main">
                                     {% endif %}
                                     Total Absent: {{ year.attendance_absense }}
+                                    {% if year.attendance_absense_with_half %}
+                                        ({{ year.attendance_absense_with_half }} with half days)
+                                    {% endif %}
                                     Total Tardy: {{ year.attendance_tardy }}
                                     <table class="section-table">
                                         <tr>

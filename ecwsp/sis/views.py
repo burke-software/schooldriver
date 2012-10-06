@@ -434,8 +434,8 @@ def view_student(request, id=None):
             attendances = student.student_attn.filter(date__range=(year.start_date, year.end_date))
             year.attendances = attendances
             year.attendance_tardy = attendances.filter(status__tardy=True).count
-            year.attendance_absense = attendances.filter(status__absent=True, status__half=False).count()
-            year.attendance_absense += float(attendances.filter(status__absent=True, status__half=True).count()) / 2
+            year.attendance_absense = attendances.filter(status__absent=True).count()
+            year.attendance_absense_with_half = year.attendance_absense + float(attendances.filter(status__half=True).count()) / 2
             
     #Standard Tests
     from ecwsp.administration.models import Configuration
