@@ -202,7 +202,9 @@ def daily_attendance_report(adate, private_notes=False, type="odt", request=None
         attns = attendance.filter(student__year__id=year.id)
         for attn in attns:
             if attn.status.absent:
-                attn.total = StudentAttendance.objects.filter(student=attn.student, status__absent=True, date__range=active_year_dates).count()
+                attn.total = StudentAttendance.objects.filter(student=attn.student, status__absent=True, status__half=False, date__range=active_year_dates).count()
+                halfs = StudentAttendance.objects.filter(student=attn.student, status__absent=True, status__half=True,date__range=active_year_dates).count() / 2 
+                attn.total += (float(halfs)/2)
             elif attn.status.tardy:
                 attn.total = StudentAttendance.objects.filter(student=attn.student, status__tardy=True, date__range=active_year_dates).count()
             else:
@@ -278,13 +280,14 @@ def attendance_report(request):
                     students = students.filter()
                     
                     titles.append("Student")
-                    titles.append("Total Absences")
+                    titles.append("Total Absences (not half)")
                     titles.append("Total Tardies")
                     for status in AttendanceStatus.objects.exclude(name="Present"):
                         titles.append(status)
                     pref = UserPreference.objects.get_or_create(user=request.user)[0]
                     students_absent = students.filter(
                         student_attn__status__absent=True,
+                        student_attn__status__half=False,
                         student_attn__in=attendances).annotate(abs=Count('student_attn'))
                     students_tardy = students.filter(
                         student_attn__status__tardy=True,

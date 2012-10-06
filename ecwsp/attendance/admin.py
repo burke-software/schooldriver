@@ -52,5 +52,5 @@ admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 admin.site.register(AttendanceLog)
 
 class AttendanceStatusAdmin(admin.ModelAdmin):
-    list_display = ['name', 'code', 'excused', 'absent', 'tardy']
+    list_display = ['name', 'code', 'excused', 'absent', 'tardy', 'half']
 admin.site.register(AttendanceStatus,AttendanceStatusAdmin)

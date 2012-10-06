@@ -35,6 +35,7 @@ class AttendanceStatus(models.Model):
     excused = models.BooleanField()
     absent = models.BooleanField(help_text="Some statistics need to add various types of absent statuses, such as the number in parathesis in daily attendance")
     tardy = models.BooleanField(help_text="Some statistics need to add various types of tardy statuses, such as the number in parathesis in daily attendance")
+    half = models.BooleanField(help_text="Counts as half attendance when counting. So 2 half absents and equals 1 normal. Also check of absent")
     
     class Meta:
         verbose_name_plural = 'Attendance Statuses'
