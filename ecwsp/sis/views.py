@@ -437,7 +437,7 @@ def view_student(request, id=None):
             year.attendance_absense = attendances.filter(status__absent=True).count()
             year.attendance_absense_with_half = year.attendance_absense + float(attendances.filter(status__half=True).count()) / 2
             year.total = year.get_number_days()
-            year.present = year.total - year.attendance_absense - year.attendance_tardy - year.attendance_absense_with_half
+            year.present = year.total - year.attendance_tardy - year.attendance_absense_with_half
     #Standard Tests
     from ecwsp.administration.models import Configuration
     from ecwsp.schedule.models import StandardCategory, StandardCategoryGrade, StandardTest, StandardTestResult
