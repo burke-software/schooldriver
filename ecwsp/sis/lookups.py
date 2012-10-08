@@ -86,7 +86,7 @@ class EmergencyContactLookup(LookupChannel):
                 primary = "<td>Primary</td>"
             else:
                 primary = ""
-            result += "<tr><td style=\"border-bottom: none;\"> %s </td><td style=\"border-bottom: none;\"> %s </td>%s</tr>" % (number.full_number(), number.get_type_display(), primary)
+            result += "<tr><td style=\"border-bottom: none;\"> %s </td><td style=\"border-bottom: none;\"> %s </td><td>%s</td>%s</tr>" % (number.full_number(), number.get_type_display(), number.note, primary)
         result += "</table>"
         return result
     

@@ -200,6 +200,7 @@ class PhoneNumber(models.Model):
     number = PhoneNumberField()
     ext = models.CharField(max_length=10, blank=True, null=True)
     type = models.CharField(max_length=2, choices=(('H', 'Home'), ('C', 'Cell'), ('W', 'Work'), ('O', 'Other')), blank=True)
+    note = models.CharField(max_length=255, blank=True)
     class Meta:
         abstract = True
     def full_number(self):
