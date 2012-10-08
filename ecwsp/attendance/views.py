@@ -20,10 +20,12 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, Sum, Count, get_model
 from django.forms.models import BaseModelFormSet, modelformset_factory
+from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
@@ -232,6 +234,116 @@ def daily_attendance_report(adate, private_notes=False, type="odt", request=None
     
     filename = "daily_attendance"
     return pod_save(filename, "." + str(type), data, template)
+
+def check_attendance_permission(course, user):
+    """ Returns true if user has permission to take attendance
+    """
+    if Faculty.objects.filter(username=user.username):
+        teacher = Faculty.objects.get(username=user.username)
+        if teacher == course.teacher or teacher in course.secondary_teachers.all():
+            return True
+    if user.has_perm('attendance.change_studentattendance'):
+        return True
+    raise PermissionDenied('User attempting to take attendance is unauthorized')
+    
+    
+@permission_required('attendance.take_studentattendance')
+def select_course_for_attendance(request):
+    """ View for a teacher to select which course to take attendance for
+    """
+    today=datetime.datetime.now()
+    if not Faculty.objects.filter(username=request.user.username):
+        messages.info(
+            request,
+            'You do not exists as a Teacher. Tell an administrator to create a teacher with your username.')
+        return HttpResponseRedirect(reverse('admin:index'))
+    
+    teacher = Faculty.objects.get(username=request.user.username)
+    courses = Course.objects.filter(
+        teacher=teacher,
+        marking_period__start_date__lte=today,
+        marking_period__end_date__gte=today)
+    sec_courses = Course.objects.filter(
+        secondary_teachers=teacher,
+        marking_period__start_date__lte=today,
+        marking_period__end_date__gte=today)
+    courses = courses | sec_courses
+    
+    predicted_course = None
+    if courses.filter(
+        coursemeet__day__exact=today.isoweekday(),
+        coursemeet__period__start_time__gt=today.time()
+        ):
+        predicted_course = courses.filter(
+            coursemeet__day__exact=today.isoweekday(),
+            coursemeet__period__start_time__gt=today.time(),
+            ).order_by('coursemeet__period__start_time')[0]
+    return render_to_response(
+        'attendance/select_course_attendance.html',
+        {
+            'courses': courses,
+            'predicted_course': predicted_course,
+        },
+        RequestContext(request, {}))
+    
+
+@permission_required('attendance.take_studentattendance')
+def course_attendance(request, course_id, for_date=datetime.date.today):
+    """ View for a teacher to take course attendance
+    """
+    for_date=datetime.date.today()
+    course = get_object_or_404(Course, pk=course_id)
+    check_attendance_permission(course, request.user)
+    
+    students = course.get_enrolled_students()
+    daily_attendance = StudentAttendance.objects.filter(student__in=students,date=for_date).distinct()
+    CourseAttendanceFormSet = formset_factory(CourseAttendanceForm, extra=0)
+    
+    if request.POST:
+        formset = CourseAttendanceFormSet(request.POST)
+        if formset.is_valid():
+            number_created = 0
+            for form in formset.forms:
+                data = form.cleaned_data
+                if data['status']:
+                    course_attendance, created = CourseAttendance.objects.get_or_create(
+                        student=data['student'],
+                        course=course,
+                        date=for_date,
+                        status=data['status'],
+                    )
+                    if created: number_created += 1
+            messages.success(request, 'Attendance recorded for %s students' % number_created)
+    else:
+        initial_data = []
+        for student in students:
+            initial_row = {'student': student}
+            if student.courseattendance_set.filter(date=for_date, course=course):
+                initial_row['status'] = student.courseattendance_set.filter(date=for_date)[0].status
+            elif student.student_attn.filter(date=for_date, status__absent=True):
+                initial_row['status'] = AttendanceStatus.objects.get(name="Absent")
+            initial_data.append(initial_row)
+        formset = CourseAttendanceFormSet(initial=initial_data)
+    
+    i = 0
+    for student in students:
+        formset[i].student_name = student
+        formset[i].student_attendance = ""
+        formset[i].student_attendance_note = ""
+        if student.student_attn.filter(date=for_date):
+            for attendance in student.student_attn.filter(date=for_date):
+                formset[i].student_attendance += unicode(attendance.status)
+                formset[i].student_attendance_note += unicode(attendance.notes)
+        i += 1
+    
+    return render_to_response(
+        'attendance/course_attendance.html',
+        {
+            'course': course,
+            'formset': formset,
+            'for_date': for_date,
+        },
+        RequestContext(request, {}))
 
 
 @permission_required('sis.reports') 

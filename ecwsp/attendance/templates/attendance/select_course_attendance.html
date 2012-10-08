@@ -1,0 +1,27 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+    <h2> Select course to take attendance for </h2>
+    
+    {% if predicted_course %}
+        <p>
+            Perhaps you want
+            <a href="{% url ecwsp.attendance.views.course_attendance predicted_course.id %}">
+                {{ predicted_course }}
+            </a>?
+        </p>
+        <br/>
+    {% endif %}
+    <ul>
+        {% for course in courses %}
+            <li>
+                <a href="{% url ecwsp.attendance.views.course_attendance course.id %}">
+                    {{ course }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+    
+{% endblock %}
+

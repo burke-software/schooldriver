@@ -44,6 +44,24 @@ class AttendanceStatus(models.Model):
         return unicode(self.name)
 
 
+class CourseAttendance(models.Model):
+    """ Attendance taken at each course
+    It compares with the daily "student attendance" and is a way to verify
+    students are not skipping classes.
+    """
+    student =  models.ForeignKey(Student)
+    course = models.ForeignKey('schedule.Course')
+    date = models.DateField(default=datetime.datetime.now)
+    status = models.ForeignKey(AttendanceStatus)
+    notes = models.CharField(max_length=500, blank=True)
+    def __unicode__(self):
+        return unicode(self.student) + " " + unicode(self.date) + " " + unicode(self.status)
+    
+    def course_period(self):
+        if self.course.coursemeet_set.filter(day=self.date.isoweekday()):
+            return self.course.coursemeet_set.filter(day=self.date.isoweekday())[0].period
+
+
 class StudentAttendance(models.Model):
     student =  models.ForeignKey(Student, related_name="student_attn", help_text="Start typing a student's first or last name to search")
     date = models.DateField(default=datetime.datetime.now)

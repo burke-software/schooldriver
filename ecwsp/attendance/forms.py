@@ -35,6 +35,14 @@ class StudentAttendanceForm(forms.ModelForm):
     status = forms.ModelChoiceField(widget=forms.Select(attrs={'class':'status',}), queryset=AttendanceStatus.objects.filter(teacher_selectable=True))
     
     
+class CourseAttendanceForm(forms.Form):
+    student = forms.ModelChoiceField(queryset=Student.objects.all(), widget=forms.HiddenInput())
+    status = forms.ModelChoiceField(
+        widget=forms.Select(attrs={'class':'status',}),
+        queryset=AttendanceStatus.objects.filter(teacher_selectable=True),
+        required=False)
+
+    
 class AttendanceReportForm(TimeBasedForm):
     filter_status = forms.ModelChoiceField(required=False, queryset=AttendanceStatus.objects.all())
     filter_count =forms.IntegerField(initial=0, help_text="Minimal number of above needed to show in report")

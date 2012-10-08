@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+    
+    {% load adminmedia %}
+    {{ formset.media }}
+    
+{% endblock %}
+
+{% block content %}
+    <h2> Attendance for {{ course }} on {{ for_date }} </h2>
+    <form method="post" action="" id="myform">
+        {{ formset.management_form }}
+        {{ formset.non_form_errors }}
+	{{ msg|safe }}
+        <div class='table'>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Student</th>
+                        <th>Daily Attendance</th>
+                        <th>Course Attendance</th>
+			<th>Note</th>
+                    </tr>
+                    {% for form in formset %}
+                        <tr>
+                            <td>{{ form.student_name }}</td>
+                            <td>{{ form.student_attendance }}</td>
+                            <td>{{ form.status }} {{ form.student }}</td>
+                            <td>{{ form.student_attendance_note }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <input type="submit" value="Submit"/>
+    </form>
+    <script type="text/javascript">
+        document.getElementById("id_form-0-status" ).focus();
+    </script>
+{% endblock %}
+

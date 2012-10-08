@@ -21,7 +21,7 @@ from django.contrib import messages
 from django import forms
 from daterange_filter.filter import DateRangeFilter
 
-from models import *
+from ecwsp.attendance.models import StudentAttendance, CourseAttendance, AttendanceLog, AttendanceStatus
 
 from ajax_select import make_ajax_form
 
@@ -48,6 +48,20 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
         return super(StudentAttendanceAdmin, self).lookup_allowed(lookup, *args, **kwargs)
         
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
+
+class CourseAttendanceAdmin(admin.ModelAdmin):
+    list_display = ['student', 'date', 'course', 'course_period', 'status', 'notes']
+    list_filter = [
+        ('date', DateRangeFilter),
+        'status'
+        ]
+    search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
+    
+    def lookup_allowed(self, lookup, *args, **kwargs):
+        if lookup in ('student','student__id__exact',):
+            return True
+        return super(StudentAttendanceAdmin, self).lookup_allowed(lookup, *args, **kwargs)
+admin.site.register(CourseAttendance, CourseAttendanceAdmin)
 
 admin.site.register(AttendanceLog)
 

@@ -82,6 +82,9 @@
                     <ul class="grp-user-options">
                         {% if perms.attendance.take_studentattendance %}
                             <li><a href="{% url ecwsp.attendance.views.teacher_attendance %}">{% trans 'Take Homeroom Attendance' %}</a>
+                            {% if settings.ATTENDANCE_COURSE_BASED %}
+                                <li><a href="{% url ecwsp.attendance.views.select_course_for_attendance %}">{% trans 'Take Course Attendance' %}</a>
+                            {% endif %}
                         {% endif %}
                         {% if perms.attendance.change_studentattendance %}
                             <li><a href="{% url admin:attendance_studentattendance_changelist %}">{% trans 'Edit' %}</a></li>

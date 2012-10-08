@@ -329,6 +329,12 @@ SUGAR_PASSWORD = ''
 CRND_ROUTES = False
 
 
+#Attendance
+# Enables option to do course based attendance
+# where teacher takes attendance at each course, not just once a day
+ATTENDANCE_COURSE_BASED = False
+
+
 #OMR
 QUEXF_URL = "http://quexf.cristoreyny.org"
 
