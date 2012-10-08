@@ -148,9 +148,12 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
         # just leave items alone--we don't actually consider it here; we only pass it to benchmark_calculate_course_category_aggregate
         # setting items here will prevent benchmark_calculate_course_category_aggregate from saving anything
         save = True
+        items_categories = None
     else:
         # don't store aggregates for every one-off combination of items
         save = False
+        # we'll have to miss cache and recaculate any category to which an item belongs
+        items_categories = Category.objects.filter(item__in=items).distinct()
 
     calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
 
@@ -173,7 +176,7 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
     for rule_category in calculation_rule.per_course_category_set.filter(apply_to_departments=course.department):
         criteria['category'] = rule_category.category
         cat_agg, cat_created = benchmark_get_create_or_flush(Aggregate, **criteria)
-        if cat_created or recalculate_all_categories:
+        if cat_created or recalculate_all_categories or rule_category.category in items_categories:
             cat_agg, cat_created = benchmark_calculate_course_category_aggregate(student, course, rule_category.category, marking_period, items)
         if cat_agg.cached_value is not None:
             course_numer += rule_category.weight * cat_agg.cached_value
@@ -216,6 +219,10 @@ def gradebook_recalculate_on_mark_change(mark):
 
 def gradebook_get_average(student, course, category=None, marking_period=None, items=None):
     try:
+        if items is not None:
+            # this is rather silly, but it avoids code duplication or a teensy four-line function.
+            # averages of one-off sets of items aren't saved and must be calculated every time
+            raise Aggregate.DoesNotExist
         agg = benchmark_get_or_flush(Aggregate, student=student, course=course, category=category, marking_period=marking_period)
     except Aggregate.DoesNotExist:
         if category is None:
