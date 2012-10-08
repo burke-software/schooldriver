@@ -148,7 +148,7 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
         # just leave items alone--we don't actually consider it here; we only pass it to benchmark_calculate_course_category_aggregate
         # setting items here will prevent benchmark_calculate_course_category_aggregate from saving anything
         save = True
-        items_categories = None
+        items_categories = ()
     else:
         # don't store aggregates for every one-off combination of items
         save = False
