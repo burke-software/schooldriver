@@ -96,7 +96,12 @@
 				
 				<tr><td class="thing"> Emergency Contact(s) </td><td> {% for ec in emergency_contacts %}
 				<p> {{ ec.fname }} {{ ec.lname }}<br />
-				{% for number in ec.emergencycontactnumber_set.all %} <span class="thing">{{ number.get_type_display }}:</span> {{ number.number }} {% endfor %} <br />
+				{% for number in ec.emergencycontactnumber_set.all %}
+                                    <span class="thing">{{ number.get_type_display }}:</span>
+                                    {{ number.number }}
+                                    {{ number.note }}
+                                    {% if number.primary %} (Primary) {% endif %}
+                                    <br />{% endfor %}
 				{% endfor %} </td></tr>
 				
 				{% if sib %}
