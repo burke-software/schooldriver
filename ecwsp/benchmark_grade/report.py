@@ -61,6 +61,12 @@ def benchmark_report_card(template, options, students, format="odt"):
                     course_marking_period.category.count_passing = items.filter(best_mark__gte=PASSING_GRADE).distinct().count()
                     if course_marking_period.category.count_total:
                         course_marking_period.category.count_percentage = (Decimal(course_marking_period.category.count_passing) / course_marking_period.category.count_total * 100).quantize(Decimal('0', ROUND_HALF_UP))
+
+                    if course.department is not None and course.department.name == 'Corporate Work Study': # TODO: Remove this terrible hack
+                        course_marking_period.category.count_passing = course_marking_period.category.count_total
+                        course_marking_period.category.count_missing = 0
+                        course_marking_period.category.count_percentage = 100
+
                     category.overall_count_total += course_marking_period.category.count_total
                     category.overall_count_missing += course_marking_period.category.count_missing
                     category.overall_count_passing += course_marking_period.category.count_passing
@@ -124,8 +130,8 @@ def benchmark_report_card(template, options, students, format="odt"):
     data['school_year'] = school_year
     data['marking_period'] = marking_period.name # just passing object makes appy think it's undefined
     filename = 'output'
-    #return pod_save(filename, ".pdf", data, template)
-    return pod_save(filename, "." + str(format), data, template)
+    return pod_save(filename, ".pdf", data, template)
+    #return pod_save(filename, "." + str(format), data, template)
 
 def bleh_benchmark_report_card(template, options, students, format="odt"):
     """ A TC-exclusive benchmark-based report card generator for a single marking period """
