@@ -33,6 +33,7 @@ from django.core.files import File
 from ecwsp.omr.models import Test
 from ecwsp.omr.queXF import import_queXF, pagesetup
 from ecwsp.omr.models import *
+from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
 def get_db_connection():
     db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
@@ -69,7 +70,7 @@ def generate_xml(test_id):
         studentsection.appendChild(studentnametag)
         if instance:
             studentsection.setAttribute("studentid",str(instance.id))
-            studentname = doc.createTextNode(str(instance.student.fname + " " + instance.student.lname))
+            studentname = doc.createTextNode(strip_unicode_to_ascii(instance.student.fname + " " + instance.student.lname))
             studentnametag.appendChild(studentname)
         else:
             studentsection.setAttribute("studentid","0")
