@@ -36,24 +36,24 @@ begin
         SELECT DISTINCT boxes.value from quexf_crny.boxes WHERE quexf_crny.boxes.bid = @answer_bid
     );
     set @points_earned = (
-        SELECT crny.omr_answer.point_value from crny.omr_answer where crny.omr_answer.id = @answer_id
+        SELECT sword_crny.omr_answer.point_value from sword_crny.omr_answer where sword_crny.omr_answer.id = @answer_id
     );
 set @points_possible = (
-        SELECT crny.omr_question.point_value from crny.omr_question
-            where crny.omr_question.id = (SELECT DISTINCT boxgroupstype.varname from quexf_crny.boxgroupstype
+        SELECT sword_crny.omr_question.point_value from sword_crny.omr_question
+            where sword_crny.omr_question.id = (SELECT DISTINCT boxgroupstype.varname from quexf_crny.boxgroupstype
             JOIN quexf_crny.boxes
             ON quexf_crny.boxgroupstype.bgid=quexf_crny.boxes.bgid
             JOIN quexf_crny.formboxverifychar
             ON quexf_crny.boxes.bid=quexf_crny.formboxverifychar.bid
             WHERE quexf_crny.formboxverifychar.bid = NEW.bid)
     );
-    INSERT INTO crny.omr_answerinstance(test_instance_id,question_id,answer_id, points_earned, points_possible)
+    INSERT INTO sword_crny.omr_answerinstance(test_instance_id,question_id,answer_id, points_earned, points_possible)
     values (@test_instance_id, @question_id, @answer_id, @points_earned, @points_possible)
     on duplicate key
     update answer_id = @answer_id, points_earned = @points_earned;
 
-    update crny.omr_testinstance SET crny.omr_testinstance.results_recieved = True
-    WHERE crny.omr_testinstance.id = @test_instance_id;
+    update sword_crny.omr_testinstance SET sword_crny.omr_testinstance.results_recieved = True
+    WHERE sword_crny.omr_testinstance.id = @test_instance_id;
 end;
 end if;
 //
