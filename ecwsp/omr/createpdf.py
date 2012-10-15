@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-#settings required in settings_local.py: DB_USER, DB_PASS, QXF_DB
+#settings required in settings_local.py: QUEXF_DB_USER, QUEXF_DB_PASS, QUEXF_DB_NAME, QUEXF_URL
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.styles import getSampleStyleSheet
@@ -36,7 +36,7 @@ from ecwsp.omr.models import *
 from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
 def get_db_connection():
-    db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
+    db = MySQLdb.Connect(user=settings.QUEXF_DB_USER, passwd=settings.DB_PASS,db=settings.QUEXF_DB_NAME)
     return db.cursor()
 
 def generate_xml(test_id):
@@ -257,19 +257,21 @@ def newPage(c):
     page = page +1
     
 def drawLines(c):
+    side_margin = .35
     c.setLineWidth(1.5)
+    
     #bottom left
-    c.line(.5*inch,.5*inch,1.5*inch,.5*inch)
-    c.line(.5*inch,.5*inch,.5*inch,1.5*inch)
+    c.line(side_margin*inch,.5*inch, (1.0 + side_margin) *inch,.5*inch)
+    c.line(side_margin*inch,.5*inch,side_margin*inch,1.5*inch)
     #bottom right
-    c.line(width - .75*inch,.5*inch,width - 1.75*inch,.5*inch)
-    c.line(width - .75*inch,.5*inch,width - .75*inch,1.5*inch)
+    c.line(width - side_margin*inch,.5*inch,width - (1 + side_margin)*inch,.5*inch)
+    c.line(width - side_margin*inch,.5*inch,width - side_margin*inch,1.5*inch)
     #top left
-    c.line(.5*inch,height - .75*inch,1.25*inch,height - .75*inch)
-    c.line(.5*inch,height - .75*inch,.5*inch,height - 1.5*inch)
+    c.line(side_margin*inch,height - .75*inch,(.75 + side_margin)*inch,height - .75*inch)
+    c.line(side_margin*inch,height - .75*inch,side_margin*inch,height - 1.5*inch)
     #top right
-    c.line(width - .75*inch,height - .75*inch,width - 1.75*inch, height - .75*inch)
-    c.line(width - .75*inch,height - .75*inch,width - .75*inch, height - 1.5*inch)
+    c.line(width - side_margin*inch,height - .75*inch,width - (.75 + side_margin)*inch, height - .75*inch)
+    c.line(width - side_margin*inch,height - .75*inch,width - side_margin*inch, height - 1.5*inch)
     
 def barcode(c):
     global code
@@ -590,7 +592,7 @@ def pageBanding():
 def barcodeBoxgroup():
     """hacks on QueXF's database to insert the banding for the student barcode into the database
     """
-    db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
+    db = MySQLdb.Connect(user=settings.QUEXF_DB_USER, passwd=settings.DB_PASS,db=settings.QUEXF_DB_NAME)
     db_cursor = db.cursor()
     #db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
     db_cursor.execute("SHOW TABLE STATUS LIKE 'pages'")
@@ -604,7 +606,7 @@ def barcodeBoxgroup():
                       " values (210, 185, 1175, 450, " + str(pageid) + ",LAST_INSERT_ID(),"+
                       str(student_id[id]) + ")")
     db.commit()
-    db.close()    
+    db.close()
     
 def questionBanding(question, variable_name):
     global boxgroup
