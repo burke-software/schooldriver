@@ -18,6 +18,14 @@ class MonthYearField(forms.MultiValueField):
         return datetime.date.today()
         
 
+class InquiryForm(forms.ModelForm):
+    class Meta:
+        model = Applicant
+        fields = ('fname', 'lname', 'mname', 'sex', 'bday', 'street', 'city', 'state',
+                  'zip', 'parent_email', 'email', 'family_preferred_language',
+                  'siblings', 'year', 'ethnicity', 'hs_grad_yr', 'hs_grad_yr')
+
+
 class ApplicantForm(forms.ModelForm):
     class Meta:
         model = Applicant

@@ -10,8 +10,25 @@ from ecwsp.sis.models import *
 from ecwsp.sis.importer import *
 from ecwsp.admissions.reports import *
 from ecwsp.admissions.models import *
-from ecwsp.admissions.forms import *
+from ecwsp.admissions.forms import InquiryForm, ReportForm, ApplicantForm
 from ecwsp.administration.models import Configuration
+
+def inquiry_form(request):
+    """ A place for applicants to inquire for more info
+    Places them in the database as an applicant
+    Public view can be used by anyone
+    """
+    if request.POST:
+        form = InquiryForm(request.POST)
+        if form.is_valid():
+            pass
+    else:
+        form = InquiryForm()
+    return render_to_response('admissions/inquiry_form.html', {
+            'form': form,
+        },
+        RequestContext(request, {}),
+    )
 
 @permission_required('admissions.view_applicant') 
 def reports(request):

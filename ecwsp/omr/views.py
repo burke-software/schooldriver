@@ -456,13 +456,6 @@ def student_unknown(request, test_id):
     #open files from quexf
     test = get_object_or_404(TestInstance, id = test_id)
     
-    #db = MySQLdb.Connect(user=settings.DB_USER, passwd=settings.DB_PASS,db=settings.QXF_DB)
-    #c = db.cursor()
-    #c.execute("SELECT ")
-    #c.fetchone()
-    #c.fetchmany(n)
-    #c.fetchall()
-    
     return render_to_response('omr/student_unknown', {
         
     }, RequestContext(request, {}),)

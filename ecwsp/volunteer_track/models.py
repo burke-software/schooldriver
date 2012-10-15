@@ -96,9 +96,8 @@ class VolunteerSite(models.Model):
                     from django.core.mail import send_mail
                     from_email = Configuration.get_or_default("From Email Address",default="donotreply@change.me").value
                     msg = "Hello %s,\nYour site %s has been approved!" % (self.volunteer, self.site)
-                    emailEnd = Configuration.get_or_default("email", default="@change.me").value
                     subject = "Site approval"
-                    send_to = str(self.volunteer.student.username) + emailEnd
+                    send_to = self.volunteer.student.get_email
                     send_mail(subject, msg, from_email, [send_to])
                 except:
                     exc_type, exc_obj, exc_tb = sys.exc_info()
