@@ -513,3 +513,33 @@ def ajax_save_grade(request):
         return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': str(average)}))
     else:
         return HttpResponse('POST DATA INCOMPLETE', status=400) 
+
+@staff_member_required
+def count_items_by_category_across_courses(reuqest):
+    CATEGORY_NAMES = ('Standards', 'Daily Practice')
+    ITEM_CRITERIA = {'best_mark': 0}
+    PERCENTAGE_THRESHOLD = 20
+    COURSE_THRESHOLD = 3
+
+    categories = Category.objects.filter(name__in=CATEGORY_NAMES)
+    school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
+    output = {}
+    for year in GradeLevel.objects.all():
+        output[year] = []
+    for student in Student.objects.filter(inactive=False).order_by('lname', 'fname'):
+        matching_course_count = 0
+        matching_course_explanations = []
+        for course in student.course_set.filter(marking_period__school_year=school_year).distinct():
+            items = Item.objects.filter(course=course, category__in=categories, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+            total_item_count = items.count()
+            if not total_item_count:
+                continue
+            matching_item_count = items.filter(**ITEM_CRITERIA).count()
+            matching_percentage = round(float(matching_item_count) / total_item_count * 100, 0)
+            if matching_percentage >= PERCENTAGE_THRESHOLD:
+                matching_course_count += 1
+                matching_course_explanations.append('{} ({}/{} or {}%)'.format(course.fullname, matching_item_count, total_item_count, int(matching_percentage)))
+        if matching_course_count >= COURSE_THRESHOLD:
+            output[student.year].append({'student': student, 'matching_course_explanations': matching_course_explanations})
+
+    return render_to_response('benchmark_grade/custom_test.html', {'output': output})
