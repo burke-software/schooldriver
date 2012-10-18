@@ -10,13 +10,13 @@ function toggle_comments(){
 function fullscreen_table(destroy){
     if ($('#gradebook_div').length){
         if (destroy){
-            $('#gradebook_table').fixedHeaderTable('destroy');
+            //$('#gradebook_table').fixedHeaderTable('destroy');
         }
         window_height = $(window).height()
         needed_height = $('#gradebook_div').height();
         buffer = 170
         if (window_height-buffer < needed_height) {
-            $('#gradebook_table').fixedHeaderTable({ height: '300', width: '300', fixedColumn: 1 });
+            //$('#gradebook_table').fixedHeaderTable({ height: '300', width: '300', fixedColumn: 1 });
         }
     }
 }
