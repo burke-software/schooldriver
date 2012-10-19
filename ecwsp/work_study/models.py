@@ -700,10 +700,10 @@ class TimeSheet(models.Model):
             sendTo = self.student.get_email
             subject = "Time Sheet approved for " + unicode(self.student)
             if show_comment:
-                msg = "Hello " + unicode(self.student) + ",\nYour time card was approved. Your rating was " + unicode(self.performance) + " \nYour supervisor's comment was \"" \
+                msg = "Hello " + unicode(self.student) + ",\nYour time card for " + self.date.strftime("%x") + " was approved. Your rating was " + unicode(self.performance) + " \nYour supervisor's comment was \"" \
                     + unicode(self.supervisor_comment) + "\""
             else:
-                msg = "Hello " + unicode(self.student) + ",\nYour time card was approved."
+                msg = "Hello " + unicode(self.student) + ",\nYour time card for " + self.date.strftime("%x") + " was approved."
             from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
             send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
