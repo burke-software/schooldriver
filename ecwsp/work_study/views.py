@@ -691,10 +691,16 @@ def report_builder_view(request):
                 elif 'all_timesheets' in request.POST:
                     timesheets = TimeSheet.objects.filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])).order_by('student', 'date')
                     data = []
-                    titles = ["Name", "", "For Pay", "make up", "approved", "company", "creation date", "date"]
+                    titles = ["Name", "", "For Pay", "make up", "approved", "company",
+                              "creation date", "date", "Time In", "Lunch", "Lunch Return", "Out", "Hours",
+                              "Student net", "School net", "Student Accomplishment", "Performance", "Supervisor Comment"]
                     fileName = "timesheets.xls"
                     for ts in timesheets:
-                        data.append([ts.student.fname, ts.student.lname, ts.for_pay, ts.make_up, ts.approved, ts.company, ts.creation_date, ts.date, ts.time_in, ts.time_lunch, ts.time_lunch_return, ts.time_out, ts.hours, ts.student_net, ts.school_net, ts.student_accomplishment, ts.performance, ts.supervisor_comment])
+                        data.append([ts.student.fname, ts.student.lname, ts.for_pay, ts.make_up,
+                                     ts.approved, ts.company, ts.creation_date, ts.date, ts.time_in,
+                                     ts.time_lunch, ts.time_lunch_return, ts.time_out, ts.hours,
+                                     ts.student_net, ts.school_net, ts.student_accomplishment,
+                                     ts.performance, ts.supervisor_comment])
                     report = xlsReport(data, titles, fileName, heading="timesheets")
                     return report.finish()
                     
