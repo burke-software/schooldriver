@@ -114,6 +114,7 @@ class WithdrawnChoices(models.Model):
         return unicode(self.name)
     class Meta:
         ordering = ['name']
+        verbose_name_plural = "Withdrawn Choices"
         
 class CountryOption(models.Model):
     name = models.CharField(max_length=500)
