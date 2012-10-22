@@ -594,7 +594,7 @@ class Importer:
                             elif name == "is_plan":
                                 is_plan = self.determine_truth(value)
                                 if is_plan:
-                                    test = StandardTest.objects.get_or_create(name="PLAN")
+                                    test = StandardTest.objects.get_or_create(name="PLAN")[0]
                                     model.test = test
                             elif name[:9] == "category ":
                                 model.save()
