@@ -36,7 +36,12 @@ from ecwsp.omr.models import *
 from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
 def get_db_connection():
-    db = MySQLdb.Connect(user=settings.QUEXF_DB_USER, passwd=settings.DB_PASS,db=settings.QUEXF_DB_NAME)
+    db = MySQLdb.Connect(
+        user=settings.QUEXF_DB_USER,
+        passwd=settings.QUEXF_DB_PASS,
+        db=settings.QUEXF_DB_NAME,
+        host=settings.QUEXF_DB_HOST,
+        )
     return db.cursor()
 
 def generate_xml(test_id):
@@ -592,8 +597,7 @@ def pageBanding():
 def barcodeBoxgroup():
     """hacks on QueXF's database to insert the banding for the student barcode into the database
     """
-    db = MySQLdb.Connect(user=settings.QUEXF_DB_USER, passwd=settings.DB_PASS,db=settings.QUEXF_DB_NAME)
-    db_cursor = db.cursor()
+    db_cursor = get_db_connection()
     #db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
     db_cursor.execute("SHOW TABLE STATUS LIKE 'pages'")
     row = db_cursor.fetchone()
@@ -605,8 +609,6 @@ def barcodeBoxgroup():
     db_cursor.execute("INSERT INTO boxes (tlx,tly,brx,bry,pid,bgid,value)" +
                       " values (210, 185, 1175, 450, " + str(pageid) + ",LAST_INSERT_ID(),"+
                       str(student_id[id]) + ")")
-    db.commit()
-    db.close()
     
 def questionBanding(question, variable_name):
     global boxgroup

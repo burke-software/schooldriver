@@ -340,6 +340,7 @@ QUEXF_URL = ""
 QUEXF_DB_NAME = 'quexf'
 QUEXF_DB_PASS = ''
 QUEXF_DB_USER = ''
+QUEXF_DB_HOST = ''
 
 
 #Canvas LMS

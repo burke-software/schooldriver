@@ -363,6 +363,9 @@ def ajax_question_form(request, test_id, question_id):
 
 @permission_required('omr.teacher_test')
 def ajax_finalize_test(request, test_id):
+    generate_xml(test_id)
+    return HttpResponse('SUCCESS');
+
     try:
         # Send to QueXF
         generate_xml(test_id)
