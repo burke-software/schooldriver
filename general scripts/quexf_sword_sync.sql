@@ -20,7 +20,7 @@ begin
   
   set @test_instance_id = (
    SELECT DISTINCT `val` *1 from quexf_crny.formboxverifytext where quexf_crny.formboxverifytext.fid = @form_id
-    and quexf_crny.formboxverifytext.bid = 1
+    and quexf_crny.formboxverifytext.bid = @box_id
   );
   
   set @question_id = (
