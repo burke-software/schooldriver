@@ -227,6 +227,12 @@ def discipline_report_view(request):
                 start, end = form.get_dates()
                 if 'student' in request.POST:
                     students = Student.objects.all()
+                    school_year = SchoolYear.objects.get(active_year=True)
+                    if form.cleaned_data['date_begin']:
+                        if SchoolYear.objects.filter(end_date__gte=form.cleaned_data['date_begin']):
+                            school_year = SchoolYear.objects.filter(end_date__gte=form.cleaned_data['date_begin']).order_by('start_date')[0]
+                            # students belonging to this school year
+                            students = students.filter(course__marking_period__school_year__exact=school_year,inactive=False).distinct()
                     if not form.cleaned_data['include_deleted'] :
                         students = students.exclude(inactive=True)
                     if form.cleaned_data['order_by'] == "Year":
