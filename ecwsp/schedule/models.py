@@ -54,6 +54,12 @@ class MarkingPeriod(models.Model):
     def __unicode__(self):
         return unicode(self.name)
         
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        # Don't allow draft entries to have a pub_date.
+        if self.start_date > self.end_date:
+            raise ValidationError('Cannot end before starting!')
+        
     def get_number_days(self, date=date.today()):
         """ Get number of days in a marking period"""
         if (self.school_days or self.school_days == 0) and date >= self.end_date:
