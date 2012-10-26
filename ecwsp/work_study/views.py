@@ -90,6 +90,10 @@ def student_timesheet(request):
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
             obj = form.save()
+            show_comment_default = Configuration.get_or_default(name="work_study show commment default", default='True',help_text="").value
+            if show_comment_default == 'True':
+                obj.show_student_comments = True
+                obj.save()
             log_admin_entry(request, obj, ADDITION, message='Student created timesheet')
             access = AccessLog()
             access.login = request.user
