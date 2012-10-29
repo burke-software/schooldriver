@@ -387,6 +387,7 @@ def test_result(request, test_id):
     for test_instance in test.testinstance_set.filter(results_received=False):
         if test_instance.answerinstance_set.all().count():
             test_instance.results_received = True
+            test_instance.save()
     
     return render_to_response('omr/test_result.html', {
         'test': test,
