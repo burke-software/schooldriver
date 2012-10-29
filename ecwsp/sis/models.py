@@ -72,7 +72,7 @@ class UserPreference(models.Model):
     include_deleted_students = models.BooleanField(help_text="When searching for students, include deleted (previous) students.")
     additional_report_fields = models.ManyToManyField('ReportField', blank=True, null=True, help_text="These fields will be added to spreadsheet reports. WARNING adding fields with multiple results will GREATLY increase the time it takes to generate reports")
     omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
-    omr_default_save_question_to_bank = models.BooleanField(default=True)
+    omr_default_save_question_to_bank = models.BooleanField(default=False)
     omr_default_number_answers = models.IntegerField(default=2, blank=True, )
     user = models.ForeignKey(User, unique=True, editable=False)
     names = None    # extra field names. (Attempt to speed up reports so these don't get called up over and over)

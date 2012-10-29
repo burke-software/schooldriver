@@ -383,6 +383,7 @@ INSTALLED_APPS += (
     'dajax',
     'daterange_filter',
     'django_filters',
+    'floppyforms',
     'pagination',
     'massadmin',
     'admin_export',
