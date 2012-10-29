@@ -67,11 +67,11 @@ class Test(models.Model):
     
     @property
     def students_test_results(self):
-        return self.testinstance_set.filter(results_recieved=True).count()
+        return self.testinstance_set.filter(results_received=True).count()
     
     @property
     def students_in_queue(self):
-        return self.testinstance_set.filter(results_recieved=False).count()
+        return self.testinstance_set.filter(results_received=False).count()
     
     @property
     def points_possible(self):
@@ -300,7 +300,7 @@ class TestInstance(models.Model):
     test = models.ForeignKey(Test)
     date = models.DateTimeField(auto_now_add=True)
     teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True)
-    results_recieved = models.BooleanField()
+    results_received = models.BooleanField()
     def __unicode__(self):
         return '%s %s' % (self.student, self.test)
     

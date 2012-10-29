@@ -76,6 +76,7 @@ begin
   UNTIL no_more_bids = 1
  END REPEAT;
  close bid_cursor;
+ 
 end;
 end if;
 //
