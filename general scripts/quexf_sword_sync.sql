@@ -9,21 +9,17 @@ begin
  DECLARE no_more_bids INT DEFAULT 0;
  DECLARE bid_cursor CURSOR FOR select boxes.bid from boxes join formboxes on formboxes.bid = boxes.bid where fid = new.fid group by bgid;
  DECLARE CONTINUE HANDLER FOR NOT FOUND SET no_more_bids = 1;
- INSERT INTO d (a) values ('here12');
  set @form_id = new.fid;
  OPEN bid_cursor;
  FETCH bid_cursor INTO current_bid;
  -- for each box id in all box group ids.
  REPEAT
-  INSERT INTO d (a) values ('here13');
-  
-  FETCH bid_cursor INTO current_bid;
   
   set @box_id = current_bid;
   
   set @test_instance_id = (
    SELECT DISTINCT `val` *1 from quexf_crny.formboxverifytext where quexf_crny.formboxverifytext.fid = @form_id
-    and quexf_crny.formboxverifytext.bid = @box_id
+    and quexf_crny.formboxverifytext.bid = 1
   );
   
   set @question_id = (
@@ -46,9 +42,6 @@ begin
   set @answer_bid = (
    select bid from formboxes where fid = @form_id and filled = @lowest_filled and filled < 0.85 limit 1
   );
-  
-  INSERT INTO d(a,b,c)
-   values (@lowest_filled, @answer_bid, '');
   
   if @answer_bid is not null then
    set @answer_id =(
@@ -79,6 +72,7 @@ begin
    update answer_id = @answer_id, points_earned = @points_earned;
   end if;
   
+  FETCH bid_cursor INTO current_bid;
   UNTIL no_more_bids = 1
  END REPEAT;
  close bid_cursor;
