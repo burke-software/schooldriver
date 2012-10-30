@@ -438,14 +438,11 @@ def view_student(request, id=None):
             year.attendance_absense_with_half = year.attendance_absense + float(attendances.filter(status__half=True).count()) / 2
             year.total = year.get_number_days()
             year.present = year.total - year.attendance_tardy - year.attendance_absense_with_half
+    
     #Standard Tests
     from ecwsp.administration.models import Configuration
     from ecwsp.schedule.models import StandardCategory, StandardCategoryGrade, StandardTest, StandardTestResult
-    std_test_config = Configuration.get_or_default("Standard Tests in View Student",default="False")
-    if std_test_config.value.lower() == "false" or std_test_config.value.lower == "f":
-        std = None
-    else:
-        std = StandardTestResult.objects.filter(student=student)
+    standard_tests = StandardTestResult.objects.filter(student=student)
     
     return render_to_response('sis/view_student.html', {
         'date':today,
@@ -465,7 +462,7 @@ def view_student(request, id=None):
         'schedule_days':schedule_days,
         'periods': periods,
         'include_inactive': profile.include_deleted_students,
-        'tests': std
+        'tests': standard_tests
     }, RequestContext(request, {}),)
 
 @permission_required('sis.change_student') 

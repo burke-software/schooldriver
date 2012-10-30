@@ -285,7 +285,6 @@
 			<div class="sv-section">
                             <div id="a_alumni" class="section-header">
                                 <a  href="javascript:void(0)">Alumni</a>
-                                {% if perms.alumni.change_alumni %} <a class="edit_link" href="{% url admin:alumni_alumni_changelist %}?student__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
                             </div>
 			<div class="sv-main">
 				{% if perms.alumni.change_alumni %}
@@ -492,30 +491,29 @@
                 {% endif %}
             
             
-		{% if tests %}
-			<div class="sv-section noprint"><a id="a_schedule" class="section-header noprint" href="javascript:void(0)">Standard Tests</a>
+	{% if tests %}
+	<div class="sv-section noprint"><a id="a_tests" class="section-header noprint" href="javascript:void(0)">Standard Tests</a>
             <div class="sv-main">
-			<div class="section-div">
-				<table>
-					<tr>
-						<th>Test</th>
-						<th>Date</th>
-						<th>Total</th>
-						<th>Details</th>
-						
-					</tr>
-					{% for test in tests %}
-						<tr><td>{{ test.test }}</td><td>{{ test.date }}</td><td>{{ test.total }}</td>
-						<td><a href="/admin/schedule/standardtestresult/{{ test.id }}">See More about these results</tr>
-						{% endfor %}
-				</table>
-				{% for test in tests %}
-					{{ test.name }}
-				{% endfor %}
-			</div> <!-- class="section-div" -->
+                <div class="section-div">
+                    <table>
+                        <tr>
+                            <th>Test</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Details</th>
+                        </tr>
+                        {% for test in tests %}
+                            <tr><td>{{ test.test }}</td><td>{{ test.date }}</td><td>{{ test.total }}</td>
+                            <td><a href="/admin/schedule/standardtestresult/{{ test.id }}">See More about these results</tr>
+                        {% endfor %}
+                    </table>
+                    {% for test in tests %}
+                        {{ test.name }}
+                    {% endfor %}
+                </div> <!-- class="section-div" -->
             </div><!-- .sv-main -->
-            </div><!-- .sv-section -->
-		{% endif %}
+        </div><!-- .sv-section -->
+        {% endif %}
         
     {% endif %}
 {% endblock %}
