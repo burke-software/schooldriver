@@ -168,7 +168,9 @@ def download_test(request, test_id):
 @permission_required('omr.teacher_test')
 def edit_test(request, id=None):
     teacher = Faculty.objects.get(username=request.user.username)
-    teacher_courses = Course.objects.filter(Q(teacher=teacher) | Q(secondary_teachers=teacher))
+    teacher_courses = Course.objects.filter(
+        Q(teacher=teacher) | Q(secondary_teachers=teacher)).annotate(
+        models.Max('marking_period__start_date')).order_by('-marking_period__start_date__max')
     if id:
         add = False
         test = Test.objects.get(id=id)
@@ -190,6 +192,31 @@ def edit_test(request, id=None):
         if test_form.is_valid():
             instance = test_form.save()
             messages.success(request, 'Test %s saved!' % (instance,))
+            
+            # Quick test creation
+            quick_number_questions = test_form.cleaned_data['quick_number_questions']
+            quick_number_answers = test_form.cleaned_data['quick_number_answers']
+            print quick_number_questions
+            print quick_number_answers
+            if quick_number_questions and quick_number_answers:
+                question_i = 0
+                default_points = UserPreference.objects.get(user=request.user).omr_default_point_value
+                while question_i < quick_number_questions:
+                    question_i += 1
+                    question = Question.objects.create(
+                        question = str(question_i),
+                        type = 'Multiple Choice',
+                        point_value = default_points,
+                        test = instance,
+                    )
+                    answer_i = 0
+                    while answer_i < quick_number_answers:
+                        answer_i += 1
+                        answer = Answer.objects.create(
+                            question = question,
+                            answer = str(answer_i),
+                        )
+            
             if '_continue' in request.POST:
                 return HttpResponseRedirect(reverse(my_tests) + str(instance.id))
             elif '_save' in request.POST:
@@ -363,6 +390,9 @@ def ajax_question_form(request, test_id, question_id):
 
 @permission_required('omr.teacher_test')
 def ajax_finalize_test(request, test_id):
+    generate_xml(test_id)
+    return HttpResponse('SUCCESS');
+
     try:
         # Send to QueXF
         generate_xml(test_id)
@@ -380,6 +410,11 @@ def ajax_finalize_test(request, test_id):
 @permission_required('omr.teacher_test')
 def test_result(request, test_id):
     test = get_object_or_404(Test, id=test_id)
+    
+    for test_instance in test.testinstance_set.filter(results_received=False):
+        if test_instance.answerinstance_set.all().count():
+            test_instance.results_received = True
+            test_instance.save()
     
     return render_to_response('omr/test_result.html', {
         'test': test,

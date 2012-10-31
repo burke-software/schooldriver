@@ -68,7 +68,7 @@ function ajax_quick_add_note() {
         function(data){
 	    html = '<form action="/alumni/ajax_quick_add_note" method="post" id="quick_add_note_form">'
 		+ data
-		+ '<input type="button" value="Save" onclick="ajax_quick_add_note_save()"/></form>';
+		+ '<input type="button" value="Save" class="grp-button" onclick="ajax_quick_add_note_save()"/></form>';
 	    $("#quick_add_alumni_note").html(html);
         }
     );

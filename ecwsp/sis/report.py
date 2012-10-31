@@ -203,7 +203,9 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
             )
             courses = courses.filter(marking_period__in=marking_periods).distinct().order_by('department')
             for course in courses:
-                grades = course.grade_set.filter(student=student).filter(marking_period__isnull=False)
+                grades = course.grade_set.filter(student=student).filter(
+                    marking_period__isnull=False,
+                    marking_period__show_reports=True)
                 i = 1
                 for grade in grades:
                     # course.grade1, course.grade2, etc

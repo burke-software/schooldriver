@@ -34,7 +34,9 @@
                 </div>
                 <div>
                     {{ question_form.themes.label }} {{ question_form.themes.errors }}
-                    <a href="/admin/omr/theme/add/" class="add-another" id="add_id_{{question_form.themes.html_name}}" onclick="return showAddAnotherPopup(this);"><img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"></a>
+                    <a href="/admin/omr/theme/add/" class="add-another" id="add_id_{{question_form.themes.html_name}}" onclick="return showAddAnotherPopup(this);">
+                        <img src="/static/grappelli/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another">
+                    </a>
                 </div>
                 {{ question_form.themes }}
                 {% if new %}
@@ -87,11 +89,15 @@
     <script>
       var form_count_{{ question_form.prefix }} = {{ answers_formset.total_form_count }};
       $('#add_more_{{ question_form.prefix }}').click(function() {
-        var form = '{{answers_formset.empty_form.as_custom|escapejs}}'.replace(/__prefix__/g, form_count_{{ question_form.prefix }});
-        $('#answers_div_{{ question_form.prefix }}').append(form);
-        CKEDITOR.replace("id_questionanswers_" + '{{ question_form.prefix }}'.split('_')[1] + "-" + form_count_{{ question_form.prefix }} + "-answer", {"filebrowserWindowWidth": 940, "disableNativeSpellChecker": false, "filebrowserUploadUrl": "/ckeditor/upload/", "extraPlugins": "equation", "height": 80, "width": 640, "resize_enabled": false, "removePlugins": "scayt,menubutton,contextmenu,elementspath", "filebrowserBrowseUrl": "/ckeditor/browse/", "skin": "django", "filebrowserWindowHeight": 725, "toolbar": [["Bold", "Italic", "Underline", "Subscript", "Superscript", "-", "Image", "Link", "Unlink", "SpecialChar", "equation", "-", "Format", "-", "Maximize", "-", "Table", "-", "BulletedList", "NumberedList", "-", "PasteText", "PasteFromWord"]]});
-        form_count_{{ question_form.prefix }}++;
-        $('#id_{{ answers_formset.prefix }}-TOTAL_FORMS').val(form_count_{{ question_form.prefix }});
+        if (form_count_{{ question_form.prefix }} < 7) {
+            var form = '{{answers_formset.empty_form.as_custom|escapejs}}'.replace(/__prefix__/g, form_count_{{ question_form.prefix }});
+            $('#answers_div_{{ question_form.prefix }}').append(form);
+            CKEDITOR.replace("id_questionanswers_" + '{{ question_form.prefix }}'.split('_')[1] + "-" + form_count_{{ question_form.prefix }} + "-answer", {"filebrowserWindowWidth": 940, "disableNativeSpellChecker": false, "filebrowserUploadUrl": "/ckeditor/upload/", "extraPlugins": "equation", "height": 80, "width": 640, "resize_enabled": false, "removePlugins": "scayt,menubutton,contextmenu,elementspath", "filebrowserBrowseUrl": "/ckeditor/browse/", "skin": "django", "filebrowserWindowHeight": 725, "toolbar": [["Bold", "Italic", "Underline", "Subscript", "Superscript", "-", "Image", "Link", "Unlink", "SpecialChar", "equation", "-", "Format", "-", "Maximize", "-", "Table", "-", "BulletedList", "NumberedList", "-", "PasteText", "PasteFromWord"]]});
+            form_count_{{ question_form.prefix }}++;
+            $('#id_{{ answers_formset.prefix }}-TOTAL_FORMS').val(form_count_{{ question_form.prefix }});
+        } else {
+            alert('Sorry only up to seven answers are supported at this time :(');
+        }
       });
     
       {% if new %}

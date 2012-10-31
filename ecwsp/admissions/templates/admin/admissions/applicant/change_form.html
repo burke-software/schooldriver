@@ -114,6 +114,10 @@
 
 <!-- CONTENT SWORD override -->
 {% block content %}
+    <p id="duplicate_p" class="duplicate_p">
+        Possible Duplicates<br/>
+        <span id="insert_point"/>
+    </p>
     <div class="grp-layout-container">
         <div class="grp-form-container">
             <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.module_name }}_form">{% csrf_token %}{% block form_top %}{% endblock %} 

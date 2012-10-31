@@ -16,7 +16,13 @@ class TestForm(forms.ModelForm):
         model = Test
         fields = ('name', 'school_year', 'teachers', 'department', 'marking_period', 'courses')
     teachers = AutoCompleteSelectMultipleField('faculty', required=True)
-    students = forms.ModelMultipleChoiceField(queryset=Student.objects.filter(inactive=False), widget=FilteredSelectMultiple("Students",False,attrs={'rows':'10'}), required=False)
+    students = forms.ModelMultipleChoiceField(
+        queryset = Student.objects.filter(inactive=False),
+        widget = FilteredSelectMultiple("Students",False,attrs={'rows':'10'}),
+        required = False
+        )
+    quick_number_questions = forms.IntegerField(max_value=100, min_value=1, required=False)
+    quick_number_answers = forms.IntegerField(max_value=6, min_value=2, required=False)
     
     def save(self, *args, **kwargs):
         instance = super(TestForm, self).save(*args, **kwargs)
@@ -32,7 +38,7 @@ class TestQuestionForm(forms.ModelForm):
     is_true = forms.ChoiceField(widget=forms.Select, choices=((True,"True"),(False,"False")))
     benchmarks = AutoCompleteSelectMultipleField('benchmark', required=False)
     themes = AutoCompleteSelectMultipleField('theme', required=False)
-    save_to_bank = forms.BooleanField(required=False, initial=True)
+    save_to_bank = forms.BooleanField(required=False)
         
 class AnswerForm(forms.ModelForm):
     class Meta:

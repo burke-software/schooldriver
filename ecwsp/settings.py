@@ -340,6 +340,7 @@ QUEXF_URL = ""
 QUEXF_DB_NAME = 'quexf'
 QUEXF_DB_PASS = ''
 QUEXF_DB_USER = ''
+QUEXF_DB_HOST = ''
 
 
 #Canvas LMS
@@ -382,6 +383,7 @@ INSTALLED_APPS += (
     'dajax',
     'daterange_filter',
     'django_filters',
+    'floppyforms',
     'pagination',
     'massadmin',
     'admin_export',

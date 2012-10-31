@@ -668,10 +668,6 @@ class TimeSheet(models.Model):
     student_net = models.DecimalField(blank=True, max_digits=6, decimal_places=2, null=True)
     approved = models.BooleanField(verbose_name="approve")
     student_accomplishment = models.TextField(blank=True)
-    #performance_choices = (
-    #    ('1', 'Unacceptable'), ('2', 'Expectations Not Met'), ('3', 'Meets Expectations'), 
-    #    ('4', 'Exceeds Expectations'), ('5', 'Far Exceeds Expectations'))
-    #performance =  models.CharField(max_length=1, choices=performance_choices, blank=True)
     performance = models.ForeignKey(TimeSheetPerformanceChoice, blank=True,null=True)
     supervisor_comment = models.TextField(blank=True)
     show_student_comments = models.BooleanField(default=True)
@@ -700,10 +696,10 @@ class TimeSheet(models.Model):
             sendTo = self.student.get_email
             subject = "Time Sheet approved for " + unicode(self.student)
             if show_comment:
-                msg = "Hello " + unicode(self.student) + ",\nYour time card was approved. Your rating was " + unicode(self.performance) + " \nYour supervisor's comment was \"" \
+                msg = "Hello " + unicode(self.student) + ",\nYour time card for " + self.date.strftime("%x") + " was approved. Your rating was " + unicode(self.performance) + " \nYour supervisor's comment was \"" \
                     + unicode(self.supervisor_comment) + "\""
             else:
-                msg = "Hello " + unicode(self.student) + ",\nYour time card was approved."
+                msg = "Hello " + unicode(self.student) + ",\nYour time card for " + self.date.strftime("%x") + " was approved."
             from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
             send_mail(subject, msg, from_addr, [str(sendTo)])
         except:

@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 
 from ajax_select import make_ajax_form
 from ajax_select.fields import autoselect_fields_check_can_add
+from daterange_filter.filter import DateRangeFilter
 
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
@@ -86,7 +87,7 @@ class StandardCategoryGradeInline(admin.TabularInline):
 class StandardTestResultAdmin(admin.ModelAdmin):
     inlines = (StandardCategoryGradeInline,)
     list_display = ['student', 'test', 'date']
-    list_filter = ['test']
+    list_filter = ['test', ('date', DateRangeFilter)]
     search_fields = ['student__fname', 'student__lname', 'test__name']
 admin.site.register(StandardTestResult, StandardTestResultAdmin)
 

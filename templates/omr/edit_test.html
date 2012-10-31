@@ -1,5 +1,6 @@
 {% extends "admin/index.html" %}
 {% load i18n %}
+{% load floppyforms %}
 
 {% block breadcrumbs %}
     <div id="breadcrumbs">
@@ -39,9 +40,40 @@
   {% if add and perms.omr.change_test %} <a href="{% url admin:omr_test_changelist %}">Start by copying existing test</a> {% endif %}
   <form enctype="multipart/form-data" action="" method="post" id="test_form">
     <fieldset class="module">
-      <div class="row">
-        {{ test_form.as_p }}
-      </div>
+        <div class="row">
+            <table>
+                {% formrow test_form.name using "floppyforms/rows/tr.html" %}
+                {% formrow test_form.school_year using "floppyforms/rows/tr.html" %}
+                {% formrow test_form.teachers using "floppyforms/rows/tr.html" %}
+                {% formrow test_form.department using "floppyforms/rows/tr.html" %}
+                {% formrow test_form.marking_period using "floppyforms/rows/tr.html" %}
+            </table>
+            <p>
+                Select course(s): {{ test_form.courses }}
+            </p>
+            <a href="javascript:void(0)" onclick='$("#students_div").show(); $(this).hide()'>Select individual students</a>
+            <div id="students_div" style="display: none">
+                {% formrow test_form.students %}
+            </div>
+            <br/>
+            {% if add %}
+                <a href="javascript:void(0)" onclick='$("#quick_table").show(); $(this).hide()'>Quick Test</a>
+                <table id="quick_table" style="display: none">
+                    <tr>
+                        <td colspan="3">Start test with pre made (blank) questions and answers</td>
+                    </tr>
+                    <tr>
+                        <td> Number of questions to make </td>
+                        <td>{{ test_form.quick_number_questions }}{{ test_form.quick_number_questions.errors }}</td>
+                    </tr>
+                    <tr>
+                        <td>Number of answers per question</td>
+                        <td>{{ test_form.quick_number_answers }}{{ test_form.quick_number_answers.errors }}</td>
+                    </tr>
+                </table>
+            {% endif %}
+            
+        </div>
     </fieldset>
     
     <footer class="grp-module grp-submit-row grp-fixed-footer"> 

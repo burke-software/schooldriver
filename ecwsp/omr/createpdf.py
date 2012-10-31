@@ -36,8 +36,13 @@ from ecwsp.omr.models import *
 from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
 def get_db_connection():
-    db = MySQLdb.Connect(user=settings.QUEXF_DB_USER, passwd=settings.DB_PASS,db=settings.QUEXF_DB_NAME)
-    return db.cursor()
+    db = MySQLdb.Connect(
+        user=settings.QUEXF_DB_USER,
+        passwd=settings.QUEXF_DB_PASS,
+        db=settings.QUEXF_DB_NAME,
+        host=settings.QUEXF_DB_HOST,
+        )
+    return db
 
 def generate_xml(test_id):
     global entire_testtag
@@ -48,7 +53,7 @@ def generate_xml(test_id):
     def make_pdf(instance):
         global entire_testtag, id
         teacher_section_required = False
-            
+        
         doc = minidom.Document()
         testtag = doc.createElement("test")
         id = doc.createElement("id")
@@ -62,7 +67,7 @@ def generate_xml(test_id):
         titletag = doc.createElement("title")
         id.appendChild(titletag)
         titletext = doc.createTextNode(test.name)
-        titletag.appendChild(titletext)        
+        titletag.appendChild(titletext)
         studentsection = doc.createElement("section")
         studentsection.setAttribute("type","student")
         id.appendChild(studentsection)
@@ -156,7 +161,7 @@ def generate_xml(test_id):
         
     
     def validate_pdf(testid):
-        db_cursor = get_db_connection()
+        db_cursor = get_db_connection().cursor()
         count = db_cursor.execute('select  pages.qid,pid from pages left join questionnaires on questionnaires.qid=pages.qid where questionnaires.description=%s;', (testid,))
         if not count:
             raise Exception('PDF should have been sent to quexf but was not!')
@@ -592,7 +597,7 @@ def pageBanding():
 def barcodeBoxgroup():
     """hacks on QueXF's database to insert the banding for the student barcode into the database
     """
-    db = MySQLdb.Connect(user=settings.QUEXF_DB_USER, passwd=settings.DB_PASS,db=settings.QUEXF_DB_NAME)
+    db = get_db_connection()
     db_cursor = db.cursor()
     #db_cursor.execute("SET @pageid = ((SELECT pid from pages order by pid DESC limit 1) +1)")
     db_cursor.execute("SHOW TABLE STATUS LIKE 'pages'")
@@ -606,7 +611,6 @@ def barcodeBoxgroup():
                       " values (210, 185, 1175, 450, " + str(pageid) + ",LAST_INSERT_ID(),"+
                       str(student_id[id]) + ")")
     db.commit()
-    db.close()
     
 def questionBanding(question, variable_name):
     global boxgroup

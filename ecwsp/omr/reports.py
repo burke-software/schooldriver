@@ -22,6 +22,7 @@ from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.administration.models import Template
 from ecwsp.omr.models import *
+from ecwsp.benchmarks.models import Benchmark
 
 import xlwt
 
