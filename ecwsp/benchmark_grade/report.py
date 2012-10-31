@@ -47,7 +47,10 @@ def benchmark_report_card(template, options, students, format="odt"):
             course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
             course.category_by_name = {}
             for category in course.categories:
-                category.weight_percentage = calculation_rule.per_course_category_set.get(category=category, apply_to_departments=course.department).weight * 100
+                try:
+                    category.weight_percentage = calculation_rule.per_course_category_set.get(category=category, apply_to_departments=course.department).weight * Decimal(100)
+                except CalculationRulePerCourseCategory.DoesNotExist:
+                    category.weight_percentage = Decimal(0)
                 category.weight_percentage = category.weight_percentage.quantize(Decimal('0'), ROUND_HALF_UP)
                 category.overall_count_total = 0
                 category.overall_count_missing = 0
