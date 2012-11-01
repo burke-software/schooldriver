@@ -47,6 +47,9 @@
         
     <div class="menu">
         <form action="" method="get">
+            <input type="button" value="Create New Assignment" onclick="get_new_assignment_form(event)"/>
+            <input type="button" value="Create New Demonstration" onclick="get_new_demonstration_form(event)"/>
+            <div class="blackbar"></div>
             <div class="filter_item">
                 Student Cohort
                 <div class="blackbar"></div>
@@ -90,9 +93,6 @@
                 {{ filter_form.date_end }}
                 <input type="submit" value="Filter"/>
             </div>
-            <div class="blackbar"></div>
-            <input type="button" value="Create New Assignment" onclick="get_new_assignment_form(event)"/>
-            <input type="button" value="Create New Demonstration" onclick="get_new_demonstration_form(event)"/>
         </form>
     </div><!-- .menu -->
     

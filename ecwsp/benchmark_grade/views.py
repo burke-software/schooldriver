@@ -298,7 +298,13 @@ def gradebook(request, course_id):
                         items = items.filter(date__lt=filter_value)
                     filtered = True
     else:
-        filter_form = GradebookFilterForm()
+        # show only the active marking period by default
+        active_mps = course.marking_period.filter(active=True)
+        if active_mps:
+            filter_form = GradebookFilterForm(initial={'marking_period': active_mps[0]})
+            items = items.filter(marking_period=active_mps[0])
+        else:
+            filter_form = GradebookFilterForm()
         filter_form.update_querysets(course)
     
     # Freeze these now in case someone else gets in here!
