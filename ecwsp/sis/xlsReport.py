@@ -9,6 +9,34 @@ import re
 import os
 import tempfile
 import binascii
+import arial10
+
+class FitSheetWrapper(object):
+    """Try to fit columns to max size of any entry.
+    To use, wrap this around a worksheet returned from the 
+    workbook's add_sheet method, like follows:
+
+        sheet = FitSheetWrapper(book.add_sheet(sheet_name))
+
+    The worksheet interface remains the same: this is a drop-in wrapper
+    for auto-sizing columns.
+
+    Source: http://stackoverflow.com/questions/6929115/python-xlwt-accessing-existing-cell-content-auto-adjust-column-width
+    """
+    def __init__(self, sheet):
+        self.sheet = sheet
+        self.widths = dict()
+    def write(self, r, c, label="", style=pycel.Style.default_style):
+        self.sheet.write(r, c, label, style)
+        width = arial10.fitwidth(label)
+        if style is not None and style.font is not None and style.font.bold:
+            width *= 1.062 # jnm fudge factor
+        if width > self.widths.get(c, 0):
+            self.widths[c] = width
+            self.sheet.col(c).width = width
+
+    def __getattr__(self, attr):
+        return getattr(self.sheet, attr)
 
 def is_number(x):
     try:
@@ -57,21 +85,24 @@ class xlsReport:
         self.dataStyle.borders.bottom = 0x01
         self.dataStyle.borders.top = 0x01
     
-    def __init__(self, data, titles=None, fileName="report", heading="", heading_top=True):
+    def __init__(self, data, titles=None, fileName="report", heading="", heading_top=True, auto_width=False):
         """ data: data to be included in rows. ex [['this', 'is', 'row 1'], ['row2', 'column2', 'column3']]
         titles: header array
         fileName:
         heading: Optionally add header above data"""
         self.prepareStyles()
         self.fileName = fileName
-        self.addSheet(data, titles, heading, heading_top=heading_top)
+        self.addSheet(data, titles, heading, heading_top=heading_top, auto_width=auto_width)
 
-    def addSheet(self, data, titles=None, heading="", addtional_fields_user=None, heading_top=True):
+    def addSheet(self, data, titles=None, heading="", addtional_fields_user=None, heading_top=True, auto_width=False):
         """ Used to create additional sheet.
         data: data to be included in rows. ex [['this', 'is', 'row 1'], ['row2', 'column2', 'column3']]
         titles: header array
         heading: Optionally add header above data"""
+
         ws = self.wb.add_sheet(heading)
+        if auto_width:
+            ws = FitSheetWrapper(ws)
         if heading != "" and heading_top:
             ws.write(0,0,heading, self.headingStyle)
             y = 1

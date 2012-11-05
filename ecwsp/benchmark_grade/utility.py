@@ -17,6 +17,7 @@
 #   MA 02110-1301, USA.
 
 from ecwsp.benchmark_grade.models import *
+from ecwsp.grades.models import Grade
 from django.db.models import Avg, Sum, Min
 import logging
 
@@ -190,6 +191,17 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
         agg.cached_value = None
     if save:
         agg.save()
+        if marking_period is not None:
+            # temporary(?) integration with the rest of sword
+            g, g_created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, override_final=False)
+            if agg.cached_substitution is not None:
+                # FIDDLESTICKS... INC does not fit in the column
+                letter_grade_max_length = Grade._meta.get_field_by_name('letter_grade')[0].max_length
+                g.letter_grade = agg.cached_substitution[:letter_grade_max_length]
+                g.grade = None
+            else:
+                g.set_grade(agg.cached_value)
+            g.save()
     return agg, created
 
 def gradebook_recalculate_on_item_change(item, students=None):
@@ -219,9 +231,8 @@ def gradebook_recalculate_on_mark_change(mark):
 
 def gradebook_get_average(student, course, category=None, marking_period=None, items=None):
     try:
-        if items is not None:
+        if items is not None: # averages of one-off sets of items aren't saved and must be calculated every time
             # this is rather silly, but it avoids code duplication or a teensy four-line function.
-            # averages of one-off sets of items aren't saved and must be calculated every time
             raise Aggregate.DoesNotExist
         agg = benchmark_get_or_flush(Aggregate, student=student, course=course, category=category, marking_period=marking_period)
     except Aggregate.DoesNotExist:

@@ -20,7 +20,8 @@ urlpatterns = patterns('',
     (r'^gradebook/(?P<course_id>\d+)/ajax_get_demonstration_form/$', views.ajax_get_demonstration_form),
     (r'^gradebook/(?P<course_id>\d+)/ajax_get_demonstration_form/(?P<demonstration_id>\d+)/$', views.ajax_get_demonstration_form),
     (r'^gradebook/(?P<course_id>\d+)/ajax_get_demonstration_form/(?P<demonstration_id>\d+)/delete/$', views.ajax_delete_demonstration_form),
-    ('custom_test', views.count_items_by_category_across_courses),
+    ('student_incomplete_courses', 'ecwsp.benchmark_grade.report.student_incomplete_courses'),
+    ('student_zero_dp_standards', 'ecwsp.benchmark_grade.report.student_zero_dp_standards'),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 

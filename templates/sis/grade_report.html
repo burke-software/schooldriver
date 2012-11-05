@@ -86,5 +86,22 @@
 	{% endif %}
     </fieldset>
 </form>
-{% endblock %}
+<br/>
 
+{% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
+<style>
+#customReports p { margin-bottom: 1em; }
+#customReports li { margin: 0.25em; }
+</style>
+<fieldset id="customReports" style="padding:5px;">
+<legend>Custom Reports</legend>
+    <p>All reports apply to the active school year.</p>
+    <ul>
+        <li><a href="/benchmark_grade/student_incomplete_courses">Students with one or more incomplete courses</a></li>
+        <li><em>Inverse:</em> <a href="/benchmark_grade/student_incomplete_courses?inverse">Students with no incomplete courses</a></li>
+        <li><a href="/benchmark_grade/student_zero_dp_standards">Students with zeros on 20% or more of Daily Practice assignments and Standards <strong>combined</strong> in three or more classes</a></li>
+        <li><em>Inverse:</em> <a href="/benchmark_grade/student_zero_dp_standards?inverse">Students without zeros on 20% or more of Daily Practice assignments and Standards <strong>combined</strong> in three or more classes</a></li>
+    </ul>
+</fieldset>
+{% endif %}
+{% endblock %}

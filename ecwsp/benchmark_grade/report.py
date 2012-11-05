@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.core.servers.basehttp import FileWrapper
+from django.contrib.admin.views.decorators import staff_member_required
 
 from ecwsp.sis.models import *
 from ecwsp.sis.uno_report import uno_save
@@ -302,3 +303,100 @@ def bleh_benchmark_report_card(template, options, students, format="odt"):
     filename = 'output'
     #return pod_save(filename, ".pdf", data, template)
     return pod_save(filename, "." + str(format), data, template)
+
+@staff_member_required
+def student_incomplete_courses(request):
+    if 'inverse' in request.GET: 
+        inverse = True
+    else:
+        inverse = False
+
+    from ecwsp.sis.xlsReport import xlsReport
+    from ecwsp.work_study.models import StudentWorker
+
+    AGGREGATE_CRITERIA = {'category__name': 'Standards', 'marking_period': None, 'cached_substitution': 'INC'}
+
+    school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
+    '''
+    if inverse:
+        method = Student.objects.exclude
+    else:
+        method = Student.objects.filter
+    students = method(aggregate__in=Aggregate.objects.filter(course__marking_period__school_year=school_year, **AGGREGATE_CRITERIA).distinct()).distinct()
+    students = students.filter(inactive=False).order_by('year', 'lname', 'fname')
+    '''
+    students = Student.objects.filter(inactive=False).order_by('year', 'lname', 'fname')
+    data = []
+    titles = ['Last Name', 'First Name', 'Year', 'Work Day', 'Incomplete Courses']
+    for student in students:
+        aggs = Aggregate.objects.filter(student=student, course__marking_period__school_year=school_year, **AGGREGATE_CRITERIA).distinct()
+        if inverse and aggs.count():
+            continue
+        if not inverse and not aggs.count():
+            continue
+        try:
+            work_day = StudentWorker.objects.get(username=student.username).day
+        except StudentWorker.DoesNotExist:
+            work_day = None
+        data.append([student.lname, student.fname, student.year, work_day, u', '.join(map(lambda x: unicode(x[0]), aggs.values_list('course__fullname')))])
+
+    return xlsReport(data, titles, 'report.xls', heading='Sheet1', heading_top=False, auto_width=True).finish()    
+
+@staff_member_required
+def student_zero_dp_standards(request):
+    if 'inverse' in request.GET: 
+        inverse = True
+    else:
+        inverse = False
+
+    CATEGORY_NAMES = ('Standards', 'Daily Practice')
+    ITEM_CRITERIA = {'best_mark': 0}
+    CATEGORY_HEADING_FORMAT = '{} at 0'
+    PERCENTAGE_THRESHOLD = 20
+    COURSE_THRESHOLD = 3
+    return count_items_by_category_across_courses(CATEGORY_NAMES, ITEM_CRITERIA, CATEGORY_HEADING_FORMAT, PERCENTAGE_THRESHOLD, COURSE_THRESHOLD, inverse)
+
+def count_items_by_category_across_courses(category_names, item_criteria, category_heading_format, percentage_threshold, course_threshold, inverse=False):
+    from ecwsp.sis.xlsReport import xlsReport
+    from ecwsp.work_study.models import StudentWorker
+
+    categories = Category.objects.filter(name__in=category_names)
+    titles = ['Last Name', 'First Name', 'Year', 'Work Day']
+    if not inverse:
+        titles.append('Course')
+        for c in categories: titles.append(category_heading_format.format(c.name))
+    school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
+    data = []
+    for student in Student.objects.filter(inactive=False).order_by('year', 'lname', 'fname'):
+        try:
+            work_day = StudentWorker.objects.get(username=student.username).day
+        except StudentWorker.DoesNotExist:
+            work_day = None
+        matching_courses = []
+        for course in student.course_set.filter(marking_period__school_year=school_year).distinct():
+            items = Item.objects.filter(course=course, category__in=categories, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+            total_item_count = items.count()
+            if not total_item_count:
+                continue
+            matching_item_count = items.filter(**item_criteria).count()
+            matching_percentage = round(float(matching_item_count) / total_item_count * 100, 0)
+            if matching_percentage >= percentage_threshold:
+                matching_course_detail = [course.fullname]
+                if not inverse: # this is a waste of time for the inverse report
+                    for c in categories:
+                        total_items_in_category = items.filter(category=c).count()
+                        if total_items_in_category:
+                            missing_items_in_category = items.filter(**item_criteria).filter(category=c).count()
+                            missing_percentage_in_category = round(float(missing_items_in_category) / total_items_in_category * 100)
+                        matching_course_detail.append('{}/{} ({}%)'.format(missing_items_in_category, total_items_in_category, missing_percentage_in_category))
+                matching_courses.append(matching_course_detail)
+        if len(matching_courses) >= course_threshold:
+            if not inverse:
+                for course in matching_courses:
+                    row = [student.lname, student.fname, student.year, work_day]
+                    row.extend(course)
+                    data.append(row)
+        elif inverse:
+            row = [student.lname, student.fname, student.year, work_day]
+            data.append(row)
+    return xlsReport(data, titles, 'report.xls', heading='Sheet1', heading_top=False, auto_width=True).finish()
