@@ -184,7 +184,8 @@ def teacher_submissions(request):
 
 
 def daily_attendance_report(adate, private_notes=False, type="odt", request=None):
-    from ecwsp.sis.report import *
+    from ecwsp.sis.models import GradeLevel
+    from ecwsp.sis.report import get_school_day_number, pod_save, get_default_data
     template = Template.objects.get_or_create(name="Daily Attendance")[0]
     template = template.get_template_path(request)
     if not template:
