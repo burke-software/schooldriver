@@ -14,7 +14,7 @@ begin
  FETCH bid_cursor INTO current_bid;
  -- for each box id in all box group ids.
  REPEAT
-  
+  insert into d (a) values (1);
   set @box_id = current_bid;
   
   set @test_instance_id = (
