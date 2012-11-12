@@ -17,6 +17,7 @@ import uno
 import re
 from decimal import *
 from datetime import date
+import copy
 
 class struct(object):
     def __unicode__(self):
@@ -58,8 +59,8 @@ def benchmark_report_card(template, options, students, format="odt"):
                 category.overall_count_passing = 0
                 for course_marking_period in course.current_marking_periods:
                     course_marking_period.category = category
-                    course_marking_period.category.average = gradebook_get_average(student, course, category, marking_period, None)
-                    items = Item.objects.filter(course=course, marking_period=marking_period, category=category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+                    course_marking_period.category.average = gradebook_get_average(student, course, category, course_marking_period, None)
+                    items = Item.objects.filter(course=course, marking_period=course_marking_period, category=category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
                     course_marking_period.category.count_total = items.exclude(best_mark=None).distinct().count()
                     course_marking_period.category.count_missing = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
                     course_marking_period.category.count_passing = items.filter(best_mark__gte=PASSING_GRADE).distinct().count()
@@ -85,7 +86,8 @@ def benchmark_report_card(template, options, students, format="odt"):
                         course_marking_period.category.item_groups.append(item_group)
 
                     course_marking_period.category_by_name = getattr(course_marking_period, 'category_by_name', {})
-                    course_marking_period.category_by_name[category.name] = course_marking_period.category
+                    # make a copy so we don't overwrite the last marking period's data
+                    course_marking_period.category_by_name[category.name] = copy.copy(course_marking_period.category)
                     # the last time through the loop is the most current marking period,
                     # so give that to anyone who doesn't request an explicit marking period
                     #category = course_marking_period.category
