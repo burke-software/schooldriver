@@ -68,6 +68,9 @@ if 'ecwsp.integrations.canvas_sync' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^canvas_sync/', include('ecwsp.integrations.canvas_sync.urls')), )
 if 'ecwsp.integrations.schoolreach' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^schoolreach/', include('ecwsp.integrations.schoolreach.urls')), )
+
+if 'report_builder' in settings.INSTALLED_APPS:
+    urlpatterns += url(r'^report_builder/', include('report_builder.urls')),
     
 if 'sentry' in settings.INSTALLED_APPS:    
     urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)

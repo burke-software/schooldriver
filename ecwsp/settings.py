@@ -141,7 +141,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'dajaxice.finders.DajaxiceFinder',
 )
 DEBUG = True
 TEMPLATE_DEBUG = True
@@ -358,7 +357,8 @@ from settings_local import *
 # must do this after importing settings_local
 if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
-
+    STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',) # this breaks collectstatic if added unconditionally
+    INSTALLED_APPS += ('dajaxice', 'dajax') # these don't cause harm, but it seems cleaner not to reference them unless necessary
 
 #Celery
 if 'djcelery' in INSTALLED_APPS:
@@ -379,8 +379,6 @@ if 'djcelery' in INSTALLED_APPS:
 
 # These are required add ons that we always want to have
 INSTALLED_APPS += (
-    'dajaxice',
-    'dajax',
     'daterange_filter',
     'django_filters',
     'floppyforms',

@@ -372,7 +372,11 @@ def view_student(request, id=None):
     # Guess the mp desired (current or next coming)
     schedule_days = None
     periods = None
-    current_mp = MarkingPeriod.objects.filter(end_date__gte=today).order_by('-start_date')
+    # look for the current mp first
+    current_mp = MarkingPeriod.objects.filter(start_date__lte=today, end_date__gte=today).order_by('-start_date')
+    # nada? get the next mp (soonest-starting mp ending today or in the future)
+    if not current_mp:
+        current_mp = MarkingPeriod.objects.filter(end_date__gte=today).order_by('start_date')
     if current_mp:
         current_mp = current_mp[0]
         schedule_days, periods = cal.build_schedule(student, current_mp, include_asp=True)

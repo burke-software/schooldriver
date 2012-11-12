@@ -19,6 +19,7 @@
 from django.contrib import admin
 
 from ajax_select import make_ajax_form
+from daterange_filter.filter import DateRangeFilter
 
 from models import *
 
@@ -32,7 +33,7 @@ class StudentDisciplineAdmin(admin.ModelAdmin):
     list_per_page = 50
     fields = ['date', 'students', 'teacher', 'infraction', 'comments', 'private_note']
     list_display = ('show_students', 'date', 'comment_Brief', 'infraction')
-    list_filter = ['date', 'infraction', 'action',]
+    list_filter = [('date',DateRangeFilter), 'infraction', 'action',]
     search_fields = ['comments', 'students__fname', 'students__lname']
     inlines = [DisciplineActionInstanceInline]
     
