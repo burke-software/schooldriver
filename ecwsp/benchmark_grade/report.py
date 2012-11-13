@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.core.servers.basehttp import FileWrapper
 from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Q
 
 from ecwsp.sis.models import *
 from ecwsp.sis.uno_report import uno_save
@@ -316,7 +317,7 @@ def student_incomplete_courses(request):
     from ecwsp.sis.xlsReport import xlsReport
     from ecwsp.work_study.models import StudentWorker
 
-    AGGREGATE_CRITERIA = {'category__name': 'Standards', 'marking_period': None, 'cached_substitution': 'INC'}
+    AGGREGATE_CRITERIA = {'category__name': 'Standards', 'cached_substitution': 'INC'}
 
     school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
     '''
@@ -331,7 +332,7 @@ def student_incomplete_courses(request):
     data = []
     titles = ['Last Name', 'First Name', 'Year', 'Work Day', 'Incomplete Courses']
     for student in students:
-        aggs = Aggregate.objects.filter(student=student, course__marking_period__school_year=school_year, **AGGREGATE_CRITERIA).distinct()
+        aggs = Aggregate.objects.filter(student=student, marking_period__school_year=school_year, **AGGREGATE_CRITERIA).distinct().order_by('marking_period__start_date')
         if inverse and aggs.count():
             continue
         if not inverse and not aggs.count():
@@ -340,7 +341,20 @@ def student_incomplete_courses(request):
             work_day = StudentWorker.objects.get(username=student.username).day
         except StudentWorker.DoesNotExist:
             work_day = None
-        data.append([student.lname, student.fname, student.year, work_day, u', '.join(map(lambda x: unicode(x[0]), aggs.values_list('course__fullname')))])
+        course_details = {}
+        for agg in aggs:
+            course_detail = course_details.get(agg.course_id, {})
+            course_detail['fullname'] = agg.course.fullname
+            marking_periods = course_detail.get('marking_periods', [])
+            marking_periods.append(agg.marking_period.shortname)
+            course_detail['marking_periods'] = marking_periods
+            course_details[agg.course_id] = course_detail
+        narrative = []
+        course_details = sorted(course_details.items(), key=lambda(k, v): (v, k))
+        for course_detail in course_details:
+            course_detail = course_detail[1] # discard the course id
+            narrative.append(u'{} ({})'.format(course_detail['fullname'], u', '.join(course_detail['marking_periods'])))
+        data.append([student.lname, student.fname, student.year, work_day, u'; '.join(narrative)])
 
     return xlsReport(data, titles, 'report.xls', heading='Sheet1', heading_top=False, auto_width=True).finish()    
 
@@ -351,23 +365,30 @@ def student_zero_dp_standards(request):
     else:
         inverse = False
 
-    CATEGORY_NAMES = ('Standards', 'Daily Practice')
+    YEAR_CATEGORY_NAMES = ('Standards',)
+    CURRENT_MARKING_PERIOD_CATEGORY_NAMES = ('Daily Practice',)
     ITEM_CRITERIA = {'best_mark': 0}
     CATEGORY_HEADING_FORMAT = '{} at 0'
     PERCENTAGE_THRESHOLD = 20
     COURSE_THRESHOLD = 3
-    return count_items_by_category_across_courses(CATEGORY_NAMES, ITEM_CRITERIA, CATEGORY_HEADING_FORMAT, PERCENTAGE_THRESHOLD, COURSE_THRESHOLD, inverse)
+    return count_items_by_category_across_courses(YEAR_CATEGORY_NAMES, CURRENT_MARKING_PERIOD_CATEGORY_NAMES, ITEM_CRITERIA, CATEGORY_HEADING_FORMAT, PERCENTAGE_THRESHOLD, COURSE_THRESHOLD, inverse)
 
-def count_items_by_category_across_courses(category_names, item_criteria, category_heading_format, percentage_threshold, course_threshold, inverse=False):
+def count_items_by_category_across_courses(year_category_names, current_marking_period_category_names, item_criteria, category_heading_format, percentage_threshold, course_threshold, inverse=False):
     from ecwsp.sis.xlsReport import xlsReport
     from ecwsp.work_study.models import StudentWorker
 
-    categories = Category.objects.filter(name__in=category_names)
+    all_category_names = list(year_category_names)
+    all_category_names.extend(current_marking_period_category_names)
+    all_categories = Category.objects.filter(name__in=all_category_names)
+    year_categories = Category.objects.filter(name__in=year_category_names)
+    current_marking_period_categories = Category.objects.filter(name__in=current_marking_period_category_names)
     titles = ['Last Name', 'First Name', 'Year', 'Work Day']
     if not inverse:
         titles.append('Course')
-        for c in categories: titles.append(category_heading_format.format(c.name))
+        for c in all_categories: titles.append(category_heading_format.format(c.name))
     school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
+    marking_period = school_year.markingperiod_set.filter(show_reports=True, start_date__lt=date.today()).order_by('-start_date')[0]
+
     data = []
     for student in Student.objects.filter(inactive=False).order_by('year', 'lname', 'fname'):
         try:
@@ -376,22 +397,33 @@ def count_items_by_category_across_courses(category_names, item_criteria, catego
             work_day = None
         matching_courses = []
         for course in student.course_set.filter(marking_period__school_year=school_year).distinct():
-            items = Item.objects.filter(course=course, category__in=categories, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+            items = Item.objects.filter(Q(category__in=current_marking_period_categories, marking_period=marking_period) | Q(category__in=year_categories),
+                                        course=course, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
             total_item_count = items.count()
             if not total_item_count:
                 continue
+
+            course_match = False
+            matching_course_detail = [course.fullname]
+            # check for combined category matches
             matching_item_count = items.filter(**item_criteria).count()
             matching_percentage = round(float(matching_item_count) / total_item_count * 100, 0)
             if matching_percentage >= percentage_threshold:
-                matching_course_detail = [course.fullname]
-                if not inverse: # this is a waste of time for the inverse report
-                    for c in categories:
-                        total_items_in_category = items.filter(category=c).count()
-                        if total_items_in_category:
-                            missing_items_in_category = items.filter(**item_criteria).filter(category=c).count()
-                            missing_percentage_in_category = round(float(missing_items_in_category) / total_items_in_category * 100)
-                        matching_course_detail.append('{}/{} ({}%)'.format(missing_items_in_category, total_items_in_category, missing_percentage_in_category))
+                course_match = True
+            for c in all_categories:
+                # check for individual category matches, and get detail for each category if combined matched already
+                total_items_in_category = items.filter(category=c).count()
+                matching_items_in_category = items.filter(**item_criteria).filter(category=c).count()
+                if total_items_in_category:
+                    matching_percentage_in_category = round(float(matching_items_in_category) / total_items_in_category * 100)
+                else:
+                    matching_percentage_in_category = 0
+                matching_course_detail.append('{}/{} ({}%)'.format(matching_items_in_category, total_items_in_category, matching_percentage_in_category))
+                if matching_percentage_in_category >= percentage_threshold:
+                    course_match = True
+            if course_match:
                 matching_courses.append(matching_course_detail)
+
         if len(matching_courses) >= course_threshold:
             if not inverse:
                 for course in matching_courses:
