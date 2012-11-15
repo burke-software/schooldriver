@@ -80,17 +80,18 @@ class BenchmarkGradeImporter(Importer):
     @transaction.commit_on_success
     def import_grades(self, course, marking_period):
         # now this has to be redone AGAIN to work with the Demonstration model
-        raise Exception('import_grades() under construction.')
+        #raise Exception('import_grades() under construction.')
         """ This is all completely hard-coded for the Twin Cities school. """
         mark_count = 0
         errors = []
         # as requested, drop all old marks before importing
         Aggregate.objects.filter(course=course, marking_period=marking_period).delete()
-        Mark.objects.filter(item__course=course, item__marking_period=marking_period).delete()
+        Item.objects.filter(course=course, marking_period=marking_period).delete()
 
         # import all data from the Standards sheet
         # should probably discard "Session" columns and calculate ourselves
         # 20120821 jnm: really, we'll keep only "Session" and discard everything else
+        # 20121114 jnm: NO, YOU FOOL!
         
         sheet = self.book.sheet_by_name('Standards')
         category = Category.objects.get(name='Standards')
@@ -101,18 +102,30 @@ class BenchmarkGradeImporter(Importer):
             if unicode(sheet.cell_value(4, ncol)).strip() == 'Session':
                 last_session_column = ncol
         ncol = 4
+        item = None
+        item_has_marks = False
         while ncol <= last_session_column:
-            mark_desc = unicode(sheet.cell_value(4, ncol)).strip()
-            if mark_desc != 'Session':
+            standard_name = unicode(sheet.cell_value(3, ncol)).strip()
+            if not item or len(standard_name):
+                if item:
+                   # it's not the first time through; see if there was anything valid for the Item that's just finished
+                    if not item_has_marks:
+                        mark_count -= item.mark_set.count()
+                        item.mark_set.all().delete()
+                        item.delete()
+                # time for a new item!
+                item = Item(name=standard_name,
+                            course=course, marking_period=marking_period, category=category,
+                            points_possible=4)
+                item.save()
+                item_has_marks = False
+            demonstration_name = unicode(sheet.cell_value(4, ncol)).strip()
+            if demonstration_name == 'Session':
                 ncol += 1
                 continue # sorry, we don't care about you
-            # Make a new Item for every column!
-            standard_name = unicode(sheet.cell_value(3, ncol - 4)).strip()
-            item = Item(name=standard_name,
-                        course=course, marking_period=marking_period, category=category,
-                        points_possible=4)
-            item.save()
-            has_marks = False
+            demonstration_has_marks = False
+            demonstration = Demonstration(name=demonstration_name, item=item)
+            demonstration.save()
             nrow = 5
             while nrow < sheet.nrows:
                 username = unicode(sheet.cell_value(nrow, 1)).strip()
@@ -123,10 +136,12 @@ class BenchmarkGradeImporter(Importer):
                     markVal = None
                 else:
                     markVal = sheet.cell_value(nrow, ncol)
-                    has_marks = True
+                    item_has_marks = True
+                    demonstration_has_marks = True
                 try:
                     mark = Mark()
                     mark.item = item
+                    mark.demonstration = demonstration
                     try:
                         mark.student = Student.objects.get(username=username)
                     except Student.DoesNotExist:
@@ -136,19 +151,24 @@ class BenchmarkGradeImporter(Importer):
                             continue
                         else:
                             raise
-                    mark.description = mark_desc
+                    mark.description = '___IMPORTED___'
                     mark.mark = markVal
                     mark.save()
                     mark_count += 1
                 except Exception as e:
                     errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
                 nrow += 1
-            if not has_marks:
-                # nothing valid for this Item, so trash it
-                mark_count -= item.mark_set.count()
-                item.mark_set.all().delete()
-                item.delete() # we make 'em, we break 'em
+            if not demonstration_has_marks:
+                # nothing valid for this Demonstration, so trash it
+                mark_count -= demonstration.mark_set.count()
+                demonstration.mark_set.all().delete()
+                demonstration.delete() # we make 'em, we break 'em
             ncol += 1
+        # check once more after the lop ends
+        if not item_has_marks:
+            mark_count -= item.mark_set.count()
+            item.mark_set.all().delete()
+            item.delete()
 
         # import all data from the Engagement sheet
 
@@ -370,15 +390,21 @@ class BenchmarkGradeImporter(Importer):
         filler_count = 0
         for s in enrolled:
             for i in Item.objects.filter(course=course):
-                if Mark.objects.filter(item=i, student=s):
-                    continue
+                if i.demonstration_set.count():
+                    for d in i.demonstration_set.all():
+                        if not Mark.objects.filter(item=i, demonstration=d, student=s):
+                            m = Mark(item=i, demonstration=d, student=s, description='___FILLER_AUTO___')
+                            m.save()
+                            filler_count += 1
                 else:
-                    m = Mark(item=i, student=s, description='___FILLER_AUTO___')
-                    m.save()
-                    filler_count += 1
+                    if not Mark.objects.filter(item=i, student=s):
+                        m = Mark(item=i, student=s, description='___FILLER_AUTO___')
+                        m.save()
+                        filler_count += 1
+
 
         # make aggregates for this course
-        self._make_aggregates(course, marking_period)
+        #self._make_aggregates(course, marking_period)
         
         output = '<p>{} marks were imported.</p>'.format(mark_count)
         if non_enrolled_count or filler_count:
