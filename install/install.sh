@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # install everything needed to run this application, start with deb files, should be run as root
-apt-get install mysql-server python-uno python-xlwt python-reportlab python-mysqldb python-ldap python-pip python-feedparser python-xlrd python-mysqldb mysql-client python2.7-dev rabbitmq-server
+apt-get install apache2 mysql-server python-uno python-xlwt python-reportlab python-mysqldb python-ldap python-pip python-feedparser python-xlrd python-mysqldb mysql-client python2.7-dev rabbitmq-server
 
 # Install this if in production
 # apt-get install libapache2-mod-wsgi
