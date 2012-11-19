@@ -37,7 +37,7 @@ import datetime
 import sys
 from decimal import *
 import subprocess
-import os.basename
+import os.path
 
 class Importer:
     def __init__(self, file=None, user=None):
