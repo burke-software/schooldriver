@@ -32,7 +32,7 @@ def benchmark_find_calculation_rule(school_year):
         if rules.count():
             rule = rules[0]
         else:
-            raise Exception('There is no suitable calculation rule for the school year {}.'.format(mp.school_year))
+            raise Exception('There is no suitable calculation rule for the school year {}.'.format(school_year))
     return rule
 
 def benchmark_get_create_or_flush(model_base, **kwargs):
