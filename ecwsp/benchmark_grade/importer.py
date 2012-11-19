@@ -156,7 +156,7 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except Exception as e:
-                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
+                    errors.append('<p><span style="color: red; font-weight: bold">ERROR</span> at sheet \'' + sheet.name + '\', cell ' + self._cell_name(nrow, ncol) + ', username \'' + username + '\': ' + str(e) + '</p>')
                 nrow += 1
             if not demonstration_has_marks:
                 # nothing valid for this Demonstration, so trash it
@@ -164,7 +164,7 @@ class BenchmarkGradeImporter(Importer):
                 demonstration.mark_set.all().delete()
                 demonstration.delete() # we make 'em, we break 'em
             ncol += 1
-        # check once more after the lop ends
+        # check once more after the loop ends
         if not item_has_marks:
             mark_count -= item.mark_set.count()
             item.mark_set.all().delete()
@@ -212,7 +212,7 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except Exception as e:
-                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
+                    errors.append('<p><span style="color: red; font-weight: bold">ERROR</span> at sheet \'' + sheet.name + '\', cell ' + self._cell_name(nrow, ncol) + ', username \'' + username + '\': ' + str(e) + '</p>')
                 nrow += 1
             if not has_marks:
                 # nothing valid for this Item, so trash it
@@ -263,7 +263,7 @@ class BenchmarkGradeImporter(Importer):
                     mark.save()
                     mark_count += 1
                 except Exception as e:
-                    errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
+                    errors.append('<p><span style="color: red; font-weight: bold">ERROR</span> at sheet \'' + sheet.name + '\', cell ' + self._cell_name(nrow, ncol) + ', username \'' + username + '\': ' + str(e) + '</p>')
                 nrow += 1
             if not has_marks:
                 # nothing valid for this Item, so trash it
@@ -318,7 +318,7 @@ class BenchmarkGradeImporter(Importer):
                         mark.save()
                         mark_count += 1
                     except Exception as e:
-                        errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
+                        errors.append('<p><span style="color: red; font-weight: bold">ERROR</span> at sheet \'' + sheet.name + '\', cell ' + self._cell_name(nrow, ncol) + ', username \'' + username + '\': ' + str(e) + '</p>')
                     nrow += 1
                 if not has_marks:
                     # nothing valid for this Item, so trash it
@@ -369,7 +369,7 @@ class BenchmarkGradeImporter(Importer):
                         mark.save()
                         mark_count += 1
                     except Exception as e:
-                        errors.append('<p><span style="color: red; font-weight: bold">ERROR:</span> There was a problem with the ' + sheet.name + ' sheet at cell ' + self._cell_name(nrow, ncol) + ': ' + str(e) + '</p>')
+                        errors.append('<p><span style="color: red; font-weight: bold">ERROR</span> at sheet \'' + sheet.name + '\', cell ' + self._cell_name(nrow, ncol) + ', username \'' + username + '\': ' + str(e) + '</p>')
                     nrow += 1
                 if not has_marks:
                     # nothing valid for this Item, so trash it
