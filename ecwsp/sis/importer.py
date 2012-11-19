@@ -37,6 +37,7 @@ import datetime
 import sys
 from decimal import *
 import subprocess
+import os.path
 
 class Importer:
     def __init__(self, file=None, user=None):
@@ -44,14 +45,15 @@ class Importer:
         supports any file Openoffice.org supports"""
         if file:
             self.file = file
-            if file.name[-3:] == "xls":
+            filename = os.path.basename(file.name)
+            if filename[-3:] == "xls":
                 self.book = xlrd.open_workbook(file_contents=file.read())
             else: # convert to xls
-                destination = open('/tmp/' + file.name, 'wb+')
+                destination = open('/tmp/' + filename, 'wb+')
                 destination.write(file.read())
                 destination.close()
-                document = uno_open('/tmp/' + str(file.name))
-                tmp, filename, content = uno_save(document, file.name, "xls")
+                document = uno_open('/tmp/' + str(filename))
+                tmp, filename, content = uno_save(document, filename, "xls")
                 self.book = xlrd.open_workbook(tmp.name)
             self.error_data = {}
             self.error_titles = {}
