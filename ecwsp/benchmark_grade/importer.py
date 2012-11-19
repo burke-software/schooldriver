@@ -273,7 +273,7 @@ class BenchmarkGradeImporter(Importer):
             ncol += 1
         
         # import all data from the Daily Practice sheet
-        if course.department.name != 'Hire4Ed':
+        if course.department.name != 'Corporate Work Study':
             sheet = self.book.sheet_by_name('Daily Practice')
             category = Category.objects.get(name='Daily Practice')
             ncol = 5
@@ -328,7 +328,7 @@ class BenchmarkGradeImporter(Importer):
                 ncol += 1
         
         #import all data from the Precision and Accuracy sheet
-        if course.department.name == 'Hire4Ed':
+        if course.department.name == 'Corporate Work Study':
             sheet = self.book.sheet_by_name('Precision and Accuracy')
             category = Category.objects.get(name='Precision and Accuracy')
             ncol = 3
