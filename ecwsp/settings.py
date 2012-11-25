@@ -387,4 +387,5 @@ INSTALLED_APPS += (
     'admin_export',
     'custom_field',
     'ckeditor',
+    'report_builder',
 )
