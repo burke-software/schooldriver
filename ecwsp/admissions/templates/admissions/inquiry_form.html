@@ -1,6 +1,101 @@
+{% load sis_extras %}
+
+<style>
+    .line_above {
+        border-top: 1px solid;
+        margin-top: 1 em;
+    }
+    .longer {
+        width: 18 em;
+    }
+    .half {
+        display: inline-block;
+        width: 20 em;   
+    }
+</style>
+
 <form method="post">
-    <fieldset>
-        Name: First {{ form.fname }} {{ form.fname.errors }} Last {{ form.lname }}
-    </fieldset>
-    <input type="submit" /> 
+<fieldset>
+<h1 class="title"> Initial Inquiry / Contact Information Sheet </h1>
+<span>Interest in Applying for {{ form.year}}</span>
+
+{{ form.errors }}
+
+<h2 class="line_above">Applicant Information</h2>
+
+<p>
+    <span class="half">
+        <label for="lname">Last Name: </label>
+        {{ form.lname }}
+    </span>
+    <span class="half">
+        <label for="fname">First Name: </label>
+        {{ form.fname }}
+    </span>
+    <br/>
+    <span class="half">
+        <label for="mname">Middle Name: </label>
+        {{ form.mname }}
+    </span>
+    Sex:{{ form.sex }}
+</p>
+<p>
+    <span class="half">
+        Current School Name: {{ form.present_school_typed }}
+    </span>
+    Current School Type: {{ form.present_school_type_typed }}
+</p>
+<p>
+    <span class="half">
+        Date Of Birth:{{ form.bday }}
+    </span>
+    Place of Birth: {{ form.country_of_birth }}
+</p>
+<p>
+    <span class="half"> Ethnicity:{{ form.ethnicity}} </span>
+    Other, please specify:{{ form.ethnicity_other }}
+    <br/>
+    <span class="half"> Primary Language Spoken at Home:{{ form.family_preferred_language }} </span>
+    Other, please specify: {{ form.language_other }}
+    <br/>
+    <span class="half"> Religious Affiliation: {{ form.religion }} </span>
+    Other, please specify: {{ form.religion_other }}
+    <br/>
+</p>
+ 
+<h2 class="line_above">Parent/Guardian Information</h2>
+    <p> 
+        <span class="half"> Last Name: {{ form.p_lname }} </span>
+        {{ form.p_relationship_to_child }}
+        <br/>
+        First Name: {{ form.p_fname }}
+    </p>
+    <p>
+        Address: {{ form.p_address }}
+        <br/>
+        City: {{ form.p_city }} State: {{ form.p_state }} Zip: {{ form.p_zip }}
+    </p>
+    <p>
+        <span class="half">Home Phone {{ form.p_home }}</span>
+        Work Phone {{ form.p_work }} Ext {{ form.p_work_ext }}
+        <br/>
+        Mobile Phone: {{ form.p_mobile }}
+    </p>   
+    <p>
+        Email: {{ form.p_email }}
+    </p>
+<p>
+    
+</p>
+
+<p class="line_above">
+    How did you hear about the school? {{ form.heard_about_us }}
+</p>
+ 
+<p>
+    Spam prevention: What is 2+3? {{ form.spam }}
+</p> 
+
+</fieldset>
+<input type="submit" /> 
 </form>

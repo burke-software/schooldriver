@@ -61,7 +61,7 @@ class ApplicantAdmin(CustomFieldAdmin):
         (
             None,
             {'fields': [
-                'ready_for_export', 'lname', 'fname', 'mname', 'pic', 'bday', 'present_school', 'heard_about_us', 'first_contact',
+                ('ready_for_export', 'from_online_inquiry'), 'lname', 'fname', 'mname', 'pic', 'bday', 'present_school', 'heard_about_us', 'first_contact',
                 'application_decision', 'application_decision_by', 'withdrawn_note', 'total_income', 'adjusted_available_income',
                 'calculated_payment']
             }

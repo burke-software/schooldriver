@@ -19,7 +19,6 @@ begin
   
   set @test_instance_id = (
    SELECT DISTINCT `val` *1 from quexf_crny.formboxverifytext where quexf_crny.formboxverifytext.fid = @form_id
-    and quexf_crny.formboxverifytext.bid = 1
   );
   
   set @question_id = (

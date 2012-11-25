@@ -13,6 +13,8 @@ from ecwsp.admissions.models import *
 from ecwsp.admissions.forms import InquiryForm, ReportForm, ApplicantForm
 from ecwsp.administration.models import Configuration
 
+import datetime
+
 def inquiry_form(request):
     """ A place for applicants to inquire for more info
     Places them in the database as an applicant
@@ -21,7 +23,57 @@ def inquiry_form(request):
     if request.POST:
         form = InquiryForm(request.POST)
         if form.is_valid():
-            pass
+            data = form.cleaned_data
+            applicant = form.save()
+            applicant.from_online_inquiry = True
+            if data['ethnicity_other']:
+                applicant.ethnicity = EthnicityChoice.objects.get_or_create(name=data['ethnicity_other'])[0]
+            if data['language_other']:
+                applicant.family_preferred_language = LanguageChoice.objects.get_or_create(name=data['language_other'])[0]
+            if data['religion_other']:
+                applicant.religion = ReligionChoice.objects.get_or_create(name=data['religion_other'])[0]
+                
+            if data['p_lname'] and data['p_fname']:
+                ec = EmergencyContact.objects.get_or_create(
+                    fname=data['p_fname'],
+                    lname=data['p_lname'],
+                    relationship_to_student=data['p_relationship_to_child'],
+                    street=data['p_address'],
+                    city=data['p_city'],
+                    state=data['p_state'],
+                    zip=data['p_zip'],
+                    email=data['p_email'],
+                )[0]
+                applicant.parent_guardians.add(ec)
+                
+                if data['p_home']:
+                    EmergencyContactNumber.objects.get_or_create(
+                        contact=ec,
+                        number=data['p_home'],
+                        type="H"
+                    )
+                if data['p_work']:
+                    ec_number = EmergencyContactNumber.objects.get_or_create(
+                        contact=ec,
+                        number=data['p_work'],
+                        ext=data['p_work_ext'],
+                        type="W"
+                    )
+                if data['p_mobile']:
+                    ec_number = EmergencyContactNumber.objects.get_or_create(
+                        contact=ec,
+                        number=data['p_mobile'],
+                        type="C"
+                    )
+                
+            applicant.save()
+            log = ContactLog(
+                applicant=applicant,
+                date=datetime.date.today(),
+                note="Sent online inquiry form",
+            )
+            log.save()
+            return HttpResponse('Thank you for submitting an inquiry!')
     else:
         form = InquiryForm()
     return render_to_response('admissions/inquiry_form.html', {
