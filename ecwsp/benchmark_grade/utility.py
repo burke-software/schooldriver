@@ -69,8 +69,10 @@ def benchmark_calculate_category_as_course_aggregate(student, category, marking_
     category_numer = category_denom = Decimal(0)
     for course in Course.objects.filter(courseenrollment__user__username=student.username, marking_period=marking_period, department__in=category_as_course.include_departments.all()).distinct():
         credits = Decimal(course.credits) / course.marking_period.count()
-        try: category_aggregate = Aggregate.objects.get(student=student, marking_period=marking_period, category=category, course=course)
-        except Aggregate.DoesNotExist: category_aggregate = None
+        try:
+            category_aggregate = Aggregate.objects.get(student=student, marking_period=marking_period, category=category, course=course)
+        except Aggregate.DoesNotExist:
+            category_aggregate = benchmark_calculate_course_category_aggregate(student, course, category, marking_period)[0]
         if category_aggregate is not None and category_aggregate.cached_value is not None:
             calculate_as, display_as = calculation_rule.substitute(category_aggregate, category_aggregate.cached_value)
             category_numer += credits * calculate_as

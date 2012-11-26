@@ -49,7 +49,8 @@ import time
 import logging
 import json
 
-@user_passes_test(lambda u: u.groups.filter(Q(name='teacher') | Q(name="registrar")).count() > 0 or u.is_superuser, login_url='/')
+#@user_passes_test(lambda u: u.groups.filter(Q(name='teacher') | Q(name="registrar")).count() > 0 or u.is_superuser, login_url='/')
+@user_passes_test(lambda u: Q(name="registrar")).count() > 0 or u.is_superuser, login_url='/')
 def benchmark_grade_upload(request, id):
     """ Grades can only be entered/changed by spreadsheet upload. """
     course = Course.objects.get(id=id)
