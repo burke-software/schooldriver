@@ -13,7 +13,7 @@ class Migration(SchemaMigration):
         db.alter_column('benchmark_grade_item', 'benchmark_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['benchmarks.Benchmark'], null=True))
 
         # Changing field 'Mark.normalized_mark'
-        db.alter_column('benchmark_grade_mark', 'normalized_mark', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=8, decimal_places=4))
+        db.alter_column('benchmark_grade_mark', 'normalized_mark', self.gf('django.db.models.fields.FloatField')(null=True))
 
     def backwards(self, orm):
 
@@ -143,7 +143,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'item': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['benchmark_grade.Item']"}),
             'mark': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '8', 'decimal_places': '2', 'blank': 'True'}),
-            'normalized_mark': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '8', 'decimal_places': '4', 'blank': 'True'}),
+            'normalized_mark': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
             'student': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sis.Student']"})
         },
         'benchmarks.benchmark': {

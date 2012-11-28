@@ -154,14 +154,14 @@ class Mark(models.Model):
     demonstration = models.ForeignKey('Demonstration', blank=True, null=True)
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-    normalized_mark = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    normalized_mark = models.FloatField(blank=True, null=True)
     description = models.CharField(max_length=255)
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def save(self, *args, **kwargs):
         if self.mark is not None and self.item.points_possible is not None:
             # ideally, store a value between 0 and 1, but that only happens if 0 <= self.mark <= self.item.points_possible
             # in practice, people set marks that far exceed points_possible
-            self.normalized_mark = Decimal(self.mark) / Decimal(self.item.points_possible)
+            self.normalized_mark = self.mark / self.item.points_possible
         super(Mark, self).save(*args, **kwargs)
     def clean(self):
         from django.core.exceptions import ValidationError
