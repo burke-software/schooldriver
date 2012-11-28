@@ -161,7 +161,7 @@ class Mark(models.Model):
         if self.mark is not None and self.item.points_possible is not None:
             # ideally, store a value between 0 and 1, but that only happens if 0 <= self.mark <= self.item.points_possible
             # in practice, people set marks that far exceed points_possible
-            self.normalized_mark = self.mark / self.item.points_possible
+            self.normalized_mark = float(self.mark) / float(self.item.points_possible)
         super(Mark, self).save(*args, **kwargs)
     def clean(self):
         from django.core.exceptions import ValidationError
