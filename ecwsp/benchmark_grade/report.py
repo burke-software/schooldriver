@@ -137,8 +137,8 @@ def benchmark_report_card(template, options, students, format="odt"):
     data['school_year'] = school_year
     data['marking_period'] = marking_period.name # just passing object makes appy think it's undefined
     filename = 'output'
-    return pod_save(filename, ".pdf", data, template)
-    #return pod_save(filename, "." + str(format), data, template)
+    #return pod_save(filename, ".pdf", data, template)
+    return pod_save(filename, "." + str(format), data, template)
 
 def bleh_benchmark_report_card(template, options, students, format="odt"):
     """ A TC-exclusive benchmark-based report card generator for a single marking period """
