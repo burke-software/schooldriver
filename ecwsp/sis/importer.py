@@ -602,7 +602,7 @@ class Importer:
                                 model.save()
                                 category, created = StandardCategory.objects.get_or_create(name=name[9:], test=test)
                                 grade, created = StandardCategoryGrade.objects.get_or_create(category=category, result=model, grade=value)
-                            elif name in ["verbal", "math", "writing", "english", "reading", "science", "writing_sub", "comb_eng_write" "composite"]: # Naviance
+                            elif name in ["verbal", "math", "writing", "english", "reading", "science", "writing_sub", "comb_eng_write", "composite"]: # Naviance
                                 model.save()
                                 category = StandardCategory.objects.get_or_create(name=name, test=test)[0]
                                 grade = StandardCategoryGrade.objects.get_or_create(category=category, result=model, grade=value)[0]
