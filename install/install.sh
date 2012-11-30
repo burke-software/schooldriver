@@ -1,4 +1,8 @@
 #!/bin/bash
+echo 'You must have pip >= 1.2.1 which is not in Ubuntu 12.04'
+echo These two lines will upgrade pip and fix the path using a symlink
+echo pip install --upgrade pip
+echo ln -s /usr/local/bin/pip /usr/bin/pip
 
 # install everything needed to run this application, start with deb files, should be run as root
 apt-get install apache2 mysql-server python-uno python-xlwt python-reportlab python-mysqldb python-ldap python-pip python-feedparser python-xlrd python-mysqldb mysql-client python2.7-dev rabbitmq-server
