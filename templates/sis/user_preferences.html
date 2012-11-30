@@ -17,6 +17,9 @@
             <tr>
                 <td> {{ form.additional_report_fields.label }} </td><td> {{ form.additional_report_fields }} {{ form.additional_report_fields.help_text }} {{ form.additional_report_fields.errors }}</td>
             </tr>
+            <tr>
+                <td> {{ form.course_sort.label }} </td><td> {{ form.course_sort }} {{ form.course_sort.help_text }} {{ form.course_sort.errors }}</td>
+            </tr>
         </table>
         {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
             <h3> OMR </h3>

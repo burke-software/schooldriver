@@ -142,7 +142,7 @@ def pod_report_work_study(template, students, format="odt"):
     filename = 'Work Study Report'
     return pod_save(filename, "." + str(format), data, template)  
     
-def pod_report_grade(template, options, students, format="odt", transcript=True, report_card=True):
+def pod_report_grade(request, template, options, students, format="odt", transcript=True, report_card=True):
     """ Generate report card and transcript grades via appy
     variables for apply:
     students                - contails all each student
@@ -254,7 +254,8 @@ def pod_report_grade(template, options, students, format="odt", transcript=True,
                 while i <= 6:
                     setattr(year, "mp" + str(i), "")
                     i += 1
-                year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year, marking_period__show_reports=True).distinct().order_by('department')
+                year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year, marking_period__show_reports=True).distinct()
+                year.courses = UserPreference.objects.get_or_create(user=request.user)[0].sort_courses(year.courses)
                 year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=for_date)
                 # course grades
                 for course in year.courses:

@@ -178,7 +178,7 @@ def transcript_nonofficial(request, student_id):
             'date': date.today(),
             'student': student,
         }
-        return pod_report_grade(template, transcript=True, options=options, students=student, format=file_format)
+        return pod_report_grade(request, template, transcript=True, options=options, students=student, format=file_format)
         
     messages.info(request, 'Please upload a templated called "Transcript Nonoffical"')
     return HttpResponseRedirect(reverse('admin:index'))

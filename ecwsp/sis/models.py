@@ -20,6 +20,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import connection
 from django.db.models.signals import post_save, m2m_changed
+from django.db.models import Count, Max
 from django.contrib.localflavor.us.models import USStateField, PhoneNumberField
 from django.contrib.auth.models import User, Group
 from django.conf import settings
@@ -71,6 +72,12 @@ class UserPreference(models.Model):
     prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
     include_deleted_students = models.BooleanField(help_text="When searching for students, include deleted (previous) students.")
     additional_report_fields = models.ManyToManyField('ReportField', blank=True, null=True, help_text="These fields will be added to spreadsheet reports. WARNING adding fields with multiple results will GREATLY increase the time it takes to generate reports")
+    course_sort_choices = (
+        ('department', 'Department order rank'),
+        ('marking_period,department', 'Marking period, Department order rank'),
+        ('marking_period,fullname', 'Marking period, Course fullname'),
+    )
+    course_sort = models.CharField(default='department', max_length=64, choices=course_sort_choices, help_text='Controls the order of courses on transcripts') # and other reports in the future?
     omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
     omr_default_save_question_to_bank = models.BooleanField(default=False)
     omr_default_number_answers = models.IntegerField(default=2, blank=True, )
@@ -159,6 +166,16 @@ class UserPreference(models.Model):
         for field in fields:    
             self.names.append(field.name)
         self.names
+
+    def sort_courses(self, courses):
+        if self.course_sort == 'department':
+            return courses.order_by('department')
+        if self.course_sort == 'marking_period,department':
+            return courses.annotate(Count('marking_period'), Max('marking_period__end_date')).order_by('-marking_period__count', 'marking_period__end_date__max', 'department')
+        if self.course_sort == 'marking_period,fullname':
+            return courses.annotate(Count('marking_period'), Max('marking_period__end_date')).order_by('-marking_period__count', 'marking_period__end_date__max', 'fullname')
+        # wut?
+        return courses
 
 
 class ReportField(models.Model):
