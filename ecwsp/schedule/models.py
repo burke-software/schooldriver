@@ -179,10 +179,28 @@ class Day(models.Model):
 class Department(models.Model):
     name = models.CharField(max_length=255, unique=True)
     order_rank = models.IntegerField(blank=True, null=True, help_text="Rank that courses will show up in reports")
+    def get_graduation_credits(self, student):
+        try:
+            # We have a credits requirement explicitly matching this student's class year
+            graduation_credits_object = self.departmentgraduationcredits_set.get(class_year=student.class_of_year)
+        except DepartmentGraduationCredits.DoesNotExist:
+            # No explicit match, so find the most recent requirement that went into effect *before* this marking period's school year
+            try:
+                graduation_credits_object = self.departmentgraduationcredits_set.filter(class_year__year__lt=student.class_of_year.year).order_by('-class_year__year')[0]
+            except IndexError:
+                return None
+        return graduation_credits_object.credits
     def __unicode__(self):
         return unicode(self.name)
     class Meta:
         ordering = ('order_rank', 'name',)
+
+class DepartmentGraduationCredits(models.Model):
+    department = models.ForeignKey(Department)
+    class_year = models.ForeignKey('sis.ClassYear', help_text='Also applies to subsequent years unless a more recent requirement exists.')
+    credits = models.DecimalField(max_digits=5, decimal_places=2)
+    class Meta:
+        unique_together = ('department', 'class_year')
 
 class Course(models.Model):
     active = models.BooleanField(default=True, help_text="If active, course will show in Moodle.")

@@ -44,7 +44,17 @@ class CourseAdmin(admin.ModelAdmin):
         
     
 admin.site.register(Course, CourseAdmin)
-admin.site.register(Department)
+
+class DepartmentGraduationCreditsInline(admin.TabularInline):
+    model = DepartmentGraduationCredits
+    verbose_name = 'graduation credits requirement'
+    verbose_name_plural = 'graduation credits requirements'
+    extra = 1
+
+class DepartmentAdmin(admin.ModelAdmin):
+    inlines = [DepartmentGraduationCreditsInline]
+
+admin.site.register(Department, DepartmentAdmin)
 
 class DaysOffInline(admin.TabularInline):
     model = DaysOff
