@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from ecwsp.administration.models import Configuration
 from ecwsp.work_study.models import Contact
+import HTMLParser
 import suds
 import md5
 import datetime
@@ -90,8 +91,10 @@ class SugarSync:
                 sis_contact = Contact.objects.get(guid=guid)
             else:
                 sis_contact = Contact(guid=guid)
-            
+            h = HTMLParser.HTMLParser()
             for field in contact[2]:
+                # HTML unescape
+                field.value = h.unescape(field.value)
                 if field.name == "first_name":
                     sis_contact.fname = field.value
                 elif field.name == "last_name":
