@@ -17,37 +17,31 @@
 #   MA 02110-1301, USA.
 
 from django.shortcuts import render_to_response, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
-from django.contrib.contenttypes.models import ContentType
-from django.template import RequestContext
-from django.http import HttpResponse, HttpResponseRedirect
-from django.core.urlresolvers import reverse
-from django.db.models import Q
-from django.db.models import Count
-from django.views.generic.simple import redirect_to
-from django.forms.formsets import formset_factory
-from django.forms.models import modelformset_factory
+from django.http import HttpResponse
+from django.db.models import Q, Max
 from django.db import transaction
+from django.template import RequestContext
 
-from ecwsp.sis.models import *
-from ecwsp.sis.uno_report import *
-from ecwsp.sis.xlsReport import *
-from ecwsp.schedule.models import *
-from ecwsp.schedule.forms import *
-from ecwsp.grades.forms import *
-from ecwsp.administration.models import *
-from ecwsp.benchmark_grade.models import *
-from ecwsp.benchmark_grade.forms import *
+from ecwsp.sis.models import SchoolYear, Student
+#from ecwsp.sis.uno_report import *
+#from ecwsp.sis.xlsReport import *
+from ecwsp.schedule.models import Course, MarkingPeriod
+#from ecwsp.schedule.forms import 
+from ecwsp.grades.forms import GradeUpload
+#from ecwsp.administration.models import *
+from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration
+from ecwsp.benchmark_grade.forms import BenchmarkGradeVerifyForm, GradebookFilterForm, ItemForm
 from ecwsp.benchmarks.models import Benchmark
-from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change, benchmark_find_calculation_rule
+from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
+from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule
 
-from decimal import Decimal, ROUND_HALF_UP
-import time
+from decimal import Decimal
 import logging
 import json
+import datetime
 
 #@user_passes_test(lambda u: u.groups.filter(Q(name='teacher') | Q(name="registrar")).count() > 0 or u.is_superuser, login_url='/')
 @user_passes_test(lambda u: u.groups.filter(name="registrar").count() > 0 or u.is_superuser, login_url='/')
@@ -56,7 +50,8 @@ def benchmark_grade_upload(request, id):
     course = Course.objects.get(id=id)
     message = ''
     mps = ()
-    available_mps = course.marking_period.filter(Q(active=True) | Q(start_date__lt=date.today))
+    
+    available_mps = course.marking_period.filter(Q(active=True) | Q(start_date__lt=datetime.date.today))
     show_descriptions = True
     if request.method == 'POST':
         if 'upload' in request.POST:
@@ -84,7 +79,8 @@ def benchmark_grade_upload(request, id):
                         student.categories = categories.all()
                         for category in student.categories:
                             category.marks = Mark.objects.filter(student=student, item__course=course, item__category=category,
-                                                                 item__marking_period=mp).order_by('-item__date', 'item__name', 'description')
+                                                                 item__marking_period=mp).order_by('-item__date', 'item__name',
+                                                                                                   'description')
                             if not verify_form.cleaned_data['all_demonstrations']:
                                 category.marks = category.marks.filter(Q(description='Session') | Q(description=''))
                                 # If all_demonstrations aren't shown, "Session" is assumed; description is unnecessary
@@ -114,7 +110,7 @@ def benchmark_grade_upload(request, id):
 def student_family_grade_common(student):
     PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
     school_year = SchoolYear.objects.get(active_year=True)
-    mps = MarkingPeriod.objects.filter(school_year=school_year, start_date__lte=date.today()).order_by('-start_date')
+    mps = MarkingPeriod.objects.filter(school_year=school_year, start_date__lte=datetime.date.today()).order_by('-start_date')
     calculation_rule = benchmark_find_calculation_rule(school_year)
     for mp in mps:
         mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
@@ -122,7 +118,8 @@ def student_family_grade_common(student):
             course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
             course.category_by_name = {}
             for category in course.categories:
-                category.percentage = calculation_rule.per_course_category_set.get(category=category, apply_to_departments=course.department).weight * 100
+                category.percentage = calculation_rule.per_course_category_set.get(
+                    category=category, apply_to_departments=course.department).weight * 100
                 category.percentage = category.percentage.quantize(Decimal('0'))
                 category.average = gradebook_get_average(student, course, category, mp, None)
                 items = Item.objects.filter(course=course, category=category, mark__student=student).annotate(best_mark=Max('mark__mark'))
@@ -147,7 +144,8 @@ def student_grade(request):
         logging.warning('No student found for user "' + request.user.username + '"', exc_info=True)
         student = None
         mps = () 
-        error_message = 'Sorry, a student record was not found for the username, ' + request.user.username + ', that you provided. Please contact the school registrar.'
+        error_message = 'Sorry, a student record was not found for the username, ' + request.user.username + \
+                        ', that you provided. Please contact the school registrar.'
     
     #return HttpResponse(s)
     return render_to_response('benchmark_grade/student_grade.html', {
@@ -180,7 +178,8 @@ def student_grade_course_detail(request, course_id, marking_period_id):
     except Student.DoesNotExist:
         logging.warning('No student found for user "' + request.user.username + '"', exc_info=True)
         student = None
-        error_message = 'Sorry, a student record was not found for the username, ' + request.user.username + ', that you provided. Please contact the school registrar.'
+        error_message = 'Sorry, a student record was not found for the username, ' + request.user.username + \
+                        ', that you provided. Please contact the school registrar.'
 
     #return HttpResponse(s)
     return render_to_response('benchmark_grade/student_grade_course_detail.html', {
@@ -261,7 +260,8 @@ def gradebook(request, course_id):
     except:
         teacher_courses = None
 
-    if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and (teacher_courses is None or course not in teacher_courses):
+    if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
+    (teacher_courses is None or course not in teacher_courses):
         return HttpResponse(status=403)
 
     #students = Student.objects.filter(inactive=False,course=course)
@@ -311,7 +311,8 @@ def gradebook(request, course_id):
     # Freeze these now in case someone else gets in here!
     items = items.order_by('id').all()
     # whoa, super roll of the dice. is Item.demonstration_set really guaranteed to be ordered by id?
-    marks = Mark.objects.filter(item__in=items).order_by('item__id', 'demonstration__id').all() # precarious; sorting must match items (and demonstrations!) exactly
+    # precarious; sorting must match items (and demonstrations!) exactly
+    marks = Mark.objects.filter(item__in=items).order_by('item__id', 'demonstration__id').all() 
     items_count = items.filter(demonstration=None).count() + Demonstration.objects.filter(item__in=items).count()
     for student in students:
         student_marks = marks.filter(student=student)
@@ -338,7 +339,8 @@ def gradebook(request, course_id):
         student.marks = student_marks
         student.average = gradebook_get_average(student, course, None, None, None)
         if filtered:
-            student.filtered_average = gradebook_get_average(student, course, filter_form.cleaned_data['category'], filter_form.cleaned_data['marking_period'], items)
+            student.filtered_average = gradebook_get_average(student, course, filter_form.cleaned_data['category'],
+                                                             filter_form.cleaned_data['marking_period'], items)
 
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
@@ -361,7 +363,7 @@ def ajax_delete_item_form(request, course_id, item_id):
     item.delete()
     gradebook_recalculate_on_item_change(ghost_item)
     messages.success(request, message)
-    return HttpResponse('SUCCESS'); 
+    return HttpResponse('SUCCESS')
 
 @staff_member_required
 @transaction.commit_on_success
@@ -399,7 +401,7 @@ def ajax_get_item_form(request, course_id, item_id=None):
             # This would not work in ajax unless we make some sort of ajax
             # message handler.
             messages.success(request, '%s saved' % (item,))
-            return HttpResponse('SUCCESS'); 
+            return HttpResponse('SUCCESS')
         
     else:
         if item_id:
@@ -416,7 +418,8 @@ def ajax_get_item_form(request, course_id, item_id=None):
     form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
     form.fields['benchmark'].queryset = Benchmark.objects.filter()
 
-    form.fields['category'].widget.attrs = {'onchange': "Dajaxice.ecwsp.benchmark_grade.check_fixed_points_possible(Dajax.process, {'category':this.value})"}
+    form.fields['category'].widget.attrs = {
+        'onchange': "Dajaxice.ecwsp.benchmark_grade.check_fixed_points_possible(Dajax.process, {'category':this.value})"}
     if item and item.category.fixed_points_possible:
         form.fields['points_possible'].widget.attrs = {'disabled': 'true'}
 
@@ -445,7 +448,7 @@ def ajax_delete_demonstration_form(request, course_id, demonstration_id):
 
     gradebook_recalculate_on_item_change(ghost_item)
     messages.success(request, message)
-    return HttpResponse('SUCCESS'); 
+    return HttpResponse('SUCCESS')
 
 @staff_member_required
 @transaction.commit_on_success
@@ -474,7 +477,7 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
             # This would not work in ajax unless we make some sort of ajax
             # message handler.
             messages.success(request, '%s saved' % (demonstration,))
-            return HttpResponse('SUCCESS'); 
+            return HttpResponse('SUCCESS')
         
     else:
         if demonstration_id:
@@ -483,7 +486,8 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
         else:
             form = DemonstrationForm(initial={'course': course}, prefix="demonstration")
     
-    form.fields['item'].queryset = Item.objects.filter(course=course, category__display_in_gradebook=True, category__allow_multiple_demonstrations=True)
+    form.fields['item'].queryset = Item.objects.filter(course=course,
+                                                       category__display_in_gradebook=True, category__allow_multiple_demonstrations=True)
 
     return render_to_response('benchmark_grade/demonstration_form_fragment.html', {
         'form': form,
@@ -498,7 +502,8 @@ def ajax_save_grade(request):
         try: mark = Mark.objects.get(id=mark_id)
         except Mark.DoesNotExist: return HttpResponse('NO MARK WITH ID ' + mark_id, status=404) 
         if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
-            and request.user.username != mark.item.course.teacher.username and not mark.item.course.secondary_teachers.filter(username=request.user.username).count():
+            and request.user.username != mark.item.course.teacher.username \
+            and not mark.item.course.secondary_teachers.filter(username=request.user.username).count():
             return HttpResponse(status=403)
 
         if len(value) and value.lower != 'none':

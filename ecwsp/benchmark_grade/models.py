@@ -18,14 +18,9 @@
 
 from django.db import models
 from django.db.models import Min, Max, Sum, Avg
-from django.contrib.localflavor.us.models import *
-from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
-
-from ecwsp.sis.models import *
-from ecwsp.schedule.models import *
-from ecwsp.benchmarks.models import Benchmark
-
-import sys
+#from django.contrib.localflavor.us.models import *
+from django.conf import settings
+from decimal import Decimal
 
 from django.core.exceptions import ImproperlyConfigured
 if not 'ecwsp.benchmarks' in settings.INSTALLED_APPS:
