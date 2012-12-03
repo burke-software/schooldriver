@@ -17,6 +17,12 @@ class struct(object):
     def __unicode__(self):
         return ""
 
+def strip_trailing_zeros(x):
+    x = str(x).strip()
+    # So sayeth Alex Martelli
+    # http://stackoverflow.com/a/2440786
+    return x.rstrip('0').rstrip('.')
+
 def get_school_day_number(date):
     mps = MarkingPeriod.objects.filter(school_year__active_year=True).order_by('start_date')
     current_day = mps[0].start_date
@@ -354,5 +360,6 @@ def pod_report_grade(request, template, options, students, format="odt", transcr
     except: pass
     
     data['students'] = students
+    data['strip_trailing_zeros'] = strip_trailing_zeros
     filename = 'output'
     return pod_save(filename, "." + str(format), data, template)
