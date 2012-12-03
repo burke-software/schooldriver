@@ -28,7 +28,7 @@ from django.conf import settings
 #from ecwsp.schedule.models import CourseEnrollment
 import logging
 from thumbs import ImageWithThumbsField
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 from ecwsp.administration.models import Configuration
 from custom_field.custom_field import CustomFieldModel

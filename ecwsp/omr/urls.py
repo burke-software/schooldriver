@@ -18,6 +18,9 @@ urlpatterns = patterns('',
     (r'^test_questions/(?P<test_id>\d+)/ajax_question_form/new/$', ajax_new_question_form),
     (r'^test_questions/(?P<test_id>\d+)/ajax_question_bank_to_question/(?P<question_bank_id>\d+)/$',ajax_question_bank_to_question),
     (r'^test_questions/(?P<test_id>\d+)/ajax_finalize_test/$', ajax_finalize_test),
+    
+    (r'^test_questions/(?P<test_id>\d+)/ajax_mark_as_answer/(?P<answer_id>\d+)/$', ajax_mark_as_answer),
+    
     (r'^test/(?P<test_id>\d+)/copy/$', test_copy),
     (r'^test_result/(?P<test_id>\d+)/$', test_result),
     (r'^test_result/(?P<test_id>\d+)/download_xls/$', download_test_results),

@@ -2,10 +2,8 @@
     <div class="grp-module grp-group grp-tabular">
         <h2 class="grp-collapse-handler">
             Question <span class="question_order">{{ question.order }}</span>
-            <ul class="tools">
-              <li class="open-handler-container"><a href="javascript://" onclick="move_question('down', {{ question.id }})" class="icon open-handler" title="Move Down"></a></li>
-              <li class="close-handler-container"><a href="javascript://" onclick="move_question('up', {{ question.id }})" class="icon close-handler" title="Move Up"></a></li>
-            </ul>
+              <a href="javascript://" onclick="move_question('down', {{ question.id }})" class="icon open-handler" title="Move Down">  &nbsp;↓  &nbsp;</a></li>
+              <a href="javascript://" onclick="move_question('up', {{ question.id }})" class="icon close-handler" title="Move Up">  &nbsp;↑ &nbsp; </a></li>
         </h2>
         <div class="grp-row grp-module">
             <div class="grp-float-left">
@@ -31,12 +29,15 @@
     </div>
     <div class="grp-module">
       {% for answer in question.answer_set.all %}
-        <div class="grp-row" {% if answer.point_value == question.point_value %} style="background: #a6ffa8;" {% endif %}>
+        <div id="div_answer_{{ answer.id }}" class="grp-row" {% if answer.point_value == question.point_value %} style="background: #a6ffa8;" {% endif %}>
             <div class="grp-float-left">
                 {{ answer.answer|safe }}
             </div>
             <div class="grp-float-right">
-                {{ answer.point_value }} Point{{ answer.point_value|pluralize }}
+                {% if question.has_no_answer %}
+                    <a class="grp-button mark_button_{{ question.id }}" onclick="mark_as_answer({{ question.id }}, {{ answer.id }})"> Mark as answer </a>
+                {% endif %}
+                <span id="point_value_{{ answer.id }}">{{ answer.point_value }}</span> Point{{ answer.point_value|pluralize }}
                 {% if answer.error_type %} <br/> Error Type: {{ answer.error_type }} {% endif %}
             </div>
         </div>

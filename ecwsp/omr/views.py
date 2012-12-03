@@ -230,11 +230,27 @@ def edit_test(request, id=None):
         'add': add,
     }, RequestContext(request, {}),)
     
+
+@permission_required('omr.teacher_test')
+def ajax_mark_as_answer(request, test_id, answer_id):
+    answer = Answer.objects.get(id=answer_id)
+    question_points = answer.question.point_value
+    answer.point_value = question_points
+    answer.save()
+    return HttpResponse(question_points);
+
+    
 @permission_required('omr.teacher_test')
 def edit_test_questions(request, id):
     test = get_object_or_404(Test, id=id)
     test.reindex_question_order()
     questions = test.question_set.all()
+    
+    for question in questions:
+        if not question.answer_set.exclude(point_value=0):
+            question.has_no_answer = True
+        else:
+            question.has_no_answer = False
     
     # Ugly way to see which test is on, currently only used for filtering benchmarks
     request.session['omr_test_id'] = str(id)
