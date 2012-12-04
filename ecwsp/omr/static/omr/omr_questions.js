@@ -237,7 +237,7 @@ function clean_ckeditor(question_id) {
     }
   }
   
-  function finalize_test() {
+  function finalize_test(test_id) {
     var confirmed = confirm("Are you sure you want to finalize this test?\nYou will no longer be able to make changes to this test.");
     if ( confirmed ) {
       $.blockUI({
@@ -249,7 +249,7 @@ function clean_ckeditor(question_id) {
         "ajax_finalize_test/",
         function(data){
           if (data == "SUCCESS") {
-            document.location.href = '/omr/test_result/{{ test.id }}';
+            document.location.href = '/omr/test_result/' + test_id;
           } else {
           // Error, let user know they should panic!
             $.blockUI({
