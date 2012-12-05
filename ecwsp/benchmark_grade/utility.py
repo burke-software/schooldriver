@@ -16,7 +16,7 @@
 #   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #   MA 02110-1301, USA.
 
-from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark
+from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark, Category
 from ecwsp.schedule.models import MarkingPeriod
 from ecwsp.grades.models import Grade
 from django.db.models import Avg, Sum, Min
