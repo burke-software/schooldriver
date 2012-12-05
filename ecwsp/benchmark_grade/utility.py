@@ -21,7 +21,7 @@ from ecwsp.schedule.models import MarkingPeriod
 from ecwsp.grades.models import Grade
 from django.db.models import Avg, Sum, Min
 import logging
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 def benchmark_find_calculation_rule(school_year):
     rules = CalculationRule.objects.filter(first_year_effective=school_year)
