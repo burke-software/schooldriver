@@ -25,7 +25,7 @@ from django.db.models import Q, Max
 from django.db import transaction
 from django.template import RequestContext
 
-from ecwsp.sis.models import SchoolYear, Student
+from ecwsp.sis.models import SchoolYear, Student, Faculty
 #from ecwsp.sis.uno_report import *
 #from ecwsp.sis.xlsReport import *
 from ecwsp.schedule.models import Course, MarkingPeriod
@@ -257,7 +257,7 @@ def gradebook(request, course_id):
             graded=True,
             marking_period__school_year__active_year=True,
         ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
-    except:
+    except Faculty.DoesNotExist:
         teacher_courses = None
 
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
