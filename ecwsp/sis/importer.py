@@ -196,7 +196,10 @@ class Importer:
                     try:
                         return Student.objects.get(unique_id=value)
                     except:
-                        return Student.objects.get(id=value)
+                        try:
+                            return Student.objects.get(id=value)
+                        except:
+                            return Student.objects.get(username=value)
                 elif name == "student username":
                     return Student.objects.get(username=value)
                 elif name == "ssn" or name == "social security number" or name == "student ssn":
