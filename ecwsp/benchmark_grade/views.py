@@ -330,7 +330,7 @@ def gradebook(request, course_id):
                     mark, created = Mark.objects.get_or_create(item=item, student=student)
                     if created:
                         mark.save()
-        elif student_marks.count() > items_count:
+        if student_marks.count() > items_count:
             # Yikes, there are multiple marks per student per item. Stop loading the gradebook now.
             if 'dangerous' in request.GET:
                 pass
@@ -341,6 +341,39 @@ def gradebook(request, course_id):
         if filtered:
             student.filtered_average = gradebook_get_average(student, course, filter_form.cleaned_data['category'],
                                                              filter_form.cleaned_data['marking_period'], items)
+        # TC's column of counts
+        # TODO: don't hardcode
+        standards_category = Category.objects.get(name='Standards')
+        PASSING_GRADE = 3
+        standards_objects = Item.objects.filter(course=course, category=standards_category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+        standards_count_passing = standards_objects.filter(best_mark__gte=PASSING_GRADE).count()
+        standards_count_total = standards_objects.count()
+        if standards_count_total:
+            student.standards_counts = '{} / {} ({:.0f}%)'.format(standards_count_passing, standards_count_total, 100.0 * standards_count_passing / standards_count_total)
+        else:
+            student.standards_counts_ = None
+        if filtered:
+            standards_objects = items.filter(course=course, category=standards_category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+            standards_count_passing = standards_objects.filter(best_mark__gte=PASSING_GRADE).count()
+            standards_count_total = standards_objects.count()
+            if standards_count_total:
+                student.filtered_standards_counts = '{} / {} ({:.0f}%)'.format(standards_count_passing, standards_count_total, 100.0 * standards_count_passing / standards_count_total)
+            else:
+                student.filtered_standards_counts = None
+
+        # TC's row of counts
+        # TODO: don't hardcode
+        for item in items:
+            if item.category != standards_category:
+                item.marks_counts = 'N/A'
+                continue
+            marks_count_passing = item.mark_set.filter(mark__gte=PASSING_GRADE).count()
+            marks_count_total = item.mark_set.exclude(mark=None).count()
+            if marks_count_total:
+                item.marks_counts = '{} / {} ({:.0f}%)'.format(marks_count_passing, marks_count_total, 100.0 * marks_count_passing / marks_count_total)
+            else:
+                item.marks_counts = None
+            
 
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,

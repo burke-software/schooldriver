@@ -127,10 +127,16 @@
                             {% endif %}
                         {% endfor %}
                         {% if filtered %}
+                            <th><div class="average" style="line-height: 0.9em">
+                                <span style="font-size: smaller">Filtered<br />Standards<br />Demonstrated</span>
+                            </div></th>
                             <th><div class="average">
                                 Filtered<br />Average
                             </div></th>
                         {% endif %}
+                        <th><div class="average">
+                            Standards<br />Demonstrated
+                        </div></th>
                         <th><div class="average">
                             Course<br />Average
                         </div></th>
@@ -148,12 +154,37 @@
                             </td>
                         {% endfor %}
                         {% if filtered %}
+                            <td id="filtered_standards_count{{ row_counter }}"><div>{{ student.filtered_standards_counts }}</div></td>
                             <td id="filtered_average{{ row_counter }}"><div>{{ student.filtered_average }}</div></td>
                         {% endif %}
+                        <td id="standards_counts{{ row_counter }}"><div>{{ student.standards_counts }}</div></td>
                         <td id="average{{ row_counter }}"><div>{{ student.average }}</div></td>
                     </tr>
                     {% endwith %}
                 {% endfor %}
+
+                    <tr>
+                        <td>
+                            <em>Students Demonstrated</em>
+                        </td>
+                        {% for item in items %}
+                            <td><div>{{ item.marks_counts }}</div></td>
+                        {% endfor %}
+                        {% if filtered %}
+                            <td><!-- filtered standards demonstrated -->
+                                N/A
+                            </td>
+                            <td><!-- filtered course average -->
+                                N/A
+                            </td>
+                        {% endif %}
+                        <td><!-- standards demonstrated -->
+                            N/A
+                        </td>
+                        <td><!-- course average -->
+                            N/A
+                        </td>
+                    </tr>
                 
                 </tbody>
             </table>
