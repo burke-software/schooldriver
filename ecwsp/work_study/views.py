@@ -612,7 +612,7 @@ def report_builder_view(request):
                         for t in ts:
                             dates += unicode(t.date) + ", "
                         data.append([student, student.day, student.placement, ts.count(), dates])
-                    report = xlsReport(data, titles, "Student timesheets.xls", heading="Student Timesheets")
+                    report = xlsReport(data, titles, "Student_timesheets.xls", heading="Student Timesheets")
                     return report.finish()
                         
                 # billing report for time worked for own pay.
