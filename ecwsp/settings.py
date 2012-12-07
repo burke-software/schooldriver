@@ -112,7 +112,7 @@ INSTALLED_APPS = (
     #'ecwsp.naviance_sso',
     'ajax_select',
     'reversion',
-    'django_extensions',
+    #'django_extensions',
     #'google_auth',
     #'ldap_groups',
     'south',

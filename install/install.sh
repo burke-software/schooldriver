@@ -5,14 +5,14 @@ echo pip install --upgrade pip
 echo ln -s /usr/local/bin/pip /usr/bin/pip
 
 # install everything needed to run this application, start with deb files, should be run as root
-apt-get install apache2 mysql-server python-uno python-xlwt python-reportlab python-mysqldb python-ldap python-pip python-feedparser python-xlrd python-mysqldb mysql-client python2.7-dev rabbitmq-server
+apt-get install apache2 mysql-server python-uno python-xlwt python-reportlab python-mysqldb python-ldap python-pip python-feedparser python-xlrd python-mysqldb mysql-client python2.7-dev
 
 # Install this if in production
 # apt-get install libapache2-mod-wsgi
 
 # now install python libs that aren't in deb
 # stable version of ldap-groups may not work with mysql
-pip install --upgrade -r install/dependencies.txt
+pip install --upgrade -r dependencies.txt
 
 # optional auth related
 # pip install django-auth-gapps django_cas

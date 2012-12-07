@@ -11,8 +11,6 @@ class Migration(SchemaMigration):
 
         # Changing field 'MdlUser.email'
         db.alter_column('sis_mdluser', 'email', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True))
-        db.create_unique('sis_studentcohort', ['cohort_id', 'student_id'])
-
 
         # Changing field 'Student.year'
         db.alter_column('sis_student', 'year_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.GradeLevel'], null=True, on_delete=models.SET_NULL))
