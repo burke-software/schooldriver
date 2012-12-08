@@ -13,7 +13,9 @@ from ecwsp.admissions.models import PlaceOfWorship, ApplicationDecisionOption, W
 from ecwsp.admissions.models import BoroughOption, CountryOption, ImmigrationOption, AdmissionLevel
 from ecwsp.admissions.models import Applicant
 from ecwsp.admissions.forms import ApplicantForm
+from ecwsp.sis.models import SchoolYear
 
+import datetime
 import re
 
 admin.site.register(EthnicityChoice)
@@ -83,6 +85,12 @@ class ApplicantAdmin(CustomFieldAdmin):
     
     def add_view(self, request, form_url='', extra_context=None):
         levels = []
+        # Attempt to guess next school year
+        future_years = SchoolYear.objects.filter(start_date__gt=datetime.date.today()).order_by('start_date')
+        if future_years:
+            year = future_years[0]
+        else:
+            year = None
         for level in AdmissionLevel.objects.all():
             level.checks = []
             level.max = 0
@@ -92,13 +100,20 @@ class ApplicantAdmin(CustomFieldAdmin):
             levels.append(level)
         my_context = {
             'levels': levels,
-            'current_level': None
+            'current_level': None,
+            'year': year,
         }
         return super(ApplicantAdmin, self).add_view(request, form_url, extra_context=my_context)
     
     def change_view(self, request, object_id, extra_context=None):
         levels = []
         applicant = get_object_or_404(Applicant,id=object_id)
+		# Attempt to guess next school year
+        future_years = SchoolYear.objects.filter(start_date__gt=datetime.date.today()).order_by('start_date')
+        if future_years:
+            year = future_years[0]
+        else:
+            year = None
         for level in AdmissionLevel.objects.all():
             level.checks = []
             level.max = 0
@@ -115,6 +130,7 @@ class ApplicantAdmin(CustomFieldAdmin):
         my_context = {
             'levels': levels,
             'current_level': applicant.level,
+            'year': year,
         }
         return super(ApplicantAdmin, self).change_view(request, object_id, extra_context=my_context)
     
