@@ -18,14 +18,16 @@
       .content-grid {
         min-width: 800px !important;
       }
+      .icon {
+        vertical-align: bottom;
+        text-align: center;
+        border: none;
+      }
     </style>
 {% endblock %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <style type="text/css">
-    
-  </style>
   <link rel="stylesheet" type="text/css" href="/static/js/jqplot/jquery.jqplot.min.css" /> 
 {% endblock %}
 
@@ -95,9 +97,28 @@
   <p id="progress_recieved"></p>
   {{ test.students_test_results }} of {{ test.testinstance_set.count }} scanned tests recieved. Need <a href="https://sites.google.com/a/cristoreyny.org/sword-wiki/openmetricrecognition">help</a>?
   <br/>
-  <a href="download_xls">Download results (spreadsheet)</a><br/>
-  <a href="download_student_results">Download Student results (document to hand to students)</a><br/>
-  <a href="download_answer_sheets">Download Answer Sheets</a>
+  <table style="border: none;">
+    <tr>
+      <td class="icon">
+        <a href="download_xls">
+          <img src="/static/omr/download_spread.jpg"/><br/>
+          Results (spreadsheet)
+        </a>
+      </td>
+      <td class="icon">
+        <a href="download_student_results">
+          <img src="/static/omr/download_answer.jpg"/><br/>
+          Student results (document)
+        </a><br/>
+      </td>
+      <td class="icon">
+        <a href="download_answer_sheets">
+          <img src="/static/omr/download_bubble.jpg"/><br/>
+          Answer (bubble) Sheets
+        </a>
+      </td>
+    </tr>
+  </table>
   
   <br/>
   <div id="chart1" style="height:500px; width:800px;"></div>
