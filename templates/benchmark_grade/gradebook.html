@@ -147,7 +147,7 @@
                 {% for student in students %}
                     {% with row_counter=forloop.counter0 %}
                     <tr>
-                        <td>{{ student }}</td>
+                        <td><div id="student{{ student.id }}" onclick="show_student_overlay(event)">{{ student }}</div></td>
                         {% for mark in student.marks %}
                             <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)">
                                 <div>{{ mark.mark }}</div>
@@ -195,6 +195,7 @@
     
     <div id="new_assignment_form" class="modal"></div>
     <div id="new_demonstration_form" class="modal"></div>
+    <div id="student_info_overlay" class="modal"</div>
     
     
     <script type="text/javascript">

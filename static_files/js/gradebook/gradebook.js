@@ -167,6 +167,21 @@ function get_edit_demonstration_form(event){
     $("#new_demonstration_form").overlay().load();
 }
 
+function show_student_overlay(event) {
+    student_id = event.target.id.replace(/^student(\d+)$/, '$1').trim();
+    $.post(
+        "ajax_get_student_info/" + student_id + "/",
+        function(data){
+            $("#student_info_overlay").html(data);
+        }
+    ); 
+    $("#student_info_overlay").overlay({
+            top: '3',
+            fixed: false
+        });
+    $("#student_info_overlay").overlay().load();
+}
+
 function handle_form_fragment_submit(form) {
 
     // Handle submit for an assignment with ajax
