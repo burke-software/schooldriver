@@ -11,3 +11,14 @@
     {% endif %}
     <input type="submit" value="Submit" />    
 </form>
+{% if lists %}
+<hr />
+    {% for list in lists %}
+        <h2>{{ list.heading }}</h2>
+        <ul>
+        {% for item in list.items %}
+            <li>{{ item }}</li>
+        {% endfor %}
+        </ul>
+    {% endfor %}
+{% endif %}
