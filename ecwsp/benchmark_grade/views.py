@@ -406,6 +406,7 @@ def ajax_get_item_form(request, course_id, item_id=None):
     don't appear until reload '''
     course = get_object_or_404(Course, pk=course_id)
     item = None
+    lists = None
     
     if request.POST:
         if item_id:
@@ -440,6 +441,10 @@ def ajax_get_item_form(request, course_id, item_id=None):
         if item_id:
             item = get_object_or_404(Item, pk=item_id)
             form = ItemForm(instance=item, prefix="item")
+            # TODO: remove TC hard-coding
+            students_missing = Student.objects.filter(mark__item=item).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
+            if not students_missing: students_missing = ('None',)
+            lists = ({'heading':'Students Missing This Item', 'items':students_missing},)
         else:
             active_mps = course.marking_period.filter(active=True)
             if active_mps:
@@ -459,6 +464,7 @@ def ajax_get_item_form(request, course_id, item_id=None):
     return render_to_response('sis/generic_form_fragment.html', {
         'form': form,
         'item_id': item_id,
+        'lists': lists,
     }, RequestContext(request, {}),)
 
 @staff_member_required
@@ -490,6 +496,7 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
     and create tons of assignments. for some reason, only one shows up right away, and the rest
     don't appear until reload '''
     course = get_object_or_404(Course, pk=course_id)
+    lists = None
     
     if request.POST:
         if demonstration_id:
@@ -516,6 +523,10 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
         if demonstration_id:
             demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
             form = DemonstrationForm(instance=demonstration, prefix="demonstration")
+            # TODO: remove TC hard-coding
+            students_missing = Student.objects.filter(mark__demonstration=demonstration, mark__mark__lt=3)
+            if not students_missing: students_missing = ('None',)
+            lists = ({'heading':'Students Missing This Demonstration', 'items':students_missing},)
         else:
             form = DemonstrationForm(initial={'course': course}, prefix="demonstration")
     
@@ -525,6 +536,7 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
     return render_to_response('benchmark_grade/demonstration_form_fragment.html', {
         'form': form,
         'demonstration_id': demonstration_id,
+        'lists': lists,
     }, RequestContext(request, {}),)
 
 @staff_member_required
