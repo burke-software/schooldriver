@@ -54,9 +54,7 @@ begin
     SELECT DISTINCT boxgroupstype.varname from quexf_crny.boxgroupstype
      JOIN quexf_crny.boxes
      ON quexf_crny.boxgroupstype.bgid=quexf_crny.boxes.bgid
-     JOIN quexf_crny.formboxverifychar
-     ON quexf_crny.boxes.bid=quexf_crny.formboxverifychar.bid
-     WHERE quexf_crny.formboxverifychar.bid = @box_id
+     WHERE quexf_crny.boxes.bid = @box_id
    );
    
    set @points_possible = (
