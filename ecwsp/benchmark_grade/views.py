@@ -540,6 +540,20 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
     }, RequestContext(request, {}),)
 
 @staff_member_required
+def ajax_get_student_info(request, course_id, student_id):
+    student = get_object_or_404(Student, pk=student_id)
+    course = get_object_or_404(Course, pk=course_id)
+
+    # TODO: remove TC hard-coding
+    standards_missing = Item.objects.filter(course=course, category__name='Standards', mark__student=student).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
+    if not standards_missing: standards_missing = ('None',)
+    lists = ({'heading':'Standards Missing for {}'.format(student), 'items':standards_missing},)
+
+    return render_to_response('sis/generic_list_fragment.html', {
+        'lists': lists,
+    }, RequestContext(request, {}),)
+
+@staff_member_required
 def ajax_save_grade(request):
     if 'mark_id' in request.POST and 'value' in request.POST:
         mark_id = request.POST['mark_id'].strip()
