@@ -62,13 +62,13 @@
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> Student </a>
                     <ul class="grp-user-options">
                         {% if perms.sis.view_student %}
-                            <li><a href="{% url ecwsp.sis.views.photo_flash_card %}">{% trans 'Flashcards' %}</a></li>
+                            <li><a href="{% url "ecwsp.sis.views.photo_flash_card" %}">{% trans 'Flashcards' %}</a></li>
                         {% endif %}
                         {% if perms.sis.change_student or perms.sis.view_student %}
-                            <li><a href="{% url admin:sis_student_changelist %}">{% trans 'Edit' %}</a></li>
+                            <li><a href="{% url "admin:sis_student_changelist" %}">{% trans 'Edit' %}</a></li>
                         {% endif %}
                         {% if perms.sis.reports %}
-                            <li><a href="{% url ecwsp.sis.views.school_report_builder_view %}">{% trans 'Reports' %}</a></li>
+                            <li><a href="{% url "ecwsp.sis.views.school_report_builder_view" %}">{% trans 'Reports' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -81,16 +81,16 @@
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> {% trans 'Attendance' %} </a>
                     <ul class="grp-user-options">
                         {% if perms.attendance.take_studentattendance %}
-                            <li><a href="{% url ecwsp.attendance.views.teacher_attendance %}">{% trans 'Take Homeroom Attendance' %}</a>
+                            <li><a href="{% url "ecwsp.attendance.views.teacher_attendance" %}">{% trans 'Take Homeroom Attendance' %}</a>
                             {% if settings.ATTENDANCE_COURSE_BASED %}
-                                <li><a href="{% url ecwsp.attendance.views.select_course_for_attendance %}">{% trans 'Take Course Attendance' %}</a>
+                                <li><a href="{% url "ecwsp.attendance.views.select_course_for_attendance" %}">{% trans 'Take Course Attendance' %}</a>
                             {% endif %}
                         {% endif %}
                         {% if perms.attendance.change_studentattendance %}
-                            <li><a href="{% url admin:attendance_studentattendance_changelist %}">{% trans 'Edit' %}</a></li>
+                            <li><a href="{% url "admin:attendance_studentattendance_changelist" %}">{% trans 'Edit' %}</a></li>
                         {% endif %}
                         {% if perms.studentattendance.reports %}
-                            <li><a href="{% url ecwsp.attendance.views.attendance_report %}">{% trans 'Reports' %}</a></li>
+                            <li><a href="{% url "ecwsp.attendance.views.attendance_report" %}">{% trans 'Reports' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -104,13 +104,13 @@
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> {% trans 'Discipline' %} </a>
                     <ul class="grp-user-options">
                         {% if perms.discipline.change_studentdiscipline %}
-                            <li><a href="{% url ecwsp.discipline.views.view_discipline %}">{% trans 'View' %}</a>
+                            <li><a href="{% url "ecwsp.discipline.views.view_discipline" %}">{% trans 'View' %}</a>
                         {% endif %}
                         {% if perms.discipline.change_studentdiscipline %}
-                            <li><a href="{% url admin:discipline_studentdiscipline_changelist %}">{% trans 'Edit' %}</a></li>
+                            <li><a href="{% url "admin:discipline_studentdiscipline_changelist" %}">{% trans 'Edit' %}</a></li>
                         {% endif %}
                         {% if perms.sis.reports %}
-                            <li><a href="{% url ecwsp.discipline.views.discipline_report_view %}">{% trans 'Reports' %}</a></li>
+                            <li><a href="{% url "ecwsp.discipline.views.discipline_report_view" %}">{% trans 'Reports' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -123,17 +123,17 @@
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> Grades </a>
                     <ul class="grp-user-options">
                         {% if perms.schedule.change_course %}
-                            <li><a href="{% url admin:schedule_course_changelist %}">{% trans 'Edit Grades/Courses' %}</a></li>
+                            <li><a href="{% url "admin:schedule_course_changelist" %}">{% trans 'Edit Grades/Courses' %}</a></li>
                         {% endif %}
                         {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
-                            <li><a href="{% url ecwsp.grades.views.teacher_grade %}">{% trans 'Submit Grades' %}</a>
+                            <li><a href="{% url "ecwsp.grades.views.teacher_grade" %}">{% trans 'Submit Grades' %}</a>
                         {% endif %}
                         {% if perms.sis.reports %}
-                            <li><a href="{% url ecwsp.sis.views.grade_report %}">{% trans 'Reports' %}</a></li>
-                            <li><a href="{% url ecwsp.schedule.views.grade_analytics %}">{% trans 'Analytics' %}</a></li>
+                            <li><a href="{% url "ecwsp.sis.views.grade_report" %}">{% trans 'Reports' %}</a></li>
+                            <li><a href="{% url "ecwsp.schedule.views.grade_analytics" %}">{% trans 'Analytics' %}</a></li>
                         {% endif %}
                         {% if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS %} {% if perms.engrade_sync.change_coursesync %}
-                            <li><a href="{% url ecwsp.engrade_sync.views.setup %}">{% trans 'Engrade Setup' %}</a></li>
+                            <li><a href="{% url "ecwsp.engrade_sync.views.setup" %}">{% trans 'Engrade Setup' %}</a></li>
                         {% endif %}{% endif %}
                     </ul>
                 </li>
@@ -145,10 +145,10 @@
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> Admissions </a>
                     <ul class="grp-user-options">
                         {% if perms.admissions.change_applicant %}
-                            <li><a href="{% url admin:admissions_applicant_changelist %}">{% trans 'Applicants' %}</a></li>
+                            <li><a href="{% url "admin:admissions_applicant_changelist" %}">{% trans 'Applicants' %}</a></li>
                         {% endif %}
                         {% if perms.admissions.change_applicant %}
-                            <li><a href="{% url ecwsp.admissions.views.reports %}">{% trans 'Reports' %}</a></li>
+                            <li><a href="{% url "ecwsp.admissions.views.reports" %}">{% trans 'Reports' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -159,8 +159,8 @@
                 <li class="grp-user-options-container grp-collapse grp-closed">
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> Alumni </a>
                     <ul class="grp-user-options">
-                        <li><a href="{% url admin:app_list 'alumni'%}">{% trans 'Alumni Admin' %}</a></li>
-                        <li><a href="{% url admin:alumni_alumni_changelist %}">{% trans 'Alumnus' %}</a></li>
+                        <li><a href="{% url "admin:app_list" 'alumni' %}">{% trans 'Alumni Admin' %}</a></li>
+                        <li><a href="{% url "admin:alumni_alumni_changelist" %}">{% trans 'Alumnus' %}</a></li>
                     </ul>
                 </li>
             {% endif %}
@@ -171,9 +171,9 @@
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> Counseling </a>
                     <ul class="grp-user-options">
                         {% if perms.counseling.change_studentmeeting %}
-                            <li><a href="{% url admin:app_list 'counseling'%}">{% trans 'Counseling Admin' %}</a></li>
+                            <li><a href="{% url "admin:app_list" 'counseling'%}">{% trans 'Counseling Admin' %}</a></li>
                         {% endif %}
-                        <li><a href="{% url admin:counseling_referralform_add %}">{% trans 'Submit Referral Form' %}</a></li>
+                        <li><a href="{% url "admin:counseling_referralform_add" %}">{% trans 'Submit Referral Form' %}</a></li>
                     </ul>
                 </li>
             {% endif %}
@@ -184,13 +184,13 @@
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> CWSP </a>
                     <ul class="grp-user-options">
                         {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker %}
-                            <li><a href="{% url admin:work_study_studentworker_changelist %}">{% trans 'Edit Student Worker' %}</a></li>
+                            <li><a href="{% url "admin:work_study_studentworker_changelist" %}">{% trans 'Edit Student Worker' %}</a></li>
                         {% endif %}
                         {% if perms.sis.reports %}
-                            <li><a href="{% url ecwsp.work_study.views.report_builder_view %}">{% trans 'Reports' %}</a></li>
+                            <li><a href="{% url "ecwsp.work_study.views.report_builder_view" %}">{% trans 'Reports' %}</a></li>
                         {% endif %}
                         {% if perms.sis.reports and settings.CRND_ROUTES %}
-                            <li><a href="{% url ecwsp.work_study.views.routes %}">{% trans 'Route Reports' %}</a></li>
+                            <li><a href="{% url "ecwsp.work_study.views.routes" %}">{% trans 'Route Reports' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -202,10 +202,10 @@
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> OMR </a>
                     <ul class="grp-user-options">
                         {% if perms.omr.change_test %}
-                            <li><a href="{% url admin:app_list 'omr'%}">{% trans 'OMR Admin' %}</a></li>
+                            <li><a href="{% url "admin:app_list" 'omr' %}">{% trans 'OMR Admin' %}</a></li>
                         {% endif %}
                         {% if perms.omr.teacher_test %}
-                            <li><a href="{% url ecwsp.omr.views.my_tests %}"> {% trans 'My Tests' %}</a></li>
+                            <li><a href="{% url "ecwsp.omr.views.my_tests" %}"> {% trans 'My Tests' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -217,19 +217,19 @@
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> Admin </a>
                     <ul class="grp-user-options">
                         {% if perms.sis.reports %}
-                            <li><a href="{% url ecwsp.sis.views.import_everything %}">{% trans 'School import' %}</a></li>
+                            <li><a href="{% url "ecwsp.sis.views.import_everything" %}">{% trans 'School import' %}</a></li>
                         {% endif %}
                         {% if perms.administration.change_configuration %}
-                            <li><a href="{% url admin:administration_configuration_changelist %}">{% trans 'Configuration' %}</a></li>
+                            <li><a href="{% url "admin:administration_configuration_changelist" %}">{% trans 'Configuration' %}</a></li>
                         {% endif %}
                         {% if perms.custom_field.change_custom_field %}
-                            <li><a href="{% url admin:custom_field_customfield_changelist %}">{% trans 'Custom Fields' %}</a></li>
+                            <li><a href="{% url "admin:custom_field_customfield_changelist" %}">{% trans 'Custom Fields' %}</a></li>
                         {% endif %}
                         {% if 'ecwsp.canvas_sync' in settings.INSTALLED_APPS and perms.sis.reports %}
-                            <li><a href="{% url ecwsp.canvas_sync.views.setup %}">{% trans 'Canvas Sync' %}</a></li>
+                            <li><a href="{% url "ecwsp.canvas_sync.views.setup" %}">{% trans 'Canvas Sync' %}</a></li>
                         {% endif %}
                         {% if perms.sis.change_student %}
-                            <li><a href="{% url ecwsp.sis.views.increment_year %}">{% trans 'Change School Year' %}</a></li>
+                            <li><a href="{% url "ecwsp.sis.views.increment_year" %}">{% trans 'Change School Year' %}</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -242,7 +242,7 @@
                     <!--SWORD: added preferences -->
                     <li><a href="/sis/preferences">{% trans 'Preferences' %}</a>
                     <!-- Change Password -->
-                    {% url admin:password_change as password_change_url %}
+                    {% url "admin:password_change" as password_change_url %}
                     {% if password_change_url %}
                         <li><a href="{{ password_change_url }}">
                     {% else %}
@@ -250,7 +250,7 @@
                     {% endif %}
                     {% trans 'Change password' %}</a></li>
                     <!-- Logout -->
-                    {% url admin:logout as logout_url %}
+                    {% url "admin:logout" as logout_url %}
                     {% if logout_url %}
                         <li><a href="{{ logout_url }}">
                     {% else %}
@@ -262,7 +262,7 @@
             <!-- Userlinks -->
             {% block userlinks %}
                 <!-- JS tests -->
-                {% url test-index as testindexurl %}
+                {% url "test-index" as testindexurl %}
                 {% if testindexurl %}
                     <li><a href="{{ testindexurl }}">{% trans 'Tests' %}</a></li>
                 {% endif %}

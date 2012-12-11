@@ -24,7 +24,7 @@ Approval Queue
                    <td> {{ timesheet.hours }} </td>
                    <td>
 		    <span class="supervisor-view-icon">
-			<a href="{% url ecwsp.work_study.views.approve %}?key={{ timesheet.supervisor_key }}"></a>
+			<a href="{% url "ecwsp.work_study.views.approve" %}?key={{ timesheet.supervisor_key }}"></a>
 		    </span>
 		    <span class="supervisor-delete-icon">
 			<a href="/work_study/supervisor/delete?key={{ timesheet.supervisor_key }}"></a>
@@ -67,8 +67,8 @@ Create New Timecard
 	       <tr class="submitted-row{% cycle '1' '2' %}"">
 		       <td> {{ student.lname }}, {{ student.fname }} </td>
 		       <td> {{ student.get_day_display }} </td>
-		       <td> <a href="{% url ecwsp.work_study.views.change_supervisor student.id %}">{{ student.primary_contact }}</a></td>
-		       <td><span class="supervisor-newcard-icon"><a href="{% url ecwsp.work_study.views.create_time_card student.id %}"></a></span></td>
+		       <td> <a href="{% url "ecwsp.work_study.views.change_supervisor" student.id %}">{{ student.primary_contact }}</a></td>
+		       <td><span class="supervisor-newcard-icon"><a href="{% url "ecwsp.work_study.views.create_time_card" student.id %}"></a></span></td>
 	       </tr>
 	    {% endfor %}
 	</tbody>

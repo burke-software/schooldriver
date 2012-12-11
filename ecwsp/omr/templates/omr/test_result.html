@@ -4,14 +4,13 @@
 {% block breadcrumbs %}
     <div id="breadcrumbs">
       <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
-      &rsaquo; <a href="{% url ecwsp.omr.views.my_tests %}">{% trans 'My Tests' %}</a>
-      &rsaquo; <a href="{% url ecwsp.omr.views.edit_test test.id %}">{{ test }}</a>  
+      &rsaquo; <a href="{% url "ecwsp.omr.views.my_tests" %}">{% trans 'My Tests' %}</a>
+      &rsaquo; <a href="{% url "ecwsp.omr.views.edit_test" test.id %}">{{ test }}</a>  
       &rsaquo; {{ test }} Results
     </div>
 {% endblock %}
 
 {% block extrahead %}
-    {% load adminmedia %}
     <script type="text/javascript" src="/admin/jsi18n/"></script>
     
     <style type="text/css">

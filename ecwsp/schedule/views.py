@@ -9,7 +9,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.db.models import Count
-from django.views.generic.simple import redirect_to
 from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
 

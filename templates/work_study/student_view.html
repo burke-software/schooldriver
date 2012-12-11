@@ -30,7 +30,7 @@
 		   {% if timesheet.approved %}
 			<td> </td>
 		   {% else %}
-			<td> <span class="submitted-edit-icon"> <a href="{% url ecwsp.work_study.views.student_edit timesheet.id %}"> </a></span></td>
+			<td> <span class="submitted-edit-icon"> <a href="{% url "ecwsp.work_study.views.student_edit" timesheet.id %}"> </a></span></td>
 		   {% endif %}
                 </tr>
             {% endfor %}

@@ -3,7 +3,7 @@
 {% block object-tools-items %}
     {% if has_add_permission %}
         <li>
-            <a href="{% url ecwsp.work_study.views.student_meeting %}">Students with meetings</a>
+            <a href="{% url "ecwsp.work_study.views.student_meeting" %}">Students with meetings</a>
         </li> 
         {{ block.super }}
     {% endif %}

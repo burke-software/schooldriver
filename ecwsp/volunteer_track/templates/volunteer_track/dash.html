@@ -18,9 +18,9 @@
         {% for volunteersite in student.volunteersite_set.all %}
             <li>
                 {{ volunteersite.site }} ({{ volunteersite.site_approval }}) <br/>
-                {{ volunteersite.supervisor }} <a href="{% url ecwsp.volunteer_track.views.change_supervisor volunteersite.id %}">Change</a> (Requires approval)<br/>
+                {{ volunteersite.supervisor }} <a href="{% url "ecwsp.volunteer_track.views.change_supervisor" volunteersite.id %}">Change</a> (Requires approval)<br/>
                 {% if not volunteersite.inactive and volunteersite.site_approval == "Accepted" %}
-                    <a href="{% url ecwsp.volunteer_track.views.student_hours volunteersite.id %}">Log Hours</a><br/>
+                    <a href="{% url "ecwsp.volunteer_track.views.student_hours" volunteersite.id %}">Log Hours</a><br/>
                 {% endif %}
             </li>
         {% endfor %}
@@ -30,6 +30,6 @@
     </fieldset>
 <br/>
 
-<a href="{% url ecwsp.volunteer_track.views.student_site_approval %}">Add New Site</a> (Requires approval)
+<a href="{% url "ecwsp.volunteer_track.views.student_site_approval" %}">Add New Site</a> (Requires approval)
 
 {% endblock %}

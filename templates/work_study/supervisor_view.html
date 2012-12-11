@@ -32,7 +32,7 @@
 
 {% block content %}
 	<h2> View Approved Time Cards </h2>
-        <a href="{% url ecwsp.work_study.views.supervisor_xls %}">Download as Excel Spreadsheet (.xls)</a> <span style="font-style: italic;">This is not an official bill and is meant for your convenience only.</span>
+        <a href="{% url "ecwsp.work_study.views.supervisor_xls" %}">Download as Excel Spreadsheet (.xls)</a> <span style="font-style: italic;">This is not an official bill and is meant for your convenience only.</span>
         <table class="border">
             <tr>
                 <th>Student Name</th>
