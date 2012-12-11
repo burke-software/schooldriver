@@ -4,7 +4,6 @@
 
 {% block extrahead %}
      {{ form.media }}
-    {% load adminmedia %}
     <script type="text/javascript" src="/admin/jsi18n/"></script>
      <script type="text/javascript" src="{% admin_media_prefix %}js/core.js"></script>
     
@@ -12,9 +11,9 @@
 
 {% block breadcrumbs %}{% if not is_popup %}
 <div class="breadcrumbs">
-     <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
-     <a href="{% url admin:schedule_course_changelist %}"> Courses </a> &rsaquo; 
-     <a href="{% url admin:schedule_course_change course.id %}"> {{ course }}  </a> &rsaquo; 
+     <a href="{% url "admin:index" %}">{% trans "Home" %}</a> &rsaquo;
+     <a href="{% url "admin:schedule_course_changelist" %}"> Courses </a> &rsaquo; 
+     <a href="{% url "admin:schedule_course_change" course.id %}"> {{ course }}  </a> &rsaquo; 
      Enroll Students
 </div>
 {% endif %}{% endblock %}

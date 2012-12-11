@@ -3,15 +3,15 @@
 
 {% block breadcrumbs %}
   <div id="breadcrumbs"> 
-  <a href="{% url admin:index %}"> 
+  <a href="{% url "admin:index" %}"> 
    Home
   </a>
   &rsaquo; 
-  <a href="{% url admin:app_list 'discipline' %}"> 
+  <a href="{% url "admin:app_list" 'discipline' %}"> 
    Discipline
   </a> 
   &rsaquo; 
-  <a href="{% url admin:discipline_studentdiscipline_changelist %}"> 
+  <a href="{% url "admin:discipline_studentdiscipline_changelist" %}"> 
    Student disciplines
   </a> 
   &rsaquo; 
@@ -27,7 +27,7 @@
     Discipline infraction: {{ conf_infraction }} <br/>
     Discipline action: {{ conf_action }} <br/>
     {% if perms.administration.change_configuration %}
-      <a href="{% url admin:administration_configuration_changelist %}?q=attendance_disc">Change settings</a><br/>
+      <a href="{% url "admin:administration_configuration_changelist" %}?q=attendance_disc">Change settings</a><br/>
     {% endif %}
     <br/>
     

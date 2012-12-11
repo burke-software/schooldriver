@@ -7,7 +7,7 @@
     {% if predicted_course %}
         <p>
             Perhaps you want
-            <a href="{% url ecwsp.attendance.views.course_attendance predicted_course.id %}">
+            <a href="{% url "ecwsp.attendance.views.course_attendance" predicted_course.id %}">
                 {{ predicted_course }}
             </a>?
         </p>
@@ -16,7 +16,7 @@
     <ul>
         {% for course in courses %}
             <li>
-                <a href="{% url ecwsp.attendance.views.course_attendance course.id %}">
+                <a href="{% url "ecwsp.attendance.views.course_attendance" course.id %}">
                     {{ course }}
                 </a>
             </li>

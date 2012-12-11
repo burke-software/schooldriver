@@ -2,8 +2,7 @@
 {% load i18n %}
 
 {% block extrahead %}
-		{% load  adminmedia %}
-		<link rel="stylesheet" type= "text/css" href="/static/css/view_student_style.css" />
+    <link rel="stylesheet" type= "text/css" href="/static/css/view_student_style.css" />
 		
     <script type='text/javascript' src='/static/js/jsapi.js'></script>
     <script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
@@ -72,7 +71,7 @@
                 
             </div>
 	<div class="sv-main">
-            {% if perms.sis.change_student %} <a class="edit_link" href="{% url admin:sis_student_change student.id %}"> Edit </a><br /> {% endif %}
+            {% if perms.sis.change_student %} <a class="edit_link" href="{% url "admin:sis_student_change" student.id %}"> Edit </a><br /> {% endif %}
 		<!--<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>-->
 		{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img style="max-height: 250px;" src="{{ student.pic.url_530x400 }}"/></a> </div>{% endif %}
 		<table class="section-table">
@@ -196,7 +195,7 @@
                             </div>
                             
 			<div class="sv-main">
-                            {% if perms.discipline.change_studentdiscipline %} <a class="edit_link" href="{% url admin:discipline_studentdiscipline_changelist %}?students__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
+                            {% if perms.discipline.change_studentdiscipline %} <a class="edit_link" href="{% url "admin:discipline_studentdiscipline_changelist" %}?students__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
 					<table class="section-table">
 						<tr>
 							<th>Date</th>
@@ -221,7 +220,7 @@
                     </div>
                     
 			<div class="sv-main">
-                            {% if perms.attendance.change_studentattendance %} <a class="edit_link" href="{% url admin:attendance_studentattendance_changelist %}?student__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
+                            {% if perms.attendance.change_studentattendance %} <a class="edit_link" href="{% url "admin:attendance_studentattendance_changelist" %}?student__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
 				{% for year in years %}
                                     {% if forloop.first %}
                                         <div id="toggle_subsection_attendance" class="sv-section noprint">
@@ -267,7 +266,7 @@
                                 <a  href="javascript:void(0)">Student Interactions</a>
                             </div>
 			<div class="sv-main">
-                            {% if perms.work_study.change_studentinteraction %} <a class="edit_link" href="{% url admin:work_study_studentinteraction_changelist %}?student__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
+                            {% if perms.work_study.change_studentinteraction %} <a class="edit_link" href="{% url "admin:work_study_studentinteraction_changelist" %}?student__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
 				<div class="section-div">
 					{% for student_interaction in student_interactions %}
 						Type {{ student_interaction.type }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reported by: {{ student_interaction.reported_by }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date: {{ student_interaction.date }}
@@ -288,7 +287,7 @@
                             </div>
 			<div class="sv-main">
 				{% if perms.alumni.change_alumni %}
-					<a href="{% url admin:alumni_alumni_change alumni.id %}"> Edit </a>
+					<a href="{% url "admin:alumni_alumni_change" alumni.id %}"> Edit </a>
 				{% endif %}
 				<table class="section-table">
 					<tr>
@@ -340,7 +339,7 @@
                                 <a  href="javascript:void(0)">Counseling</a>
                              </div>
 			<div class="sv-main">
-                            {% if perms.counseling.change_studentmeeting %} <a class="edit_link" href="{% url admin:counseling_studentmeeting_changelist %}?students__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
+                            {% if perms.counseling.change_studentmeeting %} <a class="edit_link" href="{% url "admin:counseling_studentmeeting_changelist" %}?students__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
 			<div class="section-div">
 			<ul>
 				{% for meeting in student.studentmeeting_set.all %}
@@ -349,7 +348,7 @@
 					<h4>
 					{{ meeting.date }}: {{ meeting }}
 					{% if perms.counseling.change_studentmeeting %}
-					- <a href="{% url admin:counseling_studentmeeting_change meeting.id %}">Edit</a>
+					- <a href="{% url "admin:counseling_studentmeeting_change" meeting.id %}">Edit</a>
 					{% endif %}
 					</h4>
 					{% if perms.counseling.change_studentmeeting %} 
@@ -381,7 +380,7 @@
                                 <a  href="javascript:void(0)">Admissions</a>
                             </div>
 			<div class="sv-main">
-                            {% if perms.admissions.change_applicant %} <a class="edit_link" href="{% url admin:admissions_applicant_change student.appl_student.id %}"> Edit </a><br /> {% endif %}
+                            {% if perms.admissions.change_applicant %} <a class="edit_link" href="{% url "admin:admissions_applicant_change" student.appl_student.id %}"> Edit </a><br /> {% endif %}
 				<table class="section-table">
 					<tr><td class="thing"> Feeder School </td><td> {{ appl.present_school }} </td></tr>
 					<tr><td class="thing"> Ethnicity </td><td> {{ appl.ethnicity }} </td></tr>
@@ -404,7 +403,7 @@
                                 <a  href="javascript:void(0)">Volunteering</a>
                             </div>
 			<div class="sv-main">
-                            {% if perms.volunter_track.change_volunteer and student.voluneer %} <a class="edit_link" href="{% url admin:voluneer_track_volunteer_change student.volunteer.id %}"> Edit </a><br /> {% endif %}
+                            {% if perms.volunter_track.change_volunteer and student.voluneer %} <a class="edit_link" href="{% url "admin:voluneer_track_volunteer_change" student.volunteer.id %}"> Edit </a><br /> {% endif %}
 			<div class="section-div">
 			<ul>
 				{% for volunteer_site in student.volunteer.volunteersite_set.all %}
@@ -412,7 +411,7 @@
 					<h4>
 					{{ volunteer_site }}
 					{% if perms.volunteer_track.change_volunteer_site %}
-					- <a href="{% url admin:volunteer_track_volunteersite_change volunteer_site.id %}">Edit</a>
+					- <a href="{% url "admin:volunteer_track_volunteersite_change" volunteer_site.id %}">Edit</a>
 					{% endif %}
 					</h4>
 					Hours: {{ volunteer_site.hours_at_site }}
@@ -422,7 +421,7 @@
 				{% endfor %}
 			</ul>
 			{% if perms.volunteer_track.change_studentmeeting %}
-			<a href="{% url admin:volunteer_track_volunteersite_add %}">Add New</a>
+			<a href="{% url "admin:volunteer_track_volunteersite_add" %}">Add New</a>
 			{% endif %}
 					
                         </div> <!-- class="section-div"-->
@@ -438,7 +437,7 @@
                             </div>
 			<div class="sv-main">
                             {% if perms.work_study.change_studentworker and student.studentworker %}
-                                <a class="edit_link" href="{% url admin:work_study_studentworker_change student.studentworker.id %}"> Edit </a><br />
+                                <a class="edit_link" href="{% url "admin:work_study_studentworker_change" student.studentworker.id %}"> Edit </a><br />
                             {% endif %}
 				<div class="section-div">
 					<div class="showoff">Current placement: {{ student.studentworker.placement }} </div>

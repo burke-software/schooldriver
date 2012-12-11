@@ -137,7 +137,7 @@ You are logged in as
 
 {{ form.non_field_errors }}
 {% if warning %}
-    <br/><h3 style="color: red;">Warning student has already posted a time sheet for today. You may approve it <a href="{% url ecwsp.work_study.views.approve %}?key={{ key }}">here</a></h3><br/>
+    <br/><h3 style="color: red;">Warning student has already posted a time sheet for today. You may approve it <a href="{% url "ecwsp.work_study.views.approve" %}?key={{ key }}">here</a></h3><br/>
 {% endif %}
 
 <form method="post" name="timesheet_form" onsubmit="return check_time()" action="">

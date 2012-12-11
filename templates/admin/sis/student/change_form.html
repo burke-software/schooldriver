@@ -1,10 +1,10 @@
 {% extends "admin/change_form.html" %}
-{% load i18n admin_modify adminmedia grp_tags %}
+{% load i18n admin_modify grp_tags %}
 
 {% block object-tools-items %}
     {% if has_add_permission %}
         {% if 'ecwsp.grades' in settings.INSTALLED_APPS %}
-            <li><a href="{% url ecwsp.grades.views.student_gradesheet object_id %}" class="historylink">{% trans "Gradesheet" %}</a></li>
+            <li><a href="{% url "ecwsp.grades.views.student_gradesheet" object_id %}" class="historylink">{% trans "Gradesheet" %}</a></li>
         {% endif %}  
         {{ block.super }}
     {% endif %}

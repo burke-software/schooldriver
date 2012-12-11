@@ -44,8 +44,8 @@
   <h1> Open Metric Recognition </h1>
   
   <div class="module">
-    <a class="minimenu" href="{% url ecwsp.omr.views.edit_test %}">{% trans 'Create New Test' %}</a>
-    <a class="minimenu" href="{% url admin:omr_questionbank_changelist %}">{% trans 'Question Bank' %}</a>
+    <a class="minimenu" href="{% url "ecwsp.omr.views.edit_test" %}">{% trans 'Create New Test' %}</a>
+    <a class="minimenu" href="{% url "admin:omr_questionbank_changelist" %}">{% trans 'Question Bank' %}</a>
   </div>
   
   <h2>Your Tests</h2>
@@ -65,9 +65,9 @@
       <tbody>
         {% for test in tests %}
           <tr class="{% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
-            <td><a href="{% url ecwsp.omr.views.edit_test test.id %}"> {{ test }} </a></td>
+            <td><a href="{% url "ecwsp.omr.views.edit_test" test.id %}"> {{ test }} </a></td>
             <td> {{ test.marking_period }} </td>
-            <td><a href="{% url ecwsp.omr.views.edit_test_questions test.id %}"> {{ test.question_set.count }} </a></td>
+            <td><a href="{% url "ecwsp.omr.views.edit_test_questions" test.id %}"> {{ test.question_set.count }} </a></td>
             <td> {{ test.testinstance_set.count }} </td>
             <td> <a href="javascript:;" onclick="show_queue({{ test.id }});">{{ test.students_in_queue }}</a> </td>
             <td>

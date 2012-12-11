@@ -3,7 +3,7 @@
 {% block object-tools-items %}
     {% if has_add_permission %}
         <li>
-            <a href="{% url ecwsp.work_study.views.dol_form %}" class="add-handler focus">Add DOL Form</a>
+            <a href="{% url "ecwsp.work_study.views.dol_form" %}" class="add-handler focus">Add DOL Form</a>
         </li> 
         {{ block.super }}
     {% endif %}

@@ -21,9 +21,9 @@
 
 {% block breadcrumbs %}
     <div id="breadcrumbs">
-        <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
-        <a href="{% url admin:sis_student_changelist %}"> Courses </a> &rsaquo; 
-        <a href="{% url admin:sis_student_change student.id %}"> {{ student }}  </a> &rsaquo; 
+        <a href="{% url "admin:index" %}">{% trans "Home" %}</a> &rsaquo;
+        <a href="{% url "admin:sis_student_changelist" %}"> Courses </a> &rsaquo; 
+        <a href="{% url "admin:sis_student_change" student.id %}"> {{ student }}  </a> &rsaquo; 
         Student Gradesheet
     </div>
 {% endblock %}
