@@ -182,6 +182,32 @@ function show_student_overlay(event) {
     $("#student_info_overlay").overlay().load();
 }
 
+function show_fill_all_form(event) {
+    event.stopPropagation();
+    object_id = $(event.target).data('demonstration_id');
+    object_type = 'demonstration';
+    if(object_id == undefined) {
+        // bloody hell event bubbling
+        object_id = $(event.target).parents('[data-demonstration_id]').data('demonstration_id');
+    }
+    if(object_id == undefined) {
+        // still? then this isn't a demonstration
+        object_id = $(event.target).parents('[item_id]').attr('item_id');
+        object_type = 'item';
+    }
+    $.post(
+        "ajax_get_fill_all_form/" + object_type + "/" + object_id + "/",
+        function(data){
+            $("#fill_all_form").html(data);
+        }
+    );
+    $("#fill_all_form").overlay({
+            top: '3',
+            fixed: false
+        });
+    $("#fill_all_form").overlay().load();
+}
+
 function handle_form_fragment_submit(form) {
 
     // Handle submit for an assignment with ajax
@@ -208,7 +234,7 @@ function handle_form_fragment_submit(form) {
 
 function handle_demonstration_form_fragment_submit(form) {
 
-    // Handle submit for an assignment with ajax
+    // Handle submit for a demonstration with ajax
     form_data = $(form).serialize();
     demonstration_id = $(form).attr('demonstration_id');
     if (demonstration_id == 'None') {
@@ -230,6 +256,23 @@ function handle_demonstration_form_fragment_submit(form) {
     return false;
 }
 
+function handle_fill_all_form_fragment_submit(form) {
+
+    // Handle overlay form submit with ajax
+    form_data = $(form).serialize();
+    $.post(
+        $(form).attr('action'),
+        form_data,
+        function(data){
+            if ( data == "SUCCESS" ){
+                location.reload();
+            } else {
+                $("#fill_all_form").html(data);
+            }
+        }  
+    );
+    return false;
+}
 function confirm_assignment_delete(item_id){
     // stupid warning. not all categories have demonstrations. for those that do, the warning isn't scary enough.
     if (confirm("WARNING! *ALL* DEMONSTRATIONS OF THIS ASSIGNMENT WILL BE DELETED! Are you sure you want to delete this assignment?")) {

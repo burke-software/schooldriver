@@ -22,7 +22,7 @@ from django.contrib.admin import widgets as adminwidgets
 from django.db.models import Q
 
 from ecwsp.schedule.models import MarkingPeriod
-from ecwsp.benchmark_grade.models import Item, AssignmentType, Category, Demonstration
+from ecwsp.benchmark_grade.models import Item, AssignmentType, Category, Demonstration, Mark
 from ecwsp.sis.models import Cohort
 from ecwsp.benchmarks.models import Benchmark
 
@@ -54,6 +54,19 @@ class ItemForm(forms.ModelForm):
 class DemonstrationForm(forms.ModelForm):
     class Meta:
         model = Demonstration
+
+class FillAllForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(FillAllForm, self).__init__(*args, **kwargs)
+        self.fields['mark'].label = 'Mark entire column'
+    class Meta:
+        model = Mark
+        widgets = {
+            'item': forms.HiddenInput,
+            'demonstration': forms.HiddenInput,
+            'student': forms.HiddenInput,
+        }
+        exclude = ('normalized_mark', 'description')
        
 class GradebookFilterForm(forms.Form):
     cohort = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)

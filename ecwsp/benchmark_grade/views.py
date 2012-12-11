@@ -33,7 +33,7 @@ from ecwsp.schedule.models import Course, MarkingPeriod
 from ecwsp.grades.forms import GradeUpload
 #from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration
-from ecwsp.benchmark_grade.forms import BenchmarkGradeVerifyForm, GradebookFilterForm, ItemForm, DemonstrationForm
+from ecwsp.benchmark_grade.forms import BenchmarkGradeVerifyForm, GradebookFilterForm, ItemForm, DemonstrationForm, FillAllForm
 from ecwsp.benchmarks.models import Benchmark
 from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
 from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule
@@ -442,9 +442,10 @@ def ajax_get_item_form(request, course_id, item_id=None):
             item = get_object_or_404(Item, pk=item_id)
             form = ItemForm(instance=item, prefix="item")
             # TODO: remove TC hard-coding
-            students_missing = Student.objects.filter(mark__item=item).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
-            if not students_missing: students_missing = ('None',)
-            lists = ({'heading':'Students Missing This Item', 'items':students_missing},)
+            if item.category.name == 'Standards':
+                students_missing = Student.objects.filter(mark__item=item).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
+                if not students_missing: students_missing = ('None',)
+                lists = ({'heading':'Students Missing This Item', 'items':students_missing},)
         else:
             active_mps = course.marking_period.filter(active=True)
             if active_mps:
@@ -524,9 +525,10 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
             demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
             form = DemonstrationForm(instance=demonstration, prefix="demonstration")
             # TODO: remove TC hard-coding
-            students_missing = Student.objects.filter(mark__demonstration=demonstration, mark__mark__lt=3)
-            if not students_missing: students_missing = ('None',)
-            lists = ({'heading':'Students Missing This Demonstration', 'items':students_missing},)
+            if demonstration.item.category.name == 'Standards':
+                students_missing = Student.objects.filter(mark__demonstration=demonstration, mark__mark__lt=3)
+                if not students_missing: students_missing = ('None',)
+                lists = ({'heading':'Students Missing This Demonstration', 'items':students_missing},)
         else:
             form = DemonstrationForm(initial={'course': course}, prefix="demonstration")
     
@@ -551,6 +553,36 @@ def ajax_get_student_info(request, course_id, student_id):
 
     return render_to_response('sis/generic_list_fragment.html', {
         'lists': lists,
+    }, RequestContext(request, {}),)
+
+@staff_member_required
+def ajax_get_fill_all_form(request, course_id, object_type, object_id):
+    model_base = Item if object_type == 'item' else Demonstration
+    item_or_demonstration = get_object_or_404(model_base, pk=object_id)
+    course = get_object_or_404(Course, pk=course_id)
+    if type(item_or_demonstration) == Item and item_or_demonstration.course != course:
+        raise Exception('This Item does not belong to the specified Course.')
+    if type(item_or_demonstration) == Demonstration and item_or_demonstration.item.course != course:
+        raise Exception('This Demonstration does not belong to the specified Course.')
+    if type(item_or_demonstration) == Item and item_or_demonstration.category.allow_multiple_demonstrations:
+        raise Exception('Marks must be assigned to Demonstrations for this Item, not directly to the Item.')
+    if not item_or_demonstration.mark_set.count:
+        raise Exception('This {} has no Marks.'.format(item_or_demonstration._meta.object_name))
+
+    if request.POST:
+        form = FillAllForm(request.POST, prefix="fill_all")
+        if form.is_valid():
+            for m in item_or_demonstration.mark_set.all():
+                m.mark = form.cleaned_data['mark']
+                m.save()
+            messages.success(request, 'Marked all students {} for {}'.format(form.cleaned_data['mark'], item_or_demonstration))
+            return HttpResponse('SUCCESS')
+    else:
+        form = FillAllForm(instance=item_or_demonstration.mark_set.all()[0], prefix="fill_all")
+    return render_to_response('benchmark_grade/fill_all_form_fragment.html', {
+        'action': request.path,
+        'form': form,
+        'subtitle': unicode(item_or_demonstration),
     }, RequestContext(request, {}),)
 
 @staff_member_required

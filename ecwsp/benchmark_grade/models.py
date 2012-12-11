@@ -142,12 +142,14 @@ class Item(models.Model):
             benchmark_number = self.benchmark.number
         else:
             benchmark_number = None
-        latter = u', '.join(map(str, filter(None, (benchmark_number, self.description))))
-        return u': '.join(map(str, filter(None, (self.name, latter))))
+        latter = u', '.join(map(unicode, filter(None, (benchmark_number, self.description))))
+        return u': '.join(map(unicode, filter(None, (self.name, latter))))
 
 class Demonstration(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     item = models.ForeignKey('Item')
+    def __unicode__(self):
+        return self.name + u' - ' + unicode(self.item)
 
 class Mark(models.Model):
     item = models.ForeignKey('Item')
