@@ -1,0 +1,5 @@
+<table class="item_details">
+    {% for name, value in details.items %}
+        <tr><td>{{ name|title }}:</td><td>{{ value }}</td></tr>
+    {% endfor %}
+</table>

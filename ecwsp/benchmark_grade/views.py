@@ -469,6 +469,35 @@ def ajax_get_item_form(request, course_id, item_id=None):
     }, RequestContext(request, {}),)
 
 @staff_member_required
+def ajax_get_item_tooltip(request, course_id, item_id):
+    course = get_object_or_404(Course, pk=course_id)
+    item = get_object_or_404(Item, pk=item_id)
+    attribute_names = (
+        'name',
+        'description',
+        'date',
+        'marking_period',
+        'category',
+        'points_possible',
+        'assignment_type',
+        'benchmark',
+    )
+    verbose_name_overrides = {
+        'benchmark': 'standard',
+    }
+    details = {}
+    for a in attribute_names:
+        if a in verbose_name_overrides:
+            verbose_name = verbose_name_overrides[a]
+        else:
+            verbose_name = item._meta.get_field(a).verbose_name
+        value = getattr(item, a)
+        details[verbose_name] = value
+    return render_to_response('benchmark_grade/item_details.html', {
+        'details': details,
+    }, RequestContext(request, {}),)
+
+@staff_member_required
 @transaction.commit_on_success
 def ajax_delete_demonstration_form(request, course_id, demonstration_id):
     demonstration = get_object_or_404(Demonstration, pk=demonstration_id)

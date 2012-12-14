@@ -44,6 +44,17 @@ $(document).ready(function() {
     )
     
     $("#id_benchmark").multiselect();
+
+    $(".assignment").tooltip({
+        bodyHandler: function() {
+            var item_id = $(this).attr("item_id");
+            var tipHere = $("<div>Loading...</div>");
+            $.get("ajax_get_item_tooltip/" + item_id + "/", function(data) {
+               tipHere.html(data);
+            });
+            return tipHere;
+        }
+    });
 });
 
 function submit_filter_form(form){
