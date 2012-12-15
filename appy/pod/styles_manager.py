@@ -22,6 +22,7 @@ from UserDict import UserDict
 import appy.pod
 from appy.pod import *
 from appy.pod.odf_parser import OdfEnvironment, OdfParser
+from appy.shared.css import parseStyleAttribute
 
 # Possible states for the parser
 READING = 0 # Default state
@@ -191,7 +192,7 @@ class StylesManager:
         self.paragraphStyles = self.styles.getStyles('paragraph')
 
     def checkStylesAdequation(self, htmlStyle, odtStyle):
-        '''Checks that p_odtStyle my be used for style p_htmlStyle.'''
+        '''Checks that p_odtStyle may be used for style p_htmlStyle.'''
         if (htmlStyle in XHTML_PARAGRAPH_TAGS_NO_LISTS) and \
             (odtStyle in self.textStyles):
             raise PodError(
@@ -202,9 +203,49 @@ class StylesManager:
                 htmlStyle, odtStyle.displayName))
 
     def checkStylesMapping(self, stylesMapping):
-        '''Checks that the given p_stylesMapping is correct. Returns the same
-           dict as p_stylesMapping, but with Style instances as values, instead
-           of strings (style's display names).'''
+        '''Checks that the given p_stylesMapping is correct, and returns the
+           internal representation of it. p_stylesMapping is a dict where:
+           * every key can be:
+             (1) the name of a XHTML 'paragraph-like' tag (p, h1, h2...)
+             (2) the name of a XHTML 'text-like' tag (span, b, i, em...)
+             (3) the name of a CSS class
+             (4) string 'h*'
+           * every value must be:
+             (a) if the key is (1), (2) or (3), value must be the display name
+                 of an ODT style
+             (b) if the key is (4), value must be an integer indicating how to
+                 map the outline level of outlined styles (ie, for mapping HTML
+                 tag "h1" to the ODT style with outline-level=2, value must be
+                 integer "1". In that case, h2 will be mapped to the ODT style
+                 with outline-level=3, etc.). Note that this value can also be
+                 negative.
+           * Some precision now about about keys. If key is (1) or (2),
+             parameters can be given between square brackets. Every such
+             parameter represents a CSS attribute and its value. For example, a
+             key can be:
+                             p[text-align=center,color=blue]
+
+             This feature allows to map XHTML tags having different CSS
+             attributes to different ODT styles.
+
+           The method returns a dict which is the internal representation of
+           the styles mapping:
+           * every key can be:
+             (I) the name of a XHTML tag, corresponding to (1) or (2) whose
+                 potential parameters have been removed;
+             (II) the name of a CSS class (=(3))
+             (III) string 'h*' (=(4))
+           * every value can be:
+             (i) a Styles instance that was found from the specified ODT style
+                 display name in p_stylesMapping, if key is (I) and if only one,
+                 non-parameterized XHTML tag was defined in p_stylesMapping;
+             (ii) a list of the form [ (params, Style), (params, Style),...]
+                  if key is (I) and if one or more parameterized (or not) XHTML
+                  tags representing the same tag were found in p_stylesMapping.
+                  params, which can be None, is a dict whose pairs are of the
+                  form (cssAttribute, cssValue).
+             (iii) an integer value (=(b)).
+        '''
         res = {}
         if not isinstance(stylesMapping, dict) and \
            not isinstance(stylesMapping, UserDict):
@@ -221,6 +262,16 @@ class StylesManager:
             if (xhtmlStyleName != 'h*') and \
                ((not xhtmlStyleName) or (not odtStyleName)):
                 raise PodError(MAPPING_ELEM_EMPTY)
+            # Separate CSS attributes if any
+            cssAttrs = None
+            if '[' in xhtmlStyleName:
+                xhtmlStyleName, attrs = xhtmlStyleName.split('[')
+                xhtmlStyleName = xhtmlStyleName.strip()
+                attrs = attrs.strip()[:-1].split(',')
+                cssAttrs = {}
+                for attr in attrs:
+                    name, value = attr.split('=')
+                    cssAttrs[name.strip()] = value.strip()
             if xhtmlStyleName in XHTML_UNSTYLABLE_TAGS:
                 raise PodError(UNSTYLABLE_TAG % (xhtmlStyleName,
                                                  XHTML_UNSTYLABLE_TAGS))
@@ -232,9 +283,118 @@ class StylesManager:
                     else:
                         raise PodError(STYLE_NOT_FOUND % odtStyleName)
                 self.checkStylesAdequation(xhtmlStyleName, odtStyle)
-                res[xhtmlStyleName] = odtStyle
+                # Store this style mapping in the result.
+                alreadyInRes = xhtmlStyleName in res
+                if cssAttrs or alreadyInRes:
+                    # I must create a complex structure (ii) for this mapping.
+                    if not alreadyInRes:
+                        res[xhtmlStyleName] = [(cssAttrs, odtStyle)]
+                    else:
+                        value = res[xhtmlStyleName]
+                        if not isinstance(value, list):
+                            res[xhtmlStyleName] = [(cssAttrs, odtStyle), \
+                                                   (None, value)]
+                        else:
+                            res.insert(0, (cssAttrs, odtStyle))
+                else:
+                    # I must create a simple structure (i) for this mapping.
+                    res[xhtmlStyleName] = odtStyle
             else:
-                res[xhtmlStyleName] = odtStyleName # In this case, it is the
-                # outline level, not an ODT style name
+                # In this case (iii), it is the outline level, not an ODT style
+                # name.
+                res[xhtmlStyleName] = odtStyleName
+        return res
+
+    def styleMatch(self, attrs, matchingAttrs):
+        '''p_match is a dict of attributes found on some HTML element.
+           p_matchingAttrs is a dict of attributes corresponding to some style.
+           This method returns True if p_attrs contains the winning (name,value)
+           pairs that match those in p_matchingAttrs. Note that ALL attrs in
+           p_matchingAttrs must be present in p_attrs.'''
+        for name, value in matchingAttrs.iteritems():
+            if name not in attrs: return
+            if value != attrs[name]: return
+        return True
+
+    def getStyleFromMapping(self, elem, attrs, styles):
+        '''p_styles is a Style instance or a list of (cssParams, Style) tuples.
+           Depending on CSS attributes found in p_attrs, this method returns
+           the relevant Style instance.'''
+        if isinstance(styles, Style): return styles
+        hasStyleInfo = attrs and ('style' in attrs)
+        if not hasStyleInfo:
+            # If I have, at the last position in p_styles, the style related to
+            # no attribute at all, I return it.
+            lastAttrs, lastStyle = styles[-1]
+            if lastAttrs == None: return lastStyle
+            else: return
+        # If I am here, I have style info. Check if it corresponds to some style
+        # in p_styles.
+        styleInfo = parseStyleAttribute(attrs['style'], asDict=True)
+        for matchingAttrs, style in styles:
+            if self.styleMatch(styleInfo, matchingAttrs):
+                return style
+
+    def findStyle(self, elem, attrs, classValue, localStylesMapping):
+        '''Finds the ODT style that must be applied to XHTML p_elem that has
+           attrs p_attrs. In some cases, p_attrs is None; the value of the
+           "class" attribute is given instead (in p_classValue).
+
+           The global styles mapping is in self.stylesMapping; the local styles
+           mapping is in p_localStylesMapping.
+
+           Here are the places where we will search, ordered by
+           priority (highest first):
+           (1) local styles mapping (CSS style in "class" attr)
+           (2)         "            (HTML elem)
+           (3) global styles mapping (CSS style in "class" attr)
+           (4)          "            (HTML elem)
+           (5) ODT style that has the same name as CSS style in "class" attr
+           (6) Predefined pod-specific ODT style that has the same name as
+               CSS style in "class" attr
+           (7) ODT style that has the same outline level as HTML elem.
+        '''
+        res = None
+        cssStyleName = None
+        if attrs and attrs.has_key('class'):
+            cssStyleName = attrs['class']
+        if classValue:
+            cssStyleName = classValue
+        # (1)
+        if localStylesMapping.has_key(cssStyleName):
+            res = localStylesMapping[cssStyleName]
+        # (2)
+        if (not res) and localStylesMapping.has_key(elem):
+            styles = localStylesMapping[elem]
+            res = self.getStyleFromMapping(elem, attrs, styles)
+        # (3)
+        if (not res) and self.stylesMapping.has_key(cssStyleName):
+            res = self.stylesMapping[cssStyleName]
+        # (4)
+        if (not res) and self.stylesMapping.has_key(elem):
+            styles = self.stylesMapping[elem]
+            res = self.getStyleFromMapping(elem, attrs, styles)
+        # (5)
+        if (not res) and self.styles.has_key(cssStyleName):
+            res = self.styles[cssStyleName]
+        # (6)
+        if (not res) and self.podSpecificStyles.has_key(cssStyleName):
+            res = self.podSpecificStyles[cssStyleName]
+        # (7)
+        if not res:
+            # Try to find a style with the correct outline level
+            if elem in XHTML_HEADINGS:
+                # Is there a delta that must be taken into account ?
+                outlineDelta = 0
+                if localStylesMapping.has_key('h*'):
+                    outlineDelta += localStylesMapping['h*']
+                elif self.stylesMapping.has_key('h*'):
+                    outlineDelta += self.stylesMapping['h*']
+                outlineLevel = int(elem[1]) + outlineDelta
+                # Normalize the outline level
+                if outlineLevel < 1: outlineLevel = 1
+                res = self.styles.getParagraphStyleAtLevel(outlineLevel)
+        if res:
+            self.checkStylesAdequation(elem, res)
         return res
 # ------------------------------------------------------------------------------

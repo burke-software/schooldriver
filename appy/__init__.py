@@ -36,4 +36,6 @@ class Object:
                 res += u'%s=<encoding problem> ' % attrName
         res  = res.strip() + '>'
         return res.encode('utf-8')
+    def __nonzero__(self):
+        return bool(self.__dict__)
 # ------------------------------------------------------------------------------

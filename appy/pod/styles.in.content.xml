@@ -29,6 +29,9 @@
 <@style@:style @style@:name="podSub" @style@:family="text">
   <@style@:text-properties @style@:text-position="sub 58%"/>
 </@style@:style>
+<@style@:style @style@:name="podPageBreak" @style@:family="paragraph">
+  <@style@:paragraph-properties @fo@:break-before="page"/>
+</@style@:style>
 <@style@:style @style@:name="podBulletItem" @style@:family="paragraph" @style@:list-style-name="podBulletedList"/>
 <@style@:style @style@:name="podNumberItem" @style@:family="paragraph" @style@:list-style-name="podNumberedList"/>
 <@style@:style @style@:name="podBulletItemKeepWithNext" @style@:family="paragraph"
@@ -113,3 +116,32 @@
     <@style@:list-level-properties @text@:space-before="2.5in" @text@:min-label-width="0.25in"/>
   </@text@:list-level-style-number>
 </@text@:list-style>
+<@style@:style @style@:name="podImageLeft" @style@:family="graphic" @style@:parent-style-name="Graphics">
+ <@style@:graphic-properties @style@:run-through="foreground" @style@:wrap="parallel" @style@:number-wrapped-paragraphs="no-limit" @style@:wrap-contour="false" @style@:vertical-pos="top" @style@:vertical-rel="paragraph" @style@:horizontal-pos="left" @style@:horizontal-rel="paragraph" @style@:mirror="none" @fo@:clip="rect(0cm, 0cm, 0cm, 0cm)" @fo@:margin-right="0.3cm" @fo@:margin-bottom="0.2cm"/>
+</@style@:style>
+<@style@:style @style@:name="podImageRight" @style@:family="graphic" @style@:parent-style-name="Graphics">
+ <@style@:graphic-properties @style@:run-through="foreground" @style@:wrap="parallel" @style@:number-wrapped-paragraphs="no-limit" @style@:wrap-contour="false" @style@:vertical-pos="top" @style@:vertical-rel="paragraph" @style@:horizontal-pos="right" @style@:horizontal-rel="paragraph" @style@:mirror="none" @fo@:clip="rect(0cm, 0cm, 0cm, 0cm)" @fo@:margin-left="0.3cm" @fo@:margin-bottom="0.2cm"/>
+</@style@:style>
+<@style@:style @style@:name="podTablePara" @style@:family="paragraph" @style@:parent-style-name="Appy_Table_Content">
+ <@style@:text-properties @fo@:font-size="8pt" @fo@:font-weight="normal" @style@:font-weight-asian="normal" @style@:font-weight-complex="normal"/>
+</@style@:style>
+<@style@:style @style@:name="podTableParaBold" @style@:family="paragraph" @style@:parent-style-name="Appy_Table_Content">
+ <@style@:text-properties @fo@:font-size="8pt" @fo@:font-weight="bold" @style@:font-weight-asian="bold" @style@:font-weight-complex="bold"/>
+</@style@:style>
+<@style@:style @style@:name="podTableParaRight" @style@:family="paragraph" @style@:parent-style-name="Appy_Table_Content">
+ <@style@:paragraph-properties @fo@:text-align="end" @style@:justify-single-word="false"/>
+ <@style@:text-properties @fo@:font-size="8pt" @fo@:font-weight="normal" @style@:font-weight-asian="normal" @style@:font-weight-complex="normal"/>
+</@style@:style>
+<@style@:style @style@:name="podTableParaBoldRight" @style@:family="paragraph" @style@:parent-style-name="Appy_Table_Content">
+ <@style@:paragraph-properties @fo@:text-align="end" @style@:justify-single-word="false"/>
+ <@style@:text-properties @fo@:font-size="8pt" @fo@:font-weight="bold" @style@:font-weight-asian="bold" @style@:font-weight-complex="bold"/>
+</@style@:style>
+<@style@:style @style@:name="podTableCell" @style@:family="table-cell">
+ <@style@:table-cell-properties @fo@:padding="0.097cm" @fo@:border="0.018cm solid #000000"/>
+</@style@:style>
+<@style@:style @style@:name="podTableHeaderCell" @style@:family="table-cell">
+ <@style@:table-cell-properties @fo@:background-color="#e6e6e6" @fo@:padding="0.097cm" @fo@:border="0.018cm solid #000000">
+  <@style@:background-image/>
+ </@style@:table-cell-properties>
+</@style@:style>
+<!DYNAMIC_STYLES!>

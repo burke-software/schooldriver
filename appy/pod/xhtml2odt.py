@@ -9,9 +9,10 @@
 # underline.
 
 # ------------------------------------------------------------------------------
-import xml.sax
-from appy.shared.xml_parser import XmlEnvironment, XmlParser
+import xml.sax, time, random
+from appy.shared.xml_parser import XmlEnvironment, XmlParser, escapeXml
 from appy.pod.odf_parser import OdfEnvironment
+from appy.pod.styles_manager import Style
 from appy.pod import *
 
 # To which ODT tags do HTML tags correspond ?
@@ -147,10 +148,23 @@ class HtmlElement:
                         self.elem, classValue=self.classAttr)
                     if odtStyle and (odtStyle.name == 'podItemKeepWithNext'):
                         itemStyle += '_kwn'
-                env.dumpString(' %s:style-name="%s"' % (env.textNs,
-                    env.itemStyles[itemStyle]))
+                    styleName = env.itemStyles[itemStyle]
+                else:
+                    # Check if a style must be applied on 'p' tags
+                    odtStyle = env.parser.caller.findStyle('p')
+                    if odtStyle:
+                        styleName = odtStyle.name
+                    else:
+                        styleName = env.itemStyles[itemStyle]
+                env.dumpString(' %s:style-name="%s"' % (env.textNs, styleName))
+            else:
+                # Check if a style must be applied on 'p' tags
+                odtStyle = env.parser.caller.findStyle('p')
+                if odtStyle:
+                    env.dumpString(' %s:style-name="%s"' % (env.textNs,
+                                                            odtStyle.name))
             env.dumpString('>')
-            self.tagsToClose.append(HtmlElement('p',{}))
+            self.tagsToClose.append(HtmlElement('p', {}))
 
     def dump(self, start, env):
         '''Dumps the start or end (depending on p_start) tag of this HTML
@@ -198,7 +212,10 @@ class HtmlTable:
        of the HTML table, we will dump the result of this sub-buffer into
        the parent buffer, which may be the global buffer or another table
        buffer.'''
-    def __init__(self):
+    def __init__(self, env):
+        elems = str(time.time()).split('.')
+        self.name= 'AppyTable%s%s%d' % (elems[0],elems[1],random.randint(1,100))
+        self.styleNs = env.ns[OdfEnvironment.NS_STYLE]
         self.res = u'' # The sub-buffer.
         self.tempRes = u'' # The temporary sub-buffer, into which we will
         # dump all table sub-elements, until we encounter the end of the first
@@ -207,6 +224,65 @@ class HtmlTable:
         # into self.res.
         self.firstRowParsed = False # Was the first table row completely parsed?
         self.nbOfColumns = 0
+        # Are we currently within a table cell? Instead of a boolean, the field
+        # stores an integer. The integer is > 1 if the cell spans more than one
+        # column.
+        self.inCell = 0
+        # The index, within the current row, of the current cell
+        self.cellIndex = -1
+        # The size of the content of the currently parsed table cell
+        self.cellContentSize = 0
+        # The following list stores, for every column, the size of the biggest
+        # content of all its cells.
+        self.columnContentSizes = []
+        # The following list stores, for every column, its width, if specified.
+        # If widths are found, self.columnContentSizes will not be used:
+        # self.columnWidths will be used instead.
+        self.columnWidths = []
+
+    def computeColumnStyles(self, renderer):
+        '''Once the table has been completely parsed, self.columnContentSizes
+           should be correctly filled. Based on this, we can deduce the width
+           of every column and create the corresponding style declarations, in
+           p_renderer.dynamicStyles.'''
+        total = 65000.0 # A number representing the total width of the table
+        # Use (a) self.columnWidths if complete, or
+        #     (b) self.columnContentSizes if complete, or
+        #     (c) a fixed width else.
+        if self.columnWidths and (len(self.columnWidths) == self.nbOfColumns) \
+           and (None not in self.columnWidths):
+            # Use self.columnWidths
+            toUse = self.columnWidths
+        # Use self.columnContentSizes if complete
+        elif (len(self.columnContentSizes) == self.nbOfColumns) and \
+           (None not in self.columnContentSizes):
+            # Use self.columnContentSizes
+            toUse = self.columnContentSizes
+        else:
+            toUse = None
+        if toUse:
+            widths = []
+            # Compute the sum of all column content sizes
+            contentTotal = 0
+            for size in toUse: contentTotal += size
+            contentTotal = float(contentTotal)
+            for size in toUse:
+                width = int((size/contentTotal) * total)
+                widths.append(width)
+        else:
+            # There was a problem while parsing the table. Set every column
+            # with the same width.
+            widths = [int(total/self.nbOfColumns)] * self.nbOfColumns
+        # Compute style declaration corresponding to every column.
+        s = self.styleNs
+        i = 0
+        for width in widths:
+            i += 1
+            # Compute the width of this column, relative to "total".
+            decl = '<%s:style %s:name="%s.%d" %s:family="table-column">' \
+                   '<%s:table-column-properties %s:rel-column-width="%d*"' \
+                   '/></%s:style>' % (s, s, self.name, i, s, s, s, width, s)
+            renderer.dynamicStyles.append(decl.encode('utf-8'))
 
 # ------------------------------------------------------------------------------
 class XhtmlEnvironment(XmlEnvironment):
@@ -214,18 +290,21 @@ class XhtmlEnvironment(XmlEnvironment):
                   'ul_kwn': 'podBulletItemKeepWithNext',
                   'ol_kwn': 'podNumberItemKeepWithNext'}
     listStyles = {'ul': 'podBulletedList', 'ol': 'podNumberedList'}
-    def __init__(self, ns):
+    def __init__(self, renderer):
         XmlEnvironment.__init__(self)
+        self.renderer = renderer
+        self.ns = renderer.currentParser.env.namespaces
         self.res = u''
         self.currentContent = u''
         self.currentElements = [] # Stack of currently walked elements
         self.currentLists = [] # Stack of currently walked lists (ul or ol)
         self.currentTables = [] # Stack of currently walked tables
-        self.textNs = ns[OdfEnvironment.NS_TEXT]
-        self.linkNs = ns[OdfEnvironment.NS_XLINK]
-        self.tableNs = ns[OdfEnvironment.NS_TABLE]
-        self.ignore = False # Will be True when parsing parts of the XHTML that
+        self.textNs = self.ns[OdfEnvironment.NS_TEXT]
+        self.linkNs = self.ns[OdfEnvironment.NS_XLINK]
+        self.tableNs = self.ns[OdfEnvironment.NS_TABLE]
+        # The following attr will be True when parsing parts of the XHTML that
         # must be ignored.
+        self.ignore = False
 
     def getCurrentElement(self, isList=False):
         '''Gets the element that is on the top of self.currentElements or
@@ -250,20 +329,23 @@ class XhtmlEnvironment(XmlEnvironment):
     def dumpCurrentContent(self):
         '''Dumps content that was temporarily stored in self.currentContent
            into the result.'''
+        contentSize = 0
         if self.currentContent.strip():
             # Manage missing elements
             currentElem = self.getCurrentElement()
             if self.anElementIsMissing(currentElem, None):
                 currentElem.addInnerParagraph(self)
             # Dump and reinitialize the current content
-            for c in self.currentContent.strip('\n'):
-                # We remove leading and trailing carriage returns, but not
-                # whitespace because whitespace may be part of the text to dump.
-                if XML_SPECIAL_CHARS.has_key(c):
-                    self.dumpString(XML_SPECIAL_CHARS[c])
-                else:
-                    self.dumpString(c)
+            content = self.currentContent.strip('\n\t')
+            # We remove leading and trailing carriage returns, but not
+            # whitespace because whitespace may be part of the text to dump.
+            contentSize = len(content)
+            self.dumpString(escapeXml(content))
             self.currentContent = u''
+        # If we are within a table cell, update the total size of cell content.
+        if self.currentTables and self.currentTables[-1].inCell:
+            for table in self.currentTables:
+                table.cellContentSize += contentSize
 
     def getOdtAttributes(self, htmlElem, htmlAttrs={}):
         '''Gets the ODT attributes to dump for p_currentElem. p_htmlAttrs are
@@ -355,15 +437,35 @@ class XhtmlEnvironment(XmlEnvironment):
             self.currentLists.append(currentElem)
         elif elem == 'table':
             # Update stack of current tables
-            self.currentTables.append(HtmlTable())
+            if not self.currentTables:
+                # We are within a table. If no local style mapping is defined
+                # for paragraphs, add a specific style mapping for a better
+                # rendering of cells' content.
+                caller = self.parser.caller
+                map = caller.localStylesMapping
+                if 'p' not in map:
+                    map['p'] = Style('Appy_Table_Content', 'paragraph')
+            self.currentTables.append(HtmlTable(self))
         elif elem in TABLE_CELL_TAGS:
+            # Determine colspan
+            colspan = 1
+            if attrs.has_key('colspan'): colspan = int(attrs['colspan'])
+            table = self.currentTables[-1]
+            table.inCell = colspan
+            table.cellIndex += colspan
             # If we are in the first row of a table, update columns count
-            currentTable = self.currentTables[-1]
-            if not currentTable.firstRowParsed:
-                nbOfCols = 1
-                if attrs.has_key('colspan'):
-                    nbOfCols = int(attrs['colspan'])
-                currentTable.nbOfColumns += nbOfCols
+            if not table.firstRowParsed:
+                table.nbOfColumns += colspan
+            if attrs.has_key('width') and (colspan == 1):
+                # Get the width, keep figures only.
+                width = ''
+                for c in attrs['width']:
+                    if c.isdigit(): width += c
+                width = int(width)
+                # Ensure self.columnWidths is long enough
+                while (len(table.columnWidths)-1) < table.cellIndex:
+                    table.columnWidths.append(None)
+                table.columnWidths[table.cellIndex] = width
         return currentElem
 
     def onElementEnd(self, elem):
@@ -373,19 +475,44 @@ class XhtmlEnvironment(XmlEnvironment):
         if elem in XHTML_LISTS:
             self.currentLists.pop()
         elif elem == 'table':
-            lastTable = self.currentTables.pop()
+            table = self.currentTables.pop()
+            # Computes the column styles required by the table
+            table.computeColumnStyles(self.parser.caller.renderer)
             # Dumps the content of the last parsed table into the parent buffer
-            self.dumpString(lastTable.res)
+            self.dumpString(table.res)
+            # Remove cell-paragraph from local styles mapping if it was added.
+            map = self.parser.caller.localStylesMapping
+            if not self.currentTables and ('p' in map):
+                mapValue = map['p']
+                if isinstance(mapValue, Style) and \
+                   (mapValue.name == 'Appy_Table_Content'):
+                    del map['p']
         elif elem == 'tr':
-            lastTable = self.currentTables[-1]
-            if not lastTable.firstRowParsed:
-                lastTable.firstRowParsed = True
+            table = self.currentTables[-1]
+            table.cellIndex = -1
+            if not table.firstRowParsed:
+                table.firstRowParsed = True
                 # First row is parsed. I know the number of columns in the
                 # table: I can dump the columns declarations.
-                lastTable.res += ('<%s:table-column/>' % self.tableNs) * \
-                                 lastTable.nbOfColumns
-                lastTable.res += lastTable.tempRes
-                lastTable.tempRes = u''
+                for i in range(1, table.nbOfColumns + 1):
+                    table.res+= '<%s:table-column %s:style-name="%s.%d"/>' % \
+                                (self.tableNs, self.tableNs, table.name, i)
+                table.res += table.tempRes
+                table.tempRes = u''
+        elif elem in TABLE_CELL_TAGS:
+            # Update attr "columnContentSizes" of the currently parsed table,
+            # excepted if the cell spans several columns.
+            table = self.currentTables[-1]
+            if table.inCell == 1:
+                sizes = table.columnContentSizes
+                # Insert None values if the list is too small
+                while (len(sizes)-1) < table.cellIndex: sizes.append(None)
+                highest = max(sizes[table.cellIndex], table.cellContentSize, 5)
+                # Put a maximum
+                highest = min(highest, 100)
+                sizes[table.cellIndex] = highest
+            table.inCell = 0
+            table.cellContentSize = 0
         if currentElem.tagsToClose:
             self.closeConflictualElements(currentElem.tagsToClose)
         if currentElem.tagsToReopen:
@@ -420,7 +547,8 @@ class XhtmlParser(XmlParser):
         elif elem == 'a':
             e.dumpString('<%s %s:type="simple"' % (odfTag, e.linkNs))
             if attrs.has_key('href'):
-                e.dumpString(' %s:href="%s"' % (e.linkNs, attrs['href']))
+                e.dumpString(' %s:href="%s"' % (e.linkNs,
+                                                escapeXml(attrs['href'])))
             e.dumpString('>')
         elif elem in XHTML_LISTS:
             prologue = ''
@@ -437,7 +565,9 @@ class XhtmlParser(XmlParser):
             e.dumpString('<%s>' % odfTag)
         elif elem == 'table':
             # Here we must call "dumpString" only once
-            e.dumpString('<%s %s:style-name="podTable">' % (odfTag, e.tableNs))
+            table = e.currentTables[-1]
+            e.dumpString('<%s %s:name="%s" %s:style-name="podTable">' % \
+                         (odfTag, e.tableNs, table.name, e.tableNs))
         elif elem in TABLE_CELL_TAGS:
             e.dumpString('<%s %s:style-name="%s"' % \
                 (odfTag, e.tableNs, DEFAULT_ODT_STYLES[elem]))
@@ -445,6 +575,12 @@ class XhtmlParser(XmlParser):
                 e.dumpString(' %s:number-columns-spanned="%s"' % \
                              (e.tableNs, attrs['colspan']))
             e.dumpString('>')
+        elif elem == 'img':
+            style = None
+            if attrs.has_key('style'): style = attrs['style']
+            imgCode = e.renderer.importDocument(at=attrs['src'],
+                                                wrapInPara=False, style=style)
+            e.dumpString(imgCode)
         elif elem in IGNORABLE_TAGS:
             e.ignore = True
 
@@ -483,74 +619,20 @@ class XhtmlParser(XmlParser):
 class Xhtml2OdtConverter:
     '''Converts a chunk of XHTML into a chunk of ODT.'''
     def __init__(self, xhtmlString, encoding, stylesManager, localStylesMapping,
-                 ns):
+                 renderer):
+        self.renderer = renderer
         self.xhtmlString = xhtmlString
         self.encoding = encoding # Todo: manage encoding that is not utf-8
         self.stylesManager = stylesManager
-        self.odtStyles = stylesManager.styles
-        self.globalStylesMapping = stylesManager.stylesMapping
         self.localStylesMapping = localStylesMapping
         self.odtChunk = None
-        self.xhtmlParser = XhtmlParser(XhtmlEnvironment(ns), self)
+        self.xhtmlParser = XhtmlParser(XhtmlEnvironment(renderer), self)
 
     def run(self):
         self.xhtmlParser.parse(self.xhtmlString)
         return self.xhtmlParser.env.res
 
     def findStyle(self, elem, attrs=None, classValue=None):
-        '''Finds the ODT style that must be applied to XHTML p_elem that has
-           attrs p_attrs. In some cases, p_attrs is not given; the value of the
-           "class" attribute is given instead (in p_classValue).
-
-           Here are the places where we will search, ordered by
-           priority (highest first):
-           (1) local styles mapping (CSS style in "class" attr)
-           (2)         "            (HTML elem)
-           (3) global styles mapping (CSS style in "class" attr)
-           (4)          "            (HTML elem)
-           (5) ODT style that has the same name as CSS style in "class" attr
-           (6) Prefefined pod-specific ODT style that has the same name as
-               CSS style in "class" attr
-           (7) ODT style that has the same outline level as HTML elem.'''
-        res = None
-        cssStyleName = None
-        if attrs and attrs.has_key('class'):
-            cssStyleName = attrs['class']
-        if classValue:
-            cssStyleName = classValue
-        # (1)
-        if self.localStylesMapping.has_key(cssStyleName):
-            res = self.localStylesMapping[cssStyleName]
-        # (2)
-        elif self.localStylesMapping.has_key(elem):
-            res = self.localStylesMapping[elem]
-        # (3)
-        elif self.globalStylesMapping.has_key(cssStyleName):
-            res = self.globalStylesMapping[cssStyleName]
-        # (4)
-        elif self.globalStylesMapping.has_key(elem):
-            res = self.globalStylesMapping[elem]
-        # (5)
-        elif self.odtStyles.has_key(cssStyleName):
-            res = self.odtStyles[cssStyleName]
-        # (6)
-        elif self.stylesManager.podSpecificStyles.has_key(cssStyleName):
-            res = self.stylesManager.podSpecificStyles[cssStyleName]
-        # (7)
-        else:
-            # Try to find a style with the correct outline level
-            if elem in XHTML_HEADINGS:
-                # Is there a delta that must be taken into account ?
-                outlineDelta = 0
-                if self.localStylesMapping.has_key('h*'):
-                    outlineDelta += self.localStylesMapping['h*']
-                elif self.globalStylesMapping.has_key('h*'):
-                    outlineDelta += self.globalStylesMapping['h*']
-                outlineLevel = int(elem[1]) + outlineDelta
-                # Normalize the outline level
-                if outlineLevel < 1: outlineLevel = 1
-                res = self.odtStyles.getParagraphStyleAtLevel(outlineLevel)
-        if res:
-            self.stylesManager.checkStylesAdequation(elem, res)
-        return res
+        return self.stylesManager.findStyle(elem, attrs, classValue,
+                                            self.localStylesMapping)
 # ------------------------------------------------------------------------------

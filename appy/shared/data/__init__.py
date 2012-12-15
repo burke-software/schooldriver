@@ -160,6 +160,9 @@ nativeNames = {
   'zh' : '中文',
   'zu' : 'isiZulu'
 }
+# List of languages having direction right-to-left (RTL) -----------------------
+rtlLanguages = ('ar', 'he', 'fa')
+
 # ------------------------------------------------------------------------------
 class Languages:
     '''This class gives access to the language codes and names as standardized

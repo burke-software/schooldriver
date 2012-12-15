@@ -17,43 +17,49 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,USA.
 
 # ------------------------------------------------------------------------------
-import os, os.path, time, shutil, struct, random
+import os, os.path, time, shutil, struct, random, urlparse
 from appy.pod import PodError
 from appy.pod.odf_parser import OdfEnvironment
+from appy.shared import mimeTypesExts
 from appy.shared.utils import FileWrapper
+from appy.shared.dav import Resource
 
 # ------------------------------------------------------------------------------
 FILE_NOT_FOUND = "'%s' does not exist or is not a file."
 PDF_TO_IMG_ERROR = 'A PDF file could not be converted into images. Please ' \
                    'ensure that Ghostscript (gs) is installed on your ' \
                    'system and the "gs" program is in the path.'
+CONVERT_ERROR = 'Program "convert", from imagemagick, must be installed and ' \
+                'in the path for converting a SVG file into a PNG file.'
 
 # ------------------------------------------------------------------------------
 class DocImporter:
     '''Base class used for importing external content into a pod template (an
        image, another pod template, another odt document...'''
-    def __init__(self, content, at, format, tempFolder, ns, fileNames):
+    def __init__(self, content, at, format, renderer):
         self.content = content
         # If content is None, p_at tells us where to find it (file system path,
         # url, etc)
         self.at = at
-        # Ensure this path exists.
-        if at and not os.path.isfile(at): raise PodError(FILE_NOT_FOUND % at)
+        # Ensure this path exists, if it is a local path.
+        if at and not at.startswith('http') and not os.path.isfile(at):
+            raise PodError(FILE_NOT_FOUND % at)
         self.format = format
         self.res = u''
-        self.ns = ns
+        self.renderer = renderer
+        self.ns = renderer.currentParser.env.namespaces
         # Unpack some useful namespaces
-        self.textNs = ns[OdfEnvironment.NS_TEXT]
-        self.linkNs = ns[OdfEnvironment.NS_XLINK]
-        self.drawNs = ns[OdfEnvironment.NS_DRAW]
-        self.svgNs = ns[OdfEnvironment.NS_SVG]
-        self.tempFolder = tempFolder
+        self.textNs = self.ns[OdfEnvironment.NS_TEXT]
+        self.linkNs = self.ns[OdfEnvironment.NS_XLINK]
+        self.drawNs = self.ns[OdfEnvironment.NS_DRAW]
+        self.svgNs = self.ns[OdfEnvironment.NS_SVG]
+        self.tempFolder = renderer.tempFolder
         self.importFolder = self.getImportFolder()
         # Create the import folder if it does not exist.
         if not os.path.exists(self.importFolder): os.mkdir(self.importFolder)
         self.importPath = self.getImportPath(at, format)
         # A link to the global fileNames dict (explained in renderer.py)
-        self.fileNames = fileNames
+        self.fileNames = renderer.fileNames
         if at:
             # Move the file within the ODT, if it is an image and if this image
             # has not already been imported.
@@ -62,16 +68,17 @@ class DocImporter:
             # We need to dump the file content (in self.content) in a temp file
             # first. self.content may be binary, a file handler or a
             # FileWrapper.
-            if isinstance(self.content, file):
-                fileContent = self.content.read()
-            elif isinstance(self.content, FileWrapper):
-                fileContent = content.content
+            if isinstance(self.content, FileWrapper):
+                self.content.dump(self.importPath)
             else:
-                fileContent = self.content
-            f = file(self.importPath, 'wb')
-            f.write(fileContent)
-            f.close()
-        # ImageImporter adds additional, image-specific attrs, through
+                if isinstance(self.content, file):
+                    fileContent = self.content.read()
+                else:
+                    fileContent = self.content
+                f = file(self.importPath, 'wb')
+                f.write(fileContent)
+                f.close()
+        # ImageImporter adds image-specific attrs, through
         # ImageImporter.setImageInfo.
 
     def getImportFolder(self):
@@ -84,7 +91,10 @@ class DocImporter:
         '''Gets the path name of the file to dump on disk (within the ODT for
            images, in a temp folder for docs).'''
         if not format:
-            format = os.path.splitext(at)[1][1:]
+            if at.startswith('http'):
+                format = '' # We will know it only after the HTTP GET.
+            else:
+                format = os.path.splitext(at)[1][1:]
         fileName = 'f.%d.%f.%s' % (random.randint(0,10), time.time(), format)
         return os.path.abspath('%s/%s' % (self.importFolder, fileName))
 
@@ -136,9 +146,8 @@ class PdfImporter(DocImporter):
             nextImage = '%s/%s%d.jpg' % (imagesFolder, self.imagePrefix, i)
             if os.path.exists(nextImage):
                 # Use internally an Image importer for doing this job.
-                imgImporter = ImageImporter(None, nextImage, 'jpg',
-                    self.tempFolder, self.ns, self.fileNames)
-                imgImporter.setAnchor('paragraph')
+                imgImporter =ImageImporter(None, nextImage, 'jpg',self.renderer)
+                imgImporter.setImageInfo('paragraph', True, None, None, None)
                 self.res += imgImporter.run()
                 os.remove(nextImage)
             else:
@@ -180,7 +189,11 @@ def getSize(filePath, fileType):
         if len(buf) == 5:
             # else: invalid/corrupted GIF (bad header)
             x, y, u = struct.unpack("<HHB", buf)
-    return float(x)/pxToCm, float(y)/pxToCm
+    f.close()
+    if x and y:
+        return float(x)/pxToCm, float(y)/pxToCm
+    else:
+        return x, y
 
 class ImageImporter(DocImporter):
     '''This class allows to import into the ODT result an image stored
@@ -199,17 +212,75 @@ class ImageImporter(DocImporter):
                 # Yes!
                 i = importPath.rfind(self.pictFolder) + 1
                 return importPath[:i] + imagePath
-        # If I am here, the image has not already been imported: copy it.
-        shutil.copy(at, importPath)
+        # The image has not already been imported: copy it.
+        if not at.startswith('http'):
+            shutil.copy(at, importPath)
+            return importPath
+        # The image must be retrieved via a URL. Try to perform a HTTP GET.
+        response = Resource(at).get()
+        if response.code == 200:
+            # At last, I can get the file format.
+            self.format = mimeTypesExts[response.headers['Content-Type']]
+            importPath += self.format
+            f = file(importPath, 'wb')
+            f.write(response.body)
+            f.close()
+            return importPath
+        # The HTTP GET did not work, maybe for security reasons (we probably
+        # have no permission to get the file). But maybe the URL was a local
+        # one, from an application server running this POD code. In this case,
+        # if an image resolver has been given to POD, use it to retrieve the
+        # image.
+        imageResolver = self.renderer.imageResolver
+        if not imageResolver:
+            # Return some default image explaining that the image wasn't found.
+            import appy.pod
+            podFolder = os.path.dirname(appy.pod.__file__)
+            img = os.path.join(podFolder, 'imageNotFound.jpg')
+            self.format = 'jpg'
+            importPath += self.format
+            f = file(img)
+            imageContent = f.read()
+            f.close()
+            f = file(importPath, 'wb')
+            f.write(imageContent)
+            f.close()
+        else:
+            # The imageResolver is a Zope application. From it, we will
+            # retrieve the object on which the image is stored and get
+            # the file to download.
+            urlParts = urlparse.urlsplit(at)
+            path = urlParts[2][1:].split('/')[:-1]
+            try:
+                obj = imageResolver.unrestrictedTraverse(path)
+            except KeyError:
+                # Maybe a rewrite rule as added some prefix to all URLs?
+                obj = imageResolver.unrestrictedTraverse(path[1:])
+            zopeFile = getattr(obj, urlParts[3].split('=')[1])
+            appyFile = FileWrapper(zopeFile)
+            self.format = mimeTypesExts[appyFile.mimeType]
+            importPath += self.format
+            appyFile.dump(importPath)
         return importPath
 
-    def setImageInfo(self, anchor, wrapInPara, size):
+    def setImageInfo(self, anchor, wrapInPara, size, sizeUnit, style):
         # Initialise anchor
         if anchor not in self.anchorTypes:
             raise PodError(self.WRONG_ANCHOR % str(self.anchorTypes))
         self.anchor = anchor
         self.wrapInPara = wrapInPara
         self.size = size
+        self.sizeUnit = sizeUnit
+        # Put CSS attributes from p_style in a dict.
+        self.cssAttrs = {}
+        if style:
+            for attr in style.split(';'):
+                if not attr.strip(): continue
+                name, value = attr.strip().split(':')
+                value = value.strip()
+                if value.endswith('px'): value = value[:-2]
+                if value.isdigit(): value=int(value)
+                self.cssAttrs[name.strip()] = value
 
     def run(self):
         # Some shorcuts for the used xml namespaces
@@ -222,19 +293,47 @@ class ImageImporter(DocImporter):
         i = self.importPath.rfind(self.pictFolder)
         imagePath = self.importPath[i+1:].replace('\\', '/')
         self.fileNames[imagePath] = self.at
-        # Compute image size, or retrieve it from self.size if given
+        # In the case of SVG files, perform an image conversion to PNG
+        if imagePath.endswith('.svg'):
+            newImportPath = os.path.splitext(self.importPath)[0] + '.png'
+            err= os.system('convert "%s" "%s"'% (self.importPath,newImportPath))
+            if err:
+                raise Exception(CONVERT_ERROR)
+            os.remove(self.importPath)
+            self.importPath = newImportPath
+            imagePath = os.path.splitext(imagePath)[0] + '.png'
+            self.format = 'png'
+        # Retrieve image size from self.size.
+        width = height = None
         if self.size:
             width, height = self.size
-        else:
+            if self.sizeUnit == 'px':
+                # Convert it to cm
+                width = float(width) / pxToCm
+                height = float(height) / pxToCm
+        # Override self.size if 'height' or 'width' is found in self.cssAttrs
+        if 'width' in self.cssAttrs:
+            width = float(self.cssAttrs['width']) / pxToCm
+        if 'height' in self.cssAttrs:
+            height = float(self.cssAttrs['height']) / pxToCm
+        # If width and/or height is missing, compute it.
+        if not width or not height:
             width, height = getSize(self.importPath, self.format)
         if width != None:
             size = ' %s:width="%fcm" %s:height="%fcm"' % (s, width, s, height)
         else:
             size = ''
-        image = '<%s:frame %s:name="%s" %s:z-index="0" %s:anchor-type="%s"%s>' \
-                '<%s:image %s:type="simple" %s:show="embed" %s:href="%s" ' \
-                '%s:actuate="onLoad"/></%s:frame>' % (d, d, imageName, d, t, \
-                self.anchor, size, d, x, x, x, imagePath, x, d)
+        if 'float' in self.cssAttrs:
+            floatValue = self.cssAttrs['float'].capitalize()
+            styleInfo = '%s:style-name="podImage%s" ' % (d, floatValue)
+            self.anchor = 'char'
+        else:
+            styleInfo = ''
+        image = '<%s:frame %s%s:name="%s" %s:z-index="0" ' \
+                '%s:anchor-type="%s"%s><%s:image %s:type="simple" ' \
+                '%s:show="embed" %s:href="%s" %s:actuate="onLoad"/>' \
+                '</%s:frame>' % (d, styleInfo, d, imageName, d, t, self.anchor,
+                size, d, x, x, x, imagePath, x, d)
         if hasattr(self, 'wrapInPara') and self.wrapInPara:
             image = '<%s:p>%s</%s:p>' % (t, image, t)
         self.res += image

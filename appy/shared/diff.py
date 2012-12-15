@@ -10,6 +10,10 @@ htmlTag = re.compile('<(?P<tag>\w+)( .*?)?>(.*)</(?P=tag)>')
 class Merger:
     '''This class allows to merge 2 lines of text, each containing inserts and
        deletions.'''
+
+    # Exception that may be raised by this class if the merge fails.
+    class MergeError(Exception): pass
+
     def __init__(self, lineA, lineB, previousDiffs, differ):
         # lineA comes "naked": any diff previously found on it was removed from
         # it (ie, deleted text has been completely removed, while inserted text
@@ -148,7 +152,8 @@ class Merger:
                 # Invariant: at this point, we should find what remains in
                 # oldText at self.lineB[self.i:].
                 if not self.lineB[self.i:].startswith(oldText):
-                    raise 'Error!!!!'
+                    raise self.MergeError('An error occurred while computing ' \
+                                          'overlapping diffs.')
                 res += self.differ.getModifiedChunk(oldText, 'insert', '',
                                                     msg=oldDiff.group(2))
                 self.i += len(oldText)
@@ -245,19 +250,27 @@ class HtmlDiff:
     deleteStyle = 'color: red; text-decoration: line-through; cursor: help'
 
     def __init__(self, old, new,
-                 insertMsg='Inserted text', deleteMsg='Deleted text',
+                 insertMsg=u'Inserted text', deleteMsg=u'Deleted text',
                  insertCss=None, deleteCss=None, insertName='insert',
                  deleteName='delete', diffRatio=0.7):
-        # p_old and p_new are strings containing chunks of HTML.
+        # p_old and p_new are strings containing chunks of HTML. If they are not
+        # unicode strings, we convert them to unicode; this way, every char is
+        # only one char lenght.
         self.old = old.strip()
+        if isinstance(self.old, str): self.old = self.old.decode('utf-8')
         self.new = new.strip()
+        if isinstance(self.new, str): self.new = self.new.decode('utf-8')
         # Every time an "insert" or "delete" difference will be detected from
         # p_old to p_new, the impacted chunk will be surrounded by a tag that
         # will get, respectively, a 'title' attribute filled p_insertMsg or
         # p_deleteMsg. The message will give an explanation about the change
         # (who made it and at what time, for example).
         self.insertMsg = insertMsg
+        if isinstance(self.insertMsg, str):
+            self.insertMsg = self.insertMsg.decode('utf-8')
         self.deleteMsg = deleteMsg
+        if isinstance(self.deleteMsg, str):
+            self.deleteMsg = self.deleteMsg.decode('utf-8')
         # This tag will get a CSS class p_insertCss or p_deleteCss for
         # highlighting the change. If no class is provided, default styles will
         # be used (see HtmlDiff.insertStyle and HtmlDiff.deleteStyle).
@@ -333,6 +346,9 @@ class HtmlDiff:
     def isSimilar(self, s1, s2):
         '''Returns True if strings p_s1 and p_s2 can be considered as
            similar.'''
+        # Bypass the similarity algorithm for strings of length==1. Else, it can
+        # lead to infinite loops between methods getHtmlDiff and getReplacement.
+        if (len(s1) == 1) and (len(s2) == 1) and (s1 != s2): return False
         ratio = difflib.SequenceMatcher(a=s1.lower(), b=s2.lower()).ratio()
         return ratio > self.diffRatio
 
@@ -487,7 +503,7 @@ class HtmlDiff:
         i = len(l)-1
         while i >= 0:
             if l[i] in self.garbage: del l[i]
-            if sep == '\n': l[i] = l[i].strip()
+            elif sep == '\n': l[i] = l[i].strip()
             i -= 1
         return l
 
@@ -506,6 +522,8 @@ class HtmlDiff:
             i += 1
             if (i == len(old)) or (i == len(new)): break
             if old[i] != new[i]: diffFound = True
+        # i can't be inside an HTML tag.
+        if (i > 0) and (old[i-1] == '<'): i -= 1
         # Compute jo and jn
         jo = len(old)
         jn = len(new)
@@ -571,8 +589,15 @@ class HtmlDiff:
                 # Merge potential previous inner diff tags that were found (but
                 # extracted from) lineA.
                 if previousDiffsA:
-                    merger = Merger(lineA, add, previousDiffsA, self)
-                    add = merger.merge()
+                    try:
+                        merger = Merger(lineA, add, previousDiffsA, self)
+                        add = merger.merge()
+                    except Merger.MergeError, e:
+                        # The merge algorithm has made a burn out. Simplify and
+                        # consider lineA has having been completely deleted and
+                        # lineB has completely inserted.
+                        add = self.getModifiedChunk(lineA, 'delete', sep) + \
+                              self.getModifiedChunk(lineB, 'insert', sep)
                 # Rewrap line into outerTagA if lineA was a line tagged as
                 # previously inserted.
                 if outerTagA:
@@ -620,12 +645,21 @@ class HtmlDiff:
                     # Was a deletion, not a replacement
                     add = self.getModifiedChunk(chunkA, 'delete', sep)
                 else: # At least, a true replacement
-                    add = self.getReplacement(chunkA, chunkB, sep)
+                    if (sep == ' ') and (sep not in chunkA) and \
+                       (sep not in chunkB):
+                        # By going here, we avoid infinite loops that may occur
+                        # between m_getHtmlDiff and m_getReplacement
+                        # (called below).
+                        add = self.getModifiedChunk(chunkA, 'delete', sep) + \
+                              self.getModifiedChunk(chunkB, 'insert', sep)
+                    else:
+                        add = self.getReplacement(chunkA, chunkB, sep)
             if add: res += self.getDumpPrefix(res, add, previousAdd, sep) + add
             previousAdd = add
         return res
 
     def get(self):
         '''Produces the result.'''
+        if not self.old or not self.old.strip(): return self.new
         return self.getHtmlDiff(self.old, self.new, '\n')
 # ------------------------------------------------------------------------------
