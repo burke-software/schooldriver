@@ -122,7 +122,7 @@ def student_family_grade_common(student):
                     category=category, apply_to_departments=course.department).weight * 100
                 category.percentage = category.percentage.quantize(Decimal('0'))
                 category.average = gradebook_get_average(student, course, category, mp, None)
-                items = Item.objects.filter(course=course, category=category, mark__student=student).annotate(best_mark=Max('mark__mark'))
+                items = Item.objects.filter(course=course, category=category, marking_period=mp, mark__student=student).annotate(best_mark=Max('mark__mark'))
                 counts = {}
                 counts['total'] = items.exclude(best_mark=None).distinct().count()
                 counts['missing'] = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
@@ -155,15 +155,25 @@ def student_grade(request):
     }, RequestContext(request, {}),)
 
 def student_family_grade_course_detail_common(student, course, mp):
+    # TODO: move into CalculationRule?
+    CATEGORY_NAME_TO_FLAG_CRITERIA = {
+        'Standards': {'best_mark__lt': 3},
+        'Engagement': {'best_mark__lt': 3},
+        'Organization': {'best_mark__lt': 3},
+        'Daily Practice': {'best_mark__lte': 0},
+    }
     course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
     for category in course.categories:
-        items = Item.objects.filter(course=course, category=category, mark__student=student).annotate(best_mark=Max('mark__mark'))
+        items = Item.objects.filter(course=course, category=category, marking_period=mp, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
         item_names = items.values_list('name').distinct()
         category.item_groups = {}
         for item_name_tuple in item_names:
             item_name = item_name_tuple[0]
             category.item_groups[item_name] = items.filter(name=item_name).distinct() 
         category.average = gradebook_get_average(student, course, category, mp, None)
+        category.flagged_item_pks = []
+        if category.name in CATEGORY_NAME_TO_FLAG_CRITERIA:
+            category.flagged_item_pks = items.filter(**CATEGORY_NAME_TO_FLAG_CRITERIA[category.name]).values_list('pk', flat=True)
     return course
     
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
