@@ -79,7 +79,7 @@
                 <td>{{ course.fullname }} {{ mp.name }} Grade</td>
                 <td class="categoryAverage">{{ course.average }}</td>
 		    </tr>
-            {% if course.category_by_name.Standards %}
+            {% if course.category_by_name.Standards and course.category_by_name.Standards.total %}
                 <tr>
                     <td colspan="2" class="courseNarration">
                         {% if course.category_by_name.Standards.missing %}
