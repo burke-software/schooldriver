@@ -28,6 +28,9 @@
     .markMark {
         white-space: nowrap;
     }
+    .flaggedItem {
+        background: salmon;
+    }
     .pointsPossible {
         font-size: 65%;
     }
@@ -70,9 +73,9 @@
                 {% endif %}
                 {% for item in items %}
                     {% if forloop.first and forloop.last and not item.description and not item.benchmark %}
-                        <tr><td class="itemGroupName">{{ item_name }}</td><td class="markMark">{{ item.best_mark }}</td></td>
+                        <tr {% if item.pk in category.flagged_item_pks %}class="flaggedItem"{% endif %}><td class="itemGroupName">{{ item_name }}</td><td class="markMark">{{ item.best_mark }}{% if not category.fixed_points_possible %} <span class="pointsPossible">(of {{ item.points_possible }})</span>{% endif %}</td>
                     {% else %}
-                        <tr>
+                        <tr {% if item.pk in category.flagged_item_pks %}class="flaggedItem"{% endif %}>
                             <td class="individualItem">
                                 {{ item.description }}{% if item.description and item.benchmark.number %}, {% endif %}
                                 {{ item.benchmark.number }}
