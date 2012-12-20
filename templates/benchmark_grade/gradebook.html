@@ -210,17 +210,5 @@
     <div id="new_demonstration_form" class="modal"></div>
     <div id="student_info_overlay" class="modal"></div>
     <div id="fill_all_form" class="modal"></div>
-    
-    
-    <script type="text/javascript">
-    jQuery("li").bind("mousemove", function(event) {
-        $(this).find("div.tooltip").css({
-            top: event.pageY + 5 + "px",
-            left: event.pageX + 5 + "px"
-        }).show();
-    }).bind("mouseout", function() {
-        $("div.tooltip").hide();
-    });
-    </script>
 
 {% endblock %}

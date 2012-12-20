@@ -26,26 +26,10 @@ $(document).ready(function() {
         });
     });
     
-    //If Javascript is running, change css on product-description to display:block
-    //then hide the div, ready to animate
-    $("div.tooltip").css({'display':'block','opacity':'0'})
-
-    $("a.trigger").hover(
-      function () {
-        $(this).prev().stop().animate({
-          opacity: 1
-        }, 500);
-      },
-      function () {
-        $(this).prev().stop().animate({
-          opacity: 0
-        }, 200);
-      }
-    )
-    
     $("#id_benchmark").multiselect();
 
-    $(".assignment").tooltip({
+    // Show item details when hovering over column header
+    $(".assignment :not(.forall)").tooltip({
         bodyHandler: function() {
             var item_id = $(this).attr("item_id");
             var tipHere = $("<div>Loading...</div>");
