@@ -19,6 +19,7 @@
 # ------------------------------------------------------------------------------
 import time
 from appy.shared.utils import Traceback
+from appy.shared.xml_parser import escapeXhtml
 
 # Some POD-specific constants --------------------------------------------------
 XHTML_HEADINGS = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6')
@@ -27,8 +28,6 @@ XHTML_PARAGRAPH_TAGS = XHTML_HEADINGS + XHTML_LISTS + ('p',)
 XHTML_PARAGRAPH_TAGS_NO_LISTS = XHTML_HEADINGS + ('p',)
 XHTML_INNER_TAGS = ('b', 'i', 'u', 'em')
 XHTML_UNSTYLABLE_TAGS = XHTML_LISTS + ('li', 'a')
-XML_SPECIAL_CHARS = {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;',
-                     "'": '&apos;'}
 
 # ------------------------------------------------------------------------------
 class PodError(Exception):
@@ -83,17 +82,6 @@ class PodError(Exception):
             buffer.write('</%s>' % withinElement.OD.elem)
     dump = staticmethod(dump)
 
-def convertToXhtml(s):
-    '''Produces the XHTML-friendly version of p_s.'''
-    res = ''
-    for c in s:
-        if XML_SPECIAL_CHARS.has_key(c):
-            res += XML_SPECIAL_CHARS[c]
-        elif c == '\n':
-            res += '<br/>'
-        elif c == '\r':
-            pass
-        else:
-            res += c
-    return res
+# XXX To remove, present for backward compatibility only.
+convertToXhtml = escapeXhtml
 # ------------------------------------------------------------------------------

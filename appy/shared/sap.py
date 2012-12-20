@@ -4,7 +4,7 @@
    a website by SAP requiring a login/password.'''
 
 # ------------------------------------------------------------------------------
-from appy.gen.utils import sequenceTypes
+from appy.shared.utils import sequenceTypes
 
 class SapError(Exception): pass
 SAP_MODULE_ERROR = 'Module pysap was not found (you can get it at ' \

@@ -58,7 +58,7 @@ class Configuration(models.Model):
     def __unicode__(self):
         return self.name
     
-    def get_or_default(name, default=None, help_text=None):
+    def get_or_default(name, default=None, help_text=""):
         """ Get the config object or create it with a default. Always use this when gettings configs"""
         object, created = Configuration.objects.get_or_create(name=name)
         if created:

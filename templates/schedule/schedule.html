@@ -52,7 +52,7 @@
             var span = $(document.getElementById('ajax'));
             $.ajax({
                type: "POST",
-               url: "{% url ecwsp.schedule.views.schedule_ajax %}",
+               url: "{% url "ecwsp.schedule.views.schedule_ajax" %}",
                data: 'model=' + model + '&id=' + id,
                success: function(msg){
                     span.fadeOut("fast", function() {
@@ -98,7 +98,7 @@
     </div>
     
     <div id="left">
-        School Year - <a href="{% url admin:schedule_schoolyear_add %}" class="add">(Add year)</a>
+        School Year - <a href="{% url "admin:schedule_schoolyear_add" %}" class="add">(Add year)</a>
         <div class="sub">
             <span class="recent">Recent years</span>
             <table>            
@@ -108,14 +108,14 @@
                             <span class="ajax" onclick='ajax_related("SchoolYear", "{{ year.id }}")'>{{ year }}</span>
                         </td> 
                         <td>
-                            <a href="{% url admin:schedule_schoolyear_change year.id %}">Edit</a>
+                            <a href="{% url "admin:schedule_schoolyear_change" year.id %}">Edit</a>
                         </td>
                     </tr>
                 {% endfor %}
                 {% if years.more %}
                     <tr>
                         <td>
-                            <a href="{% url admin:schedule_markingperiod_changelist %}">Search</a>
+                            <a href="{% url "admin:schedule_markingperiod_changelist" %}">Search</a>
                         </td>
                     </tr>
                 {% endif %}
@@ -123,7 +123,7 @@
         </div>
         
         <br/>
-        Marking Periods - <a href="{% url admin:schedule_markingperiod_add %}" class="add">(Add MP)</a>
+        Marking Periods - <a href="{% url "admin:schedule_markingperiod_add" %}" class="add">(Add MP)</a>
         <div class="sub">
             <span class="recent">Recent marking periods</span>
             <table>            
@@ -133,7 +133,7 @@
                             <span class="ajax" onclick='ajax_related("MarkingPeriod", "{{ mp.id }}")'>{{ mp }}</span>
                         </td> 
                         <td>
-                            <a href="{% url admin:schedule_markingperiod_change mp.id %}">Edit</a>
+                            <a href="{% url "admin:schedule_markingperiod_change" mp.id %}">Edit</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -143,14 +143,14 @@
                             <span class="ajax" onclick='ajax_related("MarkingPeriod", "{{ mp.id }}")'>{{ mp }}</span>
                         </td> 
                         <td>
-                            <a href="{% url admin:schedule_markingperiod_change mp.id %}">Edit</a>
+                            <a href="{% url "admin:schedule_markingperiod_change" mp.id %}">Edit</a>
                         </td>
                     </tr>
                 {% endfor %}
                 {% if mps.more %}
                     <tr>
                         <td>
-                            <a id="mps_more" href="javascript:mps_more()" style="padding-right: 20px;">...More </a> <a href="{% url admin:schedule_markingperiod_changelist %}"> Search </a>
+                            <a id="mps_more" href="javascript:mps_more()" style="padding-right: 20px;">...More </a> <a href="{% url "admin:schedule_markingperiod_changelist" %}"> Search </a>
                         </td>
                     </tr>
                 {% endif %}
@@ -158,7 +158,7 @@
         </div>
         
         <br/>
-        Periods - <a href="{% url admin:schedule_period_add %}" class="add">(Add Period)</a>
+        Periods - <a href="{% url "admin:schedule_period_add" %}" class="add">(Add Period)</a>
         <div class="sub">
             <span class="recent">Recent periods</span>
             <table>         
@@ -168,7 +168,7 @@
                             <span class="ajax" onclick='ajax_related("Period", "{{ period.id }}")'>{{ period }}</span>
                         </td> 
                         <td>
-                            <a href="{% url admin:schedule_period_change period.id %}">Edit</a>
+                            <a href="{% url "admin:schedule_period_change" period.id %}">Edit</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -178,14 +178,14 @@
                             <span class="ajax" onclick='ajax_related("Period", "{{ period.id }}")'>{{ period }}</span>
                         </td> 
                         <td>
-                            <a href="{% url admin:schedule_period_change period.id %}">Edit</a>
+                            <a href="{% url "admin:schedule_period_change" period.id %}">Edit</a>
                         </td>
                     </tr>
                 {% endfor %}
                 {% if periods.more %}
                     <tr>
                         <td>
-                            <a id="p_more" href="javascript:p_more()" style="padding-right: 20px;">...More <a href="{% url admin:schedule_period_changelist %}">Search</a>
+                            <a id="p_more" href="javascript:p_more()" style="padding-right: 20px;">...More <a href="{% url "admin:schedule_period_changelist" %}">Search</a>
                         </td>
                     </tr>
                 {% endif %}
@@ -193,7 +193,7 @@
         </div>
         
         <br/>
-        Courses - <a href="{% url admin:schedule_course_add %}" class="add">(Add Course)</a>
+        Courses - <a href="{% url "admin:schedule_course_add" %}" class="add">(Add Course)</a>
         <div class="sub">
             <span class="recent">Recent courses</span>
             <table>            
@@ -203,7 +203,7 @@
                             <span class="ajax" onclick='ajax_related("Course", "{{ course.id }}")'>{{ course }}</span>
                         </td> 
                         <td>
-                            <a href="{% url admin:schedule_course_change course.id %}">Edit</a>
+                            <a href="{% url "admin:schedule_course_change" course.id %}">Edit</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -213,14 +213,14 @@
                             <span class="ajax" onclick='ajax_related("Course", "{{ course.id }}")'>{{ course }}</span>
                         </td> 
                         <td>
-                            <a href="{% url admin:schedule_course_change course.id %}">Edit</a>
+                            <a href="{% url "admin:schedule_course_change" course.id %}">Edit</a>
                         </td>
                     </tr>
                 {% endfor %}
                 {% if courses.more %}
                     <tr>
                         <td>
-                            <a id="c_more" href="javascript:c_more()" style="padding-right: 20px;">...More<a href="{% url admin:schedule_course_changelist %}">.Search</a>
+                            <a id="c_more" href="javascript:c_more()" style="padding-right: 20px;">...More<a href="{% url "admin:schedule_course_changelist" %}">.Search</a>
                         </td>
                     </tr>
                 {% endif %}

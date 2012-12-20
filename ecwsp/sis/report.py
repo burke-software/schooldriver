@@ -226,22 +226,33 @@ def pod_report_grade(request, template, options, students, format="odt", transcr
             #Attendance for marking period
             i = 1
             student.absent_total = 0
+            student.absent_unexcused_total = 0
             student.tardy_total = 0
+            student.tardy_unexcused_total = 0
             student.dismissed_total = 0
             for mp in marking_periods.order_by('start_date'):
-                absent = student.student_attn.filter(status__absent=True, date__range=(mp.start_date, mp.end_date)).count()
-                tardy = student.student_attn.filter(status__tardy=True, date__range=(mp.start_date, mp.end_date)).count()
+                absent = student.student_attn.filter(status__absent=True, date__range=(mp.start_date, mp.end_date))
+                tardy = student.student_attn.filter(status__tardy=True, date__range=(mp.start_date, mp.end_date))
                 dismissed = student.student_attn.filter(status__code="D", date__range=(mp.start_date, mp.end_date)).count()
-                student.absent_total += absent
-                student.tardy_total += tardy
+                absent_unexcused = absent.exclude(status__excused=True)
+                tardy_unexcused = tardy.exclude(status__excused=True)
+                
+                student.absent_total += absent.count()
+                student.tardy_total += tardy.count()
+                student.absent_unexcused_total += absent_unexcused.count()
+                student.tardy_unexcused_total += tardy_unexcused.count()
                 student.dismissed_total += dismissed
-                setattr(student, "absent" + str(i), absent)
-                setattr(student, "tardy" + str(i), tardy)
+                setattr(student, "absent" + str(i), absent.count())
+                setattr(student, "tardy" + str(i), tardy.count())
+                setattr(student, "tardy_unexcused" + str(i), tardy_unexcused.count())
+                setattr(student, "absent_unexcused" + str(i), absent_unexcused.count())
                 setattr(student, "dismissed" + str(i), dismissed)
                 i += 1
             while i <= 6:
                 setattr(student, "absent" + str(i), "")
                 setattr(student, "tardy" + str(i), "")
+                setattr(student, "tardy_unexcused" + str(i), "")
+                setattr(student, "absent_unexcused" + str(i), "")
                 setattr(student, "dismissed" + str(i), "")
                 i += 1
         

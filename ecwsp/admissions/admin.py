@@ -7,13 +7,17 @@ from ajax_select import make_ajax_form
 from ajax_select.fields import autoselect_fields_check_can_add
 
 from custom_field.custom_field import CustomFieldAdmin
+from ecwsp.administration.models import Configuration
 from ecwsp.admissions.models import AdmissionCheck, ContactLog, EthnicityChoice, ReligionChoice, FeederSchool
 from ecwsp.admissions.models import SchoolType, OpenHouse, HeardAboutUsOption, FirstContactOption
 from ecwsp.admissions.models import PlaceOfWorship, ApplicationDecisionOption, WithdrawnChoices
 from ecwsp.admissions.models import BoroughOption, CountryOption, ImmigrationOption, AdmissionLevel
 from ecwsp.admissions.models import Applicant
 from ecwsp.admissions.forms import ApplicantForm
+from ecwsp.sis.models import SchoolYear
 
+import datetime
+from dateutil import parser
 import re
 
 admin.site.register(EthnicityChoice)
@@ -83,6 +87,23 @@ class ApplicantAdmin(CustomFieldAdmin):
     
     def add_view(self, request, form_url='', extra_context=None):
         levels = []
+        # Attempt to guess next school year
+        future_years = SchoolYear.objects.filter(start_date__gt=datetime.date.today()).order_by('start_date')
+        if future_years:
+            override_date = Configuration.get_or_default(
+                name="admissions_override_year_start", 
+                default='',
+                help_text="Must be ISO date (ex 2012-10-25) or blank",
+            ).value
+            if override_date:
+                try:
+                    override_date = parser.parse(override_date)
+                    future_years[0].start_date = override_date
+                except:
+                    pass
+            year = future_years[0]
+        else:
+            year = None
         for level in AdmissionLevel.objects.all():
             level.checks = []
             level.max = 0
@@ -92,13 +113,31 @@ class ApplicantAdmin(CustomFieldAdmin):
             levels.append(level)
         my_context = {
             'levels': levels,
-            'current_level': None
+            'current_level': None,
+            'year': year,
         }
         return super(ApplicantAdmin, self).add_view(request, form_url, extra_context=my_context)
     
     def change_view(self, request, object_id, extra_context=None):
         levels = []
         applicant = get_object_or_404(Applicant,id=object_id)
+		# Attempt to guess next school year
+        future_years = SchoolYear.objects.filter(start_date__gt=datetime.date.today()).order_by('start_date')
+        if future_years:
+            override_date = Configuration.get_or_default(
+                name="admissions_override_year_start", 
+                default='',
+                help_text="Must be ISO date (ex 2012-10-25) or blank",
+            ).value
+            if override_date:
+                try:
+                    override_date = parser.parse(override_date)
+                    future_years[0].start_date = override_date
+                except:
+                    pass
+            year = future_years[0]
+        else:
+            year = None
         for level in AdmissionLevel.objects.all():
             level.checks = []
             level.max = 0
@@ -115,6 +154,7 @@ class ApplicantAdmin(CustomFieldAdmin):
         my_context = {
             'levels': levels,
             'current_level': applicant.level,
+            'year': year,
         }
         return super(ApplicantAdmin, self).change_view(request, object_id, extra_context=my_context)
     

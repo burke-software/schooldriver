@@ -4,17 +4,17 @@
     {% if has_add_permission %}
         {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
             <li>
-                <a href="{% url ecwsp.discipline.views.generate_from_attendance %}"> Create from Tardies </a>
+                <a href="{% url "ecwsp.discipline.views.generate_from_attendance" %}"> Create from Tardies </a>
             </li>
         {% endif %}
         <li>
-            <a href="{% url ecwsp.discipline.views.view_discipline %}"> Lookup Student </a>
+            <a href="{% url "ecwsp.discipline.views.view_discipline" %}"> Lookup Student </a>
         </li>
         <li>
-            <a href="{% url ecwsp.discipline.views.discipline_list %}"> Today's List </a>
+            <a href="{% url "ecwsp.discipline.views.discipline_list" %}"> Today's List </a>
         </li>
         <li>
-            <a href="{% url ecwsp.discipline.views.discipline_report_view %}"> Reports </a>
+            <a href="{% url "ecwsp.discipline.views.discipline_report_view" %}"> Reports </a>
         </li> 
         {{ block.super }}
     {% endif %}

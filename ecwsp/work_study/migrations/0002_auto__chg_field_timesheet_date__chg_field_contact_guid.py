@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
 
         # Changing field 'TimeSheet.date'
-        db.alter_column('work_study_timesheet', 'date', self.gf('daterange_filter.fields.DateRangeField')())
+        db.alter_column('work_study_timesheet', 'date', self.gf('django.db.models.fields.DateField')())
 
         # Changing field 'Contact.guid'
         db.alter_column('work_study_contact', 'guid', self.gf('django.db.models.fields.CharField')(max_length=36, unique=True, null=True))
@@ -36,7 +36,7 @@ class Migration(SchemaMigration):
         },
         'attendance.studentattendance': {
             'Meta': {'ordering': "('-date', 'student')", 'unique_together': "(('student', 'date', 'status'),)", 'object_name': 'StudentAttendance'},
-            'date': ('daterange_filter.fields.DateRangeField', [], {'default': 'datetime.datetime.now'}),
+            'date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime.now'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'notes': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
             'private_notes': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
@@ -386,7 +386,7 @@ class Migration(SchemaMigration):
             'approved': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['work_study.WorkTeam']"}),
             'creation_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'date': ('daterange_filter.fields.DateRangeField', [], {}),
+            'date': ('django.db.models.fields.DateField', [], {}),
             'for_pay': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'hours': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '4', 'decimal_places': '2', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),

@@ -214,7 +214,7 @@ def edit_test(request, id=None):
                         answer_i += 1
                         answer = Answer.objects.create(
                             question = question,
-                            answer = str(answer_i),
+                            answer = chr(answer_i + 64),
                         )
             
             if '_continue' in request.POST:

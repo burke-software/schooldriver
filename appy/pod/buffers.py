@@ -20,11 +20,11 @@
 import re
 
 from xml.sax.saxutils import quoteattr
-from appy.pod import PodError, XML_SPECIAL_CHARS
+from appy.shared.xml_parser import xmlPrologue, escapeXml
+from appy.pod import PodError
 from appy.pod.elements import *
 from appy.pod.actions import IfAction, ElseAction, ForAction, VariableAction, \
                              NullAction
-from appy.shared import xmlPrologue
 
 # ------------------------------------------------------------------------------
 class ParsingError(Exception): pass
@@ -157,11 +157,7 @@ class Buffer:
 
     def dumpContent(self, content):
         '''Dumps string p_content into the buffer.'''
-        for c in content:
-            if XML_SPECIAL_CHARS.has_key(c):
-                self.write(XML_SPECIAL_CHARS[c])
-            else:
-                self.write(c)
+        self.write(escapeXml(content))
 
 # ------------------------------------------------------------------------------
 class FileBuffer(Buffer):

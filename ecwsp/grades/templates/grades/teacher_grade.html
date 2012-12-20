@@ -59,7 +59,7 @@
             <td style="text-align: left;"> <a href="upload/{{ course.id }}"> {{ course }}  </a> </td>
             <td> <a href="download/{{ course.id }}/"> Download XLS </a> </td>
             {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
-                <td><a href="{% url ecwsp.benchmark_grade.views.gradebook course.id %}">Gradebook</a></td>
+                <td><a href="{% url "ecwsp.benchmark_grade.views.gradebook" course.id %}">Gradebook</a></td>
             {% endif %}
         </tr>
     {% endfor %}

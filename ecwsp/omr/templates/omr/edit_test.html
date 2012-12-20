@@ -11,7 +11,6 @@
 {% endblock %}
 
 {% block extrahead %}
-    {% load adminmedia %}
     <script type="text/javascript" src="/admin/jsi18n/"></script>
     {{ test_form.media }}
 {% endblock %}
@@ -36,8 +35,8 @@
 {% endblock %}
 
 {% block content %}
-  <h2>New Test</h2>
-  {% if add and perms.omr.change_test %} <a href="{% url admin:omr_test_changelist %}">Start by copying existing test</a> {% endif %}
+  <h2>{% if add %} New {% else %} Edit {% endif %} Test</h2>
+  {% if add and perms.omr.change_test %} <a href="{% url "admin:omr_test_changelist" %}">Start by copying existing test</a> {% endif %}
   <form enctype="multipart/form-data" action="" method="post" id="test_form">
     <fieldset class="module">
         <div class="row">

@@ -19,6 +19,7 @@
 
 # ------------------------------------------------------------------------------
 import os, os.path, re, time, sys, traceback, unicodedata, shutil
+sequenceTypes = (list, tuple)
 
 # ------------------------------------------------------------------------------
 class FolderDeleter:
@@ -35,18 +36,28 @@ class FolderDeleter:
 
 # ------------------------------------------------------------------------------
 extsToClean = ('.pyc', '.pyo', '.fsz', '.deltafsz', '.dat', '.log')
-def cleanFolder(folder, exts=extsToClean, verbose=False):
+def cleanFolder(folder, exts=extsToClean, folders=(), verbose=False):
     '''This function allows to remove, in p_folder and subfolders, any file
-       whose extension is in p_exts.'''
+       whose extension is in p_exts, and any folder whose name is in
+       p_folders.'''
     if verbose: print 'Cleaning folder', folder, '...'
-    # Remove files with an extension listed in exts
-    for root, dirs, files in os.walk(folder):
-        for fileName in files:
-            ext = os.path.splitext(fileName)[1]
-            if (ext in exts) or ext.endswith('~'):
-                fileToRemove = os.path.join(root, fileName)
-                if verbose: print 'Removing %s...' % fileToRemove
-                os.remove(fileToRemove)
+    # Remove files with an extension listed in p_exts
+    if exts:
+        for root, dirs, files in os.walk(folder):
+            for fileName in files:
+                ext = os.path.splitext(fileName)[1]
+                if (ext in exts) or ext.endswith('~'):
+                    fileToRemove = os.path.join(root, fileName)
+                    if verbose: print 'Removing file %s...' % fileToRemove
+                    os.remove(fileToRemove)
+    # Remove folders whose names are in p_folders.
+    if folders:
+        for root, dirs, files in os.walk(folder):
+            for folderName in dirs:
+                if folderName in folders:
+                    toDelete = os.path.join(root, folderName)
+                    if verbose: print 'Removing folder %s...' % toDelete
+                    FolderDeleter.delete(toDelete)
 
 # ------------------------------------------------------------------------------
 def copyFolder(source, dest, cleanDest=False):
@@ -117,6 +128,24 @@ def copyData(data, target, targetMethod, type='string', encoding=None,
                 data = data.next
 
 # ------------------------------------------------------------------------------
+def splitList(l, sub):
+    '''Returns a list that was build from list p_l whose elements were
+       re-grouped into sub-lists of p_sub elements.
+
+       For example, if l = [1,2,3,4,5] and sub = 3, the method returns
+       [ [1,2,3], [4,5] ].'''
+    res = []
+    i = -1
+    for elem in l:
+        i += 1
+        if (i % sub) == 0:
+            # A new sub-list must be created
+            res.append([elem])
+        else:
+            res[-1].append(elem)
+    return res
+
+# ------------------------------------------------------------------------------
 class Traceback:
     '''Dumps the last traceback into a string.'''
     def get():
@@ -164,7 +193,7 @@ def executeCommand(cmd):
     return res
 
 # ------------------------------------------------------------------------------
-unwantedChars = ('\\', '/', ':', '*', '?', '"', '<', '>', '|', ' ', '\t')
+unwantedChars = ('\\', '/', ':', '*', '?', '"', '<', '>', '|', ' ', '\t', "'")
 alphaRex = re.compile('[a-zA-Z]')
 alphanumRex = re.compile('[a-zA-Z0-9]')
 def normalizeString(s, usage='fileName'):
@@ -177,6 +206,9 @@ def normalizeString(s, usage='fileName'):
     # We work in unicode. Convert p_s to unicode if not unicode.
     if isinstance(s, str):           s = s.decode('utf-8')
     elif not isinstance(s, unicode): s = unicode(s)
+    if usage == 'extractedText':
+        # Replace single quotes with blanks.
+        s = s.replace("'", " ").replace(u'’', ' ')
     # Remove any special char like accents.
     s = unicodedata.normalize('NFKD', s).encode('ascii', 'ignore')
     # Remove any other char, depending on p_usage.
@@ -195,6 +227,13 @@ def normalizeString(s, usage='fileName'):
         res = s
     return res
 
+# ------------------------------------------------------------------------------
+def normalizeText(s):
+    '''Normalizes p_s: remove special chars, lowerizes it, etc, for indexing
+       purposes.'''
+    return normalizeString(s, usage='extractedText').strip().lower()
+
+# ------------------------------------------------------------------------------
 def formatNumber(n, sep=',', precision=2, tsep=' '):
     '''Returns a string representation of number p_n, which can be a float
        or integer. p_sep is the decimal separator to use. p_precision is the
@@ -235,23 +274,20 @@ def formatNumber(n, sep=',', precision=2, tsep=' '):
     return res
 
 # ------------------------------------------------------------------------------
-toLower = {'Ç':'ç','Ù':'ù','Û':'û','Ü':'ü','Î':'î','Ï':'ï','Ô':'ô','Ö':'ö',
-           'É':'é','È':'è','Ê':'ê','Ë':'ë','À':'à','Â':'â','Ä':'ä'}
-toUpper = {'ç':'Ç','ù':'Ù','û':'Û','ü':'Ü','î':'Î','ï':'Ï','ô':'Ô','ö':'Ö',
-           'é':'É','è':'È','ê':'Ê','ë':'Ë','à':'À','â':'Â','ä':'Ä'}
-
 def lower(s):
     '''French-accents-aware variant of string.lower.'''
+    isUnicode = isinstance(s, unicode)
+    if not isUnicode: s = s.decode('utf-8')
     res = s.lower()
-    for upp, low in toLower.iteritems():
-        if upp in res: res = res.replace(upp, low)
+    if not isUnicode: res = res.encode('utf-8')
     return res
 
 def upper(s):
     '''French-accents-aware variant of string.upper.'''
+    isUnicode = isinstance(s, unicode)
+    if not isUnicode: s = s.decode('utf-8')
     res = s.upper()
-    for low, upp in toUpper.iteritems():
-        if low in res: res = res.replace(low, upp)
+    if not isUnicode: res = res.encode('utf-8')
     return res
 
 # ------------------------------------------------------------------------------
@@ -363,7 +399,10 @@ class CodeAnalysis:
 # ------------------------------------------------------------------------------
 class LinesCounter:
     '''Counts and classifies the lines of code within a folder hierarchy.'''
-    def __init__(self, folderOrModule):
+    defaultExcludes = ('%s.svn' % os.sep, '%s.bzr' % os.sep, '%stmp' % os.sep,
+                       '%stemp' % os.sep)
+
+    def __init__(self, folderOrModule, excludes=None):
         if isinstance(folderOrModule, basestring):
             # It is the path of some folder
             self.folder = folderOrModule
@@ -377,11 +416,19 @@ class LinesCounter:
                     True:  CodeAnalysis('ZPT (test)')}
         # Are we currently analysing real or test code?
         self.inTest = False
+        # Which paths to exclude from the analysis?
+        self.excludes = list(self.defaultExcludes)
+        if excludes: self.excludes += excludes
 
     def printReport(self):
         '''Displays on stdout a small analysis report about self.folder.'''
         for zone in (False, True): self.python[zone].printReport()
         for zone in (False, True): self.zpt[zone].printReport()
+
+    def isExcluded(self, path):
+        '''Must p_path be excluded from the analysis?'''
+        for excl in self.excludes:
+            if excl in path: return True
 
     def run(self):
         '''Let's start the analysis of self.folder.'''
@@ -393,10 +440,7 @@ class LinesCounter:
         testMarker4 = '%stests' % os.sep
         j = os.path.join
         for root, folders, files in os.walk(self.folder):
-            rootName = os.path.basename(root)
-            if rootName.startswith('.') or \
-               (rootName in ('tmp', 'temp')):
-                continue
+            if self.isExcluded(root): continue
             # Are we in real code or in test code ?
             self.inTest = False
             if root.endswith(testMarker2) or (root.find(testMarker1) != -1) or \

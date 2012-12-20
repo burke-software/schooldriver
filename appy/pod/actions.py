@@ -17,6 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,USA.
 
 # ------------------------------------------------------------------------------
+from appy import Object
 from appy.pod import PodError
 from appy.pod.elements import *
 
@@ -127,11 +128,40 @@ class ForAction(BufferAction):
         BufferAction.__init__(self, name, buffer, expr, elem, minus, source,
                               fromExpr)
         self.iter = iter # Name of the iterator variable used in the each loop
+
+    def initialiseLoop(self):
+        '''Initialises information about the loop, before entering into it.'''
+        context = self.buffer.env.context
+        # The "loop" object, made available in the POD context, contains info
+        # about all currently walked loops. For every walked loop, a specific
+        # object, le'ts name it curLoop, accessible at getattr(loop, self.iter),
+        # stores info about its status:
+        #   * curLoop.length  gives the total number of walked elements withhin
+        #                     the loop
+        #   * curLoop.nb      gives the index (starting at 0) if the currently
+        #                     walked element.
+        # For example, if you have a "for" statement like this:
+        #        for elem in myListOfElements
+        # Within the part of the ODT document impacted by this statement, you
+        # may access to:
+        #   * loop.elem.length to know the total length of myListOfElements
+        #   * loop.elem.nb     to know the index of the current elem within
+        #                      myListOfElements.
+        if 'loop' not in context:
+            context['loop'] = Object()
+        try:
+            total = len(self.exprResult)
+        except:
+            total = 0
+        curLoop = Object(length=total)
+        setattr(context['loop'], self.iter, curLoop)
+        return curLoop
+
     def do(self):
         context = self.buffer.env.context
         # Check self.exprResult type
         try:
-            str(self.exprResult)
+            str(self.exprResult) ### django-sis change
             # All "iterable" objects are OK. Thanks to Bernhard Bender for this
             # improvement.
         except TypeError:
@@ -155,7 +185,11 @@ class ForAction(BufferAction):
             if not self.exprResult:
                 self.result.dumpElement(Cell.OD.elem)
         # Enter the "for" loop
+        loop = self.initialiseLoop()
+        i = -1
         for item in self.exprResult:
+            i += 1
+            loop.nb = i
             context[self.iter] = item
             # Cell: add a new row if we are at the end of a row
             if isCell and (currentColIndex == nbOfColumns):
@@ -167,7 +201,7 @@ class ForAction(BufferAction):
             if isCell:
                 currentColIndex += 1
         # Cell: leave the last row with the correct number of cells
-        if isCell and self.exprResult and False:
+        if isCell and self.exprResult and False:  ## django-sis change
             wrongNbOfCells = (currentColIndex-1) - initialColIndex
             if wrongNbOfCells < 0: # Too few cells for last row
                 for i in range(abs(wrongNbOfCells)):
@@ -190,12 +224,18 @@ class ForAction(BufferAction):
                 context[self.iter] = ''
                 for i in range(nbOfMissingCellsLastLine):
                     self.buffer.evaluate(subElements=False)
+        # Delete the object representing info about the current loop.
+        try:
+            delattr(context['loop'], self.iter)
+        except AttributeError:
+            pass
         # Restore hidden variable if any
         if hasHiddenVariable:
             context[self.iter] = hiddenVariable
         else:
             if self.exprResult:
-                del context[self.iter]
+                if self.iter in context: # May not be the case on error.
+                    del context[self.iter]
 
 class NullAction(BufferAction):
     '''Action that does nothing. Used in conjunction with a "from" clause, it

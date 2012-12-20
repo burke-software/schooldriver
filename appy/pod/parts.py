@@ -10,8 +10,9 @@ class OdtTable:
     tns = 'table:'
     txns = 'text:'
 
-    def __init__(self, name, paraStyle, cellStyle, nbOfCols,
-                 paraHeaderStyle=None, cellHeaderStyle=None, html=False):
+    def __init__(self, name, paraStyle='podTablePara', cellStyle='podTableCell',
+                 nbOfCols=1, paraHeaderStyle=None, cellHeaderStyle=None,
+                 html=False):
         # An ODT table must have a name. In the case of an HTML table, p_name
         # represents the CSS class for the whole table.
         self.name = name
@@ -24,18 +25,18 @@ class OdtTable:
         # The default style of every paragraph within a header cell
         self.paraHeaderStyle = paraHeaderStyle or paraStyle
         # The default style of every header cell
-        self.cellHeaderStyle = cellHeaderStyle or cellStyle
+        self.cellHeaderStyle = cellHeaderStyle or 'podTableHeaderCell'
         # The buffer where the resulting table will be rendered
         self.res = ''
         # Do we need to generate an HTML table instead of an ODT table ?
         self.html = html
 
     def dumpCell(self, content, span=1, header=False,
-                 paraStyle=None, cellStyle=None):
+                 paraStyle=None, cellStyle=None, align=None):
         '''Dumps a cell in the table. If no specific p_paraStyle (p_cellStyle)
            is given, self.paraStyle (self.cellStyle) is used, excepted if
            p_header is True: in that case, self.paraHeaderStyle
-           (self.cellHeaderStyle) is used.'''
+           (self.cellHeaderStyle) is used. p_align is used only for HTML.'''
         if not paraStyle:
             if header: paraStyle = self.paraHeaderStyle
             else: paraStyle = self.paraStyle
@@ -52,8 +53,10 @@ class OdtTable:
             self.res += '</%stable-cell>' % self.tns
         else:
             tag = header and 'th' or 'td'
-            self.res += '<%s colspan="%d">%s</%s>' % \
-                        (tag, span, cgi.escape(str(content)), tag)
+            palign = ''
+            if align: palign = ' align="%s"' % align
+            self.res += '<%s colspan="%d"%s>%s</%s>' % \
+                        (tag, span, palign, cgi.escape(str(content)), tag)
 
     def startRow(self):
         if not self.html:

@@ -1,5 +1,5 @@
 <!-- Just plain HTML, no admin stuff. Useful for ajax -->
-<a class="close" onclick='$("#new_assignment_form").overlay().close();'></a>
+<a class="close" onclick="$(this).parent().overlay().close();"></a>
 <h2> {{ subtitle }} </h2>
 {{ msg }}
 <form method="post" onsubmit="handle_form_fragment_submit(this); return false;" item_id="{{ item_id }}" id="form_fragment" enctype="multipart/form-data" action="">
@@ -11,6 +11,17 @@
     {% endif %}
     <input type="submit" value="Submit" />    
 </form>
+{% if lists %}
+<hr />
+    {% for list in lists %}
+        <h2>{{ list.heading }}</h2>
+        <ul>
+        {% for item in list.items %}
+            <li>{{ item }}</li>
+        {% endfor %}
+        </ul>
+    {% endfor %}
+{% endif %}
 <script type="text/javascript" src="/static/js/init_admin_datepicker.js"></script>
 <script type="text/javascript">
     $("#id_item-benchmark").multiselect({

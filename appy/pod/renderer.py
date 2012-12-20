@@ -78,7 +78,7 @@ CONTENT_POD_STYLES = f.read()
 f.close()
 
 # Default font added by pod in content.xml
-CONTENT_POD_FONTS = '<@style@:font-face style:name="PodStarSymbol" ' \
+CONTENT_POD_FONTS = '<@style@:font-face @style@:name="PodStarSymbol" ' \
                     '@svg@:font-family="StarSymbol"/>'
 
 # Default text styles added by pod in styles.xml
@@ -94,7 +94,8 @@ STYLES_POD_FONTS = '<@style@:font-face @style@:name="PodStarSymbol" ' \
 class Renderer:
     def __init__(self, template, context, result, pythonWithUnoPath=None,
                  ooPort=2002, stylesMapping={}, forceOoCall=False,
-                 finalizeFunction=None, overwriteExisting=False):
+                 finalizeFunction=None, overwriteExisting=False,
+                 imageResolver=None):
         '''This Python Open Document Renderer (PodRenderer) loads a document
         template (p_template) which is an ODT file with some elements
         written in Python. Based on this template and some Python objects
@@ -103,8 +104,8 @@ class Renderer:
         from the p_context.
 
          - If p_result does not end with .odt, the Renderer
-           will call OpenOffice to perform a conversion. If p_forceOoCall is
-           True, even if p_result ends with .odt, OpenOffice will be called, not
+           will call LibreOffice to perform a conversion. If p_forceOoCall is
+           True, even if p_result ends with .odt, LibreOffice will be called, not
            for performing a conversion, but for updating some elements like
            indexes (table of contents, etc) and sections containing links to
            external files (which is the case, for example, if you use the
@@ -113,8 +114,8 @@ class Renderer:
          - If the Python interpreter which runs the current script is not
            UNO-enabled, this script will run, in another process, a UNO-enabled
            Python interpreter (whose path is p_pythonWithUnoPath) which will
-           call OpenOffice. In both cases, we will try to connect to OpenOffice
-           in server mode on port p_ooPort.
+           call LibreOffice. In both cases, we will try to connect to
+           LibreOffice in server mode on port p_ooPort.
 
          - If you plan to make "XHTML to OpenDocument" conversions, you may
            specify a styles mapping in p_stylesMapping.
@@ -128,7 +129,13 @@ class Renderer:
 
          - If you set p_overwriteExisting to True, the renderer will overwrite
            the result file. Else, an exception will be thrown if the result file
-           already exists.'''
+           already exists.
+
+         - p_imageResolver allows POD to retrieve images, from "img" tags within
+           XHTML content. Indeed, POD may not be able (ie, may not have the
+           permission to) perform a HTTP GET on those images. Currently, the
+           resolver can only be a Zope application object.
+        '''
         self.template = template
         self.templateZip = zipfile.ZipFile(template)
         self.result = result
@@ -143,6 +150,7 @@ class Renderer:
         self.forceOoCall = forceOoCall
         self.finalizeFunction = finalizeFunction
         self.overwriteExisting = overwriteExisting
+        self.imageResolver = imageResolver
         # Remember potential files or images that will be included through
         # "do ... from document" statements: we will need to declare them in
         # META-INF/manifest.xml. Keys are file names as they appear within the
@@ -205,11 +213,16 @@ class Renderer:
                 nsUris={'style': pe.NS_STYLE, 'svg': pe.NS_SVG}),
             OdInsert(STYLES_POD_STYLES,
                 XmlElement('styles', nsUri=pe.NS_OFFICE),
-                nsUris={'style': pe.NS_STYLE, 'fo': pe.NS_FO}))
+                nsUris={'style': pe.NS_STYLE, 'fo': pe.NS_FO,
+                        'text': pe.NS_TEXT}))
         self.stylesParser = self.createPodParser('styles.xml', context,
                                                  stylesInserts)
-        # Stores the styles mapping
+        # Store the styles mapping
         self.setStylesMapping(stylesMapping)
+        # While working, POD may identify "dynamic styles" to insert into
+        # the "automatic styles" section of content.xml, like the column styles
+        # of tables generated from XHTML tables via xhtml2odt.py.
+        self.dynamicStyles = []
 
     def createPodParser(self, odtFile, context, inserts):
         '''Creates the parser with its environment for parsing the given
@@ -235,13 +248,12 @@ class Renderer:
            for converting a chunk of XHTML content (p_xhtmlString) into a chunk
            of ODT content.'''
         stylesMapping = self.stylesManager.checkStylesMapping(stylesMapping)
-        ns = self.currentParser.env.namespaces
-        # xhtmlString can only be a chunk of XHTML. So we must surround it a
-        # tag in order to get a XML-compliant file (we need a root tag).
+        # xhtmlString can only be a chunk of XHTML. So we must surround it with
+        # a tag in order to get a XML-compliant file (we need a root tag).
         if xhtmlString == None: xhtmlString = ''
         xhtmlContent = '<p>%s</p>' % xhtmlString
         return Xhtml2OdtConverter(xhtmlContent, encoding, self.stylesManager,
-                                  stylesMapping, ns).run()
+                                  stylesMapping, self).run()
 
     def renderText(self, text, encoding='utf-8', stylesMapping={}):
         '''Method that can be used (under the name 'text') into a pod template
@@ -259,10 +271,11 @@ class Renderer:
             return ifTrue
         return ifFalse
 
-    imageFormats = ('png', 'jpeg', 'jpg', 'gif')
+    imageFormats = ('png', 'jpeg', 'jpg', 'gif', 'svg')
     ooFormats = ('odt',)
     def importDocument(self, content=None, at=None, format=None,
-                       anchor='as-char', wrapInPara=True, size=None):
+                       anchor='as-char', wrapInPara=True, size=None,
+                       sizeUnit='cm', style=None):
         '''If p_at is not None, it represents a path or url allowing to find
            the document. If p_at is None, the content of the document is
            supposed to be in binary format in p_content. The document
@@ -274,9 +287,14 @@ class Renderer:
            * p_wrapInPara, if true, wraps the resulting 'image' tag into a 'p'
                            tag;
            * p_size, if specified, is a tuple of float or integers
-                     (width, height) expressing size in centimeters. If not
-                     specified, size will be computed from image info.'''
-        ns = self.currentParser.env.namespaces
+                     (width, height) expressing size in p_sizeUnit (see below).
+                     If not specified, size will be computed from image info.
+           * p_sizeUnit is the unit for p_size elements, it can be "cm"
+             (centimeters) or "px" (pixels).
+           * If p_style is given, it is the content of a "style" attribute,
+             containing CSS attributes. If "width" and "heigth" attributes are
+             found there, they will override p_size and p_sizeUnit.
+        '''
         importer = None
         # Is there someting to import?
         if not content and not at:
@@ -284,6 +302,9 @@ class Renderer:
         # Guess document format
         if isinstance(content, FileWrapper):
             format = content.mimeType
+        elif hasattr(content, 'filename') and content.filename:
+            format = os.path.splitext(content.filename)[1][1:]
+            content = content.data
         if not format:
             # It should be deduced from p_at
             if not at:
@@ -297,16 +318,17 @@ class Renderer:
         if format in self.ooFormats:
             importer = OdtImporter
             self.forceOoCall = True
-        elif format in self.imageFormats:
+        elif (format in self.imageFormats) or not format:
+            # If the format can't be guessed, we suppose it is an image.
             importer = ImageImporter
             isImage = True
         elif format == 'pdf':
             importer = PdfImporter
         else:
             raise PodError(DOC_WRONG_FORMAT % format)
-        imp = importer(content, at, format, self.tempFolder, ns, self.fileNames)
+        imp = importer(content, at, format, self)
         # Initialise image-specific parameters
-        if isImage: imp.setImageInfo(anchor, wrapInPara, size)
+        if isImage: imp.setImageInfo(anchor, wrapInPara, size, sizeUnit, style)
         res = imp.run()
         return res
 
@@ -339,6 +361,8 @@ class Renderer:
             j = os.path.join
             toInsert = ''
             for fileName in self.fileNames.iterkeys():
+                if fileName.endswith('.svg'):
+                    fileName = os.path.splitext(fileName)[0] + '.png'
                 mimeType = mimetypes.guess_type(fileName)[0]
                 toInsert += ' <manifest:file-entry manifest:media-type="%s" ' \
                             'manifest:full-path="%s"/>\n' % (mimeType, fileName)
@@ -378,6 +402,12 @@ class Renderer:
            and, on the other hand, ODT styles found into the template.'''
         try:
             stylesMapping = self.stylesManager.checkStylesMapping(stylesMapping)
+            # The predefined styles below are currently ignored, because the
+            # xhtml2odt parser does not take into account span tags.
+            if 'span[font-weight=bold]' not in stylesMapping:
+                stylesMapping['span[font-weight=bold]'] = 'podBold'
+            if 'span[font-style=italic]' not in stylesMapping:
+                stylesMapping['span[font-style=italic]'] = 'podItalic'
             self.stylesManager.stylesMapping = stylesMapping
         except PodError, po:
             self.contentParser.env.currentBuffer.content.close()
@@ -449,11 +479,22 @@ class Renderer:
         for odtFile in ('content.xml', 'styles.xml'):
             shutil.copy(os.path.join(self.tempFolder, odtFile),
                         os.path.join(self.unzipFolder, odtFile))
+        # Insert dynamic styles
+        contentXml = os.path.join(self.unzipFolder, 'content.xml')
+        f = file(contentXml)
+        dynamicStyles = ''.join(self.dynamicStyles)
+        content = f.read().replace('<!DYNAMIC_STYLES!>', dynamicStyles)
+        f.close()
+        f = file(contentXml, 'w')
+        f.write(content)
+        f.close()
+        # Call the user-defined "finalize" function when present.
         if self.finalizeFunction:
             try:
                 self.finalizeFunction(self.unzipFolder)
             except Exception, e:
                 print WARNING_FINALIZE_ERROR % str(e)
+        # Re-zip the result.
         resultOdtName = os.path.join(self.tempFolder, 'result.odt')
         try:
             resultOdt = zipfile.ZipFile(resultOdtName,'w', zipfile.ZIP_DEFLATED)

@@ -1,0 +1,10 @@
+<!-- Just plain HTML, no admin stuff. Useful for ajax -->
+<a class="close" onclick="$(this).parent().overlay().close();"></a>
+<h2> {{ subtitle }} </h2>
+{{ msg }}
+<form action="{{ action }}" method="post" onsubmit="handle_fill_all_form_fragment_submit(this); return false;" item_id="{{ item_id }}" id="form_fragment" enctype="multipart/form-data">
+    <table class="form_table">
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="Submit" />    
+</form>

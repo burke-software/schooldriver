@@ -1,5 +1,5 @@
 {% extends "admin/change_form.html" %}
-{% load i18n admin_modify adminmedia %}
+{% load i18n admin_modify %}
 
 {% block stylesheets %}
   {{ block.super }}
@@ -103,10 +103,36 @@
    </script>    
    {% endif %}
    <script type="text/javascript">
+       function age_at_school_start() {
+           var year_string = '{{ year }}';
+           var selected_date = new Date("{{ year.start_date.isoformat }}");
+           var bday = new Date($('#id_bday').val());
+           
+           // Age calculation
+           var today = selected_date;
+           var birthDate = bday;
+           var age = today.getFullYear() - birthDate.getFullYear();
+           var m = today.getMonth() - birthDate.getMonth();
+           if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+           }
+           
+           $('#bday_message').remove();
+           $('#id_bday').parent().append('<span id="bday_message">Will be '+age+' on {{ year.start_date }}({{ year }})</span>');
+        }
+	   
       $(document).ready(function() {
          // Move Application boxes to the Process Status box
          $('div.application_decision').appendTo($('div.checklist'));
          $('div.application_decision_by').appendTo($('div.checklist'));
+         // Get age on bday selection
+         $('#id_bday').change( age_at_school_start );
+         $('#id_bday').datepicker({
+              onSelect: function() {
+                $(this).change();
+              }
+            });
+         age_at_school_start();
       });
    </script>
 {% endblock %}

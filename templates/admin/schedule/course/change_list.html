@@ -4,7 +4,7 @@
     {% if has_add_permission %}
         {% if perms.grades.change_grade %}
             <li>
-                <a href="{% url ecwsp.grades.views.teacher_grade_submissions %}"> View Teacher Submissions </a>
+                <a href="{% url "ecwsp.grades.views.teacher_grade_submissions" %}"> View Teacher Submissions </a>
             </li>
         {% endif %}
         {{ block.super }}

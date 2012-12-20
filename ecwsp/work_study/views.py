@@ -466,7 +466,12 @@ def change_supervisor(request, studentId):
 
 @user_passes_test(lambda u: u.has_perm('work_study.change_studentworker') or u.has_perm('sis.reports'))
 def report_builder_view(request):
-    active_year = SchoolYear.objects.get(active_year=True)
+    try:
+        active_year = SchoolYear.objects.get(active_year=True)
+    except SchoolYear.DoesNotExist:
+        messages.warning(request, 'No Active Year Set, please create an active year!')
+        return HttpResponseRedirect('/')
+
     form = ReportBuilderForm(initial={'custom_billing_begin':active_year.start_date,'custom_billing_end':active_year.end_date})
     template_form = ReportTemplateForm()
     if request.method == 'POST':
@@ -607,7 +612,7 @@ def report_builder_view(request):
                         for t in ts:
                             dates += unicode(t.date) + ", "
                         data.append([student, student.day, student.placement, ts.count(), dates])
-                    report = xlsReport(data, titles, "Student timesheets.xls", heading="Student Timesheets")
+                    report = xlsReport(data, titles, "Student_timesheets.xls", heading="Student Timesheets")
                     return report.finish()
                         
                 # billing report for time worked for own pay.

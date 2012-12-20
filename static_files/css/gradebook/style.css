@@ -61,11 +61,23 @@ height: 35px;
 }
 .assignment
 {
+    position: relative;
     font-size: 10px;
     line-height: 1em;
     width: 80px;
     margin: 0;
     padding: 0;
+}
+.forall
+{
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 1em;
+    height: 1em;
+    background: #309BBF;
+    color: white;
+    text-align: center;
 }
 .average
 {
@@ -316,7 +328,9 @@ input[type="button"] {
 .headerItem {
     text-overflow: ellipsis;
     white-space:nowrap;  
-    overflow:hidden; 
+    overflow:hidden;
+    /* sometimes the header item will be empty; make sure the div doesn't collapse */
+    min-height: 1em;
 }
 
 .ui-multiselect {
@@ -345,3 +359,7 @@ table td input[type="text"] {
 input:disabled {
     background-color: #EBEBE4;
 }
+.item_details * {
+    padding: 0.25em;
+    font-size: 1.05em;
+}   

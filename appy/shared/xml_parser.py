@@ -18,18 +18,23 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,USA.
 
 # ------------------------------------------------------------------------------
-import xml.sax, difflib, types
-from xml.sax.handler import ContentHandler, ErrorHandler, feature_external_ges,\
-                            property_interning_dict
+import xml.sax, difflib, types, cgi
+from xml.sax.handler import ContentHandler, ErrorHandler, feature_external_ges
 from xml.sax.xmlreader import InputSource
-from appy.shared import UnicodeBuffer, xmlPrologue
+from xml.sax import SAXParseException
+from appy.shared import UnicodeBuffer
 from appy.shared.errors import AppyError
+from appy.shared.utils import sequenceTypes
+from appy.shared.css import parseStyleAttribute
 
 # Constants --------------------------------------------------------------------
+xmlPrologue = '<?xml version="1.0" encoding="utf-8" ?>\n'
 CONVERSION_ERROR = '"%s" value "%s" could not be converted by the XML ' \
                    'unmarshaller.'
 CUSTOM_CONVERSION_ERROR = 'Custom converter for "%s" values produced an ' \
                           'error while converting value "%s". %s'
+XML_SPECIAL_CHARS = {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;',
+                     "'": '&apos;'}
 XML_ENTITIES = {'lt': '<', 'gt': '>', 'amp': '&', 'quot': "'", 'apos': "'"}
 HTML_ENTITIES = {
         'iexcl': '¡',  'cent': '¢', 'pound': '£', 'curren': '€', 'yen': '¥',
@@ -57,6 +62,38 @@ import htmlentitydefs
 for k, v in htmlentitydefs.entitydefs.iteritems():
     if not HTML_ENTITIES.has_key(k) and not XML_ENTITIES.has_key(k):
         HTML_ENTITIES[k] = ''
+
+def escapeXml(s):
+    '''Returns p_s, whose XML special chars have been replaced with escaped XML
+       entities.'''
+    if isinstance(s, unicode):
+        res = u''
+    else:
+        res = ''
+    for c in s:
+        if XML_SPECIAL_CHARS.has_key(c):
+            res += XML_SPECIAL_CHARS[c]
+        else:
+            res += c
+    return res
+
+def escapeXhtml(s):
+    '''Return p_s, whose XHTML special chars and carriage return chars have
+       been replaced with corresponding XHTML entities.'''
+    if isinstance(s, unicode):
+        res = u''
+    else:
+        res = ''
+    for c in s:
+        if XML_SPECIAL_CHARS.has_key(c):
+            res += XML_SPECIAL_CHARS[c]
+        elif c == '\n':
+            res += '<br/>'
+        elif c == '\r':
+            pass
+        else:
+            res += c
+    return res
 
 # ------------------------------------------------------------------------------
 class XmlElement:
@@ -123,7 +160,7 @@ class XmlParser(ContentHandler, ErrorHandler):
       - remembering the currently parsed element;
       - managing namespace declarations.
       This parser also knows about HTML entities.'''
-    def __init__(self, env=None, caller=None):
+    def __init__(self, env=None, caller=None, raiseOnError=True):
         '''p_env should be an instance of a class that inherits from
            XmlEnvironment: it specifies the environment to use for this SAX
            parser.'''
@@ -134,6 +171,8 @@ class XmlParser(ContentHandler, ErrorHandler):
         self.caller = caller # The class calling this parser
         self.parser = xml.sax.make_parser() # Fast, standard expat parser
         self.res = None # The result of parsing.
+        # Raise or not an error when a parsing error is encountered.
+        self.raiseOnError = raiseOnError
 
     # ContentHandler methods ---------------------------------------------------
     def startDocument(self):
@@ -166,6 +205,15 @@ class XmlParser(ContentHandler, ErrorHandler):
         else:
             # Put a question mark instead of raising an exception.
             self.characters('?')
+
+    # ErrorHandler methods ---------------------------------------------------
+    def error(self, error):
+        if self.raiseOnError: raise error
+        else: print 'SAX error', error
+    def fatalError(self, error):
+        if self.raiseOnError: raise error
+        else: print 'SAX fatal error', error
+    def warning(self, error): pass
 
     def parse(self, xml, source='string'):
         '''Parses a XML stream.
@@ -213,7 +261,8 @@ class XmlUnmarshaller(XmlParser):
        If "object" is specified, it means that the tag contains sub-tags, each
        one corresponding to the value of an attribute for this object.
        if "tuple" is specified, it will be converted to a list.'''
-    def __init__(self, classes={}, tagTypes={}, conversionFunctions={}):
+    def __init__(self, classes={}, tagTypes={}, conversionFunctions={},
+                 utf8=True):
         XmlParser.__init__(self)
         # self.classes below is a dict whose keys are tag names and values are
         # Python classes. During the unmarshalling process, when an object is
@@ -250,6 +299,7 @@ class XmlUnmarshaller(XmlParser):
         # for example convert strings that have specific values (in this case,
         # knowing that the value is a 'string' is not sufficient).        
         self.conversionFunctions = conversionFunctions
+        self.utf8 = utf8
 
     def convertAttrs(self, attrs):
         '''Converts XML attrs to a dict.'''
@@ -357,6 +407,8 @@ class XmlUnmarshaller(XmlParser):
                 setattr(currentContainer, name, attrValue)
 
     def characters(self, content):
+        if not self.utf8:
+            content = content.encode('utf-8')
         e = XmlParser.characters(self, content)
         if e.currentBasicType:
             e.currentContent += content
@@ -420,7 +472,6 @@ class XmlMarshaller:
     xmlEntities = {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;',
                    "'": '&apos;'}
     trueFalse = {True: 'True', False: 'False'}
-    sequenceTypes = (tuple, list)
     fieldsToMarshall = 'all'
     fieldsToExclude = []
     atFiles = ('image', 'file') # Types of archetypes fields that contain files.
@@ -468,6 +519,28 @@ class XmlMarshaller:
         elif '*' in self.namespacedTags: prefix = self.namespacedTags['*']
         if prefix: return '%s:%s' % (prefix, name)
         return name
+
+    def isAnObject(self, instance):
+        '''Returns True if p_instance is a class instance, False if it is a
+           basic type, or tuple, sequence, etc.'''
+        if instance.__class__.__name__ == 'LazyMap': return False
+        iType = type(instance)
+        if iType == types.InstanceType:
+            return True
+        elif iType.__name__ == 'ImplicitAcquirerWrapper':
+            # This is the case with Archetype instances
+            return True
+        elif iType.__class__.__name__ == 'ExtensionClass':
+            return True
+        return False
+
+    def isAList(self, value):
+        '''Is p_value a list?'''
+        return value.__class__.__name__ in ('list', 'PersistentList', 'LazyMap')
+
+    def isADict(self, value):
+        '''Is p_value a dict?'''
+        return value.__class__.__name__ in ('dict', 'PersistentMapping')
 
     def dumpRootTag(self, res, instance):
         '''Dumps the root tag.'''
@@ -549,12 +622,16 @@ class XmlMarshaller:
         elif fieldType == 'dict': self.dumpDict(res, value)
         elif isRef:
             if value:
-                if type(value) in self.sequenceTypes:
-                    for elem in value:
-                        self.dumpField(res, 'url', elem.absolute_url())
+                if self.objectType == 'appy':
+                    suffix = '/xml'
                 else:
-                    self.dumpField(res, 'url', value.absolute_url())
-        elif type(value) in self.sequenceTypes:
+                    suffix = ''
+                if type(value) in sequenceTypes:
+                    for elem in value:
+                        self.dumpField(res, 'url', elem.absolute_url()+suffix)
+                else:
+                    self.dumpField(res, 'url', value.absolute_url()+suffix)
+        elif fieldType in ('list', 'tuple'):
             # The previous condition must be checked before this one because
             # referred objects may be stored in lists or tuples, too.
             for elem in value: self.dumpField(res, 'e', elem)
@@ -595,16 +672,17 @@ class XmlMarshaller:
         elif isinstance(fieldValue, float):               fType = 'float'
         elif isinstance(fieldValue, long):                fType = 'long'
         elif isinstance(fieldValue, tuple):               fType = 'tuple'
-        elif isinstance(fieldValue, list):                fType = 'list'
-        elif isinstance(fieldValue, dict) or \
-             fieldValue.__class__.__name__ == 'PersistentMapping':fType = 'dict'
+        elif self.isAList(fieldValue):                    fType = 'list'
+        elif self.isADict(fieldValue):                    fType = 'dict'
         elif fieldValue.__class__.__name__ == 'DateTime': fType = 'DateTime'
         elif self.isAnObject(fieldValue):                 fType = 'object'
         if self.objectType != 'popo':
             if fType: res.write(' type="%s"' % fType)
             # Dump other attributes if needed
-            if type(fieldValue) in self.sequenceTypes:
-                res.write(' count="%d"' % len(fieldValue))
+            if fType in ('list', 'tuple'):
+                length = 0
+                if fieldValue: length = len(fieldValue)
+                res.write(' count="%d"' % length)
         if fType == 'file':
             if hasattr(fieldValue, 'content_type'):
                 res.write(' mimeType="%s"' % fieldValue.content_type)
@@ -616,20 +694,6 @@ class XmlMarshaller:
         # Dump the field value
         self.dumpValue(res, fieldValue, fType, isRef=(fieldType=='ref'))
         res.write('</'); res.write(fieldTag); res.write('>')
-
-    def isAnObject(self, instance):
-        '''Returns True if p_instance is a class instance, False if it is a
-           basic type, or tuple, sequence, etc.'''
-        iType = type(instance)
-        if iType == types.InstanceType:
-            return True
-        elif iType.__name__ == 'ImplicitAcquirerWrapper':
-            # This is the case with Archetype instances
-            return True
-        elif iType.__class__.__name__ == 'ExtensionClass':
-            return True
-        
-        return False
 
     def marshall(self, instance, objectType='popo', conversionFunctions={}):
         '''Returns in a UnicodeBuffer the XML version of p_instance. If
@@ -662,7 +726,7 @@ class XmlMarshaller:
                     elif self.fieldsToMarshall == 'all':
                         mustDump = True
                     else:
-                        if (type(self.fieldsToMarshall) in self.sequenceTypes) \
+                        if (type(self.fieldsToMarshall) in sequenceTypes) \
                            and (fieldName in self.fieldsToMarshall):
                             mustDump = True
                     if mustDump:
@@ -679,7 +743,7 @@ class XmlMarshaller:
                     elif self.fieldsToMarshall == 'all_with_metadata':
                         mustDump = True
                     else:
-                        if (type(self.fieldsToMarshall) in self.sequenceTypes) \
+                        if (type(self.fieldsToMarshall) in sequenceTypes) \
                            and (field.getName() in self.fieldsToMarshall):
                             mustDump = True
                     if mustDump:
@@ -691,33 +755,40 @@ class XmlMarshaller:
                         self.dumpField(res, field.getName(),field.get(instance),
                                        fieldType=fieldType)
             elif objectType == 'appy':
-                for field in instance.getAllAppyTypes():
+                for field in instance.getAppyTypes('view', None):
                     # Dump only needed fields
+                    if (field.type == 'Computed') and not field.plainText:
+                        # Ignore fields used for producing custom chunks of HTML
+                        # within the web UI.
+                        continue
                     if field.name in self.fieldsToExclude: continue
-                    if (field.type == 'Ref') and field.isBack: continue
-                    if (type(self.fieldsToMarshall) in self.sequenceTypes) \
+                    if (type(self.fieldsToMarshall) in sequenceTypes) \
                         and (field.name not in self.fieldsToMarshall): continue
-                    # Determine field type
+                    # Determine field type and value
                     fieldType = 'basic'
                     if field.type == 'File':
                         fieldType = 'file'
+                        v = field.getValue(instance)
+                        if v: v = v._zopeFile
                     elif field.type == 'Ref':
                         fieldType = 'ref'
-                    self.dumpField(res, field.name,field.getValue(instance),
-                                   fieldType=fieldType)
+                        v = field.getValue(instance, type='zobjects')
+                    else:
+                        v = field.getValue(instance)
+                    self.dumpField(res, field.name, v, fieldType=fieldType)
                 # Dump the object history.
-                histTag = self.getTagName('history')
-                eventTag = self.getTagName('event')
-                res.write('<%s type="list">' % histTag)
-                wfInfo = instance.portal_workflow.getWorkflowsFor(instance)
-                if wfInfo:
-                    history = instance.workflow_history[wfInfo[0].id]
+                if hasattr(instance.aq_base, 'workflow_history'):
+                    histTag = self.getTagName('history')
+                    eventTag = self.getTagName('event')
+                    res.write('<%s type="list">' % histTag)
+                    key = instance.workflow_history.keys()[0]
+                    history = instance.workflow_history[key]
                     for event in history:
                         res.write('<%s type="object">' % eventTag)
                         for k, v in event.iteritems():
                             self.dumpField(res, k, v)
                         res.write('</%s>' % eventTag)
-                res.write('</%s>' % histTag)
+                    res.write('</%s>' % histTag)
             self.marshallSpecificElements(instance, res)
             res.write('</'); res.write(rootTagName); res.write('>')
         else:
@@ -878,4 +949,164 @@ class XmlComparator:
             else:
                 lastLinePrinted = False
         return not atLeastOneDiff
+
+# ------------------------------------------------------------------------------
+class XhtmlCleaner(XmlParser):
+    '''This class cleans XHTML content, so it becomes ready to be stored into a
+       Appy-compliant format.'''
+    class Error(Exception): pass
+
+    # Tags that will not be in the result, content included, if keepStyles is
+    # False.
+    tagsToIgnoreWithContent = ('style', 'colgroup', 'head')
+    # Tags that will be removed from the result, but whose content will be kept,
+    # if keepStyles is False.
+    tagsToIgnoreKeepContent= ('x', 'font', 'center', 'html', 'body')
+    # All tags to ignore
+    tagsToIgnore = tagsToIgnoreWithContent + tagsToIgnoreKeepContent
+    # Attributes to ignore, if keepStyles if False.
+    attrsToIgnore = ('align', 'valign', 'cellpadding', 'cellspacing', 'width',
+                     'height', 'bgcolor', 'lang', 'border', 'class', 'rules')
+    # CSS attributes to keep, if keepStyles if False. These attributes can be
+    # used by appy.pod (to align a paragraph, center/resize an image...).
+    cssAttrsToKeep = ('width', 'height', 'float', 'text-align',
+                      'font-style', 'font-weight')
+    # Attrs to add, if not present, to ensure good formatting, be it at the web
+    # or ODT levels.
+    attrsToAdd = {'table': {'cellspacing':'0', 'cellpadding':'6', 'border':'1'},
+                  'tr':    {'valign': 'top'}}
+
+    # Tags that required a line break to be inserted after them.
+    lineBreakTags = ('p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'td')
+    # A pre-cleaning phase consists in performing some replacements before
+    # running the XML SAX parsing. The dict below contains such repls.
+    preCleanRepls = {'&nbsp;': ' '}
+
+    def preClean(self, s):
+        '''Before true XHTML cleaning, this method performs pre-cleaning by
+           performing, on p_s, replacements as defined in self.preCleanRepls.'''
+        for item, repl in self.preCleanRepls.iteritems():
+            if item in s:
+                s = s.replace(item, repl)
+        return s
+
+    def clean(self, s, keepStyles=True):
+        '''Cleaning XHTML code is done for 2 reasons:
+
+           1. The main objective is to format XHTML p_s to be storable in the
+              ZODB according to Appy rules.
+              a. Every <p> or <li> must be on a single line (ending with a
+                 carriage return); else, appy.shared.diff will not be able to
+                 compute XHTML diffs;
+              b. Optimize size: HTML comments are removed.
+
+           2. If p_keepStyles (or m_clean) is False, some style-related
+              information will be removed, in order to get a standardized
+              content that can be dumped in an elegant and systematic manner
+              into a POD template.
+        '''
+        # Must we keep style-related information or not?
+        self.env.keepStyles = keepStyles
+        self.env.currentContent = ''
+        # The stack of currently parsed elements (will contain only ignored
+        # ones).
+        self.env.currentElems = []
+        # 'ignoreTag' is True if we must ignore the currently walked tag.
+        self.env.ignoreTag = False
+        # 'ignoreContent' is True if, within the currently ignored tag, we must
+        # also ignore its content.
+        self.env.ignoreContent = False
+        try:
+            res = self.parse('<x>%s</x>' % self.preClean(s)).encode('utf-8')
+        except SAXParseException, e:
+            raise self.Error(str(e))
+        return res
+
+    def cleanStyleAttribute(self, value):
+        '''p_value contains some CSS attributes from a "style" attribute. We
+           keep those that pod can manage.'''
+        res = []
+        for name, v in parseStyleAttribute(value):
+            if name in self.cssAttrsToKeep:
+                res.append('%s: %s' % (name, v))
+        return '; '.join(res)
+
+    def startDocument(self):
+        # The result will be cleaned XHTML, joined from self.res.
+        self.res = []
+
+    def endDocument(self):
+        self.res = ''.join(self.res)
+
+    def startElement(self, elem, attrs):
+        e = self.env
+        # Dump any previously gathered content if any
+        if e.currentContent:
+            self.res.append(e.currentContent)
+            e.currentContent = ''
+        if e.ignoreTag and e.ignoreContent: return
+        if not e.keepStyles and (elem in self.tagsToIgnore):
+            e.ignoreTag = True
+            if elem in self.tagsToIgnoreWithContent:
+                e.ignoreContent = True
+            else:
+                e.ignoreContent = False
+            e.currentElems.append( (elem, e.ignoreContent) )
+            return
+        # Add a line break before the start tag if required (ie: xhtml differ
+        # needs to get paragraphs and other elements on separate lines).
+        if (elem in self.lineBreakTags) and self.res and \
+           (self.res[-1][-1] != '\n'):
+            prefix = '\n'
+        else:
+            prefix = ''
+        res = '%s<%s' % (prefix, elem)
+        # Include the found attributes, excepted those that must be ignored.
+        for name, value in attrs.items():
+            if not e.keepStyles:
+                if name in self.attrsToIgnore: continue
+                elif name == 'style':
+                    value = self.cleanStyleAttribute(value)
+                    if not value: continue
+            res += ' %s="%s"' % (name, value)
+        # Include additional attributes if required.
+        if elem in self.attrsToAdd:
+            for name, value in self.attrsToAdd[elem].iteritems():
+                res += ' %s="%s"' % (name, value)
+        self.res.append('%s>' % res)
+
+    def endElement(self, elem):
+        e = self.env
+        if e.ignoreTag and (elem in self.tagsToIgnore):
+            # Pop the currently ignored tag
+            e.currentElems.pop()
+            if e.currentElems:
+                # Keep ignoring tags.
+                e.ignoreContent = e.currentElems[-1][1]
+            else:
+                # Stop ignoring elems
+                e.ignoreTag = e.ignoreContent = False
+        elif e.ignoreTag and e.ignoreContent:
+            # This is the end of a sub-tag within a region that we must ignore.
+            pass
+        else:
+            self.res.append(self.env.currentContent)
+            # Add a line break after the end tag if required (ie: xhtml differ
+            # needs to get paragraphs and other elements on separate lines).
+            if elem in self.lineBreakTags:
+                suffix = '\n'
+            else:
+                suffix = ''
+            self.res.append('</%s>%s' % (elem, suffix))
+            self.env.currentContent = ''
+
+    def characters(self, content):
+        if self.env.ignoreContent: return
+        # Remove blanks that ckeditor may add just after a start tag
+        if not self.env.currentContent or (self.env.currentContent == ' '):
+            toAdd = ' ' + content.lstrip()
+        else:
+            toAdd = content
+        # Re-transform XML special chars to entities.
+        self.env.currentContent += cgi.escape(content)
 # ------------------------------------------------------------------------------

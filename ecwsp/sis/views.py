@@ -299,7 +299,10 @@ def grade_report(request):
         elif 'fail_report' in request.POST:
             return grade_reports.fail_report(request)
         elif 'date_based_gpa_report' in request.POST:
-            return grade_reports.date_based_gpa_report(request)
+            request.POST['template'] = 1 # Validation hack
+            form = StudentGradeReportWriterForm(request.POST, request.FILES)
+            if form.is_valid():
+                return grade_reports.date_based_gpa_report(request)
                 
     form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
     return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)

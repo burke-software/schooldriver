@@ -138,11 +138,18 @@ class Item(models.Model):
                 # let people get away with leaving it blank
                 self.points_possible = self.category.fixed_points_possible
     def __unicode__(self):
-        return self.name + " - " + self.category.name + " (" + self.course.fullname + ")"
+        if self.benchmark:
+            benchmark_number = self.benchmark.number
+        else:
+            benchmark_number = None
+        latter = u', '.join(map(unicode, filter(None, (benchmark_number, self.description))))
+        return u': '.join(map(unicode, filter(None, (self.name, latter))))
 
 class Demonstration(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     item = models.ForeignKey('Item')
+    def __unicode__(self):
+        return self.name + u' - ' + unicode(self.item)
 
 class Mark(models.Model):
     item = models.ForeignKey('Item')

@@ -18,7 +18,7 @@
 
 # ------------------------------------------------------------------------------
 from appy import Object
-from appy.gen.utils import sequenceTypes
+from appy.shared.utils import sequenceTypes
 
 # ------------------------------------------------------------------------------
 WRONG_LINE = 'Line number %d in file %s does not have the right number of ' \

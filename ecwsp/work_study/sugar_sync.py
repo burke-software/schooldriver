@@ -93,21 +93,22 @@ class SugarSync:
                 sis_contact = Contact(guid=guid)
             h = HTMLParser.HTMLParser()
             for field in contact[2]:
-                # HTML unescape
-                field.value = h.unescape(field.value)
-                if field.name == "first_name":
-                    sis_contact.fname = field.value
-                elif field.name == "last_name":
-                    sis_contact.lname = field.value
-                elif field.name == "title":
-                    sis_contact.title = field.value
-                elif field.name == "phone_work":
-                    sis_contact.phone = field.value
-                elif field.name == "phone_mobile":
-                    sis_contact.phone_cell = field.value
-                elif field.name == "phone_fax":
-                    sis_contact.fax = field.value
-                elif field.name == "email1":
-                    sis_contact.email = field.value
+                if field.value:
+                    # HTML unescape
+                    field.value = h.unescape(field.value)
+                    if field.name == "first_name":
+                        sis_contact.fname = field.value
+                    elif field.name == "last_name":
+                        sis_contact.lname = field.value
+                    elif field.name == "title":
+                        sis_contact.title = field.value
+                    elif field.name == "phone_work":
+                        sis_contact.phone = field.value
+                    elif field.name == "phone_mobile":
+                        sis_contact.phone_cell = field.value
+                    elif field.name == "phone_fax":
+                        sis_contact.fax = field.value
+                    elif field.name == "email1":
+                        sis_contact.email = field.value
                     
             sis_contact.save(sync_sugar=False)

@@ -198,6 +198,7 @@ class Converter:
             # Loads the document to convert in a new hidden frame
             prop = PropertyValue(); prop.Name = 'Hidden'; prop.Value = True
             if self.inputType == 'csv':
+                # Give some additional params if we need to open a CSV file
                 prop2 = PropertyValue()
                 prop2.Name = 'FilterFlags'
                 prop2.Value = '59,34,76,1'
@@ -206,7 +207,6 @@ class Converter:
                 props = (prop, prop2)
             else:
                 props = (prop,)
-            # Give some additional params if we need to open a CSV file
             self.doc = self.oo.loadComponentFromURL(self.docUrl, "_blank", 0,
                                                     props)
             if self.inputType == 'odt':

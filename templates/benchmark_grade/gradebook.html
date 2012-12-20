@@ -15,6 +15,11 @@
     <script type="text/javascript" src="/static/js/jquery.multiselect.filter.js"></script>
     <link rel="stylesheet" href="/static/css/jquery.multiselect.filter.css" type="text/css" media="screen">
 
+    <link rel="stylesheet" href="/static/js/jquery-tooltip/jquery.tooltip.css">
+    <script type="text/javascript" src="/static/js/jquery-tooltip/lib/jquery.bgiframe.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-tooltip/lib/jquery.dimensions.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-tooltip/jquery.tooltip.min.js"></script>
+
     <link rel="stylesheet" href="/static/css/gradebook/style.css" type="text/css" media="screen">
     <link rel="stylesheet" href="/static/css/modal.css" type="text/css" media="screen">
 
@@ -112,6 +117,7 @@
                                             <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.name}}</div>
                                             <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.benchmark.number }}{% if dem.item.description %}, {{ dem.item.description }}{% endif %}</div>
                                             <div class="headerItem" onclick="get_edit_demonstration_form(event)" data-demonstration_id="{{ dem.id }}"><em>{{ dem.name }}</em></div>
+                                            <div class="forall" title="Fill all" data-demonstration_id="{{ dem.id }}" onclick="show_fill_all_form(event)">&forall;</div>
                                         </div>
                                     </th>
                                 {% endfor %}
@@ -119,9 +125,10 @@
                                 <th>
                                     <div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">
                                         <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.category }}</div>
-                                        <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.name}}</div>
+                                        <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.name }}</div>
                                         <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.benchmark.number }}{% if item.description %}, {{ item.description }}{% endif %}</div>
                                         <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">---------</div>
+                                        <div class="forall" title="Fill all" onclick="show_fill_all_form(event)">&forall;</div>
                                     </div>
                                 </th>
                             {% endif %}
@@ -147,7 +154,7 @@
                 {% for student in students %}
                     {% with row_counter=forloop.counter0 %}
                     <tr>
-                        <td>{{ student }}</td>
+                        <td><div id="student{{ student.id }}" onclick="show_student_overlay(event)">{{ student }}</div></td>
                         {% for mark in student.marks %}
                             <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)">
                                 <div>{{ mark.mark }}</div>
@@ -168,7 +175,13 @@
                             <em>Students Demonstrated</em>
                         </td>
                         {% for item in items %}
-                            <td><div>{{ item.marks_counts }}</div></td>
+                            {% if item.demonstration_set.count %}
+                                {% for dem in item.demonstration_set.all %}
+                                    <td><div>{{ item.marks_counts }}</div></td>
+                                {% endfor %}
+                            {% else %}
+                                <td><div>{{ item.marks_counts }}</div></td>
+                            {% endif %}
                         {% endfor %}
                         {% if filtered %}
                             <td><!-- filtered standards demonstrated -->
@@ -195,6 +208,8 @@
     
     <div id="new_assignment_form" class="modal"></div>
     <div id="new_demonstration_form" class="modal"></div>
+    <div id="student_info_overlay" class="modal"></div>
+    <div id="fill_all_form" class="modal"></div>
     
     
     <script type="text/javascript">
