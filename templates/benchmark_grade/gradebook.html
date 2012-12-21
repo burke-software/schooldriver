@@ -26,6 +26,8 @@
     {% dajaxice_js_import %}
     {% load staticfiles %}
     <script type="text/javascript" src="{% static "dajax/jquery.dajax.core.js" %}"></script>
+    
+    <script>var item_pk_list = "{{ item_pks }}";</script>
 {% endblock %}
 
 {% block content %}

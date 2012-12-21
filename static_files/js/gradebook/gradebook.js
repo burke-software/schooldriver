@@ -164,7 +164,7 @@ function get_edit_demonstration_form(event){
 
 function show_student_overlay(event) {
     student_id = event.target.id.replace(/^student(\d+)$/, '$1').trim();
-    $.post(
+    $.get(
         "ajax_get_student_info/" + student_id + "/",
         function(data){
             $("#student_info_overlay").html(data);
@@ -175,6 +175,25 @@ function show_student_overlay(event) {
             fixed: false
         });
     $("#student_info_overlay").overlay().load();
+}
+
+function open_grade_detail(course_id, student_id) {
+    var detail_window = window.open();
+    detail_window.document.write("Loading...");
+    $.post(
+        "/benchmark_grade/teacher_grade_course_detail/" + student_id + "/" + course_id,
+        {item_pks: item_pk_list},
+        function(data) {
+            detail_window.document.body.innerHTML = data;
+        }
+    ).fail(function(jqXHR) {
+        if(jqXHR.responseXML != undefined)
+            detail_window.document.body.innerHTML = jqXHR.responseXML;
+        else if(jqXHR.responseText != undefined)
+            detail_window.document.body.innerText = jqXHR.responseText;
+        else
+            detail_window.document.body.innerText = "The server failed to create your report.";
+    })
 }
 
 function show_fill_all_form(event) {
@@ -300,6 +319,7 @@ function confirm_demonstration_delete(demonstration_id){
             }  
         ) /*.error(alert("The server refused to delete the demontration."));*/
         // TODO: just return HTTP errors if there's a problem, and then use .error() instead of checking for SUCCESS. Without .error(), the request just hangs, which is sloppy but okay for now.
+        // NO DON'T USE .error()! It's called .fail() now. Fail. http://api.jquery.com/jQuery.ajax/#jqXHR
         
     }
     return false;

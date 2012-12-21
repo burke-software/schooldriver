@@ -62,32 +62,34 @@
     {% else %}
         <h1>Grade Detail for {{ student.fname }} {{ student.lname }}</h1>
     {% endif %}
-    <h2>{{ mp.name }} {{ course.fullname }}</h2>
-    <div class="course">
-    {% for category in course.categories %}
-        <h3>{{ category.name }}{% if category.fixed_points_possible %}<span class="pointsPossible"> ({{ category.fixed_points_possible }} points possible)</span>{% endif %}</h3>
-        <table>
-            {% for item_name, items in category.item_groups.items %}
-                {% if items|length > 1 or items.0.description or items.0.benchmark %}
-                    <tr><td class="itemGroupName" colspan="2">{{ item_name }}</td></tr>
-                {% endif %}
-                {% for item in items %}
-                    {% if forloop.first and forloop.last and not item.description and not item.benchmark %}
-                        <tr {% if item.pk in category.flagged_item_pks %}class="flaggedItem"{% endif %}><td class="itemGroupName">{{ item_name }}</td><td class="markMark">{{ item.best_mark }}{% if not category.fixed_points_possible %} <span class="pointsPossible">(of {{ item.points_possible }})</span>{% endif %}</td>
-                    {% else %}
-                        <tr {% if item.pk in category.flagged_item_pks %}class="flaggedItem"{% endif %}>
-                            <td class="individualItem">
-                                {{ item.description }}{% if item.description and item.benchmark.number %}, {% endif %}
-                                {{ item.benchmark.number }}
-                                <div class="benchmarkName">{{ item.benchmark.name }}</div>
-                            </td>
-                            <td class="markMark">{{ item.best_mark }}{% if not category.fixed_points_possible %} <span class="pointsPossible">(of {{ item.points_possible }})</span>{% endif %}</td>
-                        </tr>
+    {% for mp in mps %}
+        <h2>{{ mp.name }} {{ course.fullname }}</h2>
+        <div class="course">
+        {% for category in mp.categories %}
+            <h3>{{ category.name }}{% if category.fixed_points_possible %}<span class="pointsPossible"> ({{ category.fixed_points_possible }} points possible)</span>{% endif %}</h3>
+            <table>
+                {% for item_name, items in category.item_groups.items %}
+                    {% if items|length > 1 or items.0.description or items.0.benchmark %}
+                        <tr><td class="itemGroupName" colspan="2">{{ item_name }}</td></tr>
                     {% endif %}
+                    {% for item in items %}
+                        {% if forloop.first and forloop.last and not item.description and not item.benchmark %}
+                            <tr {% if item.pk in category.flagged_item_pks %}class="flaggedItem"{% endif %}><td class="itemGroupName">{{ item_name }}</td><td class="markMark">{{ item.best_mark }}{% if not category.fixed_points_possible %} <span class="pointsPossible">(of {{ item.points_possible }})</span>{% endif %}</td>
+                        {% else %}
+                            <tr {% if item.pk in category.flagged_item_pks %}class="flaggedItem"{% endif %}>
+                                <td class="individualItem">
+                                    {{ item.description }}{% if item.description and item.benchmark.number %}, {% endif %}
+                                    {{ item.benchmark.number }}
+                                    <div class="benchmarkName">{{ item.benchmark.name }}</div>
+                                </td>
+                                <td class="markMark">{{ item.best_mark }}{% if not category.fixed_points_possible %} <span class="pointsPossible">(of {{ item.points_possible }})</span>{% endif %}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
-            <tr><td class="itemGroupName">Average</td><td class="categoryAverage">{{ category.average }}</td></tr>
-        </table>
+                <tr><td class="itemGroupName">Average</td><td class="categoryAverage">{{ category.average }}</td></tr>
+            </table>
+        {% endfor %}
+        </div>
     {% endfor %}
-    </div>
 {% endblock %}

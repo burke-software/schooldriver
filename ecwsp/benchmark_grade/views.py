@@ -154,7 +154,7 @@ def student_grade(request):
         'error_message': error_message,
     }, RequestContext(request, {}),)
 
-def student_family_grade_course_detail_common(student, course, mp):
+def student_family_grade_course_detail_common(student, course, mp, items=None):
     # TODO: move into CalculationRule?
     CATEGORY_NAME_TO_FLAG_CRITERIA = {
         'Standards': {'best_mark__lt': 3},
@@ -162,19 +162,37 @@ def student_family_grade_course_detail_common(student, course, mp):
         'Organization': {'best_mark__lt': 3},
         'Daily Practice': {'best_mark__lte': 0},
     }
-    course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
-    for category in course.categories:
-        items = Item.objects.filter(course=course, category=category, marking_period=mp, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
-        item_names = items.values_list('name').distinct()
-        category.item_groups = {}
-        for item_name_tuple in item_names:
-            item_name = item_name_tuple[0]
-            category.item_groups[item_name] = items.filter(name=item_name).distinct() 
-        category.average = gradebook_get_average(student, course, category, mp, None)
-        category.flagged_item_pks = []
-        if category.name in CATEGORY_NAME_TO_FLAG_CRITERIA:
-            category.flagged_item_pks = items.filter(**CATEGORY_NAME_TO_FLAG_CRITERIA[category.name]).values_list('pk', flat=True)
-    return course
+    if items is None:
+        items = Item.objects
+        specific_items = False
+    else:
+        specific_items = True
+    # always filter in case a bad person passes us items from a different course
+    items = items.filter(course=course, mark__student=student)
+    if mp is None:
+        mps = MarkingPeriod.objects.filter(item__in=items).distinct().order_by('-start_date')
+    else:
+        mps = (mp,)
+    for mp in mps:
+        mp_items = items.filter(marking_period=mp)
+        mp.categories = Category.objects.filter(item__in=mp_items).distinct()
+        for category in mp.categories:
+            category_items = mp_items.filter(category=category).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+            item_names = category_items.values_list('name').distinct()
+            category.item_groups = {}
+            for item_name_tuple in item_names:
+                item_name = item_name_tuple[0]
+                category.item_groups[item_name] = category_items.filter(name=item_name).distinct() 
+            if specific_items:
+                # get a disposable average for these specific items
+                category.average = gradebook_get_average(student, course, category, mp, category_items)
+            else:
+                category.average = gradebook_get_average(student, course, category, mp, None)
+            category.flagged_item_pks = []
+            if category.name in CATEGORY_NAME_TO_FLAG_CRITERIA:
+                category.flagged_item_pks = category_items.filter(**CATEGORY_NAME_TO_FLAG_CRITERIA[category.name]).values_list('pk', flat=True)
+
+    return mps
     
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0 or u.is_superuser, login_url='/')
 def student_grade_course_detail(request, course_id, marking_period_id):
@@ -184,7 +202,7 @@ def student_grade_course_detail(request, course_id, marking_period_id):
     error_message = None
     try:
         student = Student.objects.get(username=request.user.username)
-        course = student_family_grade_course_detail_common(student, course, mp)
+        mps = student_family_grade_course_detail_common(student, course, mp)
     except Student.DoesNotExist:
         logging.warning('No student found for user "' + request.user.username + '"', exc_info=True)
         student = None
@@ -194,7 +212,7 @@ def student_grade_course_detail(request, course_id, marking_period_id):
     #return HttpResponse(s)
     return render_to_response('benchmark_grade/student_grade_course_detail.html', {
         'course': course,
-        'mp': mp,
+        'mps': mps,
         'error_message': error_message,
     }, RequestContext(request, {}),)
 
@@ -245,24 +263,42 @@ def family_grade_course_detail(request, course_id, marking_period_id):
         student = available_students.get(username=request.GET['student_username'])
 
     if student is not None:
-        course = student_family_grade_course_detail_common(student, course, mp)
+        mps = student_family_grade_course_detail_common(student, course, mp)
     else:
-        course = None
-        mp = None
+        mps = None
 
     return render_to_response('benchmark_grade/student_grade_course_detail.html', {
         'student': student,
         'available_students': available_students,
         'course': course,
-        'mp': mp,
+        'mps': mps,
         'error_message': error_message
     }, RequestContext(request, {}),)
 
 @staff_member_required
-def gradebook(request, course_id):
-    course = get_object_or_404(Course, pk=course_id)
+def teacher_grade_course_detail(request, student_pk, course_pk):
+    """ A view for a teacher to see a student's grades in detail. """
+    course = get_object_or_404(Course, pk=course_pk)
+    teacher_courses = get_teacher_courses(request.user.username)
+    if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
+    (teacher_courses is None or course not in teacher_courses):
+        return HttpResponse(status=403, content='You do not have access to this course.')
+    student = get_object_or_404(Student, pk=student_pk)
+    if 'item_pks' in request.POST:
+        item_pks = request.POST['item_pks'].split(',')
+        items = Item.objects.filter(pk__in=item_pks)
+    else:
+        items = None
+    mps = student_family_grade_course_detail_common(student, course, None, items)
+    return render_to_response('benchmark_grade/student_grade_course_detail.html', {
+        'student': student,
+        'course': course,
+        'mps': mps,
+    }, RequestContext(request, {}),)
+
+def get_teacher_courses(username):
     try:
-        teacher = Faculty.objects.get(username=request.user.username)
+        teacher = Faculty.objects.get(username=username)
         teacher_courses = Course.objects.filter(
             graded=True,
             marking_period__school_year__active_year=True,
@@ -270,9 +306,13 @@ def gradebook(request, course_id):
     except Faculty.DoesNotExist:
         teacher_courses = None
 
+@staff_member_required
+def gradebook(request, course_id):
+    course = get_object_or_404(Course, pk=course_id)
+    teacher_courses = get_teacher_courses(request.user.username)
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
     (teacher_courses is None or course not in teacher_courses):
-        return HttpResponse(status=403)
+        return HttpResponse(status=403, content='You do not have access to this course.')
 
     #students = Student.objects.filter(inactive=False,course=course)
     students = Student.objects.filter(course=course)
@@ -387,6 +427,7 @@ def gradebook(request, course_id):
 
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
+        'item_pks': ','.join(map(str,items.values_list('pk', flat=True))),
         'students': students,
         'course': course,
         'teacher_courses': teacher_courses,
@@ -589,9 +630,12 @@ def ajax_get_student_info(request, course_id, student_id):
     standards_missing = Item.objects.filter(course=course, category__name='Standards', mark__student=student).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
     if not standards_missing: standards_missing = ('None',)
     lists = ({'heading':'Standards Missing for {}'.format(student), 'items':standards_missing},)
+    afterword = '<a onclick="open_grade_detail({}, {})">Create report from current view of gradebook (in new tab)</a>'
+    afterword = afterword.format(course_id, student_id)
 
     return render_to_response('sis/generic_list_fragment.html', {
         'lists': lists,
+        'afterword': afterword,
     }, RequestContext(request, {}),)
 
 @staff_member_required
