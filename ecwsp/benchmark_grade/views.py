@@ -211,6 +211,7 @@ def student_grade_course_detail(request, course_id, marking_period_id):
 
     #return HttpResponse(s)
     return render_to_response('benchmark_grade/student_grade_course_detail.html', {
+        'student': student,
         'course': course,
         'mps': mps,
         'error_message': error_message,
