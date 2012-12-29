@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<div id="breadcrumbs"> 
+ <a href="/admin"> Home </a> 
+ &rsaquo; 
+ <a href="{% url "admin:report_builder_report_changelist" %}"> Reports </a> 
+ &rsaquo; 
+ {{ object }}
+</div> 
+{% endblock %}
+
+{% block content %}
+    <div style="height:590px;">
+    {% include "report_builder:report_builder/report_form.html" %}
+    </div>
+{% endblock %}

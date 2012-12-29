@@ -231,6 +231,9 @@
                         {% if perms.sis.change_student %}
                             <li><a href="{% url "ecwsp.sis.views.increment_year" %}">{% trans 'Change School Year' %}</a></li>
                         {% endif %}
+                        {% if perms.report_builder.change_report %}
+                            <li><a href="{% url "admin:report_builder_report_changelist" %}">Report Builder</a></li>
+                        {% endif %}
                     </ul>
                 </li>
             {% endif %}
