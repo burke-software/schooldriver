@@ -357,12 +357,12 @@ def pod_report_grade(request, template, options, students, format="odt", transcr
             for test_result in student.standardtestresult_set.filter(test__show_on_reports=True,show_on_reports=True).order_by('test'):
                 test_result.categories = ""
                 for cat in test_result.standardcategorygrade_set.filter(category__is_total=False):
-                    test_result.categories += '%s: %s  |  ' % (cat.category.name, cat.grade)
+                    test_result.categories += '%s: %s  |  ' % (cat.category.name, strip_trailing_zeros(cat.grade))
                 test_result.categories = test_result.categories [:-3]
                 student.tests.append(test_result)
                 
             for test in StandardTest.objects.filter(standardtestresult__student=student, show_on_reports=True, standardtestresult__show_on_reports=True).distinct():
-                test.total = test.get_cherry_pick_total(student)
+                test.total = strip_trailing_zeros(test.get_cherry_pick_total(student))
                 student.highest_tests.append(test)
 
     try:

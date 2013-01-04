@@ -452,11 +452,11 @@ class StandardTestResult(models.Model):
             total = 0
             for cat in self.standardcategorygrade_set.all():
                 total += cat.grade
-            return total
+            return str(total).rstrip('0').rstrip('.')
         elif self.standardcategorygrade_set.filter(category__is_total=True):
             totals = self.standardcategorygrade_set.filter(category__is_total=True)
             if totals:
-                return totals[0].grade
+                return str(totals[0].grade).rstrip('0').rstrip('.')
         else:
             return 'N/A'
 
