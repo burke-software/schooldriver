@@ -401,15 +401,15 @@ class StandardTest(models.Model):
         
     def get_cherry_pick_total(self, student):
         """ Returns cherry
-        Why show real grades, when fake ones that look better?
+        Why show real grades, when fake ones look better?
         """
         cherry = 0
         if self.cherry_pick_final:
-            for result in self.standardtestresult_set.filter(student=student):
+            for result in self.standardtestresult_set.filter(student=student,show_on_reports=True):
                 cat_total = result.standardcategorygrade_set.get(category__is_total=True)
                 if cat_total.grade > cherry: cherry = cat_total.grade
         elif self.cherry_pick_categories:
-            cats = self.standardcategory_set.filter(standardcategorygrade__result__student=student).annotate(highest=Max('standardcategorygrade__grade'))
+            cats = self.standardcategory_set.filter(standardcategorygrade__result__show_on_reports=True,standardcategorygrade__result__student=student).annotate(highest=Max('standardcategorygrade__grade'))
             for cat in cats:
                 cherry += cat.highest
         return cherry

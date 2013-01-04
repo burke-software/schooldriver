@@ -117,7 +117,7 @@ INSTALLED_APPS = (
     #'ldap_groups',
     'south',
     'djcelery',
-    
+    'csvimport',
 )
 
 MIDDLEWARE_CLASSES = (
