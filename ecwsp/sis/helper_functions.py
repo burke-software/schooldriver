@@ -40,7 +40,7 @@ def log_admin_entry(request, obj, state, message=""):
     """
     from django.contrib.admin.models import LogEntry
     from django.contrib.contenttypes.models import ContentType
-    if request.user and hasattr(request.user,"pk"):
+    if request.user and hasattr(request.user,"pk") and request.user.pk:
         LogEntry.objects.log_action(
             user_id         = request.user.pk, 
             content_type_id = ContentType.objects.get_for_model(obj).pk,
