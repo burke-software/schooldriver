@@ -306,6 +306,7 @@ def get_teacher_courses(username):
         ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
     except Faculty.DoesNotExist:
         teacher_courses = None
+    return teacher_courses
 
 @staff_member_required
 def gradebook(request, course_id):
