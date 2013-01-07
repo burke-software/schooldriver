@@ -8,6 +8,10 @@ from ecwsp.sis.models import get_default_language, GradeLevel
 
 import datetime
 
+if not 'ecwsp.standard_test' in settings.INSTALLED_APPS:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured('admissions requires standard_test please add ecwsp.standard_test to INSTALLED_APPS')
+
 class AdmissionLevel(models.Model):
     name = models.CharField(max_length=255, unique=True)
     order = models.IntegerField(unique=True, help_text="Order in which level appears. 1 being first.")
@@ -288,3 +292,44 @@ class ContactLog(models.Model):
     
     def __unicode__(self):
         return "%s %s: %s" % (self.user, self.date, self.note)
+    
+
+class ApplicantStandardTestResult(models.Model):
+    """ Standardized test instance. This is the results of a student taking a test """
+    date = models.DateField(default=datetime.date.today())
+    applicant = models.ForeignKey(Applicant)
+    test = models.ForeignKey('standard_test.StandardTest')
+    show_on_reports = models.BooleanField(default=True, help_text="If true, show this test result on a report such as a transcript. " + \
+        "Note entire test types can be marked as shown on report or not. This is useful if you have a test that is usually shown, but have a few instances where you don't want it to show.")
+    
+    class Meta:
+        unique_together = ('date', 'applicant', 'test')
+    
+    def __unicode__(self):
+        try:
+            return '%s %s %s' % (unicode(self.applicant), unicode(self.test), self.date)
+        except:
+            return "Standard Test Result"
+    
+    @property
+    def total(self):
+        """Returns total for the test instance
+        This may be calculated or marked as "is_total" on the category
+        """
+        if self.test.calculate_total:
+            total = 0
+            for cat in self.standardcategorygrade_set.all():
+                total += cat.grade
+            return str(total).rstrip('0').rstrip('.')
+        elif self.standardcategorygrade_set.filter(category__is_total=True):
+            totals = self.standardcategorygrade_set.filter(category__is_total=True)
+            if totals:
+                return str(totals[0].grade).rstrip('0').rstrip('.')
+        else:
+            return 'N/A'
+
+class ApplicantStandardCategoryGrade(models.Model):
+    """ Grade for a category and result """
+    category = models.ForeignKey('standard_test.StandardCategory')
+    result = models.ForeignKey(ApplicantStandardTestResult)
+    grade = models.DecimalField(max_digits=6,decimal_places=2)

@@ -28,6 +28,7 @@ from ecwsp.schedule.models import *
 from ecwsp.sis.xlsReport import *
 from ecwsp.sis.uno_report import *
 from ecwsp.attendance.models import *
+from ecwsp.standard_test.models import StandardCategory, StandardCategoryGrade, StandardTest, StandardTestResult
 
 import xlrd
 import re

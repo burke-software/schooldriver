@@ -109,6 +109,7 @@ INSTALLED_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.integrations.canvas_sync',
+    'ecwsp.standard_test',
     #'ecwsp.naviance_sso',
     'ajax_select',
     'reversion',

@@ -31,7 +31,7 @@ from django.utils.safestring import mark_safe
 from datetime import date
 
 from ecwsp.sis.models import Student, UserPreference, GradeLevel, SchoolYear
-from ecwsp.sis.forms import UserPreferenceForm, UploadFileForm, StudentLookupForm, StudentReportWriterForm, UploadNaviance
+from ecwsp.sis.forms import UserPreferenceForm, UploadFileForm, StudentLookupForm, StudentReportWriterForm
 from ecwsp.sis.forms import StudentGradeReportWriterForm, MarkingPeriodForm, YearSelectForm
 from ecwsp.administration.models import Template
 from ecwsp.sis.report import pod_report_grade, pod_report_paper_attendance, pod_report_all
@@ -266,6 +266,7 @@ def student_page_redirect(request, student_id):
 def import_naviance(request):
     """ Import only naviance data
     """
+    from ecwsp.standard_test.forms import UploadNaviance
     msg = 'Import a test directly from Naviance such as SAT and ACT. You must have unique id (SWORD) and hs_student_id (Naviance)' \
           ' be the same. You must have already set up the <a href="/admin/schedule/standardtest/"> tests </a> <br/>' \
           'In Naviance, click setup, then Import/Export then export the test you want. At this time only SAT and ACT is supported.'
@@ -448,8 +449,11 @@ def view_student(request, id=None):
     
     #Standard Tests
     from ecwsp.administration.models import Configuration
-    from ecwsp.schedule.models import StandardCategory, StandardCategoryGrade, StandardTest, StandardTestResult
-    standard_tests = StandardTestResult.objects.filter(student=student)
+    if 'ecwsp.standard_test' in settings.INSTALLED_APPS:
+        from ecwsp.standard_test.models import StandardCategory, StandardCategoryGrade, StandardTest, StandardTestResult
+        standard_tests = StandardTestResult.objects.filter(student=student)
+    else:
+        standard_tests = None
     
     return render_to_response('sis/view_student.html', {
         'date':today,

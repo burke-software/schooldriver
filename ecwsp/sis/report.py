@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.conf import settings
 from django.core.servers.basehttp import FileWrapper
 
 from ecwsp.sis.models import *
@@ -352,18 +353,20 @@ def pod_report_grade(request, template, options, students, format="odt", transcr
             student.departments_text += "|"
             
             # Standardized tests
-            student.tests = []
-            student.highest_tests = []
-            for test_result in student.standardtestresult_set.filter(test__show_on_reports=True,show_on_reports=True).order_by('test'):
-                test_result.categories = ""
-                for cat in test_result.standardcategorygrade_set.filter(category__is_total=False):
-                    test_result.categories += '%s: %s  |  ' % (cat.category.name, strip_trailing_zeros(cat.grade))
-                test_result.categories = test_result.categories [:-3]
-                student.tests.append(test_result)
-                
-            for test in StandardTest.objects.filter(standardtestresult__student=student, show_on_reports=True, standardtestresult__show_on_reports=True).distinct():
-                test.total = strip_trailing_zeros(test.get_cherry_pick_total(student))
-                student.highest_tests.append(test)
+            if 'ecwsp.standard_test' in settings.INSTALLED_APPS:
+                from ecwsp.standard_test.models import StandardTest
+                student.tests = []
+                student.highest_tests = []
+                for test_result in student.standardtestresult_set.filter(test__show_on_reports=True,show_on_reports=True).order_by('test'):
+                    test_result.categories = ""
+                    for cat in test_result.standardcategorygrade_set.filter(category__is_total=False):
+                        test_result.categories += '%s: %s  |  ' % (cat.category.name, strip_trailing_zeros(cat.grade))
+                    test_result.categories = test_result.categories [:-3]
+                    student.tests.append(test_result)
+                    
+                for test in StandardTest.objects.filter(standardtestresult__student=student, show_on_reports=True, standardtestresult__show_on_reports=True).distinct():
+                    test.total = strip_trailing_zeros(test.get_cherry_pick_total(student))
+                    student.highest_tests.append(test)
 
     try:
         if options['student'].count == 1:

@@ -59,14 +59,6 @@ class StudentLookupForm(forms.Form):
 
 class UploadFileForm(forms.Form):
     file  = forms.FileField()
-    
-class UploadNaviance(forms.Form):
-    import_file = forms.FileField()
-    test = forms.ModelChoiceField(queryset=StandardTest.objects.all())
-    
-class UploadStandardTestResultForm(UploadFileForm):
-    test = forms.ModelChoiceField(queryset=StandardTest.objects.all())
-
 
 class MarkingPeriodForm(forms.Form):
     marking_period = forms.ModelMultipleChoiceField(queryset=MarkingPeriod.objects.all())

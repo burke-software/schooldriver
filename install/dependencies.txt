@@ -1,4 +1,4 @@
-django>=1.5
+#django>=1.5
 django-admin-export>=1.5
 django-ajax-filtered-fields>=0.5
 django-ajax-selects>=1.2.4

@@ -12,13 +12,14 @@ from ecwsp.admissions.models import AdmissionCheck, ContactLog, EthnicityChoice,
 from ecwsp.admissions.models import SchoolType, OpenHouse, HeardAboutUsOption, FirstContactOption
 from ecwsp.admissions.models import PlaceOfWorship, ApplicationDecisionOption, WithdrawnChoices
 from ecwsp.admissions.models import BoroughOption, CountryOption, ImmigrationOption, AdmissionLevel
-from ecwsp.admissions.models import Applicant
+from ecwsp.admissions.models import Applicant, ApplicantStandardTestResult, ApplicantStandardCategoryGrade
 from ecwsp.admissions.forms import ApplicantForm
 from ecwsp.sis.models import SchoolYear
 
 import datetime
 from dateutil import parser
 import re
+from daterange_filter.filter import DateRangeFilter
 
 admin.site.register(EthnicityChoice)
 admin.site.register(ReligionChoice)
@@ -224,3 +225,15 @@ class ApplicantAdmin(CustomFieldAdmin):
             messages.warning(request, msg[:-2])
     
 admin.site.register(Applicant, ApplicantAdmin)
+
+class ApplicantStandardCategoryGradeInline(admin.TabularInline):
+    model = ApplicantStandardCategoryGrade
+    extra = 1
+
+class ApplicantStandardTestResultAdmin(admin.ModelAdmin):
+    inlines = (ApplicantStandardCategoryGradeInline,)
+    list_display = ['applicant', 'test', 'date']
+    list_filter = ['test', ('date', DateRangeFilter)]
+    search_fields = ['applicant__fname', 'applicant__lname', 'test__name']
+admin.site.register(ApplicantStandardTestResult, ApplicantStandardTestResultAdmin)
+

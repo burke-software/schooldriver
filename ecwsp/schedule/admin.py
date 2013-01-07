@@ -7,8 +7,10 @@ from ajax_select import make_ajax_form
 from ajax_select.fields import autoselect_fields_check_can_add
 from daterange_filter.filter import DateRangeFilter
 
-from ecwsp.sis.models import *
-from ecwsp.schedule.models import *
+from ecwsp.sis.models import Faculty
+from ecwsp.schedule.models import CourseMeet, Course, Department, CourseEnrollment, MarkingPeriod
+from ecwsp.schedule.models import Period, Location, OmitCourseGPA, OmitYearGPA, Award
+from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day
 
 def copy(modeladmin, request, queryset):
     for object in queryset:
@@ -60,9 +62,7 @@ class DaysOffInline(admin.TabularInline):
     model = DaysOff
     extra = 1
     
-
 admin.site.register(Day)
-
     
 class CourseEnrollmentAdmin(admin.ModelAdmin):
     search_fields = ['course__fullname', 'user__username', 'user__fname', 'role']
@@ -82,23 +82,5 @@ admin.site.register(Location)
 admin.site.register(OmitCourseGPA)
 
 admin.site.register(OmitYearGPA)
-
-
-class StandardCategoryInline(admin.TabularInline):
-    model = StandardCategory
-    extra = 1
-class StandardTestAdmin(admin.ModelAdmin):
-    inlines = (StandardCategoryInline,)
-admin.site.register(StandardTest, StandardTestAdmin)
-
-class StandardCategoryGradeInline(admin.TabularInline):
-    model = StandardCategoryGrade
-    extra = 1
-class StandardTestResultAdmin(admin.ModelAdmin):
-    inlines = (StandardCategoryGradeInline,)
-    list_display = ['student', 'test', 'date']
-    list_filter = ['test', ('date', DateRangeFilter)]
-    search_fields = ['student__fname', 'student__lname', 'test__name']
-admin.site.register(StandardTestResult, StandardTestResultAdmin)
 
 admin.site.register(Award)

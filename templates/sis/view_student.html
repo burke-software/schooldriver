@@ -503,7 +503,7 @@
                         </tr>
                         {% for test in tests %}
                             <tr><td>{{ test.test }}</td><td>{{ test.date }}</td><td>{{ test.total }}</td>
-                            <td><a href="/admin/schedule/standardtestresult/{{ test.id }}">See More about these results</tr>
+                            <td><a href="{% url "admin:standard_test_standardtestresult_change" test.id %}">See More about these results</tr>
                         {% endfor %}
                     </table>
                     {% for test in tests %}
