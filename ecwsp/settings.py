@@ -366,6 +366,7 @@ if 'djcelery' in INSTALLED_APPS:
     import djcelery
     djcelery.setup_loader()
     #BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+    BROKER_HEARTBEAT = 30
     CELERY_IMPORTS = ()
     if "ecwsp.canvas_sync" in INSTALLED_APPS:
         CELERY_IMPORTS += ("ecwsp.canvas_sync.tasks",)
