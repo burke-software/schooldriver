@@ -315,8 +315,8 @@ def gradebook(request, course_id):
     (teacher_courses is None or course not in teacher_courses):
         return HttpResponse(status=403, content='You do not have access to this course.')
 
-    #students = Student.objects.filter(inactive=False,course=course)
-    students = Student.objects.filter(course=course)
+    students = Student.objects.filter(inactive=False,course=course)
+    #students = Student.objects.filter(course=course)
     items = Item.objects.filter(course=course)
     filtered = False
 
