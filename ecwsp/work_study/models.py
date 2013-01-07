@@ -442,9 +442,10 @@ class StudentWorker(Student):
     def get_contact(self):
         if self.primary_contact:
             return self.primary_contact
-        contacts = self.placement.contacts.all()
-        if contacts:
-            return contacts[0]
+        if self.placement:
+            contacts = self.placement.contacts.all()
+            if contacts:
+                return contacts[0]
         return None
     
     def contact(self):
