@@ -645,7 +645,8 @@ def report_builder_view(request):
                                     data.append(["", "", "", "", "Total", stu_total['hours__sum'], stu_total['student_net__sum'], \
                                         stu_total['school_net__sum']])
                                     total_hours += stu_total['hours__sum']
-                                    total_student_salary += stu_total['student_net__sum']
+                                    if stu_total['student_net__sum']:
+                                        total_student_salary += stu_total['student_net__sum']
                                     total_company_bill += stu_total['school_net__sum']
                                     studenti = 0
                         # if we did add a company, now the days are entered lets aggregate
