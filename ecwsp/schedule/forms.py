@@ -16,10 +16,10 @@ class EnrollForm(forms.Form):
     cohorts = forms.ModelMultipleChoiceField(queryset=Cohort.objects.all(), required=False)
     class Media:
         js = (
-            settings.ADMIN_MEDIA_PREFIX + "js/SelectBox.js",
-            settings.ADMIN_MEDIA_PREFIX + "js/SelectFilter2.js",
-            '/static/js/jquery.js',
-            '/static/js/ajax_filtered_fields.js',
+            'admin/js/SelectBox.js',
+            'admin/js/SelectFilter2.js',
+            'js/jquery.js',
+            'js/ajax_filtered_fields.js',
         )
 
 class MarkingPeriodSelectForm(forms.Form):
