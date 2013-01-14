@@ -291,7 +291,13 @@ input.grade_input {
 }
 
 .save_failure { 
-    background-color: rgba(255, 0, 0, 0.5);
+    /*background-color: rgba(255, 0, 0, 0.5);*/
+    background-image: -webkit-repeating-linear-gradient(135deg, yellow, yellow 13%, rgba(255, 0, 0, 0.5) 13%, rgba(255, 0, 0, 0.5) 26%);
+    font-weight: bold;
+}
+
+.flagged {
+    background-color: salmon;
 }
 
 input[type="button"] {
