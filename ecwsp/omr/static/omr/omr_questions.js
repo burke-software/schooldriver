@@ -242,23 +242,30 @@ function clean_ckeditor(question_id) {
     if ( confirmed ) {
       $.blockUI({
         overlayCSS: { backgroundColor: '#00f' },
-        message: '<h1>Sending tests to QueXF...please wait. This may take up to a minute. You will be notified in case or errors or thermo-nuclear warfare.</h1>', 
+        message: '<h1>Sending tests to QueXF...please wait. This may take up to a minute. You will be notified in case or errors.</h1>', 
       });
       
-      $.post(  
-        "ajax_finalize_test/",
-        function(data){
-          if (data == "SUCCESS") {
-            document.location.href = '/omr/test_result/' + test_id;
-          } else {
-          // Error, let user know they should panic!
+        var result = $.post(  
+            "ajax_finalize_test/",
+            function(data){
+                if (data == "SUCCESS") {
+                    document.location.href = '/omr/test_result/' + test_id;
+                } else {
+                    // Error, let user know they should panic!
+                    $.blockUI({
+                        overlayCSS: { backgroundColor: '#ff0009' },
+                        message: '<h1>Error! Click outside this box to dismiss.</h1>' + data, 
+                    });
+                    $('.blockOverlay').attr('title','Click to unblock').click($.unblockUI); 
+                }
+            }
+        );
+        result.error(function() {
             $.blockUI({
-              overlayCSS: { backgroundColor: '#ff0009' },
-              message: '<h1>Error! Click outside this box to dismiss.</h1>' + data, 
+                overlayCSS: { backgroundColor: '#ff0009' },
+                message: '<h1>Error! Click outside this box to dismiss.</h1>', 
             });
             $('.blockOverlay').attr('title','Click to unblock').click($.unblockUI); 
-          }
-        }
-      );
+        })
     }
   }
