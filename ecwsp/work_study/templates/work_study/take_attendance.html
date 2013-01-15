@@ -1,0 +1,79 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            grappelli.initDateAndTimePicker();
+	    $('.ui-timepicker-trigger').attr('tabindex', -1);
+	    $('#id_form-0-tardy').focus();
+        });
+    </script>
+{% endblock %}
+
+{% block breadcrumbs %}{% if not is_popup %}
+<div id="breadcrumbs">
+    <a href="{% url "admin:index" %}">{% trans "Home" %}</a> &rsaquo;
+    <a href="{% url "admin:app_list" 'work_study' %}">{% trans "Work Study" %}</a> &rsaquo;
+    <a href="{% url "admin:work_study_attendance_changelist" %}"> Client Visit </a> &rsaquo; 
+    Take Attendance
+</div>
+{% endif %}{% endblock %}
+
+{% block content %}
+    <h2> Work Study Attendance </h2>
+    <h3>Select Day</h3>
+    {% if work_day == "M" %}
+        Monday
+    {% else %} 
+        <a href="{% url "ecwsp.work_study.views.take_attendance" 0 %}">Monday</a>
+    {% endif %}
+    {% if work_day == "T" %}
+        Tuesday
+    {% else %} 
+        <a href="{% url "ecwsp.work_study.views.take_attendance" 1 %}">Tuesday</a>
+    {% endif %}
+    {% if work_day == "W" %}
+        Wednesday
+    {% else %} 
+        <a href="{% url "ecwsp.work_study.views.take_attendance" 2 %}">Wednesday</a>
+    {% endif %}
+    {% if work_day == "TH" %}
+        Thursday
+    {% else %} 
+        <a href="{% url "ecwsp.work_study.views.take_attendance" 3 %}">Thursday</a>
+    {% endif %}
+    {% if work_day == "F" %}
+        Friday
+    {% else %} 
+        <a href="{% url "ecwsp.work_study.views.take_attendance" 4 %}">Friday</a>
+    {% endif %}
+    
+    <p>Today is {{ date }}</p>
+    {{ formset.non_field_errors }}
+    <form method="post" action="" id="myform">
+        {{ formset.management_form }}
+        <table>
+	    <tr>
+		<th>Student</th>
+		<th>Status</th>
+		<th>Tardy time in</th>
+	    </tr>
+            {% for form in formset %}
+                <tr>
+                    <td>{{ form.student_display }} {{ form.student.as_hidden }} {{ form.student.errors }}</td>
+                    <td>{{ form.tardy }} {{ form.tardy.errors }}</td>
+                    <td>{{ form.tardy_time_in }} {{ form.tardy_time_in.errors }}</td>
+                </tr>
+            {% endfor %}
+        </table>        
+        <input type="submit"/>
+        <br/>
+        Tip: You can enter attendance by just pressing A for Absent, P for Present, etc</span>
+    </form>
+    <script type="text/javascript">
+        document.getElementById("id_form-0-status" ).focus();
+    </script>
+{% endblock %}
+

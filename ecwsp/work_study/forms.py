@@ -285,3 +285,10 @@ class CompanyContactForm3(forms.ModelForm):
     email = forms.EmailField()
     i_agree = forms.BooleanField()
     
+class QuickAttendanceForm(forms.ModelForm):
+    class Meta:
+        model = Attendance
+        fields = ('student', 'tardy', 'tardy_time_in')
+        widgets = {
+            'tardy_time_in': adminwidgets.AdminTimeWidget(attrs={'tabindex':"-1",}),
+        }

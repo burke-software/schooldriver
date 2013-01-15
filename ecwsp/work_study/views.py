@@ -23,6 +23,7 @@ from django.contrib.auth.decorators import user_passes_test, permission_required
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from django.core import urlresolvers
 from django.db.models import Q
 from django.http import HttpResponse
 from django import forms
@@ -37,7 +38,7 @@ from ecwsp.work_study.models import StudentWorker, Contact, TimeSheet, WorkTeam,
 from ecwsp.work_study.models import PaymentOption, CompanyHistory, Attendance
 from ecwsp.administration.models import Configuration, AccessLog
 from ecwsp.work_study.forms import ChangeSupervisorForm, TimeSheetForm, ReportTemplateForm, DolForm, CompanyContactForm1
-from ecwsp.work_study.forms import  CompanyContactForm2, CompanyContactForm3, ReportBuilderForm, AddSupervisor
+from ecwsp.work_study.forms import  CompanyContactForm2, CompanyContactForm3, ReportBuilderForm, AddSupervisor, QuickAttendanceForm
 from ecwsp.work_study.xlsReport import xlsReport
 from ecwsp.work_study.reports import fte_by_day, fte_by_ind, fte_by_pay, am_route_attendance, gen_attendance_report_day, route_attendance
 from ecwsp.work_study.reports import student_company_day_report, supervisor_xls
@@ -527,7 +528,7 @@ def report_builder_view(request):
                 elif 'contracts' in request.POST:
                     return contracts_report()
                 elif 'attendance' in request.POST:
-                    attend = Attendance.objects.filter(absence_date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end']))
+                    attend = Attendance.objects.filter(absence_date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])).exclude(tardy="P")
                     # Sheet 1 all absences
                     data = []
                     titles = ["Date", "First Name", "Last", "Grade", "Total", "comments", "make up date", "Bill", "Was Billed?"]
@@ -604,14 +605,15 @@ def report_builder_view(request):
                 # All students and the the number of timesheets submitted for some time period    
                 elif 'student_timesheet' in request.POST:
                     data = []
-                    titles = ["Student", "Work Day", "Placement", "Number of time sheets submitted", "Dates"]
+                    titles = ["Student", "Work Day", "Placement", "Number of work study Presents", "Number of time sheets submitted", "Dates"]
                     students = StudentWorker.objects.filter(inactive=False)
                     for student in students:
                         ts = TimeSheet.objects.filter(student=student).filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end']))
+                        present_count = student.attendance_set.filter(absence_date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end']), tardy="P").count()
                         dates = ""
                         for t in ts:
                             dates += unicode(t.date) + ", "
-                        data.append([student, student.day, student.placement, ts.count(), dates])
+                        data.append([student, student.day, student.placement, present_count, ts.count(), dates])
                     report = xlsReport(data, titles, "Student_timesheets.xls", heading="Student Timesheets")
                     return report.finish()
                         
@@ -977,3 +979,38 @@ def routes(request):
         if 'am_route_attendance' or 'pm_route_attendance' in request.POST:
             return am_route_attendance(request)
     return render_to_response('work_study/routes.html', {'request': request}, RequestContext(request, {}))
+
+@permission_required('work_study.change_attendance')
+def take_attendance(request, work_day=None):
+    today = date.today()
+    if work_day:
+        work_day = StudentWorker.dayOfWeek[int(work_day)][0]
+    else:
+        try:
+            work_day = StudentWorker.dayOfWeek[today.weekday()][0]
+        except IndexError:
+            work_day = StudentWorker.dayOfWeek[0][0]
+    students = StudentWorker.objects.filter(day=work_day)
+    AttendanceFormSet = modelformset_factory(Attendance, form=QuickAttendanceForm, extra=students.count())
+    
+    if request.POST:
+        formset = AttendanceFormSet(request.POST)
+        if formset.is_valid():
+            formset.save()
+            messages.success(request, 'Saved {0} attendance records'.format(students.count()))
+            return HttpResponseRedirect(urlresolvers.reverse('admin:work_study_attendance_changelist'))
+    else:
+        
+        initial_data = []
+        for student in students:
+            initial_data += [{'student': student}]
+        formset = AttendanceFormSet(queryset=Attendance.objects.none(),initial=initial_data)
+    i = 0
+    for form in formset.forms:
+        form.student_display = students[i]
+        i += 1
+    
+    return render_to_response(
+        'work_study/take_attendance.html',
+        {'request': request, 'work_day': work_day, 'formset': formset, 'date': today},
+        RequestContext(request, {}))
