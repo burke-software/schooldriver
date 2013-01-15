@@ -47,14 +47,17 @@
                 {% formrow test_form.department using "floppyforms/rows/tr.html" %}
                 {% formrow test_form.marking_period using "floppyforms/rows/tr.html" %}
             </table>
-            <p>
-                Select course(s): {{ test_form.courses }}
-            </p>
-            <a href="javascript:void(0)" onclick='$("#students_div").show(); $(this).hide()'>Select individual students</a>
-            <div id="students_div" style="display: none">
-                {% formrow test_form.students %}
-            </div>
-            <br/>
+            
+            {% if not test.finalized %}
+              <p>
+                  Select course(s): {{ test_form.courses }}
+              </p>
+              <a href="javascript:void(0)" onclick='$("#students_div").show(); $(this).hide()'>Select individual students</a>
+              <div id="students_div" style="display: none">
+                  {% formrow test_form.students %}
+              </div>
+              <br/>
+            {% endif %}
             {% if add %}
                 <a href="javascript:void(0)" onclick='$("#quick_table").show(); $(this).hide()'>Quick Test</a>
                 <table id="quick_table" style="display: none">

@@ -227,6 +227,7 @@ def edit_test(request, id=None):
     test_form.fields['courses'].queryset = teacher_courses
     return render_to_response('omr/edit_test.html', {
         'test_form': test_form,
+        'test': test,
         'add': add,
     }, RequestContext(request, {}),)
     
