@@ -214,6 +214,7 @@ AJAX_LOOKUP_CHANNELS = {
     'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
     'course': {'model':'schedule.course', 'search_field':'fullname'},
     'day': ('ecwsp.schedule.lookups','DayLookup'),
+    'company'  : {'model':'work_study.workteam', 'search_field':'team_name'}
 }
 if 'ecwsp.omr' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['benchmark'] = ('ecwsp.omr.lookups', 'BenchmarkLookup')
