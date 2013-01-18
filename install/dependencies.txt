@@ -1,4 +1,4 @@
-#django>=1.5
+django>=1.5
 django-admin-export>=1.5
 django-ajax-filtered-fields>=0.5
 django-ajax-selects>=1.2.4
@@ -23,3 +23,5 @@ django-apptemplates>=0.0.1
 django-filter>=0.5.4
 file:../install/hatchery/django-ckeditor-3.6.2.tar.gz
 file:../install/hatchery/django-ldap-groups-0.1.3.tar.gz
+-e git://github.com/mbi/django-rosetta.git#egg=django-rosetta
+-e git://github.com/zsiciarz/django-rosetta-grappelli.git#egg=django-rosetta-grappelli

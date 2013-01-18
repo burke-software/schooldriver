@@ -67,12 +67,16 @@ DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y','%b. %d, %Y')
 DATE_FORMAT = 'b. d, Y'
-#USE_L10N = True
+USE_L10N = True
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
+LANGUAGES = (
+  ('es', 'Spanish'),
+  ('en', 'English'),
+)
 SITE_ID = 1
 INTERNAL_IPS = ('127.0.0.1',)
-#USE_I18N = True
+USE_I18N = True
 SECRET_KEY = '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -80,7 +84,7 @@ TEMPLATE_LOADERS = (
     'apptemplates.Loader',
     'django.template.loaders.eggs.Loader',
 )
-ROOT_URLCONF = 'ecwsp.urls'
+ROOT_URLCONF = 'django_sis.urls'
 WSGI_APPLICATION = 'ecwsp.wsgi.application'
 
 # Optional these you can copy into settings_local and change or maybe they need to come first.
@@ -119,6 +123,8 @@ INSTALLED_APPS = (
     'south',
     'djcelery',
     'csvimport',
+    'rosetta-grappelli',
+    'rosetta',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -126,6 +132,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'pagination.middleware.PaginationMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
