@@ -28,10 +28,6 @@
   {{ block.super }}
   <script type="text/javascript" src="/static/js/jquery.truncate.min.js"></script>
   <script type="text/javascript">
-    function choose_benchmark(id, btext) {
-      opener.dismissBenchmarkPopup(window, id, btext);
-    }
-    
     $(document).ready(function() {
       $('.limit').truncate({
         width: 350,
@@ -95,7 +91,7 @@
       <tbody>
         {% for obj in filter_list %}
           <tr class="{% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
-            <td> <a href="javascript://" onclick="choose_benchmark({{ obj.id }}, '{{ obj.number }} {{ obj.name }}');"> {{ obj.number }} </a> </td>
+            <td> {{ obj.number }} </td>
             <td> {{ obj.name }} </td>
             <td style="min-width: 130px;">
               {% for mt in obj.measurement_topics.all %}

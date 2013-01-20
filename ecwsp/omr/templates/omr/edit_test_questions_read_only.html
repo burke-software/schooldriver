@@ -14,15 +14,11 @@
                     {{ question.point_value }} Possible Point {{ question.point_value|pluralize }}
                     <br/>
                     {{ question.type }}
-                    {% if question.group %} <br/> Group: {{ question.group }} {% endif %}
                     {% for benchmark in question.benchmarks.all %}
                       {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Benchmarks </p> {% endif %}
                       <p style="padding:0px;">{{ benchmark }}</p>
                     {% endfor %}
-                    {% for theme in question.themes.all %}
-                      {% if forloop.first %} <p style="font-weight: bold; padding:0px;"> Themes </p> {% endif %}
-                      {{ theme }}
-                    {% endfor %}
+                    {% if question.theme %}Theme:{{ question.theme }}{% endif %}
                 </div>
             </div>
         </div>

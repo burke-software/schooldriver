@@ -17,13 +17,6 @@ from django.core.exceptions import ImproperlyConfigured
 if not 'ecwsp.benchmarks' in settings.INSTALLED_APPS:
     raise ImproperlyConfigured('omr depends on benchmarks but it is not in installed apps')
     
-class Theme(models.Model):
-    """ Used by teachers, not an official benchmark """
-    name = models.CharField(max_length=255, unique=True)
-    
-    def __unicode__(self):
-        return self.name
-    
     
 def get_active_year():
     try:
@@ -115,34 +108,16 @@ class Test(models.Model):
 def enroll_course_signal(sender, instance, signal, *args, **kwargs):
     instance.enroll_course()
 signals.m2m_changed.connect(enroll_course_signal, sender=Test.courses.through)
-
-class TestVersion(models.Model):
-    """Used to mix up order or questions within groups"""
-    test = models.ForeignKey(Test)
-    
-    
-class QuestionGroup(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    def __unicode__(self):
-        return self.name
     
 
 class QuestionAbstract(models.Model):
     question = RichTextField()
-    group = models.ForeignKey(
-        QuestionGroup,
-        help_text="Group questions together on the test. Test variants are made by mixing up questions within the group. "+
-            " The name can be anything you want and you may reuse names on different tests.",
-        blank=True,
-        null=True,
-    )
     benchmarks = models.ManyToManyField('benchmarks.Benchmark', blank=True, null=True)
-    themes = models.ManyToManyField(Theme, blank=True, null=True)
+    theme = models.CharField(max_length=255, blank=True)
     type_choices = (
         ('Multiple Choice','Multiple Choice'), # Simple
         ('True/False','True/False'),        # Multiple Choice with only True or False options
         ('Essay','Essay'),                  # Teacher grades and fills in bubble
-        ('Matching','Matching'),            # Same answers for a number of "questions" Question only printed once.
     )
     type = models.CharField(max_length=25, choices=type_choices, default='Multiple Choice')
     point_value = models.IntegerField(default=1)
@@ -267,17 +242,11 @@ class Question(QuestionAbstract):
         if not self.order:
             self.order = self.test.question_set.filter(order__isnull=False).count() + 1 
         super(Question, self).save(*args, **kwargs)
-    
-    
-class ErrorType(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    def __unicode__(self):
-        return self.name
 
 
 class AnswerAbstract(models.Model):
     answer = RichTextField()
-    error_type = models.ForeignKey(ErrorType, blank=True, null=True)
+    error_type = models.CharField(max_length=255, blank=True)
     point_value = models.IntegerField(default=0)
     
     class Meta:

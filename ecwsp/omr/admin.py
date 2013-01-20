@@ -40,13 +40,9 @@ class TestAdmin(ReadPermissionModelAdmin):
     
 admin.site.register(Test, TestAdmin)
 
-admin.site.register(QuestionGroup)
-
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [AnswerInline]    
 admin.site.register(Question, QuestionAdmin)
-
-admin.site.register(ErrorType)
 
 class AnswerAdmin(admin.ModelAdmin):
     pass
@@ -64,5 +60,3 @@ admin.site.register(AnswerBank, AnswerAdmin)
 class QuestionBankAdmin(admin.ModelAdmin):
     inlines = [AnswerBankInline]    
 admin.site.register(QuestionBank,QuestionBankAdmin)
-
-admin.site.register(Theme)

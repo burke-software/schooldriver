@@ -53,7 +53,7 @@ class QuestionBankFilter(django_filters.FilterSet):
     
     class Meta:
         model = QuestionBank
-        fields = ['question', 'type', 'benchmarks', 'themes']
+        fields = ['question', 'type', 'benchmarks', 'theme']
     question = django_filters.CharFilter(name='question', lookup_type='icontains', widget=TextInput(attrs={'class':'search',}))
 
 class QuestionBankListView(ListView):
@@ -178,6 +178,7 @@ def edit_test(request, id=None):
         test_form.fields['students'].initial = test.students.all()
     else:
         add = True
+        test = None
         test_form = TestForm()
         test_form.fields['teachers'].initial = [teacher.id]
     

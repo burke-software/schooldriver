@@ -34,15 +34,18 @@ class TestQuestionForm(forms.ModelForm):
         model = Question
         widgets = {
             'test': forms.HiddenInput,
+            'point_value': forms.TextInput(attrs={'type':'number', 'class': 'number_input'}),
         }
     is_true = forms.ChoiceField(widget=forms.Select, choices=((True,"True"),(False,"False")))
     benchmarks = AutoCompleteSelectMultipleField('benchmark', required=False)
-    themes = AutoCompleteSelectMultipleField('theme', required=False)
     save_to_bank = forms.BooleanField(required=False)
         
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
+        widgets = {
+            'point_value': forms.TextInput(attrs={'type':'number', 'class': 'number_input'}),
+        }
     def as_custom(self):
         t = template.loader.get_template('omr/answer_form.html')
         return t.render(Context({'answer': self},))
