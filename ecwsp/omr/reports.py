@@ -47,32 +47,48 @@ class ReportManager(object):
         # Detail sheets
         data_points = []
         data_answers = []
+        data_abc = []
         row_points = ["Student"]
         row_answers = ["Student"]
-        for question in test.question_set.all():
+        row_abc = ["Student"]
+        for i,question in enumerate(test.question_set.all()):
             row_points.append("%s %s" % (question.order, strip_tags(question.question).strip()))
             row_answers.append("%s %s" % (question.order, strip_tags(question.question).strip()))
+            row_abc.append("Question {0}".format(i+1))
         data_points.append(row_points)
         data_answers.append(row_answers)
+        data_abc.append(row_abc)
         
         for test_instance in test.testinstance_set.all():
             row_points = []
             row_answers = []
+            row_abc = []
             row_points.append(test_instance.student)
             row_answers.append(test_instance.student)
+            row_abc.append(test_instance.student)
             for question in test.question_set.all():
                 try:
                     answer = test_instance.answerinstance_set.get(question=question)
+                except AnswerInstance.DoesNotExist:
+                    answer = None
+                if answer:
                     row_points.append(answer.points_earned)
                     row_answers.append(strip_tags(answer.answer).strip())
-                except:
-                    row_points.append('')
-                    row_answers.append('')
+                    i = None
+                    if question.type == "True/False":
+                        row_abc += [answer.answer]
+                    else:
+                        for i,x in enumerate(question.answer_set.all()):
+                            if x == answer.answer:
+                                break
+                        row_abc += [chr(65+i)]
             data_points.append(row_points)
             data_answers.append(row_answers)
+            data_abc.append(row_abc)
         
         report.addSheet(data_points, heading="Detail Points", heading_top=False)
         report.addSheet(data_answers, heading="Detail Answers", heading_top=False)
+        report.addSheet(data_abc, heading="Answer Sheet", heading_top=False)
         
         # Benchmark sheet
         data = []
