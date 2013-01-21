@@ -1,4 +1,4 @@
-from ecwsp.work_study.models import StudentInteraction, CraContact, TimeSheet
+from ecwsp.work_study.models import StudentInteraction, CraContact, TimeSheet, StudentWorker
 from ecwsp.administration.models import Configuration
 from django.core.mail import send_mail
 from datetime import date
