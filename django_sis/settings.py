@@ -122,7 +122,6 @@ INSTALLED_APPS = (
     #'ldap_groups',
     'south',
     'djcelery',
-    'csvimport',
     'rosetta-grappelli',
     'rosetta',
 )
