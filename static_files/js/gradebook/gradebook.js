@@ -39,6 +39,11 @@ $(document).ready(function() {
             return tipHere;
         }
     });
+
+    // Client-side highlighting of flagged values
+    $("td[data-category_id]").each(function(index) {
+        highlight_cell($(this));
+    });
 });
 
 function submit_filter_form(form){
@@ -82,8 +87,10 @@ function mark_change(event) {
           function(data) {
             if (data.success == "SUCCESS") {
                 var new_value = data.value;
+                var cell = $(event.target).parent()
                 $(event.target).replaceWith('<div class="save_success">' + new_value + '</div>');
                 average_cell.html('<div class="save_success">' + data.average + '</div>');
+                window.setTimeout(highlight_cell, 1000, cell);
             }
           }, "json"  
         )
@@ -351,5 +358,15 @@ function keyboard_nav(event) {
         // jnm 20120912 trigger :hover highlighting of newly focused cell
         $(selected_element).trigger('mouseenter');
         return false;
+    }
+}
+
+function highlight_cell(cell) {
+    category_id = cell.data("category_id");
+    value = $.trim(cell.text());
+    if(gradebook_flag_check(category_id, value)) {
+        cell.children("div").animate({
+            backgroundColor: "salmon"
+        }, 2000);
     }
 }

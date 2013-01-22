@@ -50,7 +50,8 @@ class CalculationRule(models.Model):
             if s.applies_to(value):
                 if s.calculate_as is not None:
                     calculate_as = s.calculate_as
-                display_as = s.display_as
+                if s.display_as is not None and len(s.display_as):
+                    display_as = s.display_as
                 return calculate_as, display_as
         return calculate_as, display_as
 
@@ -75,8 +76,9 @@ class CalculationRuleCategoryAsCourse(models.Model):
 class CalculationRuleSubstitution(models.Model):
     operator = models.CharField(max_length=2, choices=OPERATOR_CHOICES)
     match_value = models.DecimalField(max_digits=8, decimal_places=2)
-    display_as = models.CharField(max_length=16)
+    display_as = models.CharField(max_length=16, blank=True, null=True)
     calculate_as = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    flag_visually = models.BooleanField(default=False)
     apply_to_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
     apply_to_categories = models.ManyToManyField('Category', blank=True, null=True)
     calculation_rule = models.ForeignKey('CalculationRule', related_name='substitution_set')
