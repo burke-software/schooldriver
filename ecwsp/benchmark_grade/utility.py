@@ -80,7 +80,7 @@ def benchmark_calculate_category_as_course_aggregate(student, category, marking_
             category_numer += credits * calculate_as
             category_denom += credits
             # yes, agg will just end up with the last substitution, but tough
-            if display_as is not None:
+            if display_as is not None and len(display_as):
                 agg.cached_substitution = display_as
     if category_denom:
         agg.cached_value = category_numer / category_denom

@@ -20,6 +20,8 @@
     <script type="text/javascript" src="/static/js/jquery-tooltip/lib/jquery.dimensions.js"></script>
     <script type="text/javascript" src="/static/js/jquery-tooltip/jquery.tooltip.min.js"></script>
 
+    <script type="text/javascript" src="/static/js/jquery.color.plus-names-2.1.1.min.js"></script>
+
     <link rel="stylesheet" href="/static/css/gradebook/style.css" type="text/css" media="screen">
     <link rel="stylesheet" href="/static/css/modal.css" type="text/css" media="screen">
 
@@ -27,7 +29,17 @@
     {% load staticfiles %}
     <script type="text/javascript" src="{% static "dajax/jquery.dajax.core.js" %}"></script>
     
-    <script>var item_pk_list = "{{ item_pks }}";</script>
+    <script>
+        var item_pk_list = "{{ item_pks }}";
+        function gradebook_flag_check(category_id, value)
+        {
+            {% for id, comparisons in category_flag_criteria.items %}{% for comparison in comparisons %}
+            if(category_id == {{ id }} && value {{ comparison|safe }})
+                return true;
+            {% endfor %}{% endfor %}
+            return false;
+        }
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -158,7 +170,7 @@
                     <tr>
                         <td><div id="student{{ student.id }}" onclick="show_student_overlay(event)">{{ student }}</div></td>
                         {% for mark in student.marks %}
-                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)">
+                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)" data-category_id="{{ mark.item.category_id }}">
                                 <div>{{ mark.mark }}</div>
                             </td>
                         {% endfor %}

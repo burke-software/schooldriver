@@ -32,7 +32,7 @@ from ecwsp.schedule.models import Course, MarkingPeriod
 #from ecwsp.schedule.forms import 
 from ecwsp.grades.forms import GradeUpload
 #from ecwsp.administration.models import *
-from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration
+from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule
 from ecwsp.benchmark_grade.forms import BenchmarkGradeVerifyForm, GradebookFilterForm, ItemForm, DemonstrationForm, FillAllForm
 from ecwsp.benchmarks.models import Benchmark
 from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
@@ -425,7 +425,15 @@ def gradebook(request, course_id):
                 item.marks_counts = '{} / {} ({:.0f}%)'.format(marks_count_passing, marks_count_total, 100.0 * marks_count_passing / marks_count_total)
             else:
                 item.marks_counts = None
-            
+
+    # Gather visual flagging criteria
+    calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
+    category_flag_criteria = {}
+    for category in Category.objects.filter(item__in=items).distinct():
+        category_flag_criteria[category.pk] = []
+        substitutions = calculation_rule.substitution_set.filter(apply_to_departments=course.department, apply_to_categories=category, flag_visually=True)
+        for substitution in substitutions:
+            category_flag_criteria[category.pk].append(substitution.operator + ' ' + str(substitution.match_value))
 
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
@@ -435,6 +443,7 @@ def gradebook(request, course_id):
         'teacher_courses': teacher_courses,
         'filtered' : filtered,
         'filter_form': filter_form,
+        'category_flag_criteria': category_flag_criteria,
     }, RequestContext(request, {}),)
 
 @staff_member_required
