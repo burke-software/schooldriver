@@ -25,7 +25,8 @@ from ecwsp.omr.models import *
 from ecwsp.benchmarks.models import Benchmark
 
 import xlwt
-from ecwsp.sis.xl_report import XlReport, i_to_column_letter
+from ecwsp.sis.xl_report import XlReport
+from openpyxl.cell import get_column_letter
 
 class ReportManager(object):
     def download_results(self, test):
@@ -44,7 +45,7 @@ class ReportManager(object):
             i += 1
         
         report = XlReport(file_name="OMR Report")
-        report.add_sheet(data, title="Summary")
+        report.add_sheet(data, title="Summary", auto_width=True)
         # Detail sheets
         data_points = []
         data_answers = []
@@ -87,9 +88,9 @@ class ReportManager(object):
             data_answers.append(row_answers)
             data_abc.append(row_abc)
         
-        report.add_sheet(data_points, title="Detail Points")
-        report.add_sheet(data_answers, title="Detail Answers")
-        report.add_sheet(data_abc, title="Answer Sheet")
+        report.add_sheet(data_points, title="Detail Points", auto_width=True)
+        report.add_sheet(data_answers, title="Detail Answers", auto_width=True)
+        report.add_sheet(data_abc, title="Answer Sheet", auto_width=True)
         
         # Benchmark sheet
         data = []
@@ -110,11 +111,11 @@ class ReportManager(object):
                 row.append(test_instance.answerinstance_set.filter(
                     question__benchmarks=benchmark).aggregate(
                     Sum('points_earned'))['points_earned__sum'])
-                row.append('={0}{1}/{0}$2'.format(i_to_column_letter(a), str(i)))
+                row.append('={0}{1}/{0}$2'.format(get_column_letter(a), str(i)))
                 a += 2 # skip ahead 2 columns
             i += 1
             data.append(row)
-        report.add_sheet(data, title="Benchmark")
+        report.add_sheet(data, title="Benchmark", auto_width=True)
         
         return report.as_download()
         
