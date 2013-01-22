@@ -51,6 +51,8 @@ def i_to_column_letter(column_number):
     2 = b
     """
     # Since we convert to spreadsheet columns which contain multiple letters we need to build the string of letters
+    import warnings
+    warnings.warn("i_to_column_letter is deprecated, please use openpyxl.cell.import get_column_letter", DeprecationWarning)
     column_name = ""
     dividend = column_number
     while dividend > 0:
@@ -90,6 +92,8 @@ class xlsReport:
         titles: header array
         fileName:
         heading: Optionally add header above data"""
+        import warnings
+        warnings.warn("deprecated please use XlReport instead", DeprecationWarning)
         self.prepareStyles()
         self.fileName = fileName
         self.addSheet(data, titles, heading, heading_top=heading_top, auto_width=auto_width)
