@@ -35,7 +35,6 @@ from ecwsp.schedule.models import Course
 from ecwsp.sis.models import Student, UserPreference, Faculty
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.administration.models import Template
-import xlwt
 
 import datetime
 
@@ -349,7 +348,7 @@ def course_attendance(request, course_id, for_date=datetime.date.today):
 
 @permission_required('sis.reports') 
 def attendance_report(request):
-    from ecwsp.sis.xlsReport import xlsReport
+    from ecwsp.sis.xl_report import XlReport
     
     form = AttendanceReportForm()
     daily_form = AttendanceDailyForm()
@@ -442,8 +441,9 @@ def attendance_report(request):
                                         status=status).count() < form.cleaned_data['filter_count']):
                                     add = False
                             pref.get_additional_student_fields(row, student, students, titles)
-                            if add: data.append(row)    
-                    report = xlsReport(data, titles, "attendance_report.xls", heading="Attendance Report")
+                            if add: data.append(row)
+                    report = XlReport(file_name="attendance_report")
+                    report.add_sheet(data, header_row=titles, title="Attendance Report", heading="Attendance Report")
                     
                 elif 'perfect_attendance' in request.POST:
                     form = AttendanceReportForm(request.POST)
@@ -481,14 +481,11 @@ def attendance_report(request):
                         row = 3
                         for day in days:
                             # Formula C3/(B3+C3)
-                            percentage = xlwt.Formula("C" + str(row) + "/(B" +str(row) + "+C" + str(row) + ')')
+                            percentage = '=C{0}/(B{0}+C{0}'.format(str(row))
                             data.append([day.date, day.present, day.absent, percentage])
                             row += 1
-                        report = xlsReport(
-                            data,
-                            titles,
-                            "attendance_daily_stats_report.xls",
-                            heading="Attendance Daily Stats")
+                        report = XlReport(file_name="attendance_daily_stats_report")
+                        report.add_sheet(data, header_row=titles, title="Attendance Daily Stats")
                         
                 else: # Aggregate report
                     stats = []
@@ -508,12 +505,13 @@ def attendance_report(request):
                     else:
                         days = SchoolYear.objects.get(active_year=True).get_number_days()
                     #percentage = 1.0 - float(absents) / (float(students) * float(days))
-                    percentage = xlwt.Formula("1-(B6/(A6*C6))")
+                    percentage = '=1-(B4/(A4*C4))'
                     data.append(['Students', 'Total Absents', 'School days', 'Absent Percentage'])
                     data.append([students, absents, days, percentage])
                     
-                    report = xlsReport(data, titles, "attendance_report.xls", heading="Attendance Report")
-                return report.finish()
+                    report = XlReport(file_name="attendance_report")
+                    report.add_sheet(data, header_row=titles, title="Attendance Report")
+                return report.as_download()
     return render_to_response(
         'attendance/attendance_report.html',
         {'form':form, 'daily_form': daily_form, 'lookup_form': lookup_form}, RequestContext(request, {}),)

@@ -27,7 +27,6 @@ from django.template import RequestContext
 
 from ecwsp.sis.models import SchoolYear, Student, Faculty
 #from ecwsp.sis.uno_report import *
-#from ecwsp.sis.xlsReport import *
 from ecwsp.schedule.models import Course, MarkingPeriod
 #from ecwsp.schedule.forms import 
 from ecwsp.grades.forms import GradeUpload

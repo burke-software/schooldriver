@@ -28,7 +28,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 from ecwsp.administration.models import *
 from ecwsp.sis.models import UserPreference, SchoolYear, Student
-from ecwsp.sis.xlsReport import *
+from ecwsp.sis.xl_report import XlReport
 from models import *
 from forms import *
 import datetime
@@ -277,7 +277,8 @@ def discipline_report_view(request):
                         pref.get_additional_student_fields(stats, student, students, titles)
                         if add: data.append(stats)
                     
-                    report = xlsReport(data, titles, "disc_stats.xls", heading="Discipline Stats")
+                    report = XlReport(file_name="disc_stats")
+                    report.add_sheet(data, header_row=titles, title="Discipline Stats", heading="Discipline Stats")
                     
                     # By Teacher
                     data = []
@@ -295,7 +296,7 @@ def discipline_report_view(request):
                         data.append(row)
                     
                     report.addSheet(data, titles=titles, heading="By Teachers")
-                    return report.finish()
+                    return report.as_download()
                     
                 elif 'aggr' in request.POST:
                     disciplines = StudentDiscipline.objects.filter(date__range=(start, end))
@@ -321,8 +322,9 @@ def discipline_report_view(request):
                         stats.append(number)
                         
                     data.append(stats)
-                    report = xlsReport(data, titles, "disc_stats.xls", heading="Discipline Stats")
-                    return report.finish()
+                    report = XlReport(file_name="disc_stats")
+                    report.add_sheet(data, header_row=titles, title="Discipline Stats", heading="Discipline Stats")
+                    return report.as_download()
             else:
                 return render_to_response('discipline/disc_report.html', {'request': request, 'form': form},
                                           RequestContext(request, {}),)    

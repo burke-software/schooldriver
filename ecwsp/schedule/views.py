@@ -14,7 +14,7 @@ from django.forms.models import modelformset_factory
 
 from ecwsp.sis.models import *
 from ecwsp.sis.uno_report import *
-from ecwsp.sis.xlsReport import *
+from ecwsp.sis.xl_report import XlReport
 from ecwsp.schedule.models import *
 from ecwsp.schedule.forms import *
 from ecwsp.administration.models import *
@@ -354,8 +354,9 @@ def grade_analytics(request):
                 if 'xls_asp' in request.POST:
                     for dept in Department.objects.all():
                         titles.append(dept)
-                report = xlsReport(data, titles, "analytics.xls", heading="Analytics Report")
-                return report.finish()
+                report = XlReport(file_name="Analytics")
+                report.add_sheet(data, header_row=titles, title="Analytics Report", heading="Analytics Report")
+                return report.as_download()
                 
             return render_to_response('schedule/grade_analytics.html', {'form': form, 'course_selection': None, 'students': show_students,}, RequestContext(request, {}),)
     return render_to_response('schedule/grade_analytics.html', {'form': form,}, RequestContext(request, {}),)

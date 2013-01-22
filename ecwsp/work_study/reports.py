@@ -4,8 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 
 from ecwsp.administration.models import Configuration
-from ecwsp.sis.xlsReport import xlsReport
-from ecwsp.work_study.xlsReport import customXls
+from ecwsp.sis.xl_report import XlReport
 from ecwsp.work_study.models import WorkTeam, TimeSheet, StudentWorker, PickupLocation, StudentWorkerRoute
 
 import xlwt as pycel
@@ -16,7 +15,6 @@ days = (["Monday", "M"], ["Tuesday","T"], ["Wednesday","W"], ["Thursday","TH"], 
 def fte_by_ind(request):
     """ FTE by industry
     """
-    fileName = "report_fteByInd.xls"
     cursor = connection.cursor()
     fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     cursor.execute("select industry_type, count(*)/" + str(fte) + \
@@ -24,9 +22,10 @@ def fte_by_ind(request):
         "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by industry_type;")
     names = cursor.fetchall()
     titles = (["Industry", "FTE"])
-    report = xlsReport(names, titles, fileName, heading="FTE by Industry Type")
-    report.addSheet(student_company_day_report(industry_type=True), heading="Detail")
-    return report.finish()
+    report = XlReport(file_name="report_fteByInd")
+    report.add_sheet(data=names, header_row=titles, title="Analytics Report", heading="FTE by Industry Type")
+    report.add_sheet(data=student_company_day_report(industry_type=True), heading="Detail")
+    return report.as_download()
 
 
 def supervisor_xls(request):
@@ -45,13 +44,13 @@ def supervisor_xls(request):
             stu_total = timesheets.filter(student__id__iexact=timesheet.student.id).aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
             data.append(["", "", "", "Total", "", "", stu_total['hours__sum'], stu_total['school_net__sum']])
             studenti = 0
-    report = xlsReport(data, titles, fileName, heading="Company Billing")
-    
-    return report.finish()
+            
+    report = XlReport(file_name="Company Billing")
+    report.add_sheet(data, header_row=titles, title="Company Billing", heading="Company Billing")
+    return report.as_download()
 
 
 def fte_by_day(request):
-    fileName = "report_fteByDay.xls"
     cursor = connection.cursor()
     fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     cursor.execute("select day, count(*)/" + str(fte) + \
@@ -59,9 +58,9 @@ def fte_by_day(request):
         "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by day;")
     names = cursor.fetchall()
     titles = (["Day", "FTE"])
-    report = xlsReport(names, titles, fileName, heading="FTE by Day of Week")
-    report.addSheet(student_company_day_report(), heading="Detail")
-    return report.finish()
+    report = XlReport(file_name="report_fteByDay")
+    report.add_sheet(names, header_row=titles, title="FTE by Day of Week", heading="FTE by Day of Week")
+    return report.as_download()
     
 def student_company_day_report(industry_type=False, paying=False):
     data = []
@@ -172,8 +171,7 @@ def gen_attendance_report_day(day, is_pickup=False):
     return response
 
 def fte_by_pay(request):
-    fileName = "report_fteByPay.xls"
-    xls = customXls(fileName) 
+    report = XlReport(file_name="report_fteByPay")
     student_fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
     
     cursor = connection.cursor()
@@ -188,22 +186,23 @@ def fte_by_pay(request):
     company = cursor.fetchall()
 
     titles = (["Paying?","FTE"])
-    xls.addSheet(totals, titles, "Totals")
+    report.add_sheet(totals, header_row=titles, title="Totals")
     titles = (["WorkTeam", "Paying?","FTE", "Funded by"])
-    xls.addSheet(company, titles, "Companies")
-    xls.addSheet(student_company_day_report(paying=True), heading="Detail")
-    return xls.finish()
+    report.add_sheet(company, header_row=titles, title="Companies")
+    report.add_sheet(student_company_day_report(paying=True), heading="Detail")
+    return report.as_download()
 
 
 def route_attendance(request):
     data = []
     titles = ['Student First', 'Last', 'Route','Van','Company','Notes']
-    fileName = "route_attendance.xls"
     for ts in timesheets:
         data.append([])
-    report = xlsReport(data, titles, fileName, heading="Route_Attendance")
-    return report.finish()
         
+    report = XlReport(file_name="route_attendance")
+    report.add_sheet(data, header_row=titles, title="Route_Attendance")
+    return report.as_download()
+
 
 def am_route_attendance(request):
     # TO DO Implement workday selection!!!!
@@ -272,7 +271,6 @@ def am_route_attendance(request):
             row += [student.get_transport_exception_display(), ]
             data.append(row)
         if not report:
-            report = xlsReport(data, titles, fileName, heading=unicode(route))
-        else:
-            report.addSheet(data, titles, heading=unicode(route))
-    return report.finish()
+            report = XlReport(file_name=fileName)
+        report.add_sheet(data, header_row=titles, title=route, heading=route)
+    return report.as_download()

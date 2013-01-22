@@ -17,7 +17,6 @@
 from django.utils.html import strip_tags
 from django.db.models import F
 
-from ecwsp.sis.xlsReport import *
 from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.administration.models import Template

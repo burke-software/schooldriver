@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 import cStringIO as StringIO
+import openpyxl
 from openpyxl.workbook import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from openpyxl.cell import get_column_letter
@@ -12,19 +13,36 @@ class XlReport:
     """
     def __init__(self, file_name="Report"):
         """ file_name does not need an extention """
+        if file_name.endswith('.xls'):
+            file_name = file_name[:-4]
+        elif file_name.endswith('xlsx'):
+            file_name = file_name[:-5]
         self.workbook = Workbook()
         self.workbook.remove_sheet(self.workbook.get_active_sheet())
         self.file_name = file_name
     
-    def add_sheet(self, data, title=None, auto_width=False, max_auto_width=50):
+    def add_sheet(self, data, title=None, header_row=None, heading=None, auto_width=False, max_auto_width=50):
         """ Add a sheet with data to workbook
-        auto_width will ESTIMATE the width of each column by counting
+        title: sheet name
+        header_row: List - Column header (bold with bottom border)
+        heading: Sheet heading (very top of sheet)
+        auto_width: will ESTIMATE the width of each column by counting
         max chars in each column. It will not work with a formula.
-        max_auto_width is the max number of characters a column to be
+        max_auto_width: is the max number of characters a column to be
         """
         sheet = self.workbook.create_sheet()
         if title:
-            sheet.title = title
+            sheet.title = unicode(title)
+        if heading:
+            sheet.append([unicode(heading)])
+        if header_row:
+            header_row = map(unicode, header_row)
+            sheet.append(header_row)
+            row = sheet.get_highest_row()
+            for i, header_cell in enumerate(header_row):
+                cell = sheet.cell(row=row-1, column=i)
+                cell.style.font.bold = True
+                cell.style.borders.bottom.border_style = openpyxl.style.Border.BORDER_THIN
         for row in data:
             row = map(unicode, row)
             sheet.append(row)

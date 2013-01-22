@@ -314,7 +314,7 @@ def student_incomplete_courses(request):
     else:
         inverse = False
 
-    from ecwsp.sis.xlsReport import xlsReport
+    from ecwsp.sis.xl_report import XlReport
     from ecwsp.work_study.models import StudentWorker
 
     AGGREGATE_CRITERIA = {'category__name': 'Standards', 'cached_substitution': 'INC'}
@@ -355,8 +355,10 @@ def student_incomplete_courses(request):
             course_detail = course_detail[1] # discard the course id
             narrative.append(u'{} ({})'.format(course_detail['fullname'], u', '.join(course_detail['marking_periods'])))
         data.append([student.lname, student.fname, student.year, work_day, u'; '.join(narrative)])
-
-    return xlsReport(data, titles, 'report.xls', heading='Sheet1', heading_top=False, auto_width=True).finish()    
+    
+    report = XlReport()
+    report.add_sheet(data, header_row=titles, title="Sheet1", auto_width=True)
+    return report.as_download()  
 
 @staff_member_required
 def student_zero_dp_standards(request):
@@ -374,7 +376,7 @@ def student_zero_dp_standards(request):
     return count_items_by_category_across_courses(YEAR_CATEGORY_NAMES, CURRENT_MARKING_PERIOD_CATEGORY_NAMES, ITEM_CRITERIA, CATEGORY_HEADING_FORMAT, PERCENTAGE_THRESHOLD, COURSE_THRESHOLD, inverse)
 
 def count_items_by_category_across_courses(year_category_names, current_marking_period_category_names, item_criteria, category_heading_format, percentage_threshold, course_threshold, inverse=False):
-    from ecwsp.sis.xlsReport import xlsReport
+    from ecwsp.sis.xl_report import XlReport
     from ecwsp.work_study.models import StudentWorker
 
     all_category_names = list(year_category_names)
@@ -433,4 +435,6 @@ def count_items_by_category_across_courses(year_category_names, current_marking_
         elif inverse:
             row = [student.lname, student.fname, student.year, work_day]
             data.append(row)
-    return xlsReport(data, titles, 'report.xls', heading='Sheet1', heading_top=False, auto_width=True).finish()
+    report = XlReport()
+    report.add_sheet(data, header_row=titles, heading="Sheet1", auto_width=True)
+    return report.as_download()
