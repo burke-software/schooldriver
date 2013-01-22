@@ -25,6 +25,7 @@ from ecwsp.omr.models import *
 from ecwsp.benchmarks.models import Benchmark
 
 import xlwt
+from ecwsp.sis.xl_report import XlReport, i_to_column_letter
 
 class ReportManager(object):
     def download_results(self, test):
@@ -37,13 +38,13 @@ class ReportManager(object):
         data.append(['Test average: %s' % (test.points_average,)])
         data.append([])
         data.append(['Student', 'Points Earned', 'Percentage'])
-        i = 7
+        i = 6
         for ti in test.testinstance_set.annotate(earned=Sum('answerinstance__points_earned')):
-            data.append([ti.student, ti.earned, xlwt.Formula("B%s / $B$2" % i)])
+            data.append([ti.student, ti.earned, "=B%s / $B$2" % i])
             i += 1
-        #xlwt.Formula("B2")
-        report = xlsReport(data, fileName="OMR report.xls", heading="Summary", heading_top=False)
         
+        report = XlReport(file_name="OMR Report")
+        report.add_sheet(data, title="Summary")
         # Detail sheets
         data_points = []
         data_answers = []
@@ -86,9 +87,9 @@ class ReportManager(object):
             data_answers.append(row_answers)
             data_abc.append(row_abc)
         
-        report.addSheet(data_points, heading="Detail Points", heading_top=False)
-        report.addSheet(data_answers, heading="Detail Answers", heading_top=False)
-        report.addSheet(data_abc, heading="Answer Sheet", heading_top=False)
+        report.add_sheet(data_points, title="Detail Points")
+        report.add_sheet(data_answers, title="Detail Answers")
+        report.add_sheet(data_abc, title="Answer Sheet")
         
         # Benchmark sheet
         data = []
@@ -104,23 +105,18 @@ class ReportManager(object):
         i = 3 # 3 for third row on spreadsheet
         for test_instance in test.testinstance_set.all():
             row = [test_instance.student]
-            a = 98 # the letter c or column c in spreadsheet
+            a = 2 # the letter c or column c in spreadsheet
             for benchmark in Benchmark.objects.filter(question__test=test).distinct():
-                row.append(test_instance.answerinstance_set.filter(question__benchmarks=benchmark).aggregate(Sum('points_earned'))['points_earned__sum'])
-                if a <= 122: # 122 = z
-                    row.append(xlwt.Formula(chr(a)+str(i)+'/'+chr(a)+'$2'))
-                elif a <= 148:
-                    row.append(xlwt.Formula('A'+chr(a-26)+str(i)+'/'+'A'+chr(a-26)+'$2'))
-                elif a <= 174:
-                    row.append(xlwt.Formula('B'+chr(a-52)+str(i)+'/'+'B'+chr(a-52)+'$2'))
-                elif a <= 200:
-                    row.append(xlwt.Formula('C'+chr(a-78)+str(i)+'/'+'C'+chr(a-78)+'$2'))
+                row.append(test_instance.answerinstance_set.filter(
+                    question__benchmarks=benchmark).aggregate(
+                    Sum('points_earned'))['points_earned__sum'])
+                row.append('={0}{1}/{0}$2'.format(i_to_column_letter(a), str(i)))
                 a += 2 # skip ahead 2 columns
             i += 1
             data.append(row)
-        report.addSheet(data, heading="Benchmark", heading_top=False)
+        report.add_sheet(data, title="Benchmark")
         
-        return report.finish()
+        return report.as_download()
         
     def download_student_results(self, test, format, template):
         """ Make appy based report showing results for each student """
