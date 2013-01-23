@@ -298,7 +298,7 @@ input.grade_input {
 
 .flagged {
     /* not actually used, since jQuery's animate() requires the color itself, not a class name */
-    background-color: salmon;
+    background-color: rgba(250, 128, 114, 0.5);
 }
 
 input[type="button"] {

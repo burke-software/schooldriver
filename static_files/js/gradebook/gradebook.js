@@ -366,7 +366,7 @@ function highlight_cell(cell) {
     value = $.trim(cell.text());
     if(gradebook_flag_check(category_id, value)) {
         cell.children("div").animate({
-            backgroundColor: "salmon"
+            backgroundColor: "rgba(250, 128, 114, 0.5)"
         }, 2000);
     }
 }
