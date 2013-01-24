@@ -58,13 +58,16 @@ class XlReport:
                         column_widths += [len(cell)]
             
             for i, column_width in enumerate(column_widths):
-                if column_width > 0:
+                if column_width > 3:
                     if column_width < max_auto_width:
                         # * 0.9 estimates a typical variable width font
                         sheet.column_dimensions[get_column_letter(i+1)].width = column_width * 0.9
                     else:
                         sheet.column_dimensions[get_column_letter(i+1)].width = max_auto_width
-        
+    
+    def save(self, filename):
+        self.workbook.save(settings.MEDIA_ROOT + filename)
+    
     def as_download(self):
         """ Returns a django HttpResponse with the xlsx file """
         myfile = StringIO.StringIO()

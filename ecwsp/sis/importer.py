@@ -25,7 +25,7 @@ from django.db import transaction
 from ecwsp.admissions.models import *
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
-from ecwsp.sis.xlsReport import *
+from ecwsp.sis.xl_report import XlReport
 from ecwsp.sis.uno_report import *
 from ecwsp.attendance.models import *
 from ecwsp.standard_test.models import StandardCategory, StandardCategoryGrade, StandardTest, StandardTestResult
@@ -460,16 +460,16 @@ class Importer:
         
         msg += unicode(self.errors) + " error(s). "
         
-        filename = 'import_error.xls'
+        filename = 'import_error.xlsx'
         if len(self.error_data):
             self.log.errors = True
             self.log.save()
-            report = customXls("")
+            report = XlReport()
             save = False
             for key, error_page in self.error_data.items():
                 if len(error_page):
                     save = True
-                    report.addSheet(error_page, self.error_titles[key][0], heading=key, heading_top=False)
+                    report.add_sheet(error_page, header_row=self.error_titles[key][0], title=key)
             if save:
                 report.save(filename)
             else:
@@ -492,12 +492,12 @@ class Importer:
         
         filename = 'import_error.xls'
         if len(self.error_data):
-            report = customXls("")
+            report = XlReport()
             save = False
             for key, error_page in self.error_data.items():
                 if len(error_page):
                     save = True
-                    report.addSheet(error_page, self.error_titles[key][0], heading=key, heading_top=False)
+                    report.add_sheet(error_page, header_row=self.error_titles[key][0], title=key)
             if save:
                 report.save(filename)
             else:

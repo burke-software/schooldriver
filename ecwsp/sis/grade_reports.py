@@ -1,9 +1,9 @@
 from django.db.models import Q
 
 from ecwsp.sis.forms import *
-from ecwsp.sis.xlsReport import *
+from ecwsp.sis.xl_report import XlReport
+from openpyxl.cell import get_column_letter
 from ecwsp.sis.report import *
-import xlwt
 
 
 def fail_report(request):
@@ -33,9 +33,7 @@ def fail_report(request):
                 student.failed_grades = student.failed_grades | failed_grades
                 ix += 1
             row += [
-                xlwt.Formula(
-                    'sum(b%s:%s%s)' % (str(iy),i_to_column_letter(ix),str(iy))
-                    ),
+                '=sum(b{0}:{1}{0})'.format(str(iy),get_column_letter(ix)),
                 '',
                 student.username,
                 student.year,
@@ -46,9 +44,10 @@ def fail_report(request):
                 row += [grade.course, grade.marking_period, grade.grade]
             data += [row]
             iy += 1
-            
-        report = xlsReport(data, titles, "fail_report.xls", heading="Failure Report")
-        return report.finish()
+        
+        report = XlReport(file_name="fail_report")
+        report.add_sheet(data, header_row=titles, title="Failure Report")
+        return report.as_download()
         
 def student_grade(request, form):
     data = form.cleaned_data
@@ -145,7 +144,9 @@ def aggregate_grade_report(request):
                             percent = ""
                         row += [no_students, percent]
                     data.append(row)
-        report = xlsReport(data, titles, "aggregate_grade_report.xls", heading="Teacher aggregate")
+                    
+        report = XlReport(file_name="aggregate_grade_report")
+        report.add_sheet(data, header_row=titles, title="Teacher aggregate")
         
         passing = 70
         data = []
@@ -179,8 +180,8 @@ def aggregate_grade_report(request):
                 row.append(fails)
                 row.append(percent)
             data.append(row)
-        report.addSheet(data, titles=titles, heading="Class Dept aggregate")
-        return report.finish()
+        report.add_sheet(data, header_row=titles, title="Class Dept aggregate")
+        return report.as_download()
         
 
 def date_based_gpa_report(request):
@@ -259,5 +260,6 @@ def date_based_gpa_report(request):
             gpa[4] = gpa[current]
             row = [student, gpa[0],gpa[1],gpa[2],gpa[3],gpa[4]]
             data.append(row)
-        report = xlsReport(data, titles, "gpas_by_year.xls", heading="GPAs")
-        return report.finish()
+        report = XlReport(file_name="gpas_by_year")
+        report.add_sheet(data, header_row=titles, title="GPAs")
+        return report.as_download()

@@ -39,7 +39,7 @@ from ecwsp.work_study.models import PaymentOption, CompanyHistory, Attendance
 from ecwsp.administration.models import Configuration, AccessLog
 from ecwsp.work_study.forms import ChangeSupervisorForm, TimeSheetForm, ReportTemplateForm, DolForm, CompanyContactForm1
 from ecwsp.work_study.forms import  CompanyContactForm2, CompanyContactForm3, ReportBuilderForm, AddSupervisor, QuickAttendanceForm
-from ecwsp.work_study.xlsReport import xlsReport
+from ecwsp.sis.xl_report import XlReport
 from ecwsp.work_study.reports import fte_by_day, fte_by_ind, fte_by_pay, am_route_attendance, gen_attendance_report_day, route_attendance
 from ecwsp.work_study.reports import student_company_day_report, supervisor_xls
 from ecwsp.sis.models import StudentNumber, SchoolYear
@@ -378,7 +378,6 @@ def contracts_report():
     submitted contracts """
     data = []
     titles = ["Company", "Contract?", "Date of last contract"]
-    fileName = "contract_report.xls"
     
     # companies with at least one active student
     companies = Company.objects.distinct()
@@ -391,9 +390,9 @@ def contracts_report():
             last = ""
         data.append([company.name, contract, last])
     
-    report = xlsReport(data, titles, fileName, heading="Contract Report")
-    
-    return report.finish()
+    report = XlReport(file_name="contract_report")
+    report.add_sheet(data, header_row=titles, title="Contract Report", heading="Contract Report")
+    return report.as_download()
     
     
 @user_passes_test(lambda u: u.groups.filter(name='company').count() > 0 or u.is_superuser, login_url='/')    
@@ -521,8 +520,9 @@ def report_builder_view(request):
                     for h in hist:
                         data.append([unicode(h.getStudent()), h.placement, h.date])
                     titles = (["Student", "WorkTeam left", "Date",])
-                    report = xlsReport(data, titles, "company_history.xls", heading="Company History")
-                    return report.finish()
+                    report = XlReport(file_name="company_history")
+                    report.add_sheet(data, header_row=titles, title="Company History", heading="Company History")
+                    return report.as_download()
                 elif 'dols' in request.POST:
                     return dol_xls_report(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])
                 elif 'contracts' in request.POST:
@@ -541,8 +541,8 @@ def report_builder_view(request):
                         else: billed = "No"
                         data.append([at.absence_date, at.student.fname, at.student.lname, at.student.year, half, at.reason, makeup, at.fee, billed])
                     
-                    fileName = "attendance_report.xls"
-                    report = xlsReport(data, titles, fileName, heading="Total")
+                    report = XlReport(file_name="attendance_report")
+                    report.add_sheet(data, header_row=titles, title="Total")
                     
                     # waived
                     waivers = attend.filter(waive=True)
@@ -552,7 +552,7 @@ def report_builder_view(request):
                         if at.half_day: half = "1/2"
                         else: half = "1"
                         data.append([at.absence_date, at.student.fname, at.student.lname, at.student.placement, at.student.year, half, at.reason, at.fee])
-                    report.addSheet(data, titles, heading="Waived")
+                    report.add_sheet(data, header_row=titles, title="Waived")
                     
                     # pending meaning no makeup date and not waived
                     pend = attend.filter(makeup_date=None).filter(waive=None).order_by('billed')
@@ -566,7 +566,7 @@ def report_builder_view(request):
                         if at.billed: billed = "Yes"
                         else: billed = "No"
                         data.append([at.absence_date, at.student.fname, at.student.lname, at.student.placement, at.student.year, half, at.reason, at.student.get_day_display(), makeup, at.fee, billed])
-                    report.addSheet(data, titles, heading="Pending")
+                    report.add_sheet(data, header_row=titles, title="Pending")
                     
                     # scheduled
                     sced = attend.filter(~Q(makeup_date=None)).filter(waive=None)
@@ -578,7 +578,7 @@ def report_builder_view(request):
                         if at.waive: makeup = "Waived"
                         else: makeup = at.makeup_date
                         data.append([at.absence_date, at.student.fname, at.student.lname, at.student.placement, at.student.primary_contact, at.student.year, half, at.reason, makeup, at.fee])
-                    report.addSheet(data, titles, heading="Scheduled")
+                    report.add_sheet(data, header_row=titles, title="Scheduled")
                     
                     # outstanding bills, sum of student's fee - paid
                     bills = attend.filter(billed=None)
@@ -592,15 +592,15 @@ def report_builder_view(request):
                             data.append([at['student__fname'], at['student__lname'], at['fee__value__sum'], at['paid__sum'], total_owes])
                         
                     titles = ["Fname", "Lname", "Total Fee", "Total Paid", "Total owes school (does not include students who were already billed)"]
-                    report.addSheet(data, titles, heading="Bill Summary")
+                    report.add_sheet(data, header_row=titles, title="Bill Summary")
                     
                     timesheets = TimeSheet.objects.filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end']))
                     data = []
                     titles = ["Date", "First Name", "Last", "Grade", "WorkTeam", "Hours", "School Net Pay", "Student Net Pay"]
                     for ts in timesheets:
                         data.append([ts.date, ts.student.fname, ts.student.lname, ts.student.year, ts.company, ts.hours, ts.school_net, ts.student_net])
-                    report.addSheet(data, titles, heading="TimeSheets")
-                    return report.finish()
+                    report.add_sheet(data, header_row=titles, title="TimeSheets")
+                    return report.as_download()
                 
                 # All students and the the number of timesheets submitted for some time period    
                 elif 'student_timesheet' in request.POST:
@@ -614,8 +614,9 @@ def report_builder_view(request):
                         for t in ts:
                             dates += unicode(t.date) + ", "
                         data.append([student, student.day, student.placement, present_count, ts.count(), dates])
-                    report = xlsReport(data, titles, "Student_timesheets.xls", heading="Student Timesheets")
-                    return report.finish()
+                    report = XlReport(file_name="Student_timesheets")
+                    report.add_sheet(data, header_row=titles, title="Student Timesheets")
+                    return report.as_download()
                         
                 # billing report for time worked for own pay.
                 elif 'billing' in request.POST:
@@ -623,7 +624,6 @@ def report_builder_view(request):
                         Q(for_pay__iexact=1) & Q(approved__iexact=1)).order_by('student', 'date')
                     data = []
                     titles = ["Company", "Work Team", "Student", "", "Date", "Hours Worked", "Student Salary", "Company Bill"]
-                    fileName = "Billing_Report.xls"
                     companies = WorkTeam.objects.all()
                     total_hours = 0
                     total_student_salary = 0
@@ -658,7 +658,8 @@ def report_builder_view(request):
                             data.append(["",])
                     data.append(["",])
                     data.append(["Totals:", "", "", "", "", total_hours, total_student_salary, total_company_bill])
-                    report = xlsReport(data, titles, fileName, heading="Detailed Hours")
+                    report = XlReport(file_name="Billing_Report")
+                    report.add_sheet(data, header_row=titles, title="Detailed Hours")
                     
                     ### WorkTeam Summary
                     data = []
@@ -667,7 +668,7 @@ def report_builder_view(request):
                     for c in comp_totals.order_by('company__company'):
                         data.append([c['company__company__name'], c['company__team_name'], c['student__count'], c['hours__sum'], c['hours__avg'], c['student_net__sum'], c['school_net__sum']])
                     titles = ["Company", "WorkTeam", "Workers Hired", "Hours Worked", "Avg Hours per Student", "Gross Amount Paid to Students", "Amount Billed to Company"]
-                    report.addSheet(data, titles, heading="Work Team Summary")
+                    report.add_sheet(data, header_row=titles, title="Work Team Summary")
                     
                     ### Company Summary
                     data = []
@@ -677,7 +678,7 @@ def report_builder_view(request):
                     for c in comp_totals:
                         data.append([c['company__company__name'], c['student__count'], c['hours__sum'], c['hours__avg'], c['student_net__sum'], c['school_net__sum']])
                     titles = ["Company", "Workers Hired", "Hours Worked", "Avg Hours per Student", "Gross Amount Paid to Students", "Amount Billed to Company"]
-                    report.addSheet(data, titles, heading="Company Summary")
+                    report.add_sheet(data, header_row=titles, title="Company Summary")
                     
                     ### Payroll (ADP #s)
                     data = []
@@ -686,7 +687,7 @@ def report_builder_view(request):
                         ts = timesheets.filter(student=student).aggregate(Sum('hours'), Sum('student_net'))
                         data.append([student.unique_id, student.fname, student.lname, student.adp_number, ts['hours__sum'], ts['student_net__sum']])
                     titles = ['Unique ID', 'First Name', 'Last Name', 'ADP #', 'Hours Worked', 'Gross Pay']
-                    report.addSheet(data, titles, heading="Payroll (ADP #s)")
+                    report.add_sheet(data, header_row=titles, title="Payroll (ADP #s)")
                     
                     ### Student info wo ADP#
                     data = []
@@ -696,9 +697,9 @@ def report_builder_view(request):
                             data.append([student.lname, student.fname, student.parent_guardian, student.street, \
                                 student.city, student.state, student.zip, student.ssn, ts['student_net__sum']])
                     titles = ['lname', 'fname', 'parent', 'address', 'city', 'state', 'zip', 'ss', 'pay']
-                    report.addSheet(data, titles, heading="Student info wo ADP #")
+                    report.add_sheet(data, header_row=titles, title="Student info wo ADP #")
                     
-                    return report.finish()
+                    return report.as_download()
     
                 elif 'all_timesheets' in request.POST:
                     timesheets = TimeSheet.objects.filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])).order_by('student', 'date')
@@ -706,15 +707,15 @@ def report_builder_view(request):
                     titles = ["Name", "", "For Pay", "make up", "approved", "company",
                               "creation date", "date", "Time In", "Lunch", "Lunch Return", "Out", "Hours",
                               "Student net", "School net", "Student Accomplishment", "Performance", "Supervisor Comment"]
-                    fileName = "timesheets.xls"
                     for ts in timesheets:
                         data.append([ts.student.fname, ts.student.lname, ts.for_pay, ts.make_up,
                                      ts.approved, ts.company, ts.creation_date, ts.date, ts.time_in,
                                      ts.time_lunch, ts.time_lunch_return, ts.time_out, ts.hours,
                                      ts.student_net, ts.school_net, ts.student_accomplishment,
                                      ts.performance, ts.supervisor_comment])
-                    report = xlsReport(data, titles, fileName, heading="timesheets")
-                    return report.finish()
+                    report = XlReport(file_name="timesheets")
+                    report.add_sheet(data, header_row=titles, title="timesheets")
+                    return report.as_download()
                     
                 # master contact list
                 elif 'master' in request.POST:
@@ -749,11 +750,11 @@ def report_builder_view(request):
                         
                         data.append([worker.fname, worker.lname, worker.mname, worker.year, worker.day, supFname,\
                             supLname,supPhone, supCell,supEmail,number,eFname,eLname,eHome,eCell,eWork])   
-                    fileName = "StudentMasterContactList.xls"
                     titles = ['First Name', 'Last Name', 'Middle Name','Year', 'Work Day', 'Supervisor First Name', 'Supervisor Last Name', 'Supervisor Phone', \
                         'Supervisor Cell', 'Supervisor Email', 'Student Cell', 'Parent First Name', 'Parent Last Name', 'Parent Home', 'Parent Cell', 'Parent Work']
-                    report = xlsReport(data, titles, fileName, heading="Custom Report")
-                    return report.finish()
+                    report = XlReport(file_name="StudentMasterContactList")
+                    report.add_sheet(data, header_row=titles, title="Custom Report")
+                    return report.as_download()
             else:
                 return render_to_response('work_study/reportBuilder.html', {'form': form,'request':request, 'template_form': template_form}, RequestContext(request, {}))
     return render_to_response('work_study/reportBuilder.html', {'form': form,'request':request, 'template_form': template_form}, RequestContext(request, {}))
@@ -788,7 +789,6 @@ def dol_form(request, id=None):
 def dol_xls_report(begin_date, end_date,):
     data = []
     titles = ["Work Team", "CRA", "Total visits", "DOL visits (in specified dates)", "Visit in active year?", "Last visited"]
-    fileName = "Client_visit_report.xls"
     
     teams = WorkTeam.objects.all().annotate(Count('clientvisit'))
     for team in teams:
@@ -807,9 +807,9 @@ def dol_xls_report(begin_date, end_date,):
                 dol_this_year = "No"
             data.append([team.team_name, team.cra, team.clientvisit__count, dols.count(), dol_this_year, dol_last])
     
-    report = xlsReport(data, titles, fileName, heading="Client Visit Report")
-    
-    return report.finish()
+    report = XlReport(file_name="Client_visit_report")
+    report.add_sheet(data, header_row=titles, title="Client Visit Report")
+    return report.as_download()
 
 @user_passes_test(lambda u: u.has_perm('work_study.change_studentinteraction') or u.has_perm('sis.reports'))
 def student_meeting(request):
