@@ -36,16 +36,11 @@ class Migration(SchemaMigration):
         db.rename_column(u'omr_answer', 'error_type_id', 'error_type')
         # Changing field 'Answer.error_type'
         db.alter_column(u'omr_answer', 'error_type', self.gf('django.db.models.fields.CharField')(default='', max_length=255))
-        # Removing index on 'Answer', fields ['error_type']
-        db.delete_index(u'omr_answer', ['error_type_id'])
-
 
         # Renaming column for 'AnswerBank.error_type' to match new field type.
         db.rename_column(u'omr_answerbank', 'error_type_id', 'error_type')
         # Changing field 'AnswerBank.error_type'
         db.alter_column(u'omr_answerbank', 'error_type', self.gf('django.db.models.fields.CharField')(default='', max_length=255))
-        # Removing index on 'AnswerBank', fields ['error_type']
-        db.delete_index(u'omr_answerbank', ['error_type_id'])
 
         # Deleting field 'NetworkQuestionBank.group'
         db.delete_column(u'omr_networkquestionbank', 'group_id')
@@ -291,7 +286,7 @@ class Migration(SchemaMigration):
             'marking_period': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.MarkingPeriod']", 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'queXF_pdf': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'blank': 'True'}),
-            'school_year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.SchoolYear']", 'null': 'True', 'blank': 'True'}),
+            'school_year': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': u"orm['sis.SchoolYear']", 'null': 'True', 'blank': 'True'}),
             'students': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['sis.Student']", 'null': 'True', 'through': u"orm['omr.TestInstance']", 'blank': 'True'}),
             'teachers': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['sis.Faculty']", 'null': 'True', 'blank': 'True'})
         },
