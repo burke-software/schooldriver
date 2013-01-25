@@ -8,6 +8,18 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Add initial data just once!
+        from django.db import connections, DEFAULT_DB_ALIAS
+        connection = connections[DEFAULT_DB_ALIAS]
+        if 'mysql' in connection.settings_dict['ENGINE']:
+            cursor = connection.cursor()
+            cursor.execute('SET foreign_key_checks = 0')
+        from django.core.management import call_command
+        call_command("loaddata", "initial.json")
+        if 'mysql' in connection.settings_dict['ENGINE']:
+            cursor = connection.cursor()
+            cursor.execute('SET foreign_key_checks = 1')
+        connection.close()
         # Adding model 'ClassYear'
         db.create_table('sis_classyear', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
