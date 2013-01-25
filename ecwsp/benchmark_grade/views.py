@@ -20,10 +20,11 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Q, Max
 from django.db import transaction
 from django.template import RequestContext
+from django.core.urlresolvers import reverse
 
 from ecwsp.sis.models import SchoolYear, Student, Faculty
 #from ecwsp.sis.uno_report import *
@@ -315,7 +316,16 @@ def gradebook(request, course_id):
     teacher_courses = get_teacher_courses(request.user.username)
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
     (teacher_courses is None or course not in teacher_courses):
-        return HttpResponse(status=403, content='You do not have access to this course.')
+        messages.add_message(request, messages.ERROR,
+            'You do not have access to the gradebook for ' + course.fullname + '.')
+        return HttpResponseRedirect(reverse('admin:index'))
+
+    # lots of stuff will fail unceremoniously if there are no MPs assigned
+    if not course.marking_period.count():
+        messages.add_message(request, messages.ERROR,
+            'The gradebook cannot be opened because there are no marking periods assigned to the course ' +
+            course.fullname + '.')
+        return HttpResponseRedirect(reverse('admin:index'))
 
     students = Student.objects.filter(inactive=False,course=course)
     #students = Student.objects.filter(course=course)
