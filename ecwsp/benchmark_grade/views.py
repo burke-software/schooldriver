@@ -217,7 +217,7 @@ def student_grade_course_detail(request, course_id, marking_period_id):
     }, RequestContext(request, {}),)
 
 @user_passes_test(lambda u: u.groups.filter(name='family').count() > 0 or u.is_superuser, login_url='/')
-def family_grade(request):
+def family_grade(request, student_id=None):
     """ A view for family to see one or more students' grades in summary. """
     available_students = None
     student = None
@@ -225,7 +225,9 @@ def family_grade(request):
     error_message = None
 
     available_students = Student.objects.filter(family_access_users=request.user)
-    if available_students.count() == 1:
+    if student_id and request.user.is_staff:
+        student = get_object_or_404(Student, pk=student_id)
+    elif available_students.count() == 1:
         student = available_students[0]
     elif 'student_username' not in request.GET:
         error_message = "Please select a student."
