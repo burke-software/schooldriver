@@ -132,7 +132,9 @@ class Item(models.Model):
     multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1) # not used yet
     def clean(self):
         from django.core.exceptions import ValidationError
-        if self.category.fixed_points_possible is not None:
+        # must use hasattr when checking if non-nullable field is null
+        # http://stackoverflow.com/q/5725065
+        if hasattr(self, 'category') and self.category.fixed_points_possible is not None:
             if self.points_possible is not None:
                 if self.points_possible != self.category.fixed_points_possible:
                     raise ValidationError("This item's category, {}, requires {} possible points.".format(self.category, self.category.fixed_points_possible))
