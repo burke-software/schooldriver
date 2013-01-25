@@ -55,15 +55,57 @@ class Configuration(models.Model):
     file = models.FileField(blank=True, null=True, upload_to="configuration", help_text="Some configuration options are for file uploads")
     help_text = models.TextField(blank=True)
     
+    default_configs = {
+        'letter_grade_required_for_pass': ('60', 'Minimum grade required to be considered "passing"'),
+        'school pay rate per hour': ('13.00', ''),
+        'From Email Address': ('donotreply@cristoreyny.org', ''),
+        'work_study show commment default': ('True', ''),
+        'work_study_timesheet_initial_time': ('True', ''),
+        'work_study_contract_from_address': ('donotreply@cristoreyny.org', ''),
+        'work_study_contract_cc_address': ('', ''),
+        'Students per FTE': ('.2', ''),
+        'S': ('5', 'David is an idiot who can not code'),
+        'Edit all Student Worker Fields': ('False', ''),
+        'sync sugarcrm minutes': ('30', ''),
+        'counseling_referral_notice_email_to': ('', ''),
+        'Admissions to student also makes student worker': ('False', ''),
+        'admissions_override_year_start': ('', 'Must be ISO date (ex 2012-10-25) or blank'),
+        'Pasing Grade': ('70', ''),
+        'Letter Passing Grade': ('A,B,C,P', ''),
+        'Only Active Classes in Schedule': ('', ''),
+        'attendance_create_work_attendance': ('False', ''),
+        'Default City': ('', ''),
+        'How to obtain student email': ('append','append, user, or student', ''),
+        'email': ('@change.me', ''),
+        'Clear Placement for Inactive Students': ('False', ''),
+        'Benchmark-based grading': ('False', ''),
+        'School Name': ('Unnamed School', ''),
+        'School Color': ('', ''),
+        'Volunteer Track Required Hours': ('20', ''),
+        'Volunteer Track Manager Emails': ('', ''),
+        'attendance_disc_tardies_before_disc': ('1', ''),
+        'attendance_disc_infraction': ('', ''),
+        'attendance_disc_action': ('', ''),
+        'Discipline Merit Default Days': ('14', ''),
+        'Discipline Merit Level One': ('0', ''),
+        'Discipline Merit Level Two': ('1', ''),
+        'Discipline Merit Level Three': ('3', ''),
+        'Discipline Merit Level Four': ('5', ''),
+    }
+    
     def __unicode__(self):
         return self.name
     
-    def get_or_default(name, default=None, help_text=""):
-        """ Get the config object or create it with a default. Always use this when gettings configs"""
+    def get_or_default(name, default=None):
+        """ Get the config object or create it with a default. Always use this when gettings configs
+        Defaults are hard coded into this python file, you must add new values here for new configs!
+        default paramater is legacy and does not do anything
+        """
         object, created = Configuration.objects.get_or_create(name=name)
         if created:
-            object.value = default
-            object.help_text = help_text
+            default_config = Configuration.default_configs[name]
+            object.value = default_config[0]
+            object.help_text = default_config[1]
             object.save()
         return object
     get_or_default = Callable(get_or_default)
