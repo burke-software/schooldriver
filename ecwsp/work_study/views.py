@@ -991,7 +991,8 @@ def take_attendance(request, work_day=None):
         except IndexError:
             work_day = StudentWorker.dayOfWeek[0][0]
     students = StudentWorker.objects.filter(day=work_day)
-    AttendanceFormSet = modelformset_factory(Attendance, form=QuickAttendanceForm, extra=students.count())
+    extra = students.count() - students.filter(attendance__absence_date=today).count()
+    AttendanceFormSet = modelformset_factory(Attendance, form=QuickAttendanceForm, extra=extra)
     
     if request.POST:
         formset = AttendanceFormSet(request.POST)
@@ -1000,15 +1001,12 @@ def take_attendance(request, work_day=None):
             messages.success(request, 'Saved {0} attendance records'.format(students.count()))
             return HttpResponseRedirect(urlresolvers.reverse('admin:work_study_attendance_changelist'))
     else:
-        
+        existing_attendance = Attendance.objects.filter(absence_date=today)
         initial_data = []
-        for student in students:
+        for student in students.exclude(attendance__absence_date=today):
             initial_data += [{'student': student}]
-        formset = AttendanceFormSet(queryset=Attendance.objects.none(),initial=initial_data)
+        formset = AttendanceFormSet(queryset=existing_attendance,initial=initial_data)
     i = 0
-    for form in formset.forms:
-        form.student_display = students[i]
-        i += 1
     
     return render_to_response(
         'work_study/take_attendance.html',
