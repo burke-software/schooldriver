@@ -776,7 +776,7 @@ class AttendanceReason(models.Model):
 class Attendance(models.Model):
     student = models.ForeignKey(StudentWorker, help_text="Student who is absent this day")
     absence_date = models.DateField(default=datetime.now, verbose_name="date")
-    tardy = models.CharField(verbose_name="Status", max_length=1, choices=(("P", "Present"),("A", "Absent/Half Day"),("T", "Tardy")),default="P")
+    tardy = models.CharField(verbose_name="Status", max_length=1, choices=(("P", "Present"),("A", "Absent/Half Day"),("T", "Tardy"),("N", "No Timesheet")),default="P")
     tardy_time_in = models.TimeField(blank=True,null=True)
     makeup_date = models.DateField(blank=True, null=True)
     fee = models.ForeignKey(AttendanceFee, blank=True, null=True)
