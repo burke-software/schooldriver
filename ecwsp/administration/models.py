@@ -96,7 +96,7 @@ class Configuration(models.Model):
     def __unicode__(self):
         return self.name
     
-    def get_or_default(name, default=None):
+    def get_or_default(name, default=None, help_text=None):
         """ Get the config object or create it with a default. Always use this when gettings configs
         Defaults are hard coded into this python file, you must add new values here for new configs!
         default paramater is legacy and does not do anything
