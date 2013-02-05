@@ -615,10 +615,11 @@ class StudentInteraction(models.Model):
             return ""
     
     def __unicode__(self):
-        if self.student.count() == 1:
+        # don't attempt to traverse a m2m if we're not actually in the database yet
+        if self.pk and self.student.count() == 1:
             stu = self.student.all()[0]
             return unicode(stu) + " " + unicode(self.date)
-        return "Interation: " + unicode(self.date)
+        return "Interaction: " + unicode(self.date)
         
 # this handler sets the company field in student interaction based on student
 # company when it was added
