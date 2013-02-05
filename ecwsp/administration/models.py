@@ -91,6 +91,7 @@ class Configuration(models.Model):
         'Discipline Merit Level Two': ('1', ''),
         'Discipline Merit Level Three': ('3', ''),
         'Discipline Merit Level Four': ('5', ''),
+        'work_study message to student missing time sheet': ('You did not submit a timesheet today', ''),
     }
     
     def __unicode__(self):
