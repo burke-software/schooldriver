@@ -92,6 +92,8 @@ class Configuration(models.Model):
         'Discipline Merit Level Three': ('3', ''),
         'Discipline Merit Level Four': ('5', ''),
         'work_study message to student missing time sheet': ('You did not submit a timesheet today', ''),
+        'admissions_inquiry_form_css': ('', 'CSS for Inquiry Form'),
+        'admissions_notify_email': ('', 'Send admissions notifications to this email. Comma seperated are ok.'),
     }
     
     def __unicode__(self):
