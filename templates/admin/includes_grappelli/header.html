@@ -212,7 +212,7 @@
             {% endif %}{% endif %}
     
             <!-- Administration -->
-            {% if perms.sis.reports or perms.administration.change_configuration or perms.custom_field.change_custom_field %}
+            {% if perms.report_builder.change_report or perms.sis.reports or perms.administration.change_configuration or perms.custom_field.change_custom_field %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
                     <a href="javascript://" class="user-options-handler grp-collapse-handler"> Admin </a>
                     <ul class="grp-user-options">
