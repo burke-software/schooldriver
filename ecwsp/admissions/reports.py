@@ -1,4 +1,4 @@
-from ecwsp.admissions.models import *
+from ecwsp.admissions.models import Applicant, AdmissionLevel, GradeLevel, ApplicationDecisionOption
 from ecwsp.sis.xl_report import XlReport
 from ecwsp.sis.models import GradeLevel
 
@@ -32,6 +32,6 @@ def report_process_statistics(year):
         yr_applicants = applicants.filter(year=grade_level).distinct()
         data.append([grade_level, yr_applicants.count()])
     
-    report = XlReport(file_name="Process Statistics")
+    report = XlReport(file_name="Process_Statistics")
     report.add_sheet(data, header_row=titles, title="Process Statistics", heading="Process Statistics")
     return report.as_download()
