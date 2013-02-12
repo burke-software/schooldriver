@@ -1,3 +1,5 @@
+var flagged_color;
+
 $(document).ready(function() {
     sh_highlightDocument();
 
@@ -41,10 +43,24 @@ $(document).ready(function() {
     });
 
     // Client-side highlighting of flagged values
+    // animate() can't fade into a css class; requires the color explictly
+    silly_div = $('<div class="flagged"></div>').appendTo('body')
+    flagged_color = silly_div.css("background-color");
+    silly_div.remove();
     $("td[data-category_id]").each(function(index) {
         highlight_cell($(this));
     });
 });
+
+function highlight_cell(cell) {
+    category_id = cell.data("category_id");
+    value = $.trim(cell.text());
+    if(gradebook_flag_check(category_id, value)) {
+        cell.children("div").animate({
+            backgroundColor: flagged_color
+        }, 2000);
+    }
+}
 
 function submit_filter_form(form){
     $(form).submit();
@@ -73,6 +89,7 @@ function mark_change(event) {
     // OMG use var or variables will be global
     var prev_value = $(event.target).attr('prev_value');
     var cur_value = $(event.target).val()
+    var cell = $(event.target).parent()
     if (prev_value != cur_value) {
         $(event.target).removeClass('save_success');
         $(event.target).addClass('saving');
@@ -87,7 +104,6 @@ function mark_change(event) {
           function(data) {
             if (data.success == "SUCCESS") {
                 var new_value = data.value;
-                var cell = $(event.target).parent()
                 $(event.target).replaceWith('<div class="save_success">' + new_value + '</div>');
                 average_cell.html('<div class="save_success">' + data.average + '</div>');
                 window.setTimeout(highlight_cell, 1000, cell);
@@ -100,6 +116,7 @@ function mark_change(event) {
         );
     } else {
         $(event.target).replaceWith('<div>' + $(event.target).val() + '</div>');
+        highlight_cell(cell);
     }
 }
 
@@ -187,7 +204,7 @@ function show_student_overlay(event) {
 function open_grade_detail(course_id, student_id) {
     // Create a temporary form to submit the list of currently-shown items via POST, and open the result in a new tab
     $("form[name=grade_detail_temporary]").remove();
-    var new_form = $('<form name="grade_detail_temporary" action="/benchmark_grade/teacher_grade_course_detail/' + student_id + "/" + course_id +
+    var new_form = $('<form name="grade_detail_temporary" action="/benchmark_grade/student_report/' + student_id + "/" + course_id +
                      '" method="post" target="_blank"></form>').appendTo("body");
     new_form.append('<input name="item_pks" type="hidden" value="' + item_pk_list + '">');
     new_form.submit();
@@ -348,15 +365,5 @@ function keyboard_nav(event) {
         // jnm 20120912 trigger :hover highlighting of newly focused cell
         $(selected_element).trigger('mouseenter');
         return false;
-    }
-}
-
-function highlight_cell(cell) {
-    category_id = cell.data("category_id");
-    value = $.trim(cell.text());
-    if(gradebook_flag_check(category_id, value)) {
-        cell.children("div").animate({
-            backgroundColor: "rgba(250, 128, 114, 0.5)"
-        }, 2000);
     }
 }
