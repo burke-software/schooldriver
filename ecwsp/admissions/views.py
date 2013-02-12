@@ -21,6 +21,13 @@ def inquiry_form(request):
     Public view can be used by anyone
     """
     css = Configuration.get_or_default('admissions_inquiry_form_css').value
+    exclude_years = Configuration.get_or_default('admissions_hide_inquiry_grade').value.split(',')
+    valid_years = GradeLevel.objects.all()
+    if exclude_years:
+        try:
+            valid_years = valid_years.exclude(id__in=exclude_years)
+        except:
+            valid_years = GradeLevel.objects.all()
     if request.POST:
         form = InquiryForm(request.POST)
         if form.is_valid():
@@ -77,6 +84,7 @@ def inquiry_form(request):
             return HttpResponse('Thank you for submitting an inquiry!')
     else:
         form = InquiryForm()
+        form.fields['year'].queryset = valid_years
     return render_to_response('admissions/inquiry_form.html', {
             'form': form,
             'css': css,
