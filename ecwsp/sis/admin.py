@@ -177,7 +177,7 @@ try:
 except ImportError:
     pass
 else:
-    add_import(StudentAdmin, add_button=True)
+    add_import(StudentAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(ClassYear)
 

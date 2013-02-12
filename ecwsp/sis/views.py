@@ -111,8 +111,8 @@ def student_redirect(request):
 
 def family_redirect(request):
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
-        from ecwsp.benchmark_grade.views import family_grade
-        return family_grade(request)
+        from ecwsp.benchmark_grade.views import student_report
+        return student_report(request)
     return render_to_response('base.html', {'msg': "Welcome!", 'request': request,}, RequestContext(request, {}))
 
 @user_passes_test(lambda u: u.groups.filter(name='registrar').count() > 0 or u.is_superuser, login_url='/')
