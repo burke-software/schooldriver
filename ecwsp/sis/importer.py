@@ -21,6 +21,7 @@ from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.db import transaction
+from django.conf import settings
 
 from ecwsp.admissions.models import *
 from ecwsp.sis.models import *
@@ -65,15 +66,16 @@ class Importer:
         args = []
         database = settings.DATABASES[database]
         if 'USER' in database:
-            args += ["--user=%s" % database['USER']]
+            args += ["--user='%s'" % database['USER']]
         if 'PASSWORD' in database:
-            args += ["--password=%s" % database['PASSWORD']]
-        if 'HOSTNAME' in database:
-            args += ["--host=%s" % database['HOSTNAME']]
+            args += ["--password='%s'" % database['PASSWORD']]
+        if 'HOST' in database and database['HOST']:
+            args += ["--host='%s'" % database['HOST']]
         if 'PORT' in database and database['PORT']:
-            args += ["--port=%s" % database['PORT']]
-        args += [database['NAME']]
-        
+            args += ["--port='%s'" % database['PORT']]
+        args += ["'%s'" % database['NAME']]
+
+
         new_version = (2,7)
         current_version = sys.version_info
         if current_version >= new_version:

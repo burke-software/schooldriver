@@ -349,7 +349,8 @@ def course_attendance(request, course_id, for_date=datetime.date.today):
 @permission_required('sis.reports') 
 def attendance_report(request):
     from ecwsp.sis.xl_report import XlReport
-    
+    from ecwsp.sis.report import pod_report_all
+
     form = AttendanceReportForm()
     daily_form = AttendanceDailyForm()
     lookup_form = AttendanceViewForm()

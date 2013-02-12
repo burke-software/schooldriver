@@ -10,6 +10,9 @@ class Migration(SchemaMigration):
         ("schedule", "0001_initial"),
         ("work_study", "0001_initial"),
     )
+    depends_on = (
+        ('administration','0001_initial'),
+    )
     def forwards(self, orm):
         # Adding model 'UserPreference'
         db.create_table('sis_userpreference', (

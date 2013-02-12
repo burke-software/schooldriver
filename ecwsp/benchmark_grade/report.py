@@ -36,15 +36,16 @@ def benchmark_report_card(template, options, students, format="odt"):
                                                   show_reports=True)
     marking_period = attendance_marking_periods.order_by('-start_date')[0]
     for student in students:
-        student.courses = Course.objects.filter(
+        student.year_courses = Course.objects.filter(
             courseenrollment__user=student,
             graded=True,
-            marking_period=marking_period,
+            marking_period__school_year=school_year,
         ).distinct().order_by('department')
+        student.courses = []
         student.count_total_by_category_name = {}
         student.count_missing_by_category_name = {}
         student.count_passing_by_category_name = {}
-        for course in student.courses:
+        for course in student.year_courses:
             course.average = gradebook_get_average(student, course, None, marking_period, None)
             course.current_marking_periods = course.marking_period.filter(start_date__lt=for_date).order_by('start_date')
             course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
@@ -99,6 +100,11 @@ def benchmark_report_card(template, options, students, format="odt"):
                 student.count_total_by_category_name[category.name] = student.count_total_by_category_name.get(category.name, 0) + category.overall_count_total
                 student.count_missing_by_category_name[category.name] = student.count_missing_by_category_name.get(category.name, 0) + category.overall_count_missing
                 student.count_passing_by_category_name[category.name] = student.count_passing_by_category_name.get(category.name, 0) + category.overall_count_passing
+
+            # some components of report need access to courses for entire year (student.year_courses)
+            # but we must keep student.courses restricted to the current marking period for compatibility
+            if marking_period in course.marking_period.all():
+                student.courses.append(course)
 
         student.count_percentage_by_category_name = {}
         for category_name, value in student.count_total_by_category_name.items():

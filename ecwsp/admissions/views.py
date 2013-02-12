@@ -20,6 +20,7 @@ def inquiry_form(request):
     Places them in the database as an applicant
     Public view can be used by anyone
     """
+    css = Configuration.get_or_default('admissions_inquiry_form_css').value
     if request.POST:
         form = InquiryForm(request.POST)
         if form.is_valid():
@@ -78,6 +79,7 @@ def inquiry_form(request):
         form = InquiryForm()
     return render_to_response('admissions/inquiry_form.html', {
             'form': form,
+            'css': css,
         },
         RequestContext(request, {}),
     )

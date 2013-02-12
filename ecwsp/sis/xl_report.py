@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponse
 import cStringIO as StringIO
 import openpyxl
@@ -17,6 +18,7 @@ class XlReport:
             file_name = file_name[:-4]
         elif file_name.endswith('xlsx'):
             file_name = file_name[:-5]
+        file_name = file_name.replace(' ', '_') # Some browsers don't deal well with spaces in downloads
         self.workbook = Workbook()
         self.workbook.remove_sheet(self.workbook.get_active_sheet())
         self.file_name = file_name

@@ -185,22 +185,12 @@ function show_student_overlay(event) {
 }
 
 function open_grade_detail(course_id, student_id) {
-    var detail_window = window.open();
-    detail_window.document.write("Loading...");
-    $.post(
-        "/benchmark_grade/teacher_grade_course_detail/" + student_id + "/" + course_id,
-        {item_pks: item_pk_list},
-        function(data) {
-            detail_window.document.body.innerHTML = data;
-        }
-    ).fail(function(jqXHR) {
-        if(jqXHR.responseXML != undefined)
-            detail_window.document.body.innerHTML = jqXHR.responseXML;
-        else if(jqXHR.responseText != undefined)
-            detail_window.document.body.innerText = jqXHR.responseText;
-        else
-            detail_window.document.body.innerText = "The server failed to create your report.";
-    })
+    // Create a temporary form to submit the list of currently-shown items via POST, and open the result in a new tab
+    $("form[name=grade_detail_temporary]").remove();
+    var new_form = $('<form name="grade_detail_temporary" action="/benchmark_grade/teacher_grade_course_detail/' + student_id + "/" + course_id +
+                     '" method="post" target="_blank"></form>').appendTo("body");
+    new_form.append('<input name="item_pks" type="hidden" value="' + item_pk_list + '">');
+    new_form.submit();
 }
 
 function show_fill_all_form(event) {

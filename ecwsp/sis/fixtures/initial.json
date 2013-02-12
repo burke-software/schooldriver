@@ -1,0 +1,7728 @@
+[
+{
+  "pk": 1, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "logentry", 
+    "name": "log entry", 
+    "app_label": "admin"
+  }
+},
+{
+  "pk": 2, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "permission", 
+    "name": "permission", 
+    "app_label": "auth"
+  }
+},
+{
+  "pk": 3, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "group", 
+    "name": "group", 
+    "app_label": "auth"
+  }
+},
+{
+  "pk": 4, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "user", 
+    "name": "user", 
+    "app_label": "auth"
+  }
+},
+{
+  "pk": 5, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "contenttype", 
+    "name": "content type", 
+    "app_label": "contenttypes"
+  }
+},
+{
+  "pk": 6, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "session", 
+    "name": "session", 
+    "app_label": "sessions"
+  }
+},
+{
+  "pk": 7, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "benchmark", 
+    "name": "benchmark", 
+    "app_label": "benchmarks"
+  }
+},
+{
+  "pk": 8, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "department", 
+    "name": "department", 
+    "app_label": "benchmarks"
+  }
+},
+{
+  "pk": 9, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "measurementtopic", 
+    "name": "measurement topic", 
+    "app_label": "benchmarks"
+  }
+},
+{
+  "pk": 10, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "migrationhistory", 
+    "name": "migration history", 
+    "app_label": "south"
+  }
+},
+{
+  "pk": 11, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "sesstat", 
+    "name": "SES Stat", 
+    "app_label": "django_ses"
+  }
+},
+{
+  "pk": 12, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "customfield", 
+    "name": "custom field", 
+    "app_label": "custom_field"
+  }
+},
+{
+  "pk": 13, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "customfieldvalue", 
+    "name": "custom field value", 
+    "app_label": "custom_field"
+  }
+},
+{
+  "pk": 14, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "userpreference", 
+    "name": "user preference", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 15, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "reportfield", 
+    "name": "report field", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 16, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "mdluser", 
+    "name": "mdl user", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 17, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "emergencycontact", 
+    "name": "Student Contact", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 18, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "emergencycontactnumber", 
+    "name": "emergency contact number", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 19, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "faculty", 
+    "name": "faculty", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 20, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "cohort", 
+    "name": "cohort", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 21, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "percoursecohort", 
+    "name": "per course cohort", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 22, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "reasonleft", 
+    "name": "reason left", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 23, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "gradelevel", 
+    "name": "grade level", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 24, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "languagechoice", 
+    "name": "language choice", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 25, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "classyear", 
+    "name": "class year", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 26, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "student", 
+    "name": "student", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 27, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "asphistory", 
+    "name": "asp history", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 28, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentcohort", 
+    "name": "student cohort", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 29, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "transcriptnotechoices", 
+    "name": "transcript note choices", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 30, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "transcriptnote", 
+    "name": "transcript note", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 31, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentnumber", 
+    "name": "student number", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 32, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentfile", 
+    "name": "student file", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 33, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studenthealthrecord", 
+    "name": "student health record", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 34, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "schoolyear", 
+    "name": "school year", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 35, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "importlog", 
+    "name": "import log", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 36, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "messagetostudent", 
+    "name": "message to student", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 37, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "familyaccessuser", 
+    "name": "family access user", 
+    "app_label": "sis"
+  }
+},
+{
+  "pk": 38, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "hours", 
+    "name": "Hours", 
+    "app_label": "volunteer_track"
+  }
+},
+{
+  "pk": 39, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "site", 
+    "name": "site", 
+    "app_label": "volunteer_track"
+  }
+},
+{
+  "pk": 40, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "sitesupervisor", 
+    "name": "site supervisor", 
+    "app_label": "volunteer_track"
+  }
+},
+{
+  "pk": 41, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "volunteersite", 
+    "name": "volunteer site", 
+    "app_label": "volunteer_track"
+  }
+},
+{
+  "pk": 42, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "volunteer", 
+    "name": "volunteer", 
+    "app_label": "volunteer_track"
+  }
+},
+{
+  "pk": 43, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "markingperiod", 
+    "name": "marking period", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 44, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "daysoff", 
+    "name": "days off", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 45, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "period", 
+    "name": "period", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 46, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "coursemeet", 
+    "name": "course meet", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 47, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "location", 
+    "name": "location", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 48, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "courseenrollment", 
+    "name": "course enrollment", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 49, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "day", 
+    "name": "day", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 50, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "department", 
+    "name": "department", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 51, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "departmentgraduationcredits", 
+    "name": "department graduation credits", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 52, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "course", 
+    "name": "course", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 53, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "omitcoursegpa", 
+    "name": "omit course gpa", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 54, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "omityeargpa", 
+    "name": "omit year gpa", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 55, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "award", 
+    "name": "award", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 56, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "awardstudent", 
+    "name": "award student", 
+    "app_label": "schedule"
+  }
+},
+{
+  "pk": 57, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "attendancestatus", 
+    "name": "attendance status", 
+    "app_label": "attendance"
+  }
+},
+{
+  "pk": 58, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "courseattendance", 
+    "name": "course attendance", 
+    "app_label": "attendance"
+  }
+},
+{
+  "pk": 59, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentattendance", 
+    "name": "student attendance", 
+    "app_label": "attendance"
+  }
+},
+{
+  "pk": 60, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "attendancelog", 
+    "name": "attendance log", 
+    "app_label": "attendance"
+  }
+},
+{
+  "pk": 61, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "attendancedailystat", 
+    "name": "attendance daily stat", 
+    "app_label": "attendance"
+  }
+},
+{
+  "pk": 62, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "cracontact", 
+    "name": "Contact CRA", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 63, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "pickuplocation", 
+    "name": "Companies: pickup", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 64, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "contact", 
+    "name": "Contact Supervisor", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 65, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "company", 
+    "name": "company", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 66, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "workteam", 
+    "name": "work team", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 67, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "paymentoption", 
+    "name": "payment option", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 68, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentfunctionalresponsibility", 
+    "name": "student functional responsibility", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 69, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentdesiredskill", 
+    "name": "student desired skill", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 70, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "compcontract", 
+    "name": "Company Contract", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 71, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "personality", 
+    "name": "personality", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 72, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "handout33", 
+    "name": "handout33", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 73, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentworkerroute", 
+    "name": "student worker route", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 74, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentworker", 
+    "name": "student worker", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 75, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "survey", 
+    "name": "survey", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 76, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "companyhistory", 
+    "name": "company history", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 77, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "presetcomment", 
+    "name": "preset comment", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 78, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentinteraction", 
+    "name": "student interaction", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 79, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "timesheetperformancechoice", 
+    "name": "time sheet performance choice", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 80, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "timesheet", 
+    "name": "time sheet", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 81, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "attendancefee", 
+    "name": "attendance fee", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 82, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "attendancereason", 
+    "name": "attendance reason", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 83, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "attendance", 
+    "name": "attendance", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 84, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "clientvisit", 
+    "name": "client visit", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 85, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "messagetosupervisor", 
+    "name": "message to supervisor", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 86, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "workteamuser", 
+    "name": "work team user", 
+    "app_label": "work_study"
+  }
+},
+{
+  "pk": 87, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "accesslog", 
+    "name": "access log", 
+    "app_label": "administration"
+  }
+},
+{
+  "pk": 88, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "configuration", 
+    "name": "configuration", 
+    "app_label": "administration"
+  }
+},
+{
+  "pk": 89, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "template", 
+    "name": "template", 
+    "app_label": "administration"
+  }
+},
+{
+  "pk": 90, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "admissionlevel", 
+    "name": "admission level", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 91, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "admissioncheck", 
+    "name": "admission check", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 92, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "ethnicitychoice", 
+    "name": "ethnicity choice", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 93, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "religionchoice", 
+    "name": "religion choice", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 94, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "heardaboutusoption", 
+    "name": "heard about us option", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 95, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "firstcontactoption", 
+    "name": "first contact option", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 96, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "applicationdecisionoption", 
+    "name": "application decision option", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 97, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "boroughoption", 
+    "name": "borough option", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 98, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "schooltype", 
+    "name": "school type", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 99, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "placeofworship", 
+    "name": "place of worship", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 100, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "feederschool", 
+    "name": "feeder school", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 101, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "openhouse", 
+    "name": "open house", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 102, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "withdrawnchoices", 
+    "name": "withdrawn choices", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 103, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "countryoption", 
+    "name": "country option", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 104, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "immigrationoption", 
+    "name": "immigration option", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 105, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "applicant", 
+    "name": "applicant", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 106, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "contactlog", 
+    "name": "contact log", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 107, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "applicantstandardtestresult", 
+    "name": "applicant standard test result", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 108, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "applicantstandardcategorygrade", 
+    "name": "applicant standard category grade", 
+    "app_label": "admissions"
+  }
+},
+{
+  "pk": 109, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "coursesync", 
+    "name": "course sync", 
+    "app_label": "engrade_sync"
+  }
+},
+{
+  "pk": 110, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "teachersync", 
+    "name": "teacher sync", 
+    "app_label": "engrade_sync"
+  }
+},
+{
+  "pk": 111, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "college", 
+    "name": "college", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 112, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "collegeenrollment", 
+    "name": "college enrollment", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 113, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "alumnistatus", 
+    "name": "alumni status", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 114, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "withdrawl", 
+    "name": "withdrawl", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 115, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "alumninotecategory", 
+    "name": "alumni note category", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 116, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "alumninote", 
+    "name": "alumni note", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 117, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "alumniaction", 
+    "name": "alumni action", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 118, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "alumniemail", 
+    "name": "alumni email", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 119, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "alumniphonenumber", 
+    "name": "alumni phone number", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 120, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "alumni", 
+    "name": "alumni", 
+    "app_label": "alumni"
+  }
+},
+{
+  "pk": 121, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "test", 
+    "name": "test", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 122, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "questionbank", 
+    "name": "question bank", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 123, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "networkquestionbank", 
+    "name": "network question bank", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 124, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "question", 
+    "name": "question", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 125, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "answerbank", 
+    "name": "answer bank", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 126, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "answer", 
+    "name": "answer", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 127, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "testinstance", 
+    "name": "test instance", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 128, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "answerinstance", 
+    "name": "answer instance", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 129, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "disciplineaction", 
+    "name": "discipline action", 
+    "app_label": "discipline"
+  }
+},
+{
+  "pk": 130, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "disciplineactioninstance", 
+    "name": "discipline action instance", 
+    "app_label": "discipline"
+  }
+},
+{
+  "pk": 131, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "infraction", 
+    "name": "infraction", 
+    "app_label": "discipline"
+  }
+},
+{
+  "pk": 132, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentdiscipline", 
+    "name": "student discipline", 
+    "app_label": "discipline"
+  }
+},
+{
+  "pk": 133, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "gradecomment", 
+    "name": "grade comment", 
+    "app_label": "grades"
+  }
+},
+{
+  "pk": 134, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "grade", 
+    "name": "grade", 
+    "app_label": "grades"
+  }
+},
+{
+  "pk": 135, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "followupaction", 
+    "name": "follow up action", 
+    "app_label": "counseling"
+  }
+},
+{
+  "pk": 136, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentmeetingcategory", 
+    "name": "student meeting category", 
+    "app_label": "counseling"
+  }
+},
+{
+  "pk": 137, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "studentmeeting", 
+    "name": "student meeting", 
+    "app_label": "counseling"
+  }
+},
+{
+  "pk": 138, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "referralcategory", 
+    "name": "referral category", 
+    "app_label": "counseling"
+  }
+},
+{
+  "pk": 139, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "referralreason", 
+    "name": "referral reason", 
+    "app_label": "counseling"
+  }
+},
+{
+  "pk": 140, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "referralform", 
+    "name": "referral form", 
+    "app_label": "counseling"
+  }
+},
+{
+  "pk": 141, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "revision", 
+    "name": "revision", 
+    "app_label": "reversion"
+  }
+},
+{
+  "pk": 142, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "version", 
+    "name": "version", 
+    "app_label": "reversion"
+  }
+},
+{
+  "pk": 143, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "taskmeta", 
+    "name": "task state", 
+    "app_label": "djcelery"
+  }
+},
+{
+  "pk": 144, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "tasksetmeta", 
+    "name": "saved group result", 
+    "app_label": "djcelery"
+  }
+},
+{
+  "pk": 145, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "intervalschedule", 
+    "name": "interval", 
+    "app_label": "djcelery"
+  }
+},
+{
+  "pk": 146, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "crontabschedule", 
+    "name": "crontab", 
+    "app_label": "djcelery"
+  }
+},
+{
+  "pk": 147, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "periodictasks", 
+    "name": "periodic tasks", 
+    "app_label": "djcelery"
+  }
+},
+{
+  "pk": 148, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "periodictask", 
+    "name": "periodic task", 
+    "app_label": "djcelery"
+  }
+},
+{
+  "pk": 149, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "workerstate", 
+    "name": "worker", 
+    "app_label": "djcelery"
+  }
+},
+{
+  "pk": 150, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "taskstate", 
+    "name": "task", 
+    "app_label": "djcelery"
+  }
+},
+{
+  "pk": 151, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "report", 
+    "name": "report", 
+    "app_label": "report_builder"
+  }
+},
+{
+  "pk": 152, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "displayfield", 
+    "name": "display field", 
+    "app_label": "report_builder"
+  }
+},
+{
+  "pk": 153, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "filterfield", 
+    "name": "filter field", 
+    "app_label": "report_builder"
+  }
+},
+{
+  "pk": 1, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_logentry", 
+    "name": "Can add log entry", 
+    "content_type": 1
+  }
+},
+{
+  "pk": 2, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_logentry", 
+    "name": "Can change log entry", 
+    "content_type": 1
+  }
+},
+{
+  "pk": 3, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_logentry", 
+    "name": "Can delete log entry", 
+    "content_type": 1
+  }
+},
+{
+  "pk": 4, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_permission", 
+    "name": "Can add permission", 
+    "content_type": 2
+  }
+},
+{
+  "pk": 5, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_permission", 
+    "name": "Can change permission", 
+    "content_type": 2
+  }
+},
+{
+  "pk": 6, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_permission", 
+    "name": "Can delete permission", 
+    "content_type": 2
+  }
+},
+{
+  "pk": 7, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_group", 
+    "name": "Can add group", 
+    "content_type": 3
+  }
+},
+{
+  "pk": 8, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_group", 
+    "name": "Can change group", 
+    "content_type": 3
+  }
+},
+{
+  "pk": 9, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_group", 
+    "name": "Can delete group", 
+    "content_type": 3
+  }
+},
+{
+  "pk": 10, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_user", 
+    "name": "Can add user", 
+    "content_type": 4
+  }
+},
+{
+  "pk": 11, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_user", 
+    "name": "Can change user", 
+    "content_type": 4
+  }
+},
+{
+  "pk": 12, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_user", 
+    "name": "Can delete user", 
+    "content_type": 4
+  }
+},
+{
+  "pk": 13, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_contenttype", 
+    "name": "Can add content type", 
+    "content_type": 5
+  }
+},
+{
+  "pk": 14, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_contenttype", 
+    "name": "Can change content type", 
+    "content_type": 5
+  }
+},
+{
+  "pk": 15, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_contenttype", 
+    "name": "Can delete content type", 
+    "content_type": 5
+  }
+},
+{
+  "pk": 16, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_session", 
+    "name": "Can add session", 
+    "content_type": 6
+  }
+},
+{
+  "pk": 17, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_session", 
+    "name": "Can change session", 
+    "content_type": 6
+  }
+},
+{
+  "pk": 18, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_session", 
+    "name": "Can delete session", 
+    "content_type": 6
+  }
+},
+{
+  "pk": 19, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_benchmark", 
+    "name": "Can add benchmark", 
+    "content_type": 7
+  }
+},
+{
+  "pk": 20, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_benchmark", 
+    "name": "Can change benchmark", 
+    "content_type": 7
+  }
+},
+{
+  "pk": 21, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_benchmark", 
+    "name": "Can delete benchmark", 
+    "content_type": 7
+  }
+},
+{
+  "pk": 22, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_department", 
+    "name": "Can add department", 
+    "content_type": 8
+  }
+},
+{
+  "pk": 23, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_department", 
+    "name": "Can change department", 
+    "content_type": 8
+  }
+},
+{
+  "pk": 24, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_department", 
+    "name": "Can delete department", 
+    "content_type": 8
+  }
+},
+{
+  "pk": 25, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_measurementtopic", 
+    "name": "Can add measurement topic", 
+    "content_type": 9
+  }
+},
+{
+  "pk": 26, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_measurementtopic", 
+    "name": "Can change measurement topic", 
+    "content_type": 9
+  }
+},
+{
+  "pk": 27, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_measurementtopic", 
+    "name": "Can delete measurement topic", 
+    "content_type": 9
+  }
+},
+{
+  "pk": 28, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_migrationhistory", 
+    "name": "Can add migration history", 
+    "content_type": 10
+  }
+},
+{
+  "pk": 29, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_migrationhistory", 
+    "name": "Can change migration history", 
+    "content_type": 10
+  }
+},
+{
+  "pk": 30, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_migrationhistory", 
+    "name": "Can delete migration history", 
+    "content_type": 10
+  }
+},
+{
+  "pk": 31, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_sesstat", 
+    "name": "Can add SES Stat", 
+    "content_type": 11
+  }
+},
+{
+  "pk": 32, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_sesstat", 
+    "name": "Can change SES Stat", 
+    "content_type": 11
+  }
+},
+{
+  "pk": 33, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_sesstat", 
+    "name": "Can delete SES Stat", 
+    "content_type": 11
+  }
+},
+{
+  "pk": 34, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_customfield", 
+    "name": "Can add custom field", 
+    "content_type": 12
+  }
+},
+{
+  "pk": 35, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_customfield", 
+    "name": "Can change custom field", 
+    "content_type": 12
+  }
+},
+{
+  "pk": 36, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_customfield", 
+    "name": "Can delete custom field", 
+    "content_type": 12
+  }
+},
+{
+  "pk": 37, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_customfieldvalue", 
+    "name": "Can add custom field value", 
+    "content_type": 13
+  }
+},
+{
+  "pk": 38, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_customfieldvalue", 
+    "name": "Can change custom field value", 
+    "content_type": 13
+  }
+},
+{
+  "pk": 39, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_customfieldvalue", 
+    "name": "Can delete custom field value", 
+    "content_type": 13
+  }
+},
+{
+  "pk": 40, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_userpreference", 
+    "name": "Can add user preference", 
+    "content_type": 14
+  }
+},
+{
+  "pk": 41, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_userpreference", 
+    "name": "Can change user preference", 
+    "content_type": 14
+  }
+},
+{
+  "pk": 42, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_userpreference", 
+    "name": "Can delete user preference", 
+    "content_type": 14
+  }
+},
+{
+  "pk": 43, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_reportfield", 
+    "name": "Can add report field", 
+    "content_type": 15
+  }
+},
+{
+  "pk": 44, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_reportfield", 
+    "name": "Can change report field", 
+    "content_type": 15
+  }
+},
+{
+  "pk": 45, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_reportfield", 
+    "name": "Can delete report field", 
+    "content_type": 15
+  }
+},
+{
+  "pk": 46, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_mdluser", 
+    "name": "Can add mdl user", 
+    "content_type": 16
+  }
+},
+{
+  "pk": 47, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_mdluser", 
+    "name": "Can change mdl user", 
+    "content_type": 16
+  }
+},
+{
+  "pk": 48, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_mdluser", 
+    "name": "Can delete mdl user", 
+    "content_type": 16
+  }
+},
+{
+  "pk": 49, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_emergencycontact", 
+    "name": "Can add Student Contact", 
+    "content_type": 17
+  }
+},
+{
+  "pk": 50, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_emergencycontact", 
+    "name": "Can change Student Contact", 
+    "content_type": 17
+  }
+},
+{
+  "pk": 51, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_emergencycontact", 
+    "name": "Can delete Student Contact", 
+    "content_type": 17
+  }
+},
+{
+  "pk": 52, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_emergencycontactnumber", 
+    "name": "Can add emergency contact number", 
+    "content_type": 18
+  }
+},
+{
+  "pk": 53, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_emergencycontactnumber", 
+    "name": "Can change emergency contact number", 
+    "content_type": 18
+  }
+},
+{
+  "pk": 54, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_emergencycontactnumber", 
+    "name": "Can delete emergency contact number", 
+    "content_type": 18
+  }
+},
+{
+  "pk": 55, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_faculty", 
+    "name": "Can add faculty", 
+    "content_type": 19
+  }
+},
+{
+  "pk": 56, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_faculty", 
+    "name": "Can change faculty", 
+    "content_type": 19
+  }
+},
+{
+  "pk": 57, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_faculty", 
+    "name": "Can delete faculty", 
+    "content_type": 19
+  }
+},
+{
+  "pk": 58, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_cohort", 
+    "name": "Can add cohort", 
+    "content_type": 20
+  }
+},
+{
+  "pk": 59, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_cohort", 
+    "name": "Can change cohort", 
+    "content_type": 20
+  }
+},
+{
+  "pk": 60, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_cohort", 
+    "name": "Can delete cohort", 
+    "content_type": 20
+  }
+},
+{
+  "pk": 61, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_percoursecohort", 
+    "name": "Can add per course cohort", 
+    "content_type": 21
+  }
+},
+{
+  "pk": 62, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_percoursecohort", 
+    "name": "Can change per course cohort", 
+    "content_type": 21
+  }
+},
+{
+  "pk": 63, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_percoursecohort", 
+    "name": "Can delete per course cohort", 
+    "content_type": 21
+  }
+},
+{
+  "pk": 64, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_reasonleft", 
+    "name": "Can add reason left", 
+    "content_type": 22
+  }
+},
+{
+  "pk": 65, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_reasonleft", 
+    "name": "Can change reason left", 
+    "content_type": 22
+  }
+},
+{
+  "pk": 66, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_reasonleft", 
+    "name": "Can delete reason left", 
+    "content_type": 22
+  }
+},
+{
+  "pk": 67, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_gradelevel", 
+    "name": "Can add grade level", 
+    "content_type": 23
+  }
+},
+{
+  "pk": 68, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_gradelevel", 
+    "name": "Can change grade level", 
+    "content_type": 23
+  }
+},
+{
+  "pk": 69, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_gradelevel", 
+    "name": "Can delete grade level", 
+    "content_type": 23
+  }
+},
+{
+  "pk": 70, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_languagechoice", 
+    "name": "Can add language choice", 
+    "content_type": 24
+  }
+},
+{
+  "pk": 71, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_languagechoice", 
+    "name": "Can change language choice", 
+    "content_type": 24
+  }
+},
+{
+  "pk": 72, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_languagechoice", 
+    "name": "Can delete language choice", 
+    "content_type": 24
+  }
+},
+{
+  "pk": 73, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_classyear", 
+    "name": "Can add class year", 
+    "content_type": 25
+  }
+},
+{
+  "pk": 74, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_classyear", 
+    "name": "Can change class year", 
+    "content_type": 25
+  }
+},
+{
+  "pk": 75, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_classyear", 
+    "name": "Can delete class year", 
+    "content_type": 25
+  }
+},
+{
+  "pk": 76, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_student", 
+    "name": "Can add student", 
+    "content_type": 26
+  }
+},
+{
+  "pk": 77, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_student", 
+    "name": "Can change student", 
+    "content_type": 26
+  }
+},
+{
+  "pk": 78, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_student", 
+    "name": "Can delete student", 
+    "content_type": 26
+  }
+},
+{
+  "pk": 79, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_student", 
+    "name": "View student", 
+    "content_type": 26
+  }
+},
+{
+  "pk": 80, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_ssn_student", 
+    "name": "View student ssn", 
+    "content_type": 26
+  }
+},
+{
+  "pk": 81, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_mentor_student", 
+    "name": "View mentoring information student", 
+    "content_type": 26
+  }
+},
+{
+  "pk": 82, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "reports", 
+    "name": "View reports", 
+    "content_type": 26
+  }
+},
+{
+  "pk": 83, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_asphistory", 
+    "name": "Can add asp history", 
+    "content_type": 27
+  }
+},
+{
+  "pk": 84, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_asphistory", 
+    "name": "Can change asp history", 
+    "content_type": 27
+  }
+},
+{
+  "pk": 85, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_asphistory", 
+    "name": "Can delete asp history", 
+    "content_type": 27
+  }
+},
+{
+  "pk": 86, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentcohort", 
+    "name": "Can add student cohort", 
+    "content_type": 28
+  }
+},
+{
+  "pk": 87, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentcohort", 
+    "name": "Can change student cohort", 
+    "content_type": 28
+  }
+},
+{
+  "pk": 88, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentcohort", 
+    "name": "Can delete student cohort", 
+    "content_type": 28
+  }
+},
+{
+  "pk": 89, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_transcriptnotechoices", 
+    "name": "Can add transcript note choices", 
+    "content_type": 29
+  }
+},
+{
+  "pk": 90, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_transcriptnotechoices", 
+    "name": "Can change transcript note choices", 
+    "content_type": 29
+  }
+},
+{
+  "pk": 91, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_transcriptnotechoices", 
+    "name": "Can delete transcript note choices", 
+    "content_type": 29
+  }
+},
+{
+  "pk": 92, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_transcriptnote", 
+    "name": "Can add transcript note", 
+    "content_type": 30
+  }
+},
+{
+  "pk": 93, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_transcriptnote", 
+    "name": "Can change transcript note", 
+    "content_type": 30
+  }
+},
+{
+  "pk": 94, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_transcriptnote", 
+    "name": "Can delete transcript note", 
+    "content_type": 30
+  }
+},
+{
+  "pk": 95, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentnumber", 
+    "name": "Can add student number", 
+    "content_type": 31
+  }
+},
+{
+  "pk": 96, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentnumber", 
+    "name": "Can change student number", 
+    "content_type": 31
+  }
+},
+{
+  "pk": 97, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentnumber", 
+    "name": "Can delete student number", 
+    "content_type": 31
+  }
+},
+{
+  "pk": 98, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentfile", 
+    "name": "Can add student file", 
+    "content_type": 32
+  }
+},
+{
+  "pk": 99, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentfile", 
+    "name": "Can change student file", 
+    "content_type": 32
+  }
+},
+{
+  "pk": 100, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentfile", 
+    "name": "Can delete student file", 
+    "content_type": 32
+  }
+},
+{
+  "pk": 101, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studenthealthrecord", 
+    "name": "Can add student health record", 
+    "content_type": 33
+  }
+},
+{
+  "pk": 102, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studenthealthrecord", 
+    "name": "Can change student health record", 
+    "content_type": 33
+  }
+},
+{
+  "pk": 103, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studenthealthrecord", 
+    "name": "Can delete student health record", 
+    "content_type": 33
+  }
+},
+{
+  "pk": 104, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_schoolyear", 
+    "name": "Can add school year", 
+    "content_type": 34
+  }
+},
+{
+  "pk": 105, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_schoolyear", 
+    "name": "Can change school year", 
+    "content_type": 34
+  }
+},
+{
+  "pk": 106, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_schoolyear", 
+    "name": "Can delete school year", 
+    "content_type": 34
+  }
+},
+{
+  "pk": 107, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_importlog", 
+    "name": "Can add import log", 
+    "content_type": 35
+  }
+},
+{
+  "pk": 108, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_importlog", 
+    "name": "Can change import log", 
+    "content_type": 35
+  }
+},
+{
+  "pk": 109, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_importlog", 
+    "name": "Can delete import log", 
+    "content_type": 35
+  }
+},
+{
+  "pk": 110, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_messagetostudent", 
+    "name": "Can add message to student", 
+    "content_type": 36
+  }
+},
+{
+  "pk": 111, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_messagetostudent", 
+    "name": "Can change message to student", 
+    "content_type": 36
+  }
+},
+{
+  "pk": 112, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_messagetostudent", 
+    "name": "Can delete message to student", 
+    "content_type": 36
+  }
+},
+{
+  "pk": 113, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_familyaccessuser", 
+    "name": "Can add family access user", 
+    "content_type": 4
+  }
+},
+{
+  "pk": 114, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_familyaccessuser", 
+    "name": "Can change family access user", 
+    "content_type": 4
+  }
+},
+{
+  "pk": 115, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_familyaccessuser", 
+    "name": "Can delete family access user", 
+    "content_type": 4
+  }
+},
+{
+  "pk": 116, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_hours", 
+    "name": "Can add Hours", 
+    "content_type": 38
+  }
+},
+{
+  "pk": 117, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_hours", 
+    "name": "Can change Hours", 
+    "content_type": 38
+  }
+},
+{
+  "pk": 118, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_hours", 
+    "name": "Can delete Hours", 
+    "content_type": 38
+  }
+},
+{
+  "pk": 119, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_site", 
+    "name": "Can add site", 
+    "content_type": 39
+  }
+},
+{
+  "pk": 120, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_site", 
+    "name": "Can change site", 
+    "content_type": 39
+  }
+},
+{
+  "pk": 121, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_site", 
+    "name": "Can delete site", 
+    "content_type": 39
+  }
+},
+{
+  "pk": 122, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_sitesupervisor", 
+    "name": "Can add site supervisor", 
+    "content_type": 40
+  }
+},
+{
+  "pk": 123, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_sitesupervisor", 
+    "name": "Can change site supervisor", 
+    "content_type": 40
+  }
+},
+{
+  "pk": 124, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_sitesupervisor", 
+    "name": "Can delete site supervisor", 
+    "content_type": 40
+  }
+},
+{
+  "pk": 125, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_volunteersite", 
+    "name": "Can add volunteer site", 
+    "content_type": 41
+  }
+},
+{
+  "pk": 126, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_volunteersite", 
+    "name": "Can change volunteer site", 
+    "content_type": 41
+  }
+},
+{
+  "pk": 127, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_volunteersite", 
+    "name": "Can delete volunteer site", 
+    "content_type": 41
+  }
+},
+{
+  "pk": 128, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_volunteer", 
+    "name": "Can add volunteer", 
+    "content_type": 42
+  }
+},
+{
+  "pk": 129, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_volunteer", 
+    "name": "Can change volunteer", 
+    "content_type": 42
+  }
+},
+{
+  "pk": 130, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_volunteer", 
+    "name": "Can delete volunteer", 
+    "content_type": 42
+  }
+},
+{
+  "pk": 131, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_asphistory", 
+    "name": "Can view asp history", 
+    "content_type": 27
+  }
+},
+{
+  "pk": 132, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_benchmark", 
+    "name": "Can view benchmark", 
+    "content_type": 7
+  }
+},
+{
+  "pk": 133, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_classyear", 
+    "name": "Can view class year", 
+    "content_type": 25
+  }
+},
+{
+  "pk": 134, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_cohort", 
+    "name": "Can view cohort", 
+    "content_type": 20
+  }
+},
+{
+  "pk": 135, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_contenttype", 
+    "name": "Can view content type", 
+    "content_type": 5
+  }
+},
+{
+  "pk": 136, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_customfield", 
+    "name": "Can view custom field", 
+    "content_type": 12
+  }
+},
+{
+  "pk": 137, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_customfieldvalue", 
+    "name": "Can view custom field value", 
+    "content_type": 13
+  }
+},
+{
+  "pk": 138, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_department", 
+    "name": "Can view department", 
+    "content_type": 8
+  }
+},
+{
+  "pk": 139, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_emergencycontactnumber", 
+    "name": "Can view emergency contact number", 
+    "content_type": 18
+  }
+},
+{
+  "pk": 140, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_faculty", 
+    "name": "Can view faculty", 
+    "content_type": 19
+  }
+},
+{
+  "pk": 141, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_familyaccessuser", 
+    "name": "Can view family access user", 
+    "content_type": 37
+  }
+},
+{
+  "pk": 142, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_gradelevel", 
+    "name": "Can view grade level", 
+    "content_type": 23
+  }
+},
+{
+  "pk": 143, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_group", 
+    "name": "Can view group", 
+    "content_type": 3
+  }
+},
+{
+  "pk": 144, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_hours", 
+    "name": "Can view Hours", 
+    "content_type": 38
+  }
+},
+{
+  "pk": 145, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_importlog", 
+    "name": "Can view import log", 
+    "content_type": 35
+  }
+},
+{
+  "pk": 146, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_languagechoice", 
+    "name": "Can view language choice", 
+    "content_type": 24
+  }
+},
+{
+  "pk": 147, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_logentry", 
+    "name": "Can view log entry", 
+    "content_type": 1
+  }
+},
+{
+  "pk": 148, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_mdluser", 
+    "name": "Can view mdl user", 
+    "content_type": 16
+  }
+},
+{
+  "pk": 149, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_measurementtopic", 
+    "name": "Can view measurement topic", 
+    "content_type": 9
+  }
+},
+{
+  "pk": 150, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_messagetostudent", 
+    "name": "Can view message to student", 
+    "content_type": 36
+  }
+},
+{
+  "pk": 151, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_migrationhistory", 
+    "name": "Can view migration history", 
+    "content_type": 10
+  }
+},
+{
+  "pk": 152, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_percoursecohort", 
+    "name": "Can view per course cohort", 
+    "content_type": 21
+  }
+},
+{
+  "pk": 153, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_permission", 
+    "name": "Can view permission", 
+    "content_type": 2
+  }
+},
+{
+  "pk": 154, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_reasonleft", 
+    "name": "Can view reason left", 
+    "content_type": 22
+  }
+},
+{
+  "pk": 155, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_reportfield", 
+    "name": "Can view report field", 
+    "content_type": 15
+  }
+},
+{
+  "pk": 156, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_schoolyear", 
+    "name": "Can view school year", 
+    "content_type": 34
+  }
+},
+{
+  "pk": 157, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_sesstat", 
+    "name": "Can view SES Stat", 
+    "content_type": 11
+  }
+},
+{
+  "pk": 158, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_session", 
+    "name": "Can view session", 
+    "content_type": 6
+  }
+},
+{
+  "pk": 159, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_site", 
+    "name": "Can view site", 
+    "content_type": 39
+  }
+},
+{
+  "pk": 160, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_sitesupervisor", 
+    "name": "Can view site supervisor", 
+    "content_type": 40
+  }
+},
+{
+  "pk": 161, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentcohort", 
+    "name": "Can view student cohort", 
+    "content_type": 28
+  }
+},
+{
+  "pk": 162, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_emergencycontact", 
+    "name": "Can view Student Contact", 
+    "content_type": 17
+  }
+},
+{
+  "pk": 163, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentfile", 
+    "name": "Can view student file", 
+    "content_type": 32
+  }
+},
+{
+  "pk": 164, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studenthealthrecord", 
+    "name": "Can view student health record", 
+    "content_type": 33
+  }
+},
+{
+  "pk": 165, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentnumber", 
+    "name": "Can view student number", 
+    "content_type": 31
+  }
+},
+{
+  "pk": 166, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_transcriptnote", 
+    "name": "Can view transcript note", 
+    "content_type": 30
+  }
+},
+{
+  "pk": 167, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_transcriptnotechoices", 
+    "name": "Can view transcript note choices", 
+    "content_type": 29
+  }
+},
+{
+  "pk": 168, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_user", 
+    "name": "Can view user", 
+    "content_type": 4
+  }
+},
+{
+  "pk": 169, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_userpreference", 
+    "name": "Can view user preference", 
+    "content_type": 14
+  }
+},
+{
+  "pk": 170, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_volunteer", 
+    "name": "Can view volunteer", 
+    "content_type": 42
+  }
+},
+{
+  "pk": 171, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_volunteersite", 
+    "name": "Can view volunteer site", 
+    "content_type": 41
+  }
+},
+{
+  "pk": 172, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_markingperiod", 
+    "name": "Can add marking period", 
+    "content_type": 43
+  }
+},
+{
+  "pk": 173, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_markingperiod", 
+    "name": "Can change marking period", 
+    "content_type": 43
+  }
+},
+{
+  "pk": 174, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_markingperiod", 
+    "name": "Can delete marking period", 
+    "content_type": 43
+  }
+},
+{
+  "pk": 175, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_daysoff", 
+    "name": "Can add days off", 
+    "content_type": 44
+  }
+},
+{
+  "pk": 176, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_daysoff", 
+    "name": "Can change days off", 
+    "content_type": 44
+  }
+},
+{
+  "pk": 177, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_daysoff", 
+    "name": "Can delete days off", 
+    "content_type": 44
+  }
+},
+{
+  "pk": 178, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_period", 
+    "name": "Can add period", 
+    "content_type": 45
+  }
+},
+{
+  "pk": 179, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_period", 
+    "name": "Can change period", 
+    "content_type": 45
+  }
+},
+{
+  "pk": 180, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_period", 
+    "name": "Can delete period", 
+    "content_type": 45
+  }
+},
+{
+  "pk": 181, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_coursemeet", 
+    "name": "Can add course meet", 
+    "content_type": 46
+  }
+},
+{
+  "pk": 182, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_coursemeet", 
+    "name": "Can change course meet", 
+    "content_type": 46
+  }
+},
+{
+  "pk": 183, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_coursemeet", 
+    "name": "Can delete course meet", 
+    "content_type": 46
+  }
+},
+{
+  "pk": 184, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_location", 
+    "name": "Can add location", 
+    "content_type": 47
+  }
+},
+{
+  "pk": 185, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_location", 
+    "name": "Can change location", 
+    "content_type": 47
+  }
+},
+{
+  "pk": 186, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_location", 
+    "name": "Can delete location", 
+    "content_type": 47
+  }
+},
+{
+  "pk": 187, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_courseenrollment", 
+    "name": "Can add course enrollment", 
+    "content_type": 48
+  }
+},
+{
+  "pk": 188, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_courseenrollment", 
+    "name": "Can change course enrollment", 
+    "content_type": 48
+  }
+},
+{
+  "pk": 189, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_courseenrollment", 
+    "name": "Can delete course enrollment", 
+    "content_type": 48
+  }
+},
+{
+  "pk": 190, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_day", 
+    "name": "Can add day", 
+    "content_type": 49
+  }
+},
+{
+  "pk": 191, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_day", 
+    "name": "Can change day", 
+    "content_type": 49
+  }
+},
+{
+  "pk": 192, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_day", 
+    "name": "Can delete day", 
+    "content_type": 49
+  }
+},
+{
+  "pk": 193, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_department", 
+    "name": "Can add department", 
+    "content_type": 50
+  }
+},
+{
+  "pk": 194, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_department", 
+    "name": "Can change department", 
+    "content_type": 50
+  }
+},
+{
+  "pk": 195, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_department", 
+    "name": "Can delete department", 
+    "content_type": 50
+  }
+},
+{
+  "pk": 196, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_departmentgraduationcredits", 
+    "name": "Can add department graduation credits", 
+    "content_type": 51
+  }
+},
+{
+  "pk": 197, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_departmentgraduationcredits", 
+    "name": "Can change department graduation credits", 
+    "content_type": 51
+  }
+},
+{
+  "pk": 198, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_departmentgraduationcredits", 
+    "name": "Can delete department graduation credits", 
+    "content_type": 51
+  }
+},
+{
+  "pk": 199, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_course", 
+    "name": "Can add course", 
+    "content_type": 52
+  }
+},
+{
+  "pk": 200, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_course", 
+    "name": "Can change course", 
+    "content_type": 52
+  }
+},
+{
+  "pk": 201, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_course", 
+    "name": "Can delete course", 
+    "content_type": 52
+  }
+},
+{
+  "pk": 202, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_omitcoursegpa", 
+    "name": "Can add omit course gpa", 
+    "content_type": 53
+  }
+},
+{
+  "pk": 203, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_omitcoursegpa", 
+    "name": "Can change omit course gpa", 
+    "content_type": 53
+  }
+},
+{
+  "pk": 204, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_omitcoursegpa", 
+    "name": "Can delete omit course gpa", 
+    "content_type": 53
+  }
+},
+{
+  "pk": 205, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_omityeargpa", 
+    "name": "Can add omit year gpa", 
+    "content_type": 54
+  }
+},
+{
+  "pk": 206, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_omityeargpa", 
+    "name": "Can change omit year gpa", 
+    "content_type": 54
+  }
+},
+{
+  "pk": 207, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_omityeargpa", 
+    "name": "Can delete omit year gpa", 
+    "content_type": 54
+  }
+},
+{
+  "pk": 208, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_award", 
+    "name": "Can add award", 
+    "content_type": 55
+  }
+},
+{
+  "pk": 209, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_award", 
+    "name": "Can change award", 
+    "content_type": 55
+  }
+},
+{
+  "pk": 210, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_award", 
+    "name": "Can delete award", 
+    "content_type": 55
+  }
+},
+{
+  "pk": 211, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_awardstudent", 
+    "name": "Can add award student", 
+    "content_type": 56
+  }
+},
+{
+  "pk": 212, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_awardstudent", 
+    "name": "Can change award student", 
+    "content_type": 56
+  }
+},
+{
+  "pk": 213, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_awardstudent", 
+    "name": "Can delete award student", 
+    "content_type": 56
+  }
+},
+{
+  "pk": 214, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_attendancestatus", 
+    "name": "Can add attendance status", 
+    "content_type": 57
+  }
+},
+{
+  "pk": 215, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_attendancestatus", 
+    "name": "Can change attendance status", 
+    "content_type": 57
+  }
+},
+{
+  "pk": 216, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_attendancestatus", 
+    "name": "Can delete attendance status", 
+    "content_type": 57
+  }
+},
+{
+  "pk": 217, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_courseattendance", 
+    "name": "Can add course attendance", 
+    "content_type": 58
+  }
+},
+{
+  "pk": 218, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_courseattendance", 
+    "name": "Can change course attendance", 
+    "content_type": 58
+  }
+},
+{
+  "pk": 219, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_courseattendance", 
+    "name": "Can delete course attendance", 
+    "content_type": 58
+  }
+},
+{
+  "pk": 220, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentattendance", 
+    "name": "Can add student attendance", 
+    "content_type": 59
+  }
+},
+{
+  "pk": 221, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentattendance", 
+    "name": "Can change student attendance", 
+    "content_type": 59
+  }
+},
+{
+  "pk": 222, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentattendance", 
+    "name": "Can delete student attendance", 
+    "content_type": 59
+  }
+},
+{
+  "pk": 223, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "take_studentattendance", 
+    "name": "Take own student attendance", 
+    "content_type": 59
+  }
+},
+{
+  "pk": 224, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_attendancelog", 
+    "name": "Can add attendance log", 
+    "content_type": 60
+  }
+},
+{
+  "pk": 225, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_attendancelog", 
+    "name": "Can change attendance log", 
+    "content_type": 60
+  }
+},
+{
+  "pk": 226, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_attendancelog", 
+    "name": "Can delete attendance log", 
+    "content_type": 60
+  }
+},
+{
+  "pk": 227, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_attendancedailystat", 
+    "name": "Can add attendance daily stat", 
+    "content_type": 61
+  }
+},
+{
+  "pk": 228, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_attendancedailystat", 
+    "name": "Can change attendance daily stat", 
+    "content_type": 61
+  }
+},
+{
+  "pk": 229, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_attendancedailystat", 
+    "name": "Can delete attendance daily stat", 
+    "content_type": 61
+  }
+},
+{
+  "pk": 230, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_cracontact", 
+    "name": "Can add Contact CRA", 
+    "content_type": 62
+  }
+},
+{
+  "pk": 231, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_cracontact", 
+    "name": "Can change Contact CRA", 
+    "content_type": 62
+  }
+},
+{
+  "pk": 232, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_cracontact", 
+    "name": "Can delete Contact CRA", 
+    "content_type": 62
+  }
+},
+{
+  "pk": 233, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_pickuplocation", 
+    "name": "Can add Companies: pickup", 
+    "content_type": 63
+  }
+},
+{
+  "pk": 234, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_pickuplocation", 
+    "name": "Can change Companies: pickup", 
+    "content_type": 63
+  }
+},
+{
+  "pk": 235, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_pickuplocation", 
+    "name": "Can delete Companies: pickup", 
+    "content_type": 63
+  }
+},
+{
+  "pk": 236, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_contact", 
+    "name": "Can add Contact Supervisor", 
+    "content_type": 64
+  }
+},
+{
+  "pk": 237, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_contact", 
+    "name": "Can change Contact Supervisor", 
+    "content_type": 64
+  }
+},
+{
+  "pk": 238, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_contact", 
+    "name": "Can delete Contact Supervisor", 
+    "content_type": 64
+  }
+},
+{
+  "pk": 239, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_company", 
+    "name": "Can add company", 
+    "content_type": 65
+  }
+},
+{
+  "pk": 240, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_company", 
+    "name": "Can change company", 
+    "content_type": 65
+  }
+},
+{
+  "pk": 241, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_company", 
+    "name": "Can delete company", 
+    "content_type": 65
+  }
+},
+{
+  "pk": 242, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_workteamuser", 
+    "name": "Can add work team user", 
+    "content_type": 86
+  }
+},
+{
+  "pk": 243, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_workteamuser", 
+    "name": "Can change work team user", 
+    "content_type": 86
+  }
+},
+{
+  "pk": 244, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_workteamuser", 
+    "name": "Can delete work team user", 
+    "content_type": 86
+  }
+},
+{
+  "pk": 245, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_workteam", 
+    "name": "Can add work team", 
+    "content_type": 66
+  }
+},
+{
+  "pk": 246, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_workteam", 
+    "name": "Can change work team", 
+    "content_type": 66
+  }
+},
+{
+  "pk": 247, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_workteam", 
+    "name": "Can delete work team", 
+    "content_type": 66
+  }
+},
+{
+  "pk": 248, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_paymentoption", 
+    "name": "Can add payment option", 
+    "content_type": 67
+  }
+},
+{
+  "pk": 249, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_paymentoption", 
+    "name": "Can change payment option", 
+    "content_type": 67
+  }
+},
+{
+  "pk": 250, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_paymentoption", 
+    "name": "Can delete payment option", 
+    "content_type": 67
+  }
+},
+{
+  "pk": 251, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentfunctionalresponsibility", 
+    "name": "Can add student functional responsibility", 
+    "content_type": 68
+  }
+},
+{
+  "pk": 252, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentfunctionalresponsibility", 
+    "name": "Can change student functional responsibility", 
+    "content_type": 68
+  }
+},
+{
+  "pk": 253, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentfunctionalresponsibility", 
+    "name": "Can delete student functional responsibility", 
+    "content_type": 68
+  }
+},
+{
+  "pk": 254, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentdesiredskill", 
+    "name": "Can add student desired skill", 
+    "content_type": 69
+  }
+},
+{
+  "pk": 255, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentdesiredskill", 
+    "name": "Can change student desired skill", 
+    "content_type": 69
+  }
+},
+{
+  "pk": 256, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentdesiredskill", 
+    "name": "Can delete student desired skill", 
+    "content_type": 69
+  }
+},
+{
+  "pk": 257, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_compcontract", 
+    "name": "Can add Company Contract", 
+    "content_type": 70
+  }
+},
+{
+  "pk": 258, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_compcontract", 
+    "name": "Can change Company Contract", 
+    "content_type": 70
+  }
+},
+{
+  "pk": 259, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_compcontract", 
+    "name": "Can delete Company Contract", 
+    "content_type": 70
+  }
+},
+{
+  "pk": 260, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_personality", 
+    "name": "Can add personality", 
+    "content_type": 71
+  }
+},
+{
+  "pk": 261, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_personality", 
+    "name": "Can change personality", 
+    "content_type": 71
+  }
+},
+{
+  "pk": 262, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_personality", 
+    "name": "Can delete personality", 
+    "content_type": 71
+  }
+},
+{
+  "pk": 263, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_handout33", 
+    "name": "Can add handout33", 
+    "content_type": 72
+  }
+},
+{
+  "pk": 264, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_handout33", 
+    "name": "Can change handout33", 
+    "content_type": 72
+  }
+},
+{
+  "pk": 265, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_handout33", 
+    "name": "Can delete handout33", 
+    "content_type": 72
+  }
+},
+{
+  "pk": 266, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentworkerroute", 
+    "name": "Can add student worker route", 
+    "content_type": 73
+  }
+},
+{
+  "pk": 267, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentworkerroute", 
+    "name": "Can change student worker route", 
+    "content_type": 73
+  }
+},
+{
+  "pk": 268, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentworkerroute", 
+    "name": "Can delete student worker route", 
+    "content_type": 73
+  }
+},
+{
+  "pk": 269, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentworker", 
+    "name": "Can add student worker", 
+    "content_type": 74
+  }
+},
+{
+  "pk": 270, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentworker", 
+    "name": "Can change student worker", 
+    "content_type": 74
+  }
+},
+{
+  "pk": 271, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentworker", 
+    "name": "Can delete student worker", 
+    "content_type": 74
+  }
+},
+{
+  "pk": 272, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_survey", 
+    "name": "Can add survey", 
+    "content_type": 75
+  }
+},
+{
+  "pk": 273, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_survey", 
+    "name": "Can change survey", 
+    "content_type": 75
+  }
+},
+{
+  "pk": 274, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_survey", 
+    "name": "Can delete survey", 
+    "content_type": 75
+  }
+},
+{
+  "pk": 275, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_companyhistory", 
+    "name": "Can add company history", 
+    "content_type": 76
+  }
+},
+{
+  "pk": 276, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_companyhistory", 
+    "name": "Can change company history", 
+    "content_type": 76
+  }
+},
+{
+  "pk": 277, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_companyhistory", 
+    "name": "Can delete company history", 
+    "content_type": 76
+  }
+},
+{
+  "pk": 278, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_presetcomment", 
+    "name": "Can add preset comment", 
+    "content_type": 77
+  }
+},
+{
+  "pk": 279, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_presetcomment", 
+    "name": "Can change preset comment", 
+    "content_type": 77
+  }
+},
+{
+  "pk": 280, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_presetcomment", 
+    "name": "Can delete preset comment", 
+    "content_type": 77
+  }
+},
+{
+  "pk": 281, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentinteraction", 
+    "name": "Can add student interaction", 
+    "content_type": 78
+  }
+},
+{
+  "pk": 282, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentinteraction", 
+    "name": "Can change student interaction", 
+    "content_type": 78
+  }
+},
+{
+  "pk": 283, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentinteraction", 
+    "name": "Can delete student interaction", 
+    "content_type": 78
+  }
+},
+{
+  "pk": 284, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_timesheetperformancechoice", 
+    "name": "Can add time sheet performance choice", 
+    "content_type": 79
+  }
+},
+{
+  "pk": 285, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_timesheetperformancechoice", 
+    "name": "Can change time sheet performance choice", 
+    "content_type": 79
+  }
+},
+{
+  "pk": 286, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_timesheetperformancechoice", 
+    "name": "Can delete time sheet performance choice", 
+    "content_type": 79
+  }
+},
+{
+  "pk": 287, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_timesheet", 
+    "name": "Can add time sheet", 
+    "content_type": 80
+  }
+},
+{
+  "pk": 288, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_timesheet", 
+    "name": "Can change time sheet", 
+    "content_type": 80
+  }
+},
+{
+  "pk": 289, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_timesheet", 
+    "name": "Can delete time sheet", 
+    "content_type": 80
+  }
+},
+{
+  "pk": 290, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_attendancefee", 
+    "name": "Can add attendance fee", 
+    "content_type": 81
+  }
+},
+{
+  "pk": 291, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_attendancefee", 
+    "name": "Can change attendance fee", 
+    "content_type": 81
+  }
+},
+{
+  "pk": 292, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_attendancefee", 
+    "name": "Can delete attendance fee", 
+    "content_type": 81
+  }
+},
+{
+  "pk": 293, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_attendancereason", 
+    "name": "Can add attendance reason", 
+    "content_type": 82
+  }
+},
+{
+  "pk": 294, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_attendancereason", 
+    "name": "Can change attendance reason", 
+    "content_type": 82
+  }
+},
+{
+  "pk": 295, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_attendancereason", 
+    "name": "Can delete attendance reason", 
+    "content_type": 82
+  }
+},
+{
+  "pk": 296, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_attendance", 
+    "name": "Can add attendance", 
+    "content_type": 83
+  }
+},
+{
+  "pk": 297, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_attendance", 
+    "name": "Can change attendance", 
+    "content_type": 83
+  }
+},
+{
+  "pk": 298, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_attendance", 
+    "name": "Can delete attendance", 
+    "content_type": 83
+  }
+},
+{
+  "pk": 299, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_clientvisit", 
+    "name": "Can add client visit", 
+    "content_type": 84
+  }
+},
+{
+  "pk": 300, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_clientvisit", 
+    "name": "Can change client visit", 
+    "content_type": 84
+  }
+},
+{
+  "pk": 301, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_clientvisit", 
+    "name": "Can delete client visit", 
+    "content_type": 84
+  }
+},
+{
+  "pk": 302, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_messagetosupervisor", 
+    "name": "Can add message to supervisor", 
+    "content_type": 85
+  }
+},
+{
+  "pk": 303, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_messagetosupervisor", 
+    "name": "Can change message to supervisor", 
+    "content_type": 85
+  }
+},
+{
+  "pk": 304, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_messagetosupervisor", 
+    "name": "Can delete message to supervisor", 
+    "content_type": 85
+  }
+},
+{
+  "pk": 305, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_accesslog", 
+    "name": "Can add access log", 
+    "content_type": 87
+  }
+},
+{
+  "pk": 306, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_accesslog", 
+    "name": "Can change access log", 
+    "content_type": 87
+  }
+},
+{
+  "pk": 307, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_accesslog", 
+    "name": "Can delete access log", 
+    "content_type": 87
+  }
+},
+{
+  "pk": 308, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_configuration", 
+    "name": "Can add configuration", 
+    "content_type": 88
+  }
+},
+{
+  "pk": 309, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_configuration", 
+    "name": "Can change configuration", 
+    "content_type": 88
+  }
+},
+{
+  "pk": 310, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_configuration", 
+    "name": "Can delete configuration", 
+    "content_type": 88
+  }
+},
+{
+  "pk": 311, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_template", 
+    "name": "Can add template", 
+    "content_type": 89
+  }
+},
+{
+  "pk": 312, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_template", 
+    "name": "Can change template", 
+    "content_type": 89
+  }
+},
+{
+  "pk": 313, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_template", 
+    "name": "Can delete template", 
+    "content_type": 89
+  }
+},
+{
+  "pk": 314, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_admissionlevel", 
+    "name": "Can add admission level", 
+    "content_type": 90
+  }
+},
+{
+  "pk": 315, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_admissionlevel", 
+    "name": "Can change admission level", 
+    "content_type": 90
+  }
+},
+{
+  "pk": 316, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_admissionlevel", 
+    "name": "Can delete admission level", 
+    "content_type": 90
+  }
+},
+{
+  "pk": 317, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_admissioncheck", 
+    "name": "Can add admission check", 
+    "content_type": 91
+  }
+},
+{
+  "pk": 318, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_admissioncheck", 
+    "name": "Can change admission check", 
+    "content_type": 91
+  }
+},
+{
+  "pk": 319, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_admissioncheck", 
+    "name": "Can delete admission check", 
+    "content_type": 91
+  }
+},
+{
+  "pk": 320, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_ethnicitychoice", 
+    "name": "Can add ethnicity choice", 
+    "content_type": 92
+  }
+},
+{
+  "pk": 321, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_ethnicitychoice", 
+    "name": "Can change ethnicity choice", 
+    "content_type": 92
+  }
+},
+{
+  "pk": 322, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_ethnicitychoice", 
+    "name": "Can delete ethnicity choice", 
+    "content_type": 92
+  }
+},
+{
+  "pk": 323, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_religionchoice", 
+    "name": "Can add religion choice", 
+    "content_type": 93
+  }
+},
+{
+  "pk": 324, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_religionchoice", 
+    "name": "Can change religion choice", 
+    "content_type": 93
+  }
+},
+{
+  "pk": 325, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_religionchoice", 
+    "name": "Can delete religion choice", 
+    "content_type": 93
+  }
+},
+{
+  "pk": 326, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_heardaboutusoption", 
+    "name": "Can add heard about us option", 
+    "content_type": 94
+  }
+},
+{
+  "pk": 327, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_heardaboutusoption", 
+    "name": "Can change heard about us option", 
+    "content_type": 94
+  }
+},
+{
+  "pk": 328, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_heardaboutusoption", 
+    "name": "Can delete heard about us option", 
+    "content_type": 94
+  }
+},
+{
+  "pk": 329, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_firstcontactoption", 
+    "name": "Can add first contact option", 
+    "content_type": 95
+  }
+},
+{
+  "pk": 330, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_firstcontactoption", 
+    "name": "Can change first contact option", 
+    "content_type": 95
+  }
+},
+{
+  "pk": 331, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_firstcontactoption", 
+    "name": "Can delete first contact option", 
+    "content_type": 95
+  }
+},
+{
+  "pk": 332, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_applicationdecisionoption", 
+    "name": "Can add application decision option", 
+    "content_type": 96
+  }
+},
+{
+  "pk": 333, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_applicationdecisionoption", 
+    "name": "Can change application decision option", 
+    "content_type": 96
+  }
+},
+{
+  "pk": 334, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_applicationdecisionoption", 
+    "name": "Can delete application decision option", 
+    "content_type": 96
+  }
+},
+{
+  "pk": 335, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_boroughoption", 
+    "name": "Can add borough option", 
+    "content_type": 97
+  }
+},
+{
+  "pk": 336, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_boroughoption", 
+    "name": "Can change borough option", 
+    "content_type": 97
+  }
+},
+{
+  "pk": 337, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_boroughoption", 
+    "name": "Can delete borough option", 
+    "content_type": 97
+  }
+},
+{
+  "pk": 338, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_schooltype", 
+    "name": "Can add school type", 
+    "content_type": 98
+  }
+},
+{
+  "pk": 339, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_schooltype", 
+    "name": "Can change school type", 
+    "content_type": 98
+  }
+},
+{
+  "pk": 340, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_schooltype", 
+    "name": "Can delete school type", 
+    "content_type": 98
+  }
+},
+{
+  "pk": 341, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_placeofworship", 
+    "name": "Can add place of worship", 
+    "content_type": 99
+  }
+},
+{
+  "pk": 342, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_placeofworship", 
+    "name": "Can change place of worship", 
+    "content_type": 99
+  }
+},
+{
+  "pk": 343, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_placeofworship", 
+    "name": "Can delete place of worship", 
+    "content_type": 99
+  }
+},
+{
+  "pk": 344, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_feederschool", 
+    "name": "Can add feeder school", 
+    "content_type": 100
+  }
+},
+{
+  "pk": 345, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_feederschool", 
+    "name": "Can change feeder school", 
+    "content_type": 100
+  }
+},
+{
+  "pk": 346, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_feederschool", 
+    "name": "Can delete feeder school", 
+    "content_type": 100
+  }
+},
+{
+  "pk": 347, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_openhouse", 
+    "name": "Can add open house", 
+    "content_type": 101
+  }
+},
+{
+  "pk": 348, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_openhouse", 
+    "name": "Can change open house", 
+    "content_type": 101
+  }
+},
+{
+  "pk": 349, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_openhouse", 
+    "name": "Can delete open house", 
+    "content_type": 101
+  }
+},
+{
+  "pk": 350, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_withdrawnchoices", 
+    "name": "Can add withdrawn choices", 
+    "content_type": 102
+  }
+},
+{
+  "pk": 351, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_withdrawnchoices", 
+    "name": "Can change withdrawn choices", 
+    "content_type": 102
+  }
+},
+{
+  "pk": 352, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_withdrawnchoices", 
+    "name": "Can delete withdrawn choices", 
+    "content_type": 102
+  }
+},
+{
+  "pk": 353, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_countryoption", 
+    "name": "Can add country option", 
+    "content_type": 103
+  }
+},
+{
+  "pk": 354, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_countryoption", 
+    "name": "Can change country option", 
+    "content_type": 103
+  }
+},
+{
+  "pk": 355, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_countryoption", 
+    "name": "Can delete country option", 
+    "content_type": 103
+  }
+},
+{
+  "pk": 356, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_immigrationoption", 
+    "name": "Can add immigration option", 
+    "content_type": 104
+  }
+},
+{
+  "pk": 357, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_immigrationoption", 
+    "name": "Can change immigration option", 
+    "content_type": 104
+  }
+},
+{
+  "pk": 358, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_immigrationoption", 
+    "name": "Can delete immigration option", 
+    "content_type": 104
+  }
+},
+{
+  "pk": 359, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_applicant", 
+    "name": "Can add applicant", 
+    "content_type": 105
+  }
+},
+{
+  "pk": 360, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_applicant", 
+    "name": "Can change applicant", 
+    "content_type": 105
+  }
+},
+{
+  "pk": 361, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_applicant", 
+    "name": "Can delete applicant", 
+    "content_type": 105
+  }
+},
+{
+  "pk": 362, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_contactlog", 
+    "name": "Can add contact log", 
+    "content_type": 106
+  }
+},
+{
+  "pk": 363, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_contactlog", 
+    "name": "Can change contact log", 
+    "content_type": 106
+  }
+},
+{
+  "pk": 364, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_contactlog", 
+    "name": "Can delete contact log", 
+    "content_type": 106
+  }
+},
+{
+  "pk": 365, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_applicantstandardtestresult", 
+    "name": "Can add applicant standard test result", 
+    "content_type": 107
+  }
+},
+{
+  "pk": 366, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_applicantstandardtestresult", 
+    "name": "Can change applicant standard test result", 
+    "content_type": 107
+  }
+},
+{
+  "pk": 367, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_applicantstandardtestresult", 
+    "name": "Can delete applicant standard test result", 
+    "content_type": 107
+  }
+},
+{
+  "pk": 368, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_applicantstandardcategorygrade", 
+    "name": "Can add applicant standard category grade", 
+    "content_type": 108
+  }
+},
+{
+  "pk": 369, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_applicantstandardcategorygrade", 
+    "name": "Can change applicant standard category grade", 
+    "content_type": 108
+  }
+},
+{
+  "pk": 370, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_applicantstandardcategorygrade", 
+    "name": "Can delete applicant standard category grade", 
+    "content_type": 108
+  }
+},
+{
+  "pk": 371, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_coursesync", 
+    "name": "Can add course sync", 
+    "content_type": 109
+  }
+},
+{
+  "pk": 372, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_coursesync", 
+    "name": "Can change course sync", 
+    "content_type": 109
+  }
+},
+{
+  "pk": 373, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_coursesync", 
+    "name": "Can delete course sync", 
+    "content_type": 109
+  }
+},
+{
+  "pk": 374, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_teachersync", 
+    "name": "Can add teacher sync", 
+    "content_type": 110
+  }
+},
+{
+  "pk": 375, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_teachersync", 
+    "name": "Can change teacher sync", 
+    "content_type": 110
+  }
+},
+{
+  "pk": 376, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_teachersync", 
+    "name": "Can delete teacher sync", 
+    "content_type": 110
+  }
+},
+{
+  "pk": 377, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_college", 
+    "name": "Can add college", 
+    "content_type": 111
+  }
+},
+{
+  "pk": 378, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_college", 
+    "name": "Can change college", 
+    "content_type": 111
+  }
+},
+{
+  "pk": 379, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_college", 
+    "name": "Can delete college", 
+    "content_type": 111
+  }
+},
+{
+  "pk": 380, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_collegeenrollment", 
+    "name": "Can add college enrollment", 
+    "content_type": 112
+  }
+},
+{
+  "pk": 381, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_collegeenrollment", 
+    "name": "Can change college enrollment", 
+    "content_type": 112
+  }
+},
+{
+  "pk": 382, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_collegeenrollment", 
+    "name": "Can delete college enrollment", 
+    "content_type": 112
+  }
+},
+{
+  "pk": 383, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_alumnistatus", 
+    "name": "Can add alumni status", 
+    "content_type": 113
+  }
+},
+{
+  "pk": 384, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_alumnistatus", 
+    "name": "Can change alumni status", 
+    "content_type": 113
+  }
+},
+{
+  "pk": 385, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_alumnistatus", 
+    "name": "Can delete alumni status", 
+    "content_type": 113
+  }
+},
+{
+  "pk": 386, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_withdrawl", 
+    "name": "Can add withdrawl", 
+    "content_type": 114
+  }
+},
+{
+  "pk": 387, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_withdrawl", 
+    "name": "Can change withdrawl", 
+    "content_type": 114
+  }
+},
+{
+  "pk": 388, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_withdrawl", 
+    "name": "Can delete withdrawl", 
+    "content_type": 114
+  }
+},
+{
+  "pk": 389, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_alumninotecategory", 
+    "name": "Can add alumni note category", 
+    "content_type": 115
+  }
+},
+{
+  "pk": 390, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_alumninotecategory", 
+    "name": "Can change alumni note category", 
+    "content_type": 115
+  }
+},
+{
+  "pk": 391, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_alumninotecategory", 
+    "name": "Can delete alumni note category", 
+    "content_type": 115
+  }
+},
+{
+  "pk": 392, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_alumninote", 
+    "name": "Can add alumni note", 
+    "content_type": 116
+  }
+},
+{
+  "pk": 393, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_alumninote", 
+    "name": "Can change alumni note", 
+    "content_type": 116
+  }
+},
+{
+  "pk": 394, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_alumninote", 
+    "name": "Can delete alumni note", 
+    "content_type": 116
+  }
+},
+{
+  "pk": 395, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_alumniaction", 
+    "name": "Can add alumni action", 
+    "content_type": 117
+  }
+},
+{
+  "pk": 396, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_alumniaction", 
+    "name": "Can change alumni action", 
+    "content_type": 117
+  }
+},
+{
+  "pk": 397, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_alumniaction", 
+    "name": "Can delete alumni action", 
+    "content_type": 117
+  }
+},
+{
+  "pk": 398, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_alumniemail", 
+    "name": "Can add alumni email", 
+    "content_type": 118
+  }
+},
+{
+  "pk": 399, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_alumniemail", 
+    "name": "Can change alumni email", 
+    "content_type": 118
+  }
+},
+{
+  "pk": 400, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_alumniemail", 
+    "name": "Can delete alumni email", 
+    "content_type": 118
+  }
+},
+{
+  "pk": 401, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_alumniphonenumber", 
+    "name": "Can add alumni phone number", 
+    "content_type": 119
+  }
+},
+{
+  "pk": 402, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_alumniphonenumber", 
+    "name": "Can change alumni phone number", 
+    "content_type": 119
+  }
+},
+{
+  "pk": 403, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_alumniphonenumber", 
+    "name": "Can delete alumni phone number", 
+    "content_type": 119
+  }
+},
+{
+  "pk": 404, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_alumni", 
+    "name": "Can add alumni", 
+    "content_type": 120
+  }
+},
+{
+  "pk": 405, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_alumni", 
+    "name": "Can change alumni", 
+    "content_type": 120
+  }
+},
+{
+  "pk": 406, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_alumni", 
+    "name": "Can delete alumni", 
+    "content_type": 120
+  }
+},
+{
+  "pk": 407, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_test", 
+    "name": "Can add test", 
+    "content_type": 121
+  }
+},
+{
+  "pk": 408, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_test", 
+    "name": "Can change test", 
+    "content_type": 121
+  }
+},
+{
+  "pk": 409, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_test", 
+    "name": "Can delete test", 
+    "content_type": 121
+  }
+},
+{
+  "pk": 410, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "teacher_test", 
+    "name": "Teacher can make and edit tests", 
+    "content_type": 121
+  }
+},
+{
+  "pk": 411, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_questionbank", 
+    "name": "Can add question bank", 
+    "content_type": 122
+  }
+},
+{
+  "pk": 412, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_questionbank", 
+    "name": "Can change question bank", 
+    "content_type": 122
+  }
+},
+{
+  "pk": 413, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_questionbank", 
+    "name": "Can delete question bank", 
+    "content_type": 122
+  }
+},
+{
+  "pk": 414, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_networkquestionbank", 
+    "name": "Can add network question bank", 
+    "content_type": 123
+  }
+},
+{
+  "pk": 415, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_networkquestionbank", 
+    "name": "Can change network question bank", 
+    "content_type": 123
+  }
+},
+{
+  "pk": 416, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_networkquestionbank", 
+    "name": "Can delete network question bank", 
+    "content_type": 123
+  }
+},
+{
+  "pk": 417, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_question", 
+    "name": "Can add question", 
+    "content_type": 124
+  }
+},
+{
+  "pk": 418, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_question", 
+    "name": "Can change question", 
+    "content_type": 124
+  }
+},
+{
+  "pk": 419, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_question", 
+    "name": "Can delete question", 
+    "content_type": 124
+  }
+},
+{
+  "pk": 420, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_answerbank", 
+    "name": "Can add answer bank", 
+    "content_type": 125
+  }
+},
+{
+  "pk": 421, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_answerbank", 
+    "name": "Can change answer bank", 
+    "content_type": 125
+  }
+},
+{
+  "pk": 422, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_answerbank", 
+    "name": "Can delete answer bank", 
+    "content_type": 125
+  }
+},
+{
+  "pk": 423, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_answer", 
+    "name": "Can add answer", 
+    "content_type": 126
+  }
+},
+{
+  "pk": 424, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_answer", 
+    "name": "Can change answer", 
+    "content_type": 126
+  }
+},
+{
+  "pk": 425, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_answer", 
+    "name": "Can delete answer", 
+    "content_type": 126
+  }
+},
+{
+  "pk": 426, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_testinstance", 
+    "name": "Can add test instance", 
+    "content_type": 127
+  }
+},
+{
+  "pk": 427, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_testinstance", 
+    "name": "Can change test instance", 
+    "content_type": 127
+  }
+},
+{
+  "pk": 428, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_testinstance", 
+    "name": "Can delete test instance", 
+    "content_type": 127
+  }
+},
+{
+  "pk": 429, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_answerinstance", 
+    "name": "Can add answer instance", 
+    "content_type": 128
+  }
+},
+{
+  "pk": 430, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_answerinstance", 
+    "name": "Can change answer instance", 
+    "content_type": 128
+  }
+},
+{
+  "pk": 431, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_answerinstance", 
+    "name": "Can delete answer instance", 
+    "content_type": 128
+  }
+},
+{
+  "pk": 432, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_disciplineaction", 
+    "name": "Can add discipline action", 
+    "content_type": 129
+  }
+},
+{
+  "pk": 433, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_disciplineaction", 
+    "name": "Can change discipline action", 
+    "content_type": 129
+  }
+},
+{
+  "pk": 434, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_disciplineaction", 
+    "name": "Can delete discipline action", 
+    "content_type": 129
+  }
+},
+{
+  "pk": 435, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_disciplineactioninstance", 
+    "name": "Can add discipline action instance", 
+    "content_type": 130
+  }
+},
+{
+  "pk": 436, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_disciplineactioninstance", 
+    "name": "Can change discipline action instance", 
+    "content_type": 130
+  }
+},
+{
+  "pk": 437, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_disciplineactioninstance", 
+    "name": "Can delete discipline action instance", 
+    "content_type": 130
+  }
+},
+{
+  "pk": 438, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_infraction", 
+    "name": "Can add infraction", 
+    "content_type": 131
+  }
+},
+{
+  "pk": 439, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_infraction", 
+    "name": "Can change infraction", 
+    "content_type": 131
+  }
+},
+{
+  "pk": 440, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_infraction", 
+    "name": "Can delete infraction", 
+    "content_type": 131
+  }
+},
+{
+  "pk": 441, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentdiscipline", 
+    "name": "Can add student discipline", 
+    "content_type": 132
+  }
+},
+{
+  "pk": 442, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentdiscipline", 
+    "name": "Can change student discipline", 
+    "content_type": 132
+  }
+},
+{
+  "pk": 443, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentdiscipline", 
+    "name": "Can delete student discipline", 
+    "content_type": 132
+  }
+},
+{
+  "pk": 444, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_gradecomment", 
+    "name": "Can add grade comment", 
+    "content_type": 133
+  }
+},
+{
+  "pk": 445, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_gradecomment", 
+    "name": "Can change grade comment", 
+    "content_type": 133
+  }
+},
+{
+  "pk": 446, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_gradecomment", 
+    "name": "Can delete grade comment", 
+    "content_type": 133
+  }
+},
+{
+  "pk": 447, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_grade", 
+    "name": "Can add grade", 
+    "content_type": 134
+  }
+},
+{
+  "pk": 448, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_grade", 
+    "name": "Can change grade", 
+    "content_type": 134
+  }
+},
+{
+  "pk": 449, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_grade", 
+    "name": "Can delete grade", 
+    "content_type": 134
+  }
+},
+{
+  "pk": 450, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_own_grade", 
+    "name": "Change grades for own class", 
+    "content_type": 134
+  }
+},
+{
+  "pk": 451, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_own_final_grade", 
+    "name": "Change final YTD grades for own class", 
+    "content_type": 134
+  }
+},
+{
+  "pk": 452, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_followupaction", 
+    "name": "Can add follow up action", 
+    "content_type": 135
+  }
+},
+{
+  "pk": 453, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_followupaction", 
+    "name": "Can change follow up action", 
+    "content_type": 135
+  }
+},
+{
+  "pk": 454, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_followupaction", 
+    "name": "Can delete follow up action", 
+    "content_type": 135
+  }
+},
+{
+  "pk": 455, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentmeetingcategory", 
+    "name": "Can add student meeting category", 
+    "content_type": 136
+  }
+},
+{
+  "pk": 456, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentmeetingcategory", 
+    "name": "Can change student meeting category", 
+    "content_type": 136
+  }
+},
+{
+  "pk": 457, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentmeetingcategory", 
+    "name": "Can delete student meeting category", 
+    "content_type": 136
+  }
+},
+{
+  "pk": 458, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_studentmeeting", 
+    "name": "Can add student meeting", 
+    "content_type": 137
+  }
+},
+{
+  "pk": 459, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_studentmeeting", 
+    "name": "Can change student meeting", 
+    "content_type": 137
+  }
+},
+{
+  "pk": 460, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_studentmeeting", 
+    "name": "Can delete student meeting", 
+    "content_type": 137
+  }
+},
+{
+  "pk": 461, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_referralcategory", 
+    "name": "Can add referral category", 
+    "content_type": 138
+  }
+},
+{
+  "pk": 462, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_referralcategory", 
+    "name": "Can change referral category", 
+    "content_type": 138
+  }
+},
+{
+  "pk": 463, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_referralcategory", 
+    "name": "Can delete referral category", 
+    "content_type": 138
+  }
+},
+{
+  "pk": 464, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_referralreason", 
+    "name": "Can add referral reason", 
+    "content_type": 139
+  }
+},
+{
+  "pk": 465, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_referralreason", 
+    "name": "Can change referral reason", 
+    "content_type": 139
+  }
+},
+{
+  "pk": 466, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_referralreason", 
+    "name": "Can delete referral reason", 
+    "content_type": 139
+  }
+},
+{
+  "pk": 467, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_referralform", 
+    "name": "Can add referral form", 
+    "content_type": 140
+  }
+},
+{
+  "pk": 468, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_referralform", 
+    "name": "Can change referral form", 
+    "content_type": 140
+  }
+},
+{
+  "pk": 469, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_referralform", 
+    "name": "Can delete referral form", 
+    "content_type": 140
+  }
+},
+{
+  "pk": 470, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_revision", 
+    "name": "Can add revision", 
+    "content_type": 141
+  }
+},
+{
+  "pk": 471, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_revision", 
+    "name": "Can change revision", 
+    "content_type": 141
+  }
+},
+{
+  "pk": 472, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_revision", 
+    "name": "Can delete revision", 
+    "content_type": 141
+  }
+},
+{
+  "pk": 473, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_version", 
+    "name": "Can add version", 
+    "content_type": 142
+  }
+},
+{
+  "pk": 474, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_version", 
+    "name": "Can change version", 
+    "content_type": 142
+  }
+},
+{
+  "pk": 475, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_version", 
+    "name": "Can delete version", 
+    "content_type": 142
+  }
+},
+{
+  "pk": 476, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_taskmeta", 
+    "name": "Can add task state", 
+    "content_type": 143
+  }
+},
+{
+  "pk": 477, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_taskmeta", 
+    "name": "Can change task state", 
+    "content_type": 143
+  }
+},
+{
+  "pk": 478, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_taskmeta", 
+    "name": "Can delete task state", 
+    "content_type": 143
+  }
+},
+{
+  "pk": 479, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_tasksetmeta", 
+    "name": "Can add saved group result", 
+    "content_type": 144
+  }
+},
+{
+  "pk": 480, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_tasksetmeta", 
+    "name": "Can change saved group result", 
+    "content_type": 144
+  }
+},
+{
+  "pk": 481, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_tasksetmeta", 
+    "name": "Can delete saved group result", 
+    "content_type": 144
+  }
+},
+{
+  "pk": 482, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_intervalschedule", 
+    "name": "Can add interval", 
+    "content_type": 145
+  }
+},
+{
+  "pk": 483, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_intervalschedule", 
+    "name": "Can change interval", 
+    "content_type": 145
+  }
+},
+{
+  "pk": 484, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_intervalschedule", 
+    "name": "Can delete interval", 
+    "content_type": 145
+  }
+},
+{
+  "pk": 485, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_crontabschedule", 
+    "name": "Can add crontab", 
+    "content_type": 146
+  }
+},
+{
+  "pk": 486, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_crontabschedule", 
+    "name": "Can change crontab", 
+    "content_type": 146
+  }
+},
+{
+  "pk": 487, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_crontabschedule", 
+    "name": "Can delete crontab", 
+    "content_type": 146
+  }
+},
+{
+  "pk": 488, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_periodictasks", 
+    "name": "Can add periodic tasks", 
+    "content_type": 147
+  }
+},
+{
+  "pk": 489, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_periodictasks", 
+    "name": "Can change periodic tasks", 
+    "content_type": 147
+  }
+},
+{
+  "pk": 490, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_periodictasks", 
+    "name": "Can delete periodic tasks", 
+    "content_type": 147
+  }
+},
+{
+  "pk": 491, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_periodictask", 
+    "name": "Can add periodic task", 
+    "content_type": 148
+  }
+},
+{
+  "pk": 492, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_periodictask", 
+    "name": "Can change periodic task", 
+    "content_type": 148
+  }
+},
+{
+  "pk": 493, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_periodictask", 
+    "name": "Can delete periodic task", 
+    "content_type": 148
+  }
+},
+{
+  "pk": 494, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_workerstate", 
+    "name": "Can add worker", 
+    "content_type": 149
+  }
+},
+{
+  "pk": 495, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_workerstate", 
+    "name": "Can change worker", 
+    "content_type": 149
+  }
+},
+{
+  "pk": 496, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_workerstate", 
+    "name": "Can delete worker", 
+    "content_type": 149
+  }
+},
+{
+  "pk": 497, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_taskstate", 
+    "name": "Can add task", 
+    "content_type": 150
+  }
+},
+{
+  "pk": 498, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_taskstate", 
+    "name": "Can change task", 
+    "content_type": 150
+  }
+},
+{
+  "pk": 499, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_taskstate", 
+    "name": "Can delete task", 
+    "content_type": 150
+  }
+},
+{
+  "pk": 500, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_report", 
+    "name": "Can add report", 
+    "content_type": 151
+  }
+},
+{
+  "pk": 501, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_report", 
+    "name": "Can change report", 
+    "content_type": 151
+  }
+},
+{
+  "pk": 502, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_report", 
+    "name": "Can delete report", 
+    "content_type": 151
+  }
+},
+{
+  "pk": 503, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_displayfield", 
+    "name": "Can add display field", 
+    "content_type": 152
+  }
+},
+{
+  "pk": 504, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_displayfield", 
+    "name": "Can change display field", 
+    "content_type": 152
+  }
+},
+{
+  "pk": 505, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_displayfield", 
+    "name": "Can delete display field", 
+    "content_type": 152
+  }
+},
+{
+  "pk": 506, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "add_filterfield", 
+    "name": "Can add filter field", 
+    "content_type": 153
+  }
+},
+{
+  "pk": 507, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "change_filterfield", 
+    "name": "Can change filter field", 
+    "content_type": 153
+  }
+},
+{
+  "pk": 508, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "delete_filterfield", 
+    "name": "Can delete filter field", 
+    "content_type": 153
+  }
+},
+{
+  "pk": 509, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_accesslog", 
+    "name": "Can view access log", 
+    "content_type": 87
+  }
+},
+{
+  "pk": 510, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_admissioncheck", 
+    "name": "Can view admission check", 
+    "content_type": 91
+  }
+},
+{
+  "pk": 511, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_admissionlevel", 
+    "name": "Can view admission level", 
+    "content_type": 90
+  }
+},
+{
+  "pk": 512, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_alumni", 
+    "name": "Can view alumni", 
+    "content_type": 120
+  }
+},
+{
+  "pk": 513, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_alumniaction", 
+    "name": "Can view alumni action", 
+    "content_type": 117
+  }
+},
+{
+  "pk": 514, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_alumniemail", 
+    "name": "Can view alumni email", 
+    "content_type": 118
+  }
+},
+{
+  "pk": 515, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_alumninote", 
+    "name": "Can view alumni note", 
+    "content_type": 116
+  }
+},
+{
+  "pk": 516, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_alumninotecategory", 
+    "name": "Can view alumni note category", 
+    "content_type": 115
+  }
+},
+{
+  "pk": 517, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_alumniphonenumber", 
+    "name": "Can view alumni phone number", 
+    "content_type": 119
+  }
+},
+{
+  "pk": 518, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_alumnistatus", 
+    "name": "Can view alumni status", 
+    "content_type": 113
+  }
+},
+{
+  "pk": 519, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_answer", 
+    "name": "Can view answer", 
+    "content_type": 126
+  }
+},
+{
+  "pk": 520, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_answerbank", 
+    "name": "Can view answer bank", 
+    "content_type": 125
+  }
+},
+{
+  "pk": 521, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_answerinstance", 
+    "name": "Can view answer instance", 
+    "content_type": 128
+  }
+},
+{
+  "pk": 522, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_applicant", 
+    "name": "Can view applicant", 
+    "content_type": 105
+  }
+},
+{
+  "pk": 523, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_applicantstandardcategorygrade", 
+    "name": "Can view applicant standard category grade", 
+    "content_type": 108
+  }
+},
+{
+  "pk": 524, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_applicantstandardtestresult", 
+    "name": "Can view applicant standard test result", 
+    "content_type": 107
+  }
+},
+{
+  "pk": 525, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_applicationdecisionoption", 
+    "name": "Can view application decision option", 
+    "content_type": 96
+  }
+},
+{
+  "pk": 526, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_attendance", 
+    "name": "Can view attendance", 
+    "content_type": 83
+  }
+},
+{
+  "pk": 527, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_attendancedailystat", 
+    "name": "Can view attendance daily stat", 
+    "content_type": 61
+  }
+},
+{
+  "pk": 528, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_attendancefee", 
+    "name": "Can view attendance fee", 
+    "content_type": 81
+  }
+},
+{
+  "pk": 529, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_attendancelog", 
+    "name": "Can view attendance log", 
+    "content_type": 60
+  }
+},
+{
+  "pk": 530, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_attendancereason", 
+    "name": "Can view attendance reason", 
+    "content_type": 82
+  }
+},
+{
+  "pk": 531, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_attendancestatus", 
+    "name": "Can view attendance status", 
+    "content_type": 57
+  }
+},
+{
+  "pk": 532, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_award", 
+    "name": "Can view award", 
+    "content_type": 55
+  }
+},
+{
+  "pk": 533, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_awardstudent", 
+    "name": "Can view award student", 
+    "content_type": 56
+  }
+},
+{
+  "pk": 534, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_boroughoption", 
+    "name": "Can view borough option", 
+    "content_type": 97
+  }
+},
+{
+  "pk": 535, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_clientvisit", 
+    "name": "Can view client visit", 
+    "content_type": 84
+  }
+},
+{
+  "pk": 536, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_college", 
+    "name": "Can view college", 
+    "content_type": 111
+  }
+},
+{
+  "pk": 537, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_collegeenrollment", 
+    "name": "Can view college enrollment", 
+    "content_type": 112
+  }
+},
+{
+  "pk": 538, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_pickuplocation", 
+    "name": "Can view Companies: pickup", 
+    "content_type": 63
+  }
+},
+{
+  "pk": 539, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_company", 
+    "name": "Can view company", 
+    "content_type": 65
+  }
+},
+{
+  "pk": 540, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_compcontract", 
+    "name": "Can view Company Contract", 
+    "content_type": 70
+  }
+},
+{
+  "pk": 541, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_companyhistory", 
+    "name": "Can view company history", 
+    "content_type": 76
+  }
+},
+{
+  "pk": 542, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_configuration", 
+    "name": "Can view configuration", 
+    "content_type": 88
+  }
+},
+{
+  "pk": 543, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_cracontact", 
+    "name": "Can view Contact CRA", 
+    "content_type": 62
+  }
+},
+{
+  "pk": 544, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_contactlog", 
+    "name": "Can view contact log", 
+    "content_type": 106
+  }
+},
+{
+  "pk": 545, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_contact", 
+    "name": "Can view Contact Supervisor", 
+    "content_type": 64
+  }
+},
+{
+  "pk": 546, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_countryoption", 
+    "name": "Can view country option", 
+    "content_type": 103
+  }
+},
+{
+  "pk": 547, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_course", 
+    "name": "Can view course", 
+    "content_type": 52
+  }
+},
+{
+  "pk": 548, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_courseattendance", 
+    "name": "Can view course attendance", 
+    "content_type": 58
+  }
+},
+{
+  "pk": 549, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_courseenrollment", 
+    "name": "Can view course enrollment", 
+    "content_type": 48
+  }
+},
+{
+  "pk": 550, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_coursemeet", 
+    "name": "Can view course meet", 
+    "content_type": 46
+  }
+},
+{
+  "pk": 551, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_coursesync", 
+    "name": "Can view course sync", 
+    "content_type": 109
+  }
+},
+{
+  "pk": 552, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_crontabschedule", 
+    "name": "Can view crontab", 
+    "content_type": 146
+  }
+},
+{
+  "pk": 553, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_day", 
+    "name": "Can view day", 
+    "content_type": 49
+  }
+},
+{
+  "pk": 554, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_daysoff", 
+    "name": "Can view days off", 
+    "content_type": 44
+  }
+},
+{
+  "pk": 555, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_department", 
+    "name": "Can view department", 
+    "content_type": 50
+  }
+},
+{
+  "pk": 556, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_departmentgraduationcredits", 
+    "name": "Can view department graduation credits", 
+    "content_type": 51
+  }
+},
+{
+  "pk": 557, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_disciplineaction", 
+    "name": "Can view discipline action", 
+    "content_type": 129
+  }
+},
+{
+  "pk": 558, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_disciplineactioninstance", 
+    "name": "Can view discipline action instance", 
+    "content_type": 130
+  }
+},
+{
+  "pk": 559, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_displayfield", 
+    "name": "Can view display field", 
+    "content_type": 152
+  }
+},
+{
+  "pk": 560, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_ethnicitychoice", 
+    "name": "Can view ethnicity choice", 
+    "content_type": 92
+  }
+},
+{
+  "pk": 561, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_feederschool", 
+    "name": "Can view feeder school", 
+    "content_type": 100
+  }
+},
+{
+  "pk": 562, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_filterfield", 
+    "name": "Can view filter field", 
+    "content_type": 153
+  }
+},
+{
+  "pk": 563, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_firstcontactoption", 
+    "name": "Can view first contact option", 
+    "content_type": 95
+  }
+},
+{
+  "pk": 564, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_followupaction", 
+    "name": "Can view follow up action", 
+    "content_type": 135
+  }
+},
+{
+  "pk": 565, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_grade", 
+    "name": "Can view grade", 
+    "content_type": 134
+  }
+},
+{
+  "pk": 566, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_gradecomment", 
+    "name": "Can view grade comment", 
+    "content_type": 133
+  }
+},
+{
+  "pk": 567, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_handout33", 
+    "name": "Can view handout33", 
+    "content_type": 72
+  }
+},
+{
+  "pk": 568, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_heardaboutusoption", 
+    "name": "Can view heard about us option", 
+    "content_type": 94
+  }
+},
+{
+  "pk": 569, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_immigrationoption", 
+    "name": "Can view immigration option", 
+    "content_type": 104
+  }
+},
+{
+  "pk": 570, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_infraction", 
+    "name": "Can view infraction", 
+    "content_type": 131
+  }
+},
+{
+  "pk": 571, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_intervalschedule", 
+    "name": "Can view interval", 
+    "content_type": 145
+  }
+},
+{
+  "pk": 572, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_location", 
+    "name": "Can view location", 
+    "content_type": 47
+  }
+},
+{
+  "pk": 573, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_markingperiod", 
+    "name": "Can view marking period", 
+    "content_type": 43
+  }
+},
+{
+  "pk": 574, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_messagetosupervisor", 
+    "name": "Can view message to supervisor", 
+    "content_type": 85
+  }
+},
+{
+  "pk": 575, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_networkquestionbank", 
+    "name": "Can view network question bank", 
+    "content_type": 123
+  }
+},
+{
+  "pk": 576, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_omitcoursegpa", 
+    "name": "Can view omit course gpa", 
+    "content_type": 53
+  }
+},
+{
+  "pk": 577, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_omityeargpa", 
+    "name": "Can view omit year gpa", 
+    "content_type": 54
+  }
+},
+{
+  "pk": 578, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_openhouse", 
+    "name": "Can view open house", 
+    "content_type": 101
+  }
+},
+{
+  "pk": 579, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_paymentoption", 
+    "name": "Can view payment option", 
+    "content_type": 67
+  }
+},
+{
+  "pk": 580, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_period", 
+    "name": "Can view period", 
+    "content_type": 45
+  }
+},
+{
+  "pk": 581, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_periodictask", 
+    "name": "Can view periodic task", 
+    "content_type": 148
+  }
+},
+{
+  "pk": 582, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_periodictasks", 
+    "name": "Can view periodic tasks", 
+    "content_type": 147
+  }
+},
+{
+  "pk": 583, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_personality", 
+    "name": "Can view personality", 
+    "content_type": 71
+  }
+},
+{
+  "pk": 584, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_placeofworship", 
+    "name": "Can view place of worship", 
+    "content_type": 99
+  }
+},
+{
+  "pk": 585, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_presetcomment", 
+    "name": "Can view preset comment", 
+    "content_type": 77
+  }
+},
+{
+  "pk": 586, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_question", 
+    "name": "Can view question", 
+    "content_type": 124
+  }
+},
+{
+  "pk": 587, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_questionbank", 
+    "name": "Can view question bank", 
+    "content_type": 122
+  }
+},
+{
+  "pk": 588, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_referralcategory", 
+    "name": "Can view referral category", 
+    "content_type": 138
+  }
+},
+{
+  "pk": 589, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_referralform", 
+    "name": "Can view referral form", 
+    "content_type": 140
+  }
+},
+{
+  "pk": 590, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_referralreason", 
+    "name": "Can view referral reason", 
+    "content_type": 139
+  }
+},
+{
+  "pk": 591, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_religionchoice", 
+    "name": "Can view religion choice", 
+    "content_type": 93
+  }
+},
+{
+  "pk": 592, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_report", 
+    "name": "Can view report", 
+    "content_type": 151
+  }
+},
+{
+  "pk": 593, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_revision", 
+    "name": "Can view revision", 
+    "content_type": 141
+  }
+},
+{
+  "pk": 594, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_tasksetmeta", 
+    "name": "Can view saved group result", 
+    "content_type": 144
+  }
+},
+{
+  "pk": 595, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_schooltype", 
+    "name": "Can view school type", 
+    "content_type": 98
+  }
+},
+{
+  "pk": 596, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentattendance", 
+    "name": "Can view student attendance", 
+    "content_type": 59
+  }
+},
+{
+  "pk": 597, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentdesiredskill", 
+    "name": "Can view student desired skill", 
+    "content_type": 69
+  }
+},
+{
+  "pk": 598, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentdiscipline", 
+    "name": "Can view student discipline", 
+    "content_type": 132
+  }
+},
+{
+  "pk": 599, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentfunctionalresponsibility", 
+    "name": "Can view student functional responsibility", 
+    "content_type": 68
+  }
+},
+{
+  "pk": 600, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentinteraction", 
+    "name": "Can view student interaction", 
+    "content_type": 78
+  }
+},
+{
+  "pk": 601, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentmeeting", 
+    "name": "Can view student meeting", 
+    "content_type": 137
+  }
+},
+{
+  "pk": 602, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentmeetingcategory", 
+    "name": "Can view student meeting category", 
+    "content_type": 136
+  }
+},
+{
+  "pk": 603, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentworker", 
+    "name": "Can view student worker", 
+    "content_type": 74
+  }
+},
+{
+  "pk": 604, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_studentworkerroute", 
+    "name": "Can view student worker route", 
+    "content_type": 73
+  }
+},
+{
+  "pk": 605, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_survey", 
+    "name": "Can view survey", 
+    "content_type": 75
+  }
+},
+{
+  "pk": 606, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_taskstate", 
+    "name": "Can view task", 
+    "content_type": 150
+  }
+},
+{
+  "pk": 607, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_taskmeta", 
+    "name": "Can view task state", 
+    "content_type": 143
+  }
+},
+{
+  "pk": 608, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_teachersync", 
+    "name": "Can view teacher sync", 
+    "content_type": 110
+  }
+},
+{
+  "pk": 609, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_template", 
+    "name": "Can view template", 
+    "content_type": 89
+  }
+},
+{
+  "pk": 610, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_test", 
+    "name": "Can view test", 
+    "content_type": 121
+  }
+},
+{
+  "pk": 611, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_testinstance", 
+    "name": "Can view test instance", 
+    "content_type": 127
+  }
+},
+{
+  "pk": 612, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_timesheet", 
+    "name": "Can view time sheet", 
+    "content_type": 80
+  }
+},
+{
+  "pk": 613, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_timesheetperformancechoice", 
+    "name": "Can view time sheet performance choice", 
+    "content_type": 79
+  }
+},
+{
+  "pk": 614, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_version", 
+    "name": "Can view version", 
+    "content_type": 142
+  }
+},
+{
+  "pk": 615, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_withdrawl", 
+    "name": "Can view withdrawl", 
+    "content_type": 114
+  }
+},
+{
+  "pk": 616, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_withdrawnchoices", 
+    "name": "Can view withdrawn choices", 
+    "content_type": 102
+  }
+},
+{
+  "pk": 617, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_workteam", 
+    "name": "Can view work team", 
+    "content_type": 66
+  }
+},
+{
+  "pk": 618, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_workteamuser", 
+    "name": "Can view work team user", 
+    "content_type": 86
+  }
+},
+{
+  "pk": 619, 
+  "model": "auth.permission", 
+  "fields": {
+    "codename": "view_workerstate", 
+    "name": "Can view worker", 
+    "content_type": 149
+  }
+},
+{
+  "pk": 1, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "admissions", 
+    "permissions": [
+      317, 
+      318, 
+      319, 
+      314, 
+      315, 
+      316, 
+      359, 
+      360, 
+      361, 
+      368, 
+      369, 
+      370, 
+      365, 
+      366, 
+      367, 
+      332, 
+      333, 
+      334, 
+      335, 
+      336, 
+      337, 
+      362, 
+      363, 
+      364, 
+      353, 
+      354, 
+      355, 
+      320, 
+      321, 
+      322, 
+      344, 
+      345, 
+      346, 
+      329, 
+      330, 
+      331, 
+      326, 
+      327, 
+      328, 
+      356, 
+      357, 
+      358, 
+      347, 
+      348, 
+      349, 
+      341, 
+      342, 
+      343, 
+      323, 
+      324, 
+      325, 
+      338, 
+      339, 
+      340, 
+      350, 
+      351, 
+      352, 
+      34, 
+      35, 
+      36, 
+      136, 
+      37, 
+      38, 
+      39, 
+      137, 
+      52, 
+      53, 
+      54, 
+      139, 
+      77
+    ]
+  }
+},
+{
+  "pk": 2, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "alumni data", 
+    "permissions": [
+      404, 
+      405, 
+      406, 
+      395, 
+      396, 
+      397, 
+      398, 
+      399, 
+      400, 
+      392, 
+      393, 
+      394, 
+      389, 
+      390, 
+      391, 
+      401, 
+      402, 
+      403, 
+      383, 
+      384, 
+      385, 
+      377, 
+      378, 
+      379, 
+      380, 
+      381, 
+      382, 
+      386, 
+      387, 
+      388
+    ]
+  }
+},
+{
+  "pk": 3, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "company", 
+    "permissions": []
+  }
+},
+{
+  "pk": 4, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "counseling", 
+    "permissions": [
+      452, 
+      453, 
+      454, 
+      461, 
+      462, 
+      463, 
+      467, 
+      468, 
+      469, 
+      464, 
+      465, 
+      466, 
+      458, 
+      459, 
+      460, 
+      455, 
+      456, 
+      457, 
+      82, 
+      79, 
+      163, 
+      165
+    ]
+  }
+},
+{
+  "pk": 5, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "cwsp", 
+    "permissions": [
+      82, 
+      80, 
+      296, 
+      297, 
+      298, 
+      290, 
+      291, 
+      292, 
+      293, 
+      294, 
+      295, 
+      299, 
+      300, 
+      301, 
+      239, 
+      240, 
+      241, 
+      275, 
+      276, 
+      277, 
+      257, 
+      258, 
+      259, 
+      236, 
+      237, 
+      238, 
+      230, 
+      231, 
+      232, 
+      263, 
+      264, 
+      265, 
+      302, 
+      303, 
+      304, 
+      248, 
+      249, 
+      250, 
+      260, 
+      261, 
+      262, 
+      233, 
+      234, 
+      235, 
+      278, 
+      279, 
+      280, 
+      254, 
+      255, 
+      256, 
+      251, 
+      252, 
+      253, 
+      281, 
+      282, 
+      283, 
+      269, 
+      270, 
+      271, 
+      266, 
+      267, 
+      268, 
+      272, 
+      273, 
+      274, 
+      287, 
+      288, 
+      289, 
+      284, 
+      285, 
+      286, 
+      245, 
+      246, 
+      247, 
+      242, 
+      243, 
+      244
+    ]
+  }
+},
+{
+  "pk": 6, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "discipline", 
+    "permissions": [
+      432, 
+      433, 
+      434, 
+      435, 
+      436, 
+      437, 
+      438, 
+      439, 
+      440, 
+      441, 
+      442, 
+      443
+    ]
+  }
+},
+{
+  "pk": 7, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "faculty", 
+    "permissions": [
+      162, 
+      82, 
+      81, 
+      79
+    ]
+  }
+},
+{
+  "pk": 8, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "family", 
+    "permissions": []
+  }
+},
+{
+  "pk": 9, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "mentor", 
+    "permissions": [
+      278, 
+      279, 
+      280, 
+      281, 
+      282, 
+      283
+    ]
+  }
+},
+{
+  "pk": 10, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "no popup", 
+    "permissions": []
+  }
+},
+{
+  "pk": 11, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "registrar", 
+    "permissions": [
+      359, 
+      360, 
+      361, 
+      227, 
+      228, 
+      229, 
+      224, 
+      225, 
+      226, 
+      214, 
+      215, 
+      216, 
+      220, 
+      221, 
+      222, 
+      223, 
+      34, 
+      35, 
+      36, 
+      136, 
+      372, 
+      447, 
+      448, 
+      451, 
+      450, 
+      449, 
+      444, 
+      445, 
+      446, 
+      199, 
+      200, 
+      201, 
+      187, 
+      188, 
+      189, 
+      181, 
+      182, 
+      183, 
+      193, 
+      194, 
+      195, 
+      184, 
+      185, 
+      186, 
+      172, 
+      173, 
+      174, 
+      202, 
+      203, 
+      204, 
+      205, 
+      206, 
+      207, 
+      178, 
+      179, 
+      180, 
+      58, 
+      59, 
+      60, 
+      134, 
+      49, 
+      50, 
+      51, 
+      162, 
+      52, 
+      53, 
+      54, 
+      139, 
+      55, 
+      56, 
+      57, 
+      141, 
+      67, 
+      68, 
+      69, 
+      142, 
+      70, 
+      71, 
+      72, 
+      46, 
+      64, 
+      65, 
+      66, 
+      43, 
+      44, 
+      45, 
+      104, 
+      105, 
+      106, 
+      76, 
+      77, 
+      78, 
+      82, 
+      81, 
+      80, 
+      79, 
+      86, 
+      87, 
+      88, 
+      161, 
+      98, 
+      99, 
+      100, 
+      163, 
+      101, 
+      102, 
+      103, 
+      95, 
+      96, 
+      97, 
+      165, 
+      92, 
+      93, 
+      94, 
+      89, 
+      90, 
+      91
+    ]
+  }
+},
+{
+  "pk": 12, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "students", 
+    "permissions": []
+  }
+},
+{
+  "pk": 13, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "teacher", 
+    "permissions": [
+      220, 
+      221, 
+      222, 
+      223, 
+      467, 
+      464, 
+      450, 
+      423, 
+      424, 
+      425, 
+      420, 
+      421, 
+      422, 
+      429, 
+      430, 
+      431, 
+      414, 
+      415, 
+      416, 
+      417, 
+      418, 
+      419, 
+      411, 
+      412, 
+      413, 
+      407, 
+      408, 
+      409, 
+      410, 
+      426, 
+      427, 
+      428, 
+      79
+    ]
+  }
+},
+{
+  "pk": 14, 
+  "model": "auth.group", 
+  "fields": {
+    "name": "volunteer track", 
+    "permissions": [
+      79, 
+      116, 
+      117, 
+      118, 
+      144, 
+      119, 
+      120, 
+      121, 
+      159, 
+      122, 
+      123, 
+      124, 
+      160, 
+      128, 
+      129, 
+      130, 
+      170, 
+      125, 
+      126, 
+      127, 
+      171
+    ]
+  }
+},
+{
+  "pk": 1, 
+  "model": "administration.configuration", 
+  "fields": {
+    "help_text": "", 
+    "file": "", 
+    "name": "Header Logo", 
+    "value": ""
+  }
+},
+{
+  "pk": 1, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Official Transcript", 
+    "file": "templates/Official_transcript.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 2, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Travel Maps", 
+    "file": "templates/travel_maps.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 3, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Unofficial Transcript", 
+    "file": "templates/unofficial_transcript.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 4, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Progress Report", 
+    "file": "templates/Report_Card_PR3_1.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 6, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Paper Attendance", 
+    "file": "templates/paper_attendance.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 7, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Travel Maps Placement", 
+    "file": "templates/travel_maps_placement_1_1_1.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 8, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "OMR Student Test Results", 
+    "file": "templates/student_omr_result.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 9, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "ACT ID Document", 
+    "file": "templates/Student_ACT_ID1.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 10, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "RC JUG/HWSH/ASP", 
+    "file": "templates/Report_Card_3_2_11_81.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 11, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Student Schedule", 
+    "file": "templates/school_work_schedule_template.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 12, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "3 Column Labels", 
+    "file": "templates/Standard_labels_31.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 13, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Parent E-mail Addresses", 
+    "file": "templates/parent_email_addys_jnm_11.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 14, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Master Student Report", 
+    "file": "templates/master_report_1.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 15, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Discipline Report", 
+    "file": "templates/disc_report_3_1.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 16, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Discipline Spreadsheet", 
+    "file": "templates/disc_spreadsheet.xls", 
+    "general_student": false
+  }
+},
+{
+  "pk": 17, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Small Labels", 
+    "file": "templates/small_labels.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 18, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "5 Tardy Letter", 
+    "file": "templates/5_Tardy_Letter.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 19, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Student Attendance Report", 
+    "file": "templates/stu_attn_7.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 21, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Daily Attendance", 
+    "file": "templates/daily_attendance_template_.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 22, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Corporate Client Agreement Document", 
+    "file": "templates/Corporate_Client_Agreement_Standard_6.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 23, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "First Trimester Progress Report", 
+    "file": "templates/First_Trimester_Progress_Report_Card_1.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 24, 
+  "model": "administration.template", 
+  "fields": {
+    "report_card": false, 
+    "transcript": false, 
+    "name": "Second Trimester Progress Report Template", 
+    "file": "templates/Second_Trimester_Progress_Report_Card_1_1.odt", 
+    "general_student": false
+  }
+},
+{
+  "pk": 1, 
+  "model": "sis.schoolyear", 
+  "fields": {
+    "active_year": true, 
+    "end_date": "2013-06-12", 
+    "benchmark_grade": false, 
+    "grad_date": "2013-07-08", 
+    "start_date": "2012-08-27", 
+    "name": "2012-2013"
+  }
+}
+]

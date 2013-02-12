@@ -615,10 +615,11 @@ class StudentInteraction(models.Model):
             return ""
     
     def __unicode__(self):
-        if self.student.count() == 1:
+        # don't attempt to traverse a m2m if we're not actually in the database yet
+        if self.pk and self.student.count() == 1:
             stu = self.student.all()[0]
             return unicode(stu) + " " + unicode(self.date)
-        return "Interation: " + unicode(self.date)
+        return "Interaction: " + unicode(self.date)
         
 # this handler sets the company field in student interaction based on student
 # company when it was added
@@ -776,7 +777,7 @@ class AttendanceReason(models.Model):
 class Attendance(models.Model):
     student = models.ForeignKey(StudentWorker, help_text="Student who is absent this day")
     absence_date = models.DateField(default=datetime.now, verbose_name="date")
-    tardy = models.CharField(verbose_name="Status", max_length=1, choices=(("P", "Present"),("A", "Absent/Half Day"),("T", "Tardy")),default="P")
+    tardy = models.CharField(verbose_name="Status", max_length=1, choices=(("P", "Present"),("A", "Absent/Half Day"),("T", "Tardy"),("N", "No Timesheet")),default="P")
     tardy_time_in = models.TimeField(blank=True,null=True)
     makeup_date = models.DateField(blank=True, null=True)
     fee = models.ForeignKey(AttendanceFee, blank=True, null=True)

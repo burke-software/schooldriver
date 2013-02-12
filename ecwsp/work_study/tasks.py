@@ -77,7 +77,7 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                             msg += "Timesheet not yet approved by supervisor\n\n"
                             
                 # Now get students who are present but did not submit a time card
-                students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P",timesheet__company__cras=cra).exclude(timesheet__date=date.today())
+                students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P",timesheet__company__cras=cra).exclude(timesheet__date=date.today()).distinct()
                 if students:
                     msg += "The following students were present but did not submit time sheets:\n"
                     for student in students:

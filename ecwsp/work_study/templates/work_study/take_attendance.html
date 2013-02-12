@@ -16,7 +16,7 @@
 <div id="breadcrumbs">
     <a href="{% url "admin:index" %}">{% trans "Home" %}</a> &rsaquo;
     <a href="{% url "admin:app_list" 'work_study' %}">{% trans "Work Study" %}</a> &rsaquo;
-    <a href="{% url "admin:work_study_attendance_changelist" %}"> Client Visit </a> &rsaquo; 
+    <a href="{% url "admin:work_study_attendance_changelist" %}"> Attendance </a> &rsaquo; 
     Take Attendance
 </div>
 {% endif %}{% endblock %}
@@ -62,7 +62,16 @@
 	    </tr>
             {% for form in formset %}
                 <tr>
-                    <td>{{ form.student_display }} {{ form.student.as_hidden }} {{ form.student.errors }}</td>
+                    <td>
+                        {% if form.instance.student %}
+                              {{ form.instance.student }}
+                              {{ form.id.as_hidden }}
+                        {% else %}
+                              {{form.initial.student }}
+                        {% endif %}
+                        {{ form.student.as_hidden }} 
+                        {{ form.student.errors }}
+                    </td>
                     <td>{{ form.tardy }} {{ form.tardy.errors }}</td>
                     <td>{{ form.tardy_time_in }} {{ form.tardy_time_in.errors }}</td>
                 </tr>
