@@ -32,13 +32,23 @@ def supervisor_xls(request):
     comp = WorkTeam.objects.filter(login=request.user)[0]
     timesheets = TimeSheet.objects.filter(approved=True).filter(company=comp).order_by('student', 'date',)
     data = []
-    titles = ["WorkTeam", "Student", "", "Date", "For Pay?", "Make up?", "Hours Worked", "Company Bill"]
-    fileName = "Billing_Report.xls"
+    titles = ["WorkTeam", "Student", "", "Date", "For Pay?", "Make up?", "Hours Worked", "Company Bill", "Performance", "Student Comment", "Supervisor Comment"]
+    fileName = "Billing_Report"
     company_total = timesheets.aggregate(Sum('school_net'))
     data.append([comp.team_name, "", "", "", "", "", "", company_total['school_net__sum']])
     studenti = 0
     for timesheet in timesheets:
-        data.append(["", timesheet.student.fname, timesheet.student.lname, timesheet.date, timesheet.for_pay, timesheet.make_up, timesheet.hours, timesheet.school_net])
+        data.append(["",
+                     timesheet.student.fname,
+                     timesheet.student.lname,
+                     timesheet.date,
+                     timesheet.for_pay,
+                     timesheet.make_up,
+                     timesheet.hours,
+                     timesheet.school_net,
+                     timesheet.performance,
+                     timesheet.student_accomplishment,
+                     timesheet.supervisor_comment,])
         studenti += 1
         if studenti == timesheets.filter(student__id__iexact=timesheet.student.id).count():
             stu_total = timesheets.filter(student__id__iexact=timesheet.student.id).aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
