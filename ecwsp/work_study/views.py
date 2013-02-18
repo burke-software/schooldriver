@@ -762,6 +762,10 @@ def report_builder_view(request):
 
 @permission_required('discipline.change_clientvisit')   
 def dol_form(request, id=None):
+    supervisors_text = ""
+    for supervisor in ClientVisit.objects.get(id=id).supervisor.all():
+        supervisors_text += "{0}, ".format(unicode(supervisor))
+    supervisors_text = supervisors_text[:-2]
     if request.method == 'POST':
         if id:
             form = DolForm(request.POST, instance=ClientVisit.objects.get(id=id))
@@ -784,7 +788,7 @@ def dol_form(request, id=None):
             form = DolForm(instance=clientvisit)
         else:
             form = DolForm()
-        return render_to_response('work_study/DOL.html', {'form': form,'request':request}, RequestContext(request, {}))
+        return render_to_response('work_study/DOL.html', {'form': form, 'supervisors':supervisors_text, 'request':request}, RequestContext(request, {}))
    
 def dol_xls_report(begin_date, end_date,):
     data = []

@@ -804,7 +804,7 @@ class ClientVisit(models.Model):
     cra = models.ForeignKey(CraContact, blank=True, null=True)
     company = models.ForeignKey(WorkTeam)
     follow_up_of = models.ForeignKey('ClientVisit', blank=True, null=True, help_text="This report is a follow of up selected report")
-    supervisor = models.ForeignKey(Contact, blank=True, null=True)
+    supervisor = models.ManyToManyField(Contact, blank=True, null=True)
     choices = (
         ('4', "Above and Beyond"),
         ('3', "Represents Level of Proficiency"),
