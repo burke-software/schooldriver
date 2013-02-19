@@ -34,6 +34,13 @@ $(document).ready(function() {
     $(".assignment :not(.forall)").tooltip({
         bodyHandler: function() {
             var item_id = $(this).attr("item_id");
+            if(item_id == undefined) {
+                // maybe it's a demonstration name
+                if($(this).data("demonstration_id") != undefined)
+                    return "Click to edit demonstration " + $(this).html();
+                else
+                    return;
+            }
             var tipHere = $("<div>Loading...</div>");
             $.get("ajax_get_item_tooltip/" + item_id + "/", function(data) {
                tipHere.html(data);
@@ -112,6 +119,7 @@ function mark_change(event) {
         )
         .error(function() {
                 $(event.target).replaceWith('<div class="save_failure">' + prev_value + '</div>');
+                average_cell.children().removeClass('saving');
             }
         );
     } else {
