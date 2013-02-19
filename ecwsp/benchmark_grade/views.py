@@ -613,12 +613,12 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         if 'item_pks' in request.POST:
             item_pks = request.POST['item_pks'].split(',')
             items = Item.objects.filter(pk__in=item_pks)
-            # always filter in case a bad person passes us items from a different course
-            items = items.filter(course=course, mark__student=student)
             specific_items = True
         else:
-            items = Item.objects.filter(course=course)
+            items = Item.objects
             specific_items = False
+        # always filter in case a bad person passes us items from a different course
+        items = items.filter(course=course, mark__student=student)
 
         if marking_period_pk:
             mp = get_object_or_404(MarkingPeriod, pk=marking_period_pk)
