@@ -2,8 +2,14 @@
 SWoRD Documentation
 =====================
 
-.. contents:: Table of Contents
+:Date: February 26, 2013
 
+
+Django-sis/SWoRD is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.), and is intended for schools with our without work study programs. SWoRD is able to integrate with Naviance Premium Accounts, Engrade, SugarCRM and National Student Clearinghouse.
+
+In sum, SWoRD includes pluggable apps designed to cover most if not all of a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
+
+.. contents:: Table of Contents
 
 Developer Information
 ---------------------
@@ -69,3 +75,8 @@ UMASK=027
 | /opt/uudeview -i +a -m -p /var/www/quexf_$lower/doc/filled -
 END
 echo "$new_user@`postconf -h myhostname`"
+
+Admissions
+----------
+The admissions module allows schools to keep track of applicants, and where they are in the application process. Each step in the application process can be customized to fit a school's unique need.
+
