@@ -20,19 +20,29 @@
 	    </tr>
 
             {% for timesheet in timeSheets %}
-               <tr class="submitted-row{% cycle '1' '2' %}">
-                   <td> {{ timesheet.date }} </td>
-		   <td> {{ timesheet.company }} </td>
-                   <td> {{ timesheet.hours }} </td>
-		   <td> {{ timesheet.approved|yesno }} </td>
-                   <td> {{ timesheet.for_pay|yesno }} </td>
-                   <td> {{ timesheet.make_up|yesno }} </td>
-		   {% if timesheet.approved %}
-			<td> </td>
-		   {% else %}
-			<td> <span class="submitted-edit-icon"> <a href="{% url "ecwsp.work_study.views.student_edit" timesheet.id %}"> </a></span></td>
-		   {% endif %}
+                <tr class="submitted-row{% cycle '1' '2' %}">
+                    <td> {{ timesheet.date }} </td>
+		    <td> {{ timesheet.company }} </td>
+                    <td> {{ timesheet.hours }} </td>
+		    <td> {{ timesheet.approved|yesno }} </td>
+                    <td> {{ timesheet.for_pay|yesno }} </td>
+                    <td> {{ timesheet.make_up|yesno }} </td>
+		    {% if timesheet.approved %}
+                        <td> <a href="javaScript:void(0);" onclick="$('.details{{ timesheet.id}}').show('fast');">Details</a> </td>
+		    {% else %}
+                        <td> <span class="submitted-edit-icon"> <a href="{% url "ecwsp.work_study.views.student_edit" timesheet.id %}"> </a></span></td>
+		    {% endif %}
                 </tr>
+                {% if timesheet.student_accomplishment %}
+                    <tr style="display: none" class="submitted-row{% cycle '1' '2' %} details{{ timesheet.id }}">
+                        <td colspan="7"><b>Student Accomplishment:</b> {{ timesheet.student_accomplishment }}</td>
+                    </tr>
+                {% endif %}
+                {% if timesheet.supervisor_comment and timesheet.show_student_comments %}
+                    <tr style="display: none" class="submitted-row{% cycle '1' '2' %} details{{ timesheet.id }}">
+                        <td colspan="7"><b>Supervisor Comment:</b> {{ timesheet.performance }} - {{ timesheet.supervisor_comment }}</td>
+                    </tr>
+                {% endif %}
             {% endfor %}
         </table>
       
