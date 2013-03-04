@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.http import HttpResponse
 from django.core.servers.basehttp import FileWrapper
 from django.contrib.admin.views.decorators import staff_member_required
@@ -23,6 +24,17 @@ import copy
 class struct(object):
     def __unicode__(self):
         return ""
+
+def draw_gauge(percentage, width=10, filled_char=u'█', empty_char=u'░'):
+    ''' creates a string with unicode box drawing characters to represent percentage visually '''
+    percentage /= Decimal(100)
+    filled = int(Decimal(width * percentage).quantize(Decimal('0')))
+    if filled > width: filled = width
+    elif filled < 0: filled = 0
+    output = filled_char * filled
+    output += empty_char * (width - filled)
+    return output
+
 
 def benchmark_report_card(template, options, students, format="odt"):
     PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
@@ -142,6 +154,7 @@ def benchmark_report_card(template, options, students, format="odt"):
     data['students'] = students
     data['school_year'] = school_year
     data['marking_period'] = marking_period.name # just passing object makes appy think it's undefined
+    data['draw_gauge'] = draw_gauge
     filename = 'output'
     #return pod_save(filename, ".pdf", data, template)
     return pod_save(filename, "." + str(format), data, template)
