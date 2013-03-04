@@ -330,6 +330,7 @@ class Faculty(MdlUser):
 
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
+    long_name = models.CharField(max_length=500, blank=True, help_text="Optional verbose name")
     students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
     primary = models.BooleanField(blank=True, help_text="If set true - all students in this cohort will have it set as primary!")
     
