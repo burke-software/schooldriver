@@ -192,7 +192,7 @@ class MdlUser(models.Model):
     username = models.CharField(unique=True, max_length=255)
     fname = models.CharField(max_length=300, verbose_name="First Name")
     lname = models.CharField(max_length=300, verbose_name="Last Name")
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(blank=True)
     city = models.CharField(max_length=360, blank=True)
     class Meta:
         ordering = ('lname','fname')
@@ -330,6 +330,7 @@ class Faculty(MdlUser):
 
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
+    long_name = models.CharField(max_length=500, blank=True, help_text="Optional verbose name")
     students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
     primary = models.BooleanField(blank=True, help_text="If set true - all students in this cohort will have it set as primary!")
     

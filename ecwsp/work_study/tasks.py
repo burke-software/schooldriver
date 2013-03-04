@@ -58,8 +58,8 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
             msg = ""
             subject = "SWORD comments"
             send = False
-            timesheets = TimeSheet.objects.filter(company__cras=cra).filter(creation_date__year=date.today().year, creation_date__day=date.today().day, creation_date__month=date.today().month).order_by('company__team_name')
-            if timesheets.count() > 0:
+            timesheets = TimeSheet.objects.filter(company__cras=cra).filter(cra_email_sent=False, creation_date__month=date.today().month).order_by('company__team_name')
+            if timesheets.count():
                 for timesheet in timesheets:
                     if timesheet.supervisor_comment or timesheet.performance or timesheet.student_accomplishment:
                         send = True
@@ -96,7 +96,7 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
             msg = ""
             subject = "SWORD comments"
             send = False
-            timesheets = TimeSheet.objects.filter(creation_date__year=date.today().year, creation_date__day=date.today().day, creation_date__month=date.today().month).order_by('company__cras','company__team_name')
+            timesheets = TimeSheet.objects.filter(cra_email_sent=False, creation_date__month=date.today().month).order_by('company__cras','company__team_name')
             if timesheets.count() > 0:
                 for timesheet in timesheets:
                     if timesheet.supervisor_comment or timesheet.performance or timesheet.student_accomplishment:
@@ -124,6 +124,12 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                         'exception': sys.exc_info()[0],
                         'exception2': sys.exc_info()[1],
                     })
+        
+        # Check off time sheets that were processed today (so they aren't processed tomorrow)
+        timesheets = TimeSheet.objects.filter(creation_date__month=date.today().month, cra_email_sent=False)
+        for timesheet in timesheets:
+            timesheet.cra_email_sent = True
+            timesheet.save()
         
         # Remind students to submit time sheets
         students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())

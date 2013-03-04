@@ -674,6 +674,7 @@ class TimeSheet(models.Model):
     supervisor_comment = models.TextField(blank=True)
     show_student_comments = models.BooleanField(default=True)
     supervisor_key = models.CharField(max_length=20, blank=True)
+    cra_email_sent = models.BooleanField(help_text="This time sheet was sent to a cra via nightly email", editable=False)
     
     def student_Accomplishment_Brief(self):
         return unicode(self.student_accomplishment[:30])
