@@ -3,7 +3,6 @@
 
 {% block extrahead %}
     {{ formset.media }}
-    
 {% endblock %}
 
 {% block content %}
@@ -18,15 +17,19 @@
                     <tr>
                         <th>Student</th>
                         <th>Daily Attendance</th>
+                        <th>Note</th>
                         <th>Course Attendance</th>
 			<th>Note</th>
+                        <th>Time in</th>
                     </tr>
                     {% for form in formset %}
                         <tr>
                             <td>{{ form.student_name }}</td>
                             <td>{{ form.student_attendance }}</td>
-                            <td>{{ form.status }} {{ form.student }}</td>
                             <td>{{ form.student_attendance_note }}</td>
+                            <td>{{ form.status }} {{ form.student }}</td>
+                            <td>{{ form.notes }}</td>
+                            <td>{{ form.time_in }}{{ form.time_in.errors }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

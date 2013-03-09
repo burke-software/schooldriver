@@ -41,6 +41,8 @@ class CourseAttendanceForm(forms.Form):
         widget=forms.Select(attrs={'class':'status',}),
         queryset=AttendanceStatus.objects.filter(teacher_selectable=True),
         required=False)
+    time_in = forms.TimeField(required=False, widget=adminwidgets.AdminTimeWidget(attrs={'tabindex':"-1"}))
+    notes = forms.CharField(required=False, widget=forms.TextInput(attrs={'tabindex':"-1"}))
 
     
 class AttendanceReportForm(TimeBasedForm):

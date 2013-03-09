@@ -172,7 +172,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
     actions = [promote_to_worker, mark_inactive]
-    list_filter = ['inactive','year']
+    list_filter = ['inactive', 'year', 'class_of_year']
     list_display = ['__unicode__','year']
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
         filter_horizontal = ('family_access_users',)

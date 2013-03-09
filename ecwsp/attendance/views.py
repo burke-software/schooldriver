@@ -29,8 +29,8 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
-from models import *
-from forms import *
+from models import StudentAttendance, CourseAttendance, AttendanceStatus
+from forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
 from ecwsp.schedule.models import Course
 from ecwsp.sis.models import Student, UserPreference, Faculty
 from ecwsp.sis.helper_functions import Struct
@@ -306,20 +306,37 @@ def course_attendance(request, course_id, for_date=datetime.date.today):
             for form in formset.forms:
                 data = form.cleaned_data
                 if data['status']:
-                    course_attendance, created = CourseAttendance.objects.get_or_create(
-                        student=data['student'],
-                        course=course,
-                        date=for_date,
-                        status=data['status'],
-                    )
-                    if created: number_created += 1
-            messages.success(request, 'Attendance recorded for %s students' % number_created)
+                    number_created += 1
+                    try:
+                        course_attendance = CourseAttendance.objects.get(
+                            student=data['student'],
+                            course=course,
+                            date=for_date,
+                        )
+                        course_attendance.status = data['status']
+                        course_attendance.notes = data['notes']
+                        course_attendance.time_in = data['time_in']
+                        course_attendance.save()
+                    except CourseAttendance.DoesNotExist:
+                        CourseAttendance.objects.create(
+                            student=data['student'],
+                            course=course,
+                            date=for_date,
+                            status = data['status'],
+                            notes = data['notes'],
+                            time_in = data['time_in'],
+                        )
+            if number_created:
+                messages.success(request, 'Attendance recorded for %s students' % number_created)
     else:
         initial_data = []
         for student in students:
             initial_row = {'student': student}
             if student.courseattendance_set.filter(date=for_date, course=course):
-                initial_row['status'] = student.courseattendance_set.filter(date=for_date)[0].status
+                current_attendance = student.courseattendance_set.filter(date=for_date)[0]
+                initial_row['status'] = current_attendance.status
+                initial_row['time_in'] = current_attendance.time_in
+                initial_row['notes'] = current_attendance.notes
             elif student.student_attn.filter(date=for_date, status__absent=True):
                 initial_row['status'] = AttendanceStatus.objects.get(name="Absent")
             initial_data.append(initial_row)

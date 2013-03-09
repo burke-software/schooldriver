@@ -51,7 +51,9 @@ class CourseAttendance(models.Model):
     """
     student =  models.ForeignKey(Student)
     course = models.ForeignKey('schedule.Course')
+    period = models.ForeignKey('schedule.Period', blank=True, null=True)
     date = models.DateField(default=datetime.datetime.now)
+    time_in = models.TimeField(blank=True, null=True)
     status = models.ForeignKey(AttendanceStatus)
     notes = models.CharField(max_length=500, blank=True)
     def __unicode__(self):
