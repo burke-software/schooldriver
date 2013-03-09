@@ -11,6 +11,7 @@ def global_stuff(request):
         header_image = None
     school_name = Configuration.get_or_default('School Name', default="Unnamed School")
     school_color = Configuration.get_or_default('School Color', default="").value
+    google_analytics_code = Configuration.get_or_default('Google Analytics').value
     
     # Only show messages if user just logged in
     user_messages = None
@@ -29,4 +30,5 @@ def global_stuff(request):
         "settings": settings,
         "school_color": school_color,
         'user_messages':user_messages,
+        'google_analytics_code': google_analytics_code,
     }
