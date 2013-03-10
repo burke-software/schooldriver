@@ -252,6 +252,17 @@ CKEDITOR_CONFIGS = {
     },
 }
 
+# LOGGING
+# Ignore this stupid error, why would anyone EVER want to know
+# when a user cancels a request?
+from django.http import UnreadablePostError
+
+def skip_unreadable_post(record):
+    if record.exc_info:
+        exc_type, exc_value = record.exc_info[:2]
+        if isinstance(exc_value, UnreadablePostError):
+            return False
+    return True
 
 LOGGING = {
     'version': 1,
@@ -265,13 +276,21 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
     },
+    'filters': {
+        'skip_unreadable_posts': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': skip_unreadable_post,
+        }
+},
     'handlers': {
         'sentry': {
             'level': 'WARNING',
+            'filters': ['skip_unreadable_posts'],
             'class': 'raven.contrib.django.handlers.SentryHandler',
         },
         'console': {
             'level': 'DEBUG',
+            'filters': ['skip_unreadable_posts'],
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
