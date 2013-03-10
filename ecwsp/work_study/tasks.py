@@ -1,6 +1,7 @@
 from ecwsp.work_study.models import StudentInteraction, CraContact, TimeSheet, StudentWorker
 from ecwsp.administration.models import Configuration
 from django.core.mail import send_mail
+from django.utils.encoding import smart_unicode
 from datetime import date
 import logging
 from django.conf import settings
@@ -114,7 +115,7 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                 if students:
                     msg += "The following students were present but did not submit time sheets:\n"
                     for student in students:
-                        msg += "{0}, ".format(student)
+                        msg += "{0}, ".format(smart_unicode(student))
                     msg = msg[:-2]
                 
                 try:
