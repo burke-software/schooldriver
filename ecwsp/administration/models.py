@@ -95,6 +95,7 @@ class Configuration(models.Model):
         'admissions_inquiry_form_css': ('', 'CSS for Inquiry Form'),
         'admissions_notify_email': ('', 'Send admissions notifications to this email. Comma seperated are ok.'),
         'admissions_hide_inquiry_grade': ('', 'IDs of grade (fresh, soph, etc) to exclude on inquiry form. Comma seperated are ok.'),
+        'Google Analytics': ('', 'Google Analytics Code')
     }
     
     def __unicode__(self):

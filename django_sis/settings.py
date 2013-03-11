@@ -67,6 +67,12 @@ DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y','%b. %d, %Y')
 DATE_FORMAT = 'b. d, Y'
+
+# Global date validators, to help prevent data entry errors
+import datetime
+from django.core.validators import MinValueValidator # Could use MaxValueValidator too
+DATE_VALIDATORS=[MinValueValidator(datetime.date(1970,1,1))] # Unix epoch!
+
 USE_L10N = True
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
@@ -252,6 +258,17 @@ CKEDITOR_CONFIGS = {
     },
 }
 
+# LOGGING
+# Ignore this stupid error, why would anyone EVER want to know
+# when a user cancels a request?
+from django.http import UnreadablePostError
+
+def skip_unreadable_post(record):
+    if record.exc_info:
+        exc_type, exc_value = record.exc_info[:2]
+        if isinstance(exc_value, UnreadablePostError):
+            return False
+    return True
 
 LOGGING = {
     'version': 1,
@@ -265,13 +282,21 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
     },
+    'filters': {
+        'skip_unreadable_posts': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': skip_unreadable_post,
+        }
+},
     'handlers': {
         'sentry': {
             'level': 'WARNING',
+            'filters': ['skip_unreadable_posts'],
             'class': 'raven.contrib.django.handlers.SentryHandler',
         },
         'console': {
             'level': 'DEBUG',
+            'filters': ['skip_unreadable_posts'],
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },

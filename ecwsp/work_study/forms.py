@@ -117,7 +117,7 @@ class TimeSheetForm(forms.ModelForm):
         model = TimeSheet
 
     my_supervisor = forms.ModelChoiceField(queryset=Contact.objects.all(), required=False)
-    date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS) 
+    date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS, validators=settings.DATE_VALIDATORS) 
     time_in = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
     time_lunch = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
     time_lunch_return = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
@@ -193,8 +193,8 @@ class AddSupervisor(forms.ModelForm):
         fields = ('fname', 'lname', 'phone', 'phone_cell', 'email',)
     
 class ReportBuilderForm(forms.Form):
-    custom_billing_begin = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False)
-    custom_billing_end = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False)
+    custom_billing_begin = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
+    custom_billing_end = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
 
 class ReportTemplateForm(StudentReportWriterForm):
     date_begin = None

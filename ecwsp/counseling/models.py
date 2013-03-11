@@ -40,7 +40,7 @@ class StudentMeetingCategory(models.Model):
 class StudentMeeting(models.Model):
     students = models.ManyToManyField(Student)
     category = models.ForeignKey(StudentMeetingCategory,blank=True,null=True)
-    date = models.DateField(default=datetime.date.today)
+    date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     notes = RichTextField(blank=True)
     follow_up_action = models.ForeignKey(FollowUpAction,blank=True,null=True)
     follow_up_notes = models.CharField(max_length=2024,blank=True)
@@ -74,7 +74,7 @@ class ReferralReason(models.Model):
 
 class ReferralForm(models.Model):
     classroom_teacher = models.ForeignKey(User,limit_choices_to = {'groups__name': 'faculty'},related_name='referral_classroom_teacher')
-    date = models.DateField(default=datetime.date.today)
+    date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     referred_by = models.ForeignKey(User,limit_choices_to = {'groups__name': 'faculty'})
     student = models.ForeignKey(Student)
     comments = models.TextField(blank=True)

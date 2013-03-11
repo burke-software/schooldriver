@@ -263,7 +263,7 @@ class CompContract(models.Model):
     company_name = models.CharField(max_length=255, blank=True)
     name = models.CharField(max_length=255, blank=True)
     title = models.CharField(max_length=255, blank=True)
-    date = models.DateField(default=datetime.now)
+    date = models.DateField(default=datetime.now, validators=settings.DATE_VALIDATORS)
     school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True)
     number_students = models.IntegerField(blank=True, null=True)
     
@@ -515,7 +515,7 @@ class Survey(models.Model):
     company = models.ForeignKey(WorkTeam, blank=True, null=True)
     question = models.CharField(max_length=255)
     answer = models.CharField(max_length=510, blank=True)
-    date = models.DateField(default=datetime.now)
+    date = models.DateField(default=datetime.now, validators=settings.DATE_VALIDATORS)
     def save(self, *args, **kwargs):
         if self.company == None:
             self.company = self.student.placement
@@ -528,7 +528,7 @@ class Survey(models.Model):
 class CompanyHistory(models.Model):
     student = models.ForeignKey(StudentWorker)
     placement = models.ForeignKey(WorkTeam)
-    date = models.DateField(default=datetime.now)
+    date = models.DateField(default=datetime.now, validators=settings.DATE_VALIDATORS)
     fired = models.BooleanField()
     
     def getStudent(self):
@@ -562,7 +562,7 @@ class PresetComment(models.Model):
 class StudentInteraction(models.Model):
     student = models.ManyToManyField(StudentWorker, limit_choices_to={'inactive': False}, blank=True, help_text="A email will automatically be sent to the CRA of this student if type is mentoring")
     reported_by = models.ForeignKey(User, blank=True, null=True)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     type = models.CharField(max_length=1, choices=(('M', 'Mentoring'), ('D', 'Discipline'), ('P', 'Parent'), ('C', 'Company'), ('S', 'Supervisor'), ('O', 'Other')))
     comments = models.TextField(blank=True)
     preset_comment = models.ManyToManyField(PresetComment, blank=True, help_text="Double click on the comment on the left you to add. Or click the plus to add a new preset comment")
@@ -657,8 +657,8 @@ class TimeSheet(models.Model):
     for_pay = models.BooleanField(help_text="Student is working over break and will be paid separately for this work.")
     make_up = models.BooleanField(help_text="Student is making up a missed day.", verbose_name="makeup")
     company = models.ForeignKey(WorkTeam) # Because a student's company can change but this shouldn't.
-    creation_date = models.DateTimeField(auto_now_add=True)
-    date = models.DateField()
+    creation_date = models.DateTimeField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
+    date = models.DateField(validators=settings.DATE_VALIDATORS)
     time_in = models.TimeField()
     time_lunch = models.TimeField()
     time_lunch_return = models.TimeField()
@@ -674,6 +674,7 @@ class TimeSheet(models.Model):
     supervisor_comment = models.TextField(blank=True)
     show_student_comments = models.BooleanField(default=True)
     supervisor_key = models.CharField(max_length=20, blank=True)
+    cra_email_sent = models.BooleanField(help_text="This time sheet was sent to a cra via nightly email", editable=False)
     
     def student_Accomplishment_Brief(self):
         return unicode(self.student_accomplishment[:30])
@@ -776,10 +777,10 @@ class AttendanceReason(models.Model):
         
 class Attendance(models.Model):
     student = models.ForeignKey(StudentWorker, help_text="Student who is absent this day")
-    absence_date = models.DateField(default=datetime.now, verbose_name="date")
+    absence_date = models.DateField(default=datetime.now, verbose_name="date", validators=settings.DATE_VALIDATORS)
     tardy = models.CharField(verbose_name="Status", max_length=1, choices=(("P", "Present"),("A", "Absent/Half Day"),("T", "Tardy"),("N", "No Timesheet")),default="P")
     tardy_time_in = models.TimeField(blank=True,null=True)
-    makeup_date = models.DateField(blank=True, null=True)
+    makeup_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     fee = models.ForeignKey(AttendanceFee, blank=True, null=True)
     paid = models.DecimalField(blank=True, null=True, max_digits=5, decimal_places=2, help_text="Dollar value student has paid school for a fee.")
     billed = models.BooleanField(help_text="Has the student been billed for this day?")
@@ -799,7 +800,7 @@ class Attendance(models.Model):
 
 class ClientVisit(models.Model):
     dol = models.BooleanField()
-    date = models.DateField(default=datetime.now)
+    date = models.DateField(default=datetime.now, validators=settings.DATE_VALIDATORS)
     student_worker = models.ForeignKey('StudentWorker', blank=True, null=True)
     cra = models.ForeignKey(CraContact, blank=True, null=True)
     company = models.ForeignKey(WorkTeam)
@@ -865,8 +866,8 @@ class MessageToSupervisor(models.Model):
     """ Stores a message to be shown to students for a specific amount of time
     """
     message = RichTextField(help_text="This message will be shown to supervisors when they log in.")
-    start_date = models.DateField(default=date.today)
-    end_date = models.DateField(default=date.today)
+    start_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
+    end_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
     def __unicode__(self):
         # django.utils.html has a strip_entities(), but it's undocumented
         # so snatch up it's regular expression and use it here!

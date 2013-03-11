@@ -267,7 +267,7 @@ class TestInstance(models.Model):
     school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     test = models.ForeignKey(Test)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True)
     results_received = models.BooleanField()
     def __unicode__(self):

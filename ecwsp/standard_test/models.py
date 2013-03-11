@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 import datetime
 
@@ -45,7 +46,7 @@ class StandardCategory(models.Model):
 
 class StandardTestResult(models.Model):
     """ Standardized test instance. This is the results of a student taking a test """
-    date = models.DateField(default=datetime.date.today())
+    date = models.DateField(default=datetime.date.today(), validators=settings.DATE_VALIDATORS)
     student = models.ForeignKey('sis.Student')
     test = models.ForeignKey(StandardTest)
     show_on_reports = models.BooleanField(default=True, help_text="If true, show this test result on a report such as a transcript. " + \

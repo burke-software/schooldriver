@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.models import LogEntry, CHANGE
 
 from ajax_select import make_ajax_form
@@ -109,6 +110,10 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         return super(StudentAdmin, self).lookup_allowed(lookup, *args, **kwargs)
     
     def render_change_form(self, request, context, *args, **kwargs):
+        if context['original'].alert:
+            messages.add_message(request, messages.INFO, 'ALERT: {0}'.format(context["original"].alert))
+        for record in context['original'].studenthealthrecord_set.all():
+            messages.add_message(request, messages.INFO, 'HEALTH RECORD: {0}'.format(record.record))
         try:
             if context['original'].pic:
                 txt = '<img src="' + str(context['original'].pic.url_70x65) + '"/>'
@@ -167,7 +172,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
     actions = [promote_to_worker, mark_inactive]
-    list_filter = ['inactive','year']
+    list_filter = ['inactive', 'year', 'class_of_year']
     list_display = ['__unicode__','year']
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
         filter_horizontal = ('family_access_users',)

@@ -47,8 +47,8 @@ class Calendar:
         date: defaults to right now. """
         if not date:
             date = datetime.now()
-        mps = MarkingPeriod.objects.filter(start_date__lt=date, end_date__gt=date)
-        periods = Period.objects.filter(start_time__lt=date, end_time__gt=date)
+        mps = MarkingPeriod.objects.filter(start_date__lte=date, end_date__gte=date)
+        periods = Period.objects.filter(start_time__lte=date, end_time__gte=date)
         day = date.isoweekday()
         courses = Course.objects.filter(marking_period__in=mps, periods__in=periods, enrollments__student=student)
         course_meet = CourseMeet.objects.filter(course__in=courses, day=day, period__in=periods)

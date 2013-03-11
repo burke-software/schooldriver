@@ -34,8 +34,8 @@ def duplicate(obj, changes=None):
 class MarkingPeriod(models.Model):
     name = models.CharField(max_length=255, unique=True)
     shortname = models.CharField(max_length=255) 
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(validators=settings.DATE_VALIDATORS)
+    end_date = models.DateField(validators=settings.DATE_VALIDATORS)
     school_year = models.ForeignKey('sis.SchoolYear')
     active = models.BooleanField(help_text="Teachers may only enter grades for active marking periods. There may be more than one active marking period.")
     show_reports = models.BooleanField(default=True, help_text="If checked this marking period will show up on reports.")
@@ -91,7 +91,7 @@ class MarkingPeriod(models.Model):
         return day
         
 class DaysOff(models.Model):
-    date = models.DateField()
+    date = models.DateField(validators=settings.DATE_VALIDATORS)
     marking_period = models.ForeignKey(MarkingPeriod)
     
     def __unicode__(self):
@@ -217,7 +217,7 @@ class Course(models.Model):
     credits = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Credits effect gpa.")
     department = models.ForeignKey(Department, blank=True, null=True)
     level = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
-    last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False)
+    last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
     
     def __unicode__(self):
         return self.fullname

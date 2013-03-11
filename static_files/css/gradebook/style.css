@@ -326,6 +326,12 @@ input[type="button"] {
     padding: 5px 10px 5px;
     list-style: none;
 }
+
+div.courseSelect {
+    margin-top: 0px;
+    line-height: 27px;
+}
+
 .courseSelect .courseSelected {
     background: #000;
     color: #FFF;
@@ -369,3 +375,4 @@ input:disabled {
     padding: 0.25em;
     font-size: 1.05em;
 }   
+

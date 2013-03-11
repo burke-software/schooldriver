@@ -29,10 +29,11 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
-from models import *
-from forms import *
+from models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
+from forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
+from forms import StudentAttendanceForm, StudentMultpleAttendanceForm
 from ecwsp.schedule.models import Course
-from ecwsp.sis.models import Student, UserPreference, Faculty
+from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.administration.models import Template
 
@@ -306,20 +307,37 @@ def course_attendance(request, course_id, for_date=datetime.date.today):
             for form in formset.forms:
                 data = form.cleaned_data
                 if data['status']:
-                    course_attendance, created = CourseAttendance.objects.get_or_create(
-                        student=data['student'],
-                        course=course,
-                        date=for_date,
-                        status=data['status'],
-                    )
-                    if created: number_created += 1
-            messages.success(request, 'Attendance recorded for %s students' % number_created)
+                    number_created += 1
+                    try:
+                        course_attendance = CourseAttendance.objects.get(
+                            student=data['student'],
+                            course=course,
+                            date=for_date,
+                        )
+                        course_attendance.status = data['status']
+                        course_attendance.notes = data['notes']
+                        course_attendance.time_in = data['time_in']
+                        course_attendance.save()
+                    except CourseAttendance.DoesNotExist:
+                        CourseAttendance.objects.create(
+                            student=data['student'],
+                            course=course,
+                            date=for_date,
+                            status = data['status'],
+                            notes = data['notes'],
+                            time_in = data['time_in'],
+                        )
+            if number_created:
+                messages.success(request, 'Attendance recorded for %s students' % number_created)
     else:
         initial_data = []
         for student in students:
             initial_row = {'student': student}
             if student.courseattendance_set.filter(date=for_date, course=course):
-                initial_row['status'] = student.courseattendance_set.filter(date=for_date)[0].status
+                current_attendance = student.courseattendance_set.filter(date=for_date)[0]
+                initial_row['status'] = current_attendance.status
+                initial_row['time_in'] = current_attendance.time_in
+                initial_row['notes'] = current_attendance.notes
             elif student.student_attn.filter(date=for_date, status__absent=True):
                 initial_row['status'] = AttendanceStatus.objects.get(name="Absent")
             initial_data.append(initial_row)
@@ -517,6 +535,46 @@ def attendance_report(request):
         'attendance/attendance_report.html',
         {'form':form, 'daily_form': daily_form, 'lookup_form': lookup_form}, RequestContext(request, {}),)
     
+
+def add_multiple(request):
+    """ Add multple records by allowing multiple students in the form.
+    Each student will make one new record
+    """
+    if request.POST:
+        form = StudentMultpleAttendanceForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            created_records = 0
+            updated_records = 0
+            for student in data["student"]:
+                record, created = StudentAttendance.objects.get_or_create(
+                    student_id=student,
+                    date=data['date'],
+                    status=data['status'],
+                )
+                record.time=data['time']
+                record.notes=data['notes']
+                record.private_notes=data['private_notes']
+                record.save()
+                if created:
+                    created_records += 1
+                else:
+                    updated_records += 1
+            messages.success(
+                request,
+                'Created {0} and updated {1} attendance records'.format(created_records, updated_records),)
+            
+    else:
+        form = StudentMultpleAttendanceForm()
+    breadcrumbs = [
+        {'link': reverse('admin:app_list', args=['attendance',]), 'name': 'Attendance'},
+        {'link': reverse('admin:attendance_studentattendance_changelist'), 'name': 'Student attendances'},
+        {'name': 'Take multiple'},
+    ]
+    return render_to_response(
+        'sis/generic_form.html',
+        {'form':form, 'breadcrumbs': breadcrumbs}, RequestContext(request, {}),)
+
     
 def attendance_student(id, all_years=False, order_by="Date", include_private_notes=False, type="odt"):
     """ Attendance report on particular student """
