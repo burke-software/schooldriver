@@ -59,7 +59,7 @@ class Infraction(models.Model):
 
 class StudentDiscipline(models.Model):
     students = models.ManyToManyField(Student, limit_choices_to={'inactive': False})
-    date = models.DateField(default=datetime.datetime.today)
+    date = models.DateField(default=datetime.datetime.today, validators=settings.DATE_VALIDATORS)
     infraction = models.ForeignKey(Infraction, blank=True, null=True)
     action = models.ManyToManyField(DisciplineAction, through='DisciplineActionInstance')
     comments = models.TextField(blank=True)

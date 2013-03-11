@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from ecwsp.schedule.models import *
 
 from decimal import Decimal, ROUND_HALF_UP
@@ -18,7 +19,7 @@ class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
     course = models.ForeignKey(Course)
     marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
-    date = models.DateField(auto_now=True)
+    date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     override_final = models.BooleanField(help_text="Override final grade for marking period instead of calculating it.")
     comment = models.CharField(max_length=500, blank=True)

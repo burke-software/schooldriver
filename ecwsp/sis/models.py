@@ -419,14 +419,14 @@ def get_default_language():
 class Student(MdlUser, CustomFieldModel):
     """student based on a Moodle user"""
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
-    grad_date = models.DateField(blank=True, null=True)
+    grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     pic = ImageWithThumbsField(upload_to="student_pics", blank=True, null=True, sizes=((70,65),(530, 400)))
     alert = models.CharField(max_length=500, blank=True, help_text="Warn any user who accesses this record with this text")
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
-    bday = models.DateField(blank=True, null=True, verbose_name="Birth Date")
+    bday = models.DateField(blank=True, null=True, verbose_name="Birth Date", validators=settings.DATE_VALIDATORS)
     year = models.ForeignKey(GradeLevel, blank=True, null=True, on_delete=models.SET_NULL)
     class_of_year = models.ForeignKey(ClassYear, blank=True, null=True)
-    date_dismissed = models.DateField(blank=True, null=True)
+    date_dismissed = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
     unique_id = models.IntegerField(blank=True, null=True, unique=True, help_text="For integration with outside databases")
     ssn = models.CharField(max_length=11, blank=True, null=True)
@@ -721,7 +721,7 @@ m2m_changed.connect(after_student_m2m, sender=Student.emergency_contacts.through
 class ASPHistory(models.Model):
     student = models.ForeignKey(Student)
     asp = models.CharField(max_length=255)
-    date = models.DateField(default=date.today)
+    date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
     enroll = models.BooleanField(help_text="Check if enrollment, uncheck if unenrollment")
     
     def __unicode__(self):
@@ -795,9 +795,9 @@ class StudentHealthRecord(models.Model):
 
 class SchoolYear(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    grad_date = models.DateField(blank=True, null=True)
+    start_date = models.DateField(validators=settings.DATE_VALIDATORS)
+    end_date = models.DateField(validators=settings.DATE_VALIDATORS)
+    grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     active_year = models.BooleanField(
         help_text="DANGER!! This is the current school year. There can only be one and setting this will remove it from other years. " \
                   "If you want to change the active year you almost certainly want to click Admin, Change School Year.")
@@ -850,8 +850,8 @@ class MessageToStudent(models.Model):
     """ Stores a message to be shown to students for a specific amount of time
     """
     message = RichTextField(help_text="This message will be shown to students when they log in.")
-    start_date = models.DateField(default=date.today)
-    end_date = models.DateField(default=date.today)
+    start_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
+    end_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
     def __unicode__(self):
         return self.message
 

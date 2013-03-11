@@ -67,8 +67,8 @@ class TimeBasedForm(forms.Form):
     """A generic template for time and school year based forms"""
     this_year = forms.BooleanField(required=False, initial=True, widget=forms.CheckboxInput(attrs={'onclick':'toggle("id_this_year")'}))
     all_years = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':'toggle("id_all_years")'}))
-    date_begin = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False)
-    date_end = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False)
+    date_begin = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
+    date_end = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
     marking_period = forms.ModelMultipleChoiceField(required=False, queryset=MarkingPeriod.objects.all())
     include_deleted = forms.BooleanField(required=False)
     
@@ -162,7 +162,7 @@ class StudentSelectForm(TimeBasedForm):
 
 
 class StudentBulkChangeForm(forms.Form):
-    grad_date = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False)
+    grad_date = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
     year = forms.ModelChoiceField(queryset=GradeLevel.objects.all(), required=False)
     individual_education_program = forms.NullBooleanField(required=False)
     cohort = forms.ModelChoiceField(queryset=Cohort.objects.all(), required=False)
@@ -184,7 +184,7 @@ class StudentReportWriterForm(StudentSelectForm):
         return data
 
 class StudentGradeReportWriterForm(forms.Form):
-    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), initial=date.today)
+    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), initial=date.today, validators=settings.DATE_VALIDATORS)
     template = forms.ModelChoiceField(required=False, queryset=Template.objects.all())
     upload_template = forms.FileField(required=False, help_text="You may choose a template or upload one here")
     include_deleted = forms.BooleanField(required=False)

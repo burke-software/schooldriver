@@ -18,6 +18,7 @@
 
 from django import forms
 from django.contrib.admin import widgets as adminwidgets
+from django.conf import settings
 
 from models import *
 from ecwsp.sis.forms import TimeBasedForm
@@ -60,12 +61,12 @@ class AttendanceViewForm(forms.Form):
 
 
 class AttendanceDailyForm(forms.Form):
-    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), initial=datetime.date.today)
+    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), initial=datetime.date.today, validators=settings.DATE_VALIDATORS)
     include_private_notes = forms.BooleanField(required=False)
 
 
 class AttendanceBulkChangeForm(forms.Form):
-    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False)
+    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
     status = forms.ModelChoiceField(queryset=AttendanceStatus.objects.all(), required=False)
     notes  = forms.CharField(max_length=255, required=False)
     private_notes  = forms.CharField(max_length=255, required=False)

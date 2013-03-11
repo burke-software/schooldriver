@@ -67,6 +67,12 @@ DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y','%b. %d, %Y')
 DATE_FORMAT = 'b. d, Y'
+
+# Global date validators, to help prevent data entry errors
+import datetime
+from django.core.validators import MinValueValidator # Could use MaxValueValidator too
+DATE_VALIDATORS=[MinValueValidator(datetime.date(1970,1,1))] # Unix epoch!
+
 USE_L10N = True
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'

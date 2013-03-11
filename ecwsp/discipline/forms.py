@@ -70,8 +70,8 @@ def get_default_three():
 def get_default_four():
     return int(Configuration.get_or_default('Discipline Merit Level Four', default=5).value)
 class MeritForm(forms.Form):
-    start_date = forms.DateField(initial=get_start_date_default, widget=adminwidgets.AdminDateWidget())
-    end_date = forms.DateField(initial=datetime.date.today, widget=adminwidgets.AdminDateWidget())
+    start_date = forms.DateField(initial=get_start_date_default, widget=adminwidgets.AdminDateWidget(), validators=settings.DATE_VALIDATORS)
+    end_date = forms.DateField(initial=datetime.date.today, widget=adminwidgets.AdminDateWidget(), validators=settings.DATE_VALIDATORS)
     level_one = forms.IntegerField(initial=get_default_one)
     level_two = forms.IntegerField(initial=get_default_two, required=False)
     level_three = forms.IntegerField(initial=get_default_three, required=False)

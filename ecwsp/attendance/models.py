@@ -52,7 +52,7 @@ class CourseAttendance(models.Model):
     student =  models.ForeignKey(Student)
     course = models.ForeignKey('schedule.Course')
     period = models.ForeignKey('schedule.Period', blank=True, null=True)
-    date = models.DateField(default=datetime.datetime.now)
+    date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     time_in = models.TimeField(blank=True, null=True)
     status = models.ForeignKey(AttendanceStatus)
     notes = models.CharField(max_length=500, blank=True)
@@ -66,7 +66,7 @@ class CourseAttendance(models.Model):
 
 class StudentAttendance(models.Model):
     student =  models.ForeignKey(Student, related_name="student_attn", help_text="Start typing a student's first or last name to search")
-    date = models.DateField(default=datetime.datetime.now)
+    date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     status = models.ForeignKey(AttendanceStatus)
     time = models.TimeField(blank=True,null=True)
     notes = models.CharField(max_length=500, blank=True)
@@ -123,7 +123,7 @@ post_save.connect(post_save_attendance_handler, sender=StudentAttendance)
 
 
 class AttendanceLog(models.Model):
-    date = models.DateField(default=datetime.date.today)
+    date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User)
     course = models.ForeignKey('schedule.Course')
     asp = models.BooleanField(help_text="ASP attendance, if unchecked this is for a homeroom")
@@ -132,7 +132,7 @@ class AttendanceLog(models.Model):
 
 
 class AttendanceDailyStat(models.Model):
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     present = models.IntegerField()
     absent = models.IntegerField()
     tardy = models.IntegerField()

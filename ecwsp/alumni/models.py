@@ -21,6 +21,7 @@ from django.db import IntegrityError
 from django.contrib.localflavor.us.models import USStateField
 from django.contrib.auth.models import User
 from django.contrib.localflavor.us.models import PhoneNumberField
+from django.conf import settings
 
 from ckeditor.fields import RichTextField
 from ecwsp.sis.models import Student
@@ -45,11 +46,11 @@ class College(models.Model):
 
 class CollegeEnrollment(models.Model):
     """ Mostly a place to keep Student clearinghouse enrollment data """
-    search_date = models.DateField(blank=True, null=True)
+    search_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     college = models.ForeignKey(College)
     program_years = models.CharField(max_length=1, choices=program_years_choices, blank=True, null=True)
-    begin = models.DateField(blank=True,null=True)
-    end = models.DateField(blank=True,null=True)
+    begin = models.DateField(blank=True,null=True, validators=settings.DATE_VALIDATORS)
+    end = models.DateField(blank=True,null=True, validators=settings.DATE_VALIDATORS)
     status_choices = (
         ('F', 'Full-time'),
         ('H', 'Half-time'),
@@ -60,7 +61,7 @@ class CollegeEnrollment(models.Model):
     )
     status = models.CharField(max_length=1, choices=status_choices, blank=True,null=True)
     graduated = models.BooleanField()
-    graduation_date = models.DateField(blank=True, null=True)
+    graduation_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     degree_title = models.CharField(max_length=255, blank=True, null=True)
     major = models.CharField(max_length=255, blank=True, null=True)
     alumni = models.ForeignKey('Alumni')
@@ -91,7 +92,7 @@ class AlumniStatus(models.Model):
 class Withdrawl(models.Model):
     college = models.ForeignKey(College)
     alumni = models.ForeignKey('Alumni')
-    date = models.DateField(default=datetime.date.today)
+    date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     semesters = models.DecimalField(blank=True, null=True, max_digits=5, decimal_places=3, help_text="Number of semesters/trimesters at this college.")
     from_enrollment = models.BooleanField()
     
@@ -107,7 +108,7 @@ class AlumniNote(models.Model):
     category = models.ForeignKey(AlumniNoteCategory, blank=True, null=True)
     note = RichTextField()
     alumni = models.ForeignKey('Alumni')
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     
     def __unicode__(self):
@@ -117,7 +118,7 @@ class AlumniAction(models.Model):
     title = models.CharField(max_length=255)
     note = models.TextField(blank=True)
     alumni = models.ManyToManyField('Alumni', blank=True, null=True)
-    date = models.DateField(default=datetime.date.today, blank=True, null=True)
+    date = models.DateField(default=datetime.date.today, blank=True, null=True, validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     
     def __unicode__(self):
@@ -150,7 +151,7 @@ class Alumni(models.Model):
     student = models.OneToOneField(Student, unique=True)
     college = models.ForeignKey(College, blank=True, null=True, related_name="college_student")
     graduated = models.BooleanField()
-    graduation_date = models.DateField(blank=True, null=True, help_text="Expected or actual graduation date")
+    graduation_date = models.DateField(blank=True, null=True, help_text="Expected or actual graduation date", validators=settings.DATE_VALIDATORS)
     college_override = models.BooleanField(
         help_text="If checked, college enrollment data will not set college and graduated automatically.")  
     status = models.ForeignKey(AlumniStatus, blank=True, null=True)
