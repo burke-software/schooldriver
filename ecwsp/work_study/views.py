@@ -644,6 +644,10 @@ def report_builder_view(request):
                                 if studenti == timesheets.filter(company__id__iexact=company.id).filter(student__id__iexact=timesheet.student.id).count():
                                     stu_total = timesheets.filter(company__id__iexact=company.id).filter(student__id__iexact=timesheet.student.id). \
                                         aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
+                                    # guard against aggregates that are None
+                                    for k, v in stu_total.iteritems():
+                                        if v is None:
+                                            stu_total[k] = 0
                                     data.append(["", "", "", "", "Total", stu_total['hours__sum'], stu_total['student_net__sum'], \
                                         stu_total['school_net__sum']])
                                     total_hours += stu_total['hours__sum']
