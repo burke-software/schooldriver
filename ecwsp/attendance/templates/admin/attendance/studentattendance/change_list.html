@@ -8,6 +8,9 @@
         <li>
             <a href="/attendance/teacher_submissions/"> Today's submissions </a>
         </li>
+        <li>
+            <a href="{% url "ecwsp.attendance.views.add_multiple" %}"> Add Multiple </a>
+        </li>
         {{ block.super }}
     {% endif %}
 {% endblock %}

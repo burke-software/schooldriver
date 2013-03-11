@@ -20,10 +20,12 @@ from django import forms
 from django.contrib.admin import widgets as adminwidgets
 from django.conf import settings
 
-from models import *
+from models import StudentAttendance, AttendanceStatus
+from ecwsp.sis.models import Student
 from ecwsp.sis.forms import TimeBasedForm
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 import datetime
+
 
 class StudentAttendanceForm(forms.ModelForm):
     class Meta:
@@ -34,6 +36,18 @@ class StudentAttendanceForm(forms.ModelForm):
             'notes': forms.TextInput(attrs={'tabindex':"-1",}),
         }
     status = forms.ModelChoiceField(widget=forms.Select(attrs={'class':'status',}), queryset=AttendanceStatus.objects.filter(teacher_selectable=True))
+    
+    
+class StudentMultpleAttendanceForm(forms.ModelForm):
+    """ Form accepts multiple students """
+    class Meta:
+        model = StudentAttendance
+        widgets = {
+            'date':  adminwidgets.AdminDateWidget(),
+            'time': adminwidgets.AdminTimeWidget(),
+        }
+        fields = ('date', 'status', 'time', 'notes', 'private_notes')
+    student = AutoCompleteSelectMultipleField('student')
     
     
 class CourseAttendanceForm(forms.Form):
