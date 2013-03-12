@@ -290,7 +290,7 @@ def pod_report_grade(request, template, options, students, format="odt", transcr
                             i += 1
                             continue
                         if year.benchmark_grade:
-                            setattr(course, "grade" + str(i), gradebook_get_average(student, course, None, mp))
+                            setattr(course, "grade" + str(i), gradebook_get_average(student, course, None, mp, raw=True))
                         else:
                             # We can't overwrite cells, so we have to get seperate variables for each mp grade.
                             try:
