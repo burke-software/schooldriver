@@ -233,7 +233,7 @@ def gradebook_recalculate_on_item_change(item, students=None):
 def gradebook_recalculate_on_mark_change(mark):
     gradebook_recalculate_on_item_change(mark.item, (mark.student, ))
 
-def gradebook_get_average(student, course, category=None, marking_period=None, items=None, raw=False):
+def gradebook_get_average(student, course, category=None, marking_period=None, items=None, omit_substitutions=False):
     try:
         if items is not None: # averages of one-off sets of items aren't saved and must be calculated every time
             # this is rather silly, but it avoids code duplication or a teensy four-line function.
@@ -244,7 +244,7 @@ def gradebook_get_average(student, course, category=None, marking_period=None, i
             agg, created = benchmark_calculate_course_aggregate(student, course, marking_period, items)
         else:
             agg, created = benchmark_calculate_course_category_aggregate(student, course, category, marking_period, items)
-    if not raw and agg.cached_substitution is not None:
+    if not omit_substitutions and agg.cached_substitution is not None:
         return agg.cached_substitution
     elif agg.cached_value is not None:
         calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
