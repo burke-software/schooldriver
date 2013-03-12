@@ -193,7 +193,8 @@ class StudentGradeReportWriterForm(forms.Form):
     sort_by = forms.ChoiceField(choices=(('lname', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
     filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
     filter_cohort = forms.ModelMultipleChoiceField(required=False, queryset=Cohort.objects.all())
-    
+    omit_substitutions = forms.BooleanField(required=False) # benchmark_grade only; displayed conditionally in template
+
     def clean(self):
         data = super(StudentGradeReportWriterForm, self).clean()
         if not data.get('student') and not data.get('all_students'):

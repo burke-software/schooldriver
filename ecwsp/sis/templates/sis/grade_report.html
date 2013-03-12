@@ -47,6 +47,11 @@
 		<div>
 		    {{ form.student.label }} {{ form.student }} {{ form.student.errors }}
 		</div>
+        {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
+		<div>
+		    {{ form.omit_substitutions.label }} {{ form.omit_substitutions }} {{ form.omit_substitutions.errors }}
+		</div>
+        {% endif %}
 	    </td></tr><tr><td>
 		<a href="#" id="toggle_filter_options" onclick='options_toggle(id)'>Show filter and sort options</a>
 		<div id="filter_options" style="display: none">
