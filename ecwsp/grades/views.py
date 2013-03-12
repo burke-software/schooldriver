@@ -69,7 +69,7 @@ def teacher_grade(request):
         )
     
 
-@permission_required('grade.change_grade')
+@permission_required('grades.change_grade')
 def teacher_grade_submissions(request):
     teachers = Faculty.objects.filter(
         teacher=True,
