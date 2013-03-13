@@ -110,16 +110,17 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         return super(StudentAdmin, self).lookup_allowed(lookup, *args, **kwargs)
     
     def render_change_form(self, request, context, *args, **kwargs):
-        if 'original' in context and context['original'].alert:
-            messages.add_message(request, messages.INFO, 'ALERT: {0}'.format(context["original"].alert))
-        for record in context['original'].studenthealthrecord_set.all():
-            messages.add_message(request, messages.INFO, 'HEALTH RECORD: {0}'.format(record.record))
-        try:
-            if context['original'].pic:
-                txt = '<img src="' + str(context['original'].pic.url_70x65) + '"/>'
-                context['adminform'].form.fields['pic'].help_text += txt
-        except:
-            print >> sys.stderr, "Error in StudentAdmin render_change_form"
+        if 'original' in context:
+            if context['original'].alert:
+                messages.add_message(request, messages.INFO, 'ALERT: {0}'.format(context["original"].alert))
+            for record in context['original'].studenthealthrecord_set.all():
+                messages.add_message(request, messages.INFO, 'HEALTH RECORD: {0}'.format(record.record))
+            try:
+                if context['original'].pic:
+                    txt = '<img src="' + str(context['original'].pic.url_70x65) + '"/>'
+                    context['adminform'].form.fields['pic'].help_text += txt
+            except:
+                print >> sys.stderr, "Error in StudentAdmin render_change_form"
 
         if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
             context['adminform'].form.fields['family_access_users'].queryset = User.objects.filter(groups__name='family')
