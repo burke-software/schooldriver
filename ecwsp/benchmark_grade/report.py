@@ -41,6 +41,8 @@ def benchmark_report_card(template, options, students, format="odt"):
 
     data = get_default_data()
     for_date = options['date']
+    try: omit_substitutions = options['omit_substitutions']
+    except KeyError: omit_substitutions = False
     school_year = SchoolYear.objects.filter(start_date__lt=for_date).order_by('-start_date')[0]
     calculation_rule = benchmark_find_calculation_rule(school_year)
     attendance_marking_periods = MarkingPeriod.objects.filter(school_year=school_year,
@@ -58,7 +60,7 @@ def benchmark_report_card(template, options, students, format="odt"):
         student.count_missing_by_category_name = {}
         student.count_passing_by_category_name = {}
         for course in student.year_courses:
-            course.average = gradebook_get_average(student, course, None, marking_period, None)
+            course.average = gradebook_get_average(student, course, None, marking_period, None, omit_substitutions = omit_substitutions)
             course.current_marking_periods = course.marking_period.filter(start_date__lt=for_date).order_by('start_date')
             course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
             course.category_by_name = {}
@@ -73,7 +75,7 @@ def benchmark_report_card(template, options, students, format="odt"):
                 category.overall_count_passing = 0
                 for course_marking_period in course.current_marking_periods:
                     course_marking_period.category = category
-                    course_marking_period.category.average = gradebook_get_average(student, course, category, course_marking_period, None)
+                    course_marking_period.category.average = gradebook_get_average(student, course, category, course_marking_period, None, omit_substitutions = omit_substitutions)
                     items = Item.objects.filter(course=course, marking_period=course_marking_period, category=category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
                     course_marking_period.category.count_total = items.exclude(best_mark=None).distinct().count()
                     course_marking_period.category.count_missing = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()

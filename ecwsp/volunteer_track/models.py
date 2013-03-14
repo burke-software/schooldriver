@@ -21,6 +21,7 @@ from django.db import models
 from django.db.models import Sum
 from django.contrib.localflavor.us.models import *
 from django.contrib import messages
+from django.conf import settings
 
 from datetime import datetime
 import random
@@ -31,9 +32,9 @@ from ecwsp.administration.models import Configuration
 
 class Hours(models.Model):
     volunteer_site = models.ForeignKey('VolunteerSite')
-    date = models.DateField(blank = False, null = False)
+    date = models.DateField(blank = False, null = False, validators=settings.DATE_VALIDATORS)
     hours = models.FloatField()
-    time_stamp = models.DateTimeField(auto_now_add=True)
+    time_stamp = models.DateTimeField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     class Meta:
         verbose_name = "Hours"
         verbose_name_plural = "Hours"
@@ -136,7 +137,7 @@ class Volunteer(models.Model):
     attended_reflection = models.BooleanField(verbose_name = "Attended")
     hours_required = models.IntegerField(default=get_hours_default, blank=True, null=True)
     notes = models.TextField(blank=True)
-    last_updated = models.DateTimeField(default = datetime.now)
+    last_updated = models.DateTimeField(default = datetime.now, validators=settings.DATE_VALIDATORS)
     email_queue = models.CharField(default="", max_length=1000, blank=True, editable=False, help_text="Used to store nightly notification emails")
     def __unicode__(self):
         return unicode(self.student)

@@ -174,6 +174,8 @@ def pod_report_grade(request, template, options, students, format="odt", transcr
     
     for_date = options['date'] # In case we want a transcript from a future date
     data['date_of_report'] = for_date # In case we want to include a python date on our template, which is a bit gross
+    try: omit_substitutions = options['omit_substitutions']
+    except KeyError: omit_substitutions = False
     
     # if benchmark grading is installed and enabled for the current school year,
     # and this is a report card, bail out to another function
@@ -290,7 +292,7 @@ def pod_report_grade(request, template, options, students, format="odt", transcr
                             i += 1
                             continue
                         if year.benchmark_grade:
-                            setattr(course, "grade" + str(i), gradebook_get_average(student, course, None, mp))
+                            setattr(course, "grade" + str(i), gradebook_get_average(student, course, None, mp, omit_substitutions = omit_substitutions))
                         else:
                             # We can't overwrite cells, so we have to get seperate variables for each mp grade.
                             try:

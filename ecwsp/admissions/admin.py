@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from ajax_select import make_ajax_form
 from ajax_select.fields import autoselect_fields_check_can_add
+from django.db import IntegrityError
 
 from custom_field.custom_field import CustomFieldAdmin
 from ecwsp.administration.models import Configuration
@@ -201,21 +202,24 @@ class ApplicantAdmin(CustomFieldAdmin):
                     )
             for check in input_checks:
                 if not check in obj.checklist.all():
-                    obj.checklist.add(check)
-                    contact_log = ContactLog(
-                        user = request.user,
-                        applicant = obj,
-                        note = "%s completed" % (check,)
-                    )
-                    contact_log.save()
-                    LogEntry.objects.log_action(
-                        user_id         = request.user.pk, 
-                        content_type_id = ContentType.objects.get_for_model(obj).pk,
-                        object_id       = obj.pk,
-                        object_repr     = unicode(obj), 
-                        action_flag     = CHANGE,
-                        change_message  = "Checked " + unicode(check)
-                    )
+                    try:
+                        obj.checklist.add(check)
+                        contact_log = ContactLog(
+                            user = request.user,
+                            applicant = obj,
+                            note = "%s completed" % (check,)
+                        )
+                        contact_log.save()
+                        LogEntry.objects.log_action(
+                            user_id         = request.user.pk, 
+                            content_type_id = ContentType.objects.get_for_model(obj).pk,
+                            object_id       = obj.pk,
+                            object_repr     = unicode(obj), 
+                            action_flag     = CHANGE,
+                            change_message  = "Checked " + unicode(check)
+                        )
+                    except IntegrityError:
+                        pass # This can happen when a user double clicks
         super(ApplicantAdmin, self).save_model(request, obj, form, change)
         if obj.application_decision and obj.application_decision.level.all().count() \
         and obj.application_decision and not obj.level in obj.application_decision.level.all():

@@ -2,10 +2,10 @@
 SWoRD Documentation
 =====================
 
-:Date: February 26, 2013
+:Date: March 5, 2013
 
 
-Django-sis/SWoRD is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.), and is intended for schools with our without work study programs. SWoRD is able to integrate with Naviance Premium Accounts, Engrade, SugarCRM and National Student Clearinghouse.
+Django-sis/SWoRD is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.), and is intended for schools with or without work study programs. SWoRD is able to integrate with Naviance Premium Accounts for college preparedness, Engrade for grades, SugarCRM for sales and customer tracking and National Student Clearinghouse for tracking alumni.
 
 In sum, SWoRD includes pluggable apps designed to cover most if not all of a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
 
@@ -76,7 +76,37 @@ UMASK=027
 END
 echo "$new_user@`postconf -h myhostname`"
 
+User Permissions
+---------------------
+SWoRD allows administrators to control individual user permissions. To simplify this process, SWoRD groups individual permissions into larger groups where the administrator can designate accordingly. Some of the aforementioned groups are as follows, with a brief overview:
+
+**Teachers**: users with this designation can create tests, view students, enter grades and take attendance
+
+**Counseling**: allows users to record student meetings, refer students, list a follow up action
+
+**Faculty**: can view alumni, students, and mentoring information
+
+**Work Study**: controls all facets of work-study, including: work_study attendance, fees, visits, companies, payment options, contact supervisors, time sheets, surveys, assign work teams and work team users.
+
+**Registrar**: edit templates, view applicants, edit admissions, view/edit attendance, add custom fields, sync endgrade courses, create schedules, reports, transcript notes and school years
+
+**Volunteer**: add/change/delete volunteer hours, sites, supervisors and student volunteers
+
+
+It is possible to assign individual user permissions that are found in one group, and assign it to an individual user that only has permissions from another group. For example, you can assign a teacher (who only has teacher permissions) the ability to view a student's counseling records or work study information. This allows school administrators to create unique users with flexible permissions. Further, administrators can create super users who have all permissions from each group. 
+
+
+=====================
+SWoRD Apps
+=====================
+
 Admissions
 ----------
-The admissions module allows schools to keep track of applicants, and where they are in the application process. Each step in the application process can be customized to fit a school's unique need.
+The admissions module allows schools to keep track of applicants, and where they are in the application process. Each step in the application process can be customized to fit a school's unique need. Users can designate steps that need to be completed before moving onto the next level. Additionally, SWoRD will track any open houses a student has attended and how the student heard about the school. 
+
+
+The image above details the dashboard that an admissions counselor or designated user will see when they select the admissions module. Most modules do include a dashboard for the purpose of providing users a general overview of information that is able to be filtered. 
+
+
+
 

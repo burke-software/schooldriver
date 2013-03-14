@@ -18,11 +18,14 @@
 
 from django import forms
 from django.contrib.admin import widgets as adminwidgets
+from django.conf import settings
 
-from models import *
+from models import StudentAttendance, AttendanceStatus
+from ecwsp.sis.models import Student
 from ecwsp.sis.forms import TimeBasedForm
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 import datetime
+
 
 class StudentAttendanceForm(forms.ModelForm):
     class Meta:
@@ -35,12 +38,26 @@ class StudentAttendanceForm(forms.ModelForm):
     status = forms.ModelChoiceField(widget=forms.Select(attrs={'class':'status',}), queryset=AttendanceStatus.objects.filter(teacher_selectable=True))
     
     
+class StudentMultpleAttendanceForm(forms.ModelForm):
+    """ Form accepts multiple students """
+    class Meta:
+        model = StudentAttendance
+        widgets = {
+            'date':  adminwidgets.AdminDateWidget(),
+            'time': adminwidgets.AdminTimeWidget(),
+        }
+        fields = ('date', 'status', 'time', 'notes', 'private_notes')
+    student = AutoCompleteSelectMultipleField('student')
+    
+    
 class CourseAttendanceForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.all(), widget=forms.HiddenInput())
     status = forms.ModelChoiceField(
         widget=forms.Select(attrs={'class':'status',}),
         queryset=AttendanceStatus.objects.filter(teacher_selectable=True),
         required=False)
+    time_in = forms.TimeField(required=False, widget=adminwidgets.AdminTimeWidget(attrs={'tabindex':"-1"}))
+    notes = forms.CharField(required=False, widget=forms.TextInput(attrs={'tabindex':"-1"}))
 
     
 class AttendanceReportForm(TimeBasedForm):
@@ -58,12 +75,12 @@ class AttendanceViewForm(forms.Form):
 
 
 class AttendanceDailyForm(forms.Form):
-    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), initial=datetime.date.today)
+    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), initial=datetime.date.today, validators=settings.DATE_VALIDATORS)
     include_private_notes = forms.BooleanField(required=False)
 
 
 class AttendanceBulkChangeForm(forms.Form):
-    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False)
+    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
     status = forms.ModelChoiceField(queryset=AttendanceStatus.objects.all(), required=False)
     notes  = forms.CharField(max_length=255, required=False)
     private_notes  = forms.CharField(max_length=255, required=False)

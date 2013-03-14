@@ -106,7 +106,7 @@ class FeederSchool(models.Model):
         
 class OpenHouse(models.Model):
     name = models.CharField(max_length=255, blank=True)
-    date = models.DateField(blank=True, null=True)
+    date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     def __unicode__(self):
         return unicode(self.name) + " " + unicode(self.date)
     class Meta:
@@ -151,7 +151,7 @@ class Applicant(models.Model, CustomFieldModel):
     lname = models.CharField(max_length=255, verbose_name="Last Name")
     pic = models.ImageField(upload_to="applicant_pics",blank=True, null=True)
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True)
-    bday = models.DateField(blank=True, null=True, verbose_name="Birth Date")
+    bday = models.DateField(blank=True, null=True, verbose_name="Birth Date", validators=settings.DATE_VALIDATORS)
     unique_id = models.IntegerField(blank=True, null=True, unique=True)
     street = models.CharField(max_length=150, blank=True)
     city = models.CharField(max_length=360, blank=True)
@@ -185,7 +185,7 @@ class Applicant(models.Model, CustomFieldModel):
     present_school_type_typed = models.CharField(max_length=255, blank=True)
     religion = models.ForeignKey(ReligionChoice, blank=True, null=True)
     place_of_worship = models.ForeignKey(PlaceOfWorship, blank=True, null=True)
-    follow_up_date = models.DateField(blank=True, null=True)
+    follow_up_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     open_house_attended = models.ManyToManyField(OpenHouse, blank=True, null=True)
     parent_guardian_first_name = models.CharField(max_length=150, blank=True)
     parent_guardian_last_name = models.CharField(max_length=150, blank=True)
@@ -208,7 +208,7 @@ class Applicant(models.Model, CustomFieldModel):
     adjusted_available_income = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
     calculated_payment = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
     
-    date_added = models.DateField(auto_now_add=True, blank=True, null=True)
+    date_added = models.DateField(auto_now_add=True, blank=True, null=True, validators=settings.DATE_VALIDATORS)
     level = models.ForeignKey(AdmissionLevel, blank=True, null=True, on_delete=models.SET_NULL)
     checklist = models.ManyToManyField(AdmissionCheck, blank=True, null=True)
     application_decision = models.ForeignKey(ApplicationDecisionOption, blank=True, null=True)
@@ -281,7 +281,7 @@ m2m_changed.connect(cache_applicant_m2m, sender=Applicant.parent_guardians.throu
 
 class ContactLog(models.Model):
     applicant = models.ForeignKey(Applicant)
-    date = models.DateField()
+    date = models.DateField(validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User, blank=True, null=True)
     note = models.TextField()
     
@@ -296,7 +296,7 @@ class ContactLog(models.Model):
 
 class ApplicantStandardTestResult(models.Model):
     """ Standardized test instance. This is the results of a student taking a test """
-    date = models.DateField(default=datetime.date.today())
+    date = models.DateField(default=datetime.date.today(), validators=settings.DATE_VALIDATORS)
     applicant = models.ForeignKey(Applicant)
     test = models.ForeignKey('standard_test.StandardTest')
     show_on_reports = models.BooleanField(default=True, help_text="If true, show this test result on a report such as a transcript. " + \
