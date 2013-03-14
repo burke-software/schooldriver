@@ -270,7 +270,7 @@ def skip_unreadable_post(record):
             return False
     return True
 
-LEAVE_IT_ALONE__LOGGING = {
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'root': {
