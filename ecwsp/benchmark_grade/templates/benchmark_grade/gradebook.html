@@ -31,6 +31,7 @@
     
     <script>
         var item_pk_list = "{{ item_pks }}";
+        var pending_aggregate_pks = {{ pending_aggregate_pks|safe }};
         function gradebook_flag_check(category_id, value)
         {
             {% for id, comparisons in category_flag_criteria.items %}{% for comparison in comparisons %}
@@ -179,7 +180,7 @@
                             <td id="filtered_average{{ row_counter }}"><div>{{ student.filtered_average }}</div></td>
                         {% endif %}
                         <td id="standards_counts{{ row_counter }}"><div>{{ student.standards_counts }}</div></td>
-                        <td id="average{{ row_counter }}"><div>{{ student.average }}</div></td>
+                        <td id="average{{ row_counter }}" data-aggregate_pk="{{ student.average_pk }}"><div>{{ student.average }}</div></td>
                     </tr>
                     {% endwith %}
                 {% endfor %}

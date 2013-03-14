@@ -23,6 +23,6 @@ django-apptemplates>=0.0.1
 django-filter>=0.5.4
 file:../install/hatchery/django-ckeditor-3.6.2.tar.gz
 file:../install/hatchery/django-ldap-groups-0.1.3.tar.gz
-django-rosetta>=7.1
+django-rosetta>=0.7.1
 -e git://github.com/zsiciarz/django-rosetta-grappelli.git#egg=django-rosetta-grappelli
 -e git://github.com/celery/django-celery.git@3.0#egg=django_celery-dev

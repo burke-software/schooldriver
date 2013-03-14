@@ -17,11 +17,11 @@
 #   MA 02110-1301, USA.
 
 from django.shortcuts import render_to_response, get_object_or_404
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
-from django.db.models import Q, Max
+from django.db.models import Q, Max, Count
 from django.db import transaction
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
@@ -32,11 +32,12 @@ from ecwsp.schedule.models import Course, MarkingPeriod
 #from ecwsp.schedule.forms import 
 from ecwsp.grades.forms import GradeUpload
 #from ecwsp.administration.models import *
-from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule
+from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule, AggregateTask
 from ecwsp.benchmark_grade.forms import BenchmarkGradeVerifyForm, GradebookFilterForm, ItemForm, DemonstrationForm, FillAllForm
 from ecwsp.benchmarks.models import Benchmark
-from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
+from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_get_average_and_pk, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
 from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule
+from ecwsp.benchmark_grade.tasks import benchmark_aggregate_task
 
 from decimal import Decimal
 import logging
@@ -180,8 +181,14 @@ def gradebook(request, course_id):
         else:
             filter_form = GradebookFilterForm()
         filter_form.update_querysets(course)
+        
+    # make a note of any aggregates pending recalculation
+    pending_aggregate_pks = Aggregate.objects.filter(course=course).annotate(Count('aggregatetask')).filter(
+                            aggregatetask__count__gt=0).values_list('pk', flat=True)
     
     # Freeze these now in case someone else gets in here!
+    # TODO: something that actually works. all() does not evaluate a QuerySet.
+    # https://docs.djangoproject.com/en/dev/ref/models/querysets/#when-querysets-are-evaluated
     items = items.order_by('id').all()
     # whoa, super roll of the dice. is Item.demonstration_set really guaranteed to be ordered by id?
     # precarious; sorting must match items (and demonstrations!) exactly
@@ -210,7 +217,9 @@ def gradebook(request, course_id):
             else:
                 raise Exception('Multiple marks per student per item.')
         student.marks = student_marks
-        student.average = gradebook_get_average(student, course, None, None, None)
+        average_tuple = gradebook_get_average_and_pk(student, course, None, None, None)
+        student.average = average_tuple[0]
+        student.average_pk = average_tuple[1]
         if filtered:
             student.filtered_average = gradebook_get_average(student, course, filter_form.cleaned_data['category'],
                                                              filter_form.cleaned_data['marking_period'], items)
@@ -259,6 +268,7 @@ def gradebook(request, course_id):
     return render_to_response('benchmark_grade/gradebook.html', {
         'items': items,
         'item_pks': ','.join(map(str,items.values_list('pk', flat=True))),
+        'pending_aggregate_pks': json.dumps(map(str, pending_aggregate_pks)),
         'students': students,
         'course': course,
         'teacher_courses': teacher_courses,
@@ -298,9 +308,9 @@ def ajax_get_item_form(request, course_id, item_id=None):
         else:
             form = ItemForm(request.POST, prefix="item")
         if form.is_valid():
-            item = form.save()
             if item_id is None:
                 # a new item!
+                item = form.save()
                 dem = None
                 if item.category.allow_multiple_demonstrations:
                     # must have at least one demonstration; create a new one
@@ -313,6 +323,11 @@ def ajax_get_item_form(request, course_id, item_id=None):
                     mark, created = Mark.objects.get_or_create(item=item, student=student, demonstration=dem)
                     if created:
                         mark.save()
+            else:
+                # modifying an existing item
+                old_item = Item.objects.get(pk=item.pk)
+                item = form.save()
+                gradebook_recalculate_on_item_change(item, old_item=old_item)
 
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax
@@ -524,14 +539,38 @@ def ajax_save_grade(request):
             mark.save()
         except Exception as e:
             return HttpResponse(e, status=400)
-        gradebook_recalculate_on_mark_change(mark)
+        affected_agg_pks = [x.pk for x in gradebook_recalculate_on_mark_change(mark)]
         # just the whole course average for now
         # TODO: update filtered average
-        average = gradebook_get_average(mark.student, mark.item.course, None, None, None) 
-        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': str(average)}))
+        #average = gradebook_get_average(mark.student, mark.item.course, None, None, None) 
+        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': 'Please clear your browser\'s cache.', 'affected_aggregates': affected_agg_pks}))
     else:
         return HttpResponse('POST DATA INCOMPLETE', status=400) 
 
+@staff_member_required
+def ajax_task_poll(request, course_pk=None):
+    if 'aggregate_pks[]' not in request.POST:
+        # no aggregates specified; just return the number of active tasks for this course
+        course = get_object_or_404(Course, pk=course_pk)
+        count = AggregateTask.objects.values('task_id').distinct().count()
+        return HttpResponse(json.dumps({'outstanding_tasks': count}))
+    agg_pks = request.POST.getlist('aggregate_pks[]')
+    aggs = Aggregate.objects.filter(pk__in=agg_pks)
+    count = AggregateTask.objects.filter(aggregate__in=aggs).values('task_id').distinct().count()
+    if count:
+        # thank you, come again
+        return HttpResponse(json.dumps({'outstanding_tasks': count}), status=202)
+    else:
+        # no outstanding tasks! return actual values!
+        results = {}
+        for agg in aggs:
+            if agg.cached_substitution is not None:
+                results[agg.pk] = str(agg.cached_substitution)
+            else:
+                results[agg.pk] = str(agg.cached_value)
+        return HttpResponse(json.dumps({'results': results}))
+
+@login_required
 def student_report(request, student_pk=None, course_pk=None, marking_period_pk=None):
     authorized = False
     family_available_students = None

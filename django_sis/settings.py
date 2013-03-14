@@ -253,7 +253,7 @@ CKEDITOR_CONFIGS = {
 }
 
 
-LOGGING = {
+LEAVE_IT_ALONE__LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'root': {
@@ -383,6 +383,8 @@ if 'djcelery' in INSTALLED_APPS:
         CELERY_IMPORTS += ("ecwsp.volunteer_track.tasks",)
     if "ecwsp.naviance_sso" in INSTALLED_APPS and NAVIANCE_IMPORT_KEY:
         CELERY_IMPORTS += ("ecwsp.naviance_sso.tasks",)
+    if "ecwsp.benchmark_grade" in INSTALLED_APPS:
+        CELERY_IMPORTS += ("ecwsp.benchmark_grade.tasks",)
     CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
     CELERY_ENABLE_UTC = False
 

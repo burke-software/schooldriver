@@ -57,6 +57,12 @@ $(document).ready(function() {
     $("td[data-category_id]").each(function(index) {
         highlight_cell($(this));
     });
+
+    // if the back-end told us there were outstanding calculations,
+    // poll for their completion
+    if(pending_aggregate_pks.length) {
+        task_poll();
+    }
 });
 
 function highlight_cell(cell) {
@@ -91,6 +97,39 @@ function make_into_input(element){
     $(parent).children('input').select();
 }
 
+function task_poll() {
+    $.post(
+        "../../gradebook/ajax_task_poll/",
+        { aggregate_pks: pending_aggregate_pks },
+        function(data, textStatus, jqXHR) {
+            if(jqXHR.status == 202) {
+                // make sure affected cells are marked properly
+                for(var i = 0; i < pending_aggregate_pks.length; i++) {
+                    agg_pk = pending_aggregate_pks[i];
+                    agg_cell = $('td[data-aggregate_pk="' + agg_pk + '"]');
+                    agg_cell.children().removeClass('save_success');
+                    agg_cell.children().addClass('saving');
+                }
+                // check again later. we should probably use exponential backoff
+                setTimeout(task_poll, 4000);
+                return;
+            }
+            else {
+                var pending_agg_pks_copy = pending_aggregate_pks;
+                // we'll wrangle 'em from here
+                pending_aggregate_pks = [];
+                for(var i = 0; i < pending_agg_pks_copy.length; i++) {
+                    agg_pk = pending_agg_pks_copy[i];
+                    agg_val = data.results[agg_pk];
+                    agg_cell = $('td[data-aggregate_pk="' + agg_pk + '"]');
+                    agg_cell.html('<div class="save_success">' + agg_val + "</div>");
+                }
+            }
+        },
+        "json"
+    );
+}
+
 function mark_change(event) {
     // Mark a changed grade. It will save then come back as save success.
     // OMG use var or variables will be global
@@ -112,7 +151,9 @@ function mark_change(event) {
             if (data.success == "SUCCESS") {
                 var new_value = data.value;
                 $(event.target).replaceWith('<div class="save_success">' + new_value + '</div>');
-                average_cell.html('<div class="save_success">' + data.average + '</div>');
+                // should be atomic since js is not multithreaded... right?
+                pending_aggregate_pks = pending_aggregate_pks.concat(data.affected_aggregates);
+                window.setTimeout(task_poll, 4000);
                 window.setTimeout(highlight_cell, 1000, cell);
             }
           }, "json"  

@@ -16,12 +16,14 @@
 #   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #   MA 02110-1301, USA.
 
-from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark, Category
+from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark, Category, AggregateTask
 from ecwsp.schedule.models import MarkingPeriod
 from ecwsp.grades.models import Grade
+from ecwsp.benchmark_grade.tasks import benchmark_aggregate_task
 from django.db.models import Avg, Sum, Min, Max
 import logging
 from decimal import Decimal, ROUND_HALF_UP
+import celery.utils
 
 def benchmark_find_calculation_rule(school_year):
     rules = CalculationRule.objects.filter(first_year_effective=school_year)
@@ -208,32 +210,108 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
             g.save()
     return agg, created
 
-def gradebook_recalculate_on_item_change(item, students=None):
+def gradebook_recalculate_on_item_change(item, students=None, old_item=None):
+    '''
+    If passed an item, recacluate everything affected by that item.
+    If passed an item and students, recalculate everything affected by that item for those students.
+    If passed and item and an old_item, figure out what changed and recalculate accordingly.
+
+    Item model fields:
+        name - does not affect calculations
+        description - does not affect calculations
+        course - DOES affect calculations but should not change
+        date - does not affect calculations
+        * marking_period - DOES affect calculations
+        * category - DOES affect calculations
+        * points_possible - DOES affect calcualations; all marks must be re-normalized!
+        assignment_type - does not affect calculations
+        benchmark - does not affect calculations
+    '''
+    categories = set((item.category,)) 
+    marking_periods = set((item.marking_period,))
+    renormalization_required = False
+    parting_calculation_required = False
+    if old_item:
+        if old_item.course != item.course:
+            raise Exception('Items must not move between courses.')
+        # proceed only if the change affects calculations
+        if old_item.points_possible != item.points_possible:
+            renormalization_required = True
+        if old_item.category != item.category:
+            # necessary to recalculate the old category as well as the new
+            parting_calculation_required = True
+            categories.add(old_item.category)
+        if old_item.marking_period != item.marking_period:
+            # necessary to recalculate the old marking period as well as the new
+            parting_calculation_required = True
+            marking_periods.add(old_item.marking_period)
+        if not (renormalization_required or parting_calculation_required):
+            # why are we here?
+            return
+
+    calculation_rule = benchmark_find_calculation_rule(item.course.marking_period.all()[0].school_year)
+    course = item.course
     if students is None:
         students = item.course.get_enrolled_students()
-    course = item.course
-    category = item.category
-    marking_period = item.marking_period
-    calculation_rule = benchmark_find_calculation_rule(item.course.marking_period.all()[0].school_year)
-    affects_overall_course = calculation_rule.per_course_category_set.filter(category=category, apply_to_departments=course.department).count() > 0
-    affects_overall_category = calculation_rule.category_as_course_set.filter(category=category, include_departments=course.department).count() > 0
+
+    if renormalization_required:
+        # take care of re-normalization before returning
+        for mark in item.mark_set.all():
+            mark.save()
+
+    # do other calculations in the background
+    funcs_and_args = []
+    aggregates = [] # list of aggregates to be affected by background calculations
 
     for student in students:
-        # always recalculate the aggregate for this course, category, and marking period
-        benchmark_calculate_course_category_aggregate(student, course, category, marking_period)
+        # recalculate the aggregate for the item's course, category, and marking period
+        funcs_and_args.append((benchmark_calculate_course_category_aggregate, (student, course, item.category, item.marking_period)))
+        aggregates += Aggregate.objects.filter(student=student, course=course, category=item.category, marking_period=item.marking_period)
+        if parting_calculation_required:
+            # the item was previously in another category or marking period, which now also must be recalculated
+            funcs_and_args.append((benchmark_calculate_course_category_aggregate, (student, course, old_item.category, old_item.marking_period)))
+            aggregates += Aggregate.objects.filter(student=student, course=course, category=old_item.category, marking_period=old_item.marking_period)
+        # recalculate the course-long (i.e. marking_period=None) aggregate for each affected category
+        for category in categories:
+            funcs_and_args.append((benchmark_calculate_course_category_aggregate, (student, course, category, None)))
+            aggregates += Aggregate.objects.filter(student=student, course=course, category=category, marking_period=None)
+
+    affects_overall_course = 0 < calculation_rule.per_course_category_set.filter(category__in=categories, apply_to_departments=course.department).count()
+    affected_categories_as_courses = calculation_rule.category_as_course_set.filter(category__in=categories, include_departments=course.department)
+    for student in students:
+        # recalculate aggregates for affected marking periods
+        for marking_period in marking_periods:
+            if affects_overall_course:
+                funcs_and_args.append((benchmark_calculate_course_aggregate, (student, course, marking_period)))
+                aggregates += Aggregate.objects.filter(student=student, course=course, marking_period=marking_period, category=None)
+            for category in affected_categories_as_courses:
+                funcs_and_args.append((benchmark_calculate_category_as_course_aggregate, (student, category, marking_period)))
+                aggregates += Aggregate.objects.filter(student=student, category=category, marking_period=marking_period, course=None)
+        # recalculate aggregates for the whole duration of the course (i.e. marking_period=None)
         if affects_overall_course:
-            benchmark_calculate_course_aggregate(student, course, marking_period) 
-        if affects_overall_category:
-            benchmark_calculate_category_as_course_aggregate(student, category, marking_period)
-        # always recalculate the course-long (i.e. marking_period=None) aggregate for this category
-        benchmark_calculate_course_category_aggregate(student, course, category, None)
-        if affects_overall_course:
-            benchmark_calculate_course_aggregate(student, course, None) 
+            funcs_and_args.append((benchmark_calculate_course_aggregate, (student, course, None)))
+            aggregates += Aggregate.objects.filter(student=student, course=course, marking_period=None, category=None)
+
+    if len(funcs_and_args):
+        # flag aggregates that are being recalculated
+        task_id = celery.utils.uuid()
+        for aggregate in aggregates:
+            aggregate_task = AggregateTask(aggregate=aggregate, task_id=task_id)
+            try:
+                aggregate_task.save()
+            except IntegrityError as e:
+                logging.warning('We are calculating {} ({}) multiple times!'.format(aggregate, aggregate.pk), exc_info=True)
+        # queue a task with our predetermined uuid
+        task = benchmark_aggregate_task.apply_async((funcs_and_args,), task_id=task_id)
+        return aggregates
 
 def gradebook_recalculate_on_mark_change(mark):
-    gradebook_recalculate_on_item_change(mark.item, (mark.student, ))
+    return gradebook_recalculate_on_item_change(mark.item, (mark.student, ))
 
-def gradebook_get_average(student, course, category=None, marking_period=None, items=None):
+def gradebook_get_average(*args, **kwargs):
+    return gradebook_get_average_and_pk(*args, **kwargs)[0]
+
+def gradebook_get_average_and_pk(student, course, category=None, marking_period=None, items=None):
     try:
         if items is not None: # averages of one-off sets of items aren't saved and must be calculated every time
             # this is rather silly, but it avoids code duplication or a teensy four-line function.
@@ -245,7 +323,7 @@ def gradebook_get_average(student, course, category=None, marking_period=None, i
         else:
             agg, created = benchmark_calculate_course_category_aggregate(student, course, category, marking_period, items)
     if agg.cached_substitution is not None:
-        return agg.cached_substitution
+        return agg.cached_substitution, agg.pk
     elif agg.cached_value is not None:
         calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
         if category is not None and category.display_scale is not None:
@@ -253,9 +331,9 @@ def gradebook_get_average(student, course, category=None, marking_period=None, i
             pretty = '{}{}'.format(pretty.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP), category.display_symbol)
         else:
             pretty = agg.cached_value.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP)
-        return pretty
+        return pretty, agg.pk
     else:
-        return None
+        return None, agg.pk
 
 def gradebook_get_category_average(student, category, marking_period):
     try:

@@ -21,6 +21,7 @@ from django.db.models import Min, Max, Sum, Avg
 #from django.contrib.localflavor.us.models import *
 from django.conf import settings
 from decimal import Decimal
+from datetime import datetime
 
 from django.core.exceptions import ImproperlyConfigured
 if not 'ecwsp.benchmarks' in settings.INSTALLED_APPS:
@@ -232,3 +233,11 @@ class Aggregate(models.Model):
         
     def __unicode__(self):
         return self.name # not useful
+
+class AggregateTask(models.Model):
+    ''' A Celery task in the process of recalculating an Aggregate '''
+    aggregate = models.ForeignKey('Aggregate')
+    task_id = models.CharField(max_length=36)
+    timestamp = models.DateTimeField(default=datetime.now)
+    class Meta:
+        unique_together = ('aggregate', 'task_id')
