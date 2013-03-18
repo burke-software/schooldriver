@@ -400,8 +400,6 @@ if 'djcelery' in INSTALLED_APPS:
     #BROKER_URL = 'amqp://guest:guest@localhost:5672/'
     BROKER_HEARTBEAT = 30
     CELERY_IMPORTS = ()
-    if "ecwsp.canvas_sync" in INSTALLED_APPS:
-        CELERY_IMPORTS += ("ecwsp.canvas_sync.tasks",)
     if "ecwsp.work_study" in INSTALLED_APPS:
         CELERY_IMPORTS += ("ecwsp.work_study.tasks",)
     if "ecwsp.volunteer_track" in INSTALLED_APPS:
@@ -410,6 +408,10 @@ if 'djcelery' in INSTALLED_APPS:
         CELERY_IMPORTS += ("ecwsp.naviance_sso.tasks",)
     if "ecwsp.benchmark_grade" in INSTALLED_APPS:
         CELERY_IMPORTS += ("ecwsp.benchmark_grade.tasks",)
+    if "ecwsp.admissions" in INSTALLED_APPS:
+        CELERY_IMPORTS += ("ecwsp.admissions.tasks",)
+    if "ecwsp.integrations.schoolreach" in INSTALLED_APPS:
+        CELERY_IMPORTS += ("ecwsp.integrations.schoolreach.tasks",)
     CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
     CELERY_ENABLE_UTC = False
 
