@@ -593,7 +593,7 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
                 student = get_object_or_404(Student, pk=student_pk)
                 if student in family_available_students:
                     authorized = True
-            else:
+            elif family_available_students.count():
                 student = family_available_students[0]
                 authorized = True
     
