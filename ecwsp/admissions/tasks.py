@@ -5,6 +5,8 @@ from django.core.urlresolvers import reverse
 import datetime
 import logging
 from django.conf import settings
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
@@ -20,6 +22,26 @@ if 'ecwsp.admissions' in settings.INSTALLED_APPS:
         """
         from_email = Configuration.get_or_default("From Email Address").value
         to_email = Configuration.get_or_default('admissions_notify_email').value
+        to_email_list = to_email.split(',')
+        if not len(to_email_list):
+            # don't complain if no one wants this report, just quit
+            return
+        # validate the from address
+        try:
+            validate_email(from_email)
+        except ValidationError:
+            logging.warning('email_admissions_new_inquiries failed because of invalid From Email Address "{}"'.format(from_email), exc_info=True)
+            return
+        # validate the to addresses
+        temp_email_list = to_email_list
+        to_email_list = []
+        for addr in temp_email_list:
+            try:
+                validate_email(addr)
+                to_email_list.append(addr)
+            except:
+                logging.warning('email_admissions_new_inquiries omitting invalid address "{}" in admissions_notify_email'.format(addr), exc_info=True)
+
         subject = "New online inquiries"
         today = datetime.date.today()
         
@@ -35,4 +57,4 @@ if 'ecwsp.admissions' in settings.INSTALLED_APPS:
                 if Applicant.objects.filter(fname=inquiry.fname, lname=inquiry.lname).count() > 1:
                     msg += "(May be duplicate)\n"
                 
-            send_mail(subject, msg, from_email, to_email.split(','))
+            send_mail(subject, msg, from_email, to_email_list)
