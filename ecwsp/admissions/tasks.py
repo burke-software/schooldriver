@@ -22,8 +22,7 @@ if 'ecwsp.admissions' in settings.INSTALLED_APPS:
         """
         from_email = Configuration.get_or_default("From Email Address").value
         to_email = Configuration.get_or_default('admissions_notify_email').value
-        to_email_list = to_email.split(',')
-        if not len(to_email_list):
+        if not len(to_email):
             # don't complain if no one wants this report, just quit
             return
         # validate the from address
@@ -33,13 +32,13 @@ if 'ecwsp.admissions' in settings.INSTALLED_APPS:
             logging.warning('email_admissions_new_inquiries failed because of invalid From Email Address "{}"'.format(from_email), exc_info=True)
             return
         # validate the to addresses
-        temp_email_list = to_email_list
         to_email_list = []
-        for addr in temp_email_list:
+        for addr in to_email.split(','):
             try:
+                print addr
                 validate_email(addr)
                 to_email_list.append(addr)
-            except:
+            except ValidationError:
                 logging.warning('email_admissions_new_inquiries omitting invalid address "{}" in admissions_notify_email'.format(addr), exc_info=True)
 
         subject = "New online inquiries"
