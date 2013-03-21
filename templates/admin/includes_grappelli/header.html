@@ -59,7 +59,7 @@
             <!-- Student -->
             {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> Student </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> Student </a>
                     <ul class="grp-user-options">
                         {% if perms.sis.view_student %}
                             <li><a href="{% url "ecwsp.sis.views.photo_flash_card" %}">{% trans 'Flashcards' %}</a></li>
@@ -78,7 +78,7 @@
             {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
             {% if perms.sis.reports or perms.attendance.change_studentattendance or perms.attendance.take_studentattendance %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> {% trans 'Attendance' %} </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> {% trans 'Attendance' %} </a>
                     <ul class="grp-user-options">
                         {% if perms.attendance.take_studentattendance %}
                             <li><a href="{% url "ecwsp.attendance.views.teacher_attendance" %}">{% trans 'Take Homeroom Attendance' %}</a>
@@ -101,7 +101,7 @@
             {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
             {% if perms.discipline.change_studentdiscipline %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> {% trans 'Discipline' %} </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> {% trans 'Discipline' %} </a>
                     <ul class="grp-user-options">
                         {% if perms.discipline.change_studentdiscipline %}
                             <li><a href="{% url "ecwsp.discipline.views.view_discipline" %}">{% trans 'View' %}</a>
@@ -120,7 +120,7 @@
             <!-- Grades  -->
             {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %} {% if perms.schedule.change_course or perms.grades.change_own_grade or perms.sis.reports %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> Grades </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> Grades </a>
                     <ul class="grp-user-options">
                         {% if perms.schedule.change_course %}
                             <li><a href="{% url "admin:schedule_course_changelist" %}">{% trans 'Edit Grades/Courses' %}</a></li>
@@ -142,7 +142,7 @@
             <!-- Admissions  -->
             {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> Admissions </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> Admissions </a>
                     <ul class="grp-user-options">
                         {% if perms.admissions.change_applicant %}
                             <li><a href="{% url "admin:admissions_applicant_changelist" %}">{% trans 'Applicants' %}</a></li>
@@ -157,7 +157,7 @@
             <!-- Alumni -->
             {% if perms.alumni.change_alumni and 'ecwsp.alumni' in settings.INSTALLED_APPS %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> Alumni </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> Alumni </a>
                     <ul class="grp-user-options">
                         <li><a href="{% url "admin:app_list" 'alumni' %}">{% trans 'Alumni Admin' %}</a></li>
                         <li><a href="{% url "admin:alumni_alumni_changelist" %}">{% trans 'Alumnus' %}</a></li>
@@ -168,7 +168,7 @@
             <!-- Counseling -->
             {% if perms.counseling.add_referralform and 'ecwsp.counseling' in settings.INSTALLED_APPS %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> Counseling </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> Counseling </a>
                     <ul class="grp-user-options">
                         {% if perms.counseling.change_studentmeeting %}
                             <li><a href="{% url "admin:app_list" 'counseling'%}">{% trans 'Counseling Admin' %}</a></li>
@@ -181,7 +181,7 @@
             <!-- CWSP -->
             {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> CWSP </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> CWSP </a>
                     <ul class="grp-user-options">
                         {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker %}
                             <li><a href="{% url "admin:work_study_studentworker_changelist" %}">{% trans 'Edit Student Worker' %}</a></li>
@@ -199,7 +199,7 @@
             <!-- OMR -->
             {% if 'ecwsp.omr' in settings.INSTALLED_APPS %} {% if perms.omr.change_test or perms.omr.teacher_test %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> OMR </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> OMR </a>
                     <ul class="grp-user-options">
                         {% if perms.omr.change_test %}
                             <li><a href="{% url "admin:app_list" 'omr' %}">{% trans 'OMR Admin' %}</a></li>
@@ -214,7 +214,7 @@
             <!-- Administration -->
             {% if perms.report_builder.change_report or perms.sis.reports or perms.administration.change_configuration or perms.custom_field.change_custom_field %}
                 <li class="grp-user-options-container grp-collapse grp-closed">
-                    <a href="javascript://" class="user-options-handler grp-collapse-handler"> Admin </a>
+                    <a href="javascript://" class="user-options-handler menu-collapse-handler"> Admin </a>
                     <ul class="grp-user-options">
                         {% if perms.sis.reports %}
                             <li><a href="{% url "ecwsp.sis.views.import_everything" %}">{% trans 'School import' %}</a></li>
@@ -240,7 +240,7 @@
             
             <!-- Username -->
             <li class="grp-user-options-container grp-collapse grp-closed">
-                <a style="min-width:72px;" href="javascript://" class="user-options-handler grp-collapse-handler">{% firstof user.first_name user.username %}</a>
+                <a style="min-width:72px;" href="javascript://" class="user-options-handler menu-collapse-handler">{% firstof user.first_name user.username %}</a>
                 <ul class="grp-user-options">
                     <!--SWORD: added preferences -->
                     <li><a href="/sis/preferences">{% trans 'Preferences' %}</a>
