@@ -130,6 +130,7 @@ class ReportManager(object):
             row += [answer_data['points_earned__sum']]
             row += [answer_data['points_possible__sum']]
             row += ['=C{0}/D{0}'.format(str(i))]
+            data += [row]
         report.add_sheet(data, title="Benchmarks for class", auto_width=True)
         
         return report.as_download()
