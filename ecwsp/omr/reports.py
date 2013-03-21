@@ -15,7 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from django.utils.html import strip_tags
-from django.db.models import F
+from django.db.models import F, Sum
 
 from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import Struct
