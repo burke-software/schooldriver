@@ -20,7 +20,7 @@ from django.db.models import F
 from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.administration.models import Template
-from ecwsp.omr.models import *
+from ecwsp.omr.models import AnswerInstance
 from ecwsp.benchmarks.models import Benchmark
 
 import xlwt
@@ -95,7 +95,8 @@ class ReportManager(object):
         data = []
         row = ['Benchmark']
         row2 = ['Points Possible']
-        for benchmark in Benchmark.objects.filter(question__test=test).distinct():
+        benchmarks = Benchmark.objects.filter(question__test=test).distinct()
+        for benchmark in benchmarks:
             row.append(benchmark)
             row.append('%')
             row2.append(test.question_set.filter(benchmarks=benchmark).aggregate(Sum('point_value'))['point_value__sum'])
@@ -115,6 +116,21 @@ class ReportManager(object):
             i += 1
             data.append(row)
         report.add_sheet(data, title="Benchmark", auto_width=True)
+        
+        data = [['Benchmark', 'Name', 'Earned', 'Possible', 'Percent']]
+        i = 2
+        for benchmark in benchmarks:
+            row = []
+            row += [benchmark.number, benchmark.name]
+            answer_data = AnswerInstance.objects.filter(
+                question__test=test,
+                question__benchmarks=benchmark).aggregate(
+                    Sum('points_earned'),
+                    Sum('points_possible'))
+            row += [answer_data['points_earned__sum']]
+            row += [answer_data['points_possible__sum']]
+            row += ['=C{0}/D{0}'.format(str(i))]
+        report.add_sheet(data, title="Benchmarks for class", auto_width=True)
         
         return report.as_download()
         
