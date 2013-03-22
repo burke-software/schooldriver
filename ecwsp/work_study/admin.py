@@ -347,7 +347,7 @@ class AttendanceAdmin(admin.ModelAdmin):
     form = make_ajax_form(Attendance, dict(student='studentworker'))
     search_fields = ['student__fname', 'student__lname', 'absence_date']
     list_editable = ('makeup_date','reason', 'fee', 'billed')
-    list_filter = ['absence_date', 'makeup_date', 'reason', 'fee', 'student','tardy']
+    list_filter = [('absence_date', DateRangeFilter), 'makeup_date', 'reason', 'fee', 'student','tardy']
     list_display = ('absence_date', 'makeup_date', 'reason', 'fee', 'student', 'billed','tardy')
     fieldsets = [
         (None, {'fields': ['student',('absence_date','makeup_date'),('tardy','tardy_time_in'),
