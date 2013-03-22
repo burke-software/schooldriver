@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.core.servers.basehttp import FileWrapper
 
-from ecwsp.sis.models import *
+from ecwsp.sis.models import SchoolYear, Configuration
 from ecwsp.sis.uno_report import uno_save
 from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import user_passes_test
 import tempfile
 import os
 from decimal import *
+import datetime
 
 class struct(object):
     def __unicode__(self):
@@ -92,7 +93,14 @@ def get_default_data():
     data={}
     school_name, created = Configuration.objects.get_or_create(name="School Name")
     data['school_name'] = unicode(school_name.value)
-    data['school_year'] = unicode(SchoolYear.objects.get(active_year=True))
+    try:
+        data['school_year'] = unicode(SchoolYear.objects.get(active_year=True))
+    except SchoolYear.DoesNotExist:
+        data['school_year'] = SchoolYear.objects.create(
+            active_year=True,
+            name="Default Year",
+            start_date = datetime.date.today(),
+            end_date = datetime.date.today())
     data['date'] = unicode(date.today().strftime('%b %d, %Y'))
     data['long_date'] = unicode(date.today().strftime('%B %d, %Y'))
     return data

@@ -33,7 +33,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils.html import strip_tags
 import re
 
-from datetime import datetime
+import datetime
 from datetime import timedelta
 import hashlib
 import sys
@@ -45,11 +45,12 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
+from ckeditor.fields import RichTextField
 import logging
 
-from ecwsp.administration.models import Configuration
+from ecwsp.administration.models import Configuration, Template
 from ecwsp.sis.models import Student
-from ecwsp.sis.report import *
+from ecwsp.sis.report import get_default_data, pod_save
 from ecwsp.sis.helper_functions import CharNullField
 
 class CraContact(models.Model):
@@ -107,9 +108,21 @@ class Contact(models.Model):
 
 class Company(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    alternative_contract_template = models.FileField(
+        upload_to='contracts_alt',
+        blank=True,
+        null=True,
+        help_text="Optionally use this odt template instead of a global template for this particular company.")
     
     def __unicode__(self):
         return unicode(self.name)
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.alternative_contract_template:
+            filename = str(self.alternative_contract_template).lower()
+            if not filename[-3:] in ('odt',):
+                raise ValidationError('Invalid file type. Must be odt file.')
     
     def fte(self):
         try:
@@ -263,7 +276,7 @@ class CompContract(models.Model):
     company_name = models.CharField(max_length=255, blank=True)
     name = models.CharField(max_length=255, blank=True)
     title = models.CharField(max_length=255, blank=True)
-    date = models.DateField(default=datetime.now, validators=settings.DATE_VALIDATORS)
+    date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True)
     number_students = models.IntegerField(blank=True, null=True)
     
@@ -325,7 +338,10 @@ class CompContract(models.Model):
             format = "doc"
         else:
             format = "odt"
-        template = Template.get_or_make_blank(name="Work Study Contract").file.path
+        if self.company and self.company.alternative_contract_template:
+            template = self.company.alternative_contract_template.file
+        else:
+            template = Template.get_or_make_blank(name="Work Study Contract").file.path
         if template :
             file = pod_save(filename, "." + str(format), data, template, get_tmp_file=True)
             self.contract_file.save(unicode(self.company) + "." + unicode(format), File(open(file)))
@@ -515,7 +531,7 @@ class Survey(models.Model):
     company = models.ForeignKey(WorkTeam, blank=True, null=True)
     question = models.CharField(max_length=255)
     answer = models.CharField(max_length=510, blank=True)
-    date = models.DateField(default=datetime.now, validators=settings.DATE_VALIDATORS)
+    date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     def save(self, *args, **kwargs):
         if self.company == None:
             self.company = self.student.placement
@@ -528,7 +544,7 @@ class Survey(models.Model):
 class CompanyHistory(models.Model):
     student = models.ForeignKey(StudentWorker)
     placement = models.ForeignKey(WorkTeam)
-    date = models.DateField(default=datetime.now, validators=settings.DATE_VALIDATORS)
+    date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     fired = models.BooleanField()
     
     def getStudent(self):
@@ -777,7 +793,7 @@ class AttendanceReason(models.Model):
         
 class Attendance(models.Model):
     student = models.ForeignKey(StudentWorker, help_text="Student who is absent this day")
-    absence_date = models.DateField(default=datetime.now, verbose_name="date", validators=settings.DATE_VALIDATORS)
+    absence_date = models.DateField(default=datetime.datetime.now, verbose_name="date", validators=settings.DATE_VALIDATORS)
     tardy = models.CharField(verbose_name="Status", max_length=1, choices=(("P", "Present"),("A", "Absent/Half Day"),("T", "Tardy"),("N", "No Timesheet")),default="P")
     tardy_time_in = models.TimeField(blank=True,null=True)
     makeup_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
@@ -800,7 +816,7 @@ class Attendance(models.Model):
 
 class ClientVisit(models.Model):
     dol = models.BooleanField()
-    date = models.DateField(default=datetime.now, validators=settings.DATE_VALIDATORS)
+    date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     student_worker = models.ForeignKey('StudentWorker', blank=True, null=True)
     cra = models.ForeignKey(CraContact, blank=True, null=True)
     company = models.ForeignKey(WorkTeam)
@@ -866,8 +882,8 @@ class MessageToSupervisor(models.Model):
     """ Stores a message to be shown to students for a specific amount of time
     """
     message = RichTextField(help_text="This message will be shown to supervisors when they log in.")
-    start_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
-    end_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
+    start_date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
+    end_date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     def __unicode__(self):
         # django.utils.html has a strip_entities(), but it's undocumented
         # so snatch up it's regular expression and use it here!

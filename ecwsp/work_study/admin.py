@@ -25,6 +25,8 @@ from django.contrib import admin
 from django.utils.encoding import smart_unicode
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
+from django.core.urlresolvers import reverse
 from daterange_filter.filter import DateRangeFilter
 
 from django import forms
@@ -55,7 +57,7 @@ class CompanyHistoryInline(admin.TabularInline):
 
 class CompanyAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
-        try:
+        if 'original' in context and context['original']:
             workteams = WorkTeam.objects.filter(company=context['original'].id)
             txt = "<h5>Work teams:</h5>"
             for workteam in workteams:
@@ -70,9 +72,9 @@ class CompanyAdmin(admin.ModelAdmin):
             histories = CompanyHistory.objects.filter(placement__company=context['original'].id)
             for history in histories:
                 txt += '%s </br>' % (history,)
+            txt += "<h5>Eletronic contract link:</h5>"
+            txt += '<a href="{0}">{0}</a>'.format(settings.BASE_URL + reverse('ecwsp.work_study.views.company_contract1', args=(context['original'].id,)))
             context['adminform'].form.fields['name'].help_text = txt
-        except:
-            print >> sys.stderr, "Error in company admin render_change_form"
         return super(CompanyAdmin, self).render_change_form(request, context, args, kwargs)
     search_fields = ('workteam__studentworker__fname', 'workteam__studentworker__lname', 'workteam__team_name')
     list_display = ('name','fte')
