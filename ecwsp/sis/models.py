@@ -458,7 +458,7 @@ class Student(MdlUser, CustomFieldModel):
         )
     
     def __unicode__(self):
-        return self.lname + ", " + self.fname
+        return u"{0}, {1}".format(self.lname, self.fname)
     
     @property
     def primary_cohort(self):
