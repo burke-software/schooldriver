@@ -155,13 +155,7 @@ def gradebook(request, course_id):
             mark.category_id = mark.item.category_id
         
         student.marks = student_marks
-        # This is more effecient but doesn't do validation
-        #aggregate_set = student.aggregate_set.get(course=course, category=None, marking_period=None)
-        #student.average = aggregate_set.cached_value
-        #student.average_pk = aggregate_set.pk
-        average_tuple = gradebook_get_average_and_pk(student, course, None, None, None)
-        student.average = average_tuple[0]
-        student.average_pk = average_tuple[1]
+        student.average, student.average_pk = gradebook_get_average_and_pk(student, course, None, None, None)
         if filtered:
             student.filtered_average = gradebook_get_average(student, course, filter_form.cleaned_data['category'],
                                                              filter_form.cleaned_data['marking_period'], items)

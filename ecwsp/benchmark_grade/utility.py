@@ -39,33 +39,47 @@ def benchmark_find_calculation_rule(school_year):
             raise Exception('There is no suitable calculation rule for the school year {}.'.format(school_year))
     return rule
 
-def benchmark_get_create_or_flush(model_base, **kwargs):
-    # make sure there is one and only one object matching our criteria
+def benchmark_get_create_or_flush(model_base_or_set, **kwargs):
+    ''' make sure there is one and only one object matching our criteria '''
+
+    # How does it quack?
     try:
-        model, created = model_base.objects.get_or_create(**kwargs)
-    except model_base.MultipleObjectsReturned:
+        manager = model_base_or_set.objects
+    except AttributeError:
+        manager = model_base_or_set
+
+    try:
+        model, created = manager.get_or_create(**kwargs)
+    except manager.model.MultipleObjectsReturned:
         # unsure why this happens, but it does
-        bad = model_base.objects.filter(**kwargs)
-        logging.error('Expected 0 or 1 {} but found {}; flushing them all!'.format(str(model_base).split("'")[1], bad.count()), exc_info=True)
+        bad = manager.filter(**kwargs)
+        logging.error('Expected 0 or 1 {} but found {}; flushing them all!'.format(str(manager.model).split("'")[1], bad.count()), exc_info=True)
         bad.delete()
-        model, created = model_base.objects.get_or_create(**kwargs)
+        model, created = manager.get_or_create(**kwargs)
     return model, created
 
-def benchmark_get_or_flush(model_base, **kwargs):
-    # make sure there is at most one object matching our criteria
-    # if there are two or more, don't try to guess at the correct one; just delete them
+def benchmark_get_or_flush(model_base_or_set, **kwargs):
+    ''' make sure there is at most one object matching our criteria
+    if there are two or more, don't try to guess at the correct one; just delete them '''
+
+    # How does it quack?
     try:
-        model = model_base.objects.get(**kwargs)
-    except model_base.MultipleObjectsReturned:
+        manager = model_base_or_set.objects
+    except AttributeError:
+        manager = model_base_or_set
+
+    try:
+        model = manager.get(**kwargs)
+    except manager.model.MultipleObjectsReturned:
         # unsure why this happens, but it does
-        bad = model_base.objects.filter(**kwargs)
-        logging.error('Expected 1 {} but found {}; flushing them all!'.format(str(model_base).split("'")[1], bad.count()), exc_info=True)
+        bad = manager.filter(**kwargs)
+        logging.error('Expected 1 {} but found {}; flushing them all!'.format(str(manager.model).split("'")[1], bad.count()), exc_info=True)
         bad.delete()
-        raise model_base.DoesNotExist
+        raise manager.model.DoesNotExist
     return model
 
 def benchmark_calculate_category_as_course_aggregate(student, category, marking_period):
-    agg, created = benchmark_get_create_or_flush(Aggregate, student=student, course=None, category=category, marking_period=marking_period)
+    agg, created = benchmark_get_create_or_flush(student.aggregate_set, course=None, category=category, marking_period=marking_period)
     agg.name = 'G! {} - {} (All Courses, {})'.format(student, category, marking_period)
     agg.cached_substitution = None
     calculation_rule = benchmark_find_calculation_rule(marking_period.school_year)
@@ -107,12 +121,12 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
     calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
 
     # initialize attributes
-    criteria = {'student': student, 'course': course, 'category': category, 'marking_period': marking_period}
+    criteria = {'course': course, 'category': category, 'marking_period': marking_period}
     # silly name is silly, and should not be part of the criteria
     silly_name = 'G! {} - {} ({}, {})'.format(student, category, course, marking_period)
     # don't use get_or_create; otherwise we may end up saving an empty object
     try:
-        agg = benchmark_get_or_flush(Aggregate, **criteria)
+        agg = benchmark_get_or_flush(student.aggregate_set, **criteria)
         created = False
     except Aggregate.DoesNotExist:
         agg = Aggregate(**criteria)
@@ -165,12 +179,12 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
     calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
 
     # initialize attributes
-    criteria = {'student': student, 'course': course, 'category': None, 'marking_period': marking_period}
+    criteria = {'course': course, 'category': None, 'marking_period': marking_period}
     # silly name is silly, and should not be part of the criteria
     silly_name = 'G! {} - Course Average ({}, {})'.format(student, course, marking_period)
     # don't use get_or_create; otherwise we may end up saving an empty object
     try:
-        agg = benchmark_get_or_flush(Aggregate, **criteria)
+        agg = benchmark_get_or_flush(student.aggregate_set, **criteria)
         created = False
     except Aggregate.DoesNotExist:
         agg = Aggregate(**criteria)
@@ -182,7 +196,7 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
     course_numer = course_denom = Decimal(0)
     for rule_category in calculation_rule.per_course_category_set.filter(apply_to_departments=course.department):
         criteria['category'] = rule_category.category
-        cat_agg, cat_created = benchmark_get_create_or_flush(Aggregate, **criteria)
+        cat_agg, cat_created = benchmark_get_create_or_flush(student.aggregate_set, **criteria)
         if cat_created or recalculate_all_categories or rule_category.category in items_categories:
             cat_agg, cat_created = benchmark_calculate_course_category_aggregate(student, course, rule_category.category, marking_period, items)
         if cat_agg.cached_value is not None:
@@ -316,7 +330,7 @@ def gradebook_get_average_and_pk(student, course, category=None, marking_period=
         if items is not None: # averages of one-off sets of items aren't saved and must be calculated every time
             # this is rather silly, but it avoids code duplication or a teensy four-line function.
             raise Aggregate.DoesNotExist
-        agg = benchmark_get_or_flush(Aggregate, student=student, course=course, category=category, marking_period=marking_period)
+        agg = benchmark_get_or_flush(student.aggregate_set, course=course, category=category, marking_period=marking_period)
     except Aggregate.DoesNotExist:
         if category is None:
             agg, created = benchmark_calculate_course_aggregate(student, course, marking_period, items)
@@ -337,7 +351,7 @@ def gradebook_get_average_and_pk(student, course, category=None, marking_period=
 
 def gradebook_get_category_average(student, category, marking_period):
     try:
-        agg = benchmark_get_or_flush(Aggregate, student=student, course=None, category=category, marking_period=marking_period)
+        agg = benchmark_get_or_flush(student.aggregate_set, course=None, category=category, marking_period=marking_period)
     except Aggregate.DoesNotExist:
         agg, created = benchmark_calculate_category_as_course_aggregate(student, category, marking_period)
     if agg.cached_substitution is not None:
