@@ -33,7 +33,7 @@ from ecwsp.schedule.models import Course, MarkingPeriod
 from ecwsp.grades.forms import GradeUpload
 #from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule, AggregateTask
-from ecwsp.benchmark_grade.forms import BenchmarkGradeVerifyForm, GradebookFilterForm, ItemForm, DemonstrationForm, FillAllForm
+from ecwsp.benchmark_grade.forms import GradebookFilterForm, ItemForm, DemonstrationForm, FillAllForm
 from ecwsp.benchmarks.models import Benchmark
 from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_get_average_and_pk, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
 from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule
