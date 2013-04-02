@@ -21,6 +21,43 @@ import datetime
 import time
 import logging
 
+def select_grade_method(request):
+    """ Select a per user preferred grading method
+    Forward to previously requested page after
+    """
+    pref = UserPreference.objects.get_or_create(user=request.user)[0]
+    if request.POST and 'choice' in request.POST:
+        pref.gradebook_preference = request.POST['choice']
+        pref.save()
+    options = []
+    if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+        options += ['O']
+    if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS:
+        options += ['E']
+    allow_spreadsheet = Configuration.get_or_default('grades_allow_spreadsheet_import').value
+    if allow_spreadsheet == 'True':
+        options += ['S']
+    else:
+        allow_import = False
+    if request.user.has_perm('grades.change_own_grade') or request.user.has_pem('grades.change_grade'):
+        options += ['M']
+        allow_manual = True
+    
+    if not pref.gradebook_preference and len(options) == 1:
+        pref.gradebook_preference = options[0]
+        pref.save()
+    
+    if pref.gradebook_preference and (not 'override' in request.GET or request.POST):
+        if 'next' in request.GET:
+            next_page = request.GET['next']
+            if next_page == "teacher_grade":
+                return redirect('ecwsp.grades.views.teacher_grade')
+    
+    return render_to_response(
+        'grades/select_grade_method.html',
+        {'request': request, 'allow_spreadsheet': allow_spreadsheet, 'allow_manual': allow_manual},
+        RequestContext(request, {}),)
+
 @permission_required('grades.change_own_grade')
 def teacher_grade(request):
     if Faculty.objects.filter(username=request.user.username):
@@ -32,7 +69,8 @@ def teacher_grade(request):
             graded=True,
             marking_period__school_year__active_year=True,
         ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
-
+    pref = UserPreference.objects.get_or_create(user=request.user)[0].gradebook_preference
+    
     if "ecwsp.engrade_sync" in settings.INSTALLED_APPS:
         if request.method == 'POST':
             form = EngradeSyncForm(request.POST)
@@ -57,14 +95,12 @@ def teacher_grade(request):
                     })
             else:
                 messages.info(request, 'You must select a valid marking period')
-        engrade_sync = True
         form = EngradeSyncForm()
     else:
-        engrade_sync = False
         form = None
     return render_to_response(
         'grades/teacher_grade.html',
-        {'request': request, 'courses': courses, 'form': form,'engrade_sync': engrade_sync},
+        {'request': request, 'courses': courses, 'form': form, 'pref': pref},
         RequestContext(request, {}),
         )
     

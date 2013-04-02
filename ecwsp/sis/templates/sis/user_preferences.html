@@ -20,6 +20,9 @@
             <tr>
                 <td> {{ form.course_sort.label }} </td><td> {{ form.course_sort }} {{ form.course_sort.help_text }} {{ form.course_sort.errors }}</td>
             </tr>
+            <tr>
+                <td> {{ form.gradebook_preference.label }}</td><td>{{ form.gradebook_preference }} {{ form.gradebook_preference.errors }}</td>
+            </tr>
         </table>
         {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
             <h3> OMR </h3>

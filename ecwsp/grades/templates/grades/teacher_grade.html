@@ -3,79 +3,84 @@
 
 {% block extrastyle %}
 {{ block.super }}
-	<style type="text/css">
-		tr:nth-child(odd) { 
-			background-color:#FCFCFC; 
-		}
-		
-		.modal {
-			background-color:#fff;
-			display:none;
-			width:550px;
-			padding:15px;
-			text-align:center;
-			border:2px solid #333;
-		
-			opacity:0.9;
-			border-radius:6px;
-			-moz-border-radius:6px;
-			-webkit-border-radius:6px;
-			box-shadow: 0 0 100px #ddd;
-			-moz-box-shadow: 0 0 100px #ddd;
-			-webkit-box-shadow: 0 0 100px #ddd;
-		}
-	</style>
+    <style type="text/css">
+        tr:nth-child(odd) {
+            background-color:#FCFCFC;
+        }
+
+        .modal {
+            background-color:#fff;
+            display:none;
+            width:550px;
+            padding:15px;
+            text-align:center;
+            border:2px solid #333;
+
+            opacity:0.9;
+            border-radius:6px;
+            -moz-border-radius:6px;
+            -webkit-border-radius:6px;
+            box-shadow: 0 0 100px #ddd;
+            -moz-box-shadow: 0 0 100px #ddd;
+            -webkit-box-shadow: 0 0 100px #ddd;
+        }
+    </style>
 {% endblock %}
 
 {% block extrahead %}
-	<script src="/static/js/jquery.tools.min.js" type="text/javascript"></script>
-	<script type="text/javascript"> 
-		$(document).ready(function()
-		{
-			var triggers = $(".modalInput").overlay({
-				mask: {
-					color: '#ebecff',
-					loadSpeed: 200,
-					opacity: 0.9
-				},
-				top: 'center'
-			});
-		});
-	</script> 
+    <script src="/static/js/jquery.tools.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function()
+        {
+            var triggers = $(".modalInput").overlay({
+                mask: {
+                    color: '#ebecff',
+                    loadSpeed: 200,
+                    opacity: 0.9
+                },
+                top: 'center'
+            });
+        });
+    </script>
 {% endblock %}
 
 {% block content %}
-	<h2> Select course to submit or check grades. </h2>
+    <h2> Select course to submit or check grades. </h2>
     <table style="text-align: center;">
-    <tr>
-        <th>Course</th>
-        <th>Download Blank Gradebook</th>
-        {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
-            <th>Online Gradebook</th>
-        {% endif %}
-    </tr>
-    {% for course in courses %}
         <tr>
-            <td style="text-align: left;"> <a href="upload/{{ course.id }}"> {{ course }}  </a> </td>
-            <td> <a href="download/{{ course.id }}/"> Download XLS </a> </td>
-            {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
-                <td><a href="{% url "ecwsp.benchmark_grade.views.gradebook" course.id %}">Gradebook</a></td>
+            <th>Course</th>
+            {% if pref == "S" %}
+                <th>Download Blank Gradebook</th>
+            {% elif pref == 'O' %}
+                <th>Online Gradebook</th>
             {% endif %}
         </tr>
-    {% endfor %}
+        {% for course in courses %}
+            <tr>
+                <td style="text-align: left;"> <a href="upload/{{ course.id }}"> {{ course }}  </a> </td>
+                {% if pref == 'S' %}
+                    <td> <a href="download/{{ course.id }}/"> Download XLS </a> </td>
+                {% elif pref == 'O' %}
+                    <td><a href="{% url "ecwsp.benchmark_grade.views.gradebook" course.id %}">Gradebook</a></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
     </table>
-	
-	{% if engrade_sync %}
-		<div class="modal" id="engrade_sync_form">
-			<form action="" method="post">
-				<h4>Select marking period.</h4>
-				This will sync Engrade grades for the selected marking period. You will still need to
-				verify grades one at a time by clicking on a class on the behind page.
-				{{ form.as_p }}
-				<input type="submit"/>
-			</form>
-		</div>
-		<br/>
-		<input type="button" style="width:200px;margin-left: 30px;" class="modalInput grp-button" value="Sync all grades from Engrade" rel="#engrade_sync_form"/>
-	{% endif %}
+
+    {% if pref == "E" %}
+        <div class="modal" id="engrade_sync_form">
+            <form action="" method="post">
+                <h4>Select marking period.</h4>
+                This will sync Engrade grades for the selected marking period. You will still need to
+                verify grades one at a time by clicking on a class on the behind page.
+                {{ form.as_p }}
+                <input type="submit"/>
+            </form>
+        </div>
+        <br/>
+        <input type="button" style="width:200px;margin-left: 30px;" class="modalInput grp-button" value="Sync all grades from Engrade" rel="#engrade_sync_form"/>
+    {% endif %}
+    
+    <br/>
+    <p><a href="{% url "ecwsp.grades.views.select_grade_method" %}?override=true&next=teacher_grade">Click here to change grading method</a></p>
 {% endblock %}

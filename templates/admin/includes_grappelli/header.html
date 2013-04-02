@@ -126,7 +126,7 @@
                             <li><a href="{% url "admin:schedule_course_changelist" %}">{% trans 'Edit Grades/Courses' %}</a></li>
                         {% endif %}
                         {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
-                            <li><a href="{% url "ecwsp.grades.views.teacher_grade" %}">{% trans 'Submit Grades' %}</a>
+                            <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a>
                         {% endif %}
                         {% if perms.sis.reports %}
                             <li><a href="{% url "ecwsp.sis.views.grade_report" %}">{% trans 'Reports' %}</a></li>

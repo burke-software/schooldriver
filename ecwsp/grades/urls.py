@@ -10,4 +10,5 @@ urlpatterns = patterns('',
     (r'^student_gradesheet/(?P<id>\d+)/$', student_gradesheet),
     (r'^student_gradesheet/(?P<id>\d+)/(?P<year_id>\d+)$', student_gradesheet),
     (r'^view_comment_codes/$', view_comment_codes),
+    (r'^select_grade_method/$', select_grade_method),
 )

@@ -29,12 +29,18 @@
     <form action="" method="post" enctype="multipart/form-data" class="noprint">
         {{ import_form }} 
         <input type="submit" value="Upload Grades" name="upload"/>
+	
+	{% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
+	    <br/><p><a href="{% url "ecwsp.benchmark_grade.views.gradebook" course_id=course.id %}">Click here for Online Gradebook</a></p><br/>
+	{% endif %}
+	
         <div>
             <a href="#" id="toggle_comments" class="toggle_comments" onclick='toggle_comments()'>Show Comments</a>
             <a href="#" id="toggle_comments" class="toggle_comments" style="display: none" onclick='toggle_comments()'>Hide Comments</a>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{% url "ecwsp.grades.views.view_comment_codes" %}" target="_blank"> View Comment Codes</a>
         </div>
     </form>
+    
     
     <form action="" onsubmit="submit_form()" method="post">
 	<div id="gradebook_div">

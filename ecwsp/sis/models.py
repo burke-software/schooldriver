@@ -81,6 +81,8 @@ class UserPreference(models.Model):
     omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
     omr_default_save_question_to_bank = models.BooleanField(default=False)
     omr_default_number_answers = models.IntegerField(default=2, blank=True, )
+    gradebook_preference = models.CharField(max_length=10, blank=True, choices=(
+         ('O', 'Online Gradebook'), ('S','Spreadsheet'), ('E', 'Engrade'), ('M', 'Manual')))
     user = models.ForeignKey(User, unique=True, editable=False)
     names = None    # extra field names. (Attempt to speed up reports so these don't get called up over and over)
     first = True
