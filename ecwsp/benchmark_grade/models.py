@@ -162,7 +162,6 @@ class Mark(models.Model):
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     normalized_mark = models.FloatField(blank=True, null=True)
-    description = models.CharField(max_length=255)
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def save(self, *args, **kwargs):
         if self.mark is not None and self.item.points_possible is not None:
