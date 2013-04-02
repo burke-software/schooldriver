@@ -171,7 +171,7 @@
                     <tr>
                         <td><div id="student{{ student.id }}" onclick="show_student_overlay(event)">{{ student }}</div></td>
                         {% for mark in student.marks %}
-                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)" data-category_id="{{ mark.item.category_id }}">
+                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)" data-category_id="{{ mark.category_id }}">
                                 <div>{{ mark.mark }}</div>
                             </td>
                         {% endfor %}
@@ -184,7 +184,6 @@
                     </tr>
                     {% endwith %}
                 {% endfor %}
-
                     <tr>
                         <td>
                             <em>Students Demonstrated</em>

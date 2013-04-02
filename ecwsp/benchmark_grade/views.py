@@ -195,8 +195,9 @@ def gradebook(request, course_id):
     marks = Mark.objects.filter(item__in=items).order_by('item__id', 'demonstration__id').all() 
     items_count = items.filter(demonstration=None).count() + Demonstration.objects.filter(item__in=items).count()
     for student in students:
-        student_marks = marks.filter(student=student)
-        if student_marks.count() < items_count:
+        student_marks = marks.filter(student=student).select_related('item__category_id')
+        student_marks_count = student_marks.count()
+        if student_marks_count < items_count:
             # maybe student enrolled after assignments were created
             for item in items:
                 if len(item.demonstration_set.all()):
@@ -210,13 +211,21 @@ def gradebook(request, course_id):
                     mark, created = Mark.objects.get_or_create(item=item, student=student)
                     if created:
                         mark.save()
-        if student_marks.count() > items_count:
+        if student_marks_count > items_count:
             # Yikes, there are multiple marks per student per item. Stop loading the gradebook now.
             if 'dangerous' in request.GET:
                 pass
             else:
                 raise Exception('Multiple marks per student per item.')
+        
+        for mark in student_marks:
+            mark.category_id = mark.item.category_id
+        
         student.marks = student_marks
+        # This is more effecient but doesn't do validation
+        #aggregate_set = student.aggregate_set.get(course=course, category=None, marking_period=None)
+        #student.average = aggregate_set.cached_value
+        #student.average_pk = aggregate_set.pk
         average_tuple = gradebook_get_average_and_pk(student, course, None, None, None)
         student.average = average_tuple[0]
         student.average_pk = average_tuple[1]

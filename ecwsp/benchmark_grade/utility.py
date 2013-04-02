@@ -27,13 +27,13 @@ import celery.utils
 
 def benchmark_find_calculation_rule(school_year):
     rules = CalculationRule.objects.filter(first_year_effective=school_year)
-    if rules.count():
+    if rules:
         # We have a rule explicitly matching this marking period's school year
         rule = rules[0]
     else:
         # No explicit match, so find the most recent rule that went into effect *before* this marking period's school year
         rules = CalculationRule.objects.filter(first_year_effective__start_date__lt=school_year.start_date).order_by('-first_year_effective__start_date')
-        if rules.count():
+        if rules:
             rule = rules[0]
         else:
             raise Exception('There is no suitable calculation rule for the school year {}.'.format(school_year))
