@@ -7,7 +7,6 @@ dajaxice_autodiscover()
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = patterns('',
-    (r'^upload/(?P<id>\d+)$', views.benchmark_grade_upload),
     (r'^student_report$', views.student_report),
     (r'^student_report/(?P<student_pk>\d+)$', views.student_report),
     (r'^student_report/(?P<student_pk>\d+)/(?P<course_pk>\d+)$', views.student_report),
