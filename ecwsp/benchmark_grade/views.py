@@ -43,6 +43,7 @@ from decimal import Decimal
 import logging
 import json
 import datetime
+import reversion
 
 def get_teacher_courses(username):
     """ Utility function that returns courses a given teacher may access """
@@ -204,13 +205,9 @@ def gradebook(request, course_id):
                     # must create mark for each demonstration
                     for demonstration in item.demonstration_set.all():
                         mark, created = Mark.objects.get_or_create(item=item, demonstration=demonstration, student=student)
-                        if created:
-                            mark.save()
                 else:
                     # a regular item without demonstrations; make only one mark
                     mark, created = Mark.objects.get_or_create(item=item, student=student)
-                    if created:
-                        mark.save()
         if student_marks_count > items_count:
             # Yikes, there are multiple marks per student per item. Stop loading the gradebook now.
             if 'dangerous' in request.GET:
@@ -317,26 +314,27 @@ def ajax_get_item_form(request, course_id, item_id=None):
         else:
             form = ItemForm(request.POST, prefix="item")
         if form.is_valid():
-            if item_id is None:
-                # a new item!
-                item = form.save()
-                dem = None
-                if item.category.allow_multiple_demonstrations:
-                    # must have at least one demonstration; create a new one
-                    dem = Demonstration()
-                    dem.name = 'Dem. 1'
-                    dem.item = item
-                    dem.save()
-                # must create blank marks for each student
-                for student in Student.objects.filter(course=course):
-                    mark, created = Mark.objects.get_or_create(item=item, student=student, demonstration=dem)
-                    if created:
-                        mark.save()
-            else:
-                # modifying an existing item
-                old_item = Item.objects.get(pk=item.pk)
-                item = form.save()
-                gradebook_recalculate_on_item_change(item, old_item=old_item)
+            with reversion.create_revision():
+                if item_id is None:
+                    # a new item!
+                    item = form.save()
+                    dem = None
+                    if item.category.allow_multiple_demonstrations:
+                        # must have at least one demonstration; create a new one
+                        dem = Demonstration()
+                        dem.name = 'Dem. 1'
+                        dem.item = item
+                        dem.save()
+                    # must create blank marks for each student
+                    for student in Student.objects.filter(course=course):
+                        mark, created = Mark.objects.get_or_create(item=item, student=student, demonstration=dem)
+                else:
+                    # modifying an existing item
+                    old_item = Item.objects.get(pk=item.pk)
+                    item = form.save()
+                    gradebook_recalculate_on_item_change(item, old_item=old_item)
+                reversion.set_user(request.user)
+                reversion.set_comment("gradebook")
 
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax
@@ -447,8 +445,6 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
                 # a new demonstration; must create blank marks for each student
                 for student in Student.objects.filter(course=course):
                     mark, created = Mark.objects.get_or_create(item=demonstration.item, demonstration=demonstration, student=student)
-                    if created:
-                        mark.save()
 
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax
@@ -541,11 +537,12 @@ def ajax_save_grade(request):
         else:
             mark.mark = None
             value = 'None'
-        # temporarily log who's changing stuff since i'll have to manually recalculate averages later
-        mark.description += ',' + request.user.username
         try:
-            mark.full_clean()
-            mark.save()
+            with reversion.create_revision():
+                mark.full_clean()
+                mark.save()
+                reversion.set_user(request.user)
+                reversion.set_comment("gradebook")
         except Exception as e:
             return HttpResponse(e, status=400)
         affected_agg_pks = [x.pk for x in gradebook_recalculate_on_mark_change(mark)]

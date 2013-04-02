@@ -4,18 +4,27 @@ from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from ecwsp.benchmark_grade.models import Category, Item, Demonstration, Mark, Aggregate
 from ecwsp.benchmark_grade.models import CalculationRulePerCourseCategory, CalculationRuleCategoryAsCourse, CalculationRuleSubstitution, CalculationRule, AssignmentType 
 
+import reversion
+
 admin.site.register(Category)
-admin.site.register(Item)
+admin.site.register(Item, reversion.VersionAdmin)
 admin.site.register(Demonstration)
-admin.site.register(Mark)
 admin.site.register(Aggregate)
 admin.site.register(AssignmentType)
+
+class MarkAdmin(reversion.VersionAdmin):
+    raw_id_fields = ('item',)
+    related_lookup_fields = {
+        'fk': ['demostration',],
+    }
+
+admin.site.register(Mark, MarkAdmin)
 
 class CalculationRulePerCourseCategoryInline(admin.TabularInline):
     model = CalculationRulePerCourseCategory
     verbose_name = 'category included in each course average'
     verbose_name_plural = 'categories included in each course average'
-    extra = 0 
+    extra = 0
 
 class CalculationRuleCategoryAsCourseInline(admin.TabularInline):
     model = CalculationRuleCategoryAsCourse
