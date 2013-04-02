@@ -102,40 +102,75 @@ SWoRD contains a number of configurations built in that are created with each ne
 
 
 =====================
-SWoRD Apps
+Admissions
 =====================
 
-Admissions
-----------
 The admissions module allows schools to keep track of applicants, and where they are in the application process. Each step in the application process can be customized to fit a school's unique need. Users can designate steps that need to be completed before moving onto the next level. Additionally, SWoRD will track any open houses a student has attended and how the student heard about the school. 
 
 
 The image above details the dashboard that an admissions counselor or designated user will see when they select the admissions module. Most modules do include a dashboard for the purpose of providing users a general overview of information that is able to be filtered. 
 
+
 Adding an Applicant
 --------------------
 To add an applicant: 
-1.Select "Applicants" under the Admissions module
-2.Enter information about the applicant accordingly. First and Last Name fields are required.
-3.Click "save"
+
+1. Select **Applicants** under the Admissions module
+2. Enter information about the applicant accordingly. First and Last Name fields are required.
+3. Click **save**
 
 SWoRD will then return you to the applicants dashboard where you will see your newly created applicant at the top.
 
+
+------------------
 Admissions Levels
 ------------------
 SWoRD allows schools to control admissions levels/steps that are unique to their school process. Appropiately, each step is customizable. To customize these levels:
 
-1.Select "Admissions Levels" under the Admissions module.
-2.You will see the screen shown below.
-(PIC)
-3. From this screen, you can add an admissions level, selecting the "Add Amissions Level" button, or edit an existing one by selecting 'edit' located next the level you are altering. From the edit screen or add screen, make the necessary changes/additions then select save.
+1. Select **Admissions Levels** under the Admissions module.
+2. You will see the screen shown below.
 
-The section under the header, "Items needed to be completed to attain this level in the process" refers to creating a checklist of various tasks the applicant may need to complete prior to reaching a new step. For reference, the image below details a checklist containing two required tasks (open house, requested more information) to be completed before the applicant reaches the level of Inquiry. 
+IMAGE
+
+3. From this screen, you can add an admissions level, selecting the **Add Amissions Level** button, or edit an existing one by selecting *edit* located next the level you are altering. From the edit screen or add screen, make the necessary changes/additions then select save.
+
+The section under the header, **Items needed to be completed to attain this level in the process** refers to creating a checklist of various tasks the applicant may need to complete prior to reaching a new step. For reference, the image below details a checklist containing two required tasks (open house, requested more information) to be completed before the applicant reaches the level of Inquiry. 
 (PIC)
 
 Users may assign designated levels to be required in order to advance to the next. For example, schools may deem it required for an applicant to pay an initial deposit prior to registration.
 
-To make a step required, simply check the box found under the "Required" column.
+To make a step required, simply check the box found under the **Required** column and save.
 
+---------------------
+Filtering Applicants
+---------------------
+To maximize organization, efficiency and promote the ease of collecting various admissions data for report preparation, SWoRD contains a myriad of filters and functions accessible through the main applicant page. Each column header in the image below will sort accordingly. For example, clicking on Last Name will filter by last name, application decision by decision, etc. 
+
+(PICTURE)
+Alternatively, for more specific filter choices- users may choose from the available filters located directly to the right of the applicant list on the main applicant page. In sum, the drop down list allows users to select and combine the following filters: school year, level, checklist, ready for export, present school, ethnicity, head about us, and year. The filter tool will do so in real time, no need to select and save.
+
+---------------------
+Exporting Applicants
+---------------------
+SWoRD allows for easy export into an Excel document for sharing/distribution. To export applicants after they have been filtered or not, follow the steps below to export them into an Excel file.
+
+1. Select each applicant you would like to export, or select all by selecting the top left-most box to check every applicant.
+2. Click the drop down box located on the black tool bar at the bottom of the page.
+3. Select **Export to XLS**
+4. A box opens up with options on what to export.
+5. Select All to pull all information entered for each applicant, or check specific boxes.
+6. Scroll down and select **Submit**
+7. SWoRD will then open up an Excel document detailing the specified information.
+
+--------------------
+Admission Reports
+--------------------
+Some basic Admission Reports are available built in to SWoRD that allows users to quickly process statistics based on a school year's applicants. 
+
+1. Under the **Admissions** tab located at the top right of your SWoRD screen, select **Reports**
+2. Select whichever year you are generating this report for
+3. Click **Process Statistics**
+
+SWoRD will then generate an Excel document detailing some basic admission statistics, such as number of applicants by grade, and number of applicants on a particular level in the process.  
 
 
