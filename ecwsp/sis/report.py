@@ -157,7 +157,7 @@ def pod_report_work_study(template, students, format="odt"):
     filename = 'Work Study Report'
     return pod_save(filename, "." + str(format), data, template)  
     
-def pod_report_grade(request, template, options, students, format="odt", transcript=True, report_card=True):
+def pod_report_grade(request, template, options, students, format="odt", transcript=True, report_card=True, benchmark_report_card=True):
     """ Generate report card and transcript grades via appy
     variables for apply:
     students                - contails all each student
@@ -185,11 +185,10 @@ def pod_report_grade(request, template, options, students, format="odt", transcr
     try: omit_substitutions = options['omit_substitutions']
     except KeyError: omit_substitutions = False
     
-    # if benchmark grading is installed and enabled for the current school year,
+    # if benchmark grading is installed and enabled for the selected template,
     # and this is a report card, bail out to another function
-    if (report_card and
-        "ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
-        SchoolYear.objects.filter(start_date__lt=for_date).order_by('-start_date')[0].benchmark_grade):
+    if (benchmark_report_card and
+        "ecwsp.benchmark_grade" in settings.INSTALLED_APPS):
         from ecwsp.benchmark_grade.report import benchmark_report_card
         return benchmark_report_card(template, options, students, format)
     

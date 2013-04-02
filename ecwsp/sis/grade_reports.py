@@ -59,6 +59,7 @@ def student_grade(request, form):
             form.fields['template'].queryset = Template.objects.filter(Q(report_card=True) | Q(transcript=True))
             #return render_to_response('sis/grade_report.html', {'form':form, 'mp_form':mp_form}, RequestContext(request, {}),)
         report_card = template.report_card
+        benchmark_report_card = template.benchmark_report_card
         transcript = template.transcript
     else:
         # or use uploaded template, saving it to temp file
@@ -72,7 +73,7 @@ def student_grade(request, form):
         transcript = True
     file_format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
     return pod_report_grade(request, template_path, options=data, students=form.get_students(data), format=file_format,
-                            report_card=report_card, transcript=transcript)
+                            report_card=report_card, benchmark_report_card=benchmark_report_card, transcript=transcript)
 
 def aggregate_grade_report(request):
     from ecwsp.grades.models import Grade

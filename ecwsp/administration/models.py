@@ -121,6 +121,7 @@ class Template(models.Model):
     file = models.FileField(upload_to="templates")
     general_student = models.BooleanField(help_text="Can be used on student reports")
     report_card = models.BooleanField(help_text="Can be used on grade reports, gathers data for one year")
+    benchmark_report_card = models.BooleanField(help_text="A highly detailed, single-year report card for benchmark-based grading")
     transcript = models.BooleanField(help_text="Can be used on grade reports, gathers data for all years")
     
     def __unicode__(self):

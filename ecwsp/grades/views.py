@@ -106,13 +106,6 @@ def teacher_grade_upload(request, id):
     
     course = Course.objects.get(id=id)
     
-    # if benchmark grading is installed and enabled for the course's school year,
-    # bail out to another function
-    if ("ecwsp.benchmark_grade" in settings.INSTALLED_APPS and
-        course.marking_period.all().order_by('-start_date')[0].school_year.benchmark_grade):
-        from ecwsp.benchmark_grade.views import benchmark_grade_upload
-        return benchmark_grade_upload(request, id)
-        
     students = course.get_enrolled_students(show_deleted=True)
     grades = course.grade_set.all()
     

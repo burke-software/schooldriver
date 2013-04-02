@@ -271,7 +271,7 @@ def skip_unreadable_post(record):
             return False
     return True
 
-LOGGING = {
+BLARG_LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'root': {
