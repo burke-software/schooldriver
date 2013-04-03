@@ -767,8 +767,9 @@ def report_builder_view(request):
 @permission_required('discipline.change_clientvisit')   
 def dol_form(request, id=None):
     supervisors_text = ""
-    for supervisor in ClientVisit.objects.get(id=id).supervisor.all():
-        supervisors_text += unicode(supervisor) + ", "
+    if id:
+        for supervisor in ClientVisit.objects.get(id=id).supervisor.all():
+            supervisors_text += unicode(supervisor) + ", "
     supervisors_text = supervisors_text[:-2]
     if request.method == 'POST':
         if id:
