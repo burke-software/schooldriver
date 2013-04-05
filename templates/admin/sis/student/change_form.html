@@ -67,7 +67,7 @@
                        <tr>
                             <td><a href="/admin/schedule/course/{{ course.id }}">{{ course }}</a></td>
                             <td><a href="/admin/schedule/courseenrollment/{{ course.enroll }}"> Enrollment </a></td>
-                            <td><a href="/schedule/teacher_grade/upload/{{ course.id }}"> Grades </a></td>
+                            <td><a href="{% url "ecwsp.grades.views.teacher_grade_upload" course.id %}"> Grades </a></td>
                        </tr>
                   {% endfor %}
              </table>
