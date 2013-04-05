@@ -173,4 +173,52 @@ Some basic Admission Reports are available built in to SWoRD that allows users t
 
 SWoRD will then generate an Excel document detailing some basic admission statistics, such as number of applicants by grade, and number of applicants on a particular level in the process.  
 
+Another available pre-made report is labled as **Funnel**. This report will generate on screen admissions statistics from each step in the admissions process. The report will show total, current, male/female and rejected reasons. A sample of this report is shown below.
 
+To create this funnel, follow the first two steps above, but for step 3 select **Funnel** instead of process statistics. 
+
+----------------------------
+Other Admissions Options
+----------------------------
+The remaining selections found under the main admissions screen: feeder schools, ethnicity choices, religion choices, school types, etc. are there to allow for additional options to be visible from drop down boxes on applicants. For example, if an applicant has applied and his/her religion is not listed, the admissions counselor or worker will select **religion choices**, make their addition, then **save**. Once saved, the new religion choice will be permanently saved in the religion choices drop down box for quick future use. 
+
+====================
+Attendance
+====================
+SWoRD has a built in attendance module that allows teachers to record daily attendance. Attendance requires homerooms to be set up. Homerooms are simply courses that are designated as such. 
+
+
+Taking Attendance
+--------------------
+1. Click **Attendance** from the navigation menu
+2. Teachers will be presented a screen with a list of students currently in their class
+3. Teachers can select to mark all students present by clicking the **Set all to Present** option, or alternatively, teachers can click the drop down box by each student to mark individually.
+
+The **notes** column is a blank box where teachers can enter notes regarding the student's attendance, for example if a student is marked absent, the teacher can indicate in the notes box the reason why said student was absent.
+
+**Things to keep in mind in taking attendance:**
+
+-If a student is already marked absent beforehand, the teacher will see this. At this point, nothing the teacher does will effect it. Keeping it as absent will not change it. Marking present will also not change anything.
+
+-Teachers are not allowed to edit atendance records.
+
+-If two teachers mark the same student absent, it will not be recorded twice. This might happen if a student is enrolled in two different homerooms. If one teacher marks the student absent and the other present, the student will be considered absent. 
+
+--------------------
+Attendance Reports
+--------------------
+Built in to SWoRD are a number of pre-formatted and available attendance reports. The reports are designed to allow for the quick generation of data that a user may need to pull. Below, a list of available reports will be described. 
+
+*All reports are located in the same location and will export into an Excel document or a Word document. To access them, select Attendance from the navigation menu and select Reports.*
+
+**Daily Attendance** This report allows users with permission to generate the daily attendance for all students located in their school, separated by grade. Specifically, the report displays all students not marked Present, so the user who pulls this report will know which student was absent, why, and in what grade that student is in. Additionally, the report will tally the number of students absent by each grade which will be visible towards the bottom of the report. 
+
+**Lookup Student** Allows users to quickly look up a student's attendance record. The user will see the date/reasons for all days that student was marked absent/tardy/late excused, etc. in a Microsoft Word document. 
+
+**Perfect Attendance Certificates** This report will produce a Word document with a list of student names who have zero absenses and tardies for the date range and/or year you set.
+
+**Daily Attendance Stats** Will produce an Excel document showing the date, number present, number absent and absent percentage. Users can select a range of dates or marking periods.
+
+**By Student Report** Produces a detailed Excel document covering every enrolled student, and displaying a tally of all absences and tardies, including what type of absence it was- excused, medical, holiday, religious, etc.
+
+**Aggregate Report** Allows users to see a combined tally of all absences for the school, given a marking period or date range. Additionally, the report will produce an absolute Absent Percentage for the entire school.
