@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+    {{ formset.media }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            grappelli.initDateAndTimePicker();
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <h2> Select Grading Method </h2>
+    <p>
+	There may be multiple ways for you to grade or view grades. Please select one. You may change it after your
+	selection.
+    </p>
+    <form method="post" action="">
+        {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
+	    <div>
+		<button style="width:auto" type="submit" name="choice" value="O" class="grp-button">Online Gradebook</button>    
+	    </div>
+	{% endif %}
+	{% if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS %}
+	    <div>
+		<button style="width:auto" type="submit" name="choice" value="E" class="grp-button">Sync from Engrade</button>    
+	    </div>
+	{% endif %}
+	{% if allow_spreadsheet %}
+	    <div>
+		<button style="width:auto" type="submit" name="choice" value="S" class="grp-button">Import Spreadsheet</button>
+	    </div>
+	{% endif %}
+	{% if allow_manual %}
+	    <div>
+		<button style="width:auto" type="submit" name="choice" value="M" class="grp-button">Manual Entry</button>
+	    </div>
+	{% endif %}
+    </form>
+{% endblock %}
+
