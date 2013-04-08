@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.core.servers.basehttp import FileWrapper
 
-from ecwsp.sis.models import SchoolYear, Configuration
+from ecwsp.sis.models import SchoolYear, Configuration, UserPreference
 from ecwsp.sis.uno_report import uno_save
 from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
