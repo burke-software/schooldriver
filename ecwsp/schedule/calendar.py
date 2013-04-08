@@ -69,12 +69,13 @@ class Calendar:
                 days.append(day[1])
                 arr_days.append(day)
                 
+        only_active = Configuration.get_or_default("Only Active Classes in Schedule", "False").value
+    
+        
         for period in periods:
             period.days = []
             for day in arr_days:
-                if Configuration.get_or_default("Only Active Classes in Schedule", "False").value == "True" \
-                or Configuration.get_or_default("Only Active Classes in Schedule", "False").value == "true" \
-                or Configuration.get_or_default("Only Active Classes in Schedule", "False").value == "T":
+                if  only_active in ['T', 'True', '1', 't', 'true']:
                     course = course_meets.filter(day=day[0], period=period, course__active=True)
                 else:
                     course = course_meets.filter(day=day[0], period=period)
