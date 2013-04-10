@@ -40,7 +40,7 @@ class CalculationRule(models.Model):
     ''' A per-year GPA calculation rule. It should also be applied to future years unless a more current rule exists.
     '''
     # Potential calculation components: career, year, marking period, course
-    first_year_effective = models.ForeignKey('sis.SchoolYear', help_text='Rule also applies to subsequent years unless a more recent rule exists.')
+    first_year_effective = models.ForeignKey('sis.SchoolYear', unique=True, help_text='Rule also applies to subsequent years unless a more recent rule exists.')
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, default=4)
     decimal_places = models.IntegerField(default=2)
 
@@ -165,7 +165,7 @@ class Mark(models.Model):
     normalized_mark = models.FloatField(blank=True, null=True)
     
     class Meta:
-        unique_together = ('item', 'student',)
+        unique_together = ('item', 'demonstration', 'student',)
     
     
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
