@@ -295,7 +295,7 @@ def discipline_report_view(request):
                             row.append(disciplines.filter(teacher=teacher, action=action).count())
                         data.append(row)
                     
-                    report.addSheet(data, titles=titles, heading="By Teachers")
+                    report.add_sheet(data, header_row=titles, heading="By Teachers")
                     return report.as_download()
                     
                 elif 'aggr' in request.POST:
