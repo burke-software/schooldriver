@@ -660,6 +660,14 @@ class HtmlDiff:
 
     def get(self):
         '''Produces the result.'''
+        # Normally, if self.old is empty, the whole self.new should be
+        # considered as inserted text. But see this line:
         if not self.old or not self.old.strip(): return self.new
+        # Why? This is for avoiding problems in the case of cumulative diffs.
+        # A cumulative diff means: calling HtmlDiff with, as old value, the
+        # result of a previous call to HtmlDiff. In this case, if the whole text
+        # is already considered as inserted, we will already have overlaps in
+        # the next diff. Overlaps are hard to manage, so we avoid to get them
+        # as a starting point when computing cumulative diffs.
         return self.getHtmlDiff(self.old, self.new, '\n')
 # ------------------------------------------------------------------------------

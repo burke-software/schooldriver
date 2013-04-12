@@ -23,7 +23,7 @@ from UserDict import UserDict
 
 import appy.pod, time, cgi
 from appy.pod import PodError
-from appy.shared import mimeTypesExts
+from appy.shared import mimeTypes, mimeTypesExts
 from appy.shared.xml_parser import XmlElement
 from appy.shared.utils import FolderDeleter, executeCommand
 from appy.shared.utils import FileWrapper
@@ -40,10 +40,10 @@ RESULT_FILE_EXISTS = 'Result file "%s" exists.'
 CANT_WRITE_RESULT = 'I cannot write result file "%s". %s'
 CANT_WRITE_TEMP_FOLDER = 'I cannot create temp folder "%s". %s'
 NO_PY_PATH = 'Extension of result file is "%s". In order to perform ' \
-             'conversion from ODT to this format we need to call OpenOffice. ' \
+             'conversion from ODT to this format we need to call LibreOffice. ' \
              'But the Python interpreter which runs the current script does ' \
              'not know UNO, the library that allows to connect to ' \
-             'OpenOffice in server mode. If you can\'t install UNO in this ' \
+             'LibreOffice in server mode. If you can\'t install UNO in this ' \
              'Python interpreter, you can specify, in parameter ' \
              '"pythonWithUnoPath", the path to a UNO-enabled Python ' \
              'interpreter. One such interpreter may be found in ' \
@@ -57,12 +57,11 @@ BLANKS_IN_PATH = 'Blanks were found in path "%s". Please use the DOS-names ' \
 BAD_RESULT_TYPE = 'Result "%s" has a wrong extension. Allowed extensions ' \
                   'are: "%s".'
 CONVERT_ERROR = 'An error occurred during the conversion. %s'
-BAD_OO_PORT = 'Bad OpenOffice port "%s". Make sure it is an integer.'
+BAD_OO_PORT = 'Bad LibreOffice port "%s". Make sure it is an integer.'
 XHTML_ERROR = 'An error occurred while rendering XHTML content.'
-WARNING_INCOMPLETE_ODT = 'Warning: your ODT file may not be complete (ie ' \
-                         'imported documents may not be present). This is ' \
-                         'because we could not connect to OpenOffice in ' \
-                         'server mode: %s'
+WARNING_INCOMPLETE_OD = 'Warning: your OpenDocument file may not be complete ' \
+  '(ie imported documents may not be present). This is because we could not ' \
+  'connect to LibreOffice in server mode: %s'
 DOC_NOT_SPECIFIED = 'Please specify a document to import, either with a ' \
                     'stream (parameter "content") or with a path (parameter ' \
                     '"at")'
@@ -92,6 +91,8 @@ STYLES_POD_FONTS = '<@style@:font-face @style@:name="PodStarSymbol" ' \
 
 # ------------------------------------------------------------------------------
 class Renderer:
+    templateTypes = ('odt', 'ods') # Types of POD templates
+
     def __init__(self, template, context, result, pythonWithUnoPath=None,
                  ooPort=2002, stylesMapping={}, forceOoCall=False,
                  finalizeFunction=None, overwriteExisting=False,
@@ -416,29 +417,17 @@ class Renderer:
                 FolderDeleter.delete(self.tempFolder)
             raise po
 
-    def reportProblem(self, msg, resultType):
-        '''When trying to call OO in server mode for producing ODT
-           (=forceOoCall=True), if an error occurs we still have an ODT to
-           return to the user. So we produce a warning instead of raising an
-           error.'''
-        if (resultType == 'odt') and self.forceOoCall:
-            print WARNING_INCOMPLETE_ODT % msg
-        else:
-            raise msg
-
-    def callOpenOffice(self, resultOdtName, resultType):
-        '''Call Open Office in server mode to convert or update the ODT
-           result.'''
-        ooOutput = ''
+    def callLibreOffice(self, resultName, resultType):
+        '''Call LibreOffice in server mode to convert or update the result.'''
+        loOutput = ''
         try:
             if (not isinstance(self.ooPort, int)) and \
-            (not isinstance(self.ooPort, long)):
+               (not isinstance(self.ooPort, long)):
                 raise PodError(BAD_OO_PORT % str(self.ooPort))
             try:
                 from appy.pod.converter import Converter, ConverterError
                 try:
-                    Converter(resultOdtName, resultType,
-                                self.ooPort).run()
+                    Converter(resultName, resultType, self.ooPort).run()
                 except ConverterError, ce:
                     raise PodError(CONVERT_ERROR % str(ce))
             except ImportError:
@@ -450,35 +439,54 @@ class Renderer:
                     raise PodError(BLANKS_IN_PATH % self.pyPath)
                 if not os.path.isfile(self.pyPath):
                     raise PodError(PY_PATH_NOT_FILE % self.pyPath)
-                if resultOdtName.find(' ') != -1:
-                    qResultOdtName = '"%s"' % resultOdtName
+                if resultName.find(' ') != -1:
+                    qResultName = '"%s"' % resultName
                 else:
-                    qResultOdtName = resultOdtName
+                    qResultName = resultName
                 convScript = '%s/converter.py' % \
                             os.path.dirname(appy.pod.__file__)
                 if convScript.find(' ') != -1:
                     convScript = '"%s"' % convScript
                 cmd = '%s %s %s %s -p%d' % \
-                    (self.pyPath, convScript, qResultOdtName, resultType,
+                    (self.pyPath, convScript, qResultName, resultType,
                     self.ooPort)
-                ooOutput = executeCommand(cmd)
+                loOutput = executeCommand(cmd)
         except PodError, pe:
-            # When trying to call OO in server mode for producing
-            # ODT (=forceOoCall=True), if an error occurs we still
-            # have an ODT to return to the user. So we produce a
-            # warning instead of raising an error.
-            if (resultType == 'odt') and self.forceOoCall:
-                print WARNING_INCOMPLETE_ODT % str(pe)
+            # When trying to call LO in server mode for producing ODT or ODS
+            # (=forceOoCall=True), if an error occurs we have nevertheless
+            # an ODT or ODS to return to the user. So we produce a warning
+            # instead of raising an error.
+            if (resultType in self.templateTypes) and self.forceOoCall:
+                print WARNING_INCOMPLETE_OD % str(pe)
             else:
                 raise pe
-        return ooOutput
+        return loOutput
+
+    def getTemplateType(self):
+        '''Identifies the type of the pod template in self.template
+           (ods or odt). If self.template is a string, it is a file name and we
+           simply get its extension. Else, it is a binary file in a StringIO
+           instance, and we seek the mime type from the first bytes.'''
+        if isinstance(self.template, basestring):
+            res = os.path.splitext(self.template)[1][1:]
+        else:
+            # A StringIO instance
+            self.template.seek(0)
+            firstBytes = self.template.read(90)
+            firstBytes = firstBytes[firstBytes.index('mimetype')+8:]
+            if firstBytes.startswith(mimeTypes['ods']):
+                res = 'ods'
+            else:
+                # We suppose this is ODT
+                res = 'odt'
+        return res
 
     def finalize(self):
-        '''Re-zip the result and potentially call OpenOffice if target format is
-           not ODT or if forceOoCall is True.'''
-        for odtFile in ('content.xml', 'styles.xml'):
-            shutil.copy(os.path.join(self.tempFolder, odtFile),
-                        os.path.join(self.unzipFolder, odtFile))
+        '''Re-zip the result and potentially call LibreOffice if target format
+           is not among self.templateTypes or if forceOoCall is True.'''
+        for innerFile in ('content.xml', 'styles.xml'):
+            shutil.copy(os.path.join(self.tempFolder, innerFile),
+                        os.path.join(self.unzipFolder, innerFile))
         # Insert dynamic styles
         contentXml = os.path.join(self.unzipFolder, 'content.xml')
         f = file(contentXml)
@@ -494,52 +502,63 @@ class Renderer:
                 self.finalizeFunction(self.unzipFolder)
             except Exception, e:
                 print WARNING_FINALIZE_ERROR % str(e)
-        # Re-zip the result.
-        resultOdtName = os.path.join(self.tempFolder, 'result.odt')
+        # Re-zip the result, first as an OpenDocument file of the same type as
+        # the POD template (odt, ods...)
+        resultExt = self.getTemplateType()
+        resultName = os.path.join(self.tempFolder, 'result.%s' % resultExt)
         try:
-            resultOdt = zipfile.ZipFile(resultOdtName,'w', zipfile.ZIP_DEFLATED)
+            resultZip = zipfile.ZipFile(resultName, 'w', zipfile.ZIP_DEFLATED)
         except RuntimeError:
-            resultOdt = zipfile.ZipFile(resultOdtName,'w')
+            resultZip = zipfile.ZipFile(resultName,'w')
+        # Insert first the file "mimetype" (uncompressed), in order to be
+        # compliant with the OpenDocument Format specification, section 17.4,
+        # that expresses this restriction. Else, libraries like "magic", under
+        # Linux/Unix, are unable to detect the correct mimetype for a pod result
+        # (it simply recognizes it as a "application/zip" and not a
+        # "application/vnd.oasis.opendocument.text)".
+        resultZip.write(os.path.join(self.unzipFolder, 'mimetype'),
+                        'mimetype', zipfile.ZIP_STORED)
         for dir, dirnames, filenames in os.walk(self.unzipFolder):
             for f in filenames:
                 folderName = dir[len(self.unzipFolder)+1:]
-                resultOdt.write(os.path.join(dir, f),
+                # Ignore file "mimetype" that was already inserted.
+                if (folderName == '') and (f == 'mimetype'): continue
+                resultZip.write(os.path.join(dir, f),
                                 os.path.join(folderName, f))
             if not dirnames and not filenames:
                 # This is an empty leaf folder. We must create an entry in the
-                # zip for him
+                # zip for him.
                 folderName = dir[len(self.unzipFolder):]
                 zInfo = zipfile.ZipInfo("%s/" % folderName,time.localtime()[:6])
                 zInfo.external_attr = 48
-                resultOdt.writestr(zInfo, '')
-        resultOdt.close()
-        resultType = os.path.splitext(self.result)[1]
+                resultZip.writestr(zInfo, '')
+        resultZip.close()
+        resultType = os.path.splitext(self.result)[1].strip('.')
         try:
-            if (resultType == '.odt') and not self.forceOoCall:
+            if (resultType in self.templateTypes) and not self.forceOoCall:
                 # Simply move the ODT result to the result
-                os.rename(resultOdtName, self.result)
+                os.rename(resultName, self.result)
             else:
-                if resultType.startswith('.'): resultType = resultType[1:]
-                if not resultType in FILE_TYPES.keys():
+                if resultType not in FILE_TYPES:
                     raise PodError(BAD_RESULT_TYPE % (
                         self.result, FILE_TYPES.keys()))
-                # Call OpenOffice to perform the conversion or document update
-                output = self.callOpenOffice(resultOdtName, resultType)
-                # I (should) have the result. Move it to the correct name
-                resPrefix = os.path.splitext(resultOdtName)[0] + '.'
-                if resultType == 'odt':
+                # Call LibreOffice to perform the conversion or document update.
+                output = self.callLibreOffice(resultName, resultType)
+                # I (should) have the result. Move it to the correct name.
+                resPrefix = os.path.splitext(resultName)[0]
+                if resultType in self.templateTypes:
                     # converter.py has (normally!) created a second file
-                    # suffixed .res.odt
-                    resultName = resPrefix + 'res.odt'
-                    if not os.path.exists(resultName):
-                        resultName = resultOdtName
+                    # suffixed .res.[resultType]
+                    finalResultName = '%s.res.%s' % (resPrefix, resultType)
+                    if not os.path.exists(finalResultName):
+                        finalResultName = resultName
                         # In this case OO in server mode could not be called to
                         # update indexes, sections, etc.
                 else:
-                    resultName = resPrefix + resultType
-                if not os.path.exists(resultName):
+                    finalResultName = '%s.%s' % (resPrefix, resultType)
+                if not os.path.exists(finalResultName):
                     raise PodError(CONVERT_ERROR % output)
-                os.rename(resultName, self.result)
+                os.rename(finalResultName, self.result)
         finally:
             FolderDeleter.delete(self.tempFolder)
 # ------------------------------------------------------------------------------

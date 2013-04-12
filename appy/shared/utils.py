@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,USA.
 
 # ------------------------------------------------------------------------------
-import os, os.path, re, time, sys, traceback, unicodedata, shutil
+import os, os.path, re, time, sys, traceback, unicodedata, shutil, mimetypes
 sequenceTypes = (list, tuple)
 
 # ------------------------------------------------------------------------------
@@ -532,4 +532,20 @@ class FileWrapper:
                 tool.log(CONVERSION_ERROR % (cmd, errorMessage), type='error')
                 return
         return filePath
+
+    def copy(self):
+        '''Returns a copy of this file.'''
+        return FileWrapper(self._zopeFile._getCopy(self._zopeFile))
+
+# ------------------------------------------------------------------------------
+def getMimeType(fileName):
+    '''Tries to guess mime type from p_fileName.'''
+    res, encoding = mimetypes.guess_type(fileName)
+    if not res:
+        if fileName.endswith('.po'):
+            res = 'text/plain'
+            encoding = 'utf-8'
+    if not res: return ''
+    if not encoding: return res
+    return '%s;;charset=%s' % (res, encoding)
 # ------------------------------------------------------------------------------

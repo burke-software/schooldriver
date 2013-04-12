@@ -23,6 +23,11 @@ from appy.pod.odf_parser import OdfEnvironment
 from appy.shared import mimeTypesExts
 from appy.shared.utils import FileWrapper
 from appy.shared.dav import Resource
+# The uuid module is there only if python >= 2.5
+try:
+    import uuid
+except ImportError:
+    uuid = None
 
 # ------------------------------------------------------------------------------
 FILE_NOT_FOUND = "'%s' does not exist or is not a file."
@@ -81,6 +86,15 @@ class DocImporter:
         # ImageImporter adds image-specific attrs, through
         # ImageImporter.setImageInfo.
 
+    def getUuid(self):
+        '''Creates a unique id for images/documents to be imported into an
+           ODT document.'''
+        if uuid:
+            return uuid.uuid4().hex
+        else:
+            # The uuid module is not there. Generate a UUID based on random.
+            return 'f%d.%f' % (random.randint(0,1000), time.time())
+
     def getImportFolder(self):
         '''This method must be overridden and gives the path where to dump the
            content of the document or image. In the case of a document it is a
@@ -95,7 +109,7 @@ class DocImporter:
                 format = '' # We will know it only after the HTTP GET.
             else:
                 format = os.path.splitext(at)[1][1:]
-        fileName = 'f.%d.%f.%s' % (random.randint(0,10), time.time(), format)
+        fileName = '%s.%s' % (self.getUuid(), format)
         return os.path.abspath('%s/%s' % (self.importFolder, fileName))
 
     def moveFile(self, at, importPath):
@@ -160,6 +174,8 @@ pxToCm = 44.173513561
 def getSize(filePath, fileType):
     '''Gets the size of an image by reading first bytes.'''
     x, y = (None, None)
+    # Get fileType from filePath if not given.
+    if not fileType: fileType = os.path.splitext(filePath)[1][1:]
     f = file(filePath, 'rb')
     if fileType in jpgTypes:
         # Dummy read to skip header ID
@@ -288,7 +304,6 @@ class ImageImporter(DocImporter):
         t = self.textNs
         x = self.linkNs
         s = self.svgNs
-        imageName = 'Image%f' % time.time()
         # Compute path to image
         i = self.importPath.rfind(self.pictFolder)
         imagePath = self.importPath[i+1:].replace('\\', '/')
@@ -332,8 +347,8 @@ class ImageImporter(DocImporter):
         image = '<%s:frame %s%s:name="%s" %s:z-index="0" ' \
                 '%s:anchor-type="%s"%s><%s:image %s:type="simple" ' \
                 '%s:show="embed" %s:href="%s" %s:actuate="onLoad"/>' \
-                '</%s:frame>' % (d, styleInfo, d, imageName, d, t, self.anchor,
-                size, d, x, x, x, imagePath, x, d)
+                '</%s:frame>' % (d, styleInfo, d, self.getUuid(), d, t,
+                self.anchor, size, d, x, x, x, imagePath, x, d)
         if hasattr(self, 'wrapInPara') and self.wrapInPara:
             image = '<%s:p>%s</%s:p>' % (t, image, t)
         self.res += image
