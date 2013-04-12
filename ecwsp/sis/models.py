@@ -286,6 +286,10 @@ class EmergencyContactNumber(PhoneNumber):
     contact = models.ForeignKey(EmergencyContact)
     primary = models.BooleanField()
     
+    class Meta:
+        verbose_name = "Student Contact"
+    
+    
     def save(self, *args, **kwargs):
         if self.primary:
             for contact in self.contact.emergencycontactnumber_set.exclude(id=self.id).filter(primary=True):
@@ -444,7 +448,7 @@ class Student(MdlUser, CustomFieldModel):
     family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True)
     alt_email = models.EmailField(blank=True, help_text="Alternative student email that is not their school email.")
     notes = models.TextField(blank=True)
-    emergency_contacts = models.ManyToManyField(EmergencyContact, blank=True)
+    emergency_contacts = models.ManyToManyField(EmergencyContact, verbose_name="Student Contact", blank=True)
     siblings = models.ManyToManyField('Student', blank=True)
     cohorts = models.ManyToManyField(Cohort, through='StudentCohort', blank=True)
     cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
