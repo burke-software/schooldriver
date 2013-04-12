@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from django.utils.html import strip_tags
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F, Sum
 
 from ecwsp.sis.report import *
@@ -70,9 +71,6 @@ class ReportManager(object):
             for question in test.question_set.all():
                 try:
                     answer = test_instance.answerinstance_set.get(question=question)
-                except AnswerInstance.DoesNotExist:
-                    answer = None
-                if answer:
                     row_points.append(answer.points_earned)
                     row_answers.append(strip_tags(answer.answer).strip())
                     i = None
@@ -83,6 +81,10 @@ class ReportManager(object):
                             if x == answer.answer:
                                 break
                         row_abc += [chr(65+i)]
+                except ObjectDoesNotExist:
+                    row_points += ['']
+                    row_answers += ['']
+                    row_abc += ['']
             data_points.append(row_points)
             data_answers.append(row_answers)
             data_abc.append(row_abc)
