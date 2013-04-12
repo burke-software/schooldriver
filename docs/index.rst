@@ -98,7 +98,18 @@ It is possible to assign individual user permissions that are found in one group
 
 Configurations
 ---------------
-SWoRD contains a number of configurations built in that are created with each new instance. 
+SWoRD contains a number of configurations built in that are created with each new instance designed to make functions easier to edit/change or implement. One example includes the configurations for email- in the **How to obtain student email** function, users may designate three values designed to direct SWoRD emails. **Append** apends the domain name after a student's username, for example jstudent@yourdomain.org. **User** takes the email address from the Auth->User record, and **Student** takes the email address marked from the *alt email* field of the student record page. 
+
+Getting Started
+----------------
+
+**Server:** SWoRD can be installed in any platform that can run Django. It should be noted, however that all testing is done in Ubuntu Linux 10.04 with MySQL.
+
+**Client:** SWoRD is divided into two parts, the admin site and the student/company facing site. The student and company facing site is tested in Firefox, Chrome, Opera, and IE 6,7,8. The admin site is tested only in standards compliant browsers such as Firefox, Opera, and Chrome. If using IE, you should install the Chrome Frame add on. 
+
+**Editing Templates** requires office software. Creating report templates require LibreOffice and *must* be saved in ODT format. Keep in mind end users may select their preferred office format preference, so ODT is **NOT** required to just view a report.
+
+Using the ISO supported Open Document format is recommended for best interoperability, however doc and xls binary formats are highly supported. In rare cases formatting may be slightly different in these formats. Office Open XML while supported, is **not** recommended. 
 
 
 =====================
@@ -222,3 +233,47 @@ Built in to SWoRD are a number of pre-formatted and available attendance reports
 **By Student Report** Produces a detailed Excel document covering every enrolled student, and displaying a tally of all absences and tardies, including what type of absence it was- excused, medical, holiday, religious, etc.
 
 **Aggregate Report** Allows users to see a combined tally of all absences for the school, given a marking period or date range. Additionally, the report will produce an absolute Absent Percentage for the entire school.
+
+-------------------
+Editing Attendance
+-------------------
+
+Users with the proper permissions may be allowed to edit attendance for the entire school. To do so,
+
+1. Select **Attendance** from the navigation menu
+2. Click **Edit** from the drop down
+
+The edit screen will display all students who have been marked anything other than *Present*. Users can then enter or make any edits/notes. For example if a student was marked absent, but the school later received a doctor's note, the user can then switch from *Absent* to *Absent Excused* with a note saying- *Doctor Visit*. 
+
+This dashboard also contains a filter option located to the right of the screen, similar to other dashboards in SWoRD. This filter option allows users on this menu to filter by date or date range, and also by attendance status- absent, tardy, absent excused, etc. 
+
+===================
+Discipline
+===================
+
+The discipline module tracks a student’s discipline information, including: infractions, actions to be taken, and the teacher who reported the infraction. Similar to the other modules in SWoRD, discipline reports can be generated and exported into an Excel document for convenience. 
+
+View Discipline
+-----------------
+For fast lookup of a particular student's discipline record, SWoRD allows you to do a quick lookup.
+From the Navigation menu located on top of your page, select **Discipline**, then **View**. SWoRD will open a page with a text box. Begin typing in the name of the student you would like to view, and SWoRD will present you with a list of available students, as shown below:
+
+PICTURE
+
+Once the appropiate student has been selected, SWoRD will present all discipline information that has been input for the student:
+
+PICTURE
+
+-------------------
+Discipline Reports
+-------------------
+
+The Discipline Reports function allows users to pull discipline data, while having the option to filter by action, infraction, time, and minimum number of the previously stated.
+
+IMAGE
+
+**By Student Report** will produce a list of all students who have a record of disciplinary action, including details about the incident- e.g. student broke dress code, had his phone out, etc.
+
+**Aggregate Report** produces an Excel document compiling a tally for each disciplinary incident.
+
+IMAGE
