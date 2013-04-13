@@ -176,7 +176,7 @@ class Applicant(models.Model, CustomFieldModel):
         help_text="Applying for this grade level",
         default=get_year)
     school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True, default=get_school_year)
-    parent_guardians = models.ManyToManyField('sis.EmergencyContact', blank=True, null=True)
+    parent_guardians = models.ManyToManyField('sis.EmergencyContact', verbose_name="Student Contact", blank=True, null=True)
     ethnicity = models.ForeignKey(EthnicityChoice, blank=True, null=True)
     hs_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)
     elem_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)

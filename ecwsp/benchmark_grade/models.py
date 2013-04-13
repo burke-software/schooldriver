@@ -40,7 +40,7 @@ class CalculationRule(models.Model):
     ''' A per-year GPA calculation rule. It should also be applied to future years unless a more current rule exists.
     '''
     # Potential calculation components: career, year, marking period, course
-    first_year_effective = models.ForeignKey('sis.SchoolYear', help_text='Rule also applies to subsequent years unless a more recent rule exists.')
+    first_year_effective = models.ForeignKey('sis.SchoolYear', unique=True, help_text='Rule also applies to subsequent years unless a more recent rule exists.')
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, default=4)
     decimal_places = models.IntegerField(default=2)
 
@@ -128,6 +128,7 @@ class Item(models.Model):
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     assignment_type = models.ForeignKey('AssignmentType', blank=True, null=True)
     benchmark = models.ForeignKey('benchmarks.Benchmark', blank=True, null=True, verbose_name='standard')
+    
     @property
     def benchmark_description(self): return self.benchmark.name
     multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1) # not used yet
@@ -162,6 +163,11 @@ class Mark(models.Model):
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     normalized_mark = models.FloatField(blank=True, null=True)
+    
+    class Meta:
+        unique_together = ('item', 'demonstration', 'student',)
+    
+    
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def save(self, *args, **kwargs):
         if self.mark is not None and self.item.points_possible is not None:
@@ -186,7 +192,11 @@ class Aggregate(models.Model):
     category = models.ForeignKey('Category', blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-
+    
+    class Meta:
+        unique_together = ('student', 'course', 'category', 'marking_period')
+    
+    
     def max(self):
         if self.points_possible is None:
             return None

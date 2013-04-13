@@ -244,18 +244,20 @@ def pod_report_grade(request, template, options, students, format="odt", transcr
                 absent = student.student_attn.filter(status__absent=True, date__range=(mp.start_date, mp.end_date))
                 tardy = student.student_attn.filter(status__tardy=True, date__range=(mp.start_date, mp.end_date))
                 dismissed = student.student_attn.filter(status__code="D", date__range=(mp.start_date, mp.end_date)).count()
-                absent_unexcused = absent.exclude(status__excused=True)
-                tardy_unexcused = tardy.exclude(status__excused=True)
+                absent_unexcused = absent.exclude(status__excused=True).count()
+                tardy_unexcused = tardy.exclude(status__excused=True).count()
+                absent = absent.count()
+                tardy = tardy.count()
                 
-                student.absent_total += absent.count()
-                student.tardy_total += tardy.count()
-                student.absent_unexcused_total += absent_unexcused.count()
-                student.tardy_unexcused_total += tardy_unexcused.count()
+                student.absent_total += absent
+                student.tardy_total += tardy
+                student.absent_unexcused_total += absent_unexcused
+                student.tardy_unexcused_total += tardy_unexcused
                 student.dismissed_total += dismissed
-                setattr(student, "absent" + str(i), absent.count())
-                setattr(student, "tardy" + str(i), tardy.count())
-                setattr(student, "tardy_unexcused" + str(i), tardy_unexcused.count())
-                setattr(student, "absent_unexcused" + str(i), absent_unexcused.count())
+                setattr(student, "absent" + str(i), absent)
+                setattr(student, "tardy" + str(i), tardy)
+                setattr(student, "tardy_unexcused" + str(i), tardy_unexcused)
+                setattr(student, "absent_unexcused" + str(i), absent_unexcused)
                 setattr(student, "dismissed" + str(i), dismissed)
                 i += 1
             while i <= 6:

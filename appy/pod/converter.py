@@ -51,15 +51,15 @@ DOC_NOT_FOUND = 'Document "%s" was not found.'
 URL_NOT_FOUND = 'Doc URL "%s" is wrong. %s'
 BAD_RESULT_TYPE = 'Bad result type "%s". Available types are %s.'
 CANNOT_WRITE_RESULT = 'I cannot write result "%s". %s'
-CONNECT_ERROR = 'Could not connect to OpenOffice on port %d. UNO ' \
-                '(OpenOffice API) says: %s.'
+CONNECT_ERROR = 'Could not connect to LibreOffice on port %d. UNO ' \
+                '(LibreOffice API) says: %s.'
 
 # Some constants ---------------------------------------------------------------
 DEFAULT_PORT = 2002
 
 # ------------------------------------------------------------------------------
 class Converter:
-    '''Converts a document readable by OpenOffice into pdf, doc, txt, rtf...'''
+    '''Converts a document readable by LibreOffice into pdf, doc, txt, rtf...'''
     exeVariants = ('soffice.exe', 'soffice')
     pathReplacements = {'program files': 'progra~1',
                         'openoffice.org 1': 'openof~1',
@@ -72,9 +72,9 @@ class Converter:
         self.resultType = resultType
         self.resultFilter = self.getResultFilter()
         self.resultUrl = self.getResultUrl()
-        self.ooContext = None
-        self.oo = None # The OpenOffice application object
-        self.doc = None # The OpenOffice loaded document
+        self.loContext = None
+        self.oo = None # The LibreOffice application object
+        self.doc = None # The LibreOffice loaded document
 
     def getInputUrls(self, docPath):
         '''Returns the absolute path of the input file. In fact, it returns a
@@ -100,7 +100,7 @@ class Converter:
         return res
 
     def getResultUrl(self):
-        '''Returns the path of the result file in the format needed by OO. If
+        '''Returns the path of the result file in the format needed by LO. If
            the result type and the input type are the same (ie the user wants to
            refresh indexes or some other action and not perform a real
            conversion), the result file is named
@@ -126,7 +126,7 @@ class Converter:
             raise ConverterError(CANNOT_WRITE_RESULT % (res, ioe))
 
     def connect(self):
-        '''Connects to OpenOffice'''
+        '''Connects to LibreOffice'''
         if os.name == 'nt':
             import socket
         import uno
@@ -138,17 +138,17 @@ class Converter:
             resolver = localContext.ServiceManager.createInstanceWithContext(
                 "com.sun.star.bridge.UnoUrlResolver", localContext)
             # Connect to the running office
-            self.ooContext = resolver.resolve(
+            self.loContext = resolver.resolve(
                 'uno:socket,host=localhost,port=%d;urp;StarOffice.' \
                 'ComponentContext' % self.port)
             # Is seems that we can't define a timeout for this method.
             # I need it because, for example, when a web server already listens
-            # to the given port (thus, not a OpenOffice instance), this method
+            # to the given port (thus, not a LibreOffice instance), this method
             # blocks.
-            smgr = self.ooContext.ServiceManager
+            smgr = self.loContext.ServiceManager
             # Get the central desktop object
             self.oo = smgr.createInstanceWithContext(
-                'com.sun.star.frame.Desktop', self.ooContext)
+                'com.sun.star.frame.Desktop', self.loContext)
         except NoConnectException, nce:
             raise ConverterError(CONNECT_ERROR % (self.port, nce))
 
@@ -220,7 +220,7 @@ class Converter:
             raise ConverterError(URL_NOT_FOUND % (self.docPath, iae))
 
     def convertDocument(self):
-        '''Calls OO to perform a document conversion. Note that the conversion
+        '''Calls LO to perform a document conversion. Note that the conversion
            is not really done if the source and target documents have the same
            type.'''
         properties = []
@@ -238,7 +238,7 @@ class Converter:
         self.doc.storeToURL(self.resultUrl, tuple(properties))
 
     def run(self):
-        '''Connects to OO, does the job and disconnects.'''
+        '''Connects to LO, does the job and disconnects.'''
         self.connect()
         self.loadDocument()
         self.convertDocument()
@@ -257,12 +257,12 @@ class ConverterScript:
             '   and   outputType is the output format, that must be one of\n' \
             '         %s.\n' \
             ' "python" should be a UNO-enabled Python interpreter (ie the ' \
-            '  one which is included in the OpenOffice.org distribution).' % \
+            '  one which is included in the LibreOffice distribution).' % \
             str(FILE_TYPES.keys())
     def run(self):
         optParser = OptionParser(usage=ConverterScript.usage)
         optParser.add_option("-p", "--port", dest="port",
-                             help="The port on which OpenOffice runs " \
+                             help="The port on which LibreOffice runs " \
                              "Default is %d." % DEFAULT_PORT,
                              default=DEFAULT_PORT, metavar="PORT", type='int')
         (options, args) = optParser.parse_args()

@@ -16,8 +16,8 @@
 #   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #   MA 02110-1301, USA.
 
-from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark, Category, AggregateTask
-from ecwsp.schedule.models import MarkingPeriod
+from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark, Category, AggregateTask, CalculationRulePerCourseCategory
+from ecwsp.schedule.models import MarkingPeriod, Department
 from ecwsp.grades.models import Grade
 from ecwsp.benchmark_grade.tasks import benchmark_aggregate_task
 from django.db.models import Avg, Sum, Min, Max
@@ -35,7 +35,17 @@ def benchmark_find_calculation_rule(school_year):
         rules = CalculationRule.objects.filter(first_year_effective__start_date__lt=school_year.start_date).order_by('-first_year_effective__start_date')
         if rules:
             rule = rules[0]
+        elif CalculationRule.objects.count() == 0 and Category.objects.count() <= 1:
+            # The school hasn't configured anything; cut them some slack
+            rule = CalculationRule.objects.get_or_create(first_year_effective = school_year)[0]
+            if Category.objects.count() == 1:
+                category = Category.objects.all()[0]
+            else:
+                category = Category.objects.get_or_create(name="Everything")[0]
+            per_course_category = CalculationRulePerCourseCategory.objects.get_or_create(calculation_rule=rule, category=category)[0]
+            per_course_category.apply_to_departments.add(*Department.objects.all())
         else:
+            # The school has touched the configuration; don't guess at what they want
             raise Exception('There is no suitable calculation rule for the school year {}.'.format(school_year))
     return rule
 
@@ -129,7 +139,7 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
         agg = benchmark_get_or_flush(student.aggregate_set, **criteria)
         created = False
     except Aggregate.DoesNotExist:
-        agg = Aggregate(**criteria)
+        agg = Aggregate(student=student, **criteria)
         created = True
     agg.name = silly_name
 
@@ -187,7 +197,7 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
         agg = benchmark_get_or_flush(student.aggregate_set, **criteria)
         created = False
     except Aggregate.DoesNotExist:
-        agg = Aggregate(**criteria)
+        agg = Aggregate(student=student, **criteria)
         created = True
     agg.name = silly_name
 

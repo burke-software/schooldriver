@@ -201,7 +201,7 @@ class ForAction(BufferAction):
             if isCell:
                 currentColIndex += 1
         # Cell: leave the last row with the correct number of cells
-        if isCell and self.exprResult and False:  ## django-sis change
+        if isCell and self.exprResult and False: ## django-sis change
             wrongNbOfCells = (currentColIndex-1) - initialColIndex
             if wrongNbOfCells < 0: # Too few cells for last row
                 for i in range(abs(wrongNbOfCells)):

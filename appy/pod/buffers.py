@@ -139,11 +139,24 @@ class Buffer:
 
     def getLength(self): pass # To be overridden
 
-    def dumpStartElement(self, elem, attrs={}):
+    def dumpStartElement(self, elem, attrs={}, ignoreAttrs=(),
+                         insertAttributesHook=False):
+        '''Inserts into this buffer the start tag p_elem, with its p_attrs,
+           excepted those listed in p_ignoreAttrs. If p_insertAttributesHook
+           is True (works only for MemoryBuffers), we will insert an Attributes
+           instance at the end of the list of dumped attributes, in order to be
+           able, when evaluating the buffer, to dump additional attributes, not
+           known at this dump time.'''
         self.write('<%s' % elem)
         for name, value in attrs.items():
+            if ignoreAttrs and (name in ignoreAttrs): continue
             self.write(' %s=%s' % (name, quoteattr(value)))
+        if insertAttributesHook:
+            res = self.addAttributes()
+        else:
+            res = None
         self.write('>')
+        return res
 
     def dumpEndElement(self, elem):
         self.write('</%s>' % elem)
@@ -178,11 +191,20 @@ class FileBuffer(Buffer):
         except UnicodeDecodeError:
             self.content.write(something)
 
-    def addExpression(self, expression):
+    def addExpression(self, expression, tiedHook=None):
+        # At 2013-02-06, this method was not called within the whole test suite.
         try:
             self.dumpContent(Expression(expression).evaluate(self.env.context))
         except Exception, e:
             PodError.dump(self, EVAL_EXPR_ERROR % (expression, e), dumpTb=False)
+
+    def addAttributes(self):
+        # Into a FileBuffer, it is not possible to insert Attributes. Every
+        # Attributes instance is tied to an Expression; because dumping
+        # expressions directly into FileBuffer instances seems to be a rather
+        # theorical case (see comment inside the previous method), it does not
+        # seem to be a real problem.
+        pass
 
     def pushSubBuffer(self, subBuffer): pass
 
@@ -297,13 +319,20 @@ class MemoryBuffer(Buffer):
                 # Remember where this cell is in the table
                 newElem.colIndex = newElem.tableInfo.curColIndex
 
-    def addExpression(self, expression):
+    def addExpression(self, expression, tiedHook=None):
         # Create the POD expression
         expr = Expression(expression)
-        expr.expr = expression
+        if tiedHook: tiedHook.tiedExpression = expr
         self.elements[self.getLength()] = expr
         self.content += u' '# To be sure that an expr and an elem can't be found
                             # at the same index in the buffer.
+
+    def addAttributes(self):
+        # Create the Attributes instance
+        attrs = Attributes(self.env)
+        self.elements[self.getLength()] = attrs
+        self.content += u' '
+        return attrs
 
     def createAction(self, statementGroup):
         '''Tries to create an action based on p_statementGroup. If the statement
@@ -546,6 +575,8 @@ class MemoryBuffer(Buffer):
                     except Exception, e:
                         PodError.dump(result, EVAL_EXPR_ERROR % (
                             evalEntry.expr, e), dumpTb=False)
+                elif isinstance(evalEntry, Attributes):
+                    result.write(evalEntry.evaluate(self.env.context))
                 else: # It is a subBuffer
                     if evalEntry.action:
                         evalEntry.action.execute()

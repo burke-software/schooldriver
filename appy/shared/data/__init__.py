@@ -163,6 +163,11 @@ nativeNames = {
 # List of languages having direction right-to-left (RTL) -----------------------
 rtlLanguages = ('ar', 'he', 'fa')
 
+# Countries of the "euro" zone
+vatEuroCountries = ('AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'GR', 'ES',
+                    'FI', 'FR', 'GB', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT',
+                    'NL', 'PL' 'PT', 'RO', 'SE', 'SI', 'SK')
+
 # ------------------------------------------------------------------------------
 class Languages:
     '''This class gives access to the language codes and names as standardized
@@ -230,6 +235,8 @@ class Countries:
        (first line has been removed).'''
 
     def __init__(self):
+        # This file has been downloaded from
+        # http://www.iso.org/iso/country_codes.htm and converted to utf-8.
         self.fileName = os.path.dirname(__file__) + '/CountryCodesIso3166.1.txt'
         self.countryCodes = []
         # Names of countries in English

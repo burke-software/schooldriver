@@ -60,10 +60,6 @@ class OdInsert:
 class PodEnvironment(OdfEnvironment):
     '''Contains all elements representing the current parser state during
        parsing.'''
-    # Elements we must ignore (they will not be included in the result
-    ignorableElements = None # Will be set after namespace propagation
-    # Elements that may be impacted by POD statements
-    impactableElements = None # Idem
     # Possibles modes
     # ADD_IN_BUFFER: when encountering an impactable element, we must
     #                continue to dump it in the current buffer
@@ -92,6 +88,10 @@ class PodEnvironment(OdfEnvironment):
         self.mode = self.ADD_IN_SUBBUFFER
         # Current state
         self.state = self.READING_CONTENT
+        # Elements we must ignore (they will not be included in the result)
+        self.ignorableElements = None # Will be set after namespace propagation
+        # Elements that may be impacted by POD statements
+        self.impactableElements = None # Idem
         # Stack of currently visited tables
         self.tableStack = []
         self.tableIndex = -1
@@ -108,6 +108,11 @@ class PodEnvironment(OdfEnvironment):
         self.ifActions = []
         # Currently walked named "if" actions
         self.namedIfActions = {} #~{s_statementName: IfAction}~
+        # Currently parsed expression within an ODS template
+        self.currentOdsExpression = None
+        self.currentOdsHook = None
+        # Names of some tags, that we will compute after namespace propagation
+        self.tags = None
 
     def getTable(self):
         '''Gets the currently parsed table.'''
@@ -155,15 +160,15 @@ class PodEnvironment(OdfEnvironment):
             self.getTable().curRowAttrs = self.currentElem.attrs
         elif elem == Cell.OD.elem:
             colspan = 1
-            attrSpan = '%s:number-columns-spanned' % tableNs
+            attrSpan = self.tags['number-columns-spanned']
             if self.currentElem.attrs.has_key(attrSpan):
                 colspan = int(self.currentElem.attrs[attrSpan])
             self.getTable().curColIndex += colspan
-        elif elem == ('%s:table-column' % tableNs):
+        elif elem == self.tags['table-column']:
             attrs = self.currentElem.attrs
-            if attrs.has_key('%s:number-columns-repeated' % tableNs):
+            if attrs.has_key(self.tags['number-columns-repeated']):
                 self.getTable().nbOfColumns += int(
-                    attrs['%s:number-columns-repeated' % tableNs])
+                    attrs[self.tags['number-columns-repeated']])
             else:
                 self.getTable().nbOfColumns += 1
         return ns
@@ -188,8 +193,29 @@ class PodEnvironment(OdfEnvironment):
             xmlElemDef = eval(elemName[0].upper() + elemName[1:]).OD
             elemFullName = xmlElemDef.getFullName(ns)
             xmlElemDef.__init__(elemFullName)
-        self.ignorableElements = ('%s:tracked-changes' % ns[self.NS_TEXT],
-                                  '%s:change' % ns[self.NS_TEXT])
+        # Create a table of names of used tags and attributes (precomputed,
+        # including namespace, for performance).
+        self.tags = {
+          'tracked-changes': '%s:tracked-changes' % ns[self.NS_TEXT],
+          'change': '%s:change' % ns[self.NS_TEXT],
+          'annotation': '%s:annotation' % ns[self.NS_OFFICE],
+          'change-start': '%s:change-start' % ns[self.NS_TEXT],
+          'change-end': '%s:change-end' % ns[self.NS_TEXT],
+          'conditional-text': '%s:conditional-text' % ns[self.NS_TEXT],
+          'table-cell': '%s:table-cell' % ns[self.NS_TABLE],
+          'formula': '%s:formula' % ns[self.NS_TABLE],
+          'value-type': '%s:value-type' % ns[self.NS_OFFICE],
+          'value': '%s:value' % ns[self.NS_OFFICE],
+          'string-value': '%s:string-value' % ns[self.NS_OFFICE],
+          'span': '%s:span' % ns[self.NS_TEXT],
+          'number-columns-spanned': '%s:number-columns-spanned' % \
+                                    ns[self.NS_TABLE],
+          'number-columns-repeated': '%s:number-columns-repeated' % \
+                                    ns[self.NS_TABLE],
+          'table-column': '%s:table-column' % ns[self.NS_TABLE],
+        }
+        self.ignorableElements = (self.tags['tracked-changes'],
+                                  self.tags['change'])
         self.impactableElements = (
            Text.OD.elem, Title.OD.elem, Table.OD.elem, Row.OD.elem,
            Cell.OD.elem, Section.OD.elem)
@@ -208,14 +234,40 @@ class PodParser(OdfParser):
         ns = e.onStartElement()
         officeNs = ns[e.NS_OFFICE]
         textNs = ns[e.NS_TEXT]
+        tableNs = ns[e.NS_TABLE]
         if elem in e.ignorableElements:
             e.state = e.IGNORING
-        elif elem == ('%s:annotation' % officeNs):
+        elif elem == e.tags['annotation']:
+            # Be it in an ODT or ODS template, an annotation is considered to
+            # contain a POD statement.
             e.state = e.READING_STATEMENT
-        elif (elem == ('%s:change-start' % textNs)) or \
-             (elem == ('%s:conditional-text' % textNs)):
+        elif elem in (e.tags['change-start'], e.tags['conditional-text']):
+            # In an ODT template, any text in track-changes or any conditional
+            # field is considered to contain a POD expression.
             e.state = e.READING_EXPRESSION
             e.exprHasStyle = False
+        elif (elem == e.tags['table-cell']) and \
+             attrs.has_key(e.tags['formula']) and \
+             (attrs[e.tags['value-type']] == 'string') and \
+             attrs[e.tags['formula']].startswith('of:="'):
+            # In an ODS template, any cell containing a formula of type "string"
+            # and whose content is expressed as a string between double quotes
+            # (="...") is considered to contain a POD expression. But here it
+            # is a special case: we need to dump the cell; the expression is not
+            # directly contained within this cell; the expression will be
+            # contained in the next inner paragraph. So we must here dump the
+            # cell, but without some attributes, because the "formula" will be
+            # converted to the result of evaluating the POD expression.
+            if e.mode == e.ADD_IN_SUBBUFFER:
+                e.addSubBuffer()
+            e.currentBuffer.addElement(e.currentElem.name)
+            hook = e.currentBuffer.dumpStartElement(elem, attrs,
+                     ignoreAttrs=(e.tags['formula'], e.tags['string-value'],
+                                  e.tags['value-type']),
+                     insertAttributesHook=True)
+            # We already have the POD expression: remember it on the env.
+            e.currentOdsExpression = attrs[e.tags['string-value']]
+            e.currentOdsHook = hook
         else:
             if e.state == e.IGNORING:
                 pass
@@ -228,8 +280,7 @@ class PodParser(OdfParser):
             elif e.state == e.READING_STATEMENT:
                 pass
             elif e.state == e.READING_EXPRESSION:
-                if (elem == ('%s:span' % textNs)) and \
-                   not e.currentContent.strip():
+                if (elem == (e.tags['span'])) and not e.currentContent.strip():
                     e.currentBuffer.dumpStartElement(elem, attrs)
                     e.exprHasStyle = True
         e.manageInserts()
@@ -241,7 +292,7 @@ class PodParser(OdfParser):
         textNs = ns[e.NS_TEXT]
         if elem in e.ignorableElements:
             e.state = e.READING_CONTENT
-        elif elem == ('%s:annotation' % officeNs):
+        elif elem == e.tags['annotation']:
             # Manage statement
             oldCb = e.currentBuffer
             actionElemIndex = oldCb.createAction(e.currentStatement)
@@ -258,6 +309,13 @@ class PodParser(OdfParser):
             if e.state == e.IGNORING:
                 pass
             elif e.state == e.READING_CONTENT:
+                # Dump the ODS POD expression if any
+                if e.currentOdsExpression:
+                    e.currentBuffer.addExpression(e.currentOdsExpression,
+                                                  tiedHook=e.currentOdsHook)
+                    e.currentOdsExpression = None
+                    e.currentOdsHook = None
+                # Dump the ending tag
                 e.currentBuffer.dumpEndElement(elem)
                 if elem in e.impactableElements:
                     if isinstance(e.currentBuffer, MemoryBuffer):
@@ -287,14 +345,14 @@ class PodParser(OdfParser):
                         e.currentStatement.append(statementLine)
                     e.currentContent = ''
             elif e.state == e.READING_EXPRESSION:
-                if (elem == ('%s:change-end' % textNs)) or \
-                   (elem == ('%s:conditional-text' % textNs)):
+                if (elem == e.tags['change-end']) or \
+                   (elem == e.tags['conditional-text']):
                     expression = e.currentContent.strip()
                     e.currentContent = ''
                     # Manage expression
                     e.currentBuffer.addExpression(expression)
                     if e.exprHasStyle:
-                        e.currentBuffer.dumpEndElement('%s:span' % textNs)
+                        e.currentBuffer.dumpEndElement(e.tags['span'])
                     e.state = e.READING_CONTENT
 
     def characters(self, content):
@@ -302,7 +360,12 @@ class PodParser(OdfParser):
         if e.state == e.IGNORING:
             pass
         elif e.state == e.READING_CONTENT:
-            e.currentBuffer.dumpContent(content)
+            if e.currentOdsExpression:
+                # Do not write content if we have encountered an ODS expression:
+                # we will replace this content with the expression's result.
+                pass
+            else:
+                e.currentBuffer.dumpContent(content)
         elif e.state == e.READING_STATEMENT:
             if e.currentElem.elem.startswith(e.namespaces[e.NS_TEXT]):
                 e.currentContent += content

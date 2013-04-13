@@ -73,7 +73,7 @@ class StudentCohortInline(admin.TabularInline):
 class StudentECInline(admin.TabularInline):
     model = Student.emergency_contacts.through
     extra = 0
-    classes = ('grp-collapse grp-closed',)
+    classes = ('grp-collapse grp-open',)
     
 
 class MarkingPeriodInline(admin.StackedInline):

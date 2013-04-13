@@ -999,7 +999,7 @@ def take_attendance(request, work_day=None):
             work_day = StudentWorker.dayOfWeek[today.weekday()][0]
         except IndexError:
             work_day = StudentWorker.dayOfWeek[0][0]
-    students = StudentWorker.objects.filter(day=work_day)
+    students = StudentWorker.objects.filter(day=work_day, inactive=False)
     extra = students.count() - students.filter(attendance__absence_date=today).count()
     AttendanceFormSet = modelformset_factory(Attendance, form=QuickAttendanceForm, extra=extra)
     

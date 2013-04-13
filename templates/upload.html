@@ -15,6 +15,13 @@
 		<a href="/media/{{ error_filename }}" >Download non imported data with errors</a>
 	{% endif %}
 	
+    
+    {% if 'simple_import' in settings.INSTALLED_APPS %}
+      <p>
+	Try our new import tool! <a href="{% url "simple_import.views.start_import" %}">Click here</a>
+      </p>
+    {% endif %}
+    
     <h3>Import Tool</h3>
     <dl>
         <dt>Tips</dt>
