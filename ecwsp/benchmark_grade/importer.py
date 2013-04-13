@@ -151,7 +151,7 @@ class BenchmarkGradeImporter(Importer):
                             continue
                         else:
                             raise
-                    mark.description = '___IMPORTED___'
+                    #mark.description = '___IMPORTED___'
                     mark.mark = markVal
                     mark.save()
                     mark_count += 1
@@ -393,12 +393,12 @@ class BenchmarkGradeImporter(Importer):
                 if i.demonstration_set.count():
                     for d in i.demonstration_set.all():
                         if not Mark.objects.filter(item=i, demonstration=d, student=s):
-                            m = Mark(item=i, demonstration=d, student=s, description='___FILLER_AUTO___')
+                            m = Mark(item=i, demonstration=d, student=s) #, description='___FILLER_AUTO___')
                             m.save()
                             filler_count += 1
                 else:
                     if not Mark.objects.filter(item=i, student=s):
-                        m = Mark(item=i, student=s, description='___FILLER_AUTO___')
+                        m = Mark(item=i, student=s) #, description='___FILLER_AUTO___')
                         m.save()
                         filler_count += 1
 
