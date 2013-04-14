@@ -13,6 +13,10 @@ _DEFAULTS = {
     'CAS_RETRY_LOGIN': False,
     'CAS_SERVER_URL': None,
     'CAS_VERSION': '2',
+    'CAS_GATEWAY': False,
+    'CAS_PROXY_CALLBACK': None,
+    'CAS_RESPONSE_CALLBACKS': None,
+    'CAS_CUSTOM_FORBIDDEN':None
 }
 
 for key, value in _DEFAULTS.iteritems():
