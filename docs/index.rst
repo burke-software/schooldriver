@@ -111,6 +111,10 @@ Getting Started
 
 Using the ISO supported Open Document format is recommended for best interoperability, however doc and xls binary formats are highly supported. In rare cases formatting may be slightly different in these formats. Office Open XML while supported, is **not** recommended. 
 
+====================
+Student Information System (SIS)
+====================
+The SIS is the central module of SWORD which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please click on the pertinent headings. 
 
 =====================
 Admissions
@@ -192,6 +196,41 @@ To create this funnel, follow the first two steps above, but for step 3 select *
 Other Admissions Options
 ----------------------------
 The remaining selections found under the main admissions screen: feeder schools, ethnicity choices, religion choices, school types, etc. are there to allow for additional options to be visible from drop down boxes on applicants. For example, if an applicant has applied and his/her religion is not listed, the admissions counselor or worker will select **religion choices**, make their addition, then **save**. Once saved, the new religion choice will be permanently saved in the religion choices drop down box for quick future use. 
+
+=======================
+Students
+=======================
+
+Adding Students
+--------------------
+image 01
+
+1. From Home, click on **Student** in the top navigation bar and click **Edit**.
+
+image 02
+
+2. On the top right, click the **+ Add student** button.
+
+image03
+
+3. Enter the student’s Last Name, First Name, and Username, which are required fields, and any additional information including Birth Date, Student Contact, and Notes. Click the **Save** button at the bottom right to complete the input of student information.
+
+**Notes**
+
+* Year classifications are the various grades SWORD supports and their associated names. The defaults in SWORD are:
+
+  - Freshman: 9
+  - Sophomore: 10
+  - Junior: 11
+  - Senior: 12
+
+(Image04 of Filter function for Class of 2015)
+
+* Use the **Filter** function to filter students by Inactivity, Year classification, or Graduating Year. 
+
+(Image05 of Year sorting)
+
+* Click on the column heading **Year** to sort students by Year classification in ascending or descending order. 
 
 ====================
 Attendance
