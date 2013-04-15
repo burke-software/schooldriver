@@ -203,17 +203,18 @@ Students
 
 Adding Students
 --------------------
-image 01
 
 1. From Home, click on **Student** in the top navigation bar and click **Edit**.
 
-image 02
+image 01
 
 2. On the top right, click the **+ Add student** button.
 
-image03
+image 02
 
 3. Enter the student’s Last Name, First Name, and Username, which are required fields, and any additional information including Birth Date, Student Contact, and Notes. Click the **Save** button at the bottom right to complete the input of student information.
+
+image 03
 
 **Notes**
 
@@ -224,13 +225,13 @@ image03
   - Junior: 11
   - Senior: 12
 
-(Image04 of Filter function for Class of 2015)
-
 * Use the **Filter** function to filter students by Inactivity, Year classification, or Graduating Year. 
 
-(Image05 of Year sorting)
+(Image04 of Filter function for Class of 2015)
 
 * Click on the column heading **Year** to sort students by Year classification in ascending or descending order. 
+
+(Image05 of Year sorting)
 
 ====================
 Attendance
