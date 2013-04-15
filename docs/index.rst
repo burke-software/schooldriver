@@ -114,7 +114,7 @@ Using the ISO supported Open Document format is recommended for best interoperab
 ====================
 Student Information System (SIS)
 ====================
-The SIS is the central module of SWORD which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please follow the pertinent headings. 
+The SIS is the central module of SWoRD which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please follow the pertinent headings. 
 
 =====================
 Admissions
