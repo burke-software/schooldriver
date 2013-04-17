@@ -99,6 +99,33 @@ SWoRD allows administrators to control individual user permissions. To simplify 
 
 It is possible to assign individual user permissions that are found in one group, and assign it to an individual user that only has permissions from another group. For example, you can assign a teacher (who only has teacher permissions) the ability to view a student's counseling records or work study information. This allows school administrators to create unique users with flexible permissions. Further, administrators can create super users who have all permissions from each group. 
 
+Importing Data Into Sword
+--------------------------
+SWoRD supports the import of data into its database.
+
+In order to make the import process as simple as possible for schools transitioning into SWoRD, or schools preparing for the new school year, SWoRD allows data to be imported via Excel or LibreOffice document.
+
+There are two easy ways to import data, both of which *require* the appropiate permissions for the user. The first method is described below:
+
+1. To access the import screen, select admin > school import from the navigation menu located at the top right hand corner of the SWoRD dashboard.
+2. Download the sample data from the **sample data** link available in light blue font. The sample data is basically a pre-formatted Excel/Office file that shows you what can be imported.
+3. Follow the outline on the appropiate tab- ex. if importing students, you should follow the students tab. if importing applicants, the applicants tab, etc. 
+4. You may delete all the other tabs once you've decide what model you are importing, so you are left with say only the *students* tab.
+5. Enter all information about the student you would like to have entered. **NOTE:** For every tab, a unique ID or student username is required. This allows SWoRD to identify which student the data is pertinent to. If you use unique ID and not a username, SWoRD will automatically generate a username using a combination of the first and last name. e.g. Joe Student would be jstudent. 
+6. Leave blank any columns you don't have the data or don't wish to import.
+7. Save
+8. Once saved, you may return to the import screen and upload your xls or ods file you just created.
+
+The next, newer method below allows users to set up their Excel/Open Office document without specifying a tab name or following any specific format in columns.
+
+1. Same as above, select admin > school import from the navigation menu.
+2. Select **Click here** located at the very top of this page in blue text. This will take you to an import screen.
+3. Fill out name 
+4. Select browse to locate your Excel document
+5. Import type- select from create new records, create and update records, and only update records. 
+6. Select a model. Model refers to where you are importing the data into. Select students for students, applicants for applicants, etc.
+7. Submit Query
+8. The next page will verify your column data and allow you to preview then run the import.
 
 Configurations
 ---------------
@@ -114,6 +141,24 @@ Getting Started
 **Editing Templates** requires office software. Creating report templates require LibreOffice and *must* be saved in ODT format. Keep in mind end users may select their preferred office format preference, so ODT is **NOT** required to just view a report.
 
 Using the ISO supported Open Document format is recommended for best interoperability, however doc and xls binary formats are highly supported. In rare cases formatting may be slightly different in these formats. Office Open XML while supported, is **not** recommended. 
+
+Log Entries
+--------------
+Log entries record all actions completed on a SWoRD's instance. This allows administrators and superusers to track down and locate any changes made on specific dates/times. Admins will see a dashboard similar to what is shown below:
+
+IMAGE
+
+**User** refers to which user made a change.
+
+**Action time** details the date and time the change was made.
+
+**Content type** is the model that the change was made on. ex. applicant, student, etc.
+
+**Object repr** puts a specific name to the content type- ex. if applicant was the content type, then object repr will list an exact name- Joe Student
+
+**Is Addition, Is Deletion, Is Change-** True/False indicator showing the admin what type of action was completed.
+
+Similar to other dashboards in SWoRD, users may sort by clicking column headers and using the filter tool.
 
 ====================
 Student Information System (SIS)
@@ -324,5 +369,14 @@ IMAGE
 **By Student Report** will produce a list of all students who have a record of disciplinary action, including details about the incident- e.g. student broke dress code, had his phone out, etc.
 
 **Aggregate Report** produces an Excel document compiling a tally for each disciplinary incident.
+
+IMAGE
+
+-------------------
+Discipline Actions
+-------------------
+The **Discipline Actions** option located under the **Discipline** heading on the main SWoRD dashboard will control what disciplinary actions teachers have available to choose from when reporting students via drop down box.Accordingly, schools beginning to use SWoRD should add all discipline actions that the school currently utilizes. 
+
+Clicking **Discipline Actions** will present the user with a list of current discipline actions. To add an action, simply select **Add Discipline Action** from that screen, create a new discipline, then save. 
 
 IMAGE
