@@ -198,11 +198,8 @@ Other Admissions Options
 The remaining selections found under the main admissions screen: feeder schools, ethnicity choices, religion choices, school types, etc. are there to allow for additional options to be visible from drop down boxes on applicants. For example, if an applicant has applied and his/her religion is not listed, the admissions counselor or worker will select **religion choices**, make their addition, then **save**. Once saved, the new religion choice will be permanently saved in the religion choices drop down box for quick future use. 
 
 =======================
-Students
-=======================
-
 Adding Students
---------------------
+=======================
 
 1. From Home, click on **Student** in the top navigation bar and click **Edit**.
 
@@ -216,15 +213,6 @@ image 02
 
 image 03
 
-**Notes**
-
-* Year classifications are the various grades SWORD supports and their associated names. The defaults in SWORD are:
-
-  - Freshman: 9
-  - Sophomore: 10
-  - Junior: 11
-  - Senior: 12
-
 * Use the **Filter** function to filter students by Inactivity, Year classification, or Graduating Year. 
 
 (Image04 of Filter function for Class of 2015)
@@ -232,6 +220,23 @@ image 03
 * Click on the column heading **Year** to sort students by Year classification in ascending or descending order. 
 
 (Image05 of Year sorting)
+
+School Years
+-----------------------
+The starting, ending, and graduation dates of school years may be stored here. One year may be denoted as the active year, which may be used for calculations such as the number of discipline incidents.
+
+Year Classifications
+-----------------------
+Year classifications are the various grades SWORD supports and their associated names. The defaults in SWORD are:
+
+- Freshman: 9
+- Sophomore: 10
+- Junior: 11
+- Senior: 12
+
+Cohorts
+-----------------------
+Cohorts are groupings of students within a school; the registrar may find this tool useful. For example, an "advanced class" cohort may be enrolled in particular classes, and homeroom placements may also be organized using cohorts.
 
 ====================
 Attendance
