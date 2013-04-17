@@ -5,16 +5,17 @@ SWoRD Documentation
 :Date: March 29, 2013
 
 
-Django-sis/SWoRD is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.), and is intended for schools with or without work study programs. SWoRD is able to integrate with Naviance Premium Accounts for college preparedness, Engrade for grades, SugarCRM for sales and customer tracking and National Student Clearinghouse for tracking alumni.
+Django-sis/SWoRD is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.) and is intended for schools with or without work study programs. SWoRD is able to integrate with Naviance Premium Accounts for college preparedness, Engrade for grades, SugarCRM for sales and customer tracking, and National Student Clearinghouse for tracking alumni.
 
-In sum, SWoRD includes pluggable apps designed to cover most if not all of a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
+In sum, SWoRD includes pluggable apps designed to cover most if not all a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
 
 .. contents:: Table of Contents
 =========================================
 Developer/Administrator Information 
 =========================================
-Libreoffice on the server
-Should be run as an upstart job something like /etc/init/libreoffice.conf
+**Libreoffice on the server**
+
+Should be run as an upstart job like /etc/init/libreoffice.conf::
 
     start on runlevel 2
 
@@ -24,57 +25,60 @@ Should be run as an upstart job something like /etc/init/libreoffice.conf
     respawn limit 10 120
 
 Then start with "start libreoffice"
-SugarCRM sync
-Download the sync module below and install with Sugar's module loader. It just adds a checkbox called SWORD supervisor.
 
-Next run sword_sync.sql, first ensure the database name is correct. You may want to run them one at a time. Test and make sure Sugar and SWORD work contacts sync up.
+**SugarCRM sync**
+
+Download the sync module below and install with Sugar's module loader which adds a checkbox called SWoRD supervisor.
+
+Next run sword_sync.sql. First ensure the database name is correct. You may want to run them one at a time. Test and make sure Sugar and SWoRD work contacts sync up.
 
 quexf
 ------
-Send PDF by email
-apt-get purge bsd-mailx rmail sendmail sensible-mda sendmail-bin
-sendmail-base sendmail-cf sendmail-doc
-kill `pidof 'sendmail: MTA: accepting connections'`
-rm -r '/var/spool/mqueue-client'
-rm -r '/etc/mail'
-rm /etc/aliases
-apt-get install postfix
-# internet site with smarthost
-# smtp relay host: smtp.server.com
-# procmail was already installed
-# DON'T apt-get install uudeview; Debian package is broken
-# compile it from source; put the binary in /opt
-touch /var/log/procmail.log
-chgrp www-data /var/log/procmail.log
-chmod g+w /var/log/procmail.log
+**Send PDF by email**::
 
-Create /opt/new-receiver.sh:
-#!/bin/bash
-# John Milner
-# 20120309
-if [ `whoami` != 'root' ]
-then
-echo "Run this script as root, please." >&2
-exit 1
-fi
-if [ $# -ne 1 ]
-then
-echo "Usage: $0 NEW_SCHOOL_ABBREVIATION" >&2
-exit 1
-fi 
+    apt-get purge bsd-mailx rmail sendmail sensible-mda sendmail-bin
+    sendmail-base sendmail-cf sendmail-doc
+    kill `pidof 'sendmail: MTA: accepting connections'`
+    rm -r '/var/spool/mqueue-client'
+    rm -r '/etc/mail'
+    rm /etc/aliases
+    apt-get install postfix
+    # internet site with smarthost
+    # smtp relay host: smtp.server.com
+    # procmail was already installed
+    # DON'T apt-get install uudeview; Debian package is broken
+    # compile it from source; put the binary in /opt
+    touch /var/log/procmail.log
+    chgrp www-data /var/log/procmail.log
+    chmod g+w /var/log/procmail.log
 
-randomness="`wget --quiet -O - 'http://www.random.org/strings/?num=1&len=10&digits=on&loweralpha=on&unique=on&format=plain&rnd=new'`"
-lower="`echo \"$1\" | tr '[A-Z]' '[a-z]'`"
-upper="`echo \"$1\" | tr '[a-z]' '[A-Z]'`"
-new_user="$lower-$randomness"
-adduser --disabled-login --ingroup www-data --gecos "$upper Scanned Form Receiver" "$new_user" >&2
-cat <<END > `eval echo "~$new_user/.procmailrc"`
-LOGFILE=/var/log/procmail.log
-UMASK=027
-:0
-| /opt/uudeview -i +a -m -p /var/www/quexf_$lower/doc/filled -
-END
-echo "$new_user@`postconf -h myhostname`"
+    Create /opt/new-receiver.sh:
+    #!/bin/bash
+    # John Milner
+    # 20120309
+    if [ `whoami` != 'root' ]
+    then
+        echo "Run this script as root, please." >&2
+        exit 1
+    fi
+    if [ $# -ne 1 ]
+    then
+        echo "Usage: $0 NEW_SCHOOL_ABBREVIATION" >&2
+        exit 1
+    fi 
+
+    randomness="`wget --quiet -O - 'http://www.random.org/strings/?num=1&len=10&digits=on&loweralpha=on&unique=on&format=plain&rnd=new'`"
+    lower="`echo \"$1\" | tr '[A-Z]' '[a-z]'`"
+    upper="`echo \"$1\" | tr '[a-z]' '[A-Z]'`"
+    new_user="$lower-$randomness"
+    adduser --disabled-login --ingroup www-data --gecos "$upper Scanned Form Receiver" "$new_user" >&2
+    cat <<END > `eval echo "~$new_user/.procmailrc"`
+    LOGFILE=/var/log/procmail.log
+    UMASK=027
+    :0
+    | /opt/uudeview -i +a -m -p /var/www/quexf_$lower/doc/filled -
+    END
+    echo "$new_user@`postconf -h myhostname`"
 
 User Permissions
 ---------------------
@@ -111,6 +115,10 @@ Getting Started
 
 Using the ISO supported Open Document format is recommended for best interoperability, however doc and xls binary formats are highly supported. In rare cases formatting may be slightly different in these formats. Office Open XML while supported, is **not** recommended. 
 
+====================
+Student Information System (SIS)
+====================
+The SIS is the central module of SWoRD which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please follow the pertinent headings. 
 
 =====================
 Admissions
@@ -193,6 +201,47 @@ Other Admissions Options
 ----------------------------
 The remaining selections found under the main admissions screen: feeder schools, ethnicity choices, religion choices, school types, etc. are there to allow for additional options to be visible from drop down boxes on applicants. For example, if an applicant has applied and his/her religion is not listed, the admissions counselor or worker will select **religion choices**, make their addition, then **save**. Once saved, the new religion choice will be permanently saved in the religion choices drop down box for quick future use. 
 
+=======================
+Adding Students
+=======================
+
+1. From Home, click on **Student** in the top navigation bar and click **Edit**.
+
+image 01
+
+2. On the top right, click the **+ Add student** button.
+
+image 02
+
+3. Enter the student’s Last Name, First Name, and Username, which are required fields, and any additional information including Birth Date, Student Contact, and Notes. Click the **Save** button at the bottom right to complete the input of student information.
+
+image 03
+
+* Use the **Filter** function to filter students by Inactivity, Year classification, or Graduating Year. 
+
+(Image04 of Filter function for Class of 2015)
+
+* Click on the column heading **Year** to sort students by Year classification in ascending or descending order. 
+
+(Image05 of Year sorting)
+
+School Years
+-----------------------
+The starting, ending, and graduation dates of school years may be stored here. One year may be denoted as the active year, which may be used for calculations such as the number of discipline incidents.
+
+Year Classifications
+-----------------------
+Year classifications are the various grades SWORD supports and their associated names. The defaults in SWORD are:
+
+- Freshman: 9
+- Sophomore: 10
+- Junior: 11
+- Senior: 12
+
+Cohorts
+-----------------------
+Cohorts are groupings of students within a school; the registrar may find this tool useful. For example, an "advanced class" cohort may be enrolled in particular classes, and homeroom placements may also be organized using cohorts.
+
 ====================
 Attendance
 ====================
@@ -201,9 +250,9 @@ SWoRD has a built in attendance module that allows teachers to record daily atte
 
 Taking Attendance
 --------------------
-1. Click **Attendance** from the navigation menu
-2. Teachers will be presented a screen with a list of students currently in their class
-3. Teachers can select to mark all students present by clicking the **Set all to Present** option, or alternatively, teachers can click the drop down box by each student to mark individually.
+1. Click **Attendance** from the navigation menu.
+2. Teachers will be presented a screen with a list of students currently in their class.
+3. Teachers can select to mark all students present by clicking the **Set all to Present** option or, alternatively, teachers can click the drop down box by each student to mark individually.
 
 The **notes** column is a blank box where teachers can enter notes regarding the student's attendance, for example if a student is marked absent, the teacher can indicate in the notes box the reason why said student was absent.
 

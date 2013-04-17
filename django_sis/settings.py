@@ -185,9 +185,9 @@ if LDAP:
 CAS = False
 if CAS:
     CAS_SERVER_URL = ""
-    AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend','django_cas.backends.CASBackend',)
+    AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend','cas.backends.CASBackend',)
     MIDDLEWARE_CLASSES += (
-        'django_cas.middleware.CASMiddleware',
+        'cas.middleware.CASMiddleware',
         'django.middleware.doc.XViewMiddleware',
         )
 elif LDAP:

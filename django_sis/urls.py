@@ -88,8 +88,8 @@ if settings.DEBUG:
 
 if settings.CAS:
     urlpatterns += patterns('',
-        (r'^accounts/login/$', 'django_cas.views.login'),
-        (r'^accounts/logout/$', 'django_cas.views.logout'),
+        (r'^accounts/login/$', 'cas.views.login'),
+        (r'^accounts/logout/$', 'cas.views.logout'),
     )
 
 def handler500(request):
