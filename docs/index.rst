@@ -246,9 +246,9 @@ SWoRD has a built in attendance module that allows teachers to record daily atte
 
 Taking Attendance
 --------------------
-1. Click **Attendance** from the navigation menu
-2. Teachers will be presented a screen with a list of students currently in their class
-3. Teachers can select to mark all students present by clicking the **Set all to Present** option, or alternatively, teachers can click the drop down box by each student to mark individually.
+1. Click **Attendance** from the navigation menu.
+2. Teachers will be presented a screen with a list of students currently in their class.
+3. Teachers can select to mark all students present by clicking the **Set all to Present** option or, alternatively, teachers can click the drop down box by each student to mark individually.
 
 The **notes** column is a blank box where teachers can enter notes regarding the student's attendance, for example if a student is marked absent, the teacher can indicate in the notes box the reason why said student was absent.
 
