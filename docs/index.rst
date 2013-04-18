@@ -212,43 +212,39 @@ Users may designate levels required in order to advance. For example, schools ma
 ---------------------
 Filtering Applicants
 ---------------------
-To maximize organization, efficiency and promote the ease of collecting various admissions data for report preparation, SWoRD contains a myriad of filters and functions accessible through the main applicant page. Each column header in the image below will sort accordingly. For example, clicking on Last Name will filter by last name, application decision by decision, etc. 
+To maximize organization, efficiency, and promote the ease of collecting various admissions data for report preparation, SWoRD contains several filters and functions accessible through the main applicant page. Each column header in the image below will sort accordingly. For example, clicking on Last Name will filter by last name, application decision by decision, etc. 
 
 (PICTURE)
-Alternatively, for more specific filter choices- users may choose from the available filters located directly to the right of the applicant list on the main applicant page. In sum, the drop down list allows users to select and combine the following filters: school year, level, checklist, ready for export, present school, ethnicity, head about us, and year. The filter tool will do so in real time, no need to select and save.
+Alternatively, users may choose from the available filters located directly to the right of the applicant list. The drop down list allows users to select and combine the following filters: school year, level, checklist, ready for export, present school, ethnicity, heard about us, and year. The filter tool will do so in real time, no need to select and save.
 
 ---------------------
 Exporting Applicants
 ---------------------
-SWoRD allows for easy export into an Excel document for sharing/distribution. To export applicants after they have been filtered or not, follow the steps below to export them into an Excel file.
+SWoRD allows for easy export into an Excel document for sharing or distribution. After applying filters to applicants, follow the steps below to export into an Excel file.
 
-1. Select each applicant you would like to export, or select all by selecting the top left-most box to check every applicant.
-2. Click the drop down box located on the black tool bar at the bottom of the page.
-3. Select **Export to XLS**
-4. A box opens up with options on what to export.
-5. Select All to pull all information entered for each applicant, or check specific boxes.
-6. Scroll down and select **Submit**
-7. SWoRD will then open up an Excel document detailing the specified information.
+1. Select each applicant you would like to export or select all by selecting the top left checkbox.
+2. Click the drop down menu located on the black toolbar at the bottom of the page.
+3. Select **Export to XLS**. A box opens up with options on what to export.
+4. Choose Select All to export all information entered for each applicant or check specific boxes.
+5. Scroll down and select **Submit**.
+6. SWoRD will then open an Excel document.
 
 --------------------
 Admission Reports
 --------------------
 Some basic Admission Reports are available built in to SWoRD that allows users to quickly process statistics based on a school year's applicants. 
 
-1. Under the **Admissions** tab located at the top right of your SWoRD screen, select **Reports**
-2. Select whichever year you are generating this report for
-3. Click **Process Statistics**
+1. Under the **Admissions** tab in the navigation bar, select **Reports**.
+2. Select a year and click **Process Statistics**.
+3. SWoRD will generate an Excel document detailing some basic admission statistics such as number of applicants by grade or number of applicants on a particular level in the process.  
 
-SWoRD will then generate an Excel document detailing some basic admission statistics, such as number of applicants by grade, and number of applicants on a particular level in the process.  
-
-Another available pre-made report is labled as **Funnel**. This report will generate on screen admissions statistics from each step in the admissions process. The report will show total, current, male/female and rejected reasons. A sample of this report is shown below.
-
-To create this funnel, follow the first two steps above, but for step 3 select **Funnel** instead of process statistics. 
+In step 2, another option is to choose **Funnel**, which generates on-screen admissions statistics from each step in the admissions process. The report shows total, current, male/female, and rejected reasons.
+(SAMPLE OF REPORT) 
 
 ----------------------------
 Other Admissions Options
 ----------------------------
-The remaining selections found under the main admissions screen: feeder schools, ethnicity choices, religion choices, school types, etc. are there to allow for additional options to be visible from drop down boxes on applicants. For example, if an applicant has applied and his/her religion is not listed, the admissions counselor or worker will select **religion choices**, make their addition, then **save**. Once saved, the new religion choice will be permanently saved in the religion choices drop down box for quick future use. 
+The remaining selections found under Admission Administration such as feeder schools, ethnicity choices, religion choices, school types, etc., allow the dropdown menu choices to be modified. For example, if a particular religion choice is unavailable in dropdown, click on Religion Choices under Admission administration, then the +Add religion choice button to enter the religion, then Save. The entry is now permanently available in the dropdown menu. 
 
 =======================
 Adding Students
@@ -294,43 +290,40 @@ Cohorts are groupings of students within a school; the registrar may find this t
 ====================
 Attendance
 ====================
-SWoRD has a built in attendance module that allows teachers to record daily attendance. Attendance requires homerooms to be set up. Homerooms are simply courses that are designated as such. 
+SWoRD has a built-in attendance module that allows teachers to record daily attendance. Homerooms must already be in place, which are simply courses that are designated as such. 
 
 
 Taking Attendance
 --------------------
 1. Click **Attendance** from the navigation menu.
-2. Teachers will be presented a screen with a list of students currently in their class.
-3. Teachers can select to mark all students present by clicking the **Set all to Present** option or, alternatively, teachers can click the drop down box by each student to mark individually.
+2. A screen appears with a class list. Teachers can mark all students present by **Set all to Present** or click the dropdown menu to mark individually.
 
-The **notes** column is a blank box where teachers can enter notes regarding the student's attendance, for example if a student is marked absent, the teacher can indicate in the notes box the reason why said student was absent.
+Additional comments may be entered in the **Notes** column.
 
-**Things to keep in mind in taking attendance:**
+**Things to keep in mind:**
 
--If a student is already marked absent beforehand, the teacher will see this. At this point, nothing the teacher does will effect it. Keeping it as absent will not change it. Marking present will also not change anything.
+* If a student is already marked absent before, the teacher will see this. At this point, nothing the teacher does will affect it. Keeping it as absent will not change it. Marking present will also not change anything.
 
--Teachers are not allowed to edit atendance records.
+* Teachers are not allowed to edit attendance records.
 
--If two teachers mark the same student absent, it will not be recorded twice. This might happen if a student is enrolled in two different homerooms. If one teacher marks the student absent and the other present, the student will be considered absent. 
+* If a student is enrolled in two different homerooms and is marked absent in one and present in the other, the student will be considered absent. 
 
 --------------------
 Attendance Reports
 --------------------
-Built in to SWoRD are a number of pre-formatted and available attendance reports. The reports are designed to allow for the quick generation of data that a user may need to pull. Below, a list of available reports will be described. 
+Under **Attendance**(navigation menu) and **Reports** are a number of pre-formatted attendance reports designed to be quickly exported into an Excel or Word document. The available reports are:
 
-*All reports are located in the same location and will export into an Excel document or a Word document. To access them, select Attendance from the navigation menu and select Reports.*
+**Daily Attendance** This report allows users with permission to generate the daily attendance for all students, separated by grade. In particular, the report displays all *absent* students (not marked Present), reasons, and year classifications. Total absences by year classification are tallied at the bottom.
 
-**Daily Attendance** This report allows users with permission to generate the daily attendance for all students located in their school, separated by grade. Specifically, the report displays all students not marked Present, so the user who pulls this report will know which student was absent, why, and in what grade that student is in. Additionally, the report will tally the number of students absent by each grade which will be visible towards the bottom of the report. 
+**Lookup Student** Allows users to look up a student's attendance record. The date/reasons for all absent/tardy/late excused, etc. are reported in a Word document. 
 
-**Lookup Student** Allows users to quickly look up a student's attendance record. The user will see the date/reasons for all days that student was marked absent/tardy/late excused, etc. in a Microsoft Word document. 
+**Perfect Attendance Certificates** For a date range or year, this report generates a Word document with a list of students who have zero absenses and tardies.
 
-**Perfect Attendance Certificates** This report will produce a Word document with a list of student names who have zero absenses and tardies for the date range and/or year you set.
+**Daily Attendance Stats** For a date range or marking periods, this report generates an Excel document showing the date, number present, number absent, and absent percentage.
 
-**Daily Attendance Stats** Will produce an Excel document showing the date, number present, number absent and absent percentage. Users can select a range of dates or marking periods.
+**By Student Report** This report generates an Excel document of every enrolled student, displaying a tally of all absences and tardies including type of absence (excused, medical, holiday, religious, etc.).
 
-**By Student Report** Produces a detailed Excel document covering every enrolled student, and displaying a tally of all absences and tardies, including what type of absence it was- excused, medical, holiday, religious, etc.
-
-**Aggregate Report** Allows users to see a combined tally of all absences for the school, given a marking period or date range. Additionally, the report will produce an absolute Absent Percentage for the entire school.
+**Aggregate Report** For a date range or marking period, this report is a combined tally of all absences. An absolute Absent Percentage is also reported.
 
 -------------------
 Editing Attendance
