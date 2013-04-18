@@ -5,7 +5,7 @@ SWoRD Documentation
 :Date: March 29, 2013
 
 
-Django-sis/SWoRD is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.) and is intended for schools with or without work study programs. SWoRD is able to integrate with Naviance Premium Accounts for college preparedness, Engrade for grades, SugarCRM for sales and customer tracking, and National Student Clearinghouse for tracking alumni.
+Django-sis/SWoRD, Student Worker Relational Database, is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.) and is intended for schools with or without work study programs. SWoRD is able to integrate with Naviance Premium Accounts for college preparedness, Engrade for grades, SugarCRM for sales and customer tracking, and National Student Clearinghouse for tracking alumni.
 
 In sum, SWoRD includes pluggable apps designed to cover most if not all a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
 
@@ -242,7 +242,7 @@ In step 2, another option is to choose **Funnel**, which generates on-screen adm
 (SAMPLE OF REPORT) 
 
 ----------------------------
-Other Admissions Options
+Modifying options - Admission Administration
 ----------------------------
 The remaining selections found under Admission Administration such as feeder schools, ethnicity choices, religion choices, school types, etc., allow the dropdown menu choices to be modified. For example, if a particular religion choice is unavailable in dropdown, click on Religion Choices under Admission administration, then the +Add religion choice button to enter the religion, then Save. The entry is now permanently available in the dropdown menu. 
 
@@ -331,27 +331,27 @@ Editing Attendance
 
 Users with the proper permissions may be allowed to edit attendance for the entire school. To do so,
 
-1. Select **Attendance** from the navigation menu
-2. Click **Edit** from the drop down
+1. Select **Attendance** from the navigation menu, then **Edit**. 
+2. The Edit screen will display all students who have *not* been marked *Present*; edits/notes may be entered. For example, if the school later receives a doctor's note for an absent student, *Absent* may be switched to *Absent Excused* with a *Doctor Visit* note. 
 
-The edit screen will display all students who have been marked anything other than *Present*. Users can then enter or make any edits/notes. For example if a student was marked absent, but the school later received a doctor's note, the user can then switch from *Absent* to *Absent Excused* with a note saying- *Doctor Visit*. 
-
-This dashboard also contains a filter option located to the right of the screen, similar to other dashboards in SWoRD. This filter option allows users on this menu to filter by date or date range, and also by attendance status- absent, tardy, absent excused, etc. 
+This dashboard also contains a filter option located to the right of the screen, allowing filtering by date, date range, or attendance status (absent, tardy, absent excused, etc.). 
 
 ===================
 Discipline
 ===================
 
-The discipline module tracks a student’s discipline information, including: infractions, actions to be taken, and the teacher who reported the infraction. Similar to the other modules in SWoRD, discipline reports can be generated and exported into an Excel document for convenience. 
+The discipline module tracks a student’s discipline information including infractions, actions to be taken, and the teacher who reported the infraction. Similar to the other modules in SWoRD, discipline reports can be generated and exported into an Excel document. 
 
 View Discipline
 -----------------
-For fast lookup of a particular student's discipline record, SWoRD allows you to do a quick lookup.
-From the Navigation menu located on top of your page, select **Discipline**, then **View**. SWoRD will open a page with a text box. Begin typing in the name of the student you would like to view, and SWoRD will present you with a list of available students, as shown below:
+For fast lookup of a particular student's discipline record:
+
+1. Select **Discipline** from the navigation menu, then **View**. 
+2. Begin typing in the name of the student in the text box, and SWoRD will present you with a list of available students as shown below:
 
 PICTURE
 
-Once the appropiate student has been selected, SWoRD will present all discipline information that has been input for the student:
+3. Once a particular student has been selected, SWoRD will present all discipline information that has been input for the student:
 
 PICTURE
 
@@ -359,21 +359,24 @@ PICTURE
 Discipline Reports
 -------------------
 
-The Discipline Reports function allows users to pull discipline data, while having the option to filter by action, infraction, time, and minimum number of the previously stated.
+Displine Reports allows users to pull and filter discipline data by action, infraction, time, and minimum number of incidents.
 
 IMAGE
 
-**By Student Report** will produce a list of all students who have a record of disciplinary action, including details about the incident- e.g. student broke dress code, had his phone out, etc.
+**By Student Report** produces a list of students who have a record of disciplinary action including details about the incident.
 
-**Aggregate Report** produces an Excel document compiling a tally for each disciplinary incident.
+**Aggregate Report** generates an Excel document tallying each disciplinary incident.
 
 IMAGE
 
 -------------------
 Discipline Actions
 -------------------
-The **Discipline Actions** option located under the **Discipline** heading on the main SWoRD dashboard will control what disciplinary actions teachers have available to choose from when reporting students via drop down box.Accordingly, schools beginning to use SWoRD should add all discipline actions that the school currently utilizes. 
+The link to **Discipline Actions** is located in **Home** under **Discipline**. 
 
-Clicking **Discipline Actions** will present the user with a list of current discipline actions. To add an action, simply select **Add Discipline Action** from that screen, create a new discipline, then save. 
+Here disciplinary actions available from the dropdown menu may be modified. 
+Clicking **Discipline Actions** presents a list of current discipline actions. To add an action, click **+Add Discipline Action**, enter a new discipline, then Save. 
+
+*Schools beginning to use SWoRD should add all discipline actions that the school currently utilizes.* 
 
 IMAGE
