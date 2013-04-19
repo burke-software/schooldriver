@@ -45,6 +45,24 @@ import json
 import datetime
 import reversion
 
+def make_validationerror_raiser(message):
+    from django.core.exceptions import ValidationError
+    ''' Returns a function that raises a ValidationError with the specified message '''
+    def validationerror_raiser(value):
+        ''' Ignores specified value and raises a ValidationError '''
+        raise ValidationError(message)
+    return validationerror_raiser
+
+def require_active_marking_period(marking_period):
+    from django.core.exceptions import ValidationError
+    if not marking_period.active:
+        raise ValidationError('{} is not an active marking period.'.format(marking_period))
+
+def require_item_in_active_marking_period(item):
+    from django.core.exceptions import ValidationError
+    if item.marking_period and not item.marking_period.active:
+        raise ValidationError("This item's marking period, {}, is not active.".format(item.marking_period))
+
 def get_teacher_courses(username):
     """ Utility function that returns courses a given teacher may access """
     try:
@@ -219,6 +237,9 @@ def gradebook(request, course_id):
 @transaction.commit_on_success
 def ajax_delete_item_form(request, course_id, item_id):
     item = get_object_or_404(Item, pk=item_id)
+    if not request.user.has_perm('grades.delete_grade') and not item.marking_period.active:
+        # you aren't a registrar, so you can't modify an inactive marking period
+        return HttpResponse(status=403)
     ghost_item = Item()
     ghost_item.course = item.course
     ghost_item.category = item.category
@@ -241,10 +262,20 @@ def ajax_get_item_form(request, course_id, item_id=None):
     
     if request.POST:
         if item_id:
+            # modifying an existing item
             item = get_object_or_404(Item, pk=item_id)
             form = ItemForm(request.POST, instance=item, prefix="item")
+            if not request.user.has_perm('grades.change_grade') and not item.marking_period.active:
+                # you aren't a registrar, so you can't modify an item from an inactive marking period
+                form.fields['marking_period'].validators.append(
+                    make_validationerror_raiser('This item belongs to the inactive marking period {}.'.format(item.marking_period))
+                )
         else:
+            # creating a new item
             form = ItemForm(request.POST, prefix="item")
+            if not request.user.has_perm('grades.add_grade'): # registrars should have this, as opposed to change_own_grade
+                # restrict regular teachers to the active marking period
+                form.fields['marking_period'].validators.append(require_active_marking_period)
         if form.is_valid():
             with reversion.create_revision():
                 if item_id is None:
@@ -339,6 +370,9 @@ def ajax_get_item_tooltip(request, course_id, item_id):
 def ajax_delete_demonstration_form(request, course_id, demonstration_id):
     demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
     item = demonstration.item
+    if not request.user.has_perm('grades.delete_grade') and not item.marking_period.active:
+        # you aren't a registrar, so you can't modify an inactive marking period
+        return HttpResponse(status=403)
     ghost_item = Item()
     ghost_item.course = item.course
     ghost_item.category = item.category
@@ -367,10 +401,20 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
     
     if request.POST:
         if demonstration_id:
+            # modifying an existing demonstration
             demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
             form = DemonstrationForm(request.POST, instance=demonstration, prefix="demonstration")
+            if not request.user.has_perm('grades.change_grade') and not demonstration.item.marking_period.active:
+                # you aren't a registrar, so you can't modify a demonstration from an inactive marking period
+                form.fields['item'].validators.append(
+                    make_validationerror_raiser('This demonstration belongs to the inactive marking period {}.'.format(demonstration.item.marking_period))
+                )
         else:
+            # creating a new demonstration
             form = DemonstrationForm(request.POST, prefix="demonstration")
+            if not request.user.has_perm('grades.add_grade'):
+                # you aren't a registrar, so make sure you can only select items in active marking periods
+                form.fields['item'].validators.append(require_item_in_active_marking_period)
         if form.is_valid():
             demonstration = form.save()
             if demonstration_id is None:
@@ -438,6 +482,15 @@ def ajax_get_fill_all_form(request, course_id, object_type, object_id):
 
     if request.POST:
         form = FillAllForm(request.POST, prefix="fill_all")
+        try:
+            marking_period = item_or_demonstration.marking_period
+        except AttributeError:
+            marking_period = item_or_demonstration.item.marking_period
+        if not request.user.has_perm('grades.change_grade') and marking_period is not None and not marking_period.active:
+                # you aren't a registrar, so you can't modify an item from an inactive marking period
+                form.fields['mark'].validators.append(
+                    make_validationerror_raiser('This {} belongs to the inactive marking period {}.'.format(object_type, marking_period))
+                )
         if form.is_valid():
             for m in item_or_demonstration.mark_set.all():
                 m.mark = form.cleaned_data['mark']
@@ -462,6 +515,12 @@ def ajax_save_grade(request):
         if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
             and request.user.username != mark.item.course.teacher.username \
             and not mark.item.course.secondary_teachers.filter(username=request.user.username).count():
+            return HttpResponse(status=403)
+
+        if not request.user.has_perm('grades.change_grade') \
+            and mark.item.marking_period is not None \
+            and not mark.item.marking_period.active:
+            # you aren't a registrar, so you can't modify an item from an inactive marking period
             return HttpResponse(status=403)
 
         if len(value) and value.lower != 'none':
