@@ -241,12 +241,12 @@ class EmergencyContact(models.Model):
     state = USStateField(blank=True, null=True)
     zip = models.CharField(max_length=10, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to.")
+    primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to. In the event of an emergency, this is the person that will be contacted first.")
     emergency_only = models.BooleanField(help_text="Only contact in case of emergency")
     sync_schoolreach = models.BooleanField(help_text="Sync this contact with schoolreach",default=True)
     
     class Meta:
-        ordering = ('primary_contact', 'emergency_only', 'lname') 
+        ordering = ('primary_contact', 'lname') 
         verbose_name = "Student Contact"
     
     def __unicode__(self):
@@ -280,7 +280,12 @@ class EmergencyContact(models.Model):
             if hasattr(self, 'applicant_set'):
                 for applicant in self.applicant_set.all():
                     applicant.set_cache(self)
-
+    
+    def show_student(self):
+        students = ""
+        for student in self.student_set.all():
+            students += "{}, ".format(student)
+        return students[:-2]
 
 class EmergencyContactNumber(PhoneNumber):
     contact = models.ForeignKey(EmergencyContact)
