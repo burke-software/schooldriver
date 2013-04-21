@@ -8,7 +8,7 @@ import tempfile
 import os
 
 
-class TemplateReport():
+class TemplateReport(object):
     data = {}
     filename = "Template Report"
     

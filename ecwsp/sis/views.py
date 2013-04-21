@@ -34,7 +34,7 @@ from ecwsp.sis.models import Student, UserPreference, GradeLevel, SchoolYear
 from ecwsp.sis.forms import UserPreferenceForm, UploadFileForm, StudentLookupForm, StudentReportWriterForm
 from ecwsp.sis.forms import StudentGradeReportWriterForm, MarkingPeriodForm, YearSelectForm
 from ecwsp.administration.models import Template
-from ecwsp.sis.report import pod_report_grade, pod_report_paper_attendance, pod_report_all
+from ecwsp.sis.report import pod_report_paper_attendance, pod_report_all
 from ecwsp.sis import grade_reports
 from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Course
