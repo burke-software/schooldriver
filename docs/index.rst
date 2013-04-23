@@ -165,6 +165,68 @@ IMAGE
 
 Similar to other dashboards in SWoRD, users may sort by clicking column headers and using the filter tool.
 
+Templates
+------------
+All SWoRD instances come packaged with a set of general templates. These templates allow users to generate a number of varied reports, including:Tardy Letters, Daily Attendance, Progress Reports, Transcripts, Travel Maps, Test Results, Discipline Report
+
+A list of all available templates, free to download is found `here
+<https://sites.google.com/a/cristoreyny.org/sword-wiki/preparing-for-a-new-school-year/templates>`_.
+
+SWoRD further allows users to create and edit their own templates to be used accordingly and will be discussed in the next section, Report Writing.
+
+Report Writing/Creating Templates
+-----------------------------------
+**Note** Before you proceed, please be aware that in most cases it's best to simply edit existing templates found in your templates location, rather than creating entirely new templates as this section will discuss. 
+
+SWoRD provides the means for end users to create and utilize their own customized reports/templates. All reports are made using the `Appy Framework
+<http://appyframework.org/pod.html>`_.
+
+The basic process works like this: user creates report template in a word processor >>> the template gets uploaded into SWoRD >>> Download/use finished report.
+
+To get started, it is first recommended that you use `LibreOffice
+<http://www.libreoffice.org/>`_ with the Insert Field extension found `here
+<https://sites.google.com/a/cristoreyny.org/sword-wiki/preparing-for-a-new-school-year/report-writing/insert_field1_1.oxt?attredirects=0>`_.
+
+**Note:** When creating templates, ODT format is *required* and all files must be saved in the .odt extension, which is the default in LibreOffice.
+
+**Note:** Microsoft Office can be used with track changes used to denote fields, however, this method is *not* recommended.
+
+**Note:** All finished reports may be opened with Microsoft Office.
+
+1. When you enter "fields" in Libre, this refers to database fields.
+2. Insert field using the insert field extension mentioned above
+
+IMAGE
+
+3. Edit a field by double clicking on one.
+
+*Note:* You can see a list of available fields to choose from by typing this into your SWoRD instance's URL. SAMPLESCHOOLURL/admin/doc/models. Some fields are calculated, for example he_she is based off of the sex of a student. Any type: list field cannot be used directly, but must be placed in a loop.
+
+**Logic in Templates** You may use any Python logic in a template. For example in the above screenshot there is a note "do section for student in students". This logic can technically be placed in a field, however it's easier to read in a note. To create a note click Insert > Comment. In the example a section is being created for each student in the field "students". students is a list of students as defined in "School Reports" in SWORD. To create a section click Insert, Section. In the example the section includes a page break. SWoRD will create a section (page break included) for each student in your list of students. This makes for similar results of a mail merge. You may also "do row" or "do cell" to create tables.
+
+You may even include Django specific code, for example students.filter(fname="Joe") would result in a list of students with the first name of "Joe". For more see`Django's retrieving objects
+<https://docs.djangoproject.com/en/dev/topics/db/queries/#retrieving-objects>`_. This may get complex fast, therefore SWORD offers some basic sorting and filtering options for you. See School Reports with SWORD. Essentially School Reports will give you the variable students, with your desired filters. If you selected only one student, you will instead have a "student" variable. From here you usually want some type of logic, such as do section for student in students. 
+
+**Spreadsheet Reports** work differently. You can add additional fields to any student related spreadsheet. Select User Preferences and add additional fields here. These additional fields are defined by an administrator and follow the typical . notation (placement.address gets the address of the placement). The gradebook spreadsheet is a special case and a template can be used here. See the included template called "grade spreadsheet".
+
+**Database Field Names** Click on Documentation, then Models to view various Database models. You can chain them by placing . to any related fields. For example student.placement.address would yield the address of the placement of that student.
+
+Exporting SWoRD data to Excel
+-------------------------------
+SWoRD allows users to export into Excel any and all data that users have input into their respective SWoRD instance. The process of exporting information is very simple, and detailed below:
+
+    1. Click on any model you want to edit from your SWoRD home dash- ex. students, applicants, student workers, discipline, etc.
+    2. This will take you to the basic familiar dashboard for that model.
+    3. Click the checkbox next to each student you want to pull info from.
+    4. Select the black drop down box located towards the bottom of the page.
+    5. Select "export to xls" 
+    6. A screen asking what you want to be exported appears- make your selections.
+    7. Submit.
+
+IMAGE
+
+
+
 ====================
 Student Information System (SIS)
 ====================
