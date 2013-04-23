@@ -4,14 +4,13 @@ SWoRD Documentation
 
 :Date: March 29, 2013
 
-
 Django-sis/SWoRD, Student Worker Relational Database, is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.) and is intended for schools with or without work study programs. SWoRD is able to integrate with Naviance Premium Accounts for college preparedness, Engrade for grades, SugarCRM for sales and customer tracking, and National Student Clearinghouse for tracking alumni.
 
 In sum, SWoRD includes pluggable apps designed to cover most if not all a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
 
 .. contents:: Table of Contents
 =========================================
-Developer/Administrator Information 
+Developer and Administrator Information 
 =========================================
 **Libreoffice on the server**
 
@@ -174,8 +173,8 @@ A list of all available templates, free to download is found `here
 
 SWoRD further allows users to create and edit their own templates to be used accordingly and will be discussed in the next section, Report Writing.
 
-Report Writing/Creating Templates
------------------------------------
+Report Writing and Creating Templates
+---------------------------------------
 **Note** Before you proceed, please be aware that in most cases it's best to simply edit existing templates found in your templates location, rather than creating entirely new templates as this section will discuss. 
 
 SWoRD provides the means for end users to create and utilize their own customized reports/templates. All reports are made using the `Appy Framework
