@@ -645,7 +645,8 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
             'Daily Practice': {'best_mark__lte': 0},
         }
 
-        if 'item_pks' in request.POST:
+        # be careful of empty string in POST, as int('') raises ValueError
+        if 'item_pks' in request.POST and len(request.POST['item_pks']):
             item_pks = request.POST['item_pks'].split(',')
             items = Item.objects.filter(pk__in=item_pks)
             specific_items = True
