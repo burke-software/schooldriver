@@ -17,7 +17,7 @@
 #   MA 02110-1301, USA.
 
 from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark, Category, AggregateTask, CalculationRulePerCourseCategory
-from ecwsp.schedule.models import MarkingPeriod, Department
+from ecwsp.schedule.models import MarkingPeriod, Department, Course
 from ecwsp.grades.models import Grade
 from ecwsp.benchmark_grade.tasks import benchmark_aggregate_task
 from django.db.models import Avg, Sum, Min, Max
