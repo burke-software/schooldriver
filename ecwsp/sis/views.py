@@ -244,7 +244,6 @@ def school_report_builder_view(request):
                     f.write(template.read())
                     f.close()
                     template = tmpfile
-                format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
                 
                 report = TemplateReport(request.user)
                 students=form.get_students(data)
