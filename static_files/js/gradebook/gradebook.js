@@ -97,6 +97,15 @@ function make_into_input(element){
     $(parent).children('input').select();
 }
 
+function highlight_pending() {
+    for(var i = 0; i < pending_aggregate_pks.length; i++) {
+        agg_pk = pending_aggregate_pks[i];
+        agg_cell = $('td[data-aggregate_pk="' + agg_pk + '"]');
+        agg_cell.children().removeClass('save_success');
+        agg_cell.children().addClass('saving');
+    }
+}
+
 function task_poll() {
     $.post(
         "../../gradebook/ajax_task_poll/",
@@ -104,12 +113,7 @@ function task_poll() {
         function(data, textStatus, jqXHR) {
             if(jqXHR.status == 202) {
                 // make sure affected cells are marked properly
-                for(var i = 0; i < pending_aggregate_pks.length; i++) {
-                    agg_pk = pending_aggregate_pks[i];
-                    agg_cell = $('td[data-aggregate_pk="' + agg_pk + '"]');
-                    agg_cell.children().removeClass('save_success');
-                    agg_cell.children().addClass('saving');
-                }
+                highlight_pending();
                 // check again later. we should probably use exponential backoff
                 setTimeout(task_poll, 4000);
                 return;
@@ -142,8 +146,6 @@ function mark_change(event) {
         var mark_id = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r\d+_mark(\d+)$/, '$1').trim()
         var row = $(event.target).parents('td').attr('id').replace(/^tdc\d+_r(\d+)_.*$/, '$1').trim();
         var average_cell = $('#average' + row)
-        average_cell.children().removeClass('save_success');
-        average_cell.children().addClass('saving');
         $.post(  
           "../../gradebook/ajax_save_grade/",
           {mark_id: mark_id, value: cur_value},
@@ -153,6 +155,8 @@ function mark_change(event) {
                 $(event.target).replaceWith('<div class="save_success">' + new_value + '</div>');
                 // should be atomic since js is not multithreaded... right?
                 pending_aggregate_pks = pending_aggregate_pks.concat(data.affected_aggregates);
+                // highlight pending immediately, but wait a bit before trying to get calculation result
+                highlight_pending();
                 window.setTimeout(task_poll, 4000);
                 window.setTimeout(highlight_cell, 1000, cell);
             }

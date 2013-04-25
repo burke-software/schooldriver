@@ -139,8 +139,7 @@ def gradebook(request, course_id):
         filter_form.update_querysets(course)
         
     # make a note of any aggregates pending recalculation
-    pending_aggregate_pks = Aggregate.objects.filter(course=course).annotate(Count('aggregatetask')).filter(
-                            aggregatetask__count__gt=0).values_list('pk', flat=True)
+    pending_aggregate_pks = Aggregate.objects.filter(course=course, aggregatetask__in=AggregateTask.objects.all()).values_list('pk', flat=True).distinct()
     
     # Freeze these now in case someone else gets in here!
     # TODO: something that actually works. all() does not evaluate a QuerySet.
@@ -646,7 +645,8 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
             'Daily Practice': {'best_mark__lte': 0},
         }
 
-        if 'item_pks' in request.POST:
+        # be careful of empty string in POST, as int('') raises ValueError
+        if 'item_pks' in request.POST and len(request.POST['item_pks']):
             item_pks = request.POST['item_pks'].split(',')
             items = Item.objects.filter(pk__in=item_pks)
             specific_items = True

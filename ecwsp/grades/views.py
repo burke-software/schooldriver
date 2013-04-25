@@ -21,6 +21,7 @@ import datetime
 import time
 import logging
 
+@login_required
 def select_grade_method(request):
     """ Select a per user preferred grading method
     Forward to previously requested page after

@@ -15,12 +15,13 @@ class Migration(SchemaMigration):
         db.delete_column(u'benchmark_grade_mark', 'description')
 
         # Adding unique constraint on 'Mark', fields ['item', 'student']
-        db.create_unique(u'benchmark_grade_mark', ['item_id', 'student_id'])
+        # THIS IS WRONG AND CANNOT BE USED!
+        #db.create_unique(u'benchmark_grade_mark', ['item_id', 'student_id'])
 
 
     def backwards(self, orm):
         # Removing unique constraint on 'Mark', fields ['item', 'student']
-        db.delete_unique(u'benchmark_grade_mark', ['item_id', 'student_id'])
+        #db.delete_unique(u'benchmark_grade_mark', ['item_id', 'student_id'])
 
         # Removing unique constraint on 'Aggregate', fields ['category', 'course', 'marking_period', 'student']
         db.delete_unique(u'benchmark_grade_aggregate', ['category_id', 'course_id', 'marking_period_id', 'student_id'])
