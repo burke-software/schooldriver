@@ -9,7 +9,8 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # Removing unique constraint on 'Mark', fields ['item', 'student']
-        db.delete_unique(u'benchmark_grade_mark', ['item_id', 'student_id'])
+        # WRONG AND REMOVED FROM PREVIOUS MIGRATION
+        #db.delete_unique(u'benchmark_grade_mark', ['item_id', 'student_id'])
 
         # Adding unique constraint on 'Mark', fields ['item', 'demonstration', 'student']
         db.create_unique(u'benchmark_grade_mark', ['item_id', 'demonstration_id', 'student_id'])
@@ -20,7 +21,7 @@ class Migration(SchemaMigration):
         db.delete_unique(u'benchmark_grade_mark', ['item_id', 'demonstration_id', 'student_id'])
 
         # Adding unique constraint on 'Mark', fields ['item', 'student']
-        db.create_unique(u'benchmark_grade_mark', ['item_id', 'student_id'])
+        #db.create_unique(u'benchmark_grade_mark', ['item_id', 'student_id'])
 
 
     models = {
