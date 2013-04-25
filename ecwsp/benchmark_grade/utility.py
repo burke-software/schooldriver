@@ -308,9 +308,9 @@ def gradebook_recalculate_on_item_change(item, students=None, old_item=None):
             if affects_overall_course:
                 funcs_and_args.append((benchmark_calculate_course_aggregate, (student, course, marking_period)))
                 aggregates += Aggregate.objects.filter(student=student, course=course, marking_period=marking_period, category=None)
-            for category in affected_categories_as_courses:
-                funcs_and_args.append((benchmark_calculate_category_as_course_aggregate, (student, category, marking_period)))
-                aggregates += Aggregate.objects.filter(student=student, category=category, marking_period=marking_period, course=None)
+            for category_as_course in affected_categories_as_courses:
+                funcs_and_args.append((benchmark_calculate_category_as_course_aggregate, (student, category_as_course.category, marking_period)))
+                aggregates += Aggregate.objects.filter(student=student, category=category_as_course.category, marking_period=marking_period, course=None)
         # recalculate aggregates for the whole duration of the course (i.e. marking_period=None)
         if affects_overall_course:
             funcs_and_args.append((benchmark_calculate_course_aggregate, (student, course, None)))
