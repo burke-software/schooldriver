@@ -12,9 +12,10 @@ class TemplateReport(object):
     data = {}
     filename = "Template Report"
     
-    def __init__(self, user):
+    def __init__(self, user=None):
         self.get_default_data()
-        self.file_format = UserPreference.objects.get_or_create(user=user)[0].get_format(type="document")
+        if user:
+            self.file_format = UserPreference.objects.get_or_create(user=user)[0].get_format(type="document")
         
     
     def get_default_data(self):
