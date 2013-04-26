@@ -61,6 +61,8 @@ class TemplateReport(object):
             content = "application/pdf"
         elif ext == ".rtf":
             content = "application/rtf"
+        elif ext == '.ods':
+            content = "application/vnd.oasis.opendocument.spreadsheet"
         else: # odt, prefered
             content = "application/vnd.oasis.opendocument.text"
             

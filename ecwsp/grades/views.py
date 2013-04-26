@@ -225,19 +225,25 @@ def teacher_grade_download(request, id, type=None):
         data['$students'].append(unicode(student))
         data['$username'].append(unicode(student.username))
     
-    # Libreoffice crashes sometimes, maybe 5% of the time. So try it some more!
-    for x in range(0,3):
-        try:
-            template_path = template.get_template_path(request)
-            if not template_path:
-                return HttpResponseRedirect(reverse('admin:index'))
-            return replace_spreadsheet(template_path, filename, data, type)
-        except:
-            logging.warning('LibreOffice crashed?', exc_info=True, extra={
-                'request': request,
-            })
-            time.sleep(3)
-    return replace_spreadsheet(template_path, filename, data, type)
+    if True:
+        # Libreoffice crashes sometimes, maybe 5% of the time. So try it some more!
+        for x in range(0,3):
+            try:
+                template_path = template.get_template_path(request)
+                if not template_path:
+                    return HttpResponseRedirect(reverse('admin:index'))
+                return replace_spreadsheet(template_path, filename, data, type)
+            except:
+                logging.warning('LibreOffice crashed?', exc_info=True, extra={
+                    'request': request,
+                })
+                time.sleep(3)
+        return replace_spreadsheet(template_path, filename, data, type)
+    # Appy version (too buggy to use)
+    #template_path = template.get_template_path(request)
+    #if not template_path:
+    #    return HttpResponseRedirect(reverse('admin:index'))
+    #return replace_spreadsheet(template_path, filename, data, type)
     
     
 def handle_grade_save(request, course=None):

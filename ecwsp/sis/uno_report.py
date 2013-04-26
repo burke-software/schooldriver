@@ -105,6 +105,16 @@ def is_number(x):
     except ValueError:
         return False
         
+
+def new_replace_spreadsheet(infile, outfile, data, type="ods", sheets=False):
+    """ An appy pod implimentation, appy is too buggy though """
+    from ecwsp.sis.template_report import TemplateReport
+    
+    report = TemplateReport()
+    report.data = data
+    report.filename = outfile
+    return report.pod_save(infile, ext=".ods")
+
     
 def replace_spreadsheet(infile, outfile, data, type="ods", sheets=False):
     """replaces variables with an array or single entry
