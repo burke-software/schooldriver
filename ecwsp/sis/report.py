@@ -118,7 +118,13 @@ class GradeTemplateReport(TemplateReport):
             i += 1
 
 
-    def get_student_transcript_data(self, student):
+    def get_student_transcript_data(self, student, omit_substitutions=False):
+        # benchmark_grade transcripts aren't radically different,
+        # but they have some additional data
+        if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
+            from ecwsp.benchmark_grade.models import Aggregate
+            from ecwsp.benchmark_grade.utility import gradebook_get_average, benchmark_find_calculation_rule, gradebook_get_category_average
+        
         student.years = SchoolYear.objects.filter(
             markingperiod__show_reports=True,
             start_date__lt=self.for_date,
@@ -283,12 +289,6 @@ class GradeTemplateReport(TemplateReport):
             from ecwsp.benchmark_grade.report import benchmark_report_card
             return benchmark_report_card(template, options, students, file_format)
         
-        # benchmark_grade transcripts aren't radically different,
-        # but they have some additional data
-        if (transcript and "ecwsp.benchmark_grade" in settings.INSTALLED_APPS):
-            from ecwsp.benchmark_grade.models import Aggregate
-            from ecwsp.benchmark_grade.utility import gradebook_get_average, benchmark_find_calculation_rule, gradebook_get_category_average
-        
         self.marking_periods = MarkingPeriod.objects.filter(
             school_year=SchoolYear.objects.filter(
                 start_date__lt=self.for_date
@@ -310,7 +310,7 @@ class GradeTemplateReport(TemplateReport):
                 self.get_student_report_card_data(student)
             ## for transcripts
             if transcript:
-                self.get_student_transcript_data(student)
+                self.get_student_transcript_data(student, omit_substitutions)
                 
         try:
             if options['student'].count == 1:
