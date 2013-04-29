@@ -287,7 +287,7 @@ class GradeTemplateReport(TemplateReport):
         if (benchmark_report_card and
             "ecwsp.benchmark_grade" in settings.INSTALLED_APPS):
             from ecwsp.benchmark_grade.report import benchmark_report_card
-            return benchmark_report_card(template, options, students, file_format)
+            return benchmark_report_card(self, template, options, students)
         
         self.marking_periods = MarkingPeriod.objects.filter(
             school_year=SchoolYear.objects.filter(
