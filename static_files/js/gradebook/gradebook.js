@@ -175,6 +175,7 @@ function mark_change(event) {
 
 function get_new_assignment_form(event){
     // Get a new assignment form to display of modal overlay
+    $("#new_assignment_form").html("Loading...");
     $.post(
         "ajax_get_item_form/",
         function(data){  
@@ -189,6 +190,7 @@ function get_new_assignment_form(event){
 }
 
 function get_edit_assignment_form(event){
+    $("#new_assignment_form").html("Loading...");
     // Get a new assignment form to display of modal overlay
     item_id = $(event.target).attr('item_id');
     $.post(
@@ -205,6 +207,7 @@ function get_edit_assignment_form(event){
 }
 
 function get_new_demonstration_form(event){
+    $("#new_demonstration_form").html("Loading...");
     // Get a new demonstration form to display of modal overlay
     $.post(
         "ajax_get_demonstration_form/",
@@ -220,6 +223,7 @@ function get_new_demonstration_form(event){
 }
 
 function get_edit_demonstration_form(event){
+    $("#new_demonstration_form").html("Loading...");
     // Get a new demonstration form to display of modal overlay
     demonstration_id = $(event.target).data('demonstration_id');
     if(demonstration_id == undefined) {
