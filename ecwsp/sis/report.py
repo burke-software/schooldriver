@@ -177,6 +177,7 @@ class GradeTemplateReport(TemplateReport):
                 if (mp.end_date < self.for_date and
                     course.is_passing(
                         student,
+                        cache_grade=course.final,
                         cache_passing=self.passing_grade,
                         cache_letter_passing=self.letter_passing_grade) and
                     course.credits):

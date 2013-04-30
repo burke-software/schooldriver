@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import Max
 from django.contrib import messages
 from django.conf import settings
 
@@ -255,11 +254,14 @@ class Course(models.Model):
         else:
             return Student.objects.filter(courseenrollment__course=self, inactive=False)
     
-    def is_passing(self, student, date_report=None, cache_passing=None, cache_letter_passing=None):
+    def is_passing(self, student, date_report=None, cache_grade=None, cache_passing=None, cache_letter_passing=None):
         """ Is student passing course? """
         if cache_passing == None:
             pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
-        grade = self.get_final_grade(student, date_report=date_report)
+        if cache_grade:
+            grade = cache_grade
+        else:
+            grade = self.get_final_grade(student, date_report=date_report)
         try:
             if grade >= int(pass_score):
                 return True
