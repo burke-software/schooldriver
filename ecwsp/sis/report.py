@@ -66,7 +66,7 @@ class GradeTemplateReport(TemplateReport):
             courseenrollment__user=student,
             graded=True,
         )
-        courses = courses.filter(marking_period__in=marking_periods).distinct().order_by('department')
+        courses = courses.filter(marking_period__in=self.marking_periods).distinct().order_by('department')
         for course in courses:
             grades = course.grade_set.filter(student=student).filter(
                 marking_period__isnull=False,
@@ -77,7 +77,7 @@ class GradeTemplateReport(TemplateReport):
                 setattr(course, "grade" + str(i), grade)
                 i += 1
             while i <= 4:
-                setattr(course, "grade" + str(i), blank_grade)
+                setattr(course, "grade" + str(i), self.blank_grade)
                 i += 1
             course.final = course.get_final_grade(student)
         student.courses = courses
@@ -89,7 +89,7 @@ class GradeTemplateReport(TemplateReport):
         student.tardy_total = 0
         student.tardy_unexcused_total = 0
         student.dismissed_total = 0
-        for mp in marking_periods.order_by('start_date'):
+        for mp in self.marking_periods.order_by('start_date'):
             absent = student.student_attn.filter(status__absent=True, date__range=(mp.start_date, mp.end_date))
             tardy = student.student_attn.filter(status__tardy=True, date__range=(mp.start_date, mp.end_date))
             dismissed = student.student_attn.filter(status__code="D", date__range=(mp.start_date, mp.end_date)).count()
@@ -271,8 +271,8 @@ class GradeTemplateReport(TemplateReport):
         students.years.dismissed - Dismissed for year
         studnets.years.credits  - Total credits for year
         """
-        blank_grade = struct()
-        blank_grade.comment = ""
+        self.blank_grade = struct()
+        self.blank_grade.comment = ""
         
         self.passing_grade = float(Configuration.get_or_default("Passing Grade", '70').value)
         self.letter_passing_grade = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
