@@ -150,7 +150,7 @@ Log Entries
 --------------
 Log entries record all actions completed during a SWoRD's instance. This allows administrators and superusers to locate any changes made at specific dates or times. Admins will see a dashboard similar to what is shown below:
 
-IMAGE
+.. image:: /images/logentries.png
 
 **User** refers to which user made a change.
 
@@ -222,7 +222,7 @@ SWoRD allows users to export into Excel any and all data that users have input i
     6. A screen asking what you want to be exported appears- make your selections.
     7. Submit.
 
-IMAGE
+.. image:: /images/exportoxls.png
 
 
 
@@ -237,6 +237,7 @@ Admissions
 
 The admissions module allows schools to keep track of applicants, and their status in the application process. Each step in the application process can be customized to fit a school's unique need. Users can designate steps that need to be completed before moving onto the next level. Additionally, SWoRD may track any open houses a student has attended and how the student heard about the school. 
 
+.. image:: /images/applicantdashboard.png
 
 The image above details the dashboard that an admissions counselor or designated user sees when the admissions module is selected. Most modules include a dashboard to provide users a general overview of information that is able to be filtered. 
 
