@@ -231,7 +231,7 @@ def daily_attendance_report(adate, private_notes=False, type="odt", request=None
     for attn in StudentAttendance.objects.filter(date=adate):
         if (attn.notes) or (attn.private_notes and private_notes):
             report.data['comments'] += unicode(attn.student) + ": "
-            if attn.notes: data['comments'] += unicode(attn.notes) + "  "
+            if attn.notes: report.data['comments'] += unicode(attn.notes) + "  "
             if attn.private_notes and private_notes: 
                 report.data['comments'] += unicode(attn.private_notes) 
             report.data['comments'] += ",  "
