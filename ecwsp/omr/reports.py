@@ -20,6 +20,7 @@ from django.db.models import F, Sum
 
 from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import Struct
+from ecwsp.sis.template_report import TemplateReport
 from ecwsp.administration.models import Template
 from ecwsp.omr.models import AnswerInstance
 from ecwsp.benchmarks.models import Benchmark
@@ -139,8 +140,8 @@ class ReportManager(object):
         
     def download_student_results(self, test, format, template):
         """ Make appy based report showing results for each student """
-        data = get_default_data()
-        
+        report = TemplateReport()
+        report.file_format = format
         test_instances = test.testinstance_set.all()
         benchmarks = Benchmark.objects.filter(question__test=test)
         
@@ -164,10 +165,10 @@ class ReportManager(object):
                 except:
                     incorrect.right_answer = "No correct answer"
             
-        data['test'] = test
-        data['tests'] = test_instances
+        report.data['test'] = test
+        report.data['tests'] = test_instances
         
-        filename = 'Student Results for ' + unicode(test)
-        return pod_save(filename, "." + str(format), data, template)  
+        report.filename = 'Student Results for ' + unicode(test)
+        return report.pod_save(template)  
 
 report = ReportManager()
