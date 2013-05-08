@@ -195,7 +195,7 @@ To get started, it is first recommended that you use `LibreOffice
 1. When you enter "fields" in Libre, this refers to database fields.
 2. Insert field using the insert field extension mentioned above
 
-IMAGE
+.. image:: /images/fields.png
 
 3. Edit a field by double clicking on one.
 
@@ -261,13 +261,13 @@ SWoRD allows schools to control admissions levels/steps that are unique to their
 1. Select **Admissions Levels** under the Admissions module.
 2. You will see the screen shown below.
 
-IMAGE
+.. image:: /images/admissionslevel1.png
 
 3. From this screen you can add an admissions level, selecting the **Add Amissions Level** button or edit an existing one by selecting *edit* located next the level you are altering. From the edit screen or add screen, make the necessary changes/additions and then select save.
 
 The section under the header, **Items needed to be completed to attain this level in the process**, refers to creating a checklist of various tasks the applicant needs to complete prior to reaching a new step. For example, the image below details a checklist containing the two required tasks 'Open House' and 'Request more information' which must be completed before the applicant reaches the level of Inquiry. 
 
-(PIC)
+.. image:: /images/admissionslevel2.png
 
 Users may designate levels required in order to advance. For example, schools may require an applicant pay an initial deposit prior to registration. To make a step required, simply check the box found under the **Required** column and save.
 
@@ -276,7 +276,7 @@ Filtering Applicants
 ---------------------
 To maximize organization, efficiency, and promote the ease of collecting various admissions data for report preparation, SWoRD contains several filters and functions accessible through the main applicant page. Each column header in the image below will sort accordingly. For example, clicking on Last Name will filter by last name, application decision by decision, etc. 
 
-(PICTURE)
+.. image:: /images/applicantsalpha.png
 Alternatively, users may choose from the available filters located directly to the right of the applicant list. The drop down list allows users to select and combine the following filters: school year, level, checklist, ready for export, present school, ethnicity, heard about us, and year. The filter tool will do so in real time, no need to select and save.
 
 ---------------------
@@ -301,7 +301,7 @@ Some basic Admission Reports are available built in to SWoRD that allows users t
 3. SWoRD will generate an Excel document detailing some basic admission statistics such as number of applicants by grade or number of applicants on a particular level in the process.  
 
 In step 2, another option is to choose **Funnel**, which generates on-screen admissions statistics from each step in the admissions process. The report shows total, current, male/female, and rejected reasons.
-(SAMPLE OF REPORT) 
+.. image:: /images/admfunnel.png
 
 ----------------------------
 Modifying options - Admission Administration
@@ -314,23 +314,23 @@ Adding Students
 
 1. From Home, click on **Student** in the top navigation bar and click **Edit**.
 
-image 01
+.. image:: /images/sisadd1.png
 
 2. On the top right, click the **+ Add student** button.
 
-image 02
+.. image:: /images/sisadd2.png
 
 3. Enter the student’s Last Name, First Name, and Username, which are required fields, and any additional information including Birth Date, Student Contact, and Notes. Click the **Save** button at the bottom right to complete the input of student information.
 
-image 03
+.. image:: /images/sisadd3entry.png
 
 * Use the **Filter** function to filter students by Inactivity, Year classification, or Graduating Year. 
 
-(Image04 of Filter function for Class of 2015)
+.. image:: /images/sisadd4filter.png
 
 * Click on the column heading **Year** to sort students by Year classification in ascending or descending order. 
 
-(Image05 of Year sorting)
+.. image:: /images/sisadd5sorting.png
 
 School Years
 -----------------------
@@ -411,11 +411,11 @@ For fast lookup of a particular student's discipline record:
 1. Select **Discipline** from the navigation menu, then **View**. 
 2. Begin typing in the name of the student in the text box, and SWoRD will present you with a list of available students as shown below:
 
-PICTURE
+.. image:: /images/viewdiscipline.png
 
 3. Once a particular student has been selected, SWoRD will present all discipline information that has been input for the student:
 
-PICTURE
+.. image:: /images/viewdiscipline2.png
 
 -------------------
 Discipline Reports
@@ -429,7 +429,7 @@ IMAGE
 
 **Aggregate Report** generates an Excel document tallying each disciplinary incident.
 
-IMAGE
+.. image:: /images/disciplineaggregate.png
 
 -------------------
 Discipline Actions
@@ -441,7 +441,7 @@ Clicking **Discipline Actions** presents a list of current discipline actions. T
 
 *Schools beginning to use SWoRD should add all discipline actions that the school currently utilizes.* 
 
-IMAGE
+.. image:: /images/disciplineactions.png
 
 
 =================
@@ -453,7 +453,7 @@ Electronic Time Card System
 -----------------------------
 At the heart of SWoRD's work-study module is the electronic time card system. The electronic time card system allows the school to keep track of a student's working day, what that student did at work, and how their work supervisor felt the student did on a particular day. Additionally, all time cards created by students will be stored neatly into SWoRD where work-study staff can then filter or create reports accordingly. The basic steps are outlined in the image below:
 
-SWORD PROCESS IMAGE
+.. image:: /images/timecardprocess.png
 
 SWoRD then stores all timecards in the main timecard dash. Users with access to these stored time sheets are able to view each time sheet’s information including date, hours, student accomplishments, and supervisor comments.
 
@@ -466,11 +466,12 @@ Creating student workers involves creating a student first, then "promoting" the
 
 1. Access the student dash 
 by selecting **Student** at the navigation bar, then **EDIT**
-	   FIRST CWSP IMAGE
+.. image:: /images/cwspnav1.png
 2. Here, either create your student, or if the student is already in the dash, make a check by that student/s name.
 3. Select the drop down action box located at the bottom left of the screen and select **Promote to Worker**
 
-	   SECOND CWSP IMAGE
+.. image:: /images/cwsp2.png
+
 4. Once selected, the student/s will be made into a student worker- you can then view the new student worker in the student worker dash by clicking **CWSP**>**Edit Student Worker**
 
 Creating Supervisor Logins
@@ -480,7 +481,7 @@ Creating Supervisor Logins
 2. Select an available login, or click the blue plus located to the right of the box.
 
 
-IMAGE SC LOGIN
+.. image:: /images/cwspsuperlogin.png
 
 **Things to keep in mind**
 - You need access to create users.
@@ -497,7 +498,7 @@ SWoRD supports the ability to store and sign fully electronic work study contrac
 
 1. For fully electronic contracts, start by editing or creating a template, and be make certain that it's named "Work Study Contract". If your school has purchased SWoRD support, feel free to email for assistance in this  regard, otherwise refer to the "Report Writing and Creating Templates" section above to do so indepedently. 
 
-CWSP TEMPLATE IMAGE
+.. image:: /images/cwspaddtemplate.png
 
 2. Next, you will need to generate special web links for **each** company you want to get a contract from. It is recommended that you try this first with a fake companay to see how it works.
 
@@ -517,8 +518,8 @@ SWoRD allows school officials to send out messages/reminders for all supervisors
 3. Select a Start and End date to indicate how long the message will be visible.
 4. Click Save.
 
-MSG TO SUPER PIC1
+.. image:: /images/msgtosuper.png
 
 After the previous steps above have been completed, SWoRD will then display your message to supervisors on their dashboard page, as shown below:
 
-MSG TO SUPER PIC2
+.. image:: /images/msgtosuper2.png
