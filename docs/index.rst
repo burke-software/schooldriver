@@ -453,7 +453,7 @@ Electronic Time Card System
 -----------------------------
 At the heart of SWoRD's work-study module is the electronic time card system. The electronic time card system allows the school to keep track of a student's working day, what that student did at work, and how their work supervisor felt the student did on a particular day. Additionally, all time cards created by students will be stored neatly into SWoRD where work-study staff can then filter or create reports accordingly. The basic steps are outlined in the image below:
 
-.. image:: /images/timecardprocess.png
+.. image:: /images/timecardprocess.jpg
 
 SWoRD then stores all timecards in the main timecard dash. Users with access to these stored time sheets are able to view each time sheet’s information including date, hours, student accomplishments, and supervisor comments.
 
