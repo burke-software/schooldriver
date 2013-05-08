@@ -150,7 +150,7 @@ Log Entries
 --------------
 Log entries record all actions completed during a SWoRD's instance. This allows administrators and superusers to locate any changes made at specific dates or times. Admins will see a dashboard similar to what is shown below:
 
-IMAGE
+.. image:: /images/logentries.png
 
 **User** refers to which user made a change.
 
@@ -222,7 +222,7 @@ SWoRD allows users to export into Excel any and all data that users have input i
     6. A screen asking what you want to be exported appears- make your selections.
     7. Submit.
 
-IMAGE
+.. image:: /images/exportoxls.png
 
 
 
@@ -237,6 +237,7 @@ Admissions
 
 The admissions module allows schools to keep track of applicants, and their status in the application process. Each step in the application process can be customized to fit a school's unique need. Users can designate steps that need to be completed before moving onto the next level. Additionally, SWoRD may track any open houses a student has attended and how the student heard about the school. 
 
+.. image:: /images/applicantdashboard.png
 
 The image above details the dashboard that an admissions counselor or designated user sees when the admissions module is selected. Most modules include a dashboard to provide users a general overview of information that is able to be filtered. 
 
@@ -441,3 +442,83 @@ Clicking **Discipline Actions** presents a list of current discipline actions. T
 *Schools beginning to use SWoRD should add all discipline actions that the school currently utilizes.* 
 
 IMAGE
+
+
+=================
+Work Study
+=================
+The SWoRD work study module allows users to keep track of student worker information, including: detailed company information, work assignments, work attendance, directions, work teams, performance reviews, time sheets and more.
+
+Electronic Time Card System
+-----------------------------
+At the heart of SWoRD's work-study module is the electronic time card system. The electronic time card system allows the school to keep track of a student's working day, what that student did at work, and how their work supervisor felt the student did on a particular day. Additionally, all time cards created by students will be stored neatly into SWoRD where work-study staff can then filter or create reports accordingly. The basic steps are outlined in the image below:
+
+SWORD PROCESS IMAGE
+
+SWoRD then stores all timecards in the main timecard dash. Users with access to these stored time sheets are able to view each time sheet’s information including date, hours, student accomplishments, and supervisor comments.
+
+
+SWORD TIMECARD DASHBOARD PIC
+
+Adding a Student Worker
+--------------------------
+Creating student workers involves creating a student first, then "promoting" them to a student worker as follows.
+
+1. Access the student dash 
+by selecting **Student** at the navigation bar, then **EDIT**
+	   FIRST CWSP IMAGE
+2. Here, either create your student, or if the student is already in the dash, make a check by that student/s name.
+3. Select the drop down action box located at the bottom left of the screen and select **Promote to Worker**
+
+	   SECOND CWSP IMAGE
+4. Once selected, the student/s will be made into a student worker- you can then view the new student worker in the student worker dash by clicking **CWSP**>**Edit Student Worker**
+
+Creating Supervisor Logins
+---------------------------
+
+1. Under the CWSP section from the main SWoRD dash, select **work teams** and click on your desired work team.
+2. Select an available login, or click the blue plus located to the right of the box.
+
+
+IMAGE SC LOGIN
+
+**Things to keep in mind**
+- You need access to create users.
+- Supervisors must log in to the base site, not the admin site. 
+- Do not mark these users (Company) as Faculty or Student users. Doing so will produce unexpected results.
+- One work team may have an unlimited number of supervisor logins.
+- Supervisor login is not related to the supervisor contact in anyway.
+
+
+Electronic Contracts
+----------------------
+
+SWoRD supports the ability to store and sign fully electronic work study contracts between the school and the student's work placement. Contracts can be filled out by the client from a web interface, or manually added to a company under the **Companies**selection from the CWSP header. **Note:** Contracts are linked to companies, not work teams.
+
+1. For fully electronic contracts, start by editing or creating a template, and be make certain that it's named "Work Study Contract". If your school has purchased SWoRD support, feel free to email for assistance in this  regard, otherwise refer to the "Report Writing and Creating Templates" section above to do so indepedently. 
+
+CWSP TEMPLATE IMAGE
+
+2. Next, you will need to generate special web links for **each** company you want to get a contract from. It is recommended that you try this first with a fake companay to see how it works.
+
+3. To get to this link, enter <site url>/work_study/company_contract/<company id #> Where site url is replaced with the URL for your SWoRD installation. Company ID # can be downloaded with the export to XLS tool. Go to **companies**, check off the companies you want to get IDs for, click **Export to XLS** and make sure the ID column option is checked.
+
+A finished url might look something like: sis.YOURSCHOOL.org/work_study/company_contract/123
+
+You may send this link to your client and wait for the results to come in. Because SWoRD stores contracts, you may review it once it has been submitted under Work_study > Company Contracts.
+
+
+Message to Supervisors
+------------------------
+SWoRD allows school officials to send out messages/reminders for all supervisors to see when they log in to approve a student's time card. The steps are as follows, with an attached picture depicting the steps and outcome:
+
+1. Under **Company Data, select ADD under the "Message to Supervisors" subheading.	
+2. Type out your desired message to display to all supervisors.
+3. Select a Start and End date to indicate how long the message will be visible.
+4. Click Save.
+
+MSG TO SUPER PIC1
+
+After the previous steps above have been completed, SWoRD will then display your message to supervisors on their dashboard page, as shown below:
+
+MSG TO SUPER PIC2
