@@ -51,6 +51,7 @@ import logging
 from ecwsp.administration.models import Configuration, Template
 from ecwsp.sis.models import Student
 from ecwsp.sis.helper_functions import CharNullField
+from ecwsp.sis.template_report import TemplateReport
 
 class CraContact(models.Model):
     name = models.ForeignKey(User)
