@@ -63,6 +63,7 @@ def student_grade(request, form):
         transcript = template.transcript
     else:
         # or use uploaded template, saving it to temp file
+        benchmark_report_card = None
         template = request.FILES['upload_template']
         tmpfile = mkstemp()[1]
         f = open(tmpfile, 'wb')
@@ -71,8 +72,8 @@ def student_grade(request, form):
         template_path = tmpfile
         report_card = True
         transcript = True
-    file_format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
-    return pod_report_grade(request, template_path, options=data, students=form.get_students(data), format=file_format,
+    report = GradeTemplateReport(request.user)
+    return report.pod_report_grade(template_path, options=data, students=form.get_students(data),
                             report_card=report_card, benchmark_report_card=benchmark_report_card, transcript=transcript)
 
 def aggregate_grade_report(request):

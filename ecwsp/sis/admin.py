@@ -48,6 +48,13 @@ class EmergencyContactInline(admin.TabularInline):
     model = EmergencyContactNumber
     extra = 1
     classes = ('grp-collapse grp-open',)
+    verbose_name = "Student Contact Number"
+    verbose_name_plural = "Student Contact Numbers"
+    from django.forms import TextInput, Textarea
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput()},
+    }
     
 class TranscriptNoteInline(admin.TabularInline):
     model = TranscriptNote
@@ -74,6 +81,8 @@ class StudentECInline(admin.TabularInline):
     model = Student.emergency_contacts.through
     extra = 0
     classes = ('grp-collapse grp-open',)
+    verbose_name = "Student for Contact"
+    verbose_name_plural = "Students for Contact"
     
 
 class MarkingPeriodInline(admin.StackedInline):
@@ -203,15 +212,17 @@ admin.site.register(StudentCourse, StudentCourseAdmin)
 
 class EmergencyContactAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': [('lname', 'fname'), 'mname', ('relationship_to_student','email'), ('primary_contact', 'emergency_only')]}),
-        ('Address', {'fields': ['street', ('city', 'state'), 'zip'],
+        (None, {'fields': [('lname', 'fname'), 'mname', ('relationship_to_student','email'), 'primary_contact', 'emergency_only',]}),
+        ('Address', {'fields': ['street', ('city', 'state',), 'zip'],
             'classes': ['collapse']}),
     ]
     if 'ecwsp.integrations.schoolreach' in settings.INSTALLED_APPS:
         fieldsets[0][1]['fields'].append('sync_schoolreach')
-    list_filter = ['primary_contact', 'emergency_only']
+    list_filter = ['primary_contact',]
     inlines = [EmergencyContactInline, StudentECInline]
     search_fields = ['fname', 'lname', 'email', 'student__fname', 'student__lname']
+    list_display = ['fname', 'lname', 'primary_contact', 'relationship_to_student', 'show_student']
+    
 admin.site.register(EmergencyContact, EmergencyContactAdmin)
 
 admin.site.register(MdlUser) # Not used?

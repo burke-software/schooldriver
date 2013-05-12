@@ -229,6 +229,13 @@ class Applicant(models.Model, CustomFieldModel):
     def __unicode__(self):
         return "%s %s %s" % (self.fname, self.mname, self.lname)
     
+    @property
+    def parent_guardian(self):
+        """ Compatibility to act like sis.student parent_guardian
+        """
+        return u"{} {}".format(self.parent_guardian_first_name, self.parent_guardian_last_name)
+    
+    
     def set_cache(self, contact):
         self.parent_guardian_first_name = contact.fname
         self.parent_guardian_last_name = contact.lname

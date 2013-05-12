@@ -165,7 +165,7 @@ class WorkStudyUserAdmin(UserAdmin,admin.ModelAdmin):
     list_display = ('username','first_name','last_name','is_active',)
     list_filter = ('is_active','workteam')
     def queryset(self,request):
-        return User.objects.filter(groups__name='Company')
+        return WorkTeamUser.objects.filter(groups__name='Company')
     
 admin.site.register(WorkTeamUser,WorkStudyUserAdmin)
 

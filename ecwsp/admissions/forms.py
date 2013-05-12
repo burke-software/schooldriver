@@ -9,7 +9,8 @@ from django.contrib.localflavor.us import forms as us_forms
 
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 
-from ecwsp.admissions.models import *
+from ecwsp.administration.models import Template
+from ecwsp.admissions.models import AdmissionLevel, Applicant
 from ecwsp.sis.models import SchoolYear
 
 class NumberInput(TextInput):
@@ -70,3 +71,12 @@ class ApplicantForm(forms.ModelForm):
         
 class ReportForm(forms.Form):
     school_year = forms.ModelMultipleChoiceField(SchoolYear.objects.all())
+    
+class TemplateReportForm(forms.Form):
+    school_year = forms.ModelMultipleChoiceField(SchoolYear.objects.all())
+    level = forms.ModelMultipleChoiceField(AdmissionLevel.objects.all())
+    ready_for_export = forms.NullBooleanField()
+    template = forms.ModelChoiceField(Template.objects.all())
+    
+    
+    

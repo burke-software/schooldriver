@@ -13,14 +13,20 @@
 <h2> Admission Reports </h2>
 <form action="" method="post">
     <fieldset class="module">
+	<legend>Pre-made Reports </legend>
 	<div class="row">
-	    <legend>Pre-made Reports </legend>
 	    {{ report_form }}
 	    <br/><br/>
 	    <input type="submit" name="process_statistics" value="Process Statistics (xls)"/>
 	    <input type="submit" name="funnel" value="Funnel"/>
 	    <input type="submit" name="applicants_to_students" value="Create students from applicants"/>
 	</div>
+    </fieldset>
+    
+    <fieldset class="module">
+      <legend>Template Reports</legend>
+      {{ template_form }}
+      <input type="submit" name="template_report" value="Submit"/>
     </fieldset>
 </form>
 

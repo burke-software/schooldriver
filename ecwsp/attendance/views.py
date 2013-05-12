@@ -35,6 +35,7 @@ from forms import StudentAttendanceForm, StudentMultpleAttendanceForm
 from ecwsp.schedule.models import Course
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
+from ecwsp.sis.template_report import TemplateReport
 from ecwsp.administration.models import Template
 
 import datetime
@@ -185,15 +186,18 @@ def teacher_submissions(request):
 
 def daily_attendance_report(adate, private_notes=False, type="odt", request=None):
     from ecwsp.sis.models import GradeLevel
-    from ecwsp.sis.report import get_school_day_number, pod_save, get_default_data
+    from ecwsp.sis.report import get_school_day_number
     template = Template.objects.get_or_create(name="Daily Attendance")[0]
     template = template.get_template_path(request)
     if not template:
         return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
     
-    data = get_default_data()
-    data['selected_date'] = unicode(adate)
-    data['school_day'] = get_school_day_number(adate)
+    if request:
+        report = TemplateReport(request.user)
+    else:
+        report = TemplateReport()
+    report.data['selected_date'] = unicode(adate)
+    report.data['school_day'] = get_school_day_number(adate)
     
     attendance = StudentAttendance.objects.filter(date=adate)
     students = Student.objects.filter(student_attn__in=attendance)
@@ -212,7 +216,7 @@ def daily_attendance_report(adate, private_notes=False, type="odt", request=None
                 attn.total = StudentAttendance.objects.filter(student=attn.student, status__tardy=True, date__range=active_year_dates).count()
             else:
                 attn.total = StudentAttendance.objects.filter(student=attn.student, status=attn.status, date__range=active_year_dates).count()
-        data['absences_' + str(year.id)] = attns
+        report.data['absences_' + str(year.id)] = attns
         
         attn_list = ""
         for status in AttendanceStatus.objects.exclude(name="Present"):
@@ -220,21 +224,21 @@ def daily_attendance_report(adate, private_notes=False, type="odt", request=None
             if attn.count() > 0:
                 attn_list += unicode(status.name) + " " + unicode(attn.count()) + ",  " 
         if len(attn_list) > 3: attn_list = attn_list[:-3]
-        data['stat_' + str(year.id)] = attn_list
+        report.data['stat_' + str(year.id)] = attn_list
         
     
-    data['comments'] = ""
+    report.data['comments'] = ""
     for attn in StudentAttendance.objects.filter(date=adate):
         if (attn.notes) or (attn.private_notes and private_notes):
-            data['comments'] += unicode(attn.student) + ": "
-            if attn.notes: data['comments'] += unicode(attn.notes) + "  "
+            report.data['comments'] += unicode(attn.student) + ": "
+            if attn.notes: report.data['comments'] += unicode(attn.notes) + "  "
             if attn.private_notes and private_notes: 
-                data['comments'] += unicode(attn.private_notes) 
-            data['comments'] += ",  "
-    if len(data['comments']) > 3: data['comments'] = data['comments'][:-3]
+                report.data['comments'] += unicode(attn.private_notes) 
+            report.data['comments'] += ",  "
+    if len(report.data['comments']) > 3: report.data['comments'] = report.data['comments'][:-3]
     
-    filename = "daily_attendance"
-    return pod_save(filename, "." + str(type), data, template)
+    report.filename = "daily_attendance"
+    return report.pod_save(template)
 
 def check_attendance_permission(course, user):
     """ Returns true if user has permission to take attendance
@@ -367,7 +371,6 @@ def course_attendance(request, course_id, for_date=datetime.date.today):
 @permission_required('sis.reports') 
 def attendance_report(request):
     from ecwsp.sis.xl_report import XlReport
-    from ecwsp.sis.report import pod_report_all
 
     form = AttendanceReportForm()
     daily_form = AttendanceDailyForm()

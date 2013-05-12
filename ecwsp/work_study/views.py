@@ -43,8 +43,8 @@ from ecwsp.sis.xl_report import XlReport
 from ecwsp.work_study.reports import fte_by_day, fte_by_ind, fte_by_pay, am_route_attendance, gen_attendance_report_day, route_attendance
 from ecwsp.work_study.reports import student_company_day_report, supervisor_xls
 from ecwsp.sis.models import StudentNumber, SchoolYear
-from ecwsp.sis.report import pod_report_work_study
 from ecwsp.sis.helper_functions import log_admin_entry
+from ecwsp.sis.template_report import TemplateReport
 
 #from itertools import *
 from datetime import date
@@ -503,7 +503,11 @@ def report_builder_view(request):
                 students = template_form.get_students(template_form.cleaned_data, worker=True)
                 template = template_form.get_template(request)
                 if template:
-                    return pod_report_work_study(template, students)
+                    report = TemplateReport(request.user)
+                    report.data['workteams'] = WorkTeam.objects.all()
+                    report.data['students'] = students
+                    report.filename = 'Work Study Report'
+                    return report.pod_save(template)  
         else:
             form = ReportBuilderForm(request.POST)
             if form.is_valid():

@@ -50,8 +50,8 @@ import logging
 
 from ecwsp.administration.models import Configuration, Template
 from ecwsp.sis.models import Student
-from ecwsp.sis.report import get_default_data, pod_save
 from ecwsp.sis.helper_functions import CharNullField
+from ecwsp.sis.template_report import TemplateReport
 
 class CraContact(models.Model):
     name = models.ForeignKey(User)
@@ -331,20 +331,20 @@ class CompContract(models.Model):
             return "Student will not leave for errands"
         
     def generate_contract_file(self):
-        data = get_default_data()
-        data['contract'] = self
-        filename = unicode(self.company) + "_contract"
+        report = TemplateReport()
+        report.data['contract'] = self
+        report.filename = unicode(self.company) + "_contract"
         if settings.PREFERED_FORMAT == "m":
-            format = "doc"
+            report.file_format = "doc"
         else:
-            format = "odt"
+            report.file_format = "odt"
         if self.company and self.company.alternative_contract_template:
             template = self.company.alternative_contract_template.file
         else:
             template = Template.get_or_make_blank(name="Work Study Contract").file.path
         if template :
-            file = pod_save(filename, "." + str(format), data, template, get_tmp_file=True)
-            self.contract_file.save(unicode(self.company) + "." + unicode(format), File(open(file)))
+            report_file = report.pod_save(template, get_tmp_file=True)
+            self.contract_file.save(unicode(self.company) + "." + unicode(report.file_format), File(open(report_file)))
     
     #filename, ext, data, template
     def get_contract_as_pdf(self, ie=False, response=True):

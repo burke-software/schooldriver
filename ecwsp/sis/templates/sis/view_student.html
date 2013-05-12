@@ -57,7 +57,8 @@
             
 		  <div id="name-and-grade">
 			<h1 class="sv-name">{{ student }}</h1>
-			{{ student.year }} - {{ student.class_of_year }} {% if location %} at {{ location }} {% endif %}
+			{{ student.year }} - {{ student.class_of_year }}
+			{% if location %}<p>Location: {{ location }}</p>{% endif %}
 		  </div>
 		  
 		  <div id="transcript">   

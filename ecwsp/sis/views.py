@@ -34,7 +34,7 @@ from ecwsp.sis.models import Student, UserPreference, GradeLevel, SchoolYear
 from ecwsp.sis.forms import UserPreferenceForm, UploadFileForm, StudentLookupForm, StudentReportWriterForm
 from ecwsp.sis.forms import StudentGradeReportWriterForm, MarkingPeriodForm, YearSelectForm
 from ecwsp.administration.models import Template
-from ecwsp.sis.report import pod_report_grade, pod_report_paper_attendance, pod_report_all
+from ecwsp.sis.report import TemplateReport
 from ecwsp.sis import grade_reports
 from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Course
@@ -210,7 +210,18 @@ def school_report_builder_view(request):
                 day = "4"
             if request.POST['p_attendance'] == "Friday":
                 day = "5"
-            result = pod_report_paper_attendance(day, format=format)
+            
+            template = Template.objects.get_or_create(name="Paper Attendance")[0].file
+            if not template:
+                result = False
+            else:
+                from ecwsp.schedule.models import CourseMeet
+                cm = CourseMeet.objects.filter(day=day)
+                courses = Course.objects.filter(coursemeet__in=cm, homeroom=True).distinct()
+                report = TemplateReport(request.user)
+                report.data['courses'] = courses
+                result = report.pod_save(template)
+            
             if result:
                 return result
             else:
@@ -233,8 +244,16 @@ def school_report_builder_view(request):
                     f.write(template.read())
                     f.close()
                     template = tmpfile
-                format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
-                return pod_report_all(template, options=data, students=form.get_students(data), format=format)
+                
+                report = TemplateReport(request.user)
+                students=form.get_students(data)
+                cal = Calendar()
+                current_mp = MarkingPeriod.objects.filter(end_date__gte=date.today()).order_by('-start_date')
+                if current_mp:
+                    for student in students:
+                        student.schedule_days, student.periods = cal.build_schedule(student, current_mp[0])
+                report.data['students'] = students
+                return report.pod_save(template)
             else:
                 return render_to_response('sis/reportBuilder.html', {'request':request, 'form':form})
     form = StudentReportWriterForm()

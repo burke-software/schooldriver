@@ -36,11 +36,10 @@ def draw_gauge(percentage, width=10, filled_char=u'█', empty_char=u'░'):
     return output
 
 
-def benchmark_report_card(template, options, students, format="odt"):
+def benchmark_report_card(grade_template_report, template, options, students, format="odt"):
     PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
-
-    data = get_default_data()
-    for_date = options['date']
+    data = grade_template_report.data
+    for_date = grade_template_report.for_date
     try: omit_substitutions = options['omit_substitutions']
     except KeyError: omit_substitutions = False
     school_year = SchoolYear.objects.filter(start_date__lt=for_date).order_by('-start_date')[0]
@@ -157,9 +156,7 @@ def benchmark_report_card(template, options, students, format="odt"):
     data['school_year'] = school_year
     data['marking_period'] = marking_period.name # just passing object makes appy think it's undefined
     data['draw_gauge'] = draw_gauge
-    filename = 'output'
-    #return pod_save(filename, ".pdf", data, template)
-    return pod_save(filename, "." + str(format), data, template)
+    return grade_template_report.pod_save(template)
 
 @staff_member_required
 def student_incomplete_courses(request):

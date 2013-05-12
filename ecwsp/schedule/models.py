@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import Max
 from django.contrib import messages
 from django.conf import settings
 
@@ -255,10 +254,14 @@ class Course(models.Model):
         else:
             return Student.objects.filter(courseenrollment__course=self, inactive=False)
     
-    def is_passing(self, student, date_report=None):
+    def is_passing(self, student, date_report=None, cache_grade=None, cache_passing=None, cache_letter_passing=None):
         """ Is student passing course? """
-        pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
-        grade = self.get_final_grade(student, date_report=date_report)
+        if cache_passing == None:
+            pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
+        if cache_grade:
+            grade = cache_grade
+        else:
+            grade = self.get_final_grade(student, date_report=date_report)
         try:
             if grade >= int(pass_score):
                 return True
@@ -304,7 +307,7 @@ class Course(models.Model):
         if 'ecwsp.grades' in settings.INSTALLED_APPS:
             from ecwsp.grades.models import Grade
             final = Grade.objects.filter(course=self, override_final=True, student=student)
-            if final.count():
+            if final:
                 if not date_report or final[0].course.marking_period.filter(end_date__lte=date_report).count():
                     final = final[0].get_grade()
             elif date_report:
