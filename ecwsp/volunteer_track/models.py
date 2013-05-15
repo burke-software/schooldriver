@@ -137,7 +137,7 @@ class Volunteer(models.Model):
     attended_reflection = models.BooleanField(verbose_name = "Attended")
     hours_required = models.IntegerField(default=get_hours_default, blank=True, null=True)
     notes = models.TextField(blank=True)
-    last_updated = models.DateTimeField(default = datetime.now, validators=settings.DATE_VALIDATORS)
+    last_updated = models.DateTimeField(default = datetime.now)
     email_queue = models.CharField(default="", max_length=1000, blank=True, editable=False, help_text="Used to store nightly notification emails")
     def __unicode__(self):
         return unicode(self.student)
