@@ -143,6 +143,10 @@ class Item(models.Model):
             else:
                 # let people get away with leaving it blank
                 self.points_possible = self.category.fixed_points_possible
+
+        if not self.points_possible > 0:
+            # TODO: DB validation once TC cleans up their mess
+            raise ValidationError("Please assign a number of points possible greater than zero.")
     def __unicode__(self):
         if self.benchmark:
             benchmark_number = self.benchmark.number
