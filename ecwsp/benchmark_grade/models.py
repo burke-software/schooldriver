@@ -128,7 +128,6 @@ class Item(models.Model):
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     assignment_type = models.ForeignKey('AssignmentType', blank=True, null=True)
     benchmark = models.ForeignKey('benchmarks.Benchmark', blank=True, null=True, verbose_name='standard')
-    
     @property
     def benchmark_description(self): return self.benchmark.name
     multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1) # not used yet
@@ -143,7 +142,6 @@ class Item(models.Model):
             else:
                 # let people get away with leaving it blank
                 self.points_possible = self.category.fixed_points_possible
-
         if not self.points_possible > 0:
             # TODO: DB validation once TC cleans up their mess
             raise ValidationError("Please assign a number of points possible greater than zero.")
@@ -167,11 +165,8 @@ class Mark(models.Model):
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     normalized_mark = models.FloatField(blank=True, null=True)
-    
     class Meta:
         unique_together = ('item', 'demonstration', 'student',)
-    
-    
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def save(self, *args, **kwargs):
         if self.mark is not None and self.item.points_possible is not None:
@@ -196,11 +191,8 @@ class Aggregate(models.Model):
     category = models.ForeignKey('Category', blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-    
     class Meta:
         unique_together = ('student', 'course', 'category', 'marking_period')
-    
-    
     def max(self):
         if self.points_possible is None:
             return None
@@ -211,7 +203,6 @@ class Aggregate(models.Model):
         highest = marks.aggregate(Max('normalized_mark'))['normalized_mark__max']
         highest *= self.points_possible
         return highest
-
     def min(self):
         if self.points_possible is None:
             return None
@@ -222,7 +213,6 @@ class Aggregate(models.Model):
         lowest = marks.aggregate(Min('normalized_mark'))['normalized_mark__min']
         lowest *= self.points_possible
         return lowest
-
     def mean(self, normalize=False):
         if self.points_possible is None:
             return None
