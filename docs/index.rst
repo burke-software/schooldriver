@@ -8,6 +8,8 @@ Django-sis/SWoRD, Student Worker Relational Database, is an open source school i
 
 In sum, SWoRD includes pluggable apps designed to cover most if not all a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
 
+The purpose of this documentation is to be a user manual for end users. Most features will be highlighted and discussed, along with explanations and how-tos for everyday tasks. If you are a developer more interested in the technical aspects of SWoRD, please refer to our github page.
+
 .. contents:: Table of Contents
 =========================================
 Developer and Administrator Information 
@@ -224,12 +226,74 @@ SWoRD allows users to export into Excel any and all data that users have input i
 
 .. image:: /images/exportoxls.png
 
+Custom Fields
+--------------
+The custom fields option allows schools additional flexibility with regards to storing additional information to a particular model (student, applicants, student worker, etc.).
+
+Under Admin > Custom Fields, the custom fields creation screen displays:
+
+.. image:: /images/customfield1.png
+
+Required fields:
+
+Name- Refers to the name of the custom field. Note: this name will be visible to other end users
+
+Content Type- Designates which model to affix the custom field to. (Student, Alumni, Applicant, Faculty, etc.)
+
+Field Type- Text, Integer, and Boolean- select the type of custom field.
+
+NB: Boolean refers to a simple checkbox. The box can be checked or unchecked when created based on preference. Leave blank for unchecked and enter "1" for checked under the "Default Value" in the creation screen shown above.
+
 
 
 ====================
 Student Information System (SIS)
 ====================
 The SIS is the central module of SWoRD which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please follow the pertinent headings. 
+
+Adding Students
+-----------------
+
+1. From Home, click on **Student** in the top navigation bar and click **Edit**.
+
+.. image:: /images/sisadd1.png
+
+2. On the top right, click the **+ Add student** button.
+
+.. image:: /images/sisadd2.png
+
+3. Enter the student’s Last Name, First Name, and Username, which are required fields, and any additional information including Birth Date, Student Contact, and Notes. Click the **Save** button at the bottom right to complete the input of student information.
+
+.. image:: /images/sisadd3entry.png
+
+* Use the **Filter** function to filter students by Inactivity, Year classification, or Graduating Year. 
+
+.. image:: /images/sisadd4filter.png
+
+* Click on the column heading **Year** to sort students by Year classification in ascending or descending order. 
+
+.. image:: /images/sisadd5sorting.png
+
+School Years
+-----------------------
+The starting, ending, and graduation dates of school years may be stored here. One year may be denoted as the active year, which may be used for calculations such as the number of discipline incidents.
+
+Year Classifications
+-----------------------
+Year classifications are the various grades SWORD supports and their associated names. The defaults in SWORD are:
+
+- Freshman: 9
+- Sophomore: 10
+- Junior: 11
+- Senior: 12
+
+Cohorts
+-----------------------
+Cohorts are groupings of students within a school; the registrar may find this tool useful. For example, an "advanced class" cohort may be enrolled in particular classes, and homeroom placements may also be organized using cohorts.
+
+
+
+
 
 =====================
 Admissions
@@ -308,46 +372,8 @@ Modifying options - Admission Administration
 ----------------------------
 The remaining selections found under Admission Administration such as feeder schools, ethnicity choices, religion choices, school types, etc., allow the dropdown menu choices to be modified. For example, if a particular religion choice is unavailable in dropdown, click on Religion Choices under Admission administration, then the +Add religion choice button to enter the religion, then Save. The entry is now permanently available in the dropdown menu. 
 
-=======================
-Adding Students
-=======================
 
-1. From Home, click on **Student** in the top navigation bar and click **Edit**.
 
-.. image:: /images/sisadd1.png
-
-2. On the top right, click the **+ Add student** button.
-
-.. image:: /images/sisadd2.png
-
-3. Enter the student’s Last Name, First Name, and Username, which are required fields, and any additional information including Birth Date, Student Contact, and Notes. Click the **Save** button at the bottom right to complete the input of student information.
-
-.. image:: /images/sisadd3entry.png
-
-* Use the **Filter** function to filter students by Inactivity, Year classification, or Graduating Year. 
-
-.. image:: /images/sisadd4filter.png
-
-* Click on the column heading **Year** to sort students by Year classification in ascending or descending order. 
-
-.. image:: /images/sisadd5sorting.png
-
-School Years
------------------------
-The starting, ending, and graduation dates of school years may be stored here. One year may be denoted as the active year, which may be used for calculations such as the number of discipline incidents.
-
-Year Classifications
------------------------
-Year classifications are the various grades SWORD supports and their associated names. The defaults in SWORD are:
-
-- Freshman: 9
-- Sophomore: 10
-- Junior: 11
-- Senior: 12
-
-Cohorts
------------------------
-Cohorts are groupings of students within a school; the registrar may find this tool useful. For example, an "advanced class" cohort may be enrolled in particular classes, and homeroom placements may also be organized using cohorts.
 
 ====================
 Attendance
@@ -523,3 +549,70 @@ SWoRD allows school officials to send out messages/reminders for all supervisors
 After the previous steps above have been completed, SWoRD will then display your message to supervisors on their dashboard page, as shown below:
 
 .. image:: /images/msgtosuper2.png
+
+
+===================
+Volunteer Tracking
+===================
+
+Some schools require students to complete a certain number of volunteer hours every school year. Accordingly, SWoRD allows school staff to keep track of a student's volunteer hours, sites, and site supervisors. Tracking volunteers works similar to other modules in terms of adding and storing data.
+
+
+Adding a Volunteer
+-------------------
+Locate the **Volunteer_track** module of SWoRD from your main dashboard screen. Once found, select **add** by the **volunteers** option. The following page will be displayed:
+
+.. image:: /images/volunteeradd.png
+
+Under **student** begin typing in the name of a student you will be adding as a volunteer. A list of students will then show in a drop down box. Once your selection has been made, the remaining fields are optional- hours required, notes, sites. Select **Save**.
+
+Volunteers will be stored under the **Volunteers** heading along with their progress in number of volunteer hours completed.
+
+.. image:: /images/volunteersstored.png
+
+
+
+Add a Site for Volunteers
+----------------------------
+**Sites** refer to the physical location of where students will be volunteering. In the volunteer track module, the **volunteer sites** option is for school staff to create a new volunteer session for a student without the student submitting.
+
+From the **Volunteer Tracking** header select +Add by the Sites option.
+
+.. image:: /images/volunteeraddsite.png
+
+Next, you'll see the image below directing you to fill out basic site information. Save your changes.
+
+.. image:: /images/volunteeraddsite2.png
+
+
+Assign a Site Supervisor
+--------------------------
+At the familiar **Volunteer Tracking** module, select +Add next the **Site supervisors** option.
+
+.. image:: /images/volunteeraddsuper.png
+
+From this screen, add your information in about the supervisor. Note: only the NAME field is required, although ideally you could set the **site** of where this person is in charge of at this screen as well.
+
+
+Add Volunteer Site
+---------------------
+Selct +Add by the **Add Volunter Site** on the Volunteer Tracking module. Clicking add will lead to the following screen:
+
+.. image:: /images/volunteeraddvolsite.png
+
+Here, you may enter the appropiate information in to register hours for a particular student. 
+
+.. image:: /images/volunteerhours.png
+
+Once the hours have been registered, you will see this reflected in the volunteer dash.
+
+.. image:: /images/volunteerslistwithhours.png
+
+
+
+
+
+
+
+
+
