@@ -117,7 +117,7 @@ There are two easy ways to import data, both of which *require* the appropiate p
 7. Save
 8. Once saved you may return to the import screen and upload the xls or ods file you have just created.
 
-The follow newer method below allows users to set up an Excel/Open Office document without specifying a tab name or following any specific format in columns.
+The newer method below allows users to set up an Excel/Open Office document without specifying a tab name or following any specific format in columns.
 
 1. As described above, select Admin > School import from the navigation menu.
 2. Select **Click here** located at the very top of this page in blue text, which brings you to an import screen.
