@@ -17,7 +17,7 @@
 #   MA 02110-1301, USA.
 
 from django.db import models
-from django.db.models import Min, Max, Sum, Avg
+from django.db.models import Avg, Count, Max, Min, StdDev, Sum, Variance
 #from django.contrib.localflavor.us.models import *
 from django.conf import settings
 from decimal import Decimal
@@ -34,6 +34,16 @@ OPERATOR_CHOICES = (
     (u'<', u'Less than'),
     (u'!=', u'Not equal to'),
     (u'==', u'Equal to')
+)
+
+AGGREGATE_METHODS = (
+    (u'Avg', u'Average'),
+    (u'Count', u'Count'),
+    (u'Max', u'Maximum'),
+    (u'Min', u'Minimum'),
+    (u'StdDev', u'Standard deviation'),
+    (u'Sum', u'Sum'),
+    (u'Variance', u'Variance')
 )
 
 class CalculationRule(models.Model):
@@ -101,6 +111,7 @@ class CalculationRuleSubstitution(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=255)
     allow_multiple_demonstrations = models.BooleanField(default=False)
+    demonstration_aggregation_method = models.CharField(max_length=16, choices=AGGREGATE_METHODS, blank=True, null=True)
     display_in_gradebook = models.BooleanField(default=True)
     fixed_points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     fixed_granularity = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
@@ -112,6 +123,29 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = 'categories'
         ordering = ['display_order']
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.allow_multiple_demonstrations and self.demonstration_aggregation_method is None:
+            raise ValidationError('Please select a demonstration aggregation method.')
+        if not self.allow_multiple_demonstrations and self.demonstration_aggregation_method is not None:
+            self.demonstration_aggregation_method = None
+    @property
+    def aggregation_method(self):
+        if self.demonstration_aggregation_method == 'Avg':
+            return Avg
+        if self.demonstration_aggregation_method == 'Count':
+            return Count
+        if self.demonstration_aggregation_method == 'Max':
+            return Max
+        if self.demonstration_aggregation_method == 'Min':
+            return Min
+        if self.demonstration_aggregation_method == 'StdDev':
+            return StdDev
+        if self.demonstration_aggregation_method == 'Sum':
+            return Sum
+        if self.demonstration_aggregation_method == 'Variance':
+            return Variance
+        raise Exception('Category with id={} has invalid aggregation method.'.format(self.id))
 
 class AssignmentType(models.Model):
     name = models.CharField(max_length=255)
@@ -193,46 +227,59 @@ class Aggregate(models.Model):
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     class Meta:
         unique_together = ('student', 'course', 'category', 'marking_period')
+    @property
+    def mark_set(self):
+        ''' All the Marks needed to calculate this Aggregate '''
+        item_fields = ('course', 'category', 'marking_period')
+        criteria = {'student_id': self.student.id}
+        for field in item_fields:
+            field += '_id'
+            criterium = getattr(self, field)
+            if criterium is not None:
+                criteria['item__' + field] = criterium
+        return Mark.objects.filter(**criteria).exclude(mark=None)
+    def mark_values_list(self, normalize=False):
+        ''' A list of tuples of (mark, points_possible) for all the Marks
+        needed to calculate this Aggregate '''
+        if self.category is not None and self.category.allow_multiple_demonstrations:
+            if normalize:
+                mark_list = self.mark_set.values('item')\
+                        .annotate(self.category.aggregation_method('normalized_mark'))\
+                        .values_list('normalized_mark__max')
+                return [(x[0], 1) for x in mark_list]
+            else:
+                return self.mark_set.values('item')\
+                        .annotate(self.category.aggregation_method('mark'))\
+                        .values_list('mark__max', 'item__points_possible')
+        else:
+            if normalize:
+                mark_list = self.mark_set.values_list('normalized_mark')
+                return [(x[0], 1) for x in mark_list]
+            else:
+                return self.mark_set.values_list('mark', 'item__points_possible')
     def max(self):
         if self.points_possible is None:
             return None
-        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
-        marks = Mark.objects.filter(item__in=items, student=self.student).exclude(normalized_mark=None)
-        if not marks:
+        mark, item_points_possible = zip(*self.mark_values_list(normalize=True))
+        if len(mark):
+            return Decimal(max(mark)) * self.points_possible
+        else:
             return None
-        highest = marks.aggregate(Max('normalized_mark'))['normalized_mark__max']
-        highest *= self.points_possible
-        return highest
     def min(self):
         if self.points_possible is None:
             return None
-        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
-        marks = Mark.objects.filter(item__in=items, student=self.student).exclude(normalized_mark=None)
-        if not marks:
+        mark, item_points_possible = zip(*self.mark_values_list(normalize=True))
+        if len(mark):
+            return Decimal(min(mark)) * self.points_possible
+        else:
             return None
-        lowest = marks.aggregate(Min('normalized_mark'))['normalized_mark__min']
-        lowest *= self.points_possible
-        return lowest
     def mean(self, normalize=False):
         if self.points_possible is None:
             return None
-        items = Item.objects.filter(course=self.course, category=self.category, marking_period=self.marking_period)
-        if normalize: # mark should always == normalized_mark, but meh
-            marks = Mark.objects.filter(item__in=items, student=self.student).exclude(normalized_mark=None)
-        else:
-            marks = Mark.objects.filter(item__in=items, student=self.student).exclude(mark=None)
-        if not marks:
-            return None
-        if normalize:
-            mean = Decimal(marks.aggregate(Avg('normalized_mark'))['normalized_mark__avg']) # angry that the DB/ORM returns a float
-        else:
-            numerator = marks.aggregate(Sum('mark'))['mark__sum']
-            denominator = marks.aggregate(Sum('item__points_possible'))['item__points_possible__sum']
-            if denominator == 0:
-                return None
-            mean = numerator / denominator
-        mean *= self.points_possible
-        return mean
+        mark, item_points_possible = zip(*self.mark_values_list(normalize))
+        total_points_possible = sum(item_points_possible)
+        if total_points_possible:
+            return Decimal(sum(mark) / total_points_possible) * self.points_possible
         
     def __unicode__(self):
         return self.name # not useful
