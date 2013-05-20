@@ -317,7 +317,7 @@ To add an applicant:
 SWoRD will then return you to the applicant's dashboard where you will see your newly-created applicant at the top.
 
 
-------------------
+
 Admissions Levels
 ------------------
 SWoRD allows schools to control admissions levels/steps that are unique to their process. Each step is customizable as follows:
@@ -335,7 +335,7 @@ The section under the header, **Items needed to be completed to attain this leve
 
 Users may designate levels required in order to advance. For example, schools may require an applicant pay an initial deposit prior to registration. To make a step required, simply check the box found under the **Required** column and save.
 
----------------------
+
 Filtering Applicants
 ---------------------
 To maximize organization, efficiency, and promote the ease of collecting various admissions data for report preparation, SWoRD contains several filters and functions accessible through the main applicant page. Each column header in the image below will sort accordingly. For example, clicking on Last Name will filter by last name, application decision by decision, etc. 
@@ -343,7 +343,7 @@ To maximize organization, efficiency, and promote the ease of collecting various
 .. image:: /images/applicantsalpha.png
 Alternatively, users may choose from the available filters located directly to the right of the applicant list. The drop down list allows users to select and combine the following filters: school year, level, checklist, ready for export, present school, ethnicity, heard about us, and year. The filter tool will do so in real time, no need to select and save.
 
----------------------
+
 Exporting Applicants
 ---------------------
 SWoRD allows for easy export into an Excel document for sharing or distribution. After applying filters to applicants, follow the steps below to export into an Excel file.
@@ -355,7 +355,7 @@ SWoRD allows for easy export into an Excel document for sharing or distribution.
 5. Scroll down and select **Submit**.
 6. SWoRD will then open an Excel document.
 
---------------------
+
 Admission Reports
 --------------------
 Some basic Admission Reports are available built in to SWoRD that allows users to quickly process statistics based on a school year's applicants. 
@@ -367,9 +367,9 @@ Some basic Admission Reports are available built in to SWoRD that allows users t
 In step 2, another option is to choose **Funnel**, which generates on-screen admissions statistics from each step in the admissions process. The report shows total, current, male/female, and rejected reasons.
 .. image:: /images/admfunnel.png
 
-----------------------------
+
 Modifying options - Admission Administration
-----------------------------
+---------------------------------------------
 The remaining selections found under Admission Administration such as feeder schools, ethnicity choices, religion choices, school types, etc., allow the dropdown menu choices to be modified. For example, if a particular religion choice is unavailable in dropdown, click on Religion Choices under Admission administration, then the +Add religion choice button to enter the religion, then Save. The entry is now permanently available in the dropdown menu. 
 
 
@@ -396,7 +396,7 @@ Additional comments may be entered in the **Notes** column.
 
 * If a student is enrolled in two different homerooms and is marked absent in one and present in the other, the student will be considered absent. 
 
---------------------
+
 Attendance Reports
 --------------------
 Under **Attendance**(navigation menu) and **Reports** are a number of pre-formatted attendance reports designed to be quickly exported into an Excel or Word document. The available reports are:
@@ -413,7 +413,7 @@ Under **Attendance**(navigation menu) and **Reports** are a number of pre-format
 
 **Aggregate Report** For a date range or marking period, this report is a combined tally of all absences. An absolute Absent Percentage is also reported.
 
--------------------
+
 Editing Attendance
 -------------------
 
@@ -443,7 +443,7 @@ For fast lookup of a particular student's discipline record:
 
 .. image:: /images/viewdiscipline2.png
 
--------------------
+
 Discipline Reports
 -------------------
 
@@ -457,7 +457,7 @@ IMAGE
 
 .. image:: /images/disciplineaggregate.png
 
--------------------
+
 Discipline Actions
 -------------------
 The link to **Discipline Actions** is located in **Home** under **Discipline**. 
