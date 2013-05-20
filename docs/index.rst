@@ -8,6 +8,8 @@ Django-sis/SWoRD, Student Worker Relational Database, is an open source school i
 
 In sum, SWoRD includes pluggable apps designed to cover most if not all a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
 
+The purpose of this documentation is to be a user manual for end users. Most features will be highlighted and discussed, along with explanations and how-tos for everyday tasks. If you are a developer more interested in the technical aspects of SWoRD, please refer to our github page.
+
 .. contents:: Table of Contents
 =========================================
 Developer and Administrator Information 
@@ -115,7 +117,7 @@ There are two easy ways to import data, both of which *require* the appropiate p
 7. Save
 8. Once saved you may return to the import screen and upload the xls or ods file you have just created.
 
-The follow newer method below allows users to set up an Excel/Open Office document without specifying a tab name or following any specific format in columns.
+The newer method below allows users to set up an Excel/Open Office document without specifying a tab name or following any specific format in columns.
 
 1. As described above, select Admin > School import from the navigation menu.
 2. Select **Click here** located at the very top of this page in blue text, which brings you to an import screen.
@@ -224,6 +226,24 @@ SWoRD allows users to export into Excel any and all data that users have input i
 
 .. image:: /images/exportoxls.png
 
+Custom Fields
+--------------
+The custom fields option allows schools additional flexibility with regards to storing additional information to a particular model (student, applicants, student worker, etc.).
+
+Under Admin > Custom Fields, the custom fields creation screen displays:
+
+.. image:: /images/customfield1.png
+
+Required fields:
+
+Name- Refers to the name of the custom field. Note: this name will be visible to other end users
+
+Content Type- Designates which model to affix the custom field to. (Student, Alumni, Applicant, Faculty, etc.)
+
+Field Type- Text, Integer, and Boolean- select the type of custom field.
+
+NB: Boolean refers to a simple checkbox. The box can be checked or unchecked when created based on preference. Leave blank for unchecked and enter "1" for checked under the "Default Value" in the creation screen shown above.
+
 
 
 ====================
@@ -231,86 +251,8 @@ Student Information System (SIS)
 ====================
 The SIS is the central module of SWoRD which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please follow the pertinent headings. 
 
-=====================
-Admissions
-=====================
-
-The admissions module allows schools to keep track of applicants, and their status in the application process. Each step in the application process can be customized to fit a school's unique need. Users can designate steps that need to be completed before moving onto the next level. Additionally, SWoRD may track any open houses a student has attended and how the student heard about the school. 
-
-.. image:: /images/applicantdashboard.png
-
-The image above details the dashboard that an admissions counselor or designated user sees when the admissions module is selected. Most modules include a dashboard to provide users a general overview of information that is able to be filtered. 
-
-
-Adding an Applicant
---------------------
-To add an applicant: 
-
-1. Select **Applicants** under the Admissions module.
-2. Enter information about the applicant accordingly. First and Last Name fields are required.
-3. Click **Save**.
-
-SWoRD will then return you to the applicant's dashboard where you will see your newly-created applicant at the top.
-
-
-------------------
-Admissions Levels
-------------------
-SWoRD allows schools to control admissions levels/steps that are unique to their process. Each step is customizable as follows:
-
-1. Select **Admissions Levels** under the Admissions module.
-2. You will see the screen shown below.
-
-.. image:: /images/admissionslevel1.png
-
-3. From this screen you can add an admissions level, selecting the **Add Amissions Level** button or edit an existing one by selecting *edit* located next the level you are altering. From the edit screen or add screen, make the necessary changes/additions and then select save.
-
-The section under the header, **Items needed to be completed to attain this level in the process**, refers to creating a checklist of various tasks the applicant needs to complete prior to reaching a new step. For example, the image below details a checklist containing the two required tasks 'Open House' and 'Request more information' which must be completed before the applicant reaches the level of Inquiry. 
-
-.. image:: /images/admissionslevel2.png
-
-Users may designate levels required in order to advance. For example, schools may require an applicant pay an initial deposit prior to registration. To make a step required, simply check the box found under the **Required** column and save.
-
----------------------
-Filtering Applicants
----------------------
-To maximize organization, efficiency, and promote the ease of collecting various admissions data for report preparation, SWoRD contains several filters and functions accessible through the main applicant page. Each column header in the image below will sort accordingly. For example, clicking on Last Name will filter by last name, application decision by decision, etc. 
-
-.. image:: /images/applicantsalpha.png
-Alternatively, users may choose from the available filters located directly to the right of the applicant list. The drop down list allows users to select and combine the following filters: school year, level, checklist, ready for export, present school, ethnicity, heard about us, and year. The filter tool will do so in real time, no need to select and save.
-
----------------------
-Exporting Applicants
----------------------
-SWoRD allows for easy export into an Excel document for sharing or distribution. After applying filters to applicants, follow the steps below to export into an Excel file.
-
-1. Select each applicant you would like to export or select all by selecting the top left checkbox.
-2. Click the drop down menu located on the black toolbar at the bottom of the page.
-3. Select **Export to XLS**. A box opens up with options on what to export.
-4. Choose Select All to export all information entered for each applicant or check specific boxes.
-5. Scroll down and select **Submit**.
-6. SWoRD will then open an Excel document.
-
---------------------
-Admission Reports
---------------------
-Some basic Admission Reports are available built in to SWoRD that allows users to quickly process statistics based on a school year's applicants. 
-
-1. Under the **Admissions** tab in the navigation bar, select **Reports**.
-2. Select a year and click **Process Statistics**.
-3. SWoRD will generate an Excel document detailing some basic admission statistics such as number of applicants by grade or number of applicants on a particular level in the process.  
-
-In step 2, another option is to choose **Funnel**, which generates on-screen admissions statistics from each step in the admissions process. The report shows total, current, male/female, and rejected reasons.
-.. image:: /images/admfunnel.png
-
-----------------------------
-Modifying options - Admission Administration
-----------------------------
-The remaining selections found under Admission Administration such as feeder schools, ethnicity choices, religion choices, school types, etc., allow the dropdown menu choices to be modified. For example, if a particular religion choice is unavailable in dropdown, click on Religion Choices under Admission administration, then the +Add religion choice button to enter the religion, then Save. The entry is now permanently available in the dropdown menu. 
-
-=======================
 Adding Students
-=======================
+-----------------
 
 1. From Home, click on **Student** in the top navigation bar and click **Edit**.
 
@@ -349,6 +291,90 @@ Cohorts
 -----------------------
 Cohorts are groupings of students within a school; the registrar may find this tool useful. For example, an "advanced class" cohort may be enrolled in particular classes, and homeroom placements may also be organized using cohorts.
 
+
+
+
+
+=====================
+Admissions
+=====================
+
+The admissions module allows schools to keep track of applicants, and their status in the application process. Each step in the application process can be customized to fit a school's unique need. Users can designate steps that need to be completed before moving onto the next level. Additionally, SWoRD may track any open houses a student has attended and how the student heard about the school. 
+
+.. image:: /images/applicantdashboard.png
+
+The image above details the dashboard that an admissions counselor or designated user sees when the admissions module is selected. Most modules include a dashboard to provide users a general overview of information that is able to be filtered. 
+
+
+Adding an Applicant
+--------------------
+To add an applicant: 
+
+1. Select **Applicants** under the Admissions module.
+2. Enter information about the applicant accordingly. First and Last Name fields are required.
+3. Click **Save**.
+
+SWoRD will then return you to the applicant's dashboard where you will see your newly-created applicant at the top.
+
+
+
+Admissions Levels
+------------------
+SWoRD allows schools to control admissions levels/steps that are unique to their process. Each step is customizable as follows:
+
+1. Select **Admissions Levels** under the Admissions module.
+2. You will see the screen shown below.
+
+.. image:: /images/admissionslevel1.png
+
+3. From this screen you can add an admissions level, selecting the **Add Amissions Level** button or edit an existing one by selecting *edit* located next the level you are altering. From the edit screen or add screen, make the necessary changes/additions and then select save.
+
+The section under the header, **Items needed to be completed to attain this level in the process**, refers to creating a checklist of various tasks the applicant needs to complete prior to reaching a new step. For example, the image below details a checklist containing the two required tasks 'Open House' and 'Request more information' which must be completed before the applicant reaches the level of Inquiry. 
+
+.. image:: /images/admissionslevel2.png
+
+Users may designate levels required in order to advance. For example, schools may require an applicant pay an initial deposit prior to registration. To make a step required, simply check the box found under the **Required** column and save.
+
+
+Filtering Applicants
+---------------------
+To maximize organization, efficiency, and promote the ease of collecting various admissions data for report preparation, SWoRD contains several filters and functions accessible through the main applicant page. Each column header in the image below will sort accordingly. For example, clicking on Last Name will filter by last name, application decision by decision, etc. 
+
+.. image:: /images/applicantsalpha.png
+Alternatively, users may choose from the available filters located directly to the right of the applicant list. The drop down list allows users to select and combine the following filters: school year, level, checklist, ready for export, present school, ethnicity, heard about us, and year. The filter tool will do so in real time, no need to select and save.
+
+
+Exporting Applicants
+---------------------
+SWoRD allows for easy export into an Excel document for sharing or distribution. After applying filters to applicants, follow the steps below to export into an Excel file.
+
+1. Select each applicant you would like to export or select all by selecting the top left checkbox.
+2. Click the drop down menu located on the black toolbar at the bottom of the page.
+3. Select **Export to XLS**. A box opens up with options on what to export.
+4. Choose Select All to export all information entered for each applicant or check specific boxes.
+5. Scroll down and select **Submit**.
+6. SWoRD will then open an Excel document.
+
+
+Admission Reports
+--------------------
+Some basic Admission Reports are available built in to SWoRD that allows users to quickly process statistics based on a school year's applicants. 
+
+1. Under the **Admissions** tab in the navigation bar, select **Reports**.
+2. Select a year and click **Process Statistics**.
+3. SWoRD will generate an Excel document detailing some basic admission statistics such as number of applicants by grade or number of applicants on a particular level in the process.  
+
+In step 2, another option is to choose **Funnel**, which generates on-screen admissions statistics from each step in the admissions process. The report shows total, current, male/female, and rejected reasons.
+.. image:: /images/admfunnel.png
+
+
+Modifying options - Admission Administration
+---------------------------------------------
+The remaining selections found under Admission Administration such as feeder schools, ethnicity choices, religion choices, school types, etc., allow the dropdown menu choices to be modified. For example, if a particular religion choice is unavailable in dropdown, click on Religion Choices under Admission administration, then the +Add religion choice button to enter the religion, then Save. The entry is now permanently available in the dropdown menu. 
+
+
+
+
 ====================
 Attendance
 ====================
@@ -370,7 +396,7 @@ Additional comments may be entered in the **Notes** column.
 
 * If a student is enrolled in two different homerooms and is marked absent in one and present in the other, the student will be considered absent. 
 
---------------------
+
 Attendance Reports
 --------------------
 Under **Attendance**(navigation menu) and **Reports** are a number of pre-formatted attendance reports designed to be quickly exported into an Excel or Word document. The available reports are:
@@ -387,7 +413,7 @@ Under **Attendance**(navigation menu) and **Reports** are a number of pre-format
 
 **Aggregate Report** For a date range or marking period, this report is a combined tally of all absences. An absolute Absent Percentage is also reported.
 
--------------------
+
 Editing Attendance
 -------------------
 
@@ -417,7 +443,7 @@ For fast lookup of a particular student's discipline record:
 
 .. image:: /images/viewdiscipline2.png
 
--------------------
+
 Discipline Reports
 -------------------
 
@@ -431,7 +457,7 @@ IMAGE
 
 .. image:: /images/disciplineaggregate.png
 
--------------------
+
 Discipline Actions
 -------------------
 The link to **Discipline Actions** is located in **Home** under **Discipline**. 
@@ -523,3 +549,70 @@ SWoRD allows school officials to send out messages/reminders for all supervisors
 After the previous steps above have been completed, SWoRD will then display your message to supervisors on their dashboard page, as shown below:
 
 .. image:: /images/msgtosuper2.png
+
+
+===================
+Volunteer Tracking
+===================
+
+Some schools require students to complete a certain number of volunteer hours every school year. Accordingly, SWoRD allows school staff to keep track of a student's volunteer hours, sites, and site supervisors. Tracking volunteers works similar to other modules in terms of adding and storing data.
+
+
+Adding a Volunteer
+-------------------
+Locate the **Volunteer_track** module of SWoRD from your main dashboard screen. Once found, select **add** by the **volunteers** option. The following page will be displayed:
+
+.. image:: /images/volunteeradd.png
+
+Under **student** begin typing in the name of a student you will be adding as a volunteer. A list of students will then show in a drop down box. Once your selection has been made, the remaining fields are optional- hours required, notes, sites. Select **Save**.
+
+Volunteers will be stored under the **Volunteers** heading along with their progress in number of volunteer hours completed.
+
+.. image:: /images/volunteersstored.png
+
+
+
+Add a Site for Volunteers
+----------------------------
+**Sites** refer to the physical location of where students will be volunteering. In the volunteer track module, the **volunteer sites** option is for school staff to create a new volunteer session for a student without the student submitting.
+
+From the **Volunteer Tracking** header select +Add by the Sites option.
+
+.. image:: /images/volunteeraddsite.png
+
+Next, you'll see the image below directing you to fill out basic site information. Save your changes.
+
+.. image:: /images/volunteeraddsite2.png
+
+
+Assign a Site Supervisor
+--------------------------
+At the familiar **Volunteer Tracking** module, select +Add next the **Site supervisors** option.
+
+.. image:: /images/volunteeraddsuper.png
+
+From this screen, add your information in about the supervisor. Note: only the NAME field is required, although ideally you could set the **site** of where this person is in charge of at this screen as well.
+
+
+Add Volunteer Site
+---------------------
+Selct +Add by the **Add Volunter Site** on the Volunteer Tracking module. Clicking add will lead to the following screen:
+
+.. image:: /images/volunteeraddvolsite.png
+
+Here, you may enter the appropiate information in to register hours for a particular student. 
+
+.. image:: /images/volunteerhours.png
+
+Once the hours have been registered, you will see this reflected in the volunteer dash.
+
+.. image:: /images/volunteerslistwithhours.png
+
+
+
+
+
+
+
+
+

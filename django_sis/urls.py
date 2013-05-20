@@ -76,7 +76,8 @@ if 'report_builder' in settings.INSTALLED_APPS:
     urlpatterns += url(r'^report_builder/', include('report_builder.urls')),
 if 'simple_import' in settings.INSTALLED_APPS:
     urlpatterns += url(r'^simple_import/', include('simple_import.urls')),
-    
+if 'responsive_dashboard' in settings.INSTALLED_APPS:
+    urlpatterns += url(r'^', include('responsive_dashboard.urls')),
 if 'sentry' in settings.INSTALLED_APPS:    
     urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)
 
