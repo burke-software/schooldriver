@@ -46,6 +46,7 @@ class MarkingPeriod(models.Model):
     saturday = models.BooleanField()
     sunday = models.BooleanField()
     school_days = models.IntegerField(blank=True, null=True, help_text="If set, this will be the number of days school is in session. If unset, the value is calculated by the days off.")
+    weight = models.DecimalField(max_digits=5, decimal_places=3, blank=True, null=True, help_text="Weight this marking period when calculating grades. Leave blank if unwanted.")
     
     class Meta:
         ordering = ('-start_date',)
@@ -258,6 +259,8 @@ class Course(models.Model):
         """ Is student passing course? """
         if cache_passing == None:
             pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
+	else:
+	    pass_score = cache_passing
         if cache_grade:
             grade = cache_grade
         else:
