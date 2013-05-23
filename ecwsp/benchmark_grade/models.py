@@ -1,4 +1,4 @@
-#   Copyright 2011 Burke Software and Consulting LLC
+#   Copyright 2013 Burke Software and Consulting LLC
 #   Author: John Milner <john@tmoj.net>
 #   
 #   This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,32 @@ from django.db.models import Avg, Count, Max, Min, StdDev, Sum, Variance
 from django.conf import settings
 from decimal import Decimal
 from datetime import datetime
+
+####### TURN ME INTO A MANAGER #######
+def benchmark_find_calculation_rule(school_year):
+    rules = CalculationRule.objects.filter(first_year_effective=school_year)
+    if rules:
+        # We have a rule explicitly matching this marking period's school year
+        rule = rules[0]
+    else:
+        # No explicit match, so find the most recent rule that went into effect *before* this marking period's school year
+        rules = CalculationRule.objects.filter(first_year_effective__start_date__lt=school_year.start_date).order_by('-first_year_effective__start_date')
+        if rules:
+            rule = rules[0]
+        elif CalculationRule.objects.count() == 0 and Category.objects.count() <= 1:
+            # The school hasn't configured anything; cut them some slack
+            rule = CalculationRule.objects.get_or_create(first_year_effective = school_year)[0]
+            if Category.objects.count() == 1:
+                category = Category.objects.all()[0]
+            else:
+                category = Category.objects.get_or_create(name="Everything")[0]
+            per_course_category = CalculationRulePerCourseCategory.objects.get_or_create(calculation_rule=rule, category=category)[0]
+            per_course_category.apply_to_departments.add(*Department.objects.all())
+        else:
+            # The school has touched the configuration; don't guess at what they want
+            raise Exception('There is no suitable calculation rule for the school year {}.'.format(school_year))
+    return rule
+######################################
 
 from django.core.exceptions import ImproperlyConfigured
 if not 'ecwsp.benchmarks' in settings.INSTALLED_APPS:
@@ -106,7 +132,7 @@ class CalculationRuleSubstitution(models.Model):
             return value != self.match_value
         if self.operator == '==':
             return value == self.match_value
-        raise Exception('CalculationRuleSubstitution with id={} has invalid operator.'.format(self.id))
+        raise Exception('CalculationRuleSubstitution with id={} has invalid operator.'.format(self.pk))
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
@@ -145,7 +171,7 @@ class Category(models.Model):
             return Sum
         if self.demonstration_aggregation_method == 'Variance':
             return Variance
-        raise Exception('Category with id={} has invalid aggregation method.'.format(self.id))
+        raise Exception('Category with id={} has invalid aggregation method.'.format(self.pk))
 
 class AssignmentType(models.Model):
     name = models.CharField(max_length=255)
@@ -231,7 +257,7 @@ class Aggregate(models.Model):
     def mark_set(self):
         ''' All the Marks needed to calculate this Aggregate '''
         item_fields = ('course', 'category', 'marking_period')
-        criteria = {'student_id': self.student.id}
+        criteria = {'student_id': self.student.pk}
         for field in item_fields:
             field += '_id'
             criterium = getattr(self, field)
@@ -257,6 +283,47 @@ class Aggregate(models.Model):
                 return [(x[0], 1) for x in mark_list]
             else:
                 return self.mark_set.values_list('mark', 'item__points_possible')
+    def depends_on(self):
+        ''' Returns all Aggregates, in the form of [(Aggregate, created),], immediately required to calculate
+        this Aggregate. Not recursive; multiple levels of dependency are NOT considered. '''
+        aggregate_tuples = []
+        ours = [self.student_id, self.course_id,
+                self.category_id, self.marking_period_id]
+        ours = [x is not None for x in ours]
+        if ours == [True, True, True, True]:
+            ''' As specific as it gets. Average for one category
+            in one course during one marking period. '''
+            return aggregate_tuples
+        #if ours == [True, True, True, False]:
+            # Not currently used
+        if ours == [True, True, False, True]:
+            ''' Course grade for one marking period. '''
+            rule = benchmark_find_calculation_rule(self.marking_period.school_year)
+            per_course_categories = rule.per_course_category_set.filter(apply_to_departments=self.course.department)
+            for per_course_category in per_course_categories:
+                aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
+                    course_id=self.course_id, category_id=per_course_category.category_id,
+                    marking_period_id=self.marking_period_id))
+            return aggregate_tuples
+        if ours == [True, True, False, False]:
+            ''' Overall course grade, for the entire duration of the course. '''
+            marking_periods = self.course.marking_period.all()
+            for marking_period in marking_periods:
+                aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
+                    course_id=self.course_id, category_id=None, marking_period_id=marking_period.pk))
+            return aggregate_tuples
+        if ours == [True, False, True, True]:
+            ''' Average of a category across all courses for one marking period.
+            TC used this last year and counted it in GPAs as if it were a course. '''
+            rule = benchmark_find_calculation_rule(self.marking_period.school_year)
+            departments = rule.category_as_course_set.get(category_id=self.category_id).include_departments.all()
+            courses = self.student.course_set.filter(marking_period=self.marking_period_id,
+                department__in=departments, graded=True)
+            for course in courses:
+                aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
+                    course_id=course.pk, category_id=self.category_id, marking_period_id=self.marking_period_id))
+            return aggregate_tuples
+        raise Exception("Aggregate type unrecognized.")
     def max(self):
         if self.points_possible is None:
             return None
