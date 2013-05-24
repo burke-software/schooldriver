@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'MarkingPeriod.weight'
         db.add_column(u'schedule_markingperiod', 'weight',
-                      self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=5, decimal_places=3, blank=True),
+                      self.gf('django.db.models.fields.DecimalField')(default=1, max_digits=5, decimal_places=3),
                       keep_default=False)
 
 
@@ -152,7 +152,7 @@ class Migration(SchemaMigration):
             'thursday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'tuesday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'wednesday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'weight': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '5', 'decimal_places': '3', 'blank': 'True'})
+            'weight': ('django.db.models.fields.DecimalField', [], {'default': '1', 'max_digits': '5', 'decimal_places': '3'})
         },
         u'schedule.omitcoursegpa': {
             'Meta': {'object_name': 'OmitCourseGPA'},
@@ -241,7 +241,7 @@ class Migration(SchemaMigration):
         u'sis.schoolyear': {
             'Meta': {'ordering': "('-start_date',)", 'object_name': 'SchoolYear'},
             'active_year': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'benchmark_grade': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'benchmark_grade': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'end_date': ('django.db.models.fields.DateField', [], {}),
             'grad_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -260,7 +260,7 @@ class Migration(SchemaMigration):
             'date_dismissed': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'emergency_contacts': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.EmergencyContact']", 'symmetrical': 'False', 'blank': 'True'}),
             'family_access_users': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.User']", 'symmetrical': 'False', 'blank': 'True'}),
-            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
+            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
             'grad_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'individual_education_program': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'mdluser_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['sis.MdlUser']", 'unique': 'True', 'primary_key': 'True'}),
