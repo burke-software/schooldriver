@@ -26,7 +26,7 @@ class Migration(SchemaMigration):
             ('saturday', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('sunday', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('school_days', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('weight', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=5, decimal_places=3, blank=True)),
+            ('weight', self.gf('django.db.models.fields.DecimalField')(default=1, max_digits=5, decimal_places=3)),
         ))
         db.send_create_signal(u'schedule', ['MarkingPeriod'])
 
@@ -371,7 +371,7 @@ class Migration(SchemaMigration):
             'thursday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'tuesday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'wednesday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'weight': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '5', 'decimal_places': '3', 'blank': 'True'})
+            'weight': ('django.db.models.fields.DecimalField', [], {'default': '1', 'max_digits': '5', 'decimal_places': '3'})
         },
         u'schedule.omitcoursegpa': {
             'Meta': {'object_name': 'OmitCourseGPA'},
