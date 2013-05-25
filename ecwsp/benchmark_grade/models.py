@@ -80,10 +80,10 @@ class CalculationRule(models.Model):
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, default=4)
     decimal_places = models.IntegerField(default=2)
 
-    def substitute(self, item, value):
+    def substitute(self, item_or_aggregate, value):
         calculate_as = value
         display_as = None
-        for s in self.substitution_set.filter(apply_to_departments=item.course.department, apply_to_categories=item.category):
+        for s in self.substitution_set.filter(apply_to_departments=item_or_aggregate.course.department, apply_to_categories=item_or_aggregate.category):
             if s.applies_to(value):
                 if s.calculate_as is not None:
                     calculate_as = s.calculate_as
@@ -284,7 +284,7 @@ class Aggregate(models.Model):
             else:
                 return self.mark_set.values_list('mark', 'item__points_possible')
     def depends_on(self):
-        ''' Returns all Aggregates, in the form of [(Aggregate, created),], immediately required to calculate
+        ''' Returns all Aggregates, in the form of [(Aggregate, created, weight),], immediately required to calculate
         this Aggregate. Not recursive; multiple levels of dependency are NOT considered. '''
         aggregate_tuples = []
         ours = [self.student_id, self.course_id,
@@ -303,14 +303,14 @@ class Aggregate(models.Model):
             for per_course_category in per_course_categories:
                 aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
                     course_id=self.course_id, category_id=per_course_category.category_id,
-                    marking_period_id=self.marking_period_id))
+                    marking_period_id=self.marking_period_id) + (per_course_category.weight,))
             return aggregate_tuples
         if ours == [True, True, False, False]:
             ''' Overall course grade, for the entire duration of the course. '''
             marking_periods = self.course.marking_period.all()
             for marking_period in marking_periods:
                 aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
-                    course_id=self.course_id, category_id=None, marking_period_id=marking_period.pk))
+                    course_id=self.course_id, category_id=None, marking_period_id=marking_period.pk) + (marking_period.weight,))
             return aggregate_tuples
         if ours == [True, False, True, True]:
             ''' Average of a category across all courses for one marking period.
@@ -320,13 +320,53 @@ class Aggregate(models.Model):
             courses = self.student.course_set.filter(marking_period=self.marking_period_id,
                 department__in=departments, graded=True)
             for course in courses:
+                weight = Decimal(course.credits) / course.marking_period.count()
                 aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
-                    course_id=course.pk, category_id=self.category_id, marking_period_id=self.marking_period_id))
+                    course_id=course.pk, category_id=self.category_id, marking_period_id=self.marking_period_id) + (weight,))
             return aggregate_tuples
         raise Exception("Aggregate type unrecognized.")
+    def calculate(self, recalculate_all=False):
+        numerator = denominator = Decimal(0)
+        aggregate_tuples = self.depends_on()
+        self.cached_substitution = None
+        if not len(aggregate_tuples):
+            # Base case: I depend on no Aggregate; calculate from Marks
+            self.cached_value = self.mean()
+        else:
+            for aggregate, created, weight in aggregate_tuples:
+                # I depend on other Aggregates
+                if created or recalculate_all:
+                    aggregate.calculate(recalculate_all)
+                if aggregate.cached_value is not None:
+                    numerator += weight * aggregate.cached_value
+                    denominator += weight
+                    if aggregate.cached_substitution is not None:
+                        # Allow substitutions to bubble up,
+                        # e.g. INC on one Item yields INC on the whole Category and Course
+                        self.cached_substitution = aggregate.cached_substitution
+            if denominator:
+                self.cached_value = numerator / denominator
+            else:
+                self.cached_value = None
+        if self.cached_value is not None:
+            if self.marking_period is not None:
+                rule = benchmark_find_calculation_rule(self.marking_period.school_year)
+            elif self.course is not None:
+                rule = benchmark_find_calculation_rule(self.course.marking_period.all()[0].school_year)
+            else:
+                rule = None
+            if rule is not None:
+                calculate_as, display_as = rule.substitute(self, self.cached_value)
+                self.cached_value = calculate_as
+                if display_as is not None and len(display_as):
+                    self.cached_substitution = display_as
+        # SAVE???
+        return self.cached_value
     def max(self):
         if self.points_possible is None:
-            return None
+            #return None
+            # This is dumb. Probably should eradicate and use Category.points_possible
+            self.points_possible = 4
         mark, item_points_possible = zip(*self.mark_values_list(normalize=True))
         if len(mark):
             return Decimal(max(mark)) * self.points_possible
@@ -334,7 +374,9 @@ class Aggregate(models.Model):
             return None
     def min(self):
         if self.points_possible is None:
-            return None
+            #return None
+            # This is dumb. Probably should eradicate and use Category.points_possible
+            self.points_possible = 4
         mark, item_points_possible = zip(*self.mark_values_list(normalize=True))
         if len(mark):
             return Decimal(min(mark)) * self.points_possible
@@ -342,8 +384,13 @@ class Aggregate(models.Model):
             return None
     def mean(self, normalize=False):
         if self.points_possible is None:
+            #return None
+            # This is dumb. Probably should eradicate and use Category.points_possible
+            self.points_possible = 4
+        mark_values_list = self.mark_values_list(normalize)
+        if not len(mark_values_list):
             return None
-        mark, item_points_possible = zip(*self.mark_values_list(normalize))
+        mark, item_points_possible = zip(*mark_values_list)
         total_points_possible = sum(item_points_possible)
         if total_points_possible:
             return Decimal(sum(mark) / total_points_possible) * self.points_possible

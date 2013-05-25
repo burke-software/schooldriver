@@ -216,6 +216,7 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
             if cat_agg.cached_substitution is not None:
                 agg.cached_substitution = cat_agg.cached_substitution
     if course_denom:
+        print course_numer, '/', course_denom
         agg.cached_value = course_numer / course_denom
     else:
         agg.cached_value = None
