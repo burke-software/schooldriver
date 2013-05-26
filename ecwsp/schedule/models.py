@@ -373,7 +373,10 @@ class Course(models.Model):
             new.coursemeet_set.create(location=cm.location,day=cm.day,period=cm.period)
         new.save()
         messages.success(request, 'Copy successful!')
-        
+
+    def number_of_students(self):
+        return self.courseenrollment_set.filter(role="student").count()
+    number_of_students.short_description = "# of Students" 
         
 class OmitCourseGPA(models.Model):
     """ Used to keep repeated or invalid course from affecting GPA """
