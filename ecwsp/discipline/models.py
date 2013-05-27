@@ -73,7 +73,8 @@ class StudentDiscipline(models.Model):
             return "Multiple students"
         else:
             return None
-    
+    show_students.short_description = "Students"
+
     def comment_Brief(self):
         return self.comments[:100]
      
