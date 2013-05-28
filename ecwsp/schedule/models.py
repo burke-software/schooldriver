@@ -332,10 +332,10 @@ class Course(models.Model):
             grades =  Grade.objects.filter(student=student, course=self)
             if date_report:
                 grades = grades.filter(marking_period__end_date__lte=date_report)
-	    total_weight = Decimal(0)
-	    for grade in grades:
-		total_weight += grade.marking_period.weight
-	    for grade in grades:
+            total_weight = Decimal(0)
+            for grade in grades:
+                total_weight += grade.marking_period.weight
+            for grade in grades:
                 try:
                     final += Decimal(grade.get_grade()) * (grade.marking_period.weight / total_weight)
                     number += 1
