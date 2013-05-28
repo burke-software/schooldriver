@@ -372,12 +372,12 @@ class Aggregate(models.Model):
         after excluding None and the empty string '''
         plures = set(plures).difference(set((None, '')))
         if len(plures) == 1:
-            unum = plures.pop()
+            unus = plures.pop()
         elif len(plures) == 0:
-            unum = None
+            unus = None
         else:
             raise Exception('Contradictory display_as substitutions for Aggregate {}: {}'.format(self.pk, plures))
-        return unum
+        return unus
     def max(self):
         if self.points_possible is None:
             #return None

@@ -176,6 +176,13 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
 def benchmark_calculate_course_aggregate(student, course, marking_period, items=None, recalculate_all_categories=False):
     # doesn't recalculate component aggregates by default
     if items is None:
+        # QUICK HACK to use new Aggregate calculation method
+        # TODO: Subclass Aggregate and override mark_set for one-off sets of Items
+        agg, created = Aggregate.objects.get_or_create(student=student, course=course, marking_period=marking_period, category=None)
+        agg.calculate(recalculate_all_categories)
+        return agg, created
+        # /HACK (haha, right.)
+
         # just leave items alone--we don't actually consider it here; we only pass it to benchmark_calculate_course_category_aggregate
         # setting items here will prevent benchmark_calculate_course_category_aggregate from saving anything
         save = True
