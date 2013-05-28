@@ -120,6 +120,7 @@ class CalculationRuleSubstitution(models.Model):
     apply_to_categories = models.ManyToManyField('Category', blank=True, null=True)
     calculation_rule = models.ForeignKey('CalculationRule', related_name='substitution_set')
     def applies_to(self, value):
+        # TODO: Compare normalized values?
         if self.operator == '>':
             return value > self.match_value
         if self.operator == '>=':
@@ -254,6 +255,15 @@ class Aggregate(models.Model):
     class Meta:
         unique_together = ('student', 'course', 'category', 'marking_period')
     @property
+    def calculation_rule(self):
+        ''' Find the CalculationRule that applies to this Aggregate '''
+        if self.marking_period is not None:
+            return benchmark_find_calculation_rule(self.marking_period.school_year)
+        if self.course is not None:
+            return benchmark_find_calculation_rule(
+                self.course.marking_period.all()[0].school_year)
+        # implicit return None
+    @property
     def mark_set(self):
         ''' All the Marks needed to calculate this Aggregate '''
         item_fields = ('course', 'category', 'marking_period')
@@ -265,24 +275,32 @@ class Aggregate(models.Model):
                 criteria['item__' + field] = criterium
         return Mark.objects.filter(**criteria).exclude(mark=None)
     def mark_values_list(self, normalize=False):
-        ''' A list of tuples of (mark, points_possible) for all the Marks
+        ''' A list of tuples of (mark, display_as, points_possible) for all the Marks
         needed to calculate this Aggregate '''
+        rule = self.calculation_rule
         if self.category is not None and self.category.allow_multiple_demonstrations:
             if normalize:
                 mark_list = self.mark_set.values('item')\
                         .annotate(self.category.aggregation_method('normalized_mark'))\
                         .values_list('normalized_mark__max')
-                return [(x[0], 1) for x in mark_list]
             else:
-                return self.mark_set.values('item')\
+                mark_list = self.mark_set.values('item')\
                         .annotate(self.category.aggregation_method('mark'))\
                         .values_list('mark__max', 'item__points_possible')
         else:
             if normalize:
                 mark_list = self.mark_set.values_list('normalized_mark')
-                return [(x[0], 1) for x in mark_list]
             else:
-                return self.mark_set.values_list('mark', 'item__points_possible')
+                mark_list = self.mark_set.values_list('mark', 'item__points_possible')
+        if normalize:
+            # TODO: handle substitutions
+            return [(x[0], 'TODO!', 1) for x in mark_list]
+        else:
+            final_list = []
+            for mark, points_possible in mark_list:
+                calculate_as, display_as = rule.substitute(self, mark)
+                final_list.append((calculate_as, display_as, points_possible))
+            return final_list
     def depends_on(self):
         ''' Returns all Aggregates, in the form of [(Aggregate, created, weight),], immediately required to calculate
         this Aggregate. Not recursive; multiple levels of dependency are NOT considered. '''
@@ -298,7 +316,7 @@ class Aggregate(models.Model):
             # Not currently used
         if ours == [True, True, False, True]:
             ''' Course grade for one marking period. '''
-            rule = benchmark_find_calculation_rule(self.marking_period.school_year)
+            rule = self. calculation_rule
             per_course_categories = rule.per_course_category_set.filter(apply_to_departments=self.course.department)
             for per_course_category in per_course_categories:
                 aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
@@ -315,7 +333,7 @@ class Aggregate(models.Model):
         if ours == [True, False, True, True]:
             ''' Average of a category across all courses for one marking period.
             TC used this last year and counted it in GPAs as if it were a course. '''
-            rule = benchmark_find_calculation_rule(self.marking_period.school_year)
+            rule = self. calculation_rule
             departments = rule.category_as_course_set.get(category_id=self.category_id).include_departments.all()
             courses = self.student.course_set.filter(marking_period=self.marking_period_id,
                 department__in=departments, graded=True)
@@ -331,7 +349,7 @@ class Aggregate(models.Model):
         self.cached_substitution = None
         if not len(aggregate_tuples):
             # Base case: I depend on no Aggregate; calculate from Marks
-            self.cached_value = self.mean()
+            self.cached_value, self.cached_substitution = self.mean()
         else:
             for aggregate, created, weight in aggregate_tuples:
                 # I depend on other Aggregates
@@ -348,40 +366,46 @@ class Aggregate(models.Model):
                 self.cached_value = numerator / denominator
             else:
                 self.cached_value = None
-        if self.cached_value is not None:
-            if self.marking_period is not None:
-                rule = benchmark_find_calculation_rule(self.marking_period.school_year)
-            elif self.course is not None:
-                rule = benchmark_find_calculation_rule(self.course.marking_period.all()[0].school_year)
-            else:
-                rule = None
-            if rule is not None:
-                calculate_as, display_as = rule.substitute(self, self.cached_value)
-                self.cached_value = calculate_as
-                if display_as is not None and len(display_as):
-                    self.cached_substitution = display_as
-        # SAVE???
-        return self.cached_value
+        self.save()
+    def _e_pluribus_unum(self, plures):
+        ''' Return one from many (display_as substitutions), provided the many have only one unique value
+        after excluding None and the empty string '''
+        plures = set(plures).difference(set((None, '')))
+        if len(plures) == 1:
+            unum = plures.pop()
+        elif len(plures) == 0:
+            unum = None
+        else:
+            raise Exception('Contradictory display_as substitutions for Aggregate {}: {}'.format(self.pk, plures))
+        return unum
     def max(self):
         if self.points_possible is None:
             #return None
             # This is dumb. Probably should eradicate and use Category.points_possible
             self.points_possible = 4
-        mark, item_points_possible = zip(*self.mark_values_list(normalize=True))
+        mark_values_list = self.mark_values_list(normalize=True)
+        if not len(mark_values_list):
+            return None, None
+        mark, display_as, item_points_possible = zip(*mark_values_list)
+        display_as = self._e_pluribus_unum(display_as)
         if len(mark):
-            return Decimal(max(mark)) * self.points_possible
+            return (Decimal(max(mark)) * self.points_possible, display_as)
         else:
-            return None
+            return None, display_as
     def min(self):
         if self.points_possible is None:
             #return None
             # This is dumb. Probably should eradicate and use Category.points_possible
             self.points_possible = 4
-        mark, item_points_possible = zip(*self.mark_values_list(normalize=True))
+        mark_values_list = self.mark_values_list(normalize=True)
+        if not len(mark_values_list):
+            return None, None
+        mark, display_as, item_points_possible = zip(*mark_values_list)
+        display_as = self._e_pluribus_unum(display_as)
         if len(mark):
             return Decimal(min(mark)) * self.points_possible
         else:
-            return None
+            return None, display_as
     def mean(self, normalize=False):
         if self.points_possible is None:
             #return None
@@ -389,11 +413,14 @@ class Aggregate(models.Model):
             self.points_possible = 4
         mark_values_list = self.mark_values_list(normalize)
         if not len(mark_values_list):
-            return None
-        mark, item_points_possible = zip(*mark_values_list)
+            return None, None
+        mark, display_as, item_points_possible = zip(*mark_values_list)
+        display_as = self._e_pluribus_unum(display_as)
         total_points_possible = sum(item_points_possible)
         if total_points_possible:
-            return Decimal(sum(mark) / total_points_possible) * self.points_possible
+            return Decimal(sum(mark) / total_points_possible) * self.points_possible, display_as
+        else:
+            return None, display_as
         
     def __unicode__(self):
         return self.name # not useful
