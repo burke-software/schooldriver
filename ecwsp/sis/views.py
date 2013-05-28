@@ -28,6 +28,8 @@ from django.db import transaction
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.safestring import mark_safe
+from django.utils.decorators import method_decorator
+from django.views import generic
 from datetime import date
 
 from ecwsp.sis.models import Student, UserPreference, GradeLevel, SchoolYear
@@ -507,6 +509,16 @@ def increment_year(request):
             year = form.cleaned_data['school_year']
             return HttpResponseRedirect(reverse(increment_year_confirm, args=[year.id]))
     return render_to_response('sis/generic_form.html', {'subtitle': subtitle, 'form':form, 'msg': message}, RequestContext(request, {}),)
+
+
+class StudentViewDashletView(generic.DetailView):
+    model = Student
+    template_name = 'sis/view_student_dashlet.html'
+    
+    @method_decorator(permission_required('sis.view_student'))
+    def dispatch(self, *args, **kwargs):
+        return super(StudentViewDashletView, self).dispatch(*args, **kwargs)
+ 
 
 @transaction.commit_on_success
 def increment_year_confirm(request, year_id):

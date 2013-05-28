@@ -1,0 +1,22 @@
+{% extends "responsive_dashboard/dashlet.html" %}
+
+{% block content %}
+    {{ block.super }}
+    <table>
+    <tbody>
+        <tr>
+            <td>
+              {% if due_in %}
+              Grades for {{ marking_period }} are due in {{ due_in }} day{{ due_in|pluralize }}
+              {% endif %}
+            </td>
+            <td style="border-left: none;">
+              <a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade" class="grp-button">Submit Grades</a>
+            </td>
+        </tr>
+        <tr>
+            <td></td><td style="border-left: none;"><a class="grp-button">View Analytics</a></td>
+        </tr>
+    </tbody>
+    </table>
+{% endblock %}
