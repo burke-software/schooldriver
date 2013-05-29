@@ -1,9 +1,11 @@
 {% load i18n grp_dashboard_tags %}
 
 {{ dashboard.media }}
-<p>
-   Try the new <a href="/sis/dashboard">Dashboard</a>
-</p>
+{% if 'responsive_dashboard' in settings.INSTALLED_APPS %}
+  <p>
+    Try the new <a href="/sis/dashboard">Dashboard</a>
+  </p>
+{% endif %}
 <div class="g-d-c">
     <div class="g-d-12 g-d-f" id="column_1">
         {% for module in dashboard.children %}
