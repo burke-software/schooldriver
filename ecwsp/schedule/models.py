@@ -329,12 +329,13 @@ class Course(models.Model):
             final = Decimal(0)
             number = 0
             letter_grade = False
-            grades =  Grade.objects.filter(student=student, course=self)
+            grades =  Grade.objects.filter(student=student, course=self, marking_period__course=self)
             if date_report:
                 grades = grades.filter(marking_period__end_date__lte=date_report)
             total_weight = Decimal(0)
             for grade in grades:
                 total_weight += grade.marking_period.weight
+            print total_weight
             for grade in grades:
                 try:
                     final += Decimal(grade.get_grade()) * (grade.marking_period.weight / total_weight)
