@@ -335,7 +335,6 @@ class Course(models.Model):
             total_weight = Decimal(0)
             for grade in grades:
                 total_weight += grade.marking_period.weight
-            print total_weight
             for grade in grades:
                 try:
                     final += Decimal(grade.get_grade()) * (grade.marking_period.weight / total_weight)
