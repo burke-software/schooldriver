@@ -77,14 +77,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'work_study', ['WorkTeam'])
 
-        # Adding M2M table for field login on 'WorkTeam'
-        db.create_table(u'work_study_workteam_login', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('workteam', models.ForeignKey(orm[u'work_study.workteam'], null=False)),
-            ('workteamuser', models.ForeignKey(orm[u'work_study.workteamuser'], null=False))
-        ))
-        db.create_unique(u'work_study_workteam_login', ['workteam_id', 'workteamuser_id'])
-
         # Adding M2M table for field cras on 'WorkTeam'
         db.create_table(u'work_study_workteam_cras', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),

@@ -7,6 +7,9 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    depends_on = (
+	('administration','0001_initial'),
+    )	
     def forwards(self, orm):
         # Adding model 'UserPreference'
         db.create_table(u'sis_userpreference', (
@@ -98,14 +101,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'sis', ['Cohort'])
 
-        # Adding M2M table for field students on 'Cohort'
-        db.create_table('sis_studentcohort', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('cohort', models.ForeignKey(orm[u'sis.cohort'], null=False)),
-            ('student', models.ForeignKey(orm[u'sis.student'], null=False))
-        ))
-        db.create_unique('sis_studentcohort', ['cohort_id', 'student_id'])
-
         # Adding model 'PerCourseCohort'
         db.create_table(u'sis_percoursecohort', (
             (u'cohort_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['sis.Cohort'], unique=True, primary_key=True)),
@@ -172,14 +167,6 @@ class Migration(SchemaMigration):
             ('cache_gpa', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=5, decimal_places=2, blank=True)),
         ))
         db.send_create_signal(u'sis', ['Student'])
-
-        # Adding M2M table for field family_access_users on 'Student'
-        db.create_table(u'sis_student_family_access_users', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('student', models.ForeignKey(orm[u'sis.student'], null=False)),
-            ('familyaccessuser', models.ForeignKey(orm[u'sis.familyaccessuser'], null=False))
-        ))
-        db.create_unique(u'sis_student_family_access_users', ['student_id', 'familyaccessuser_id'])
 
         # Adding M2M table for field emergency_contacts on 'Student'
         db.create_table(u'sis_student_emergency_contacts', (
