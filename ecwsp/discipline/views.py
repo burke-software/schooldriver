@@ -183,8 +183,9 @@ def discipline_report_view(request):
         if 'merit' in request.POST:
             merit_form = MeritForm(request.POST)
             if merit_form.is_valid():
-                from ecwsp.sis.report import pod_report_generic
-                data = {}
+                from ecwsp.sis.template_report import TemplateReport
+                report = TemplateReport(request.user)
+                report.filename = 'Merit Handouts'
                 l1 = merit_form.cleaned_data['level_one']
                 l2 = merit_form.cleaned_data['level_two']
                 l3 = merit_form.cleaned_data['level_three']
@@ -213,13 +214,11 @@ def discipline_report_view(request):
                         student.merit_level = 3
                     elif student.disc_count <= l4:
                         student.merit_level = 4
-                data['students'] = students
+                report.data['students'] = students
                 template = Template.objects.get_or_create(name="Merit Level Handout")[0]
                 template = template.get_template_path(request)
-                format_type = UserPreference
                 if template:
-                    format_type = UserPreference.objects.get_or_create(user=request.user)[0].get_format()
-                    return pod_report_generic(template, data, "Merit Handouts", format=format_type)
+                    return report.pod_save(template)
         else:
             form = DisciplineStudentStatistics(request.POST)
             if form.is_valid():
