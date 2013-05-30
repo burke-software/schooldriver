@@ -74,7 +74,11 @@ def view_discipline(request):
 def discipline_report(request, student_id):
     """Generate a complete report of a student's discipline history
     """
+    from ecwsp.sis.template_report import TemplateReport
     template, created = Template.objects.get_or_create(name="Discipline Report")
+    template = template.get_template_path(request)
+    report = TemplateReport(request.user)
+    report.filename = 'disc_report'
     
     school_name, created = Configuration.objects.get_or_create(name="School Name")
     school_name = school_name.value
@@ -82,17 +86,12 @@ def discipline_report(request, student_id):
     student = Student.objects.get(id=student_id)
     disc = StudentDiscipline.objects.filter(students=student)
     
-    data = get_default_data()
-    data['disciplines'] = disc
-    data['school_year'] = SchoolYear.objects.get(active_year=True)
-    data['student'] = student
-    data['student_year'] = student.year
+    report.data['disciplines'] = disc
+    report.data['school_year'] = SchoolYear.objects.get(active_year=True)
+    report.data['student'] = student
+    report.data['student_year'] = student.year
     
-    template_path = template.get_template_path(request)
-    if not template_path:
-        return HttpResponseRedirect(reverse('admin:index')) 
-    
-    return pod_save("disc_report", ".odt", data, template_path)
+    return report.pod_save(template)
     
 
 @user_passes_test(lambda u: u.has_perm('discipline.change_studentdiscipline') or u.has_perm('sis.reports'))   
