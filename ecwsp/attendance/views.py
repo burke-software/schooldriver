@@ -391,11 +391,11 @@ def attendance_report(request):
             if lookup_form.is_valid():
                 type = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
                 return attendance_student(
+                    request,
                     lookup_form.cleaned_data['student'].id,
                     all_years=lookup_form.cleaned_data['all_years'],
                     order_by=lookup_form.cleaned_data['order_by'],
-                    include_private_notes=lookup_form.cleaned_data['include_private_notes'],
-                    type=type)
+                    include_private_notes=lookup_form.cleaned_data['include_private_notes'])
             else:
                 return render_to_response(
                     'attendance/attendance_report.html',
@@ -579,9 +579,10 @@ def add_multiple(request):
         {'form':form, 'breadcrumbs': breadcrumbs}, RequestContext(request, {}),)
 
     
-def attendance_student(id, all_years=False, order_by="Date", include_private_notes=False, type="odt"):
+def attendance_student(request, id, all_years=False, order_by="Date", include_private_notes=False):
     """ Attendance report on particular student """
-    from ecwsp.sis.report import get_default_data, pod_save
+    from ecwsp.sis.template_report import TemplateReport
+    report = TemplateReport(request.user)
     student = Student.objects.get(id=id)
     if all_years:
         attendances = StudentAttendance.objects.filter(student=student)
@@ -591,9 +592,7 @@ def attendance_student(id, all_years=False, order_by="Date", include_private_not
         attendances = StudentAttendance.objects.filter(student=student, date__range=active_year_dates)
     if order_by == "Status": attendances = attendances.order_by('status') 
     
-    data = get_default_data()
-    
-    data['attendances'] = []
+    report.data['attendances'] = []
     
     for attn in attendances:
         if include_private_notes:
@@ -604,12 +603,13 @@ def attendance_student(id, all_years=False, order_by="Date", include_private_not
         attendance.date = attn.date
         attendance.status = attn.status
         attendance.notes = notes
-        data['attendances'].append(attendance)
+        report.data['attendances'].append(attendance)
               
    # data['attendances'] = attendances
-    data['student'] = student
-    data['student_year'] = student.year
+    report.data['student'] = student
+    report.data['student_year'] = student.year
     
     template = Template.objects.get_or_create(name="Student Attendance Report")[0]
-    filename = unicode(student) + "_Attendance"
-    return pod_save(filename, "." + str(type), data, template.file.path)
+    template = template.get_template_path(request)
+    report.filename = unicode(student) + "_Attendance"
+    return report.pod_save(template)
