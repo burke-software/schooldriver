@@ -94,19 +94,12 @@ TEMPLATE_LOADERS = (
 ROOT_URLCONF = 'django_sis.urls'
 WSGI_APPLICATION = 'ecwsp.wsgi.application'
 
-# Optional these you can copy into settings_local and change or maybe they need to come first.
+""" Optional these you can copy into settings_local
+Required apps are towards the bottom of this file (which get added after local 
+settings) """
 INSTALLED_APPS = (
     'grappelli.dashboard',
     'grappelli',
-    'django.contrib.admin',    
-    'django.contrib.staticfiles',
-    'django.contrib.auth',
-    'django.contrib.admindocs',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.webdesign',
-    'ecwsp.volunteer_track',
-    'ecwsp.sis',
     'ecwsp.schedule',
     'ecwsp.work_study',
     'ecwsp.administration',
@@ -418,6 +411,13 @@ if 'djcelery' in INSTALLED_APPS:
 
 # These are required add ons that we always want to have
 INSTALLED_APPS += (
+    'django.contrib.admin',    
+    'django.contrib.staticfiles',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'ecwsp.volunteer_track',
+    'ecwsp.sis',
     'daterange_filter',
     'django_filters',
     'floppyforms',
