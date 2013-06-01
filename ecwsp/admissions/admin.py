@@ -57,8 +57,8 @@ class ContactLogInline(admin.TabularInline):
 class ApplicantAdmin(CustomFieldAdmin):
     form = ApplicantForm
     list_display = ('lname', 'fname', 'present_school', 'city', 'level', 'application_decision',
-                    'school_year', 'ready_for_export','follow_up_date')
-    list_filter = ['school_year', 'level', 'checklist', 'ready_for_export',
+                    'school_year', 'ready_for_export', 'from_online_inquiry', 'follow_up_date')
+    list_filter = ['from_online_inquiry', 'school_year', 'level', 'checklist', 'ready_for_export',
                    'application_decision','present_school','ethnicity', 'heard_about_us', 'first_contact', 'year']
     search_fields = ['lname', 'fname', 'present_school__name']
     inlines = [ContactLogInline]
