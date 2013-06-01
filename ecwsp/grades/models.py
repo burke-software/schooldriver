@@ -109,6 +109,10 @@ class Grade(models.Model):
             self.student.cache_gpa = self.student.calculate_gpa()
             if self.student.cache_gpa != "N/A":
                 self.student.save()
+        #cache course final grade
+        enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
+        enrollment.set_cache_grade()
+        enrollment.save()
     
     def __unicode__(self):
         return unicode(self.get_grade(self))

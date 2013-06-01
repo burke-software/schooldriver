@@ -140,19 +140,23 @@ class CourseEnrollment(models.Model):
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     exclude_days = models.ManyToManyField('Day', blank=True, \
         help_text="Student does not need to attend on this day. Note courses already specify meeting days, this field is for students who have a special reason to be away")
-
+    cache_grade = models.CharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
+    
     class Meta:
         unique_together = (("course", "user", "role"),)
         
     def save(self, *args, **kwargs):
         if not self.id and hasattr(self.user, 'student'):
             student = self.user.student
-            #Asp has been depreciated
-            #from ecwsp.sis.models import ASPHistory
-            #asp = ASPHistory(student=student, asp=self.course.shortname, enroll=True)
-            #asp.save()
         super(CourseEnrollment, self).save(*args, **kwargs)
-        
+    
+    def set_cache_grade(self):
+        """ Calculate and cache the final course grade for a student """
+        cache_grade = self.course.calculate_final_grade(self.user)
+        if cache_grade == None:
+            self.cache_grade = ""
+        else:
+            self.cache_grade = cache_grade
         
     def delete(self, *args, **kwargs):
         if hasattr(self.user, 'student'):
@@ -309,23 +313,28 @@ class Course(models.Model):
         date_report: optional gets grade for time period"""
         if 'ecwsp.grades' in settings.INSTALLED_APPS:
             from ecwsp.grades.models import Grade
-            final = Grade.objects.filter(course=self, override_final=True, student=student)
-            if final:
-                if not date_report or final[0].course.marking_period.filter(end_date__lte=date_report).count():
-                    final = final[0].get_grade()
-            elif date_report:
-                final = self.calculate_final_grade(student, date_report)
-            else:
-                final = self.calculate_final_grade(student)
-            return final
+            
+            if not date_report or date_report == date.today():
+                try:
+                    enrollments = self.courseenrollment_set.get(user=student, role="student")
+                    return enrollments.cache_grade
+                except CourseEnrollment.DoesNotExist:
+                    pass
+            return self.calculate_final_grade(student=student, date_report=date_report)
+            
     
     def calculate_final_grade(self, student, date_report=None):
         """
-        Calculates final grade. Does not take into account overrides.
+        Calculates final grade.
         Note that this should match recalc_ytd_grade in gradesheet.js!
         """
         if 'ecwsp.grades' in settings.INSTALLED_APPS:
             from ecwsp.grades.models import Grade
+            
+            final = Grade.objects.filter(course=self, override_final=True, student=student)
+            if final:
+                if not date_report or final[0].course.marking_period.filter(end_date__lte=date_report).count():
+                    return final[0].get_grade()
             final = Decimal(0)
             number = 0
             letter_grade = False
