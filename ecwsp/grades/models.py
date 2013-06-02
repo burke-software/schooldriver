@@ -114,5 +114,12 @@ class Grade(models.Model):
         enrollment.set_cache_grade()
         enrollment.save()
     
+    def delete(self, *args, **kwargs):
+        enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
+        super(Grade, self).delete(*args, **kwargs)
+        enrollment.set_cache_grade()
+        enrollment.save()
+
+
     def __unicode__(self):
         return unicode(self.get_grade(self))
