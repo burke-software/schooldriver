@@ -811,6 +811,7 @@ class Attendance(models.Model):
         return unicode(self.student) + " absent on " + unicode(self.absence_date)
         
     class Meta:
+        unique_together = ('student', 'absence_date')
         verbose_name_plural = 'Attendance'
 
 
