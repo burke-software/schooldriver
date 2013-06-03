@@ -180,6 +180,7 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
         # TODO: Subclass Aggregate and override mark_set for one-off sets of Items
         agg, created = Aggregate.objects.get_or_create(student=student, course=course, marking_period=marking_period, category=None)
         agg.calculate(recalculate_all_categories)
+        _copy_to_grade(agg)
         return agg, created
         # /HACK (haha, right.)
 
@@ -229,17 +230,22 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
     if save:
         agg.save()
         if marking_period is not None:
-            # temporary(?) integration with the rest of sword
-            g, g_created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, override_final=False)
-            if agg.cached_substitution is not None:
-                # FIDDLESTICKS... INC does not fit in the column
-                letter_grade_max_length = Grade._meta.get_field_by_name('letter_grade')[0].max_length
-                g.letter_grade = agg.cached_substitution[:letter_grade_max_length]
-                g.grade = None
-            else:
-                g.set_grade(agg.cached_value)
-            g.save()
+            _copy_to_grade(agg)
     return agg, created
+
+def _copy_to_grade(agg):
+    # temporary(?) integration with the rest of sword
+    g, g_created = Grade.objects.get_or_create(student=agg.student, course=agg.course, marking_period=agg.marking_period, override_final=False)
+    if agg.cached_substitution is not None:
+        # FIDDLESTICKS... INC does not fit in the column
+        letter_grade_max_length = Grade._meta.get_field_by_name('letter_grade')[0].max_length
+        g.letter_grade = agg.cached_substitution[:letter_grade_max_length]
+        g.grade = None
+    else:
+        g.set_grade(agg.cached_value)
+    g.save()
+    return g, g_created
+
 
 def gradebook_recalculate_on_item_change(item, students=None, old_item=None):
     '''

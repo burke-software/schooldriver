@@ -98,6 +98,7 @@ def gradebook(request, course_id):
     #students = Student.objects.filter(course=course)
     items = Item.objects.filter(course=course)
     filtered = False
+    temporary_aggregate = False
 
     if request.GET:
         filter_form = GradebookFilterForm(request.GET)
@@ -113,20 +114,26 @@ def gradebook(request, course_id):
                         pass
                     if filter_key == 'cohort': 
                         students = students.filter(cohorts=filter_value)
+                        temporary_aggregate = True
                     if filter_key == 'marking_period':
                         items = items.filter(marking_period=filter_value)
                     if filter_key == 'benchmark':
                         items = items.filter(benchmark__in=filter_value)
+                        temporary_aggregate = True
                     if filter_key == 'category':
                         items = items.filter(category=filter_value)
                     if filter_key == 'assignment_type':
                         items = items.filter(assignment_type=filter_value)
+                        temporary_aggregate = True
                     if filter_key == 'name':
                         items = items.filter(name__icontains=filter_value)
+                        temporary_aggregate = True
                     if filter_key == 'date_begin':
                         items = items.filter(date__gt=filter_value)
+                        temporary_aggregate = True
                     if filter_key == 'date_end':
                         items = items.filter(date__lt=filter_value)
+                        temporary_aggregate = True
                     filtered = True
     else:
         # show only the active marking period by default
@@ -134,6 +141,7 @@ def gradebook(request, course_id):
         if active_mps:
             filter_form = GradebookFilterForm(initial={'marking_period': active_mps[0]})
             items = items.filter(marking_period=active_mps[0])
+            filtered = True
         else:
             filter_form = GradebookFilterForm()
         filter_form.update_querysets(course)
@@ -175,8 +183,11 @@ def gradebook(request, course_id):
         student.marks = student_marks
         student.average, student.average_pk = gradebook_get_average_and_pk(student, course, None, None, None)
         if filtered:
-            student.filtered_average = gradebook_get_average(student, course, filter_form.cleaned_data['category'],
-                                                             filter_form.cleaned_data['marking_period'], items)
+            cleaned_or_initial = getattr(filter_form, 'cleaned_data', filter_form.initial)
+            filter_category = cleaned_or_initial.get('category', None)
+            filter_marking_period = cleaned_or_initial.get('marking_period', None)
+            filter_items = items if temporary_aggregate else None
+            student.filtered_average = gradebook_get_average(student, course, filter_category, filter_marking_period, filter_items)
         if school_year.benchmark_grade:
             # TC's column of counts
             # TODO: don't hardcode
