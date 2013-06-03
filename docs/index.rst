@@ -27,12 +27,6 @@ Should be run as an upstart job like /etc/init/libreoffice.conf::
 
 Then start with "start libreoffice"
 
-**SugarCRM sync**
-
-Download the sync module below and install with Sugar's module loader which adds a checkbox called SWoRD supervisor.
-
-Next run sword_sync.sql. First ensure the database name is correct. You may want to run them one at a time. Test and make sure Sugar and SWoRD work contacts sync up.
-
 quexf
 ------
 **Send PDF by email**::
