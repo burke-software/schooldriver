@@ -8,6 +8,17 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Remove duplicates
+        from ecwsp.work_study.models import Attendance
+        from django.db.models import Count, Min
+        master_pks = Attendance.objects.values('student', 'absence_date'
+            ).annotate(Min('pk'), count=Count('pk')
+            ).filter(count__gt=1
+            ).values_list('pk__min', flat=True)
+        masters = Attendance.objects.in_bulk( list(master_pks) )
+        for master in masters.values():
+            Attendance.objects.filter(student=master.student, absence_date=master.absence_date
+                ).exclude(pk=master.pk).delete()
         # Adding unique constraint on 'Attendance', fields ['absence_date', 'student']
         db.create_unique(u'work_study_attendance', ['absence_date', 'student_id'])
 
