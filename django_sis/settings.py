@@ -20,15 +20,20 @@
 import os,sys, logging
 
 # PATHS
-root_dir = '/opt/sword/'
-TEMPLATE_DIRS = root_dir + 'templates/'
+from os.path import join, abspath, dirname
+here = lambda *x: join(abspath(dirname(__file__)), *x)
+PROJECT_ROOT = here("..",)
+root = lambda *x: join(abspath(PROJECT_ROOT), *x)
+
+TEMPLATE_DIRS = root('templates/')
 STATICFILES_DIRS = ((''),
-    root_dir + 'static_files/',
+    root('static_files/'),
 )
-STATIC_ROOT = root_dir + 'static/'
+STATIC_ROOT = root('static/')
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = root_dir + 'media/'
+MEDIA_ROOT = root('media/')
+CKEDITOR_UPLOAD_PATH = root('media/uploads')
 
 
 # Django stuff
@@ -98,30 +103,15 @@ WSGI_APPLICATION = 'ecwsp.wsgi.application'
 Required apps are towards the bottom of this file (which get added after local 
 settings) """
 INSTALLED_APPS = (
-    'grappelli.dashboard',
-    'grappelli',
-    'ecwsp.schedule',
+    #'ecwsp.naviance_sso',
     'ecwsp.work_study',
-    'ecwsp.administration',
-    'ecwsp.admissions',
     'ecwsp.engrade_sync',
-    'ecwsp.alumni',
     'ecwsp.benchmarks',
     'ecwsp.omr',
-    'ecwsp.discipline',
-    'ecwsp.attendance',
-    'ecwsp.grades',
-    'ecwsp.counseling',
     'ecwsp.integrations.canvas_sync',
-    'ecwsp.standard_test',
-    #'ecwsp.naviance_sso',
-    'ajax_select',
-    'reversion',
     #'django_extensions',
     #'google_auth',
     #'ldap_groups',
-    'south',
-    'djcelery',
     'rosetta-grappelli',
     'rosetta',
 )
@@ -377,6 +367,10 @@ CANVAS_ACCOUNT_ID = ''
 CANVAS_BASE_URL = ''
 
 
+# django-report-builder
+REPORT_BUILDER_GLOBAL_EXPORT = True
+
+
 # this will load additional settings from the file settings_local.py
 # this is useful when managing multiple sites with different configurations
 from settings_local import *
@@ -411,6 +405,21 @@ if 'djcelery' in INSTALLED_APPS:
 
 # These are required add ons that we always want to have
 INSTALLED_APPS += (
+    'grappelli.dashboard',
+    'grappelli',
+    'ecwsp.schedule',
+    'ecwsp.administration',
+    'ecwsp.admissions',
+    'ecwsp.alumni',
+    'ecwsp.discipline',
+    'ecwsp.attendance',
+    'ecwsp.grades',
+    'ecwsp.counseling',
+    'ecwsp.standard_test',
+    'ajax_select',
+    'reversion',
+    'south',
+    'djcelery',
     'django.contrib.admin',    
     'django.contrib.staticfiles',
     'django.contrib.auth',
@@ -427,4 +436,6 @@ INSTALLED_APPS += (
     'custom_field',
     'ckeditor',
     'report_builder',
+    'responsive_dashboard',
+    'simple_import',
 )
