@@ -436,6 +436,6 @@ INSTALLED_APPS += (
     'custom_field',
     'ckeditor',
     'report_builder',
-    'responsive_dashboard',
+    #'responsive_dashboard',
     'simple_import',
 )
