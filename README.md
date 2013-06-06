@@ -19,11 +19,11 @@ Modify settings_local.py to add your own settings, such as your database.
 
 **Set up database**
 
-./manage.py syncdb --migrate
+    ./manage.py syncdb --migrate
 
-** Run a test server **
+**Run a test server**
 
-./manage.py runserver
+    ./manage.py runserver
 
 You can deploy to production as you would any Django application. https://docs.djangoproject.com/en/dev/howto/deployment/
 We do make use of celery for tasks. For a true production environment this should be set up.
