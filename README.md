@@ -1,6 +1,9 @@
 #Django-sis 
 This is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc). Below you will find a list of apps included in the software with a brief description of each.
 
+Burke Software and Consulting offers support and hosting for $3000/year for a school of < 500 students. 
+[Contact us](http://burkesoftware.com/contact-us/) for details.
+
 # Apps
 
 ##School Information System (SIS)
