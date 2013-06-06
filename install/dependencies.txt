@@ -18,6 +18,7 @@ elementtree>=1.2.7-20070827-preview
 poster>=0.8.1
 suds>=0.4
 south>=0.7.6
+raven>=3.3.7
 django-floppyforms>=1.0
 django-report-builder>=1.5
 django-apptemplates>=0.0.1
