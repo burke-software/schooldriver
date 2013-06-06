@@ -4,6 +4,42 @@ This is an open source school information system built with Django. It relies he
 Burke Software and Consulting offers support and hosting for $3000/year for a school of < 500 students. 
 [Contact us](http://burkesoftware.com/contact-us/) for details.
 
+# Quick Install
+You should have at least basic django deployment experience to run django-sis. We test only in Ubuntu 12.04 and mysql.
+Other environments might work but are not supported.
+
+On debian/ubuntu run install/install.sh
+
+If not on debian install everything in install/dependencies.txt using pip. Install reportlab from pip (requires gcc) or 
+from a package manager. 
+
+**Configuration**
+
+Modify settings_local.py to add your own settings, such as your database.
+
+**Set up database**
+
+./manage.py syncdb --migrate
+
+** Run a test server **
+
+./manage.py runserver
+
+You can deploy to production as you would any Django application. https://docs.djangoproject.com/en/dev/howto/deployment/
+We do make use of celery for tasks. For a true production environment this should be set up.
+
+## Upgrades
+
+Use south to upgrade the database. Install install/dependencies.txt in case any have updated. Collect static if on a 
+production environment. Restart your task scheduler. It should look something like
+
+    ./manage.py migrate
+    ./manage.py collectstatic
+    pip install --upgrade -r dependencies.txt
+
+We don't currently release stable versions of django-sis. You can assume everything in git is as "stable" as possible. If you 
+require more stability consider paying for support.
+
 # Apps
 
 ##School Information System (SIS)
