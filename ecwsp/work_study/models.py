@@ -47,6 +47,7 @@ from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
 from ckeditor.fields import RichTextField
 import logging
+from celery import task
 
 from ecwsp.administration.models import Configuration, Template
 from ecwsp.sis.models import Student
@@ -468,7 +469,6 @@ class StudentWorker(Student):
         contact = self.get_contact
         try:
             urlRes = urlresolvers.reverse('admin:work_study_contact_change', args = (contact.id,))
-            print "id: ", contact.id, ", contact: ", contact
             return '<a href="' +urlRes + '">' + str(contact)
         except:
             return ""
@@ -710,6 +710,7 @@ class TimeSheet(models.Model):
     def __unicode__(self):
         return unicode(self.student) + " " + unicode(self.date)
     
+    @task()
     def emailStudent(self, show_comment=True):
         try:
             sendTo = self.student.get_email
