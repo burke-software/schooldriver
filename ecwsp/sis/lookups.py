@@ -55,7 +55,7 @@ class StudentLookupSmall(StudentLookup):
         if not year: year = "Unknown year"
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
-        return "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=\"%s\" /></td><td>%s %s<br/>%s</td></tr></table>" \
+        return '<div style="float:left"><img style="height:30px;" src="%s" /></div><div>%s %s<br/>%s</div>' \
             % (image, student.fname, student.lname, year)
 
     def format_item_display(self,student):
