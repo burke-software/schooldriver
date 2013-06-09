@@ -451,7 +451,11 @@
 					{% if supervisors %}
                                             <ul>
                                             {% for supervisor in supervisors %}
-                                                    <li>{{ supervisor }} - {{ supervisor.phone }}</li>
+                                                    {% if supervisor == student.studentworker.primary_contact %}
+                                                        <li style="font-weight: bold;">{{ supervisor }} - {{ supervisor.phone }}</li>
+                                                    {% else %}
+                                                        <li>{{ supervisor }} - {{ supervisor.phone }}</li>
+                                                    {% endif %}
                                             {% endfor %}
                                             </ul>
 					{% endif %}
