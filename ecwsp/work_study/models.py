@@ -47,7 +47,7 @@ from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
 from ckeditor.fields import RichTextField
 import logging
-from celery import task
+from celery.contrib.methods import task
 
 from ecwsp.administration.models import Configuration, Template
 from ecwsp.sis.models import Student
