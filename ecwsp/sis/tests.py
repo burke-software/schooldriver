@@ -4,6 +4,8 @@ from django.contrib.auth.models import User, Group
 
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
+from ecwsp.attendance.models import *
+from ecwsp.grades.models import *
 
 from datetime import date, datetime
 
@@ -103,7 +105,7 @@ class AttendanceTest(TestCase):
         
         course = Course.objects.get(fullname="Homeroom FX 2010")
         
-        response = c.get('/sis/teacher_attendance/homeroom/' + str(course.id), follow=True)
+        response = c.get('/attendance/teacher_attendance/' + str(course.id), follow=True)
         self.assertEqual(response.status_code, 200)
         
         #should test if attendance can be submitted
@@ -136,6 +138,6 @@ class AttendanceTest(TestCase):
             )
         grade.set_grade('89.09')
         grade.save()
-        
+        print CourseEnrollment.objects.get(id=courseneroll.id).cache_grade 
         self.failUnlessEqual(self.student.gpa, Decimal('69.55'))
 

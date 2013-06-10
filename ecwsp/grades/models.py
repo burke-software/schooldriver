@@ -104,15 +104,15 @@ class Grade(models.Model):
     def save(self, *args, **kwargs):
         super(Grade, self).save(*args, **kwargs)
         
+        #cache course final grade
+        enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
+        enrollment.set_cache_grade()
+        enrollment.save()
         #cache student's GPA
         if self.grade and self.student:
             self.student.cache_gpa = self.student.calculate_gpa()
             if self.student.cache_gpa != "N/A":
                 self.student.save()
-        #cache course final grade
-        enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
-        enrollment.set_cache_grade()
-        enrollment.save()
     
     def delete(self, *args, **kwargs):
         enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")

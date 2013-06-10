@@ -1,4 +1,4 @@
-from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, RssFeedDashlet
 from ecwsp.discipline.models import StudentDiscipline
 from ecwsp.schedule.models import Course, MarkingPeriod
 from report_builder.models import Report
@@ -55,6 +55,8 @@ class ReportBuilderDashlet(ListDashlet):
         self.queryset = Report.objects.filter(starred=self.request.user)
         return super(ReportBuilderDashlet, self)._render(**kwargs)
 
+class AnnouncementsDashlet(RssFeedDashlet):
+    feed_url = 'http://feeds.feedburner.com/FeedForBurkeSoftwareAndConsultingLlc'
 
 class SisDashboard(Dashboard):
     app = 'sis'
@@ -64,8 +66,8 @@ class SisDashboard(Dashboard):
         ViewStudentDashlet(title="Student"),
         GradesDashlet(title="Grades"),
         ReportBuilderDashlet(title="Starred Reports", model=Report),
-
+        AnnouncementsDashlet(title="Announcements"),
     ]
-        
+
 
 dashboard = SisDashboard()
