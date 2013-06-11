@@ -478,7 +478,7 @@ At the heart of SWoRD's work-study module is the electronic time card system. Th
 SWoRD then stores all timecards in the main timecard dash. Users with access to these stored time sheets are able to view each time sheet’s information including date, hours, student accomplishments, and supervisor comments.
 
 
-SWORD TIMECARD DASHBOARD PIC
+.. image:: /images/timesheetdash.png
 
 Adding a Student Worker
 --------------------------
@@ -509,6 +509,29 @@ Creating Supervisor Logins
 - Do not mark these users (Company) as Faculty or Student users. Doing so will produce unexpected results.
 - One work team may have an unlimited number of supervisor logins.
 - Supervisor login is not related to the supervisor contact in anyway.
+
+Student Pay Rates
+---------------------
+School staff are able to set a pay rate that an individual student and a company gets per hour. The two options shown below exist for instances in which a school takes an accounting fee cut of the paycheck. Individuals can set either pay rate they desire, neither is required.
+
+.. image:: /images/studentpayrate1.png
+
+**Note** Schools have the option of setting a default pay rate in SWoRD's configurations. This price will by default appear on time sheets and student worker pages, including being a default when new students are created. 
+
+In instances where certain students get paid differently than others, you can edit the student/s by clicking on their individual student worker page as shown above, or mass editing the change from the student worker dashboard.
+
+
+Supervisor View/Timecard Approval
+---------------------------------
+Once the student submits a timecard for approval, an email will automatically be sent to the student's primary supervisor asking for approval, as shown below:
+
+.. image:: /images/supervisorview.png
+
+The email will instruct the supervisor to click on the special link provided. Once selected, the supervisor will then be sent to the time sheet the student submitted that displays what the student did, time in, time out, etc.
+
+.. image:: /images/supervisorview2.png
+
+From here, the supervisor may write questions/comments in the provided text box, as well as provide an evaluation from a drop down box- these options may be customized to fit a school's need. When the supervisor approves the time card, work study staff will see it marked as approved in the time sheet dashboard.
 
 
 Electronic Contracts
@@ -603,6 +626,58 @@ Once the hours have been registered, you will see this reflected in the voluntee
 .. image:: /images/volunteerslistwithhours.png
 
 
+=======================
+Custom Report Builder
+=======================
+
+Packaged with every instance of SWoRD is the custom report builder tool. This tool allows users with permission to easily create custom reports utilizing a drag and drop method. This section will cover how to utilize this tool.
+
+
+Report Builder Dashboard
+--------------------------
+Access the admin report builder site (sampleurl/admin/report_builder) and click **reports**. The following report builder dashboard screen appears:
+
+.. image:: /images/reportbuilderdash.png
+
+This dashboard will allow the user to view any reports that have previously been created. Additionally, users will have the option of utilizing the available filter to quickly access, sort, and view previous reports by status, date, and root model.
+
+**Starred Reports** are utilized to mark important reports, or reports that will be frequently generated. Users may quickly sort the dash to view only starred reports by selecting the **View Starred Reports** button located towards the top of the dashboard.
+
+Creating a Report
+--------------------
+From the report builder main screen described above, select **Add Report** located at the top right-hand corner of the dash. The *Add Report* screen displays- **name** and **root model** (students, applicants, workers, etc.) are required fields.
+
+.. image:: /images/addreportscreen.png
+
+It may also be helpful to include an extended description as shown above to provide other users with a more clear direction of how the report is used. Once the information has been entered, select **Save** Your newly created report will now show as the most recent report in the dash, where you can then edit accordingly: 
+
+.. image:: /images/newreportindash.png
+
+Editing a Report
+------------------
+All created reports have the option of being edited. Using the newly created report from above, to begin editing, select the pencil icon located under the **Edit** column by the respective report, in this instance: Basic Student-Worker Information.
+
+.. image:: /images/editreportscreen.png
+
+With the **Report Display Fields** tab selected at the top, click and drag the fields from the list of available options located at the bottom-left side of the screen into the empty area located directly to the right while the appropiate tab is still selected. **Save** your selection.
+
+*Note:* The **Expand Related Fields** field located in the box above the current fields list allows users to access expanded fields/information. Selecting one option will generate the expanded fields in the box below where you can then drag and drop into the space available accordingly.
+
+After dragging your specified fields and saving, users then have the option to preview the report by selecting the **Preview Report** tab. This will generate a preview, where users can then export into an Excel/Libre-Calc document, as shown below:
+
+.. image:: /images/previewreport.png
+
+Using the Report Filters Tab
+------------------------------
+The **Report Filters** option is designed to give users the ability to further refine their data. Refining information functions similiar to editing your report, simply select the **Report Filters** tab and use the available fields list on the bottom left to drag and drop into the empty area. 
+
+Using the example above, consider the use case of a user wanting to pull the student-worker data from before, but only for males working on Mondays.
+
+1. Drag and drop **Working day** and **sex** into the open area as shown below.
+2. Under the **value** header, select Monday, and Male accordingly.
+3. Click **Save** then enter preview tab to view and download into Excel.
+
+.. image:: /images/reportfilterstab.png
 
 
 
