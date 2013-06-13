@@ -267,20 +267,19 @@ LOGGING = {
         },
     },
     'filters': {
-        'skip_unreadable_posts': {
-            '()': 'django.utils.log.CallbackFilter',
-            'callback': skip_unreadable_post,
-        }
-},
+        'supress_unreadable_post': {
+            '()': 'common.logging.SuppressUnreadablePost',
+         }
+    },
     'handlers': {
         'sentry': {
             'level': 'WARNING',
-            'filters': ['skip_unreadable_posts'],
+            'filters': ['supress_unreadable_post'],
             'class': 'raven.contrib.django.handlers.SentryHandler',
         },
         'console': {
             'level': 'DEBUG',
-            'filters': ['skip_unreadable_posts'],
+            'filters': ['supress_unreadable_post'],
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
