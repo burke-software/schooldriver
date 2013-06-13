@@ -174,14 +174,16 @@ def transcript_nonofficial(request, student_id):
     student = Student.objects.filter(id=student_id)
     template = Template.objects.get_or_create(name="Transcript Nonoffical")[0]
     if template.file:
-        template = template.file.path
-        file_format = 'pdf'
-        options = {
-            'date': date.today(),
-            'student': student,
-        }
-        return pod_report_grade(request, template, transcript=True, options=options, students=student, format=file_format)
-        
+        from ecwsp.sis.report import GradeTemplateReport
+        report = GradeTemplateReport(request.user)
+        return report.pod_report_grade(
+            template.file.path, 
+            {'date': date.today()}, 
+            student,
+            report_card=False,
+            benchmark_report_card=False,
+            transcript=True
+        )
     messages.info(request, 'Please upload a templated called "Transcript Nonoffical"')
     return HttpResponseRedirect(reverse('admin:index'))
 
