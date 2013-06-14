@@ -354,12 +354,36 @@ Admission Reports
 --------------------
 Some basic Admission Reports are available built in to SWoRD that allows users to quickly process statistics based on a school year's applicants. 
 
-1. Under the **Admissions** tab in the navigation bar, select **Reports**.
+1. Under the **Admissions** tab in the navigation bar, select **Reports**
+
+.. image:: /images/admreports1.png
+
 2. Select a year and click **Process Statistics**.
 3. SWoRD will generate an Excel document detailing some basic admission statistics such as number of applicants by grade or number of applicants on a particular level in the process.  
 
 In step 2, another option is to choose **Funnel**, which generates on-screen admissions statistics from each step in the admissions process. The report shows total, current, male/female, and rejected reasons.
+
 .. image:: /images/admfunnel.png
+
+
+Creating Students from Applicants
+-----------------------------------
+Prior to beginning a new school year, a school will eventually need to convert the applicants into enrolled students to assign classes, grades, etc. 
+
+**IMPORTANT NOTE:** It is important to keep in mind that the only applicants who will be made into students, are those applicants that have the **Ready for Export** check by their name on the dash. Accordingly, marking students as ready for export should be the absolute final step in the process.
+
+.. image:: /images/admcreatestudents1.png
+
+In the example above, only Michael Testerly and James Monroe will be made into students.
+
+To create students from applicants, follow the steps below:
+
+1. Access the Admissions report screen, by selecting Admissions > Reports from the menu located at the top of your page.
+2. Select the appropiate school year.
+3. Click the **Create students from applicants** button.
+
+.. image:: /images/admcreatestudents2.png
+
 
 
 Modifying options - Admission Administration
@@ -537,7 +561,9 @@ From here, the supervisor may write questions/comments in the provided text box,
 Electronic Contracts
 ----------------------
 
-SWoRD supports the ability to store and sign fully electronic work study contracts between the school and the student's work placement. Contracts can be filled out by the client from a web interface, or manually added to a company under the **Companies**selection from the CWSP header. **Note:** Contracts are linked to companies, not work teams.
+SWoRD supports the ability to store and sign fully electronic work study contracts between the school and the student's work placement. Contracts can be filled out by the client from a web interface, or manually added to a company under the **Companies** selection from the CWSP header. 
+
+**Note:** Contracts are linked to companies, not work teams.
 
 1. For fully electronic contracts, start by editing or creating a template, and be make certain that it's named "Work Study Contract". If your school has purchased SWoRD support, feel free to email for assistance in this  regard, otherwise refer to the "Report Writing and Creating Templates" section above to do so indepedently. 
 
@@ -556,7 +582,7 @@ Message to Supervisors
 ------------------------
 SWoRD allows school officials to send out messages/reminders for all supervisors to see when they log in to approve a student's time card. The steps are as follows, with an attached picture depicting the steps and outcome:
 
-1. Under **Company Data, select ADD under the "Message to Supervisors" subheading.	
+1. Under **Company Data**, select ADD under the *Message to Supervisors* subheading.	
 2. Type out your desired message to display to all supervisors.
 3. Select a Start and End date to indicate how long the message will be visible.
 4. Click Save.
