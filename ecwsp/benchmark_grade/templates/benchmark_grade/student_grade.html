@@ -27,17 +27,26 @@
     .yesIamAhyperlink {
         font-size: 65%;
     }
-    .studentSelector {
-        list-style-type: none;
+    .pipeList {
         margin: 0;
         padding: 0;
     }
-    .studentSelector li {
+    .pipeList li {
         display: inline;
+        list-style-type: none;
+    }
+    .pipeList li:before {
+        content: " | ";
+    }
+    .pipeList li:first-child:before {
+        content: none;
+    }
+    .getCloser {
+        margin-bottom: 0;
     }
     </style>
     {% if available_students.count > 1 %}
-        <ul class="studentSelector">
+        <ul class="pipeList">
         {% for a in available_students %}
             <li>
             {% if a == student %}
@@ -45,7 +54,6 @@
             {% else %}
             <a href="{% url "ecwsp.benchmark_grade.views.student_report" a.pk %}">{{ a.fname }} {{ a.lname }}</a>
             {% endif %}
-            {% if not forloop.last %} | {% endif %}
             </li>
         {% endfor %}
         </ul>
@@ -53,44 +61,49 @@
     {% if error_message %}
         <p>{{ error_message }}</p>
     {% else %}
-        <h1>Grade Summary for {{ student.fname }} {{ student.lname }}</h1>
+        <h1 class="getCloser">Grade Summary for {{ student.fname }} {{ student.lname }}</h1>
     {% endif %}
     {% for mp in mps %}
-	<h2>{{ mp.name }}</h2>
-	{% for course in mp.courses %}
-	    <div class="course">
-		<h3>
-            <a href="{% url "ecwsp.benchmark_grade.views.student_report" student.pk course.pk mp.pk %}">
-            {{ course.fullname }} <span class="yesIamAhyperlink">(click for more detail)</span></a></h3>
-		<table>
-			{% for category in course.categories %}
+        <h2 class="getCloser">{{ mp.name }}</h2>
+        <ul class="pipeList">
+        {% for mp in other_mps %}
+            <li><a href="{% url "ecwsp.benchmark_grade.views.student_report" student_pk=student.pk marking_period_pk=mp.pk %}">{{ mp.name }}</a></li>
+        {% endfor %}
+        {% for course in mp.courses %}
+            <div class="course">
+            <h3>
+                <a href="{% url "ecwsp.benchmark_grade.views.student_report" student.pk course.pk mp.pk %}">
+                {{ course.fullname }} <span class="yesIamAhyperlink">(click for more detail)</span></a></h3>
+            <table>
+                {% for category in course.categories %}
+                    <tr>
+                        <td>{{ category.name }} ({{ category.percentage }}%)</td>
+                        <td class="categoryAverage">
+                        {{ category.average }}
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td>{{ category.name }} ({{ category.percentage }}%)</td>
-                    <td class="categoryAverage">
-                    {{ category.average }}
-                    </td>
+                    <td>{{ course.fullname }} {{ mp.name }} Grade</td>
+                    <td class="categoryAverage">{{ course.average }}</td>
                 </tr>
-			{% endfor %}
-            <tr>
-                <td>{{ course.fullname }} {{ mp.name }} Grade</td>
-                <td class="categoryAverage">{{ course.average }}</td>
-		    </tr>
-            {% if course.category_by_name.Standards and course.category_by_name.Standards.total %}
-                <tr>
-                    <td colspan="2" class="courseNarration">
-                        {% if course.category_by_name.Standards.missing %}
-                            {{ student.fname }} has {{ course.category_by_name.Standards.missing }} missing
-                            {% if course.category_by_name.Standards.missing > 1 %}standards
-                            {% else %}standard
+                {% if course.category_by_name.Standards and course.category_by_name.Standards.total %}
+                    <tr>
+                        <td colspan="2" class="courseNarration">
+                            {% if course.category_by_name.Standards.missing %}
+                                {{ student.fname }} has {{ course.category_by_name.Standards.missing }} missing
+                                {% if course.category_by_name.Standards.missing > 1 %}standards
+                                {% else %}standard
+                                {% endif %}
+                                from {{ mp.name }} {{ course.fullname }}.<br />
                             {% endif %}
-                            from {{ mp.name }} {{ course.fullname }}.<br />
-                        {% endif %}
-                        {{ student.fname }} passed <u>{{ course.category_by_name.Standards.passing }}/{{ course.category_by_name.Standards.total }}, or {{ course.category_by_name.Standards.percentage}}%</u> of {{ mp.name }} standards.
-                    </td>
-                </tr>
-            {% endif %}
-		</table>
-	    </div>
-	{% endfor %}
+                            {{ student.fname }} passed <u>{{ course.category_by_name.Standards.passing }}/{{ course.category_by_name.Standards.total }}, or {{ course.category_by_name.Standards.percentage}}%</u> of {{ mp.name }} standards.
+                        </td>
+                    </tr>
+                {% endif %}
+            </table>
+            </div>
+        {% endfor %}
     {% endfor %}
+    <h2>Cumulative GPA: {{ student.gpa }}</h2>
 {% endblock %}

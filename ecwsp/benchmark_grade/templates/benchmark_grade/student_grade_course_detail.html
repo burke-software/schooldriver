@@ -42,17 +42,33 @@
     .studentSelector li {
         display: inline;
     }
+    .pipeList {
+        margin: 0;
+        padding: 0;
+    }
+    .pipeList li {
+        display: inline;
+        list-style-type: none;
+    }
+    .pipeList li:before {
+        content: " | ";
+    }
+    .pipeList li:first-child:before {
+        content: none;
+    }
+    .getCloser {
+        margin-bottom: 0;
+    }
     </style>
     {% if available_students.count > 1 %}
-        <ul class="studentSelector">
+        <ul class="pipeList">
         {% for a in available_students %}
             <li>
             {% if a == student %}
             <strong>{{ a.fname }} {{ a.lname }}</strong>
             {% else %}
-            <a href="/benchmark_grade/family_grade?student_username={{ a.username|urlencode }}">{{ a.fname }} {{ a.lname }}</a>
+            <a href="{% url "ecwsp.benchmark_grade.views.student_report" a.pk %}">{{ a.fname }} {{ a.lname }}</a>
             {% endif %}
-            {% if not forloop.last %} | {% endif %}
             </li>
         {% endfor %}
         </ul>
@@ -63,7 +79,11 @@
         <h1>Grade Detail for {{ student.fname }} {{ student.lname }}</h1>
     {% endif %}
     {% for mp in mps %}
-        <h2>{{ mp.name }} {{ course.fullname }}</h2>
+        <h2 class="getCloser">{{ mp.name }} {{ course.fullname }}</h2>
+        <ul class="pipeList">
+        {% for mp in other_mps %}
+            <li><a href="{% url "ecwsp.benchmark_grade.views.student_report" student_pk=student.pk course_pk=course.pk marking_period_pk=mp.pk %}">{{ mp.name }}</a></li>
+        {% endfor %}
         <div class="course">
         {% for category in mp.categories %}
             <h3>{{ category.name }}{% if category.fixed_points_possible %}<span class="pointsPossible"> ({{ category.fixed_points_possible }} points possible)</span>{% endif %}</h3>

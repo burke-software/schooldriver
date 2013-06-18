@@ -616,7 +616,16 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         # summary report for all courses
         PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
         school_year = SchoolYear.objects.get(active_year=True)
-        mps = MarkingPeriod.objects.filter(school_year=school_year, start_date__lte=datetime.date.today()).order_by('-start_date')
+        all_mps = MarkingPeriod.objects.filter(school_year=school_year, start_date__lte=datetime.date.today()).order_by('-start_date')
+        if marking_period_pk is None:
+            if all_mps.count():
+                mps = (all_mps[0],)
+            else:
+                mps = ()
+        else:
+            mps = all_mps.filter(pk=marking_period_pk)
+        mp_pks = [x.pk for x in mps]
+        other_mps = all_mps.exclude(pk__in=mp_pks)
         calculation_rule = benchmark_find_calculation_rule(school_year)
         for mp in mps:
             mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
@@ -641,7 +650,8 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         return render_to_response('benchmark_grade/student_grade.html', {
             'student': student,
             'available_students': family_available_students,
-            'mps': mps
+            'mps': mps,
+            'other_mps': other_mps
         }, RequestContext(request, {}),)
 
     else:
@@ -667,11 +677,26 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         # always filter in case a bad person passes us items from a different course
         items = items.filter(course=course, mark__student=student)
 
-        if marking_period_pk:
-            mp = get_object_or_404(MarkingPeriod, pk=marking_period_pk)
-            mps = (mp,)
+        all_mps = MarkingPeriod.objects.filter(item__in=items).distinct().order_by('-start_date')
+        if specific_items:
+            mps = all_mps
+            other_mps = ()
         else:
-            mps = MarkingPeriod.objects.filter(item__in=items).distinct().order_by('-start_date')
+            if marking_period_pk is None:
+                if all_mps.count():
+                    mps = (all_mps[0],)
+                else:
+                    mps = ()
+            else:
+                mps = all_mps.filter(pk=marking_period_pk)
+            mp_pks = [x.pk for x in mps]
+            other_mps = all_mps.exclude(pk__in=mp_pks)
+
+        #if marking_period_pk:
+        #    mp = get_object_or_404(MarkingPeriod, pk=marking_period_pk)
+        #    mps = (mp,)
+        #else:
+        #    mps = MarkingPeriod.objects.filter(item__in=items).distinct().order_by('-start_date')
 
         for mp in mps:
             mp_items = items.filter(marking_period=mp)
@@ -694,6 +719,8 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
 
         return render_to_response('benchmark_grade/student_grade_course_detail.html', {
             'student': student,
+            'available_students': family_available_students,
             'course': course,
-            'mps': mps
+            'mps': mps,
+            'other_mps': other_mps
         }, RequestContext(request, {}),)
