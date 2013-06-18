@@ -61,7 +61,7 @@
     {% if error_message %}
         <p>{{ error_message }}</p>
     {% else %}
-        <h1 class="getCloser">Grade Summary for {{ student.fname }} {{ student.lname }}</h1>
+        <h1>Grade Summary for {{ student.fname }} {{ student.lname }}</h1>
     {% endif %}
     {% for mp in mps %}
         <h2 class="getCloser">{{ mp.name }}</h2>
