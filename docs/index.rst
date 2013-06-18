@@ -593,6 +593,51 @@ After the previous steps above have been completed, SWoRD will then display your
 
 .. image:: /images/msgtosuper2.png
 
+CWSP Reports
+--------------
+
+Similar to other modules, the Work Study module in SWoRD comes packaged with a number of pre-built work study reports. In addition to the pre made reports, there is a section available for template based reports which will generate reports that a user has created. A description of the three major types of reports, along with examples will be shown below:
+
+**Pre-made Reports**
+
+The pre-made reports are one click reports that cover: FTE, MISC, Atendance dropoff, Attendance Pickup.
+
+.. image:: /images/cwspreportspremade.png
+
+*FTE reports:* (Full-time equivalent): by industry, day, and paying status will generate an overview and a per student look covering the aforementioned filters.
+
+**MISC** 
+
+*Company History:* Will generate an Excel document detailing all student placements at a company by date. 
+
+*Master contact list:* Produces an Excel document showing all student contacts- their work contacts number/email and each parent email/phone number.
+
+*Contracts report:* Excel document showing each company, whether or not there is a contract, and when the date for the last contract was recorded.
+
+*Attendance Dropoff and Pickup:* Shows each student worker attendance that is working on the designated day you click, along with transportation information (subway line, stop location) and associated company.
+
+**Date based reports**
+
+These reports require the user to set up a date range. Once the date range is set, the user may click on a report in which SWoRD will tailor to the dates accordingly.
+
+.. image:: /images/cwspdatebasedreports.png
+
+*Attendance and missed day report:* Multi tabbed Excel document that displays students who missed their work day, and if/when that work day will be made up along with comments and totals. Additionally, a separate tab will display all student worker time sheets that were submitted during the date range.
+
+*Billing and timesheet report:* Produces a billing report for the date range, including hours worked, and amount to be billed (multiplies hours worked by school pay rate to arrive at a total) to each company. This report breaks the billing and timesheet reports down by student.
+
+*Students who submitted timesheets:* lists name of all students, and how many time sheets they submitted (including dates) during the date range set.
+
+*Time Sheet Data:* Detailed look at all submitted time sheets during the specified date range.
+
+*DOL Report:* Displays a school work study employee's visits to client companies for the date range.
+
+**Template Based Reports**
+
+These reports allow users to generate reports that they have created themselves, although SWoRD does come packaged with some already made generic templates, including a travel maps/directions to help work study students get to their work site, as shown below:
+
+.. image:: /images/cwsptemplatebasedreport.png
+
 
 ===================
 Volunteer Tracking
