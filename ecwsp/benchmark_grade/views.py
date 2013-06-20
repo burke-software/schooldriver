@@ -389,6 +389,7 @@ def ajax_delete_demonstration_form(request, course_id, demonstration_id):
     ghost_item.marking_period = item.marking_period
     message = '%s deleted' % (demonstration,)
     demonstration.delete()
+    # TODO: degrossify
     if not Demonstration.objects.filter(item=item):
         if Mark.objects.filter(item=item):
             raise Exception('Stray marks found after attempting to delete last demonstration.')
@@ -413,6 +414,7 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
         if demonstration_id:
             # modifying an existing demonstration
             demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
+            old_demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
             form = DemonstrationForm(request.POST, instance=demonstration, prefix="demonstration")
             if not request.user.has_perm('grades.change_grade') and not demonstration.item.marking_period.active:
                 # you aren't a registrar, so you can't modify a demonstration from an inactive marking period
@@ -431,6 +433,22 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
                 # a new demonstration; must create blank marks for each student
                 for student in Student.objects.filter(course=course):
                     mark, created = Mark.objects.get_or_create(item=demonstration.item, demonstration=demonstration, student=student)
+            else:
+                # do we belong to a different Item?
+                if old_demonstration.item_id != demonstration.item_id:
+                    # update all our Marks to reference the new Item
+                    for mark in Mark.objects.filter(demonstration=demonstration):
+                        mark.item = demonstration.item
+                        mark.save()
+                    # recalculate both Items
+                    gradebook_recalculate_on_item_change(demonstration.item, old_item=old_demonstration.item)
+                    # is the old Item totally abandoned now?
+                    if not old_demonstration.item.demonstration_set.count():
+                        if old_demonstration.item.mark_set.count():
+                            raise Exception('Stray Marks found after attempting to reassign last Demonstration.')
+                        else:
+                            # no Demonstrations are left. kill the Item.
+                            old_demonstration.item.delete()
 
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax

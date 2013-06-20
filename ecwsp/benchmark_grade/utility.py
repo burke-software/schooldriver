@@ -282,9 +282,6 @@ def gradebook_recalculate_on_item_change(item, students=None, old_item=None):
             # necessary to recalculate the old marking period as well as the new
             parting_calculation_required = True
             marking_periods.add(old_item.marking_period)
-        if not (renormalization_required or parting_calculation_required):
-            # why are we here?
-            return
 
     calculation_rule = benchmark_find_calculation_rule(item.course.marking_period.all()[0].school_year)
     course = item.course
