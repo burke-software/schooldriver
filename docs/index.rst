@@ -286,6 +286,59 @@ Cohorts
 Cohorts are groupings of students within a school; the registrar may find this tool useful. For example, an "advanced class" cohort may be enrolled in particular classes, and homeroom placements may also be organized using cohorts.
 
 
+Creating Courses
+------------------
+
+Creating courses in SWoRD is a 3 step process:
+
+1. Under the Courses and Grades tab, select +Add under **courses**
+
+.. image:: /images/sisaddcourses.png
+
+2. At the add course screen, enter any information that's appropiate- teacher, description, graded, etc. Keep in mind that the only **required** options to fill out are Fullname and Shortname.
+
+3. Save
+
+Enrolling Students
+--------------------
+
+1. Under the Courses and Grades tab, select **courses**.
+2. You'll be taken to a screen of all available courses, as shown below:
+
+.. image:: /images/siscourseview.png
+
+3. Select the course you will be enrolling students in.
+4. Once selected, you will be taken to the change course screen. Click the **Enroll Students** button located towards the top right of the screen. 
+5. The screen below appears- move student/s from the available students box on the left, into the *chosen students* box on the right. You may filter the available students by grade level, located directly above the *available students* box.
+
+.. image:: /images/sisenrollstudents.png
+
+6. Save 
+
+Omit Course GPA
+-----------------
+
+SWoRD allows users to quickly omit a student's grades for a particular course.
+
+1. Under the Courses and Grades tab, select +Add by the **omit course GPA** selection
+
+.. image:: /images/sisomitcoursegpa.png
+
+2. Select the appropiate student and corresponding course.
+3. Save
+
+
+Omit Year GPA
+---------------
+
+Similar to omitting course GPAs, SWoRD allows users to omit an entire year of grades for a student so that particular year will not be calculated into GPAs and transcripts. The process is similar to omitting for a course, as shown above.
+
+1. Under the Courses and Grades tab, select +Add by the **omit year GPA** selection
+
+.. image:: /images/sisomityeargpa.png
+
+2. Select the appropiate student and corresponding year.
+3. Save
 
 
 
