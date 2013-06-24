@@ -315,6 +315,66 @@ Enrolling Students
 
 6. Save 
 
+Submitting Grades
+-------------------
+Teachers may submit grades using three methods: manually, import via spreadsheet, or using Engrade.
+
+**IMPORTANT:** SWoRD only stores final grades.
+
+**Manual Method**
+
+The manual method of entering final grades works as follows:
+
+1. Under the Courses and Grades tab > Courses, click on the appropiate course.
+2. Once selected, click **Grades** on the course page, located towards the top left.
+3. You'll be taken to a screen as shown below. Click on the cell and type a grade, then save.
+.. image:: /images/gradesmanualentry.png
+
+**Spreadsheet Method**
+
+NOTE: Only final grades are stored in SWORD. Assignments should be stored in a Spreadsheet based on a template your administrator created. 
+
+Access the course page, similar to step 1 from above.
+
+1. Under the Courses and Grades tab > Courses, click on the appropiate course.
+2. Select **Gradesheet Template**. It will open up an Excel file already set up for grade input with usernames and students already available for you, per the template. Fill out your grades and note any comments.
+
+.. image:: /images/gradesspreadsheet.png
+
+3. Once the template is filled out. Select **Grades** from the course page.
+4. *Ensure* that the marking period is correct and matching the **tab name** on the spreadsheet you filled out. Select **Upload**
+
+.. image:: /images/gradesspreadsheet2.png
+
+5. SWoRD will then set the grades and comments in accordance with your spreadsheet. 
+
+.. image:: /images/gradesspreadsheet3.png
+
+- Final grades are calculated automatically, but may be overridden by privileged users.
+- Mid marking period grades will never effect any calculation.
+
+*Grade Comments/Comment Codes:*
+
+- Comments may be entered via plain text or comment codes as designated by your school. If you wish to enter multiple comment codes per student, a comma separating each code is necessary (i.e.14, 3).
+- Blank comments or comment codes will be ignored.
+- If a comment or code already exists and you want to delete it, select the code and replace it with "none".
+
+
+*Tips:*
+
+- SWoRD stores only two decimals, although calculations may be done with more.
+- You may enter approved Letter grades if desired such as P and F. These will not effect calculations.
+- You may only be allowed to change specific marking period grades determined by your administrator. If you've made a mistake you may need to contact an administrator or registrar. It is possible to grant you access to directly enter grades in SWoRD. This may be useful for Pass/Fail grades.
+
+**Engrade Method**
+
+SWoRD is able to sync with the online gradebook, Engrade so teachers my store all assignments there, then sync final grades there to appear in SWoRD.
+
+ 1. Under the Grades menu item at the top, select **Submit Grades** 
+ 2. This will reveal your list of courses, along with the option to download a blank gradebook. Below these options is the button **Sync all grades from Engrade**. 
+
+ **Keep in mind that all grades synched from Engrade will override any grades that have been entered into SWoRD for that marking period.**
+
 Omit Course GPA
 -----------------
 
@@ -495,6 +555,25 @@ Users with the proper permissions may be allowed to edit attendance for the enti
 
 This dashboard also contains a filter option located to the right of the screen, allowing filtering by date, date range, or attendance status (absent, tardy, absent excused, etc.). 
 
+Mass Edit Attendance
+---------------------
+SWoRD allows users to edit multiple records at once, using the mass edit tool as detailed and shown:
+
+1. Select Attendance > Edit
+2. Select students for edit
+3. Select "Mass Edit" from the actions menu located at the bottom left of your screen.
+
+.. image:: /images/atndmassedit1.png
+
+4. The next screen will allow fields to be changed for all checked off records. Leaving a field blank will not change the record. 
+
+.. image:: /images/atndmassedit2.png
+
+5. Select the correct field for mass update ("status" in this case)
+6. Save
+
+
+
 ===================
 Discipline
 ===================
@@ -609,6 +688,21 @@ The email will instruct the supervisor to click on the special link provided. On
 .. image:: /images/supervisorview2.png
 
 From here, the supervisor may write questions/comments in the provided text box, as well as provide an evaluation from a drop down box- these options may be customized to fit a school's need. When the supervisor approves the time card, work study staff will see it marked as approved in the time sheet dashboard.
+
+Work Study Attendance
+------------------------
+
+The work study attendance feature will allow SWoRD to sync work study attendance with the SIS attendance taken by homeroom teachers throughout the day and update as needed. Work Study staff will select the "Take today's attendance" button from their CWSP Attendance page.
+
+ .. image:: /images/wsatnd1.png
+
+ SWoRD will then display a list of students whose working day is that particular day, as shown:
+
+ .. image:: /images/wsatndlist.png
+
+ Once submitted, SWoRD will then display both Present students and Absent students in the dashboard, in addition to Tardy and Absent/Half Day as they are marked by homeroom teachers. This allows work study staff to determine whether or not a student should submit a time sheet. 
+
+ .. image:: /images/wsatnd2.png
 
 
 Electronic Contracts
