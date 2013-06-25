@@ -286,6 +286,119 @@ Cohorts
 Cohorts are groupings of students within a school; the registrar may find this tool useful. For example, an "advanced class" cohort may be enrolled in particular classes, and homeroom placements may also be organized using cohorts.
 
 
+Creating Courses
+------------------
+
+Creating courses in SWoRD is a 3 step process:
+
+1. Under the Courses and Grades tab, select +Add under **courses**
+
+.. image:: /images/sisaddcourses.png
+
+2. At the add course screen, enter any information that's appropiate- teacher, description, graded, etc. Keep in mind that the only **required** options to fill out are Fullname and Shortname.
+
+3. Save
+
+Enrolling Students
+--------------------
+
+1. Under the Courses and Grades tab, select **courses**.
+2. You'll be taken to a screen of all available courses, as shown below:
+
+.. image:: /images/siscourseview.png
+
+3. Select the course you will be enrolling students in.
+4. Once selected, you will be taken to the change course screen. Click the **Enroll Students** button located towards the top right of the screen. 
+5. The screen below appears- move student/s from the available students box on the left, into the *chosen students* box on the right. You may filter the available students by grade level, located directly above the *available students* box.
+
+.. image:: /images/sisenrollstudents.png
+
+6. Save 
+
+Submitting Grades
+-------------------
+Teachers may submit grades using three methods: manually, import via spreadsheet, or using Engrade.
+
+**IMPORTANT:** SWoRD only stores final grades.
+
+**Manual Method**
+
+The manual method of entering final grades works as follows:
+
+1. Under the Courses and Grades tab > Courses, click on the appropiate course.
+2. Once selected, click **Grades** on the course page, located towards the top left.
+3. You'll be taken to a screen as shown below. Click on the cell and type a grade, then save.
+.. image:: /images/gradesmanualentry.png
+
+**Spreadsheet Method**
+
+NOTE: Only final grades are stored in SWORD. Assignments should be stored in a Spreadsheet based on a template your administrator created. 
+
+Access the course page, similar to step 1 from above.
+
+1. Under the Courses and Grades tab > Courses, click on the appropiate course.
+2. Select **Gradesheet Template**. It will open up an Excel file already set up for grade input with usernames and students already available for you, per the template. Fill out your grades and note any comments.
+
+.. image:: /images/gradesspreadsheet.png
+
+3. Once the template is filled out. Select **Grades** from the course page.
+4. *Ensure* that the marking period is correct and matching the **tab name** on the spreadsheet you filled out. Select **Upload**
+
+.. image:: /images/gradesspreadsheet2.png
+
+5. SWoRD will then set the grades and comments in accordance with your spreadsheet. 
+
+.. image:: /images/gradesspreadsheet3.png
+
+- Final grades are calculated automatically, but may be overridden by privileged users.
+- Mid marking period grades will never effect any calculation.
+
+*Grade Comments/Comment Codes:*
+
+- Comments may be entered via plain text or comment codes as designated by your school. If you wish to enter multiple comment codes per student, a comma separating each code is necessary (i.e.14, 3).
+- Blank comments or comment codes will be ignored.
+- If a comment or code already exists and you want to delete it, select the code and replace it with "none".
+
+
+*Tips:*
+
+- SWoRD stores only two decimals, although calculations may be done with more.
+- You may enter approved Letter grades if desired such as P and F. These will not effect calculations.
+- You may only be allowed to change specific marking period grades determined by your administrator. If you've made a mistake you may need to contact an administrator or registrar. It is possible to grant you access to directly enter grades in SWoRD. This may be useful for Pass/Fail grades.
+
+**Engrade Method**
+
+SWoRD is able to sync with the online gradebook, Engrade so teachers my store all assignments there, then sync final grades there to appear in SWoRD.
+
+ 1. Under the Grades menu item at the top, select **Submit Grades** 
+ 2. This will reveal your list of courses, along with the option to download a blank gradebook. Below these options is the button **Sync all grades from Engrade**. 
+
+ **Keep in mind that all grades synched from Engrade will override any grades that have been entered into SWoRD for that marking period.**
+
+Omit Course GPA
+-----------------
+
+SWoRD allows users to quickly omit a student's grades for a particular course.
+
+1. Under the Courses and Grades tab, select +Add by the **omit course GPA** selection
+
+.. image:: /images/sisomitcoursegpa.png
+
+2. Select the appropiate student and corresponding course.
+3. Save
+
+
+Omit Year GPA
+---------------
+
+Similar to omitting course GPAs, SWoRD allows users to omit an entire year of grades for a student so that particular year will not be calculated into GPAs and transcripts. The process is similar to omitting for a course, as shown above.
+
+1. Under the Courses and Grades tab, select +Add by the **omit year GPA** selection
+
+.. image:: /images/sisomityeargpa.png
+
+2. Select the appropiate student and corresponding year.
+3. Save
 
 
 
@@ -354,12 +467,36 @@ Admission Reports
 --------------------
 Some basic Admission Reports are available built in to SWoRD that allows users to quickly process statistics based on a school year's applicants. 
 
-1. Under the **Admissions** tab in the navigation bar, select **Reports**.
+1. Under the **Admissions** tab in the navigation bar, select **Reports**
+
+.. image:: /images/admreports1.png
+
 2. Select a year and click **Process Statistics**.
 3. SWoRD will generate an Excel document detailing some basic admission statistics such as number of applicants by grade or number of applicants on a particular level in the process.  
 
 In step 2, another option is to choose **Funnel**, which generates on-screen admissions statistics from each step in the admissions process. The report shows total, current, male/female, and rejected reasons.
+
 .. image:: /images/admfunnel.png
+
+
+Creating Students from Applicants
+-----------------------------------
+Prior to beginning a new school year, a school will eventually need to convert the applicants into enrolled students to assign classes, grades, etc. 
+
+**IMPORTANT NOTE:** It is important to keep in mind that the only applicants who will be made into students, are those applicants that have the **Ready for Export** check by their name on the dash. Accordingly, marking students as ready for export should be the absolute final step in the process.
+
+.. image:: /images/admcreatestudents1.png
+
+In the example above, only Michael Testerly and James Monroe will be made into students.
+
+To create students from applicants, follow the steps below:
+
+1. Access the Admissions report screen, by selecting Admissions > Reports from the menu located at the top of your page.
+2. Select the appropiate school year.
+3. Click the **Create students from applicants** button.
+
+.. image:: /images/admcreatestudents2.png
+
 
 
 Modifying options - Admission Administration
@@ -417,6 +554,25 @@ Users with the proper permissions may be allowed to edit attendance for the enti
 2. The Edit screen will display all students who have *not* been marked *Present*; edits/notes may be entered. For example, if the school later receives a doctor's note for an absent student, *Absent* may be switched to *Absent Excused* with a *Doctor Visit* note. 
 
 This dashboard also contains a filter option located to the right of the screen, allowing filtering by date, date range, or attendance status (absent, tardy, absent excused, etc.). 
+
+Mass Edit Attendance
+---------------------
+SWoRD allows users to edit multiple records at once, using the mass edit tool as detailed and shown:
+
+1. Select Attendance > Edit
+2. Select students for edit
+3. Select "Mass Edit" from the actions menu located at the bottom left of your screen.
+
+.. image:: /images/atndmassedit1.png
+
+4. The next screen will allow fields to be changed for all checked off records. Leaving a field blank will not change the record. 
+
+.. image:: /images/atndmassedit2.png
+
+5. Select the correct field for mass update ("status" in this case)
+6. Save
+
+
 
 ===================
 Discipline
@@ -533,11 +689,28 @@ The email will instruct the supervisor to click on the special link provided. On
 
 From here, the supervisor may write questions/comments in the provided text box, as well as provide an evaluation from a drop down box- these options may be customized to fit a school's need. When the supervisor approves the time card, work study staff will see it marked as approved in the time sheet dashboard.
 
+Work Study Attendance
+------------------------
+
+The work study attendance feature will allow SWoRD to sync work study attendance with the SIS attendance taken by homeroom teachers throughout the day and update as needed. Work Study staff will select the "Take today's attendance" button from their CWSP Attendance page.
+
+ .. image:: /images/wsatnd1.png
+
+ SWoRD will then display a list of students whose working day is that particular day, as shown:
+
+ .. image:: /images/wsatndlist.png
+
+ Once submitted, SWoRD will then display both Present students and Absent students in the dashboard, in addition to Tardy and Absent/Half Day as they are marked by homeroom teachers. This allows work study staff to determine whether or not a student should submit a time sheet. 
+
+ .. image:: /images/wsatnd2.png
+
 
 Electronic Contracts
 ----------------------
 
-SWoRD supports the ability to store and sign fully electronic work study contracts between the school and the student's work placement. Contracts can be filled out by the client from a web interface, or manually added to a company under the **Companies**selection from the CWSP header. **Note:** Contracts are linked to companies, not work teams.
+SWoRD supports the ability to store and sign fully electronic work study contracts between the school and the student's work placement. Contracts can be filled out by the client from a web interface, or manually added to a company under the **Companies** selection from the CWSP header. 
+
+**Note:** Contracts are linked to companies, not work teams.
 
 1. For fully electronic contracts, start by editing or creating a template, and be make certain that it's named "Work Study Contract". If your school has purchased SWoRD support, feel free to email for assistance in this  regard, otherwise refer to the "Report Writing and Creating Templates" section above to do so indepedently. 
 
@@ -556,7 +729,7 @@ Message to Supervisors
 ------------------------
 SWoRD allows school officials to send out messages/reminders for all supervisors to see when they log in to approve a student's time card. The steps are as follows, with an attached picture depicting the steps and outcome:
 
-1. Under **Company Data, select ADD under the "Message to Supervisors" subheading.	
+1. Under **Company Data**, select ADD under the *Message to Supervisors* subheading.	
 2. Type out your desired message to display to all supervisors.
 3. Select a Start and End date to indicate how long the message will be visible.
 4. Click Save.
@@ -566,6 +739,51 @@ SWoRD allows school officials to send out messages/reminders for all supervisors
 After the previous steps above have been completed, SWoRD will then display your message to supervisors on their dashboard page, as shown below:
 
 .. image:: /images/msgtosuper2.png
+
+CWSP Reports
+--------------
+
+Similar to other modules, the Work Study module in SWoRD comes packaged with a number of pre-built work study reports. In addition to the pre made reports, there is a section available for template based reports which will generate reports that a user has created. A description of the three major types of reports, along with examples will be shown below:
+
+**Pre-made Reports**
+
+The pre-made reports are one click reports that cover: FTE, MISC, Atendance dropoff, Attendance Pickup.
+
+.. image:: /images/cwspreportspremade.png
+
+*FTE reports:* (Full-time equivalent): by industry, day, and paying status will generate an overview and a per student look covering the aforementioned filters.
+
+**MISC** 
+
+*Company History:* Will generate an Excel document detailing all student placements at a company by date. 
+
+*Master contact list:* Produces an Excel document showing all student contacts- their work contacts number/email and each parent email/phone number.
+
+*Contracts report:* Excel document showing each company, whether or not there is a contract, and when the date for the last contract was recorded.
+
+*Attendance Dropoff and Pickup:* Shows each student worker attendance that is working on the designated day you click, along with transportation information (subway line, stop location) and associated company.
+
+**Date based reports**
+
+These reports require the user to set up a date range. Once the date range is set, the user may click on a report in which SWoRD will tailor to the dates accordingly.
+
+.. image:: /images/cwspdatebasedreports.png
+
+*Attendance and missed day report:* Multi tabbed Excel document that displays students who missed their work day, and if/when that work day will be made up along with comments and totals. Additionally, a separate tab will display all student worker time sheets that were submitted during the date range.
+
+*Billing and timesheet report:* Produces a billing report for the date range, including hours worked, and amount to be billed (multiplies hours worked by school pay rate to arrive at a total) to each company. This report breaks the billing and timesheet reports down by student.
+
+*Students who submitted timesheets:* lists name of all students, and how many time sheets they submitted (including dates) during the date range set.
+
+*Time Sheet Data:* Detailed look at all submitted time sheets during the specified date range.
+
+*DOL Report:* Displays a school work study employee's visits to client companies for the date range.
+
+**Template Based Reports**
+
+These reports allow users to generate reports that they have created themselves, although SWoRD does come packaged with some already made generic templates, including a travel maps/directions to help work study students get to their work site, as shown below:
+
+.. image:: /images/cwsptemplatebasedreport.png
 
 
 ===================

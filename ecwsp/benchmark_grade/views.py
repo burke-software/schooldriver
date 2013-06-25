@@ -389,6 +389,7 @@ def ajax_delete_demonstration_form(request, course_id, demonstration_id):
     ghost_item.marking_period = item.marking_period
     message = '%s deleted' % (demonstration,)
     demonstration.delete()
+    # TODO: degrossify
     if not Demonstration.objects.filter(item=item):
         if Mark.objects.filter(item=item):
             raise Exception('Stray marks found after attempting to delete last demonstration.')
@@ -413,6 +414,7 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
         if demonstration_id:
             # modifying an existing demonstration
             demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
+            old_demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
             form = DemonstrationForm(request.POST, instance=demonstration, prefix="demonstration")
             if not request.user.has_perm('grades.change_grade') and not demonstration.item.marking_period.active:
                 # you aren't a registrar, so you can't modify a demonstration from an inactive marking period
@@ -431,6 +433,22 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
                 # a new demonstration; must create blank marks for each student
                 for student in Student.objects.filter(course=course):
                     mark, created = Mark.objects.get_or_create(item=demonstration.item, demonstration=demonstration, student=student)
+            else:
+                # do we belong to a different Item?
+                if old_demonstration.item_id != demonstration.item_id:
+                    # update all our Marks to reference the new Item
+                    for mark in Mark.objects.filter(demonstration=demonstration):
+                        mark.item = demonstration.item
+                        mark.save()
+                    # recalculate both Items
+                    gradebook_recalculate_on_item_change(demonstration.item, old_item=old_demonstration.item)
+                    # is the old Item totally abandoned now?
+                    if not old_demonstration.item.demonstration_set.count():
+                        if old_demonstration.item.mark_set.count():
+                            raise Exception('Stray Marks found after attempting to reassign last Demonstration.')
+                        else:
+                            # no Demonstrations are left. kill the Item.
+                            old_demonstration.item.delete()
 
             # Should I use the django message framework to inform the user?
             # This would not work in ajax unless we make some sort of ajax
@@ -616,7 +634,16 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         # summary report for all courses
         PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
         school_year = SchoolYear.objects.get(active_year=True)
-        mps = MarkingPeriod.objects.filter(school_year=school_year, start_date__lte=datetime.date.today()).order_by('-start_date')
+        all_mps = MarkingPeriod.objects.filter(school_year=school_year, start_date__lte=datetime.date.today()).order_by('-start_date')
+        if marking_period_pk is None:
+            if all_mps.count():
+                mps = (all_mps[0],)
+            else:
+                mps = ()
+        else:
+            mps = all_mps.filter(pk=marking_period_pk)
+        mp_pks = [x.pk for x in mps]
+        other_mps = all_mps.exclude(pk__in=mp_pks)
         calculation_rule = benchmark_find_calculation_rule(school_year)
         for mp in mps:
             mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
@@ -641,7 +668,8 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         return render_to_response('benchmark_grade/student_grade.html', {
             'student': student,
             'available_students': family_available_students,
-            'mps': mps
+            'mps': mps,
+            'other_mps': other_mps
         }, RequestContext(request, {}),)
 
     else:
@@ -667,11 +695,26 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         # always filter in case a bad person passes us items from a different course
         items = items.filter(course=course, mark__student=student)
 
-        if marking_period_pk:
-            mp = get_object_or_404(MarkingPeriod, pk=marking_period_pk)
-            mps = (mp,)
+        all_mps = MarkingPeriod.objects.filter(item__in=items).distinct().order_by('-start_date')
+        if specific_items:
+            mps = all_mps
+            other_mps = ()
         else:
-            mps = MarkingPeriod.objects.filter(item__in=items).distinct().order_by('-start_date')
+            if marking_period_pk is None:
+                if all_mps.count():
+                    mps = (all_mps[0],)
+                else:
+                    mps = ()
+            else:
+                mps = all_mps.filter(pk=marking_period_pk)
+            mp_pks = [x.pk for x in mps]
+            other_mps = all_mps.exclude(pk__in=mp_pks)
+
+        #if marking_period_pk:
+        #    mp = get_object_or_404(MarkingPeriod, pk=marking_period_pk)
+        #    mps = (mp,)
+        #else:
+        #    mps = MarkingPeriod.objects.filter(item__in=items).distinct().order_by('-start_date')
 
         for mp in mps:
             mp_items = items.filter(marking_period=mp)
@@ -694,6 +737,8 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
 
         return render_to_response('benchmark_grade/student_grade_course_detail.html', {
             'student': student,
+            'available_students': family_available_students,
             'course': course,
-            'mps': mps
+            'mps': mps,
+            'other_mps': other_mps
         }, RequestContext(request, {}),)

@@ -261,7 +261,7 @@ function show_student_overlay(event) {
 function open_grade_detail(course_id, student_id) {
     // Create a temporary form to submit the list of currently-shown items via POST, and open the result in a new tab
     $("form[name=grade_detail_temporary]").remove();
-    var new_form = $('<form name="grade_detail_temporary" action="/benchmark_grade/student_report/' + student_id + "/" + course_id +
+    var new_form = $('<form name="grade_detail_temporary" action="/benchmark_grade/student_course_report/' + student_id + "/" + course_id +
                      '" method="post" target="_blank"></form>').appendTo("body");
     new_form.append('<input name="item_pks" type="hidden" value="' + item_pk_list + '">');
     new_form.submit();
