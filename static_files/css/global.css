@@ -1,0 +1,11 @@
+[contenteditable="true"]:focus{
+  outline: 1px solid teal;
+}
+[contenteditable="true"]:hover{
+  outline: 1px solid teal;
+}
+.editable:hover{
+  outline: 1px solid teal;
+}
+i.handle { cursor: move; }
+

@@ -26,6 +26,7 @@ urlpatterns = patterns('',
     
     (r'^ajax_select/', include('ajax_select.urls')),
     (r'^ajax_filtered_fields/', include('ajax_filtered_fields.urls')),
+    (r'^inplaceeditform/', include('inplaceeditform.urls')),
 )
 
 if settings.GAPPS:

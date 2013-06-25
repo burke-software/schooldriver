@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin_base.html" %}
 {% load i18n grp_tags %}
 
 {% block breadcrumbs %}
@@ -6,15 +6,6 @@
       <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
        &rsaquo; My Tests
     </div>
-{% endblock %}
-
-{% block stylesheets %}
-  {{ block.super }}
-  <style type="text/css">
-    .minimenu {
-      padding: 15px;
-    }
-  </style>
 {% endblock %}
 
 {% block javascripts %}
@@ -41,6 +32,7 @@
 {% endblock %}
 
 {% block content %}
+  <div class="row">
   <h1> Open Metric Recognition </h1>
   
   <div class="module">
@@ -84,8 +76,9 @@
     </table>
     
     <div class="modal" id="student_queue_modal">.
-      OH HAI!
+      ?
       <button class="close"> Close </button>
     </div>
+  </div>
   </div>
 {% endblock %}
