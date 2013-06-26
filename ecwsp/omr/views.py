@@ -320,11 +320,20 @@ def ajax_delete_answer(request, test_id, answer_id):
 @permission_required('omr.teacher_test')
 def ajax_new_question_form(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
+    profile = UserPreference.objects.get_or_create(user=request.user)[0]
 
     new_question = Question.objects.create(
         test=test,
-    )  
-    
+        point_value = profile.omr_default_point_value
+    )
+    i = 0
+    while i < profile.omr_default_number_answers:
+        new_question.answer_set.create(
+            point_value=0,
+            order=None,
+        )
+        i += 1
+     
     return render_to_response('omr/one_test_question.html', {
         'question': new_question,
     }, RequestContext(request, {}),)
