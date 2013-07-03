@@ -241,7 +241,7 @@ NB: Boolean refers to a simple checkbox. The box can be checked or unchecked whe
 
 
 ====================
-Student Information System (SIS)
+Student Information
 ====================
 The SIS is the central module of SWoRD which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please follow the pertinent headings. 
 
@@ -401,6 +401,34 @@ SWoRD is able to sync with the online gradebook, Engrade so teachers my store al
  2. This will reveal your list of courses, along with the option to download a blank gradebook. Below these options is the button **Sync all grades from Engrade**. 
 
  **Keep in mind that all grades synched from Engrade will override any grades that have been entered into SWoRD for that marking period.**
+
+Standard Tests
+-----------------------
+
+SWoRD allows users to create and enter information for various standard tests (ACT, SAT, PLAN, etc.).
+
+**Creating a New Standard Test**
+
+1. Under the *Standard Tests* tab, select +Add by the **Standard tests** option.
+
+.. image:: /images/standardtests1.png
+
+2. Enter a name of the test and select the appropiate boxes on how to calculate test results.
+3. The **Standard Category** tab refers to the categories of a test (English, Math, Science, Writing, etc.)
+4. Save
+
+**Recording Standard Test Scores**
+
+1. Under the *Standard Tests* tab, select +Add by the **Standard test results** option.
+2. Enter a date, select the student, and select the appropiate test.
+3. Under **Standard category grades** select the cateogry and type in the grades.
+
+**Note** You add additional categories by selecting *Add another Standard Category Grade (Math, then Science, etc.)
+
+.. image:: /images/standardtests2.png
+
+4. Save
+
 
 Omit Course GPA
 -----------------
