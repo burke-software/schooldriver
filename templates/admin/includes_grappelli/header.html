@@ -216,7 +216,7 @@
                     <a href="javascript://" class="user-options-handler menu-collapse-handler"> Admin </a>
                     <ul class="grp-user-options">
                         {% if perms.sis.reports %}
-                            <li><a href="{% url "ecwsp.sis.views.import_everything" %}">{% trans 'School import' %}</a></li>
+                            <li><a href="{% url "simple_import.views.start_import" %}">{% trans 'School import' %}</a></li>
                         {% endif %}
                         {% if perms.administration.change_configuration %}
                             <li><a href="{% url "admin:administration_configuration_changelist" %}">{% trans 'Configuration' %}</a></li>

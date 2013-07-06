@@ -117,25 +117,6 @@ def family_redirect(request):
         return student_report(request)
     return render_to_response('base.html', {'msg': "Welcome!", 'request': request,}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.groups.filter(name='registrar').count() > 0 or u.is_superuser, login_url='/')
-def import_everything(request):
-    """ View for handeling admin import functionality
-    """
-    if request.POST:
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            from ecwsp.sis.importer import Importer
-            importer = Importer(request.FILES['file'], request.user)
-            msg = ""
-            msg_to_add, filename = importer.magic_import_everything()
-            msg += msg_to_add
-            form = UploadFileForm()
-            return render_to_response('upload.html', {'form': form, 'msg': msg, 'error_filename':filename, 'request': request,})
-        else:
-            return render_to_response('upload.html', {'form': form, 'request': request,})
-    form = UploadFileForm()
-    return render_to_response('upload.html', {'form': form, 'request': request,}, RequestContext(request, {}))
-    
 
 @user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')    
 def photo_flash_card(request, year=None):
