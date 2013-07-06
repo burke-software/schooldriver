@@ -241,7 +241,7 @@ NB: Boolean refers to a simple checkbox. The box can be checked or unchecked whe
 
 
 ====================
-Student Information System (SIS)
+Student Information
 ====================
 The SIS is the central module of SWoRD which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please follow the pertinent headings. 
 
@@ -280,6 +280,33 @@ Year classifications are the various grades SWORD supports and their associated 
 - Sophomore: 10
 - Junior: 11
 - Senior: 12
+
+Student Phone Numbers
+-----------------------
+
+In SWoRD, you will see areas for Student phone numbers and for Student Contact phone numbers.
+To get proper information out of the system, you need to enter the numbers in the correct areas.
+
+**Student phone numbers-** are for numbers to contact the student, for example a student's cell phone.  If you use the home number in this spot, you should also put it into the contact area for the parent.
+
+**Student Contact phone numbers**- cell, home, and work phone numbers for parents or other emergency contact personnel.  
+
+Family Access Users
+---------------------
+
+SWoRD allows for parents/guardians to log in and view grade information pertaining to their child. This section will show registrars or admins how to set up parent logins. 
+
+1. Under the **School Information** tab, select Add+ by the choice, **Family Access Users**
+
+.. image:: /images/famaccess1.png
+
+2. Create a username and password for the parent.
+3. Return to the **Students** page, and under **Family Access Users**, select the user/s you've created that are in the left box titled *Available family access users* and click the arrow so that the user names switch to the right box titled, *Chosen family access users.*
+
+.. image:: /images/famaccess2.png
+
+4. Save   
+
 
 Cohorts
 -----------------------
@@ -374,6 +401,34 @@ SWoRD is able to sync with the online gradebook, Engrade so teachers my store al
  2. This will reveal your list of courses, along with the option to download a blank gradebook. Below these options is the button **Sync all grades from Engrade**. 
 
  **Keep in mind that all grades synched from Engrade will override any grades that have been entered into SWoRD for that marking period.**
+
+Standard Tests
+-----------------------
+
+SWoRD allows users to create and enter information for various standard tests (ACT, SAT, PLAN, etc.).
+
+**Creating a New Standard Test**
+
+1. Under the *Standard Tests* tab, select +Add by the **Standard tests** option.
+
+.. image:: /images/standardtests1.png
+
+2. Enter a name of the test and select the appropiate boxes on how to calculate test results.
+3. The **Standard Category** tab refers to the categories of a test (English, Math, Science, Writing, etc.)
+4. Save
+
+**Recording Standard Test Scores**
+
+1. Under the *Standard Tests* tab, select +Add by the **Standard test results** option.
+2. Enter a date, select the student, and select the appropiate test.
+3. Under **Standard category grades** select the cateogry and type in the grades.
+
+**Note** You add additional categories by selecting *Add another Standard Category Grade (Math, then Science, etc.)
+
+.. image:: /images/standardtests2.png
+
+4. Save
+
 
 Omit Course GPA
 -----------------
@@ -666,6 +721,83 @@ Creating Supervisor Logins
 - One work team may have an unlimited number of supervisor logins.
 - Supervisor login is not related to the supervisor contact in anyway.
 
+Creating Contact Supervisors
+-----------------------------
+
+Contact supervisors are individuals at companies that supervise a school's student worker. Accordingly, these contact supervisors are those people who will be receiving emails to evaluate/appraise a student worker's time card that has been submitted to them. To set them up, follow the directions below:
+
+1. Under the **Company Data** tab from the SWoRD dash, select Add+ by **Contact Supervisors**
+2. Fill out the available data fields.
+3. Save
+
+Once the contact has been created, that contact may be assigned to any number of work teams. To assign your newly created supervisor to a work team, click on **Work teams** under *Company Data* and scroll down to the **Contacts** box. Select a contact from *available* and switch them to *chosen* as shown below:
+
+.. image:: /images/contactsupervisor.png 
+
+**Don't forget to click SAVE after assigning a Contact**
+
+
+
+Work Teams
+------------------
+
+Work teams are a single student, or group of students that are assigned jobs at a company. Work teams are especially helpful for when a school has multiple students working at the same company, but have different types of jobs at that company. For example,
+
+Student A and Student B both work at Sample Company, but in differenet departments.
+
+Work teams allow schools to create unique work teams that are still associated with the same company:
+
+Student A - Sample Company Front Office
+Student B - Sample Company Marketing Dept.
+
+**Creating Work Teams**
+
+1. Select Add+ by **Work Teams** located under the *Company Data* tab.
+2. Fill out the information available. A team name is *required*. 
+3. Save
+
+In the example image below, a work team, *Wells Fargo Marketing Dept* is created and is associated with the company, *Wells Fargo*
+
+.. image:: /images/workteam1.png 
+
+
+Assigning Work Placements
+--------------------------
+
+Once all the work teams have been created, you can now assign student/s to a work team. To do so, follow the directions below:
+
+**For a single student**
+
+1. Click on student worker's name
+2. Assign the student a placement from the dropdown box. *Note*: placements refer to workteams (see above)
+
+.. image:: /images/assignworkplacement1.png 
+
+3. Save
+
+Once saved, you will see the changes reflected immediately in the student worker dash:
+
+.. image:: /images/assignworkplacement2.png 
+
+**Multiple Students**
+
+Using the Mass Edit function, work study staff can assign multiple students to the same work team quickly, instead of assigning by individual student. To do so:
+
+1. Go to the **Student Worker** dashboard, and select your students to group assign placements.
+2. Once seleted, click **Mass Edit** from the black toolbar at the bottom.
+
+.. image:: /images/assignworkplacement3.png
+
+3. At the mass edit screen, check the box by placement and assign a placement.
+
+.. image:: /images/assignworkplacement4.png
+
+4. Save
+
+You will now see the changes reflected on the dashboard:
+
+.. image:: /images/assignworkplacement5.png
+
 Student Pay Rates
 ---------------------
 School staff are able to set a pay rate that an individual student and a company gets per hour. The two options shown below exist for instances in which a school takes an accounting fee cut of the paycheck. Individuals can set either pay rate they desire, neither is required.
@@ -842,6 +974,48 @@ Here, you may enter the appropiate information in to register hours for a partic
 Once the hours have been registered, you will see this reflected in the volunteer dash.
 
 .. image:: /images/volunteerslistwithhours.png
+
+
+===========================
+Preparing for a New Year
+===========================
+
+This section will serve as a checklist for users as they get ready for a new school year.
+
+1. **Change School Year**
+
+*Note:* This will change students year- freshmen will be come sophomores, seniors will graduate, etc.
+
+How to: User must have the necessary permissions (typically a registrar). Select **Admin** from the top-right selection bar, then **Change school year**. 
+
+.. image:: /images/prepnewyear1.png
+
+Select the appropiate year from the drop down and submit. A confirmation screen appears and the change will go through once **YES** has been selected.
+
+2. **Create New Marking Periods/Semesters**
+
+In order for grades/attendances/disciplines etc. to be logged appropiately, it is vital that the correct marking periods are set up, and that you set the correct current marking period.
+
+How to: Under the Courses and Grades tab, select **Marking periods**. If you notice that marking periods for the next year have not been created, select +Add. You will be taken to the following screen:
+
+.. image:: /images/prepnewyear2.png
+
+Fill out the appropiate information and set the correct dates. Check the **Active** box if that marking period will be the first marking period for the new year (i.e. August - November). **Save**
+
+
+3. **Create students from Applicants**
+
+You may refer to `Creating Students from Applicants`_. One thing worth repeating: the only applicants who will be converted into students are those applicants who have the green check under the **ready to export** column header.
+
+4. **Create Courses for the New Year**
+
+How to: click here to read over the how-to section on this topic `Creating Courses`_. 
+
+*Note:* ensure that you select the correct marking period when creating new courses. 
+
+5. **Enroll Students in New Courses**
+
+How to: refer to `Enrolling Students`_.
 
 
 =======================
