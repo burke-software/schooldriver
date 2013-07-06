@@ -20,7 +20,7 @@
     
     {% block widget %}
       <div class="eight columns">
-        <div class="field {% if field.errors %}danger{% endif %}"> 
+        <div class="field {% if field.field.is_select %}picker{% endif %}{% if field.errors %}danger{% endif %}"> 
         {% formfield field %}
         </div>
         {% block errors %}

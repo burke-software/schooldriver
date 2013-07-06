@@ -9,3 +9,10 @@
 }
 i.handle { cursor: move; }
 
+.icon {
+  text-align: center;
+}
+.icon img {
+  height: 80px;
+}
+

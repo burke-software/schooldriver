@@ -10,7 +10,7 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script src="/static/js/jquery.tools.min.js" type="text/javascript"></script>
+<script src="http://cdn.jquerytools.org/1.2.7/full/jquery.tools.min.js"></script>
   <script type="text/javascript">
     function show_queue(test_id) {
       $.post(  
@@ -37,7 +37,6 @@
   
   <div class="module">
     <a class="minimenu" href="{% url "ecwsp.omr.views.edit_test" %}">{% trans 'Create New Test' %}</a>
-    <a class="minimenu" href="{% url "admin:omr_questionbank_changelist" %}">{% trans 'Question Bank' %}</a>
   </div>
   
   <h2>Your Tests</h2>

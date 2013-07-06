@@ -1,4 +1,4 @@
-#   Copyright 2011 David M Burke
+#   Copyright 2011-2013 David M Burke
 #   Author David M Burke <dburke@cristoreyny.org>
 #   Co-Author Callista Goss <calli@burkesoftware.com>
 #   
@@ -247,8 +247,8 @@ def ajax_mark_as_answer(request, test_id, answer_id):
 @permission_required('omr.teacher_test')
 def edit_test_questions(request, id):
     test = get_object_or_404(Test, id=id)
-    questions = test.question_set.all()
-    
+    questions = test.question_set.annotate(answer_total=Sum('answer__point_value'))
+
     # Ugly way to see which test is on, currently only used for filtering benchmarks
     request.session['omr_test_id'] = str(id)
     
@@ -321,18 +321,33 @@ def ajax_delete_answer(request, test_id, answer_id):
 def ajax_new_question_form(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
     profile = UserPreference.objects.get_or_create(user=request.user)[0]
-
     new_question = Question.objects.create(
         test=test,
-        point_value = profile.omr_default_point_value
+        point_value = profile.omr_default_point_value,
+        type = request.POST['question_type']
     )
-    i = 0
-    while i < profile.omr_default_number_answers:
+    
+    if new_question.type == "True/False":
         new_question.answer_set.create(
-            point_value=0,
-            order=None,
-        )
-        i += 1
+            answer="True",
+	    point_value=0,
+	    order=None,
+	)
+        new_question.answer_set.create(
+            answer="False",
+	    point_value=0,
+	    order=None,
+	)
+    elif new_question.type == "Essay":
+        pass
+    else:
+	i = 0
+	while i < profile.omr_default_number_answers:
+	    new_question.answer_set.create(
+		point_value=0,
+		order=None,
+	    )
+	    i += 1
      
     return render_to_response('omr/one_test_question.html', {
         'question': new_question,
@@ -368,6 +383,7 @@ def add_answer(request, test_id, question_id):
 
     return render_to_response('omr/one_test_answer.html', {
         'answer': new_answer,
+        'question': question,
     }, RequestContext(request, {}),)
 
 def refresh_question_order(request, question):

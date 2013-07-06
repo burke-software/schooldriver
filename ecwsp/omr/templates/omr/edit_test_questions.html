@@ -32,12 +32,13 @@
   {% if not test.finalized %}
   <div class="row" style="padding-top: 1em;">
     <div class="medium primary btn pill-left">
-      <a onclick="add_question();" >Add Question</a>
+      <a href="javascript:void(0)" onclick="add_question('Multiple Choice');" >Add Multiple Choice</a>
+    </div>
+    <div class="medium primary btn">
+      <a href="javascript:void(0)" onclick="add_question('True/False');">Add True/False</a>
     </div>
     <div class="medium primary btn pill-right">
-      <a onclick="return showAddAnotherPopup(this);" href="/omr/question_bank/">
-        Add Question from Question Bank
-      </a>
+      <a href="javascript:void(0)" onclick="add_question('Essay');">Add Essay Question</a>
     </div>
   </div>
   {% endif %}

@@ -1,0 +1,1 @@
+$(".multiselect").multiselect().multiselectfilter();

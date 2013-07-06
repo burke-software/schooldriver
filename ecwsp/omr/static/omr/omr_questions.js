@@ -112,16 +112,16 @@ function save_inline_answer(e, obj_id, field){
         function(data){
             if (data) {
                 $("#point_value_" + answer_id).html(data);
-                $("#div_answer_" + answer_id).css('background', '#A6FFA8');
                 $(".mark_button_" + question_id).remove();
             }
         }  
     );
   }
   
-function add_question() {
+function add_question(question_type) {
   $.post(
     "ajax_question_form/new/",
+    {question_type: question_type},
     function(data){
       $('#new_question_div').before(data);
     }  

@@ -13,4 +13,7 @@ class ModelForm(forms.ModelForm):
         for key, field in self.fields.items():
             if not 'class' in field.widget.attrs:
                 field.widget.attrs['class'] = ''
-            field.widget.attrs['class'] += ' text input'
+            if isinstance(field, ChoiceField):
+                field.is_select = True
+            else:
+                field.widget.attrs['class'] += ' text input'

@@ -255,7 +255,7 @@ class Answer(AnswerAbstract):
     @property
     def letter(self):
         if self.question.type == "True/False":
-            return self.answer
+            return self.answer[0]
         else:
             return chr(self.order + 65)
     
