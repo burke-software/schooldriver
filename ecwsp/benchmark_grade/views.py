@@ -340,8 +340,8 @@ def ajax_get_item_form(request, course_id, item_id=None):
     if item and item.category.fixed_points_possible:
         form.fields['points_possible'].widget.attrs = {'disabled': 'true'}
 
-    return render_to_response('sis/generic_form_fragment.html', {
-        'form': form,
+    return render_to_response('sis/gumby_modal_form.html', {
+        'my_form': form,
         'item_id': item_id,
         'lists': lists,
     }, RequestContext(request, {}),)

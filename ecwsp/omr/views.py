@@ -122,10 +122,9 @@ def my_tests(request):
 
 @permission_required('omr.teacher_test')
 def my_tests_show_queue(request):
-    id = request.POST['id']
-    test = Test.objects.get(id=id)
+    test = Test.objects.get(id=request.POST['id'])
     html = ""
-    for result in test.testinstance_set.filter(results_recieved=False):
+    for result in test.testinstance_set.filter(results_received=False):
         html += '%s <br/>' % (result.student,)
     return HttpResponse(html)
 

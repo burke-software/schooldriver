@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin_base.html" %}
 {% load dajaxice_templatetags %}
 
 {% block extrahead %}
@@ -7,25 +7,23 @@
     <script type="text/javascript" src="/static/js/gradebook/sh_javascript.js"></script>
     <script type="text/javascript" src="/static/js/gradebook/fixedtable.js"></script>
     <script type="text/javascript" src="/static/js/gradebook/gradebook.js?"></script>
-    <script type="text/javascript" src="/static/js/jquery.tools.min.js"></script>
     <script type="text/javascript" src="/static/js/init_admin_datepicker.js"></script>
-    
-    <script type="text/javascript" src="/static/js/jquery.multiselect.min.js"></script>
-    <link rel="stylesheet" href="/static/css/jquery.multiselect.css" type="text/css" media="screen">
-    <script type="text/javascript" src="/static/js/jquery.multiselect.filter.js"></script>
-    <link rel="stylesheet" href="/static/css/jquery.multiselect.filter.css" type="text/css" media="screen">
 
+
+
+    
     <link rel="stylesheet" href="/static/js/jquery-tooltip/jquery.tooltip.css">
     <script type="text/javascript" src="/static/js/jquery-tooltip/lib/jquery.bgiframe.js"></script>
-    <script type="text/javascript" src="/static/js/jquery-tooltip/lib/jquery.dimensions.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-tooltip/lib/jquery.dimensions.js.BAD"></script>
+
+
+
     <script type="text/javascript" src="/static/js/jquery-tooltip/jquery.tooltip.min.js"></script>
 
     <script type="text/javascript" src="/static/js/jquery.color.plus-names-2.1.1.min.js"></script>
 
     <link rel="stylesheet" href="/static/css/gradebook/style.css" type="text/css" media="screen">
-    <link rel="stylesheet" href="/static/css/modal.css" type="text/css" media="screen">
 
-    {% dajaxice_js_import %}
     {% load staticfiles %}
     <script type="text/javascript" src="{% static "dajax/jquery.dajax.core.js" %}"></script>
     
@@ -43,7 +41,8 @@
     </script>
 {% endblock %}
 
-{% block content %}
+{% block bigcontent %}
+  <div style="padding: 0px 20px 0px;">
     <div class="topbar">
         <span class="logo">{{ course.shortname }} Gradebook</span>
     </div><!-- topbar -->
@@ -67,8 +66,8 @@
         
     <div class="menu">
         <form action="" method="get">
-            <input type="button" value="Create New Assignment" onclick="get_new_assignment_form(event)"/>
-            <input type="button" value="Create New Demonstration" onclick="get_new_demonstration_form(event)"/>
+            <input type="button" class="switch active" value="Create New Assignment" gumby-trigger="#modal_form" onclick="get_new_assignment_form(event)"/>
+            <input type="button" value="Create New Demonstration" class="switch active" gumby-trigger="#modal_form" onclick="get_new_demonstration_form(event)"/>
             <div class="blackbar"></div>
             <div class="filter_item">
                 Student Cohort
@@ -128,22 +127,22 @@
                                 {% for dem in item.demonstration_set.all %}
                                     <th>
                                         <div class="assignment" item_id="{{ dem.item.id }}">
-                                            <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.category }}</div>
-                                            <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.name}}</div>
-                                            <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.benchmark.number }}{% if dem.item.description %}, {{ dem.item.description }}{% endif %}</div>
-                                            <div class="headerItem" onclick="get_edit_demonstration_form(event)" data-demonstration_id="{{ dem.id }}"><em>{{ dem.name }}</em></div>
-                                            <div class="forall" title="Fill all" data-demonstration_id="{{ dem.id }}" onclick="show_fill_all_form(event)">&forall;</div>
+                                            <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.category }}</div>
+                                            <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.name}}</div>
+                                            <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.benchmark.number }}{% if dem.item.description %}, {{ dem.item.description }}{% endif %}</div>
+                                            <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_demonstration_form(event)" data-demonstration_id="{{ dem.id }}"><em>{{ dem.name }}</em></div>
+                                            <div class="forall switch active" title="Fill all" data-demonstration_id="{{ dem.id }}"  gumby-trigger="#modal_form" onclick="show_fill_all_form(event)">&forall;</div>
                                         </div>
                                     </th>
                                 {% endfor %}
                             {% else %}
                                 <th>
                                     <div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">
-                                        <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.category }}</div>
-                                        <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.name }}</div>
-                                        <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.benchmark.number }}{% if item.description %}, {{ item.description }}{% endif %}</div>
-                                        <div class="headerItem" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">---------</div>
-                                        <div class="forall" title="Fill all" onclick="show_fill_all_form(event)">&forall;</div>
+                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.category }}</div>
+                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.name }}</div>
+                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.benchmark.number }}{% if item.description %}, {{ item.description }}{% endif %}</div>
+                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">---------</div>
+                                        <div class="forall switch active" gumby-trigger="#modal_form" title="Fill all" onclick="show_fill_all_form(event)">&forall;</div>
                                     </div>
                                 </th>
                             {% endif %}
@@ -220,9 +219,11 @@
     </div><!-- .wrapper -->
     
     
-    <div id="new_assignment_form" class="modal"></div>
-    <div id="new_demonstration_form" class="modal"></div>
-    <div id="student_info_overlay" class="modal"></div>
-    <div id="fill_all_form" class="modal"></div>
-
+    <div id="modal_form" class="modal">
+      <div class="content">
+        <a class="close switch" gumby-trigger="|#modal_form"><i class="icon-cancel" /></i></a>
+        <div id="modal_content"></div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

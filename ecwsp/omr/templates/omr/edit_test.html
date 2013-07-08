@@ -40,7 +40,7 @@
           {% if not test.finalized %}
           {% formrow test_form.courses %}
           <a href="javascript:void(0)" onclick='$("#students_div").show(); $(this).hide()'>Select individual students</a>
-          <div id="students_div" style="display: none">
+          <div id="students_div" style="display: none; min-height: 300px;">
             {% formrow test_form.students %}
           </div>
           <br/>

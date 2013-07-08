@@ -15,4 +15,6 @@ i.handle { cursor: move; }
 .icon img {
   height: 80px;
 }
-
+.modal.active {
+  z-index: 2;
+}

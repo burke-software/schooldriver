@@ -264,3 +264,9 @@ background-image: -moz-linear-gradient(#eeeeee,#e0e0e0);
 background-image: -o-linear-gradient(#eeeeee,#e0e0e0);
 background-image: linear-gradient(#eeeeee,#e0e0e0);
 }
+
+input[type=button], button, a.fb_show, a.related-lookup, body.tinyMCE input[name="src"]+div a, body.tinyMCE input[name="href"]+div a, a.related-lookup.m2m, .grp-autocomplete-wrapper-m2m a.related-lookup, .grp-autocomplete-wrapper-fk a.related-lookup, button.ui-datepicker-trigger, button.ui-timepicker-trigger, button.ui-datetime-now, .grp-pulldown-container .grp-pulldown-handler:hover, .grp-pulldown-container.grp-pulldown-state-open .grp-pulldown-handler, .grp-pulldown-container.grp-pulldown-state-open .grp-pulldown-handler:hover {
+color: #fff;
+border: 1px solid #ccc;
+background-color: #e1f0f5;
+}

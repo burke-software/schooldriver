@@ -1,0 +1,34 @@
+<!-- Just plain HTML, no admin stuff. Useful for ajax -->
+{% load floppyforms %}
+
+<div class="row">
+  <h2> {{ subtitle }} </h2>
+  {{ msg }}
+  <form method="post" onsubmit="handle_form_fragment_submit(this); return false;" item_id="{{ item_id }}" id="form_fragment" enctype="multipart/form-data" action="">
+    {% form my_form using "gumby/layouts/gumby_row.html" %}
+      {% if form.name.value %}
+	  <a class="grp-button grp-delete-link" onclick="confirm_assignment_delete({{ item_id }});">Delete</a>
+      {% endif %}
+      <input type="submit" value="Submit" />    
+  </form>
+  {% if lists %}
+  <hr />
+      {% for list in lists %}
+	  <h2>{{ list.heading }}</h2>
+	  <ul>
+	  {% for item in list.items %}
+	      <li>{{ item }}</li>
+	  {% endfor %}
+	  </ul>
+      {% endfor %}
+  {% endif %}
+</div>
+
+<script type="text/javascript">
+    $("#id_item-benchmark").multiselect({
+        multiple: false,
+        selectedList: 1
+     }).multiselectfilter();;
+    $("#id_item-benchmark").parent('div').removeClass('picker')
+    if ($(".datepicker").is('*')) { $(".datepicker").datepicker(); }
+</script>
