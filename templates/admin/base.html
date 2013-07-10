@@ -55,8 +55,15 @@
             <script src="{% static "grappelli/js/grappelli.min.js" %}" type="text/javascript"></script>
         {% endif %}
     {% endblock %}
+    
     <!-- EXTRAHEAD -->
+    
     {% include "gumby/head_lite.html" %}
+    <link rel="stylesheet" type="text/css" href="/static/css/ajax_select.css"/> 
+    <link rel="stylesheet" type="text/css" href="/static/css/ui.core.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/cupertino/jquery-ui-1.10.3.custom.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/global.css"/>
+    
     {% block extrahead %}{% endblock %}
 </head>
 <body class="{% if is_popup %}grp-popup {% endif %}{% block bodyclass %}{% endblock %}{% if LANGUAGE_BIDI %} rtl{% endif %}">

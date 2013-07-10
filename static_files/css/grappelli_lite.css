@@ -123,10 +123,10 @@ margin-left: 10px;
 -o-border-radius: 7px;
 border-radius: 7px;
 }
-.grp-line-height, h4, .grp-actions, .grp-button, input[type="submit"], a.grp-button, button.grp-button, input[type=button].grp-button, body {
+.grp-line-height, h4, .grp-actions, .grp-button, input[type="submit"], a.grp-button, button.grp-button, input[type=button].grp-button {
 line-height: 16px;
 }
-.grp-font-size, h4, .grp-button, input[type="submit"], a.grp-button, button.grp-button, input[type=button].grp-button, body {
+.grp-font-size, h4, .grp-button, input[type="submit"], a.grp-button, button.grp-button, input[type=button].grp-button {
 font-size: 12px;
 }
 .grp-submit-row>ul>li:first-child, .grp-submit-row>ul>li.first {

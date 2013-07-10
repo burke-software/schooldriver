@@ -18,3 +18,11 @@ i.handle { cursor: move; }
 .modal.active {
   z-index: 2;
 }
+/* Hack to keep chrome from freaking out with the nav menu */
+.ui-helper-hidden-accessible {
+left: -9999px;
+}
+.container{
+  margin-top: 50px;
+  margin-bottom: 20px;
+}
