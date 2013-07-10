@@ -4,7 +4,13 @@
   {% block head %}
   
   {% block javascripts %}
-  <script type="text/javascript" src="/static/js/jquery.js"></script>
+  
+  <!--[if IE]>
+    <script type="text/javascript" src="/static/js/jquery-1.10.2.min.js"></script>
+  <![endif]-->
+  <![if !IE]>
+    <script type="text/javascript" src="/static/js/jquery.js"></script>
+  <![endif]>
   <script type="text/javascript" src="/static/js/jquery-migrate.js"></script>
   <script type="text/javascript" src="/static/js/jquery-ui.js"></script>
   <script type="text/javascript" src="/static/js/ajax_select.js"></script>

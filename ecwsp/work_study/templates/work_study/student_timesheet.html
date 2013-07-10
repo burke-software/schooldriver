@@ -1,14 +1,10 @@
 {% extends "base.html" %}
 
-{% block head %}
-    <script type="text/javascript" src="/static/js/jquery.datepicker.min.js"></script>
-    
+{% block extrahead %}    
     <script type="text/javascript" src="/static/js/jquery.ptTimeSelect.js"></script>    
     <script type="text/javascript" src="/static/js/date.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-1.7.3.custom.css" media="screen">
     <link rel="stylesheet" type="text/css" href="/static/css/ui.core.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="/static/css/ui.theme.css" media="screen">
     <link rel="stylesheet" type="text/css" href="/static/css/jquery.ptTimeSelect.css">
     
     <script type="text/javascript">
@@ -111,11 +107,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="clear"></div>
 
-<div id="pagewrap">
-
-
+<div class="row">
 <h1>Create Time Card</h1>
 
 <div class="subhead-text">
@@ -139,6 +132,7 @@ You are logged in as
 {% if warning %}
     <br/><h3 style="color: red;">Warning student has already posted a time sheet for today. You may approve it <a href="{% url "ecwsp.work_study.views.approve" %}?key={{ key }}">here</a></h3><br/>
 {% endif %}
+</div>
 
 <form method="post" name="timesheet_form" onsubmit="return check_time()" action="">
 

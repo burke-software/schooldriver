@@ -18,11 +18,27 @@
   <script type="text/javascript" src="/static/omr/omr_questions.js"></script>
 {% endblock %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <style>
+  p {
+    line-height: 1em;
+    margin-bottom: 2px;
+  }
+  div.question_area {
+    max-width: 900px;
+  }
+  .question_draggable {
+    margin-bottom: 12px;
+  }
+  </style>
+{% endblock %}
+
 {% block content %}
 <div id="save_status"></div>
   <h1>Open Metric Recognition</h1>
   <h2>{{ test }} Questions </h2>
-  <div id="question_sortable">
+  <div id="question_sortable" class="question_area">
     {% for question in questions %}
       {% include "omr/one_test_question.html" with question=question %}
     {% endfor %}

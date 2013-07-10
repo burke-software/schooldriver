@@ -5,6 +5,9 @@
     <title>{% block title %}{% endblock %}</title>
     <meta charset="utf-8" />
     {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+    
+    
+    
     <!-- STYLESHEETS -->
     {% block stylesheets %}
         <link href="{% static "grappelli/jquery/ui/css/custom-theme/jquery-ui-1.8.18.custom.css" %}" rel="stylesheet" type="text/css" media="screen" />
@@ -53,6 +56,7 @@
         {% endif %}
     {% endblock %}
     <!-- EXTRAHEAD -->
+    {% include "gumby/head_lite.html" %}
     {% block extrahead %}{% endblock %}
 </head>
 <body class="{% if is_popup %}grp-popup {% endif %}{% block bodyclass %}{% endblock %}{% if LANGUAGE_BIDI %} rtl{% endif %}">
