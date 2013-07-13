@@ -107,7 +107,7 @@ class Contact(models.Model):
         except:
             return ""
 
-class Company(models.Model):
+class Company(models.Model, CustomFieldModel):
     name = models.CharField(max_length=255, unique=True)
     alternative_contract_template = models.FileField(
         upload_to='contracts_alt',
@@ -272,7 +272,7 @@ class StudentDesiredSkill(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
-class CompContract(models.Model):
+class CompContract(models.Model, CustomFieldModel):
     company = models.ForeignKey(Company)
     company_name = models.CharField(max_length=255, blank=True)
     name = models.CharField(max_length=255, blank=True)
