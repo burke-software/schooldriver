@@ -1,0 +1,48 @@
+<div id="question_{{ question.id }}_div" data-question_id="{{ question.id }}" class="question_draggable">
+  <div class="row">
+    <h3>
+      <div style="float:left">
+        <span>
+          Question
+        </span>
+        <span class="question_order">
+          {{ question.order|add:1 }}
+        </span>
+      </div>
+      <div style="float:right">
+        <span contenteditable="true"  onkeyup="this.innerText=this.innerText.replace(/[^0-9]/g,'')" onclick="selectElementContents(this)" onChange="save_inline_question(this, {{ question.id }}, 'point_value')" style="width: 1.8em;">
+          {{ question.point_value }}
+        </span>
+        <span onclick="$(this).prev('span').click();">Point(s) Possible</span>
+        <i class="question handle icon-arrow-combo"></i>
+        <i class="icon-cancel-circled" onclick="delete_question({{ question.id }});"></i>
+      </div>
+    </h3>
+  </div>
+  <div class="row">
+    <div class="eight columns">
+      <div id="question_{{ question.id }}_question" onChange="save_inline_question(this, {{ question.id }}, 'question')" contenteditable="true">
+        {{ question.question|safe }}
+      </div>
+    </div>
+    <div class="four columns">
+      <h5>{{ question.type }}</h5>
+      <div class="editable" id="benchmarks_{{ question.id }}" onClick="ajax_benchmarks_form(this, {{ question.id }});">
+      {% include "omr/one_test_question_benchmark.html" %}
+      </div>
+    </div>
+  </div>
+  {% for answer in question.answer_set.all %}
+    {% include "omr/one_test_answer.html" %}
+  {% endfor %}
+  {% if question.type != "Essay" %}
+    <div id="new_answer_div-{{ question.id }}"></div>
+    <div class="row">
+      <div class="twelve columns">
+	<div class="medium secondary btn">
+	  <a onclick="add_answer({{ question.id }});">Add Answer</a>
+	</div>
+      </div>
+    </div>
+  {% endif %}
+</div>

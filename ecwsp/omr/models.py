@@ -14,6 +14,8 @@ from django.contrib.localflavor.us.models import *
 from ecwsp.sis.models import SchoolYear, Student    
 
 from django.core.exceptions import ImproperlyConfigured
+from positions.fields import PositionField
+
 if not 'ecwsp.benchmarks' in settings.INSTALLED_APPS:
     raise ImproperlyConfigured('omr depends on benchmarks but it is not in installed apps')
     
@@ -79,17 +81,6 @@ class Test(models.Model):
         except:
             return "N/A"
     
-    def reindex_question_order(self):
-        """Test questions should always be 1, 2, 3, etc
-        This will set it straight with respect to current order """
-        questions = self.question_set.order_by('order')
-        i = 1
-        for question in questions:
-            if question.order != i:
-                question.order = i
-                question.save()
-            i += 1
-        
     def enroll_students(self, students):
         """ Enroll these students, delete those not in this list!! """
         if students:
@@ -111,7 +102,7 @@ signals.m2m_changed.connect(enroll_course_signal, sender=Test.courses.through)
     
 
 class QuestionAbstract(models.Model):
-    question = RichTextField()
+    question = RichTextField(blank=True)
     benchmarks = models.ManyToManyField('benchmarks.Benchmark', blank=True, null=True)
     theme = models.CharField(max_length=255, blank=True)
     type_choices = (
@@ -166,7 +157,7 @@ class NetworkQuestionBank(QuestionAbstract):
     
 class Question(QuestionAbstract):
     test = models.ForeignKey(Test)
-    order = models.IntegerField(blank=True,null=True)
+    order = PositionField(collection='test', blank=True)
     
     class Meta:
         ordering = ['order']
@@ -238,14 +229,10 @@ class Question(QuestionAbstract):
                 else:
                     answer.point_value = self.point_value
                 answer.save()
-    def save(self, *args, **kwargs):
-        if not self.order:
-            self.order = self.test.question_set.filter(order__isnull=False).count() + 1 
-        super(Question, self).save(*args, **kwargs)
 
 
 class AnswerAbstract(models.Model):
-    answer = RichTextField()
+    answer = RichTextField(blank=True)
     error_type = models.CharField(max_length=255, blank=True)
     point_value = models.IntegerField(default=0)
     
@@ -260,7 +247,17 @@ class AnswerBank(AnswerAbstract):
     
 class Answer(AnswerAbstract):
     question = models.ForeignKey(Question)
+    order = PositionField(collection="question")
     
+    class Meta:
+        ordering = ('order',)
+
+    @property
+    def letter(self):
+        if self.question.type == "True/False":
+            return self.answer[0]
+        else:
+            return chr(self.order + 65)
     
 class TestInstance(models.Model):
     student = models.ForeignKey('sis.Student')

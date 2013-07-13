@@ -1,0 +1,60 @@
+[contenteditable="true"]:focus{
+  outline: 1px solid teal;
+}
+[contenteditable="true"]:hover{
+  outline: 1px solid teal;
+}
+.editable:hover{
+  outline: 1px solid teal;
+}
+i.handle { cursor: move; }
+
+.icon {
+  text-align: center;
+}
+.icon img {
+  height: 80px;
+}
+.modal.active {
+  z-index: 2;
+}
+/* Hack to keep chrome from freaking out with the nav menu */
+.ui-helper-hidden-accessible {
+left: -9999px;
+}
+.container{
+  margin-top: 50px;
+  margin-bottom: 20px;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 300;
+}
+.ui-front {
+  z-index: 99999;
+  min-width: 200px;
+}
+.navbar ul li > a {
+  padding-left: 3%;
+  padding-right: 3%;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+@media screen and (max-width: 800px){
+  .navbar ul li > a {
+    font-size: 1.2vw;
+  }
+  .navbar ul li select {
+    font-size: 1.2vw !important;
+  }
+  .navbar ul li input {
+    font-size: 1.2vw !important;
+  }
+}
+@media screen and (max-width: 700px){
+  .navbar .logo {
+    display: none;
+  }
+  .navbar .columns {
+    width: 100% !important
+  }
+}

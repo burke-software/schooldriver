@@ -1,0 +1,272 @@
+.grp-module {
+position: relative;
+float: left;
+clear: both;
+margin: 0 0 5px;
+padding: 0;
+width: 100%;
+border: 1px solid #ccc;
+background: #eee;
+-webkit-border-radius: 3px;
+-moz-border-radius: 3px;
+-ms-border-radius: 3px;
+-o-border-radius: 3px;
+border-radius: 3px;
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+.grp-submit-row {
+padding: 0;
+border: 0;
+-webkit-border-radius: 0;
+-moz-border-radius: 0;
+-ms-border-radius: 0;
+-o-border-radius: 0;
+border-radius: 0;
+background: transparent;
+min-width: auto;
+}
+.grp-fixed-footer {
+position: fixed;
+z-index: 900;
+float: left;
+bottom: 0;
+left: 0;
+margin: 0;
+padding: 10px 20px 5px;
+width: 100%;
+border: 0;
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+color: #fff;
+background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+background-size: 100%;
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #333333), color-stop(100%, #222222));
+background-image: -webkit-linear-gradient(#333333,#222222);
+background-image: -moz-linear-gradient(#333333,#222222);
+background-image: -o-linear-gradient(#333333,#222222);
+background-image: linear-gradient(#333333,#222222);
+}
+.grp-fixed-footer a.grp-button:hover, .grp-fixed-footer a.grp-button:focus, .grp-fixed-footer button.grp-button:hover, .grp-fixed-footer button.grp-button:focus, .grp-fixed-footer input[type=button].grp-button:hover, .grp-fixed-footer input[type=button].grp-button:focus {
+color: #444;
+border: 1px solid #c8c8c8;
+background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+background-size: 100%;
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #eeeeee));
+background-image: -webkit-linear-gradient(#ffffff,#eeeeee);
+background-image: -moz-linear-gradient(#ffffff,#eeeeee);
+background-image: -o-linear-gradient(#ffffff,#eeeeee);
+background-image: linear-gradient(#ffffff,#eeeeee);
+}
+.grp-submit-row>ul>li input.grp-button, .grp-submit-row>ul>li a.grp-button, .grp-submit-row>ul>li button.grp-button {
+filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=75);
+opacity: 0.90;
+}
+a.grp-button:hover, a.grp-button:focus, button.grp-button:hover, button.grp-button:focus, input[type=button].grp-button:hover, input[type=button].grp-button:focus {
+color: #fff;
+border: 1px solid #373737;
+background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+background-size: 100%;
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #5e5e5e), color-stop(100%, #444444));
+background-image: -webkit-linear-gradient(#5e5e5e,#444444);
+background-image: -moz-linear-gradient(#5e5e5e,#444444);
+background-image: -o-linear-gradient(#5e5e5e,#444444);
+background-image: linear-gradient(#5e5e5e,#444444);
+}
+a.grp-button, button.grp-button, input[type=button].grp-button {
+position: relative;
+display: inline-block;
+margin: 0;
+padding: 5px;
+height: 28px;
+font-weight: bold;
+-webkit-border-radius: 5px !important;
+-moz-border-radius: 5px !important;
+-ms-border-radius: 5px !important;
+-o-border-radius: 5px !important;
+border-radius: 5px !important;
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+cursor: pointer;
+overflow: hidden;
+vertical-align: top;
+color: #fff;
+border: 1px solid #2b8aab;
+background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+background-size: 100%;
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #4fb2d3), color-stop(100%, #309bbf));
+background-image: -webkit-linear-gradient(#4fb2d3,#309bbf);
+background-image: -moz-linear-gradient(#4fb2d3,#309bbf);
+background-image: -o-linear-gradient(#4fb2d3,#309bbf);
+background-image: linear-gradient(#4fb2d3,#309bbf);
+padding: 5px 10px;
+}
+.grp-float-left {
+float: left !important;
+}
+.grp-submit-row>ul>li {
+list-style-image: none;
+list-style-type: none;
+margin-left: 0;
+white-space: nowrap;
+display: inline;
+float: right;
+padding-left: 0;
+padding-right: 0;
+margin-left: 10px;
+-webkit-border-radius: 7px;
+-moz-border-radius: 7px;
+-ms-border-radius: 7px;
+-o-border-radius: 7px;
+border-radius: 7px;
+}
+.grp-line-height, h4, .grp-actions, .grp-button, input[type="submit"], a.grp-button, button.grp-button, input[type=button].grp-button {
+line-height: 16px;
+}
+.grp-font-size, h4, .grp-button, input[type="submit"], a.grp-button, button.grp-button, input[type=button].grp-button {
+font-size: 12px;
+}
+.grp-submit-row>ul>li:first-child, .grp-submit-row>ul>li.first {
+padding-right: 0;
+}
+.grp-submit-row>ul>li input.grp-button:hover, .grp-submit-row>ul>li input.grp-button:focus, .grp-submit-row>ul>li a.grp-button:hover, .grp-submit-row>ul>li a.grp-button:focus, .grp-submit-row>ul>li button.grp-button:hover, .grp-submit-row>ul>li button.grp-button:focus {
+filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+opacity: 1;
+}
+.grp-submit-row>ul>li {
+list-style-image: none;
+list-style-type: none;
+white-space: nowrap;
+}
+.grp-submit-row.grp-fixed-footer>ul>li {
+.grp-submit-row.grp-fixed-footer>ul>li {
+margin-bottom: 5px;
+padding: 5px !important;
+background: #444;
+}
+margin-bottom: 5px;
+padding: 5px !important;
+background: #444;
+}
+.grp-fixed-footer input[type="submit"]:hover, .grp-fixed-footer input[type="submit"]:focus {
+color: #444;
+border: 1px solid #c8c8c8;
+background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+background-size: 100%;
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #eeeeee));
+background-image: -webkit-linear-gradient(#ffffff,#eeeeee);
+background-image: -moz-linear-gradient(#ffffff,#eeeeee);
+background-image: -o-linear-gradient(#ffffff,#eeeeee);
+background-image: linear-gradient(#ffffff,#eeeeee);
+}
+input[type="submit"]:hover, input[type="submit"]:focus {
+color: #fff;
+border: 1px solid #373737;
+background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+background-size: 100%;
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #5e5e5e), color-stop(100%, #444444));
+background-image: -webkit-linear-gradient(#5e5e5e,#444444);
+background-image: -moz-linear-gradient(#5e5e5e,#444444);
+background-image: -o-linear-gradient(#5e5e5e,#444444);
+background-image: linear-gradient(#5e5e5e,#444444);
+}
+input[type="submit"] {
+position: relative;
+display: inline-block;
+margin: 0;
+padding: 5px;
+height: 28px;
+font-weight: bold;
+-webkit-border-radius: 5px !important;
+-moz-border-radius: 5px !important;
+-ms-border-radius: 5px !important;
+-o-border-radius: 5px !important;
+border-radius: 5px !important;
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+cursor: pointer;
+overflow: hidden;
+vertical-align: top;
+color: #fff;
+border: 1px solid #2b8aab;
+background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+background-size: 100%;
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #4fb2d3), color-stop(100%, #309bbf));
+background-image: -webkit-linear-gradient(#4fb2d3,#309bbf);
+background-image: -moz-linear-gradient(#4fb2d3,#309bbf);
+background-image: -o-linear-gradient(#4fb2d3,#309bbf);
+background-image: linear-gradient(#4fb2d3,#309bbf);
+}
+.grp-button.grp-delete-link, button.grp-button.grp-delete-link, input[type=button].grp-button.grp-delete-link {
+color: #fff;
+border: 1px solid #ab2b2b;
+background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+background-size: 100%;
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d34f4f), color-stop(100%, #bf3030));
+background-image: -webkit-linear-gradient(#d34f4f,#bf3030);
+background-image: -moz-linear-gradient(#d34f4f,#bf3030);
+background-image: -o-linear-gradient(#d34f4f,#bf3030);
+background-image: linear-gradient(#d34f4f,#bf3030);
+}
+
+
+
+
+table {
+margin: 0;
+padding: 0;
+border-spacing: none;
+border-collapse: separate;
+border: 1px solid #ccc;
+-webkit-border-radius: 3px;
+-moz-border-radius: 3px;
+-ms-border-radius: 3px;
+-o-border-radius: 3px;
+border-radius: 3px;
+}
+table tbody tr td, table tbody tr th {
+border-bottom: 1px solid #e0e0e0;
+border-left: 1px solid #e4e4e4;
+vertical-align: top;
+}
+table td, table th {
+vertical-align: text-top;
+padding: 10px;
+font-size: 11px;
+line-height: 15px;
+}
+td, th {
+padding: 7px 7px 6px;
+}
+caption, th, td {
+text-align: left;
+font-weight: normal;
+vertical-align: middle;
+}
+table thead th {
+vertical-align: top;
+padding: 6px 10px 6px;
+font-size: 11px;
+line-height: 12px;
+color: #888;
+white-space: nowrap;
+border-left: 1px solid #ccc;
+border-bottom: 1px solid #ccc;
+background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+background-size: 100%;
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #e0e0e0));
+background-image: -webkit-linear-gradient(#eeeeee,#e0e0e0);
+background-image: -moz-linear-gradient(#eeeeee,#e0e0e0);
+background-image: -o-linear-gradient(#eeeeee,#e0e0e0);
+background-image: linear-gradient(#eeeeee,#e0e0e0);
+}
+
+input[type=button], button, a.fb_show, a.related-lookup, body.tinyMCE input[name="src"]+div a, body.tinyMCE input[name="href"]+div a, a.related-lookup.m2m, .grp-autocomplete-wrapper-m2m a.related-lookup, .grp-autocomplete-wrapper-fk a.related-lookup, button.ui-datepicker-trigger, button.ui-timepicker-trigger, button.ui-datetime-now, .grp-pulldown-container .grp-pulldown-handler:hover, .grp-pulldown-container.grp-pulldown-state-open .grp-pulldown-handler, .grp-pulldown-container.grp-pulldown-state-open .grp-pulldown-handler:hover {
+color: #fff;
+border: 1px solid #ccc;
+background-color: #e1f0f5;
+}

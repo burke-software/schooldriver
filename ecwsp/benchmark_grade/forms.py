@@ -16,7 +16,8 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
 
-from django import forms
+import floppyforms as forms
+import ecwsp.gumby_forms as forms
 from ajax_select.fields import AutoCompleteSelectMultipleField
 from django.contrib.admin import widgets as adminwidgets
 from django.db.models import Q

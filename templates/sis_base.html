@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<head>
+  {% block head %}
+  
+  {% block javascripts %}
+  
+  <!--[if IE]>
+    <script type="text/javascript" src="/static/js/jquery-1.10.2.min.js"></script>
+  <![endif]-->
+  <![if !IE]>
+    <script type="text/javascript" src="/static/js/jquery.js"></script>
+  <![endif]>
+  <script type="text/javascript" src="/static/js/jquery-migrate.js"></script>
+  <script type="text/javascript" src="/static/js/jquery-ui.js"></script>
+  <script type="text/javascript" src="/static/js/ajax_select.js"></script>
+  <script type="text/javascript" src="/static/js/jquery.multiselect.js"></script>
+  <script type="text/javascript" src="/static/js/jquery.multiselect.filter.js"></script>
+  <script type="text/javascript" src="/static/js/jquery.tools.min.js"></script>
+  {% endblock %}
+  
+  {% include "gumby/head.html" %}
+  
+  {% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="/static/css/ajax_select.css"/> 
+  <link rel="stylesheet" type="text/css" href="/static/css/ui.core.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/css/cupertino/jquery-ui-1.10.3.custom.min.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/css/global.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/css/jquery.multiselect.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/css/jquery.multiselect.filter.css"/>
+  <link rel="stylesheet" media="print" type="text/css" href="/static/css/print.css"/>
+  {% endblock %}
+  
+  <title>Django School Information System</title>
+
+  {% if google_analytics_code %}
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', '{{ google_analytics_code }}']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  {% endif %}
+  
+  {% endblock %}
+  {% block extrahead %}
+
+  {% endblock %}
+</head>
+<body>
+  {% block nav %}
+  {% endblock %}
+  {% block bigcontent %}
+    <div class="container row">
+      {% block content %}
+      {% endblock %}
+    </div>
+  {% endblock %}
+  <script src="/static/gumby/js/libs/gumby.init.js"></script>
+  <script src="/static/js/sis.init.js"></script>
+</body>
+</html>

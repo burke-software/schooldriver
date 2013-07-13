@@ -1,4 +1,4 @@
-{% extends "admin/index.html" %}
+{% extends "admin_base.html" %}
 {% load i18n %}
 
 {% block breadcrumbs %}
@@ -10,21 +10,6 @@
     </div>
 {% endblock %}
 
-{% block extrahead %}
-    <script type="text/javascript" src="/admin/jsi18n/"></script>
-    
-    <style type="text/css">
-      .content-grid {
-        min-width: 800px !important;
-      }
-      .icon {
-        vertical-align: bottom;
-        text-align: center;
-        border: none;
-      }
-    </style>
-{% endblock %}
-
 {% block stylesheets %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="/static/js/jqplot/jquery.jqplot.min.css" /> 
@@ -33,7 +18,6 @@
 {% block javascripts %}
   {{ block.super }}
   <script type="text/javascript" src="/admin/jsi18n/"></script>
-  <script type="text/javascript" src="/static/js/jquery.progressbar.min.js"></script>
   <script type="text/javascript" src="/static/js/jqplot/jquery.jqplot.min.js"></script> 
   <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
   <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
@@ -44,12 +28,6 @@
   <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.trendline.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
-      var percent = {{ test.students_test_results }} / {{ test.testinstance_set.count }};
-      $("#progress_recieved").progressBar(percent, {
-        showText: false,
-        barImage: '/static/images/progressbg_green.gif'
-      });
-      
       var line1 = [
         {% for ti in test.testinstance_set.all %}
           [{{ ti.points_earned }}, "{{ ti.student }}"],
@@ -90,36 +68,33 @@
 
 {% block content %}
   <h1> Open Metric Recognition </h1>
-  
   <h2>{{ test }} Results </h2>
-  <br/>
-  <p id="progress_recieved"></p>
-  {{ test.students_test_results }} of {{ test.testinstance_set.count }} scanned tests recieved. Need <a href="https://sites.google.com/a/cristoreyny.org/sword-wiki/openmetricrecognition">help</a>?
-  <br/>
-  <table style="border: none;">
-    <tr>
-      <td class="icon">
-        <a href="download_xls">
-          <img src="/static/omr/download_spread.jpg"/><br/>
-          Results (spreadsheet)
-        </a>
-      </td>
-      <td class="icon">
-        <a href="download_student_results">
-          <img src="/static/omr/download_answer.jpg"/><br/>
-          Student results (document)
-        </a><br/>
-      </td>
-      <td class="icon">
-        <a href="download_answer_sheets">
-          <img src="/static/omr/download_bubble.jpg"/><br/>
-          Answer (bubble) Sheets
-        </a>
-      </td>
-    </tr>
-  </table>
   
-  <br/>
-  <div id="chart1" style="height:500px; width:800px;"></div>
-  Mouse over chart to see students
+  <div class="row">
+    {{ test.students_test_results }} of {{ test.testinstance_set.count }} scanned tests recieved.
+  </div>
+  <ul class="four_up tiles">
+    <li class="icon"> 
+      <a href="download_xls">
+	<img src="/static/omr/download_spread.jpg"/><br/>
+	Results (spreadsheet)
+      </a>
+    </li>
+    <li class="icon">
+	<a href="download_student_results">
+	  <img src="/static/omr/download_answer.jpg"/><br/>
+	  Student results (document)
+	</a>
+    </li>
+    <li class="icon">
+      <a href="download_answer_sheets">
+	<img src="/static/omr/download_bubble.jpg"/><br/>
+	Answer (bubble) Sheets
+      </a>
+    </li>
+  </ul>
+  <div class="row">
+    <div id="chart1" style="height:500px; width:800px;"></div>
+    Mouse over chart to see students
+  </div>
 {% endblock %}

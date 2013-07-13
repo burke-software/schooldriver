@@ -1,94 +1,88 @@
-{% extends "admin/index.html" %}
+{% extends "admin_base.html" %}
 {% load i18n %}
 {% load floppyforms %}
 
 {% block breadcrumbs %}
-    <div id="breadcrumbs">
-      <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
-      &rsaquo; <a href="../">{% trans 'My Tests' %}</a>  
-      &rsaquo; Test
-    </div>
-{% endblock %}
-
-{% block extrahead %}
-    <script type="text/javascript" src="/admin/jsi18n/"></script>
-    {{ test_form.media }}
-{% endblock %}
-
-{% block stylesheets %}
-  {{ block.super }}
+<div id="breadcrumbs">
+  <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
+  &rsaquo; <a href="../">{% trans 'My Tests' %}</a>  
+  &rsaquo; Test
+</div>
 {% endblock %}
 
 {% block javascripts %}
-  {{ block.super }}
-  <script type="text/javascript">
-    function confirm_del() {
-      if (confirm("Are you sure you want to delete?")){
-        $('#test_form #hidden_del').click();
-      }
+{{ block.super }}
+<script type="text/javascript">
+  function confirm_del() {
+    if (confirm("Are you sure you want to delete?")){
+      $('#test_form #hidden_del').click();
     }
-  </script>
+  }
+</script>
 {% endblock %}
 
-{% block content_title %}
-    <h1>Open Metric Recognition</h1>
-{% endblock %}
 
 {% block content %}
-  <h2>{% if add %} New {% else %} Edit {% endif %} Test</h2>
-  {% if add and perms.omr.change_test %} <a href="{% url "admin:omr_test_changelist" %}">Start by copying existing test</a> {% endif %}
-  <form enctype="multipart/form-data" action="" method="post" id="test_form">
-    <fieldset class="module">
-        <div class="row">
-            <table>
-                {% formrow test_form.name using "floppyforms/rows/tr.html" %}
-                {% formrow test_form.school_year using "floppyforms/rows/tr.html" %}
-                {% formrow test_form.teachers using "floppyforms/rows/tr.html" %}
-                {% formrow test_form.department using "floppyforms/rows/tr.html" %}
-                {% formrow test_form.marking_period using "floppyforms/rows/tr.html" %}
-            </table>
-            
-            {% if not test.finalized %}
-              <p>
-                  Select course(s): {{ test_form.courses }}
-              </p>
-              <a href="javascript:void(0)" onclick='$("#students_div").show(); $(this).hide()'>Select individual students</a>
-              <div id="students_div" style="display: none">
-                  {% formrow test_form.students %}
-              </div>
-              <br/>
-            {% endif %}
-            {% if add %}
-                <a href="javascript:void(0)" onclick='$("#quick_table").show(); $(this).hide()'>Quick Test</a>
-                <table id="quick_table" style="display: none">
-                    <tr>
-                        <td colspan="3">Start test with pre made (blank) questions and answers</td>
-                    </tr>
-                    <tr>
-                        <td> Number of questions to make </td>
-                        <td>{{ test_form.quick_number_questions }}{{ test_form.quick_number_questions.errors }}</td>
-                    </tr>
-                    <tr>
-                        <td>Number of answers per question</td>
-                        <td>{{ test_form.quick_number_answers }}{{ test_form.quick_number_answers.errors }}</td>
-                    </tr>
-                </table>
-            {% endif %}
-            
-        </div>
-    </fieldset>
-    
-    <footer class="grp-module grp-submit-row grp-fixed-footer"> 
-      <ul>
-          {% if add %}
-            <li class="grp-float-left"><a href="../" class="grp-button grp-delete-link">Delete</a></li>
-          {% else %}
-            <li class="grp-float-left"><a href="javascript:confirm_del()" rel="#conform_del" class="grp-button grp-delete-link confirm">Delete</a></li>
+<h1>Open Metric Recognition</h1>
+<h2>{% if add %} New {% else %} Edit {% endif %} Test</h2>
+{% if add and perms.omr.change_test %} <a href="{% url "admin:omr_test_changelist" %}">Start by copying existing test</a> {% endif %}
+
+<div class="row">
+    {% form test_form using %}
+    <form enctype="multipart/form-data" action="" method="post" id="test_form">
+        <div class="eight columns">
+          {% formconfig row using "gumby/forms/inline_field.html" %}
+          {% formrow form.name %}
+          {% formrow form.school_year %}
+          {% formrow form.teachers %}
+          {% formrow form.department %}
+          {% formrow form.marking_period %}
+          {% if not test.finalized %}
+          {% formrow test_form.courses %}
+          <a href="javascript:void(0)" onclick='$("#students_div").show(); $(this).hide()'>Select individual students</a>
+          <div id="students_div" style="display: none; min-height: 300px;">
+            {% formrow test_form.students %}
+          </div>
+          <br/>
           {% endif %}
-          <li class="submit-button-container"><input type="submit" value="Save and continue to questions" class="default" name="_next" /></li>
-          <li class="submit-button-container"><input type="submit" value="Save and continue editing" name="_continue" /></li>
-          <input style="display:none;" id="hidden_del" type="submit" name="_delete" />
-      </ul> 
-    </footer>
-  </form>
+        </div>
+        {% if add %}
+        <div class="four columns"> 
+          <a href="javascript:void(0)" onclick='$("#quick_table").show(); $(this).hide()'>Start with Questions</a>
+          <div id="quick_table" style="display: none">
+            <div class="row field">
+              Start test with pre made (blank) questions and answers
+              <div class="nine columns">
+                Number of questions to make
+              </div>
+              <div class="three columns">
+                {{ test_form.quick_number_questions }}
+              </div>
+            </div>
+            <div class="row field">
+              <div class="nine columns">
+                Number of answers per question
+              </div>
+              <div class="three columns">
+                {{ test_form.quick_number_answers }}{{ test_form.quick_number_answers.errors }}
+              </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endform %}
+      </div>
+</div>
+<footer class="grp-module grp-submit-row grp-fixed-footer"> 
+  <ul>
+    {% if add %}
+    <li class="grp-float-left"><a href="../" class="grp-button grp-delete-link">Delete</a></li>
+    {% else %}
+    <li class="grp-float-left"><a href="javascript:confirm_del()" rel="#conform_del" class="grp-button grp-delete-link confirm">Delete</a></li>
+    {% endif %}
+    <li class="submit-button-container"><input type="submit" value="Save and continue to questions" class="default" name="_next" /></li>
+    <li class="submit-button-container"><input type="submit" value="Save and continue editing" name="_continue" /></li>
+    <input style="display:none;" id="hidden_del" type="submit" name="_delete" />
+  </ul> 
+</footer>
+</form>
 {% endblock %}

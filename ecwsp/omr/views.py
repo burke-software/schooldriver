@@ -1,4 +1,4 @@
-#   Copyright 2011 David M Burke
+#   Copyright 2011-2013 David M Burke
 #   Author David M Burke <dburke@cristoreyny.org>
 #   Co-Author Callista Goss <calli@burkesoftware.com>
 #   
@@ -27,6 +27,8 @@ from django.views.generic import ListView
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
+from dajax.core import Dajax
+from dajaxice.decorators import dajaxice_register
 
 from ecwsp.administration.models import Template
 from ecwsp.omr.createpdf import createpdf,generate_xml
@@ -120,10 +122,9 @@ def my_tests(request):
 
 @permission_required('omr.teacher_test')
 def my_tests_show_queue(request):
-    id = request.POST['id']
-    test = Test.objects.get(id=id)
+    test = Test.objects.get(id=request.POST['id'])
     html = ""
-    for result in test.testinstance_set.filter(results_recieved=False):
+    for result in test.testinstance_set.filter(results_received=False):
         html += '%s <br/>' % (result.student,)
     return HttpResponse(html)
 
@@ -160,7 +161,6 @@ def test_copy(request, test_id):
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
 def download_test(request, test_id):
     test = get_object_or_404(Test, id=test_id)
-    test.reindex_question_order()
     return render_to_response('omr/test.html', {
         'test': test,
     }, RequestContext(request, {}),)
@@ -181,6 +181,7 @@ def edit_test(request, id=None):
         test = None
         test_form = TestForm()
         test_form.fields['teachers'].initial = [teacher.id]
+        test_form.fields['teachers'].widget.attrs['placeholder'] = 'Type to search for teacher'
     
     if request.method == 'POST':
         if '_delete' in request.POST and id:
@@ -245,25 +246,14 @@ def ajax_mark_as_answer(request, test_id, answer_id):
 @permission_required('omr.teacher_test')
 def edit_test_questions(request, id):
     test = get_object_or_404(Test, id=id)
-    test.reindex_question_order()
-    questions = test.question_set.all()
-    
-    for question in questions:
-        if not question.answer_set.exclude(point_value=0):
-            question.has_no_answer = True
-        else:
-            question.has_no_answer = False
-    
+    questions = test.question_set.annotate(answer_total=Sum('answer__point_value'))
+
     # Ugly way to see which test is on, currently only used for filtering benchmarks
     request.session['omr_test_id'] = str(id)
-    
-    # for media
-    question_form = TestQuestionForm(prefix="not_real")
     
     return render_to_response('omr/edit_test_questions.html', {
         'test': test,
         'questions': questions,
-        'question_form': question_form,
     }, RequestContext(request, {}),)
 
 @permission_required('omr.teacher_test')
@@ -315,93 +305,139 @@ def ajax_question_bank_to_question(request, test_id, question_bank_id):
     return ajax_read_only_question(request, test_id, new_question.id)
 
 @permission_required('omr.teacher_test')
-def ajax_read_only_question(request, test_id, question_id):
-    question = Question.objects.get(id=question_id)
-    return render_to_response('omr/edit_test_questions_read_only.html', {
-        'question': question,
-    }, RequestContext(request, {}),)
-
-@permission_required('omr.teacher_test')
 def ajax_delete_question(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     question.delete()
-    return HttpResponse('SUCCESS');
+    return refresh_question_order(request, question)
+
+@permission_required('omr.teacher_test')
+def ajax_delete_answer(request, test_id, answer_id):
+    answer = Answer.objects.get(id=answer_id)
+    answer.delete()
+    return refresh_answer_order(request, answer)
 
 @permission_required('omr.teacher_test')
 def ajax_new_question_form(request, test_id):
-    test = Test.objects.get(id=test_id)
+    test = get_object_or_404(Test, pk=test_id)
+    profile = UserPreference.objects.get_or_create(user=request.user)[0]
+    new_question = Question.objects.create(
+        test=test,
+        point_value = profile.omr_default_point_value,
+        type = request.POST['question_type']
+    )
     
-    if request.POST:
-        question_answer_form = AnswerFormSet(request.POST, prefix="questionanswers_new")
-        question_form = TestQuestionForm(request.POST, prefix="question_new")
-        if question_form.is_valid():
-            q_instance = question_form.save()
-            for qa_form in question_answer_form.forms:
-                if qa_form.is_valid():
-                    qa_instance = qa_form.save(commit=False)
-                    if str(qa_instance.answer).replace("<br />\n", ''): # Firefox hack
-                        qa_instance.question = q_instance
-                        qa_instance.save()
-            q_instance.check_type()
-            if question_form.cleaned_data['save_to_bank']:
-                q_instance.copy_to_bank()
-            return render_to_response('omr/edit_test_questions_read_only.html', {
-                'question': q_instance,
-            }, RequestContext(request, {}),)
+    if new_question.type == "True/False":
+        new_question.answer_set.create(
+            answer="True",
+	    point_value=0,
+	    order=None,
+	)
+        new_question.answer_set.create(
+            answer="False",
+	    point_value=0,
+	    order=None,
+	)
+    elif new_question.type == "Essay":
+        pass
     else:
-        try:
-            extra_answers = UserPreference.objects.get(user=request.user).omr_default_number_answers
-        except:
-            extra_answers = 2
-        if not extra_answers:
-            extra_answers = 2
-        NewAnswerFormSet = inlineformset_factory(Question, Answer, extra=extra_answers, form=AnswerForm)
-        question_answer_form = NewAnswerFormSet(prefix="questionanswers_new")
-        try:
-            points = UserPreference.objects.get(user=request.user).omr_default_point_value
-        except:
-            points = 1
-        if not points:
-            points = 1
-        save_to_bank = UserPreference.objects.get(user=request.user).omr_default_save_question_to_bank
-        question_form = TestQuestionForm(prefix="question_new", initial={'test': test, 'point_value': points, 'save_to_bank': save_to_bank})
-    
-    return render_to_response('omr/ajax_question_form.html', {
-        'new': 'new',
-        'question_form.prefix': 'new',
-        'question_form': question_form,
-        'answers_formset': question_answer_form,
+	i = 0
+	while i < profile.omr_default_number_answers:
+	    new_question.answer_set.create(
+		point_value=0,
+		order=None,
+	    )
+	    i += 1
+     
+    return render_to_response('omr/one_test_question.html', {
+        'question': new_question,
     }, RequestContext(request, {}),)
+
+
+@permission_required('omr.teacher_test')
+def ajax_benchmarks_form(request, test_id, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    if request.POST:
+        form = QuestionBenchmarkForm(request.POST, instance=question)
+        if form.is_valid():
+            form.save()
+            form = None
+    else:
+        form = QuestionBenchmarkForm(instance=question)
+    return render_to_response('omr/one_test_question_benchmark.html', {
+        'question': question,
+        'form': form,
+    }, RequestContext(request, {}),)
+
+
+
+@permission_required('omr.teacher_test')
+def add_answer(request, test_id, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+
+    new_answer = Answer.objects.create(
+        question=question,
+        point_value=0,
+        order=None,
+    )
+
+    return render_to_response('omr/one_test_answer.html', {
+        'answer': new_answer,
+        'question': question,
+    }, RequestContext(request, {}),)
+
+def refresh_question_order(request, question):
+    questions = question.test.question_set.all()
+    data = {}
+    for q in questions:
+        data[q.id] = q.order
+    data = simplejson.dumps(data)
+    return HttpResponse(data, mimetype='application/json')
+
+def refresh_answer_order(request, answer):
+    answers = answer.question.answer_set.all()
+    data = {}
+    for a in answers:
+        data[a.id] = a.letter
+    data = simplejson.dumps(data)
+    return HttpResponse(data, mimetype='application/json')
+
+@permission_required('omr.teacher_test')
+def save_question(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    try:
+        if request.POST['field'] == 'question':
+            question.question = request.POST['content']
+        elif request.POST['field'] == 'point_value':
+            question.point_value = request.POST['content']
+        elif request.POST['field'] == 'order':
+            question.order = int(request.POST['content'])
+            question.save()
+            return refresh_question_order(request, question)
+        question.save()
+        return HttpResponse('SUCCESS');
+    except ValueError:
+        return HttpResponse('Value Error! Did not save {}!'.format(question))
+
+@permission_required('omr.teacher_test')
+def save_answer(request, answer_id):
+    answer = get_object_or_404(Answer, pk=answer_id)
+    try:
+        if request.POST['field'] == 'answer':
+            answer.answer = request.POST['content']
+        elif request.POST['field'] == 'point_value':
+            answer.point_value = request.POST['content']
+        answer.save()
+        return HttpResponse('SUCCESS');
+    except ValueError:
+        return HttpResponse('Value Error! Did not save {}!'.format(answer))
 
 @permission_required('omr.teacher_test')
 def ajax_question_form(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     test = Test.objects.get(id=test_id)
-    
-    if request.POST:
-        question_answer_form = AnswerFormSet(request.POST, instance=question, prefix="questionanswers_" + str(question_id))
-        question_form = TestQuestionForm(request.POST, instance=question, prefix="question_" + str(question_id))
-        
-        if question_form.is_valid() and question_answer_form.is_valid():
-            question_form.save()
-            question_answer_form.save()
-            question.check_type()
-            return render_to_response('omr/edit_test_questions_read_only.html', {
-                'question': question,
-            }, RequestContext(request, {}),)
-    else:
-        question_answer_form = AnswerFormSet(instance=question, prefix="questionanswers_" + str(question_id))
-        question_form = TestQuestionForm(instance=question, prefix="question_" + str(question_id))
-    if test.finalized:
-        question_form.fields['type'].widget.attrs['readonly'] = True
-        question_form.fields['order'].widget.attrs['readonly'] = True
-        question_form.fields['point_value'].widget.attrs['readonly'] = True
-        for a_form in question_answer_form:
-            a_form.fields['point_value'].widget.attrs['readonly'] = True
+     
     return render_to_response('omr/ajax_question_form.html', {
         'question': question,
-        'question_form': question_form,
-        'answers_formset': question_answer_form,
         'new': False,
         'finalized': test.finalized,
     }, RequestContext(request, {}),)

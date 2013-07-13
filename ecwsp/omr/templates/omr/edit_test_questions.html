@@ -1,4 +1,4 @@
-{% extends "admin/index.html" %}
+{% extends "admin_base.html" %}
 {% load i18n %}
 
 {% block breadcrumbs %}
@@ -10,109 +10,53 @@
     </div>
 {% endblock %}
 
-{% block extrahead %}
-    <script type="text/javascript" src="/admin/jsi18n/"></script>
-    {{ question_form.media }}
-    <style type="text/css">
-      .content-grid {
-        min-width: 800px !important;
-      }
-      .group h2, .module h2, .group div {
-        padding: 1px;
-      }
-      .question_header input[type="text"]{
-        padding: 0px;
-        border-style: dotted;
-        height: inherit;
-        background: transparent;
-        width: 35px;
-      }
-      .row {
-        margin: 0px;
-      }
-      .module:first-child {
-        margin-top: 0 !important;
-      }
-      #content {
-        margin: 0px;
-      }
-      .number_input {
-        width: 118px;
-      }
-      
-    </style>
+{% block javascripts %}
+  {{ block.super }}
+  <script type="text/javascript" src="/static/js/jquery.blockUI.js"></script>
+  <script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
+  <script type="text/javascript" src="/static/ckeditor/ckeditor/config.js"></script>
+  <script type="text/javascript" src="/static/omr/omr_questions.js"></script>
 {% endblock %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <style type="text/css">
-    tbody th, tbody td {
-      border-top: 0px solid white;
-      border-bottom: 0px solid #E0E0E0;
-    }
-    .group ul, .group li {
-      list-style-type: inherit;
-      margin-left: 6px;
-    }
-    .group ol {
-      margin-left: 6px;
-    }
-    .group div {
-      font-weight: normal;
-      padding: 3px 5px;
-    }
-    .qtable_right {
-      float: right;
-      width: 130px;
-    }
-    
-    .save_bar {
-      border: 0;
-      border-top: 1px solid #BDBDBD;
-      border-radius: 0;
-      border-bottom-left-radius: 5px;
-      border-bottom-right-radius: 5px;
-      background: #333;
-      background: -moz-linear-gradient(top, #444, #333);
-      background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#333));
-      background: -o-linear-gradient(top, #444, #333);
-    }
-    form {
-      margin-top: -2px;
-    }
-    
-    disabled {
-      background: #808080;
-    }
-    
-    .tools a.icon {
-      height: 6px;
-    }
+  <style>
+  p {
+    line-height: 1em;
+    margin-bottom: 2px;
+  }
+  div.question_area {
+    max-width: 900px;
+  }
+  .question_draggable {
+    margin-bottom: 12px;
+  }
   </style>
 {% endblock %}
 
-{% block javascripts %}
-  {{ block.super }}
-  <script type="text/javascript" src="/static/js/jquery.blockUI.js"></script>
-  <script type="text/javascript" src="/static/omr/omr_questions.js"></script>
-{% endblock %}
-
-{% block content_title %}
-    <h1>Open Metric Recognition</h1>
-{% endblock %}
-
 {% block content %}
-  <h2 id="title_h2">{{ test }} Questions </h2>
-  {% for question in questions %}
-    {% include "omr/edit_test_questions_read_only.html" with question=question %}
-  {% endfor %}
-  <div id="new_question_div"></div>
-  
+<div id="save_status"></div>
+  <h1>Open Metric Recognition</h1>
+  <h2>{{ test }} Questions </h2>
+  <div id="question_sortable" class="question_area">
+    {% for question in questions %}
+      {% include "omr/one_test_question.html" with question=question %}
+    {% endfor %}
+    <div id="new_question_div"></div>
+  </div>
+ 
   {% if not test.finalized %}
-    <a onclick="add_question();" class="grp-button">Add Question</a>
-    <a onclick="return showAddAnotherPopup(this);" href="/omr/question_bank/" class="grp-button">
-      Add Question from Question Bank
-    </a>
+  <div class="row" style="padding-top: 1em;">
+    <div class="medium primary btn pill-left">
+      <a href="javascript:void(0)" onclick="add_question('Multiple Choice');" >Add Multiple Choice</a>
+    </div>
+    <div class="medium primary btn">
+      <a href="javascript:void(0)" onclick="add_question('True/False');">Add True/False</a>
+    </div>
+    <div class="medium primary btn pill-right">
+      <a href="javascript:void(0)" onclick="add_question('Essay');">Add Essay Question</a>
+    </div>
+  </div>
   {% endif %}
   
   <br/>

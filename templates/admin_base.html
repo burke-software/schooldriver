@@ -1,0 +1,16 @@
+{% extends "sis_base.html" %}
+{% load sis_extras %}
+
+{% block javascripts %}
+{{ block.super }}
+{% endblock %}
+
+{% block stylesheets %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="/static/css/grappelli_lite.css"/> 
+{% endblock %}
+
+{% block nav %}
+{% include "gumby/nav.html" %}
+{% endblock %}
+

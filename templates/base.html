@@ -1,52 +1,23 @@
+{% extends "sis_base.html" %}
 {% load sis_extras %}
-<!DOCTYPE html>
 
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
+  <!--[if lt IE 8]>
+    <link rel="stylesheet" type="text/css" href="/static/css/styleie6.css" />
+  <![endif]-->
+  <style>
+    .masthead { width: 550px; height: 70px; background: url('{{ header_image }}') no-repeat left; float: left; background-size:contain; }
+    .school-color { background: {{ school_color|default_if_none:"#FCB034" }}; }
+  </style>
+{% endblock %}
 
-<head>
-
-		<title>Student Worker Relational Database</title>
-
-		<link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
-
-		<!--[if lt IE 8]>
-			<link rel="stylesheet" type="text/css" href="/static/css/styleie6.css" />
-		<![endif]-->
-
-		<script type="text/javascript" src="/static/js/jquery.js"></script>
-		<script type="text/javascript" src="/static/js/jquery.infieldlabel.min.js"></script>
-        
-        {% if google_analytics_code %}
-            <script type="text/javascript">
-
-              var _gaq = _gaq || [];
-              _gaq.push(['_setAccount', '{{ google_analytics_code }}']);
-              _gaq.push(['_trackPageview']);
-
-              (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-              })();
-            </script>
-        {% endif %}
-        
-		<style>
-		    .masthead { width: 550px; height: 70px; background: url('{{ header_image }}') no-repeat left; float: left; background-size:contain; }
-		    .school-color { background: {{ school_color|default_if_none:"#FCB034" }}; }
-		</style>
-
-                {% block head %}{% endblock %}
-</head>
-
-<body>
-
-
+{% block bigcontent %}
 <div id="topbar" class="school-color"></div>
 
-
 <div class="headerwrapper">
-	<header class="header">
+  <header class="header">
             <div class="masthead">
             </div>
             {% if request.user.is_authenticated %}
@@ -83,7 +54,7 @@
                                             <li><a href="{% url "ecwsp.benchmark_grade.views.student_report" %}">Grades</a></li>
                                         {% endif %}
                                     {% endif %}
-				    <li><a href="/accounts/password_change">Change Password</a></li>
+            <li><a href="/accounts/password_change">Change Password</a></li>
                                     {% if not next %}
                                         <li><a href="{% url "ecwsp.sis.views.logout_view" %}">Log Out</a></li>
                                     {% endif %}
@@ -101,43 +72,35 @@
 
 <div class="message_area">
     {% for user_message in user_messages %}
-	{{ user_message.message|safe }}
+  {{ user_message.message|safe }}
     {% endfor %}
 </div>
 
 <div class="clear"></div>
 <div id="pagewrap">
         {% block content %}
-	    <div class="spacer-3"></div>
-	    {% if msg %}
-		{{ msg }}
-	    {% else %}
-		{% if request.user.is_authenticated %}
-		    No content. Your user account may not be set up correctly. Please contact an administrator.
-		{% else %}
-		    Please <a href="/">log in</a>.
-		{% endif %}
-	    {% endif %}
+      <div class="spacer-3"></div>
+      {% if msg %}
+    {{ msg }}
+      {% else %}
+    {% if request.user.is_authenticated %}
+        No content. Your user account may not be set up correctly. Please contact an administrator.
+    {% else %}
+        Please <a href="/">log in</a>.
+    {% endif %}
+      {% endif %}
         {% endblock %}
 
 
 <div class="spacer-3"></div>
 
 <div class="footer">
-Copyright 2010-2012 <a href="http://burkesoftware.com">Burke Software and Consulting LLC</a>.<br />
+Copyright 2010-2013 <a href="http://burkesoftware.com">Burke Software and Consulting LLC</a>.<br />
 This site is for authorized use only.<br />
-Powered by <a href="http://code.google.com/p/student-worker-relational-database">SWoRD</a>. Made with <a href="http://www.djangoproject.com">Django</a>.
+Powered by <a href="https://github.com/burke-software/django-sis">SWoRD</a>. Made with <a href="http://www.djangoproject.com">Django</a>.
 </div>
 <div class="spacer-3"></div>
 
 
 </div>
-<!-- .PAGEWRAP -->
-
-<script type="text/javascript">
-jQuery(document).ready(function(){
-  $(".inline-label label").inFieldLabels();
-});
-</script>
-</body>
-</html>
+{% endblock %}

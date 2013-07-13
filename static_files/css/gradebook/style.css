@@ -125,8 +125,12 @@ height: 35px;
 .filter_item select, .filter_item input[type="text"] {
 	background: transparent;
 	font-size: 14px;
-	width: 200px;
+	width: 190px;
 	border: 1px solid #ccc;
+}
+
+.ui-multiselect {
+        width: 190px;
 }
 
 .blackbar {

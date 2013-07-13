@@ -9,8 +9,8 @@ $(document).ready(function() {
         window_width = $(window).width()
         window_height = $(window).height()
         
-        var maintbheight = window_height - 200;
-        var maintbwidth = window_width - 300;
+        var maintbheight = window_height - 220;
+        var maintbwidth = window_width - 256;
 
         $("#" + Id + " .FixedTables").fixedTable({
             width: maintbwidth,
@@ -175,55 +175,41 @@ function mark_change(event) {
 
 function get_new_assignment_form(event){
     // Get a new assignment form to display of modal overlay
-    $("#new_assignment_form").html("Loading...");
+    $("#modal_content").html("Loading...");
     $.post(
         "ajax_get_item_form/",
         function(data){  
-            $("#new_assignment_form").html(data);
+            $("#modal_content").html(data);
         }  
     ); 
-    $("#new_assignment_form").overlay({
-            top: '3',
-            fixed: false
-        });
-    $("#new_assignment_form").overlay().load();
 }
 
 function get_edit_assignment_form(event){
-    $("#new_assignment_form").html("Loading...");
+    $("#modal_content").html("Loading...");
+    $("#modal_form").addClass('active');
     // Get a new assignment form to display of modal overlay
     item_id = $(event.target).attr('item_id');
     $.post(
         "ajax_get_item_form/" + item_id + "/",
         function(data){
-            $("#new_assignment_form").html(data);
+            $("#modal_content").html(data);
         }
     ); 
-    $("#new_assignment_form").overlay({
-            top: '3',
-            fixed: false
-        });
-    $("#new_assignment_form").overlay().load();
 }
 
 function get_new_demonstration_form(event){
-    $("#new_demonstration_form").html("Loading...");
+    $("#modal_content").html("Loading...");
     // Get a new demonstration form to display of modal overlay
     $.post(
         "ajax_get_demonstration_form/",
         function(data){  
-            $("#new_demonstration_form").html(data);
+            $("#modal_content").html(data);
         }  
     ); 
-    $("#new_demonstration_form").overlay({
-            top: '3',
-            fixed: false
-        });
-    $("#new_demonstration_form").overlay().load();
 }
 
 function get_edit_demonstration_form(event){
-    $("#new_demonstration_form").html("Loading...");
+    $("#modal_content").html("Loading...");
     // Get a new demonstration form to display of modal overlay
     demonstration_id = $(event.target).data('demonstration_id');
     if(demonstration_id == undefined) {
@@ -233,14 +219,9 @@ function get_edit_demonstration_form(event){
     $.post(
         "ajax_get_demonstration_form/" + demonstration_id + "/",
         function(data){
-            $("#new_demonstration_form").html(data);
+            $("#modal_content").html(data);
         }
     ); 
-    $("#new_demonstration_form").overlay({
-            top: '3',
-            fixed: false
-        });
-    $("#new_demonstration_form").overlay().load();
 }
 
 function show_student_overlay(event) {
@@ -248,14 +229,9 @@ function show_student_overlay(event) {
     $.get(
         "ajax_get_student_info/" + student_id + "/",
         function(data){
-            $("#student_info_overlay").html(data);
+            $("#modal_content").html(data);
         }
     ); 
-    $("#student_info_overlay").overlay({
-            top: '3',
-            fixed: false
-        });
-    $("#student_info_overlay").overlay().load();
 }
 
 function open_grade_detail(course_id, student_id) {
@@ -268,6 +244,7 @@ function open_grade_detail(course_id, student_id) {
 }
 
 function show_fill_all_form(event) {
+    $("#modal_form").addClass('active');
     event.stopPropagation();
     object_id = $(event.target).data('demonstration_id');
     object_type = 'demonstration';
@@ -283,18 +260,12 @@ function show_fill_all_form(event) {
     $.post(
         "ajax_get_fill_all_form/" + object_type + "/" + object_id + "/",
         function(data){
-            $("#fill_all_form").html(data);
+            $("#modal_content").html(data);
         }
     );
-    $("#fill_all_form").overlay({
-            top: '3',
-            fixed: false
-        });
-    $("#fill_all_form").overlay().load();
 }
 
 function handle_form_fragment_submit(form) {
-
     // Handle submit for an assignment with ajax
     form_data = $(form).serialize();
     item_id = $(form).attr('item_id');
@@ -310,7 +281,7 @@ function handle_form_fragment_submit(form) {
             if ( data == "SUCCESS" ){
                 location.reload();
             } else {
-                $("#new_assignment_form").html(data);
+                $("#modal_content").html(data);
             }
         }  
     );
@@ -334,7 +305,7 @@ function handle_demonstration_form_fragment_submit(form) {
             if ( data == "SUCCESS" ){
                 location.reload();
             } else {
-                $("#new_demonstration_form").html(data);
+                $("#modal_content").html(data);
             }
         }  
     );
@@ -352,7 +323,7 @@ function handle_fill_all_form_fragment_submit(form) {
             if ( data == "SUCCESS" ){
                 location.reload();
             } else {
-                $("#fill_all_form").html(data);
+                $("#modal_content").html(data);
             }
         }  
     );

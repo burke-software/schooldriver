@@ -1,0 +1,44 @@
+{% extends "floppyforms/rows/default.html" %}
+{% load floppyforms %}
+
+{% block field %}
+  <div class="row">
+    
+    {% block label %}
+      <div class="four columns"> 
+        {% if field|id %}
+        <label class="inline" for="{{ field|id }}">
+        {% endif %}
+        {{ label }}
+        {% if label|last not in ".:!?" %}
+          :
+        {% endif %}
+        {% if field|id %}
+        </label>{% endif %}
+      </div>
+    {% endblock %}
+    
+    {% block widget %}
+      <div class="eight columns">
+        <div class="field {% if field.field.is_select %}picker{% endif %}{% if field.errors %}danger{% endif %}"> 
+        {% formfield field %}
+        </div>
+        {% block errors %}
+        {% include "floppyforms/errors.html" with errors=field.errors %}
+        {% endblock %}
+      </div>
+    {% endblock %}
+    
+    {% block help_text %}
+      {% if help_text %}
+      <div class="row elevin columns">
+        <ul><li class="default alert helptext">
+          {{ help_text }}
+          </li></ul>
+      </div>
+      {% endif %}
+    {% endblock %}
+    
+    {% block hidden_fields %}{% for field in hidden_fields %}{{ field.as_hidden }}{% endfor %}{% endblock %}
+  </div>
+{% endblock %}

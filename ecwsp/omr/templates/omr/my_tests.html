@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin_base.html" %}
 {% load i18n grp_tags %}
 
 {% block breadcrumbs %}
@@ -8,18 +8,8 @@
     </div>
 {% endblock %}
 
-{% block stylesheets %}
-  {{ block.super }}
-  <style type="text/css">
-    .minimenu {
-      padding: 15px;
-    }
-  </style>
-{% endblock %}
-
 {% block javascripts %}
   {{ block.super }}
-  <script src="/static/js/jquery.tools.min.js" type="text/javascript"></script>
   <script type="text/javascript">
     function show_queue(test_id) {
       $.post(  
@@ -41,11 +31,11 @@
 {% endblock %}
 
 {% block content %}
+  <div class="row">
   <h1> Open Metric Recognition </h1>
   
   <div class="module">
     <a class="minimenu" href="{% url "ecwsp.omr.views.edit_test" %}">{% trans 'Create New Test' %}</a>
-    <a class="minimenu" href="{% url "admin:omr_questionbank_changelist" %}">{% trans 'Question Bank' %}</a>
   </div>
   
   <h2>Your Tests</h2>
@@ -84,8 +74,9 @@
     </table>
     
     <div class="modal" id="student_queue_modal">.
-      OH HAI!
+      ?
       <button class="close"> Close </button>
     </div>
+  </div>
   </div>
 {% endblock %}

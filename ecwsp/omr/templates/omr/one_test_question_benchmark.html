@@ -1,0 +1,18 @@
+{% if form %}
+<form id="question_benchmarks_{{ question.id }}_form" method="post">
+  Benchmarks:
+  {{ form.id }}
+  <div class="field">
+    {{ form.benchmarks }}
+    {{ form.benchmarks.errors }}
+  </div>
+  <a class="grp-button" onClick="ajax_benchmarks_form_save({{ question.id }})">Save Benchmarks</a>
+</form>
+{% else %}
+Benchmarks:
+<ul>
+  {% for benchmark in question.benchmarks.all %}
+  <li>{{ benchmark }}</li>
+  {% endfor %}
+</ul>
+{% endif %}

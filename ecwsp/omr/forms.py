@@ -1,4 +1,5 @@
-from django import forms
+import floppyforms as forms
+import ecwsp.gumby_forms as forms
 from django.forms.models import inlineformset_factory, BaseInlineFormSet
 from django.forms.formsets import DELETION_FIELD_NAME
 from django.contrib.admin.widgets import FilteredSelectMultiple
@@ -15,10 +16,10 @@ class TestForm(forms.ModelForm):
     class Meta:
         model = Test
         fields = ('name', 'school_year', 'teachers', 'department', 'marking_period', 'courses')
-    teachers = AutoCompleteSelectMultipleField('faculty', required=True)
+    teachers = AutoCompleteSelectMultipleField('faculty', required=True, help_text="")
     students = forms.ModelMultipleChoiceField(
         queryset = Student.objects.filter(inactive=False),
-        widget = FilteredSelectMultiple("Students",False,attrs={'rows':'10'}),
+        widget = forms.SelectMultiple(attrs={'class':'multiselect'}),
         required = False
         )
     quick_number_questions = forms.IntegerField(max_value=100, min_value=1, required=False)
@@ -29,43 +30,9 @@ class TestForm(forms.ModelForm):
         instance.enroll_students(self.cleaned_data['students'])
         return instance
 
-class TestQuestionForm(forms.ModelForm):
+class QuestionBenchmarkForm(forms.ModelForm):
     class Meta:
         model = Question
-        widgets = {
-            'test': forms.HiddenInput,
-            'point_value': forms.TextInput(attrs={'type':'number', 'class': 'number_input'}),
-        }
-    is_true = forms.ChoiceField(widget=forms.Select, choices=((True,"True"),(False,"False")))
+        fields = ['benchmarks',]
     benchmarks = AutoCompleteSelectMultipleField('benchmark', required=False)
-    save_to_bank = forms.BooleanField(required=False)
         
-class AnswerForm(forms.ModelForm):
-    class Meta:
-        model = Answer
-        widgets = {
-            'point_value': forms.TextInput(attrs={'type':'number', 'class': 'number_input'}),
-        }
-    def as_custom(self):
-        t = template.loader.get_template('omr/answer_form.html')
-        return t.render(Context({'answer': self},))
-        
-AnswerFormSet = inlineformset_factory(Question, Answer, extra=0, form=AnswerForm)
-NewAnswerFormSet = inlineformset_factory(Question, Answer, extra=2, form=AnswerForm)
-
-class EditAnswerInstanceForm(forms.ModelForm):
-    class Meta:
-        model = AnswerInstance
-        fields = ['answer','question','points_earned']
-        widgets = {'question':forms.HiddenInput, 'points_earned':forms.HiddenInput,}
-        
-class ManualEditAnswerForm(forms.ModelForm):
-    class Meta:
-        model = Answer
-        widgets = {
-            input: RadioSelect
-        }
-        
-
-
-#https://docs.djangoproject.com/en/dev/ref/forms/widgets/

@@ -1,0 +1,255 @@
+{% load i18n %}
+<nav class="navbar" id="nav1" gumby-fixed="top">
+<div class="sixteen colgrid">
+<div class="row">
+  <a class="toggle" gumby-trigger="#nav1 > .colgrid > .row > ul" href="#"><i class="icon-menu"></i></a>
+  <div class="two columns logo">
+    <a href="/">
+      <img style="height: 48px; width: 84px; padding-top:10px;" src="/static/images/logo.svg" />
+    </a>
+  </div>
+  <ul class="fourteen columns">
+    <li class="field">
+
+
+        <div class="admin-title view_student" style="height:30px;">
+            <form id="form_view_student" style="line-height: 36px;" class="view_student" action="/sis/view_student/" method="post">
+                <input type='hidden' name='csrfmiddlewaretoken' value='RgVLrCUEmKq7vd7puOH2tlouKv7U5GSv' />
+                <input type="text" style="width:100%;" placeholder="Search" name="view_student_text" id="id_view_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student search input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
+                
+                <input type="hidden" name="student" id="id_view_student" value="">
+                <div id="id_view_student_on_deck" style="visibility: hidden;" class="results_on_deck"><div></div></div>
+                <script type="text/javascript">//<![CDATA[
+                jQuery(document).ready(function($){
+                        addAutoComplete("id_view_student", function(html_id) {
+                                $("#"+html_id).autocompleteselect({
+                                        minLength: 1,
+                                        source: '/ajax_select/ajax_lookup/dstudent',
+                                });
+                        });
+                $("#id_view_student_on_deck").bind('added',function() {
+                    $('#form_view_student').submit()
+                });
+                });//]]>
+                </script>
+            </form>
+        </div>
+
+
+   </li>
+    <li class="field">
+      <div class="field picker" style="line-height: 22px;">
+        <select id="id_marking_period" name="marking_period">
+          <option value="student" selected="selected">Students</option>
+        </select>
+      </div>
+    </li>
+    
+    {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
+      <li>
+          <a href="javascript://">Student</a>
+          <div class="dropdown">
+            <ul>
+              {% if perms.sis.view_student %}
+                <li><a href="{% url "ecwsp.sis.views.photo_flash_card" %}">{% trans 'Flashcards' %}</a></li>
+              {% endif %}
+              {% if perms.sis.change_student or perms.sis.view_student %}
+                <li><a href="{% url "admin:sis_student_changelist" %}">{% trans 'Edit' %}</a></li>
+              {% endif %}
+              {% if perms.sis.reports %}
+                <li><a href="{% url "ecwsp.sis.views.school_report_builder_view" %}">{% trans 'Reports' %}</a></li>
+              {% endif %}
+            </ul>
+          </div>
+      </li>
+    {% endif %}
+    
+    {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
+    {% if perms.sis.reports or perms.attendance.change_studentattendance or perms.attendance.take_studentattendance %}
+      <li>
+        <a href="javascript://"> {% trans 'Attendance' %} </a>
+        <div class="dropdown">
+          <ul>
+            {% if perms.attendance.take_studentattendance %}
+              <li><a href="{% url "ecwsp.attendance.views.teacher_attendance" %}">{% trans 'Take Homeroom Attendance' %}</a></li>
+              {% if settings.ATTENDANCE_COURSE_BASED %}
+                <li><a href="{% url "ecwsp.attendance.views.select_course_for_attendance" %}">{% trans 'Take Course Attendance' %}</a></li>
+              {% endif %}
+            {% endif %}
+            {% if perms.attendance.change_studentattendance %}
+              <li><a href="{% url "admin:attendance_studentattendance_changelist" %}">{% trans 'Edit' %}</a></li>
+            {% endif %}
+            {% if perms.studentattendance.reports %}
+              <li><a href="{% url "ecwsp.attendance.views.attendance_report" %}">{% trans 'Reports' %}</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </li>
+    {% endif %}
+    {% endif %}
+    
+    {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
+    {% if perms.discipline.change_studentdiscipline %}
+      <li>
+        <a href="javascript://"> {% trans 'Discipline' %} </a>
+        <div class="dropdown">
+          <ul>
+            {% if perms.discipline.change_studentdiscipline %}
+                <li><a href="{% url "ecwsp.discipline.views.view_discipline" %}">{% trans 'View' %}</a></li>
+            {% endif %}
+            {% if perms.discipline.change_studentdiscipline %}
+                <li><a href="{% url "admin:discipline_studentdiscipline_changelist" %}">{% trans 'Edit' %}</a></li>
+            {% endif %}
+            {% if perms.sis.reports %}
+                <li><a href="{% url "ecwsp.discipline.views.discipline_report_view" %}">{% trans 'Reports' %}</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </li>
+    {% endif %}
+    {% endif %}
+    
+    {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %} {% if perms.schedule.change_course or perms.grades.change_own_grade or perms.sis.reports %}
+      <li>
+        <a href="javascript://"> Grades </a>
+        <div class="dropdown">
+          <ul>
+            {% if perms.schedule.change_course %}
+              <li><a href="{% url "admin:schedule_course_changelist" %}">{% trans 'Edit Grades/Courses' %}</a></li>
+            {% endif %}
+            {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
+              <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
+            {% endif %}
+            {% if perms.sis.reports %}
+              <li><a href="{% url "ecwsp.sis.views.grade_report" %}">{% trans 'Reports' %}</a></li>
+              <li><a href="{% url "ecwsp.schedule.views.grade_analytics" %}">{% trans 'Analytics' %}</a></li>
+            {% endif %}
+            {% if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS %} {% if perms.engrade_sync.change_coursesync %}
+             <li><a href="{% url "ecwsp.engrade_sync.views.setup" %}">{% trans 'Engrade Setup' %}</a></li>
+            {% endif %}{% endif %}
+        </ul>
+        </div>
+      </li>
+    {% endif %}{% endif %}
+    
+    {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
+      <li>
+        <a href="javascript://"> Admissions </a>
+        <div class="dropdown">
+          <ul>
+            {% if perms.admissions.change_applicant %}
+              <li><a href="{% url "admin:admissions_applicant_changelist" %}">{% trans 'Applicants' %}</a></li>
+            {% endif %}
+            {% if perms.admissions.change_applicant %}
+              <li><a href="{% url "ecwsp.admissions.views.reports" %}">{% trans 'Reports' %}</a></li>
+            {% endif %}
+          </ul>  
+        </div>
+      </li>
+    {% endif %}
+  
+    {% if perms.alumni.change_alumni and 'ecwsp.alumni' in settings.INSTALLED_APPS %}
+      <li>
+        <a href="javascript://"> Alumni </a>
+        <div class="dropdown">
+          <ul>
+              <li><a href="{% url "admin:app_list" 'alumni' %}">{% trans 'Alumni Admin' %}</a></li>
+              <li><a href="{% url "admin:alumni_alumni_changelist" %}">{% trans 'Alumnus' %}</a></li>
+          </ul>
+        </div>
+      </li>
+    {% endif %}
+  
+  {% if perms.counseling.add_referralform and 'ecwsp.counseling' in settings.INSTALLED_APPS %}
+    <li>
+      <a href="javascript://"> Counseling </a>
+      <div class="dropdown">
+        <ul>
+          {% if perms.counseling.change_studentmeeting %}
+            <li><a href="{% url "admin:app_list" 'counseling'%}">{% trans 'Counseling Admin' %}</a></li>
+          {% endif %}
+          <li><a href="{% url "admin:counseling_referralform_add" %}">{% trans 'Submit Referral Form' %}</a></li>
+        </ul>
+      </div>
+    </li>
+  {% endif %}
+  
+  {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
+    <li>
+      <a href="javascript://"> CWSP </a>
+      <div class="dropdown">
+        <ul>
+          {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker %}
+            <li><a href="{% url "admin:work_study_studentworker_changelist" %}">{% trans 'Edit Student Worker' %}</a></li>
+          {% endif %}
+          {% if perms.sis.reports %}
+            <li><a href="{% url "ecwsp.work_study.views.report_builder_view" %}">{% trans 'Reports' %}</a></li>
+          {% endif %}
+          {% if perms.sis.reports and settings.CRND_ROUTES %}
+            <li><a href="{% url "ecwsp.work_study.views.routes" %}">{% trans 'Route Reports' %}</a></li>
+          {% endif %}
+          </ul>
+      </div>
+    </li>
+  {% endif %}{% endif %}
+
+  {% if 'ecwsp.omr' in settings.INSTALLED_APPS %} {% if perms.omr.change_test or perms.omr.teacher_test %}
+    <li>
+      <a href="javascript://"> OMR </a>
+      <div class="dropdown" style="margin-left: -40px;">
+        <ul>
+          {% if perms.omr.change_test %}
+            <li><a href="{% url "admin:app_list" 'omr' %}">{% trans 'OMR Admin' %}</a></li>
+          {% endif %}
+          {% if perms.omr.teacher_test %}
+            <li><a href="{% url "ecwsp.omr.views.my_tests" %}"> {% trans 'My Tests' %}</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </li>
+  {% endif %}{% endif %}
+
+  <li>
+    <a href="javascript://"> Admin </a>
+    <div class="dropdown" style="margin-left: -110px;">
+      <ul>
+        {% if perms.sis.reports %}
+          <li><a href="{% url "simple_import.views.start_import" %}">{% trans 'School import' %}</a></li>
+        {% endif %}
+        {% if perms.administration.change_configuration %}
+          <li><a href="{% url "admin:administration_configuration_changelist" %}">{% trans 'Configuration' %}</a></li>
+        {% endif %}
+        {% if perms.custom_field.change_custom_field %}
+          <li><a href="{% url "admin:custom_field_customfield_changelist" %}">{% trans 'Custom Fields' %}</a></li>
+        {% endif %}
+        {% if 'ecwsp.canvas_sync' in settings.INSTALLED_APPS and perms.sis.reports %}
+          <li><a href="{% url "ecwsp.canvas_sync.views.setup" %}">{% trans 'Canvas Sync' %}</a></li>
+        {% endif %}
+        {% if perms.sis.change_student %}
+          <li><a href="{% url "ecwsp.sis.views.increment_year" %}">{% trans 'Change School Year' %}</a></li>
+        {% endif %}
+        {% if perms.report_builder.change_report %}
+          <li><a href="{% url "admin:report_builder_report_changelist" %}">Report Builder</a></li>
+        {% endif %}
+        <li><a href="/sis/preferences">{% trans 'Preferences' %}</a>
+        {% url "admin:password_change" as password_change_url %}
+        {% if password_change_url %}
+          <li><a href="{{ password_change_url }}">
+        {% else %}
+          <li><a href="{{ root_path }}password_change/">
+        {% endif %}
+        {% trans 'Change password' %}</a></li>
+        {% url "admin:logout" as logout_url %}
+        {% if logout_url %}
+          <li><a href="{{ logout_url }}">
+        {% else %}
+          <li><a href="{{ root_path }}logout/">
+        {% endif %}
+        {% trans 'Log out' %}</a></li>
+      </ul>
+    </div>
+  </li>
+  </ul>
+</div>
+</div>
+</nav>

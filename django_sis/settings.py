@@ -214,9 +214,6 @@ AJAX_LOOKUP_CHANNELS = {
 }
 if 'ecwsp.omr' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['benchmark'] = ('ecwsp.omr.lookups', 'BenchmarkLookup')
-AJAX_SELECT_BOOTSTRAP = False
-AJAX_SELECT_INLINES = 'staticfiles'
-
 
 #CKEDITOR
 CKEDITOR_MEDIA_PREFIX = "/static/ckeditor/"
@@ -233,10 +230,10 @@ CKEDITOR_CONFIGS = {
               '-', 'PasteText','PasteFromWord',
             ]
         ],
-        'height': 80,
+        'height': 120,
         'width': 640,
         'disableNativeSpellChecker': False,
-        'removePlugins': 'scayt,menubutton,contextmenu,elementspath',
+        'removePlugins': 'scayt,menubutton,contextmenu,liststyle,tabletools,tableresize,elementspath',
         'resize_enabled': False,
         'extraPlugins': 'equation',
     },
@@ -428,7 +425,6 @@ INSTALLED_APPS += (
     'ecwsp.sis',
     'daterange_filter',
     'django_filters',
-    'floppyforms',
     'pagination',
     'massadmin',
     'admin_export',
@@ -437,6 +433,7 @@ INSTALLED_APPS += (
     'report_builder',
     #'responsive_dashboard',
     'simple_import',
+    'floppyforms',
 )
 
 if 'test' in sys.argv:
