@@ -29,6 +29,31 @@ left: -9999px;
 h1, h2, h3, h4, h5, h6 {
   font-weight: 300;
 }
+
+
+/* jquery UI theme overrides */
+.ui-menu li.ui-menu-item a {
+  display: block;
+  margin: 0;
+  padding: 3px 4px;
+  color: #444;
+  font-weight: bold;
+  border: 1px solid #c7c7c7;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  -ms-border-radius: 2px;
+  -o-border-radius: 2px;
+  border-radius: 2px;
+  background: #cee9f2;
+  cursor: pointer;
+}
+.ui-state-focus {
+  background-color: #4A4D50 !important;
+  color: white !important;
+}
+
+
+/* navbar */
 .ui-front {
   z-index: 99999;
   min-width: 200px;
