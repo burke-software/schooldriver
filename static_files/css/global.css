@@ -64,18 +64,18 @@ h1, h2, h3, h4, h5, h6 {
   margin-left: 2px;
   margin-right: 2px;
 }
-@media screen and (max-width: 800px){
+@media screen and (max-width: 1000px){
   .navbar ul li > a {
-    font-size: 1.2vw;
+    font-size: 1.1vw;
   }
   .navbar ul li select {
-    font-size: 1.2vw !important;
+    font-size: 1.1vw !important;
   }
   .navbar ul li input {
-    font-size: 1.2vw !important;
+    font-size: 1.1vw !important;
   }
 }
-@media screen and (max-width: 700px){
+@media screen and (max-width: 1000px){
   .navbar .logo {
     display: none;
   }
