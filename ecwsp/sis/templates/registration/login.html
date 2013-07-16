@@ -15,30 +15,34 @@
 {% csrf_token %}
 
 
+<!--[if IE]>
+<div class="">
+        <label for="id_username">Username</label>
+        <input type="text" placeholder="Username" id="id_{{ form.username.html_name }}" name="{{ form.username.html_name }}" class="">
+</div>
+<div class="">
+    <div class="">
+            <label for="id_password">Password</label>
+            <input type="password" placeholder="Password" id="id_{{ form.password.html_name }}" name="{{ form.password.html_name }}" class="">
+    </div>
+<![endif]-->
 
-
-<div class="username-field inline-label">
-		<!--[if IE]><label for="id_username">Username</label><![endif]-->
-		<input type="text" placeholder="Username" id="id_{{ form.username.html_name }}" name="{{ form.username.html_name }}" class="username">
+<!--[if !IE]><!-->
+<div class="username-field">
+        <input type="text" placeholder="Username" id="id_{{ form.username.html_name }}" name="{{ form.username.html_name }}" class="username">
 </div>
 
 <div class="clear"></div>
 
 <div class="password-login">
-	<div class="inputfield inline-label">
-			<!--[if IE]><label for="id_password">Password</label><![endif]-->
-			<input type="password" placeholder="Password" id="id_{{ form.password.html_name }}" name="{{ form.password.html_name }}" class="password">
-	</div>
-	
-	<div class="loginbuttonwrap">
-		<input type="submit" class="button gray" value="Log In">
-	</div>
+    <div class="inputfield">
+            <input type="password" placeholder="Password" id="id_{{ form.password.html_name }}" name="{{ form.password.html_name }}" class="password">
+    </div>
+<!--<![endif]-->
+    <div class="loginbuttonwrap">
+        <input type="submit" class="button gray" value="Log In">
+    </div>
 </div>
-
-
-
-
-
 
     
 <input type="hidden" name="next" value="{{ next }}" />
