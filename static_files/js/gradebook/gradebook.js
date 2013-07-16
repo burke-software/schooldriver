@@ -28,7 +28,7 @@ $(document).ready(function() {
         });
     });
     
-    $("#id_benchmark").multiselect();
+    $("#id_benchmark").simple_multiselect();
 
     // Show item details when hovering over column header
     $(".assignment :not(.forall)").tooltip({

@@ -14,7 +14,7 @@ from datetime import datetime, date
 class EnrollForm(forms.Form):
     students = forms.ModelMultipleChoiceField(
         queryset=Student.objects.all(),
-        widget = forms.SelectMultiple(attrs={'class':'multiselect', 'style': 'min-width: 340px;'}),
+        widget = forms.SelectMultiple(attrs={'class':'multiselect',}),
         required=False)
     cohorts = forms.ModelMultipleChoiceField(
         queryset=Cohort.objects.all(),

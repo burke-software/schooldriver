@@ -16,7 +16,12 @@
   <script type="text/javascript" src="/static/js/ajax_select.js"></script>
   <script type="text/javascript" src="/static/js/jquery.multiselect.js"></script>
   <script type="text/javascript" src="/static/js/jquery.multiselect.filter.js"></script>
+  <script>
+    $.fn.simple_multiselect = $.fn.multiselect;
+    delete $.fn.multiselect;
+</script>
   <script type="text/javascript" src="/static/js/jquery.tools.min.js"></script>
+  <script type="text/javascript" src="/static/jquery.uix.multiselect/jquery.uix.multiselect.min.js"></script>
   {% endblock %}
   
   {% include "gumby/head.html" %}
@@ -28,6 +33,7 @@
   <link rel="stylesheet" type="text/css" href="/static/css/global.css"/>
   <link rel="stylesheet" type="text/css" href="/static/css/jquery.multiselect.css"/>
   <link rel="stylesheet" type="text/css" href="/static/css/jquery.multiselect.filter.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/jquery.uix.multiselect/jquery.uix.multiselect.css"/>
   <link rel="stylesheet" media="print" type="text/css" href="/static/css/print.css"/>
   {% endblock %}
   
