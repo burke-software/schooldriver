@@ -1,4 +1,5 @@
-from django import forms
+import floppyforms as forms
+import ecwsp.gumby_forms as forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.utils.safestring import mark_safe
 from django.contrib.localflavor.us.forms import *
@@ -7,20 +8,18 @@ from django.conf import settings
 from ecwsp.schedule.models import *
 from ecwsp.sis.models import *
 from ecwsp.sis.forms import *
-from ajax_filtered_fields.forms import ManyToManyByRelatedField
 from decimal import Decimal
 from datetime import datetime, date
 
 class EnrollForm(forms.Form):
-    students = ManyToManyByRelatedField(Student, 'year', include_blank=False, required=False)
-    cohorts = forms.ModelMultipleChoiceField(queryset=Cohort.objects.all(), required=False)
-    class Media:
-        js = (
-            'admin/js/SelectBox.js',
-            'admin/js/SelectFilter2.js',
-            'js/jquery.js',
-            'js/ajax_filtered_fields.js',
-        )
+    students = forms.ModelMultipleChoiceField(
+        queryset=Student.objects.all(),
+        widget = forms.SelectMultiple(attrs={'class':'multiselect', 'style': 'min-width: 340px;'}),
+        required=False)
+    cohorts = forms.ModelMultipleChoiceField(
+        queryset=Cohort.objects.all(),
+        widget = forms.SelectMultiple(attrs={'class': 'field picker', 'style': 'min-height: 400px;'}),
+        required=False)
 
 class MarkingPeriodSelectForm(forms.Form):
     marking_period = forms.ModelChoiceField(queryset=MarkingPeriod.objects.filter(active=True))

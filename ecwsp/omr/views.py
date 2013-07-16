@@ -256,27 +256,6 @@ def edit_test_questions(request, id):
         'questions': questions,
     }, RequestContext(request, {}),)
 
-@permission_required('omr.teacher_test')
-@transaction.commit_on_success
-def ajax_reorder_question(request, test_id):
-    question_up_id = request.POST['question_up_id'][9:]
-    question_down_id = request.POST['question_down_id'][9:]
-    question_up = Question.objects.get(id=question_up_id)
-    question_down =  Question.objects.get(id=question_down_id)
-    
-    if question_up.order and question_up.order > 1:
-        question_up.order -= 1
-        question_up.save()
-    if question_down.order:
-        question_down.order += 1
-        question_down.save()
-    
-    data = {
-        question_up_id: question_up.order,
-        question_down_id: question_down.order,
-    }
-    data = simplejson.dumps(data)
-    return HttpResponse(data,'application/javascript')
 
 @permission_required('omr.teacher_test')
 def ajax_question_bank_to_question(request, test_id, question_bank_id):

@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render_to_response, get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -62,7 +62,7 @@ def schedule_enroll(request, id):
     
     students = Student.objects.filter(courseenrollment__course=course)
     form = EnrollForm(initial={'students': students})
-    return render_to_response('schedule/enroll.html', {'request': request, 'form': form, 'course': course})
+    return render(request, 'schedule/enroll.html', {'request': request, 'form': form, 'course': course})
 
 
 @user_passes_test(lambda u: u.has_perm('sis.reports'), login_url='/')
