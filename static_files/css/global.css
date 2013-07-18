@@ -24,7 +24,7 @@ left: -9999px;
 }
 .container{
   margin-top: 50px;
-  margin-bottom: 20px;
+  padding-bottom: 50px;
 }
 h1, h2, h3, h4, h5, h6 {
   font-weight: 300;
@@ -63,6 +63,10 @@ h1, h2, h3, h4, h5, h6 {
   padding-right: 3%;
   margin-left: 2px;
   margin-right: 2px;
+}
+/* Firefox hack to hide arrow. */
+.navbar select {
+  width: 165%;
 }
 @media screen and (max-width: 1000px){
   .navbar ul li > a {
