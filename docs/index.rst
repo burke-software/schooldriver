@@ -96,31 +96,39 @@ It is possible to assign individual user permissions that are found in one group
 
 Importing Data Into Sword
 --------------------------
+
 SWoRD supports the import of data into its database.
 
 In order to make the import process as simple as possible for schools transitioning into SWoRD or schools preparing for the new school year, SWoRD allows data to be imported via Excel or LibreOffice documents.
 
-There are two easy ways to import data, both of which *require* the appropiate permissions for the user. The first method is described below:
+**Before you Import**
 
-1. To access the import screen, select Admin > School import from the navigation menu (located at the top right corner of the SWoRD dashboard).
-2. Download the sample data from the **sample data** link available in light blue font. The sample data is a pre-formatted Excel/Office file that shows what can be imported.
-3. Follow the outline on the appropiate tab. For example, if importing students, follow the students tab; if importing applicants, follow the applicants tab, etc. 
-4. Delete all the other tabs once you've decide what model you are importing so you are left with, for example, only the *students* tab.
-5. Enter all information about the student you would like to have imported. **NOTE:** For every tab, a unique ID or student username is required. This allows SWoRD to identify to which student the data is pertinent. If you use unique ID and not a username, SWoRD will automatically generate a username using a combination of the first and last name e.g. for Joe Student, jstudent is generated.
-6. Leave blank any columns for which you lack the data or do not wish to import.
-7. Save
-8. Once saved you may return to the import screen and upload the xls or ods file you have just created.
+Prior to importing data, you will need an Excel spreadsheet with information pertinent to the model you are attempting to import/update. Set column headers accordingly. SWoRD is able to import all information that is able to be entered manually in a field. Here's a reference list of some column headers you can use for importing students: 
 
-The newer method below allows users to set up an Excel/Open Office document without specifying a tab name or following any specific format in columns.
+Unique ID, First Name ,Last Name, username, grad date, Student cell ph, MIDDLE NAME,  class of year, STUDENT PHONE, GENDER, BIRTH DATE, Social Security, Student E-Mail, Alert, Primary Cohort, Parent email, homeroom, preferred language, picture, password
 
-1. As described above, select Admin > School import from the navigation menu.
-2. Select **Click here** located at the very top of this page in blue text, which brings you to an import screen.
-3. Enter a name.
-4. Select browse to locate your Excel document
-5. Under Import type, select from Create New Records, Create and Update Records, and Only Update Records. 
-6. Select a Model, which refers to where you are importing the data. Select students for students, applicants for applicants, etc.
-7. Click Submit.
-8. The next page will verify your column data and allow you to preview and then run the import.
+SWoRD will guess matches based off your column headers, so if you enter First Name or fname, or FiRSt NaME as a header on your Excel doc, SWoRD will determine which field that refers to.
+
+**How To Import Data**
+
+Importing data *requires* the appropiate permissions for the user. The method is described below:
+
+1. Select Admin > School import from the navigation menu.
+2. Enter a name for the import (can be anything).
+3. Select browse to locate your Excel document
+4. Under Import type, select from Create New Records, Create and Update Records, and Only Update Records. 
+5. Select a Model. This refers to where you are importing the data. Select students for students, applicants for applicants, etc.
+
+.. image:: /images/importcap1.png
+
+6. Click Submit.
+7. The next page will give users a preview of what their import will look like. SWoRD tries to match the column headers in your document with an available field in SWoRD. You can always edit the field (via drop down box) if SWoRD displays an incorrect field.
+
+.. image:: /images/importcap2.png
+
+**Note** If you're updating records, you'll need to select an update key. For ease, selecting **username** is probably the field you'd want as key most of the time. 
+
+8. After you've matched all the fields to the sample data (i.e. SSN field actually displays a SSN in the sample data column), you can simulate the import or run it. Simulating the import won't actually import the data, but it will let you know in advance if there are any issues with what you're trying to import.
 
 Configurations
 ---------------
@@ -130,6 +138,21 @@ For example, in configurations for email in the **How to obtain student email** 
 **Append** appends the domain name after a student's username like jstudent@domainname.org. 
 **User** takes the email address from the Auth->User record.
 **Student** takes the email address marked from the *alt email* field of a student record page. 
+
+Creating Users
+--------------------
+
+To manually add users, follow the directions below:
+
+1. Under the **Administrators** panel, select Add+ by *Users*
+2. Create a username and temporary password.
+3. Next, you will need to edit the user. Select the newly created users from the users list.
+4. Assign the user a name/last name- and ideally assign them a group, which will be discussed in the next chapter below.
+
+.. image:: /images/adduser1.png
+
+
+Overall, the groupings are self explanatory- if you're creating a registrar, assign them the **registrar** group, an admissions staff member would be assigned the **admissions** group, etc. 
 
 Getting Started
 ----------------
