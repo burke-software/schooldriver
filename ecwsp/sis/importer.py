@@ -126,24 +126,36 @@ class Importer:
         This function should always find a name and never fail except in
         absurd scenarios with many users and limited varchar space
         """
-        # We have to kill blanks now; consider a stupid case like fname=" Joe" lname="Student"
-        # username would end up being just "student", which is no bueno
-        fname = "".join(fname.split());
-        lname = "".join(lname.split());
+        # We want usernames to be a-z only!
+        from django.utils.encoding import smart_unicode
+        import unicodedata
+        # Try to deal with unicode nicely
+        # http://www.peterbe.com/plog/unicode-to-ascii
+        fname = unicodedata.normalize('NFKD', smart_unicode(fname)).encode('ascii', 'ignore')
+        lname = unicodedata.normalize('NFKD', smart_unicode(lname)).encode('ascii', 'ignore')
+        fname = fname.lower()
+        lname = lname.lower()
+        # Kill any character outside a-z
+        fname = re.sub('[^a-z]', '', fname)
+        lname = re.sub('[^a-z]', '', lname)
+
         try:
             i = 1
-            username = unicode(fname[:i]) + unicode(lname)
+            username = fname[:i] + lname
             while User.objects.filter(username=username).count() > 0:
-                i += 1
-                username = unicode(fname[:i]) + unicode(lname)
+                if i < len(fname):
+                    i += 1
+                else:
+                    raise UsernameError
+                username = fname[:i] + lname
                 if username == "": raise UsernameError
         except:
             number = 1
-            username = unicode(fname[:i]) + unicode(lname) + unicode(number)
+            username = fname[:i] + lname + str(number)
             while User.objects.filter(username=username).count() > 0:
                 number += 1
-                username = unicode(fname[:i]) + unicode(lname) + unicode(number)
-        return unicode.lower(username)
+                username = fname[:i] + lname + str(number)
+        return username
     
     def import_number(self, value):
         phonePattern = re.compile(r'''
