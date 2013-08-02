@@ -64,7 +64,7 @@ class CharNullField(models.CharField):
        else:
               return value #otherwise, return just the value
     def get_db_prep_value(self, value, *args, **kwargs):  #catches value right before sending to db
-       if value=="":     #if Django tries to save '' string, send the db None (NULL)
+       if value=="" or value==None:     #if Django tries to save '' string, send the db None (NULL)
             return None
        else:
             return super(CharNullField, self).get_db_prep_value(value, *args, **kwargs)
