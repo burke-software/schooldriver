@@ -1,6 +1,4 @@
 {% load i18n %}
-<nav class="navbar" id="nav1" gumby-fixed="top">
-<div class="sixteen colgrid">
 <div class="row">
   <a class="toggle" gumby-trigger="#nav1 > .colgrid > .row > ul" href="#"><i class="icon-menu"></i></a>
   <div class="two columns logo">
@@ -8,17 +6,14 @@
       <img style="height: 48px; padding-top:10px;" src="/static/images/logo.svg" />
     </a>
   </div>
-  <ul class="fourteen columns">
+  <ul class="fourteen columns" style="float: right;">
     <li class="field">
-
-
-        <div class="admin-title view_student" style="height:30px;">
-            <form id="form_view_student" style="line-height: 36px;" class="view_student" action="/sis/view_student/" method="post">
+        <div class="admin-title view_student" style="heig;">
+            <form id="form_view_student" style="margin-bottom: 0px;" class="view_student" action="/sis/view_student/" method="post">
                 <input type='hidden' name='csrfmiddlewaretoken' value='RgVLrCUEmKq7vd7puOH2tlouKv7U5GSv' />
-                <input type="text" style="width:100%;" placeholder="Search" name="view_student_text" id="id_view_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student search input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
-                
+                <input type="search" style="width:100%;" placeholder="Lookup Student" name="view_student_text" id="id_view_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student search input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
                 <input type="hidden" name="student" id="id_view_student" value="">
-                <div id="id_view_student_on_deck" style="visibility: hidden;" class="results_on_deck"><div></div></div>
+                <div id="id_view_student_on_deck" style="display: none;" class="results_on_deck"><div></div></div>
                 <script type="text/javascript">//<![CDATA[
                 jQuery(document).ready(function($){
                         addAutoComplete("id_view_student", function(html_id) {
@@ -37,14 +32,6 @@
 
 
    </li>
-    <li class="field">
-      <div class="field picker" style="line-height: 22px;">
-        <select id="id_marking_period" name="marking_period">
-          <option value="student" selected="selected">Students</option>
-        </select>
-      </div>
-    </li>
-    
     {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
       <li>
           <a href="javascript://">Student</a>
@@ -176,7 +163,7 @@
   
   {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
     <li>
-      <a href="javascript://"> CWSP </a>
+      <a href="/work_study/dashboard/"> CWSP </a>
       <div class="dropdown">
         <ul>
           {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker %}
@@ -251,5 +238,3 @@
   </li>
   </ul>
 </div>
-</div>
-</nav>

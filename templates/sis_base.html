@@ -1,10 +1,11 @@
+{% load dajaxice_templatetags %}
 <!DOCTYPE html>
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <head>
   {% block head %}
   
   {% block javascripts %}
-  
+  {% dajaxice_js_import %}
   <!--[if IE]>
     <script type="text/javascript" src="/static/js/jquery-1.10.2.min.js"></script>
   <![endif]-->

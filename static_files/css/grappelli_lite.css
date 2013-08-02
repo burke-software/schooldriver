@@ -270,3 +270,12 @@ color: #fff;
 border: 1px solid #ccc;
 background-color: #e1f0f5;
 }
+
+
+
+
+/* breadcrumbs */
+.breadcrumbs {
+  font-weight: bold;
+  background: #eee;
+}

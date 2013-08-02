@@ -1,4 +1,5 @@
 {% extends "sis_base.html" %}
+{% load i18n %}
 {% load sis_extras %}
 
 {% block javascripts %}
@@ -11,6 +12,20 @@
 {% endblock %}
 
 {% block nav %}
-{% include "gumby/nav.html" %}
+<nav class="navbar" id="nav1" gumby-fixed="top">
+  <div class="sixteen colgrid">
+    {% include "gumby/nav.html" %}
+    <div class="breadcrumbs">
+    <div id="breadcrumbs_area" class="row">
+      <div class="sixteen columns">
+      {% block breadcrumbs %}
+        <a href="/">{% trans 'Home' %}</a>
+        
+      {% endblock %}
+      </div>
+    </div>
+    </div>
+  </div>
+</nav>
 {% endblock %}
 

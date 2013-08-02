@@ -1,15 +1,16 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin_base.html" %}
 
 {% block breadcrumbs %}
-<div id="breadcrumbs"> 
+<div class="pull_left" id="breadcrumbs"> 
  <a href="/"> Home </a> 
  &rsaquo; 
  Dashboard
-</div> 
+</div>
+<div class="pull_right">
+ <a href="javascript:void(0)" onclick="customize_dashboard();">Customize</a>
+</div>
 {% endblock %}
 
 {% block content %}
-    <div style="height:590px;">
     {% include "responsive_dashboard:responsive_dashboard/dashboard.html" %}
-    </div>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends "responsive_dashboard/dashlet.html" %}
 
 {% block content %}
-    {{ block.super }}
+    <header>{{ title }}</header>
     <table>
     <tbody>
         <tr>
@@ -11,11 +11,16 @@
               {% endif %}
             </td>
             <td style="border-left: none;">
-              <a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade" class="grp-button">Submit Grades</a>
+              <div class="primary btn">
+                <a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">Submit Grades</a>
+              </div>
             </td>
         </tr>
         <tr>
-            <td></td><td style="border-left: none;"><a class="grp-button">View Analytics</a></td>
+          <td></td>
+          <td style="border-left: none;">
+            <div class="primary btn"><a>View Analytics</a></div>
+          </td>
         </tr>
     </tbody>
     </table>

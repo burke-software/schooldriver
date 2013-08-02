@@ -57,6 +57,7 @@ class ReportBuilderDashlet(ListDashlet):
 
 class AnnouncementsDashlet(RssFeedDashlet):
     feed_url = 'http://feeds.feedburner.com/FeedForBurkeSoftwareAndConsultingLlc'
+    more_link = 'https://plus.google.com/u/0/112784955559393766110'
 
 class SisDashboard(Dashboard):
     app = 'sis'

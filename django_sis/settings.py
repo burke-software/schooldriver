@@ -374,8 +374,8 @@ from settings_local import *
 # must do this after importing settings_local
 if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
-    STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',) # this breaks collectstatic if added unconditionally
-    INSTALLED_APPS += ('dajaxice', 'dajax') # these don't cause harm, but it seems cleaner not to reference them unless necessary
+STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',) # this breaks collectstatic if added unconditionally
+DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 #Celery
 if 'djcelery' in INSTALLED_APPS:
@@ -421,6 +421,8 @@ INSTALLED_APPS += (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'dajax',
+    'dajaxice',
     'ecwsp.volunteer_track',
     'ecwsp.sis',
     'daterange_filter',

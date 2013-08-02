@@ -21,6 +21,13 @@ max-width: 1300px;
 min-width: 320px;
 margin: 0 auto;
 }
+.sixteen.colgrid .row .two.columns {
+width: 11.15385%;
+}
+.sixteen.colgrid .row .fourteen.columns {
+width: 87.30769%;
+}
+
 ul li.row {
     min-width: 10px;
 }

@@ -32,13 +32,23 @@ $(function() {
 
 });
 
+function show_save_success() {
+  $('#save_status').hide();
+  $('#save_status').html("Field Saved");
+  $('#save_status').removeClass('danger');
+  $('#save_status').addClass('success');
+  $('#save_status').fadeIn();
+}
+
 function save_inline_question(e, obj_id, field){
   var data = $(e).html();
   $.post(
     '/omr/test_questions/'+obj_id+'/save_question/',
     {content: data, field: field},
     function(data){
-      $('#save_status').html(data);
+      if (data == "SUCCESS") {
+        show_save_success();
+      }
     }
   );
 }
@@ -49,7 +59,9 @@ function save_inline_answer(e, obj_id, field){
     '/omr/test_questions/'+obj_id+'/save_answer/',
     {content: data, field: field},
     function(data){
-      $('#save_status').html(data);
+      if (data == "SUCCESS") {
+        show_save_success();
+      }
     }
   );
 }
@@ -140,8 +152,16 @@ function delete_question(question_id) {
         });
       }  
     )
-    .done(function() { $('#save_status').html('Success!'); })
-    .fail(function() { $('#save_status').html('ERROR!'); });
+    .done(function() {
+      show_save_success();
+    })
+    .fail(function() {
+      $('#save_status').hide();
+      $('#save_status').html('ERROR!');
+      $('#save_status').removeClass('success');
+      $('#save_status').addClass('danger');
+      $('#save_status').fadeIn();
+    });
   }
 }
 

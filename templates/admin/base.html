@@ -74,7 +74,11 @@
             {% if not is_popup %}
 
                 <!-- NAVIGATION -->
-                {% include "admin/includes_grappelli/header.html" %}
+                <nav class="navbar" id="nav1" gumby-fixed="top">
+                    <div class="sixteen colgrid">
+                    {% include "gumby/nav.html" %}
+                    </div>
+                </nav>
                 
                 <!-- CONTEXT NAVIGATION -->
                 <div id="grp-context-navigation">

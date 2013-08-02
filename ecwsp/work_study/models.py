@@ -410,7 +410,6 @@ class StudentWorker(Student):
         blank=True,
         choices = (('AM','No AM'),('PM','No PM'),('NO','None'))
     )
-    #fax = models.BooleanField(help_text="Check if student may fax time sheet instead of going to check-in, shows up on attendance", verbose_name="Text Time Sheet")
     work_permit_no = CharNullField(max_length=10, blank=True, null=True, unique=True)
     placement = models.ForeignKey(WorkTeam, blank=True, null=True, )
     school_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
