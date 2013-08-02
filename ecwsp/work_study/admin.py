@@ -71,7 +71,7 @@ class CompanyAdmin(admin.ModelAdmin):
             txt += "<h5>Past Students</h5>"
             histories = CompanyHistory.objects.filter(placement__company=context['original'].id)
             for history in histories:
-                txt += '%s </br>' % (history,)
+                txt += '%s </br>' % (unicode(history),)
             txt += "<h5>Eletronic contract link:</h5>"
             txt += '<a href="{0}">{0}</a>'.format(settings.BASE_URL + reverse('ecwsp.work_study.views.company_contract1', args=(context['original'].id,)))
             context['adminform'].form.fields['name'].help_text = txt
