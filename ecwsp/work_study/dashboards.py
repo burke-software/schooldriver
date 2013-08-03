@@ -34,9 +34,9 @@ class ReportBuilderDashlet(ListDashlet):
         return super(ReportBuilderDashlet, self)._render(**kwargs)
 
 
-class CwspAttendanceDashlet(Dashlet):
+class WorkStudyAttendanceDashlet(Dashlet):
     template = "/work_study/cwsp_attendance_dashlet.html"
-    require_permissions = ('work_study.change_attandance')
+    require_permissions = ('work_study.change_attandance',)
 
 
 
@@ -45,7 +45,7 @@ class WorkStudyDashboard(Dashboard):
     dashlets = [
         ReportBuilderDashlet(title="Reports",),
         TimeSheetDashlet(title="Time Sheets",),
-        CwspAttendanceDashlet(title="CWSP Attendance"),
+        WorkStudyAttendanceDashlet(title="Work Study Attendance"),
         AdminListDashlet(title="Edit Work Study", app_label="work_study")
     ]
 

@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import m2m_changed
 from custom_field.custom_field import CustomFieldModel
-from ecwsp.sis.models import get_default_language, GradeLevel
+from ecwsp.sis.models import get_default_language, GradeLevel, SchoolYear
 
 import datetime
 
