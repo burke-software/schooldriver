@@ -374,7 +374,7 @@ from settings_local import *
 # must do this after importing settings_local
 if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
-STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',) # this breaks collectstatic if added unconditionally
+    STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',) # this breaks collectstatic if added unconditionally
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 #Celery
