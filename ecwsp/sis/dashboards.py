@@ -7,6 +7,7 @@ import datetime
 
 class DisciplineDashlet(ListDashlet):
     model = StudentDiscipline
+    first_column_is_link = True
     fields = ('show_students', 'infraction')
     order_by = ('-date',)
     require_apps = ('ecwsp.discipline',)

@@ -1,45 +1,36 @@
 {% extends "responsive_dashboard/dashlet.html" %}
 
-{% block content %}
-    <script src="/static/dajaxice/dajaxice.core.js" type="text/javascript" charset="utf-8"></script>
-<header>
-    CWSP ATTENDANCE
-</header>
-<div>
-    <ul>
-        <li>
-            <div class="medium primary btn"><a href="{% url "ecwsp.work_study.views.take_attendance" %}">Take Today's Attendance</a></div>
-        </li>
-      <li class="field">
-        <label class="inline" for="attendance_date">For date</label>
-        <input id="attendance_date" class="wide input datepicker" type="text" onchange="Dajaxice.ecwsp.work_study.attendance_dashlet(callback, {'date':$(this).val()})">
-      </li>
-    </ul>
-    
-    <table>
-        <tbody>
-            <tr>
-                <td>
-                    <span id="working_today"></span> student(s) scheduled to work this day
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span id="without_timesheets"></span> student(s) did not submit timesheets
-                </td>
-            </tr>
-            <!--<tr>
-                <td>
-                    student have no make up days planned
-                </td>
-            </tr>-->
-        </tbody>
-    </table>
-</div>
-<div class="links">
-    <a href="{% url "admin:work_study_attendance_changelist" %}">Change CWSP Attendance</a>
-</div>
+{% block dashlet_body %}
+<script src="/static/dajaxice/dajaxice.core.js" type="text/javascript" charset="utf-8"></script>
+<ul>
+    <li>
+        <div class="medium primary btn"><a href="{% url "ecwsp.work_study.views.take_attendance" %}">Take Today's Attendance</a></div>
+    </li>
+  <li class="field">
+    <label class="inline" for="attendance_date">For date</label>
+    <input id="attendance_date" class="wide input datepicker" type="text" onchange="Dajaxice.ecwsp.work_study.attendance_dashlet(callback, {'date':$(this).val()})">
+  </li>
+</ul>
 
+<table>
+    <tbody>
+        <tr>
+            <td>
+                <span id="working_today"></span> student(s) scheduled to work this day
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span id="without_timesheets"></span> student(s) did not submit timesheets
+            </td>
+        </tr>
+        <!--<tr>
+            <td>
+                student have no make up days planned
+            </td>
+        </tr>-->
+    </tbody>
+</table>
 <script>
     function callback(data){
         $('#working_today').html(data.working_today);
@@ -47,4 +38,8 @@
     }
     Dajaxice.ecwsp.work_study.attendance_dashlet(callback, {'date':$('#attendance_date').val()})
 </script>
+{% endblock %}
+
+{% block dashlet_footer %}
+    <a href="{% url "admin:work_study_attendance_changelist" %}">Change CWSP Attendance</a>
 {% endblock %}

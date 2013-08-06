@@ -164,19 +164,6 @@
   {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
     <li>
       <a href="/work_study/dashboard/"> CWSP </a>
-      <div class="dropdown">
-        <ul>
-          {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker %}
-            <li><a href="{% url "admin:work_study_studentworker_changelist" %}">{% trans 'Edit Student Worker' %}</a></li>
-          {% endif %}
-          {% if perms.sis.reports %}
-            <li><a href="{% url "ecwsp.work_study.views.report_builder_view" %}">{% trans 'Reports' %}</a></li>
-          {% endif %}
-          {% if perms.sis.reports and settings.CRND_ROUTES %}
-            <li><a href="{% url "ecwsp.work_study.views.routes" %}">{% trans 'Route Reports' %}</a></li>
-          {% endif %}
-          </ul>
-      </div>
     </li>
   {% endif %}{% endif %}
 
