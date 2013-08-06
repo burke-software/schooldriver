@@ -50,7 +50,7 @@ class AccessLog(models.Model):
             return "Unknown"
         
 class Configuration(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     value = models.TextField(blank=True)
     file = models.FileField(blank=True, null=True, upload_to="configuration", help_text="Some configuration options are for file uploads")
     help_text = models.TextField(blank=True)
