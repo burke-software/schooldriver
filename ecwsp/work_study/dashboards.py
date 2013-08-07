@@ -35,7 +35,7 @@ class ReportBuilderDashlet(ListDashlet):
 
 class WorkStudyAttendanceDashlet(Dashlet):
     template = "/work_study/cwsp_attendance_dashlet.html"
-    require_permissions = ('work_study.change_attandance',)
+    require_permissions = ('work_study.change_attendance',)
 
 
 class WorkStudyReportsDashlet(Dashlet):
