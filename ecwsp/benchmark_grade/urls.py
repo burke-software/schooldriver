@@ -1,10 +1,6 @@
 from django.conf.urls.defaults import *
-import views
-
-from dajaxice.core import dajaxice_autodiscover, dajaxice_config
-dajaxice_autodiscover()
-
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+import views
 
 urlpatterns = patterns('',
     (r'^student_report$', views.student_report),
