@@ -22,6 +22,7 @@ from django.db.models import Avg, Count, Max, Min, StdDev, Sum, Variance
 from django.conf import settings
 from decimal import Decimal
 from datetime import datetime
+from ecwsp.grades.models import Grade
 
 ####### TURN ME INTO A MANAGER #######
 def benchmark_find_calculation_rule(school_year):
@@ -79,7 +80,6 @@ class CalculationRule(models.Model):
     first_year_effective = models.ForeignKey('sis.SchoolYear', unique=True, help_text='Rule also applies to subsequent years unless a more recent rule exists.')
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, default=4)
     decimal_places = models.IntegerField(default=2)
-
     def substitute(self, item_or_aggregate, value):
         calculate_as = value
         display_as = None
@@ -147,15 +147,18 @@ class Category(models.Model):
     display_symbol = models.CharField(max_length=7, blank=True, null=True)
     def __unicode__(self):
         return self.name
+
     class Meta:
         verbose_name_plural = 'categories'
         ordering = ['display_order']
+
     def clean(self):
         from django.core.exceptions import ValidationError
         if self.allow_multiple_demonstrations and self.demonstration_aggregation_method is None:
             raise ValidationError('Please select a demonstration aggregation method.')
         if not self.allow_multiple_demonstrations and self.demonstration_aggregation_method is not None:
             self.demonstration_aggregation_method = None
+
     @property
     def aggregation_method(self):
         if self.demonstration_aggregation_method == 'Avg':
@@ -206,6 +209,7 @@ class Item(models.Model):
         if not self.points_possible > 0:
             # TODO: DB validation once TC cleans up their mess
             raise ValidationError("Please assign a number of points possible greater than zero.")
+
     def __unicode__(self):
         if self.benchmark:
             benchmark_number = self.benchmark.number
@@ -228,6 +232,7 @@ class Mark(models.Model):
     normalized_mark = models.FloatField(blank=True, null=True)
     class Meta:
         unique_together = ('item', 'demonstration', 'student',)
+
     # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def save(self, *args, **kwargs):
         if self.mark is not None and self.item.points_possible is not None:
@@ -235,6 +240,7 @@ class Mark(models.Model):
             # in practice, people set marks that far exceed points_possible
             self.normalized_mark = float(self.mark) / float(self.item.points_possible)
         super(Mark, self).save(*args, **kwargs)
+
     def clean(self):
         from django.core.exceptions import ValidationError
         if self.item.category.fixed_granularity and self.mark and self.mark % self.item.category.fixed_granularity != 0:
@@ -254,6 +260,7 @@ class Aggregate(models.Model):
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     class Meta:
         unique_together = ('student', 'course', 'category', 'marking_period')
+
     @property
     def calculation_rule(self):
         ''' Find the CalculationRule that applies to this Aggregate '''
@@ -263,6 +270,7 @@ class Aggregate(models.Model):
             return benchmark_find_calculation_rule(
                 self.course.marking_period.all()[0].school_year)
         # implicit return None
+
     @property
     def mark_set(self):
         ''' All the Marks needed to calculate this Aggregate '''
@@ -274,6 +282,7 @@ class Aggregate(models.Model):
             if criterium is not None:
                 criteria['item__' + field] = criterium
         return Mark.objects.filter(**criteria).exclude(mark=None)
+
     def mark_values_list(self, normalize=False):
         ''' A list of tuples of (mark, display_as, points_possible) for all the Marks
         needed to calculate this Aggregate '''
@@ -301,6 +310,7 @@ class Aggregate(models.Model):
                 calculate_as, display_as = rule.substitute(self, mark)
                 final_list.append((calculate_as, display_as, points_possible))
             return final_list
+
     def depends_on(self):
         ''' Returns all Aggregates, in the form of [(Aggregate, created, weight),], immediately required to calculate
         this Aggregate. Not recursive; multiple levels of dependency are NOT considered. '''
@@ -343,6 +353,7 @@ class Aggregate(models.Model):
                     course_id=course.pk, category_id=self.category_id, marking_period_id=self.marking_period_id) + (weight,))
             return aggregate_tuples
         raise Exception("Aggregate type unrecognized.")
+
     def calculate(self, recalculate_all=False):
         numerator = denominator = Decimal(0)
         aggregate_tuples = self.depends_on()
@@ -367,6 +378,7 @@ class Aggregate(models.Model):
             else:
                 self.cached_value = None
         self.save()
+
     def _e_pluribus_unum(self, plures):
         ''' Return one from many (display_as substitutions), provided the many have only one unique value
         after excluding None and the empty string '''
@@ -378,6 +390,7 @@ class Aggregate(models.Model):
         else:
             raise Exception('Contradictory display_as substitutions for Aggregate {}: {}'.format(self.pk, plures))
         return unus
+
     def max(self):
         if self.points_possible is None:
             #return None
@@ -392,6 +405,7 @@ class Aggregate(models.Model):
             return (Decimal(max(mark)) * self.points_possible, display_as)
         else:
             return None, display_as
+
     def min(self):
         if self.points_possible is None:
             #return None
@@ -406,6 +420,7 @@ class Aggregate(models.Model):
             return Decimal(min(mark)) * self.points_possible
         else:
             return None, display_as
+
     def mean(self, normalize=False):
         if self.points_possible is None:
             #return None
@@ -421,7 +436,26 @@ class Aggregate(models.Model):
             return Decimal(sum(mark) / total_points_possible) * self.points_possible, display_as
         else:
             return None, display_as
-        
+
+    def _copy_to_grade(self):
+        # temporary(?) integration with the rest of sword
+        g, g_created = Grade.objects.get_or_create(student=self.student, course=self.course, marking_period=self.marking_period, override_final=False)
+        if self.cached_substitution is not None:
+            # FIDDLESTICKS... INC does not fit in the column
+            letter_grade_max_length = Grade._meta.get_field_by_name('letter_grade')[0].max_length
+            g.letter_grade = self.cached_substitution[:letter_grade_max_length]
+            g.grade = None
+        else:
+            g.set_grade(self.cached_value)
+        g.save()
+        return g, g_created
+
+    def save(self, *args, **kwargs):
+        if self.student_id is not None and self.course_id is not None and \
+            self.marking_period_id is not None and self.category_id is None:
+            self._copy_to_grade()
+        super(Aggregate, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return self.name # not useful
 
