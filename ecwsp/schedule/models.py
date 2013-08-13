@@ -207,7 +207,7 @@ class DepartmentGraduationCredits(models.Model):
         unique_together = ('department', 'class_year')
 
 class Course(models.Model):
-    active = models.BooleanField(default=True, help_text="If active, course will show in Moodle.")
+    active = models.BooleanField(default=True, help_text="Sometimes used in third party integrations such as Moodle. Has no affect within django-sis.")
     fullname = models.CharField(max_length=255, unique=True)
     shortname = models.CharField(max_length=255)
     marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
