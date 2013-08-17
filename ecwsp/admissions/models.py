@@ -167,35 +167,37 @@ class Applicant(models.Model, CustomFieldModel):
         'sis.LanguageChoice',
         blank=True,
         null=True,
+        on_delete=models.SET_NULL,
         default=get_default_language)
     siblings = models.ManyToManyField('sis.Student', blank=True)
     year = models.ForeignKey(
         'sis.GradeLevel',
         blank=True,
         null=True,
+        on_delete=models.SET_NULL,
         help_text="Applying for this grade level",
         default=get_year)
-    school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True, default=get_school_year)
+    school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True, on_delete=models.SET_NULL, default=get_school_year)
     parent_guardians = models.ManyToManyField('sis.EmergencyContact', verbose_name="Student Contact", blank=True, null=True)
-    ethnicity = models.ForeignKey(EthnicityChoice, blank=True, null=True)
+    ethnicity = models.ForeignKey(EthnicityChoice, blank=True, null=True, on_delete=models.SET_NULL,)
     hs_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)
     elem_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)
-    present_school = models.ForeignKey(FeederSchool, blank=True, null=True)
+    present_school = models.ForeignKey(FeederSchool, blank=True, null=True, on_delete=models.SET_NULL,)
     present_school_typed = models.CharField(max_length=255, blank=True, help_text="This is intented for applicants apply for the school. Administrators should use the above.")
     present_school_type_typed = models.CharField(max_length=255, blank=True)
-    religion = models.ForeignKey(ReligionChoice, blank=True, null=True)
-    place_of_worship = models.ForeignKey(PlaceOfWorship, blank=True, null=True)
+    religion = models.ForeignKey(ReligionChoice, blank=True, null=True, on_delete=models.SET_NULL,)
+    place_of_worship = models.ForeignKey(PlaceOfWorship, blank=True, null=True, on_delete=models.SET_NULL,)
     follow_up_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     open_house_attended = models.ManyToManyField(OpenHouse, blank=True, null=True)
     parent_guardian_first_name = models.CharField(max_length=150, blank=True)
     parent_guardian_last_name = models.CharField(max_length=150, blank=True)
     relationship_to_student = models.CharField(max_length=500, blank=True)
-    heard_about_us = models.ForeignKey(HeardAboutUsOption, blank=True, null=True)
+    heard_about_us = models.ForeignKey(HeardAboutUsOption, blank=True, null=True, on_delete=models.SET_NULL,)
     from_online_inquiry = models.BooleanField()
-    first_contact = models.ForeignKey(FirstContactOption, blank=True, null=True)
-    borough = models.ForeignKey(BoroughOption, blank=True, null=True)
-    country_of_birth = models.ForeignKey(CountryOption, blank=True, null=True, default=get_default_country)
-    immigration_status = models.ForeignKey(ImmigrationOption, blank=True, null=True)
+    first_contact = models.ForeignKey(FirstContactOption, blank=True, null=True, on_delete=models.SET_NULL,)
+    borough = models.ForeignKey(BoroughOption, blank=True, null=True, on_delete=models.SET_NULL,)
+    country_of_birth = models.ForeignKey(CountryOption, blank=True, null=True, default=get_default_country, on_delete=models.SET_NULL,)
+    immigration_status = models.ForeignKey(ImmigrationOption, blank=True, null=True, on_delete=models.SET_NULL,)
     ready_for_export = models.BooleanField()
     sis_student = models.OneToOneField(
         'sis.Student',
@@ -211,9 +213,9 @@ class Applicant(models.Model, CustomFieldModel):
     date_added = models.DateField(auto_now_add=True, blank=True, null=True, validators=settings.DATE_VALIDATORS)
     level = models.ForeignKey(AdmissionLevel, blank=True, null=True, on_delete=models.SET_NULL)
     checklist = models.ManyToManyField(AdmissionCheck, blank=True, null=True)
-    application_decision = models.ForeignKey(ApplicationDecisionOption, blank=True, null=True)
-    application_decision_by = models.ForeignKey(User, blank=True, null=True)
-    withdrawn = models.ForeignKey(WithdrawnChoices, blank=True, null=True)
+    application_decision = models.ForeignKey(ApplicationDecisionOption, blank=True, null=True, on_delete=models.SET_NULL,)
+    application_decision_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL,)
+    withdrawn = models.ForeignKey(WithdrawnChoices, blank=True, null=True, on_delete=models.SET_NULL,)
     withdrawn_note = models.CharField(max_length=500, blank=True)
     first_to_college = models.BooleanField(blank=True)
     individual_education_plan = models.BooleanField(blank=True)

@@ -6,6 +6,11 @@
 */
 @import url(//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700);
 
+/* Nav hack */
+div.logo img {
+    height: 38px !important;
+}
+
 .navbar {
     font-family: "Open Sans";
 }
