@@ -3,8 +3,10 @@ from ecwsp.sis.views import *
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import admin
+from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 
 admin.autodiscover()
+dajaxice_autodiscover()
 
 urlpatterns = patterns('',
     (r'^admin/', include("massadmin.urls")),
@@ -26,6 +28,7 @@ urlpatterns = patterns('',
     
     (r'^ajax_select/', include('ajax_select.urls')),
     (r'^ajax_filtered_fields/', include('ajax_filtered_fields.urls')),
+    url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 
 if settings.GAPPS:

@@ -1,10 +1,6 @@
 from django.conf.urls.defaults import *
-import views
-
-from dajaxice.core import dajaxice_autodiscover, dajaxice_config
-dajaxice_autodiscover()
-
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+import views
 
 urlpatterns = patterns('',
     (r'^student_report$', views.student_report),
@@ -27,7 +23,6 @@ urlpatterns = patterns('',
     (r'^gradebook/(?P<course_id>\d+)/ajax_get_item_tooltip/(?P<item_id>\d+)/$', views.ajax_get_item_tooltip),
     ('student_incomplete_courses', 'ecwsp.benchmark_grade.report.student_incomplete_courses'),
     ('student_zero_dp_standards', 'ecwsp.benchmark_grade.report.student_zero_dp_standards'),
-    url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 
 urlpatterns += staticfiles_urlpatterns()
