@@ -1877,6 +1877,8 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 table tr td:first-child { font-weight: inherit; }
 
+.btn { margin: 2px; }
+
 [contenteditable="true"]:focus { outline: 1px solid teal; }
 
 [contenteditable="true"]:hover { outline: 1px solid teal; }

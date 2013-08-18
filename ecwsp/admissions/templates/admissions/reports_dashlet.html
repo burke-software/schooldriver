@@ -1,0 +1,38 @@
+{% extends "responsive_dashboard/dashlet.html" %}
+
+{% load i18n %}
+
+{% block dashlet_body %}
+<form  action="{% url "ecwsp.admissions.views.reports" %}" method="post">
+  <div class="row">
+    <div class="five columns">
+      <label class="label default" id="blocklabel">{{ report_form.school_year.label }}</label>
+      {{ report_form.school_year }}
+    </div>
+    <div class="six columns">
+      <div class="medium primary btn">
+        <input type="submit" name="process_statistics" value="Process Statistics"/>
+      </div>
+      <div class="medium primary btn">
+	<input type="submit" name="funnel" value="Funnel"/>
+      </div>
+      <div class="medium primary btn">
+	<input type="submit" name="applicants_to_students" value="Create students"/>
+      </div>
+    </div>
+  </div>
+  <header style="border-top: solid 1px;">Template Reports</header>
+  <div class="row">
+    <div class="label default">Filters</div><br/>
+      {{ template_form.school_year }}
+      {{ template_form.level }}
+      {{ template_form.ready_for_export }}
+  </div>
+  <div class="row">
+    <div class="label default">Template</div>
+    <div class="picker">{{ template_form.template }}</div>
+    <div class="medium primary btn"><input type="submit" name="template_report" value="Submit"/></div>
+  </div>
+</form>
+{% endblock %}
+

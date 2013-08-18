@@ -162,7 +162,7 @@ background-image: -moz-linear-gradient(#ffffff,#eeeeee);
 background-image: -o-linear-gradient(#ffffff,#eeeeee);
 background-image: linear-gradient(#ffffff,#eeeeee);
 }
-input[type="submit"]:hover, input[type="submit"]:focus {
+.grp-module input[type="submit"]:hover, input[type="submit"]:focus {
 color: #fff;
 border: 1px solid #373737;
 background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
@@ -173,7 +173,7 @@ background-image: -moz-linear-gradient(#5e5e5e,#444444);
 background-image: -o-linear-gradient(#5e5e5e,#444444);
 background-image: linear-gradient(#5e5e5e,#444444);
 }
-input[type="submit"] {
+.grp-module input[type="submit"] {
 position: relative;
 display: inline-block;
 margin: 0;

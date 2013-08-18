@@ -5,6 +5,9 @@ table tr td:first-child {
    font-weight: inherit;
 }
 
+.btn {
+  margin: 2px;    
+}
 
 // OMR ajax editing
 [contenteditable="true"]:focus{

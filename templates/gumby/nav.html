@@ -121,17 +121,7 @@
     
     {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
       <li>
-        <a href="javascript://"> Admissions </a>
-        <div class="dropdown">
-          <ul>
-            {% if perms.admissions.change_applicant %}
-              <li><a href="{% url "admin:admissions_applicant_changelist" %}">{% trans 'Applicants' %}</a></li>
-            {% endif %}
-            {% if perms.admissions.change_applicant %}
-              <li><a href="{% url "ecwsp.admissions.views.reports" %}">{% trans 'Reports' %}</a></li>
-            {% endif %}
-          </ul>  
-        </div>
+        <a href="/admissions/dashboard/"> Admissions </a>
       </li>
     {% endif %}
   
