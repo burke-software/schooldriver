@@ -46,6 +46,19 @@
               {% if perms.sis.reports %}
                 <li><a href="{% url "ecwsp.sis.views.school_report_builder_view" %}">{% trans 'Reports' %}</a></li>
               {% endif %}
+              {% if perms.schedule.change_course %}
+                <li><a href="{% url "admin:schedule_course_changelist" %}">{% trans 'Edit Grades/Courses' %}</a></li>
+              {% endif %}
+              {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
+                <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
+              {% endif %}
+              {% if perms.sis.reports %}
+                <li><a href="{% url "ecwsp.sis.views.grade_report" %}">{% trans 'Grade Reports' %}</a></li>
+                <li><a href="{% url "ecwsp.schedule.views.grade_analytics" %}">{% trans 'Analytics' %}</a></li>
+              {% endif %}
+              {% if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS %} {% if perms.engrade_sync.change_coursesync %}
+               <li><a href="{% url "ecwsp.engrade_sync.views.setup" %}">{% trans 'Engrade Setup' %}</a></li>
+              {% endif %}{% endif %}
             </ul>
           </div>
       </li>
@@ -95,29 +108,6 @@
       </li>
     {% endif %}
     {% endif %}
-    
-    {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %} {% if perms.schedule.change_course or perms.grades.change_own_grade or perms.sis.reports %}
-      <li>
-        <a href="javascript://"> Grades </a>
-        <div class="dropdown">
-          <ul>
-            {% if perms.schedule.change_course %}
-              <li><a href="{% url "admin:schedule_course_changelist" %}">{% trans 'Edit Grades/Courses' %}</a></li>
-            {% endif %}
-            {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
-              <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
-            {% endif %}
-            {% if perms.sis.reports %}
-              <li><a href="{% url "ecwsp.sis.views.grade_report" %}">{% trans 'Reports' %}</a></li>
-              <li><a href="{% url "ecwsp.schedule.views.grade_analytics" %}">{% trans 'Analytics' %}</a></li>
-            {% endif %}
-            {% if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS %} {% if perms.engrade_sync.change_coursesync %}
-             <li><a href="{% url "ecwsp.engrade_sync.views.setup" %}">{% trans 'Engrade Setup' %}</a></li>
-            {% endif %}{% endif %}
-        </ul>
-        </div>
-      </li>
-    {% endif %}{% endif %}
     
     {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
       <li>

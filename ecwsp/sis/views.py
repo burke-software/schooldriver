@@ -86,7 +86,7 @@ def index(request):
                 messages.warning(request, 'Warning, your version of Firefox is out of date. Please upgrade.')
         except:
             pass
-        return HttpResponseRedirect('/admin')
+        return HttpResponseRedirect('/sis/dashboard')
     elif request.user.groups.filter(Q(name='students')).count() > 0:
         return student_redirect(request)
     elif request.user.groups.filter(name='family').count() > 0:

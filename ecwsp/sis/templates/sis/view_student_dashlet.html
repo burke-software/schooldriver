@@ -1,6 +1,9 @@
 {% extends "responsive_dashboard/dashlet.html" %}
 
-{% block content %}
+{% block dashlet_header %}
+{% endblock %}
+
+{% block dashlet_body %}
     <header>
     
     <form id="form_view_student_dashlet" class="view_student" action="/sis/view_student/" method="post">
@@ -48,6 +51,9 @@
       </p>
       {% endif %}
     </div>
+{% endblock %}
+
+{% block dashlet_footer %}
     {% if perms.sis.change_student %}
       <div class="links">
          <a href="{% url 'admin:work_study_studentworker_changelist' %}">Change Students</a>
