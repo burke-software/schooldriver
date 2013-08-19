@@ -49,7 +49,7 @@ class WorkStudyReportsDashlet(Dashlet):
             active_year = SchoolYear.objects.get(active_year=True)
         except SchoolYear.DoesNotExist:
             messages.warning(self.request, 'No Active Year Set, please create an active year!')
-            return HttpResponseRedirect('/')
+            return None
     
         form = ReportBuilderForm(initial={'custom_billing_begin':active_year.start_date,'custom_billing_end':active_year.end_date})
         template_form = ReportTemplateForm()
