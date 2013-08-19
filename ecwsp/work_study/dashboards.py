@@ -1,3 +1,4 @@
+from django.contrib import messages
 from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet
 from ecwsp.sis.models import SchoolYear
 from ecwsp.work_study.models import TimeSheet
