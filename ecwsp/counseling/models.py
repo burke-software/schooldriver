@@ -93,7 +93,7 @@ class ReferralForm(models.Model):
                 (self.referred_by,self.student,settings.BASE_URL,reverse('admin:counseling_referralform_change',args=(self.id,)),)
                 from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 to_addr = Configuration.get_or_default("counseling_referral_notice_email_to", "").value.split(',')
-                if to_addr:
+                if to_addr and to_addr != ['']:
                     send_mail(subject, msg, from_addr, to_addr)
             except:
                 logging.error('Couldn\'t email counseling referral form', exc_info=True)
