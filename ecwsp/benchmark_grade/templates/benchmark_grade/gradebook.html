@@ -41,6 +41,24 @@
     </script>
 {% endblock %}
 
+{% block nav %}
+<!-- only useful override here is removing gumby-fixed from <nav> tag -->
+<nav class="navbar" id="nav1">
+  <div class="sixteen colgrid">
+    {% include "gumby/nav.html" %}
+    <div class="breadcrumbs">
+    <div id="breadcrumbs_area" class="row">
+      <div class="sixteen columns">
+      {% block breadcrumbs %}
+        {{ block.super }}
+      {% endblock %}
+      </div>
+    </div>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
 {% block bigcontent %}
   <div style="padding: 0px 20px 0px;">
     <div class="topbar">
