@@ -54,6 +54,9 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 0px;
 }
 
+// <select multiple>s are too small
+.field select[multiple] { height: 6em; }
+
 
 // ************* GRADEBOOK *************************
 table#gradebook_table tr:nth-child(2n) td {

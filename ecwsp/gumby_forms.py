@@ -8,7 +8,8 @@ class Form(forms.Form):
             if not 'class' in field.widget.attrs:
                 field.widget.attrs['class'] = ''
             if isinstance(field, ChoiceField):
-                if not 'multiselect' in field.widget.attrs['class']:
+                if not 'multiselect' in field.widget.attrs['class'] and \
+                    not isinstance(field.widget, SelectMultiple):
                     field.is_select = True
             elif isinstance(field, DateField):
                 field.widget.attrs['class'] += ' datepicker'
@@ -22,7 +23,8 @@ class ModelForm(forms.ModelForm):
             if not 'class' in field.widget.attrs:
                 field.widget.attrs['class'] = ''
             if isinstance(field, ChoiceField):
-                if not 'multiselect' in field.widget.attrs['class']:
+                if not 'multiselect' in field.widget.attrs['class'] and \
+                    not isinstance(field.widget, SelectMultiple):
                     field.is_select = True
             elif isinstance(field, DateField):
                 field.widget.attrs['class'] += ' datepicker text input'

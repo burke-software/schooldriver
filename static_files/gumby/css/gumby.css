@@ -1899,6 +1899,8 @@ h1, h2, h3, h4, h5, h6 { font-weight: 300; }
   .navbar .logo { display: inline !important; } }
 #save_status.alert { margin-bottom: 0px; }
 
+.field select[multiple] { height: 6em; }
+
 table#gradebook_table tr:nth-child(2n) td { background: #f3f4f5; }
 
 table#gradebook_table input { border: none; background: transparent; width: 100%; }
