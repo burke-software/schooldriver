@@ -25,10 +25,10 @@
 </div>
 
 <script type="text/javascript">
-    $("#id_item-benchmark").multiselect({
+    $("#id_item-benchmark").parent('div').removeClass('picker');
+    $("#id_item-benchmark").simple_multiselect({
         multiple: false,
         selectedList: 1
-     }).multiselectfilter();;
-    $("#id_item-benchmark").parent('div').removeClass('picker')
+     }).multiselectfilter();
     if ($(".datepicker").is('*')) { $(".datepicker").datepicker(); }
 </script>
