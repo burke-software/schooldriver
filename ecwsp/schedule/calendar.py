@@ -55,33 +55,48 @@ class Calendar:
         return course_meet[0].location
     
     
-    def build_schedule(self, student, marking_period, include_asp=False):
+    def build_schedule(self, student, marking_period, include_asp=False, schedule_days=None):
         """
         Returns days ['Monday', 'Tuesday'...] and periods
         """
         periods = Period.objects.filter(course__courseenrollment__user=student, course__marking_period=marking_period).order_by('start_time').distinct()
         course_meets = CourseMeet.objects.filter(course__courseenrollment__user=student, course__marking_period=marking_period).distinct()
         
+        if schedule_days is None:
+            schedule_days = CourseMeet.day_choice
+        else:
+            # super ugly
+            day_choices = dict(CourseMeet.day_choice)
+            temp_dict = {}
+            for schedule_day in schedule_days:
+                temp_dict[schedule_day] = day_choices[schedule_day]
+            schedule_days = tuple(temp_dict.iteritems())
         days = []
         arr_days = []
-        for day in CourseMeet.day_choice:
+        for day in schedule_days:
             if course_meets.filter(day=day[0]).count():
                 days.append(day[1])
                 arr_days.append(day)
                 
-        only_active = Configuration.get_or_default("Only Active Classes in Schedule", "False").value
-    
+        only_active = Configuration.get_or_default("Only Active Classes in Schedule", "False").value in \
+            ['T', 'True', '1', 't', 'true']
+        hide_meetingless = Configuration.get_or_default('Hide Empty Periods in Schedule').value in \
+            ['T', 'True', '1', 't', 'true']
         
+        useful_periods = []
         for period in periods:
+            has_meeting = False
             period.days = []
             for day in arr_days:
-                if  only_active in ['T', 'True', '1', 't', 'true']:
+                if  only_active:
                     course = course_meets.filter(day=day[0], period=period, course__active=True)
                 else:
                     course = course_meets.filter(day=day[0], period=period)
                 if course.count():
                     period.days.append(course[0])
+                    has_meeting = True
                 else:
                     period.days.append(None)
-            CourseMeet.objects.filter(course__courseenrollment__user=student, course__marking_period=marking_period, ).distinct()
-        return days, periods
+            if has_meeting or not hide_meetingless:
+                useful_periods.append(period)
+        return days, useful_periods

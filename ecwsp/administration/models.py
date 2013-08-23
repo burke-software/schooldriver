@@ -73,6 +73,7 @@ class Configuration(models.Model):
         'Pasing Grade': ('70', ''),
         'Letter Passing Grade': ('A,B,C,P', ''),
         'Only Active Classes in Schedule': ('', ''),
+        'Hide Empty Periods in Schedule': ('False', ''),
         'attendance_create_work_attendance': ('False', ''),
         'Default City': ('', ''),
         'How to obtain student email': ('append','append, user, or student', ''),

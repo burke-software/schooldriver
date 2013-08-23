@@ -236,7 +236,8 @@ def school_report_builder_view(request):
                 current_mp = MarkingPeriod.objects.filter(end_date__gte=date.today()).order_by('-start_date')
                 if current_mp:
                     for student in students:
-                        student.schedule_days, student.periods = cal.build_schedule(student, current_mp[0])
+                        student.schedule_days, student.periods = cal.build_schedule(student, current_mp[0],
+                            schedule_days=data['schedule_days'])
                 report.data['students'] = students
                 return report.pod_save(template)
             else:

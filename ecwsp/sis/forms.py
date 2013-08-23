@@ -69,6 +69,10 @@ class TimeBasedForm(forms.Form):
     all_years = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':'toggle("id_all_years")'}))
     date_begin = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
     date_end = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
+    # CourseMeet.day_choice is a tuple of tuples; need the first value from each inner tuple for initial
+    schedule_days = forms.MultipleChoiceField(required=True, choices=CourseMeet.day_choice, initial=(x[0] for x in CourseMeet.day_choice),
+        help_text='''On applicable reports, only the selected days will be included.
+            Hold down "Control", or "Command" on a Mac, to select more than one.''')
     marking_period = forms.ModelMultipleChoiceField(required=False, queryset=MarkingPeriod.objects.all())
     include_deleted = forms.BooleanField(required=False)
     
