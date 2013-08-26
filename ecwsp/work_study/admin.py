@@ -176,16 +176,11 @@ class StudentAdmin(ReadPermissionModelAdmin):
         """override to hide inactive students by default"""
         try:
             test = request.META['HTTP_REFERER'].split(request.META['PATH_INFO'])
-        except:
-            test = None
-        if test and test[-1] and not test[-1].startswith('?'):
-            if not request.GET.has_key('inactive__exact'):
-                q = request.GET.copy()
-                q['inactive__exact'] = '0'
-                request.GET = q
-                request.META['QUERY_STRING'] = request.GET.urlencode()
+            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('inactive__exact') and not request.GET.has_key('id__in'):
+                return HttpResponseRedirect("/admin/work_study/studentworker/?inactive__exact=0")
+        except: pass # In case there is no referer
         return super(StudentAdmin,self).changelist_view(request, extra_context=extra_context)
-    
+
     def get_fieldsets(self, request, obj=None):
         "Hook for specifying fieldsets for the add form."
         if self.declared_fieldsets:
