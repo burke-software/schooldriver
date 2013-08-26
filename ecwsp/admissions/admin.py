@@ -24,7 +24,6 @@ from daterange_filter.filter import DateRangeFilter
 
 admin.site.register(EthnicityChoice)
 admin.site.register(ReligionChoice)
-admin.site.register(FeederSchool)
 admin.site.register(SchoolType)
 admin.site.register(OpenHouse)
 admin.site.register(ContactLog)
@@ -37,6 +36,7 @@ admin.site.register(BoroughOption)
 admin.site.register(CountryOption)
 admin.site.register(ImmigrationOption)
 
+
 class AdmissionCheckInline(admin.TabularInline):
     model = AdmissionCheck
     extra = 0
@@ -48,6 +48,12 @@ class AdmissionLevelAdmin(admin.ModelAdmin):
     list_editable = ('name','order',)
     inlines = (AdmissionCheckInline,)
 admin.site.register(AdmissionLevel,AdmissionLevelAdmin)
+
+class FeederSchoolAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    list_filter = ['school_type']
+admin.site.register(FeederSchool, FeederSchoolAdmin)
+
 
 class ContactLogInline(admin.TabularInline):
     model = ContactLog
