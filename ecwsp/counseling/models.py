@@ -50,13 +50,13 @@ class StudentMeeting(models.Model):
     def __unicode__(self):
         students = ''
         for student in self.students.all():
-            students += '%s, ' % (student,)
-        return '%s meeting with %s' % (unicode(self.reported_by),students[:-2])
+            students += '%s, ' % (unicode(student),)
+        return unicode('%s meeting with %s' % (unicode(self.reported_by),students[:-2]))
     def display_students(self):
         txt = ''
         for student in self.students.all():
             txt += '%s, ' % (student)
-        return txt[:-2]
+        return unicode(txt[:-2])
         
     class Meta:
         ordering = ('-date',)
