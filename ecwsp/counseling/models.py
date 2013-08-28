@@ -50,8 +50,8 @@ class StudentMeeting(models.Model):
     def __unicode__(self):
         students = ''
         for student in self.students.all():
-            students += '%s, ' % (unicode(student),)
-        return unicode('%s meeting with %s' % (unicode(self.reported_by),students[:-2]))
+            students += u'{}, '.format(student)
+        return u'%s meeting with %s' % (unicode(self.reported_by),students[:-2])
     def display_students(self):
         txt = ''
         for student in self.students.all():

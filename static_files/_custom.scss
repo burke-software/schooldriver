@@ -1,0 +1,112 @@
+// Your custom SCSS should be written here...
+
+// Things I don't like about gumby
+table tr td:first-child {
+   font-weight: inherit;
+}
+
+.btn {
+  margin: 2px;    
+}
+
+// OMR ajax editing
+[contenteditable="true"]:focus{
+  outline: 1px solid teal;
+}
+[contenteditable="true"]:hover{
+  outline: 1px solid teal;
+}
+.editable:hover{
+  outline: 1px solid teal;
+}
+
+// Icons
+i.handle { cursor: move; }
+.icon {
+  text-align: center;
+}
+.icon img {
+  height: 80px;
+}
+
+.modal.active {
+  z-index: 2;
+}
+
+// Pretty open sans headers
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 300;
+}
+
+
+// Hide breadcrumbs in mobile view
+@media screen and (max-width: $tablet-device-width){
+  .breadcrumbs {
+    display: none;
+  }
+  .navbar .logo {
+    display: inline !important;
+  }
+}
+
+// Save status on breadcrumb bar
+#save_status.alert {
+    margin-bottom: 0px;
+}
+
+// <select multiple>s are too small
+.field select[multiple] { height: 6em; }
+
+
+// ************* GRADEBOOK *************************
+table#gradebook_table tr:nth-child(2n) td {
+    background: #f3f4f5;
+}
+
+table#gradebook_table input {
+    border: none;
+    background: transparent;
+    width:100%;
+}
+
+table#gradebook_table textarea {
+    width: 15em;
+}
+
+table#gradebook_table td {
+    padding: 1px;
+    border-left: 1px;
+    border-right: 1px;
+    border-top: 0px;
+    border-bottom: 0px;
+    border-style: dotted;
+    border-color: #d4d4d4;
+}
+table#gradebook_table input.changed, textarea.changed {
+    background-color: rgba(0, 10, 255, 0.1);
+}
+
+table#gradebook_table input.final_override, .final_override {
+    background-color:rgba(255,246,46,0.5);
+    padding-right: 19px;
+    margin-right: -19px;
+}
+
+table#gradebook_table input:focus {
+    outline: 1px solid blue !important;
+}
+
+table#gradebook_table img.cancel {
+    margin-top: 2px;
+    padding-right: 1px;
+}
+
+.fht-table-wrapper {
+    /* Hack to make fixedheadertable not create pointless horizontal scroll bar */
+    width: 101% !important;
+}
+
+#content {
+    /* Why does grappelli have this? */
+    margin-bottom: 0px;
+}
