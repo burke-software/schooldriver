@@ -63,7 +63,7 @@ class Calendar:
         course_meets = CourseMeet.objects.filter(course__courseenrollment__user=student, course__marking_period=marking_period).distinct()
         
         if schedule_days is None:
-            schedule_days = CourseMeet.day_choice
+            day_list = CourseMeet.day_choice
         else:
             # super ugly
             day_choices = dict(CourseMeet.day_choice)
