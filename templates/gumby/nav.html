@@ -91,20 +91,7 @@
     {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
     {% if perms.discipline.change_studentdiscipline %}
       <li>
-        <a href="javascript://"> {% trans 'Discipline' %} </a>
-        <div class="dropdown">
-          <ul>
-            {% if perms.discipline.change_studentdiscipline %}
-                <li><a href="{% url "ecwsp.discipline.views.view_discipline" %}">{% trans 'View' %}</a></li>
-            {% endif %}
-            {% if perms.discipline.change_studentdiscipline %}
-                <li><a href="{% url "admin:discipline_studentdiscipline_changelist" %}">{% trans 'Edit' %}</a></li>
-            {% endif %}
-            {% if perms.sis.reports %}
-                <li><a href="{% url "ecwsp.discipline.views.discipline_report_view" %}">{% trans 'Reports' %}</a></li>
-            {% endif %}
-          </ul>
-        </div>
+        <a href="/discipline/dashboard/"> {% trans 'Discipline' %} </a>
       </li>
     {% endif %}
     {% endif %}
@@ -149,59 +136,12 @@
 
   {% if 'ecwsp.omr' in settings.INSTALLED_APPS %} {% if perms.omr.change_test or perms.omr.teacher_test %}
     <li>
-      <a href="javascript://"> OMR </a>
-      <div class="dropdown" style="margin-left: -40px;">
-        <ul>
-          {% if perms.omr.change_test %}
-            <li><a href="{% url "admin:app_list" 'omr' %}">{% trans 'OMR Admin' %}</a></li>
-          {% endif %}
-          {% if perms.omr.teacher_test %}
-            <li><a href="{% url "ecwsp.omr.views.my_tests" %}"> {% trans 'My Tests' %}</a></li>
-          {% endif %}
-        </ul>
-      </div>
+      <a href="/omr/dashboard"> OMR </a>
     </li>
   {% endif %}{% endif %}
 
   <li>
-    <a href="javascript://"> Admin </a>
-    <div class="dropdown" style="margin-left: -110px;">
-      <ul>
-        {% if perms.sis.reports %}
-          <li><a href="{% url "simple_import.views.start_import" %}">{% trans 'School import' %}</a></li>
-        {% endif %}
-        {% if perms.administration.change_configuration %}
-          <li><a href="{% url "admin:administration_configuration_changelist" %}">{% trans 'Configuration' %}</a></li>
-        {% endif %}
-        {% if perms.custom_field.change_custom_field %}
-          <li><a href="{% url "admin:custom_field_customfield_changelist" %}">{% trans 'Custom Fields' %}</a></li>
-        {% endif %}
-        {% if 'ecwsp.canvas_sync' in settings.INSTALLED_APPS and perms.sis.reports %}
-          <li><a href="{% url "ecwsp.canvas_sync.views.setup" %}">{% trans 'Canvas Sync' %}</a></li>
-        {% endif %}
-        {% if perms.sis.change_student %}
-          <li><a href="{% url "ecwsp.sis.views.increment_year" %}">{% trans 'Change School Year' %}</a></li>
-        {% endif %}
-        {% if perms.report_builder.change_report %}
-          <li><a href="{% url "admin:report_builder_report_changelist" %}">Report Builder</a></li>
-        {% endif %}
-        <li><a href="/sis/preferences">{% trans 'Preferences' %}</a>
-        {% url "admin:password_change" as password_change_url %}
-        {% if password_change_url %}
-          <li><a href="{{ password_change_url }}">
-        {% else %}
-          <li><a href="{{ root_path }}password_change/">
-        {% endif %}
-        {% trans 'Change password' %}</a></li>
-        {% url "admin:logout" as logout_url %}
-        {% if logout_url %}
-          <li><a href="{{ logout_url }}">
-        {% else %}
-          <li><a href="{{ root_path }}logout/">
-        {% endif %}
-        {% trans 'Log out' %}</a></li>
-      </ul>
-    </div>
+    <a href="/administration/dashboard/"> Admin </a>
   </li>
   </ul>
 </div>

@@ -75,7 +75,7 @@ class StudentDiscipline(models.Model):
             return None
     show_students.short_description = "Students"
 
-    def comment_Brief(self):
+    def comment_brief(self):
         return self.comments[:100]
      
     class Meta:

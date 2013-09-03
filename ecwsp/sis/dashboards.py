@@ -1,22 +1,19 @@
 from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, RssFeedDashlet
-from ecwsp.discipline.models import StudentDiscipline
+from ecwsp.discipline.dashboards import DisciplineDashlet
 from ecwsp.schedule.models import Course, MarkingPeriod
 from report_builder.models import Report
-
 import datetime
 
-class DisciplineDashlet(ListDashlet):
-    model = StudentDiscipline
-    first_column_is_link = True
-    fields = ('show_students', 'infraction')
-    order_by = ('-date',)
-    require_apps = ('ecwsp.discipline',)
 
 
 class ViewStudentDashlet(Dashlet):
     template = 'sis/view_student_dashlet.html'
     
 
+class SisDisciplineDashlet(DisciplineDashlet):
+    fields = ('show_students', 'infraction')
+    columns = 1
+    count = 5
 
 class CourseDashlet(ListDashlet):
     model = Course
@@ -64,7 +61,7 @@ class SisDashboard(Dashboard):
     app = 'sis'
     dashlets = [
         CourseDashlet(title="Courses For"),
-        DisciplineDashlet(title="Latest Discipline Reports",),
+        SisDisciplineDashlet(title="Latest Discipline Reports",),
         ViewStudentDashlet(title="Student"),
         GradesDashlet(title="Grades"),
         ReportBuilderDashlet(title="Starred Reports", model=Report),
