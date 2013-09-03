@@ -71,7 +71,7 @@ TIME_FORMAT = 'h:i A'
 DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y','%b. %d, %Y')
-DATE_FORMAT = 'b. d, Y'
+DATE_FORMAT = 'M d, Y'
 BASE_URL = "http://localhost:8000"
 
 # Global date validators, to help prevent data entry errors
