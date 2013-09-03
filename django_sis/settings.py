@@ -71,7 +71,7 @@ TIME_FORMAT = 'h:i A'
 DATE_INPUT_FORMATS = ('%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y', '%b %d %Y',
 '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y',
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y','%b. %d, %Y')
-DATE_FORMAT = 'M d, Y'
+DATE_FORMAT = 'M j, Y'
 BASE_URL = "http://localhost:8000"
 
 # Global date validators, to help prevent data entry errors
@@ -79,7 +79,7 @@ import datetime
 from django.core.validators import MinValueValidator # Could use MaxValueValidator too
 DATE_VALIDATORS=[MinValueValidator(datetime.date(1970,1,1))] # Unix epoch!
 
-USE_L10N = True
+USE_L10N = False
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 LANGUAGES = (
