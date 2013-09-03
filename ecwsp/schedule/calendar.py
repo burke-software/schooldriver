@@ -63,17 +63,16 @@ class Calendar:
         course_meets = CourseMeet.objects.filter(course__courseenrollment__user=student, course__marking_period=marking_period).distinct()
         
         if schedule_days is None:
-            schedule_days = CourseMeet.day_choice
+            day_list = CourseMeet.day_choice
         else:
             # super ugly
             day_choices = dict(CourseMeet.day_choice)
-            temp_dict = {}
+            day_list = []
             for schedule_day in schedule_days:
-                temp_dict[schedule_day] = day_choices[schedule_day]
-            schedule_days = tuple(temp_dict.iteritems())
+                day_list.append((schedule_day, day_choices[schedule_day]))
         days = []
         arr_days = []
-        for day in schedule_days:
+        for day in day_list:
             if course_meets.filter(day=day[0]).count():
                 days.append(day[1])
                 arr_days.append(day)

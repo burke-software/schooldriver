@@ -32,14 +32,17 @@
     <script type="text/javascript">
         $(document).ready(function()
         {
-            var triggers = $(".modalInput").overlay({
-                mask: {
-                    color: '#ebecff',
-                    loadSpeed: 200,
-                    opacity: 0.9
-                },
-                top: 'center'
-            });
+            modalInputs = $(".modalInput");
+            if(modalInputs.length) {
+                var triggers = modalInputs.overlay({
+                    mask: {
+                        color: '#ebecff',
+                        loadSpeed: 200,
+                        opacity: 0.9
+                    },
+                    top: 'center'
+                });
+            }
         });
     </script>
 {% endblock %}

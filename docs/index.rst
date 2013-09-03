@@ -95,19 +95,36 @@ SWoRD allows administrators to control individual user permissions. To simplify 
 It is possible to assign individual user permissions that are found in one group to an individual user that only has permissions from another group. For example, you can assign a teacher (who only has teacher permissions) the ability to view a student's counseling records or work study information. This allows school administrators to create unique users with flexible permissions. Further, administrators can create superusers who have permissions from all groups. 
 
 Importing Data Into Sword
---------------------------
-
+-------------------------------
 SWoRD supports the import of data into its database.
 
 In order to make the import process as simple as possible for schools transitioning into SWoRD or schools preparing for the new school year, SWoRD allows data to be imported via Excel or LibreOffice documents.
 
+Keep in mind that this section is for **importing** data, and not *updating* data. This section assumes that students, applicants, etc. do not yet exist in SWoRD (i.e.: new incoming freshmen or new applicants).
+
+If you want to use simple import to mass update information (i.e: assigning existing student workers work days and placements). Then please refer to the next chapter.
+
 **Before you Import**
 
-Prior to importing data, you will need an Excel spreadsheet with information pertinent to the model you are attempting to import/update. Set column headers accordingly. SWoRD is able to import all information that is able to be entered manually in a field. Here's a reference list of some column headers you can use for importing students: 
+Prior to importing data, you will need an Excel spreadsheet with information pertinent to the model you are attempting to import. Set column headers accordingly. SWoRD is able to import all information that is able to be entered manually in a field. Here's a reference list of some column headers you can use for importing the most common models:
 
-Unique ID, First Name ,Last Name, username, grad date, Student cell ph, MIDDLE NAME,  class of year, STUDENT PHONE, GENDER, BIRTH DATE, Social Security, Student E-Mail, Alert, Primary Cohort, Parent email, homeroom, preferred language, picture, password
+*Students*
 
-SWoRD will guess matches based off your column headers, so if you enter First Name or fname, or FiRSt NaME as a header on your Excel doc, SWoRD will determine which field that refers to.
+Unique ID, First Name ,Last Name, username, grad date, Student cell ph, middle name,  class of year, STUDENT PHONE, GENDER, BIRTH DATE, Social Security, Student E-Mail, Alert, Primary Cohort, Parent email, homeroom, preferred language, picture, password
+
+NOTE: First name, Last Name, and username/unique ID are required for importing new students.
+
+*Student Workers*
+
+First Name, Last Name, middle name, Username, notes, ADP Number, alert, alt email, am route, applicant, birth date, city, class of year, cohort, course, date dismissed, working day, placement, email, parent email, student pay rate, sex, SSN
+
+*Applicants*
+
+First name, Last name, middle name, birth date, present school, heard about us, first contact, withdrawn note, total income, adjusted available income, application decsion, application decision by, SSN, Sex, Ethnicity, Religion, Place of Worship, Year, School year, HS grad yr, Elem grad yr, email, notes, country of birth, family preferred language, lives with
+
+
+NOTE: SWoRD will guess matches based off your column headers, so if you enter First Name or fname, or FiRSt NaME as a header on your Excel doc, SWoRD will determine which field that refers to.
+
 
 **How To Import Data**
 
@@ -126,9 +143,44 @@ Importing data *requires* the appropiate permissions for the user. The method is
 
 .. image:: /images/importcap2.png
 
-**Note** If you're updating records, you'll need to select an update key. For ease, selecting **username** is probably the field you'd want as key most of the time. 
-
 8. After you've matched all the fields to the sample data (i.e. SSN field actually displays a SSN in the sample data column), you can simulate the import or run it. Simulating the import won't actually import the data, but it will let you know in advance if there are any issues with what you're trying to import.
+
+Updating data using Simple Import
+------------------------------------
+
+Some things to keep in mind prior to using the simple import for updating student data.
+
+1. You will **always** need to have an update key. This lets SWoRD reference what object is being updated. Typically, you will want to use a username, SWoRD ID or unique ID. Getting IDs for objects is easy. Utilize the export to xls feature from your chosen page (student, student worker, applicant, etc.), and select ID, username or unique ID.
+2. Data must already exist for that model. For example, you can't update information on a student that doesn't already exist. You **can** however utilize the "Create and Update" import type to do something like this, but this can't be done on the "Update Only" type. 
+3. Make sure you select the correct model type.
+
+**Example**
+
+In this example, we will assume that we have a list of new freshmen who were just made into student workers. These student workers will now need their job placements and working days assigned. The picture below highlights the aforementioned:
+
+.. image:: /images/simpleimportupdate1.png
+
+1. Get the student worker usernames for update. These usernames will be used as the **update key**. This can be done by checking the box by each student and selecting *export to xls* from the action bar at the bottom of the student worker screen and check off *username*.
+2. Using Excel, create a document with the column headers, **username**, **working day**, and **placement**.
+
+.. image:: /images/simpleimportupdate2.png
+
+3. Access the the simple import page. Admin > School Import
+4. At this screen: name your import, select your Excel document, set the import type to **only update records**, and set the model to **student worker**. Click submit.
+5. You will be taken to the match columns screen shown below:
+
+.. image:: /images/simpleimportupdate3.png
+
+NOTE: Notice in the image above I have selected username as the **update key**. As stated earlier, using either username, ID, or unique ID as the update key is easiest.
+
+6. Click *next*. The match relations screen will ask how to reference a field- this will typically be by a name or ID. In the Excel document for import, we listed a team name for placement so in this example we will use team name instead of ID.
+
+.. image:: /images/simpleimportupdate4.png
+
+7. Click **Simulate import** to check for errors, then run.
+8. Return to the student worker page, and your updated data will be displayed.
+
+.. image:: /images/simpleimportupdate5.png
 
 Configurations
 ---------------
@@ -718,9 +770,10 @@ Adding a Student Worker
 --------------------------
 Creating student workers involves creating a student first, then "promoting" them to a student worker as follows.
 
-1. Access the student dash 
-by selecting **Student** at the navigation bar, then **EDIT**
+1. Access the student dash by selecting **Student** at the navigation bar, then **EDIT**
+
 .. image:: /images/cwspnav1.png
+
 2. Here, either create your student, or if the student is already in the dash, make a check by that student/s name.
 3. Select the drop down action box located at the bottom left of the screen and select **Promote to Worker**
 
@@ -1039,6 +1092,62 @@ How to: click here to read over the how-to section on this topic `Creating Cours
 5. **Enroll Students in New Courses**
 
 How to: refer to `Enrolling Students`_.
+
+==========
+Alumni
+==========
+
+The alumni module allows schools using SWoRD to keep track of students who have graduated or left their respective schools. When schools increment school years in preparation for the new year, all classes at that time will move up one year (Freshmen become Sophomores, etc.). Seniors will then graduate and become alumni in the system. Optionally, SWoRD can sync with National Student Clearinghouse to help track online. 
+
+Alumni Dashboard
+------------------
+
+You can access the alumni module by clicking on Alumni > Alumni Administration at the top menu bar in SWoRD. From here, select **Alumni** to get to the dashboard.
+
+The alumni dashboard is pictured below:
+
+.. image:: /images/alumni1.png
+
+This dashboard allows users to gather and export a list of alumni as well as utilize filters to quickly pull pertinent data.
+
+**Alumni Filters**
+
+In sum, users have 5 filters available to utilize that SWoRD will sort accordingly:
+
+*Graduated*
+
+Whether or not the student graduated from your school
+
+*Program Years*
+
+What type of program that student went on to advance to (2 year college, 4 year, etc.) after graduating,
+
+*College*
+
+Name of the college the student is attending
+
+*College override*
+
+Yes/No field where checked indicates college enrollment data will not set college and graduated automatically. Most likely the majority of alumni you have will not have this checked.
+
+*Class of year*
+
+What year the alumni graduated from your school.
+
+Storing Alumni Data
+---------------------
+
+Clicking on an alumnus from the student dashboard opens up a page that allows users to enter a multidude of data. Towards the the top is basic data, including: college, status, graduation date, type of college, and alumni action. If you make any edits, don't forget to click **Save** at the bottom right of your screen. The image below details the aforementioned:
+
+.. image:: /images/alumni2.png
+
+**Additional Data**
+
+In addition to the basic data outlined above, the Alumni module allows school staff to store any notes or interactions with that particular student.
+
+.. image:: /images/alumni3.png
+
+
 
 
 =======================
