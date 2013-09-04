@@ -22,6 +22,7 @@ from django.contrib.localflavor.us.models import USStateField
 from django.contrib.auth.models import User
 from django.contrib.localflavor.us.models import PhoneNumberField
 from django.conf import settings
+from django.utils.safestring import mark_safe
 
 from ckeditor.fields import RichTextField
 from ecwsp.sis.models import Student
@@ -110,6 +111,10 @@ class AlumniNote(models.Model):
     alumni = models.ForeignKey('Alumni')
     date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
+    
+    def get_note(self):
+        return mark_safe(self.note)
+    
     
     def __unicode__(self):
         return "%s %s: %s" % (self.user, self.date, self.note)

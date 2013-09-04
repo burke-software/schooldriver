@@ -18,7 +18,7 @@ class OmrReportBuilderDashlet(ReportBuilderDashlet):
         # Show only starred when there are a lot of reports
         if self.queryset.count() > self.count:
             self.queryset = self.queryset.filter(starred=self.request.user)
-        return super(OmrReportBuilderDashlet, self)._render(**kwargs)
+        return super(ReportBuilderDashlet, self)._render(**kwargs)
 
 
 class OmrMyTestsDashlet(Dashlet):

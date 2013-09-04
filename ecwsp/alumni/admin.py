@@ -92,3 +92,4 @@ class AlumniAdmin(admin.ModelAdmin):
 admin.site.register(Alumni, AlumniAdmin)
 
 admin.site.register(AlumniStatus)
+admin.site.register(AlumniNote)

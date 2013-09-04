@@ -104,13 +104,7 @@
   
     {% if perms.alumni.change_alumni and 'ecwsp.alumni' in settings.INSTALLED_APPS %}
       <li>
-        <a href="javascript://"> Alumni </a>
-        <div class="dropdown">
-          <ul>
-              <li><a href="{% url "admin:app_list" 'alumni' %}">{% trans 'Alumni Admin' %}</a></li>
-              <li><a href="{% url "admin:alumni_alumni_changelist" %}">{% trans 'Alumnus' %}</a></li>
-          </ul>
-        </div>
+        <a href="/alumni/dashboard/"> Alumni </a>
       </li>
     {% endif %}
   
