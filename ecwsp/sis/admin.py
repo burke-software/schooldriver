@@ -139,10 +139,10 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     def change_view(self, request, object_id, extra_context=None):
         courses = Course.objects.filter(courseenrollment__user__id=object_id, marking_period__school_year__active_year=True).distinct()
         for course in courses:
-            course.enroll = course.courseenrollment_set.get(user__id=object_id).id
+            course.enroll = course.courseenrollment_set.get(user__id=object_id, role="student").id
         other_courses = Course.objects.filter(courseenrollment__user__id=object_id, marking_period__school_year__active_year=False).distinct()
         for course in other_courses:
-            course.enroll = course.courseenrollment_set.get(user__id=object_id).id
+            course.enroll = course.courseenrollment_set.get(user__id=object_id, role="student").id
         my_context = {
             'courses': courses,
             'other_courses': other_courses,
