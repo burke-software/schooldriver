@@ -1,0 +1,57 @@
+{% extends "admin_base.html" %}
+{% load dajaxice_templatetags %}
+
+{% block nav %}
+<!-- only useful override here is removing gumby-fixed from <nav> tag -->
+<nav class="navbar" id="nav1">
+  <div class="sixteen colgrid">
+    {% include "gumby/nav.html" %}
+    <div class="breadcrumbs">
+    <div id="breadcrumbs_area" class="row">
+      <div class="sixteen columns">
+      {% block breadcrumbs %}
+        {{ block.super }}
+      {% endblock %}
+      </div>
+    </div>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block bigcontent %}
+<h2>{{ course.shortname }} Comments</h2>
+
+<div class="row">
+  <div class="twelve columns">
+    <section class="tabs">
+      <ul class="tab-nav">
+        <li><a href="#">Session 1</a></li>
+        <li class="active"><a href="#">Session 2</a></li>
+        <li><a href="#">Session 3</a></li>
+      </ul>
+      <div class="tab-content">
+        <p>Proin elit arcu, rutrum commodo...</p>
+      </div>
+      <div class="tab-content active">
+        <div class="row">
+            <div class="two columns"><strong>Name</strong></div>
+            <div class="two columns"><strong>Session 2 Average</strong></div>
+            <div class="eight columns field"><strong>Comment</strong></div>
+        </div>
+        {% for student in students %}
+        <div class="row">
+            <div class="two columns">{{ student.lname }}, {{ student.fname }}</div>
+            <div class="two columns">{{ student.grades.24 }}</div>
+            <div class="eight columns field"><input class="text input" type="text" value="Stupid Comment" /></div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="tab-content">
+        <p>Mauris eleifend est et turpis. Duis id erat...</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+{% endblock %}
