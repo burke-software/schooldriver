@@ -380,6 +380,35 @@ class Importer:
                 filename = None
         return msg, filename
     
+    def import_just_alumni_data(self):
+        inserted = 0
+        msg = ""
+        #try:
+        sheet = self.book.sheet_by_index(0) # Just get the first one
+        inserted, updated = self.import_college_enrollment(sheet)
+        msg += "%s records inserted <br/>" % (inserted)
+        msg += "%s records updated<br/>" % (updated)
+        #except: pass
+        
+        if msg == "":
+            msg = "No files found. Check if sheets are named correctly. "
+        
+        msg += unicode(self.errors) + " error(s). "
+        
+        filename = 'import_error.xls'
+        if len(self.error_data):
+            report = XlReport()
+            save = False
+            for key, error_page in self.error_data.items():
+                if len(error_page):
+                    save = True
+                    report.add_sheet(error_page, header_row=self.error_titles[key][0], title=key)
+            if save:
+                report.save(filename)
+            else:
+                filename = None
+        return msg, filename
+    
     def import_just_standard_test(self, test=None):
         inserted = 0
         msg = ""
