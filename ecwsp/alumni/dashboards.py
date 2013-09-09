@@ -7,7 +7,7 @@ import datetime
 
 class AlumniDashlet(ListDashlet):
     model = Alumni
-    require_permissions = ('admissions.change_alumni',)
+    require_permissions = ('alumni.change_alumni',)
     fields = ('__str__', 'college', 'status')
     columns = 2
     first_column_is_link = True
@@ -15,7 +15,7 @@ class AlumniDashlet(ListDashlet):
 
 class AlumniNoteDashlet(ListDashlet):
     model = AlumniNote
-    require_permissions = ('admissions.change_alumninote',)
+    require_permissions = ('alumni.change_alumninote',)
     fields = ('alumni', 'get_note', 'date')
     columns = 3
     order_by = ('-date',)
