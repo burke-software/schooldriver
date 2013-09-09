@@ -154,12 +154,22 @@ class ReportManager(object):
                 benchmark_instance = Struct()
                 benchmark_instance.benchmark = benchmark
                 benchmark_instance.points_possible = benchmark.points_possible
-                benchmark_instance.points_earned = test_instance.answerinstance_set.filter(question__benchmarks=benchmark).aggregate(Sum('points_earned'))['points_earned__sum']
+                benchmark_instance.answers = test_instance.answerinstance_set.filter(question__benchmarks=benchmark)
+                benchmark_instance.points_earned = benchmark_instance.answers.aggregate(Sum('points_earned'))['points_earned__sum']
+                benchmark_instance.questions = ''
+                for answer in benchmark_instance.answers.all():
+                    benchmark_instance.questions += '{}, '.format(answer.question.order)
+                benchmark_instance.questions = benchmark_instance.questions[:-2]
                 benchmark_instances.append(benchmark_instance)
             test_instance.benchmarks = benchmark_instances
         
             test_instance.incorrects = test_instance.answerinstance_set.filter(points_earned__lt=F('points_possible'))
             for incorrect in test_instance.incorrects:
+                incorrect.benchmarks = ''
+                for benchmark in incorrect.question.benchmarks.all():
+                    incorrect.benchmarks += '{}, '.format(benchmark.number)
+                incorrect.benchmarks = incorrect.benchmarks[:-2]
+                
                 try:
                     incorrect.right_answer = incorrect.question.answer_set.order_by('point_value').reverse()[0]
                 except:

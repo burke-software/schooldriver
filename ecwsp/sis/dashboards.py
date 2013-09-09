@@ -48,7 +48,7 @@ class ReportBuilderDashlet(ListDashlet):
     model = Report
     fields = ('edit', 'name', 'download_xlsx')
     require_apps = ('report_builder',)
-    require_permissions = ('report_builder.change_report')
+    require_permissions = ('report_builder.change_report',)
     def _render(self, **kwargs):
         self.queryset = Report.objects.filter(starred=self.request.user)
         return super(ReportBuilderDashlet, self)._render(**kwargs)
