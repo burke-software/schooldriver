@@ -21,7 +21,7 @@ def ajax_quick_add_note(request, student_id=None):
         form = AlumniNoteForm(initial={'alumni':student_id})
         return HttpResponse(form);
     
-@permission_required('alumni.change_alumnidata')
+@permission_required('alumni.change_alumni')
 def import_clearinghouse(request):
     from ecwsp.sis.forms import UploadFileForm
     msg = 'Import a alumni data file from Student Clearinghouse'
