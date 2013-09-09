@@ -1,4 +1,5 @@
-from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet
+from django.core.urlresolvers import reverse
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, LinksListDashlet
 from ecwsp.sis.dashboards import ReportBuilderDashlet
 from ecwsp.alumni.models import Alumni, AlumniNote
 from report_builder.models import Report
@@ -21,6 +22,17 @@ class AlumniNoteDashlet(ListDashlet):
     order_by = ('-date',)
 
 
+class AlumniLinksListDashlet(LinksListDashlet):
+    links = [
+        {
+            'text': 'Import alumni data',
+            'link': reverse('ecwsp.alumni.views.import_clearinghouse'),
+            'desc': 'Import Student Clearinghouse data file',
+            'perm': ('alumni.change_alumni'),
+        },
+    ]
+
+
 class AlumniReportBuilderDashlet(ReportBuilderDashlet):
     """ django-report-builder starred reports """
     show_custom_link = '/admin/report_builder/report/?root_model__app_label=alumni'
@@ -37,6 +49,7 @@ class AlumniDashboard(Dashboard):
     app = 'alumni'
     dashlets = [
         AlumniDashlet(title="Alumni"),
+        AlumniLinksListDashlet(title="Links"),
         AlumniNoteDashlet(title='Latest Notes'),
         AlumniReportBuilderDashlet(title="Reports",),
         AdminListDashlet(title="Edit", app_label="alumni"),
