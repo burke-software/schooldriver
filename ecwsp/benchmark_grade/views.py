@@ -762,11 +762,27 @@ def comments(request, course_id):
             course.fullname + '.')
         return HttpResponseRedirect(reverse('admin:index'))
 
-    students = Student.objects.filter(inactive=False,course=course)
-    for student in students:
-        student.grades = { x.marking_period_id: x.get_grade() for x in Grade.objects.filter(student=student, course=course) }
+    marking_periods = list(course.marking_period.order_by('start_date'))
+    for marking_period in reversed(marking_periods):
+        if marking_period.active:
+            marking_period.current = True
+            break
+    else:
+        marking_periods[0].current = True
+
+    for marking_period in marking_periods:
+        marking_period.students = course.get_enrolled_students() # ugh, gross
+        for student in marking_period.students:
+            try:
+                grade = Grade.objects.get(student=student, course=course, marking_period=marking_period)
+                student.marking_period_average_pk = grade.pk
+                student.marking_period_average = Grade.objects.get(student=student, course=course, marking_period=marking_period)
+                student.comment = grade.comment
+            except Grade.DoesNotExist:
+                student.marking_period_average = None
+                student.comment = None
 
     return render_to_response('benchmark_grade/comments.html', {
         'course' : course,
-        'students': students,
+        'marking_periods': marking_periods,
     }, RequestContext(request, {}),)
