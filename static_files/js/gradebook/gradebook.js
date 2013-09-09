@@ -210,6 +210,7 @@ function get_new_demonstration_form(event){
 
 function get_edit_demonstration_form(event){
     $("#modal_content").html("Loading...");
+    $("#modal_form").addClass('active');
     // Get a new demonstration form to display of modal overlay
     demonstration_id = $(event.target).data('demonstration_id');
     if(demonstration_id == undefined) {
