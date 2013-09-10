@@ -1,0 +1,94 @@
+{% extends "admin_base.html" %}
+{% load dajaxice_templatetags %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {% load staticfiles %}
+    <script type="text/javascript" src="{% static "dajax/jquery.dajax.core.js" %}"></script>
+{% endblock %}
+
+{% block nav %}
+<!-- only useful override here is removing gumby-fixed from <nav> tag -->
+<nav class="navbar" id="nav1">
+  <div class="sixteen colgrid">
+    {% include "gumby/nav.html" %}
+    <div class="breadcrumbs">
+    <div id="breadcrumbs_area" class="row">
+      <div class="sixteen columns">
+      {% block breadcrumbs %}
+        {{ block.super }}
+      {% endblock %}
+      </div>
+    </div>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block bigcontent %}
+<div class="row">
+  <h2>{{ course.shortname }} Comments</h2>
+</div>
+
+<div class="row">
+  <div class="twelve columns">
+    <section class="tabs">
+      <ul class="tab-nav">
+      {% for marking_period in marking_periods %}
+        <li{% if marking_period.current %} class="active"{% endif %}><a href="#">{{ marking_period.shortname }}</a></li>
+      {% endfor %}
+      </ul>
+      {% for marking_period in marking_periods %}
+      <div class="tab-content{% if marking_period.current %} active{% endif %}">
+        <form>
+          <div class="row">
+              <div class="two columns"><strong>Name</strong></div>
+              <div class="two columns"><strong>{{ marking_period.shortname }} Average</strong></div>
+              <div class="eight columns field"><strong>Comment</strong></div>
+          </div>
+          {% for student in marking_period.students %}
+          <div class="row">
+              <div class="two columns"><a target="_blank" href="{% url 'ecwsp.sis.views.view_student' student.pk %}">{{ student.lname }}, {{ student.fname }}</a></div>
+              <div class="two columns">{{ student.marking_period_average }}</div>
+              <div class="eight columns field" id="grade-comment{{ student.marking_period_average_pk }}">{% if student.marking_period_average %}
+                <input class="text input grade-comment" type="text" value="{{ student.comment }}" name="{{ student.marking_period_average_pk }}"
+                  tabindex="{{ forloop.counter }}" />{% endif %}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </form>
+    </section>
+    <!--
+    <div class="row">
+      <div class="one column">Return to Gradebook</div>
+      <div class="push_ten one column">Save</div>
+    </div>
+    -->
+  </div>
+</div>
+
+<script>
+// TODO: move to separate file
+$("input.grade-comment").keydown(function(event) {
+  var parentRow = $(event.target).parent().parent();
+  var focusMe;
+  if(event.which == 38) { // up
+    focusMe = parentRow.prev();
+  } else if(event.which == 40) { //down
+    focusMe = parentRow.next();
+  } else {
+    // not our business
+    return;
+  }
+  focusMe = focusMe.find("input.grade-comment").first();
+  focusMe.focus();
+  event.preventDefault(); // stop the cursor from jumping around
+});
+$("input.grade-comment").blur(function(event) {
+  Dajaxice.ecwsp.benchmark_grade.save_marking_period_average_comment(Dajax.process, {'grade_pk': event.target.name, 'comment': event.target.value});
+});
+</script>
+
+
+{% endblock %}
