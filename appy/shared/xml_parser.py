@@ -31,13 +31,16 @@ from appy.shared.css import parseStyleAttribute
 
 # Constants --------------------------------------------------------------------
 xmlPrologue = '<?xml version="1.0" encoding="utf-8" ?>\n'
+xhtmlPrologue = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" '\
+                '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
+
 CONVERSION_ERROR = '"%s" value "%s" could not be converted by the XML ' \
                    'unmarshaller.'
 CUSTOM_CONVERSION_ERROR = 'Custom converter for "%s" values produced an ' \
                           'error while converting value "%s". %s'
 XML_SPECIAL_CHARS = {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;',
                      "'": '&apos;'}
-XML_ENTITIES = {'lt': '<', 'gt': '>', 'amp': '&', 'quot': "'", 'apos': "'"}
+XML_ENTITIES = {'lt': '<', 'gt': '>', 'amp': '&', 'quot': '"', 'apos': "'"}
 HTML_ENTITIES = {
         'iexcl': '¡',  'cent': '¢', 'pound': '£', 'curren': '€', 'yen': '¥',
         'brvbar': 'Š', 'sect': '§', 'uml': '¨', 'copy':'©', 'ordf':'ª',
@@ -59,22 +62,31 @@ HTML_ENTITIES = {
         'ouml':'ö', 'divide':'÷', 'oslash':'ø', 'ugrave':'ù', 'uacute':'ú',
         'ucirc':'û', 'uuml':'ü', 'yacute':'ý', 'thorn':'þ', 'yuml':'ÿ',
         'euro':'€', 'nbsp':' ', "rsquo":"'", "lsquo":"'", "ldquo":"'",
-        "rdquo":"'", 'ndash': ' ', 'oelig':'oe', 'quot': "'", 'mu': 'µ'}
+        "rdquo":"'", 'ndash': '—', 'mdash': '—', 'oelig':'oe', 'quot': "'",
+        'mu': 'µ'}
 import htmlentitydefs
 for k, v in htmlentitydefs.entitydefs.iteritems():
     if not HTML_ENTITIES.has_key(k) and not XML_ENTITIES.has_key(k):
         HTML_ENTITIES[k] = ''
 
-def escapeXml(s):
+def escapeXml(s, format='xml', nsText='text'):
     '''Returns p_s, whose XML special chars have been replaced with escaped XML
-       entities.'''
+       entities. If p_format is "odf", line breaks are converted to ODF line
+       breaks. In this case, it is needed to give the name of the "text"
+       namespace (p_nsText) as defined in the ODF document where the line breaks
+       must be inserted.'''
     if isinstance(s, unicode):
         res = u''
     else:
         res = ''
+    odf = format == 'odf'
     for c in s:
         if XML_SPECIAL_CHARS.has_key(c):
             res += XML_SPECIAL_CHARS[c]
+        elif odf and (c == '\n'):
+            res += '<%s:line-break/>' % nsText
+        elif odf and (c == '\r'):
+            pass
         else:
             res += c
     return res
@@ -213,10 +225,10 @@ class XmlParser(ContentHandler, ErrorHandler):
     # ErrorHandler methods ---------------------------------------------------
     def error(self, error):
         if self.raiseOnError: raise error
-        else: print 'SAX error', error
+        else: print('SAX error %s' % str(error))
     def fatalError(self, error):
         if self.raiseOnError: raise error
-        else: print 'SAX fatal error', error
+        else: print('SAX fatal error %s' % str(error))
     def warning(self, error): pass
 
     def parse(self, xml, source='string'):
@@ -939,17 +951,17 @@ class XmlComparator:
                     msg = 'Difference(s) detected between files %s and %s:' % \
                           (self.fileNameA, self.fileNameB)
                     if report: report.say(msg, encoding='utf-8')
-                    else:      print msg
+                    else: print(msg)
                     atLeastOneDiff = True
                 if not lastLinePrinted:
                     if report: report.say('...')
-                    else: print '...'
+                    else: print('...')
                 if self.areXml:
                     if report: report.say(line, encoding=encoding)
-                    else: print line
+                    else: print(line)
                 else:
                     if report: report.say(line[:-1], encoding=encoding)
-                    else: print line[:-1]
+                    else: print(line[:-1])
                 lastLinePrinted = True
             else:
                 lastLinePrinted = False
@@ -973,7 +985,8 @@ class XhtmlCleaner(XmlParser):
     
     # Attributes to ignore, if keepStyles if False.
     attrsToIgnore = ('align', 'valign', 'cellpadding', 'cellspacing', 'width',
-                     'height', 'bgcolor', 'lang', 'border', 'class', 'rules')
+                     'height', 'bgcolor', 'lang', 'border', 'class', 'rules',
+                     'id', 'name')
     # CSS attributes to keep even if keepStyles if False. These attributes can
     # be used by pod (to align a paragraph, center/resize an image...).
     cssAttrsToKeep = ('width', 'height', 'float', 'text-align',
@@ -1118,7 +1131,8 @@ class XhtmlCleaner(XmlParser):
 
     def characters(self, content):
         if self.env.ignoreContent: return
-        # Remove blanks that ckeditor may add just after a start tag
+        # Remove blanks that ckeditor may add just after a start tag or
+        # between tags.
         if not self.env.currentContent or \
            self.env.currentContent[-1] in ('\n', ' '):
             toAdd = content.lstrip()

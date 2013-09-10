@@ -5,6 +5,8 @@ import os.path
 # ------------------------------------------------------------------------------
 appyPath = os.path.realpath(os.path.dirname(appy.__file__))
 od = 'application/vnd.oasis.opendocument'
+ms = 'application/vnd.openxmlformats-officedocument'
+
 mimeTypes = {'odt': '%s.text' % od,
              'ods': '%s.spreadsheet' % od,
              'doc': 'application/msword',
@@ -12,16 +14,21 @@ mimeTypes = {'odt': '%s.text' % od,
              'pdf': 'application/pdf'
              }
 mimeTypesExts = {
-             '%s.text' % od:        'odt',
-             '%s.spreadsheet' % od: 'ods',
-             'application/msword':  'doc',
-             'text/rtf':            'rtf',
-             'application/pdf':     'pdf',
-             'image/png':           'png',
-             'image/jpeg':          'jpg',
-             'image/pjpeg':         'jpg',
-             'image/gif':           'gif'
-             }
+    '%s.text' % od:        'odt',
+    '%s.spreadsheet' % od: 'ods',
+    'application/msword':  'doc',
+    'text/rtf':            'rtf',
+    'application/pdf':     'pdf',
+    'image/png':           'png',
+    'image/jpeg':          'jpg',
+    'image/pjpeg':         'jpg',
+    'image/gif':           'gif',
+    'application/vnd.ms-excel': 'xls',
+    'application/vnd.ms-powerpoint': 'ppt',
+    '%s.wordprocessingml.document' % ms: 'docx',
+    '%s.spreadsheetml.sheet' % ms: 'xlsx',
+    '%s.presentationml.presentation' % ms: 'pptx',
+}
 
 # ------------------------------------------------------------------------------
 class UnmarshalledFile:

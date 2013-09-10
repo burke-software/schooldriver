@@ -1,29 +1,26 @@
 # ------------------------------------------------------------------------------
-# Appy is a framework for building applications in the Python language.
-# Copyright (C) 2007 Gaetan Delannay
+# This file is part of Appy, a framework for building applications in the Python
+# language. Copyright (C) 2007 Gaetan Delannay
 
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+# Appy is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# Appy is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,USA.
+# You should have received a copy of the GNU General Public License along with
+# Appy. If not, see <http://www.gnu.org/licenses/>.
 
 # ------------------------------------------------------------------------------
 import re
-
 from xml.sax.saxutils import quoteattr
 from appy.shared.xml_parser import xmlPrologue, escapeXml
 from appy.pod import PodError
 from appy.pod.elements import *
-from appy.pod.actions import IfAction, ElseAction, ForAction, VariableAction, \
+from appy.pod.actions import IfAction, ElseAction, ForAction, VariablesAction, \
                              NullAction
 
 # ------------------------------------------------------------------------------
@@ -121,6 +118,8 @@ class Buffer:
         self.parent = parent
         self.subBuffers = {} # ~{i_bufferIndex: Buffer}~
         self.env = env
+        # Are we computing for pod (True) or px (False)
+        self.pod = env.__class__.__name__ != 'PxEnvironment'
 
     def addSubBuffer(self, subBuffer=None):
         if not subBuffer:
@@ -139,23 +138,41 @@ class Buffer:
 
     def getLength(self): pass # To be overridden
 
-    def dumpStartElement(self, elem, attrs={}, ignoreAttrs=(),
-                         insertAttributesHook=False):
+    def dumpStartElement(self, elem, attrs={}, ignoreAttrs=(), hook=False,
+                         noEndTag=False, renamedAttrs=None):
         '''Inserts into this buffer the start tag p_elem, with its p_attrs,
-           excepted those listed in p_ignoreAttrs. If p_insertAttributesHook
-           is True (works only for MemoryBuffers), we will insert an Attributes
-           instance at the end of the list of dumped attributes, in order to be
-           able, when evaluating the buffer, to dump additional attributes, not
-           known at this dump time.'''
+           excepted those listed in p_ignoreAttrs. Attrs can be dumped with an
+           alternative name if specified in dict p_renamedAttrs. If p_hook is
+           not None (works only for MemoryBuffers), we will insert, at the end
+           of the list of dumped attributes:
+           * [pod] an Attributes instance, in order to be able, when evaluating
+                   the buffer, to dump additional attributes, not known at this
+                   dump time;
+           * [px]  an Attribute instance, representing a special HTML attribute
+                   like "checked" or "selected", that, if the tied expression
+                   returns False, must not be dumped at all. In this case,
+                   p_hook must be a tuple (s_attrName, s_expr).
+        '''
         self.write('<%s' % elem)
         for name, value in attrs.items():
             if ignoreAttrs and (name in ignoreAttrs): continue
-            self.write(' %s=%s' % (name, quoteattr(value)))
-        if insertAttributesHook:
-            res = self.addAttributes()
-        else:
-            res = None
-        self.write('>')
+            if renamedAttrs and (name in renamedAttrs): name=renamedAttrs[name]
+            # If the value begins with ':', it is a Python expression. Else,
+            # it is a static value.
+            if not value.startswith(':'):
+                self.write(' %s=%s' % (name, quoteattr(value)))
+            else:
+                self.write(' %s="' % name)
+                self.addExpression(value[1:])
+                self.write('"')
+        res = None
+        if hook:
+            if self.pod:
+                res = self.addAttributes()
+            else:
+                self.addAttribute(*hook)
+        # Close the tag
+        self.write(noEndTag and '/>' or '>')
         return res
 
     def dumpEndElement(self, elem):
@@ -170,7 +187,13 @@ class Buffer:
 
     def dumpContent(self, content):
         '''Dumps string p_content into the buffer.'''
-        self.write(escapeXml(content))
+        if self.pod:
+            # Take care of converting line breaks to odf line breaks.
+            content = escapeXml(content, format='odf',
+                                nsText=self.env.namespaces[self.env.NS_TEXT])
+        else:
+            content = escapeXml(content)
+        self.write(content)
 
 # ------------------------------------------------------------------------------
 class FileBuffer(Buffer):
@@ -194,7 +217,11 @@ class FileBuffer(Buffer):
     def addExpression(self, expression, tiedHook=None):
         # At 2013-02-06, this method was not called within the whole test suite.
         try:
-            self.dumpContent(Expression(expression).evaluate(self.env.context))
+            expr = Expression(expression, self.pod)
+            if tiedHook: tiedHook.tiedExpression = expr
+            res, escape = expr.evaluate(self.env.context)
+            if escape: self.dumpContent(res)
+            else: self.write(res)
         except Exception, e:
             PodError.dump(self, EVAL_EXPR_ERROR % (expression, e), dumpTb=False)
 
@@ -207,6 +234,7 @@ class FileBuffer(Buffer):
         pass
 
     def pushSubBuffer(self, subBuffer): pass
+    def getRootBuffer(self): return self
 
 # ------------------------------------------------------------------------------
 class MemoryBuffer(Buffer):
@@ -227,12 +255,11 @@ class MemoryBuffer(Buffer):
                             # the same place within this buffer.
         return sb
 
-    def getFileBuffer(self):
-        if isinstance(self.parent, FileBuffer):
-            res = self.parent
-        else:
-            res = self.parent.getFileBuffer()
-        return res
+    def getRootBuffer(self):
+        '''Returns the root buffer. For POD it is always a FileBuffer. For PX,
+           it is a MemoryBuffer.'''
+        if self.parent: return self.parent.getRootBuffer()
+        return self
 
     def getLength(self): return len(self.content)
 
@@ -253,25 +280,38 @@ class MemoryBuffer(Buffer):
         return res
 
     def isMainElement(self, elem):
-        res = False
+        '''Is p_elem the main elemen within this buffer?'''
         mainElem = self.getMainElement()
-        if mainElem and (elem == mainElem.OD.elem):
-            res = True
-            # Check if this element is not found again within the buffer
-            for index, podElem in self.elements.iteritems():
-                if podElem.OD:
-                    if (podElem.OD.elem == mainElem.OD.elem) and (index != 0):
-                        res = False
-                        break
-        return res
+        if not mainElem: return
+        if hasattr(mainElem, 'OD'): mainElem = mainElem.OD.elem
+        if elem != mainElem: return
+        # elem is the same as the main elem. But is it really the main elem, or
+        # the same elem, found deeper in the buffer?
+        for index, iElem in self.elements.iteritems():
+            foundElem = None
+            if hasattr(iElem, 'OD'):
+                if iElem.OD:
+                    foundElem = iElem.OD.elem
+            else:
+                foundElem = iElem
+            if (foundElem == mainElem) and (index != 0):
+                return
+        return True
 
     def unreferenceElement(self, elem):
         # Find last occurrence of this element
         elemIndex = -1
-        for index, podElem in self.elements.iteritems():
-            if podElem.OD:
-                if (podElem.OD.elem == elem) and (index > elemIndex):
-                    elemIndex = index
+        for index, iElem in self.elements.iteritems():
+            foundElem = None
+            if hasattr(iElem, 'OD'):
+                # A POD element
+                if iElem.OD:
+                    foundElem = iElem.OD.elem
+            else:
+                # A PX elem
+                foundElem = iElem
+            if (foundElem == elem) and (index > elemIndex):
+                elemIndex = index
         del self.elements[elemIndex]
 
     def pushSubBuffer(self, subBuffer):
@@ -294,7 +334,7 @@ class MemoryBuffer(Buffer):
             # First unreference all elements
             for index in self.getElementIndexes(expressions=False):
                 del self.elements[index]
-            self.evaluate()
+            self.evaluate(self.parent, self.env.context)
         else:
             # Transfer content in itself
             oldParentLength = self.parent.getLength()
@@ -302,7 +342,7 @@ class MemoryBuffer(Buffer):
             # Transfer elements
             for index, podElem in self.elements.iteritems():
                 self.parent.elements[oldParentLength + index] = podElem
-            # Transfer subBuffers
+            # Transfer sub-buffers
             for index, buf in self.subBuffers.iteritems():
                 self.parent.subBuffers[oldParentLength + index] = buf
         # Empty the buffer
@@ -310,29 +350,53 @@ class MemoryBuffer(Buffer):
         # Change buffer position wrt parent
         self.parent.pushSubBuffer(self)
 
-    def addElement(self, elem):
-        newElem = PodElement.create(elem)
-        self.elements[self.getLength()] = newElem
-        if isinstance(newElem, Cell) or isinstance(newElem, Table):
-            newElem.tableInfo = self.env.getTable()
-            if isinstance(newElem, Cell):
+    def addElement(self, elem, elemType='pod'):
+        if elemType == 'pod':
+            elem = PodElement.create(elem)
+        self.elements[self.getLength()] = elem
+        if isinstance(elem, Cell) or isinstance(elem, Table):
+            elem.tableInfo = self.env.getTable()
+            if isinstance(elem, Cell):
                 # Remember where this cell is in the table
-                newElem.colIndex = newElem.tableInfo.curColIndex
+                elem.colIndex = elem.tableInfo.curColIndex
+        if elem == 'x':
+            # See comment on similar statement in the method below.
+            self.content += u' '
 
     def addExpression(self, expression, tiedHook=None):
         # Create the POD expression
-        expr = Expression(expression)
+        expr = Expression(expression, self.pod)
         if tiedHook: tiedHook.tiedExpression = expr
         self.elements[self.getLength()] = expr
-        self.content += u' '# To be sure that an expr and an elem can't be found
-                            # at the same index in the buffer.
+        # To be sure that an expr and an elem can't be found at the same index
+        # in the buffer.
+        self.content += u' '
 
     def addAttributes(self):
-        # Create the Attributes instance
+        '''pod-only: adds an Attributes instance into this buffer.'''
         attrs = Attributes(self.env)
         self.elements[self.getLength()] = attrs
         self.content += u' '
         return attrs
+
+    def addAttribute(self, name, expr):
+        '''px-only: adds an Attribute instance into this buffer.'''
+        attr = Attribute(name, expr)
+        self.elements[self.getLength()] = attr
+        self.content += u' '
+        return attr
+
+    def _getVariables(self, expr):
+        '''Returns variable definitions in p_expr as a list
+           ~[(s_varName, s_expr)]~.'''
+        exprs = expr.strip().split(';')
+        res = []
+        for sub in exprs:
+            varRes = MemoryBuffer.varRex.match(sub)
+            if not varRes:
+                raise ParsingError(BAD_VAR_EXPRESSION % sub)
+            res.append(varRes.groups())
+        return res
 
     def createAction(self, statementGroup):
         '''Tries to create an action based on p_statementGroup. If the statement
@@ -407,12 +471,9 @@ class MemoryBuffer(Buffer):
                 self.action = ForAction(statementName, self, subExpr, podElem,
                                         minus, iter, source, fromClause)
             elif actionType == 'with':
-                varRes = MemoryBuffer.varRex.match(subExpr.strip())
-                if not varRes:
-                    raise ParsingError(BAD_VAR_EXPRESSION % subExpr)
-                varName, subExpr = varRes.groups()
-                self.action = VariableAction(statementName, self, subExpr,
-                    podElem, minus, varName, source, fromClause)
+                variables = self._getVariables(subExpr)
+                self.action = VariablesAction(statementName, self, podElem,
+                                           minus, variables, source, fromClause)
             else: # null action
                 if not fromClause:
                     raise ParsingError(NULL_ACTION_ERROR)
@@ -421,6 +482,32 @@ class MemoryBuffer(Buffer):
             res = indexPodElem
         except ParsingError, ppe:
             PodError.dump(self, ppe, removeFirstLine=True)
+        return res
+
+    def createPxAction(self, elem, actionType, statement):
+        '''Creates a PX action and link it to this buffer. If an action is
+           already linked to this buffer (in self.action), this action is
+           chained behind the last action via self.action.subAction.'''
+        res = 0
+        statement = statement.strip()
+        if actionType == 'for':
+            forRes = MemoryBuffer.forRex.match(statement)
+            if not forRes:
+                raise ParsingError(BAD_FOR_EXPRESSION % statement)
+            iter, subExpr = forRes.groups()
+            action = ForAction('for', self, subExpr, elem, False, iter,
+                               'buffer', None)
+        elif actionType == 'if':
+            action= IfAction('if', self, statement, elem, False, 'buffer', None)
+        elif actionType in ('var', 'var2'):
+            variables = self._getVariables(statement)
+            action = VariablesAction('var', self, elem, False, variables,
+                                     'buffer', None)
+        # Is it the first action for this buffer or not?
+        if not self.action:
+            self.action = action
+        else:
+            self.action.addSubAction(action)
         return res
 
     def cut(self, index, keepFirstPart):
@@ -553,8 +640,11 @@ class MemoryBuffer(Buffer):
 
     reTagContent = re.compile('<(?P<p>[\w-]+):(?P<f>[\w-]+)(.*?)>.*</(?P=p):' \
                               '(?P=f)>', re.S)
-    def evaluate(self, subElements=True, removeMainElems=False):
-        result = self.getFileBuffer()
+    def evaluate(self, result, context, subElements=True,
+                 removeMainElems=False):
+        '''Evaluates this buffer given the current p_context and add the result
+           into p_result. With pod, p_result is the root file buffer; with px
+           it is a memory buffer.'''
         if not subElements:
             # Dump the root tag in this buffer, but not its content.
             res = self.reTagContent.match(self.content.strip())
@@ -571,18 +661,28 @@ class MemoryBuffer(Buffer):
                 currentIndex = index + 1
                 if isinstance(evalEntry, Expression):
                     try:
-                        result.dumpContent(evalEntry.evaluate(self.env.context))
+                        res, escape = evalEntry.evaluate(context)
+                        if escape: result.dumpContent(res)
+                        else: result.write(res)
                     except Exception, e:
-                        PodError.dump(result, EVAL_EXPR_ERROR % (
-                            evalEntry.expr, e), dumpTb=False)
-                elif isinstance(evalEntry, Attributes):
-                    result.write(evalEntry.evaluate(self.env.context))
+                        if self.pod:
+                            PodError.dump(result, EVAL_EXPR_ERROR % (
+                                          evalEntry.expr, e), dumpTb=False)
+                        else: # px
+                            raise Exception(EVAL_EXPR_ERROR %(evalEntry.expr,e))
+                elif isinstance(evalEntry, Attributes) or \
+                     isinstance(evalEntry, Attribute):
+                    result.write(evalEntry.evaluate(context))
                 else: # It is a subBuffer
                     if evalEntry.action:
-                        evalEntry.action.execute()
+                        evalEntry.action.execute(result, context)
                     else:
                         result.write(evalEntry.content)
             stopIndex = self.getStopIndex(removeMainElems)
             if currentIndex < (stopIndex-1):
                 result.write(self.content[currentIndex:stopIndex])
+
+    def clean(self):
+        '''Cleans the buffer content.'''
+        self.content = u''
 # ------------------------------------------------------------------------------

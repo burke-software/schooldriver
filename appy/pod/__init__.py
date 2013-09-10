@@ -31,6 +31,7 @@ XHTML_UNSTYLABLE_TAGS = XHTML_LISTS + ('li', 'a')
 
 # ------------------------------------------------------------------------------
 class PodError(Exception):
+    @staticmethod
     def dumpTraceback(buffer, tb, textNs, removeFirstLine):
         if removeFirstLine:
             # This error came from an exception raised by pod. The text of the
@@ -46,11 +47,13 @@ class PodError(Exception):
                 buffer.write('<%s:p>' % textNs)
                 try:
                     buffer.dumpContent(tLine)
-                except UnicodeDecodeError, ude:
+                except UnicodeDecodeError:
                     buffer.dumpContent(tLine.decode('utf-8'))
                 buffer.write('</%s:p>' % textNs)
-    dumpTraceback = staticmethod(dumpTraceback)
-    def dump(buffer, message, withinElement=None, removeFirstLine=False, dumpTb=True):
+
+    @staticmethod
+    def dump(buffer, message, withinElement=None, removeFirstLine=False,
+             dumpTb=True):
         '''Dumps the error p_message in p_buffer.'''
         # Define some handful shortcuts
         e = buffer.env
@@ -80,7 +83,6 @@ class PodError(Exception):
             for subTag in subTags:
                 buffer.write('</%s>' % subTag.elem)
             buffer.write('</%s>' % withinElement.OD.elem)
-    dump = staticmethod(dump)
 
 # XXX To remove, present for backward compatibility only.
 convertToXhtml = escapeXhtml

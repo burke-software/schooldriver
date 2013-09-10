@@ -56,9 +56,6 @@
                 <li><a href="{% url "ecwsp.sis.views.grade_report" %}">{% trans 'Grade Reports' %}</a></li>
                 <li><a href="{% url "ecwsp.schedule.views.grade_analytics" %}">{% trans 'Analytics' %}</a></li>
               {% endif %}
-              {% if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS %} {% if perms.engrade_sync.change_coursesync %}
-               <li><a href="{% url "ecwsp.engrade_sync.views.setup" %}">{% trans 'Engrade Setup' %}</a></li>
-              {% endif %}{% endif %}
             </ul>
           </div>
       </li>
@@ -67,23 +64,7 @@
     {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
     {% if perms.sis.reports or perms.attendance.change_studentattendance or perms.attendance.take_studentattendance %}
       <li>
-        <a href="javascript://"> {% trans 'Attendance' %} </a>
-        <div class="dropdown">
-          <ul>
-            {% if perms.attendance.take_studentattendance %}
-              <li><a href="{% url "ecwsp.attendance.views.teacher_attendance" %}">{% trans 'Take Homeroom Attendance' %}</a></li>
-              {% if settings.ATTENDANCE_COURSE_BASED %}
-                <li><a href="{% url "ecwsp.attendance.views.select_course_for_attendance" %}">{% trans 'Take Course Attendance' %}</a></li>
-              {% endif %}
-            {% endif %}
-            {% if perms.attendance.change_studentattendance %}
-              <li><a href="{% url "admin:attendance_studentattendance_changelist" %}">{% trans 'Edit' %}</a></li>
-            {% endif %}
-            {% if perms.studentattendance.reports %}
-              <li><a href="{% url "ecwsp.attendance.views.attendance_report" %}">{% trans 'Reports' %}</a></li>
-            {% endif %}
-          </ul>
-        </div>
+        <a href="/attendance/dashboard/"> {% trans 'Attendance' %} </a>
       </li>
     {% endif %}
     {% endif %}

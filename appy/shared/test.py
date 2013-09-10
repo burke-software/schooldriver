@@ -71,7 +71,7 @@ class TestReport:
             raise InternalError(TEST_REPORT_SINGLETON_ERROR)
     def say(self, msg, force=False, encoding=None):
         if self.verbose or force:
-            print msg
+            print(msg)
         if encoding:
             self.report.write(msg.encode(encoding))
         else:

@@ -35,7 +35,10 @@ PDF_TO_IMG_ERROR = 'A PDF file could not be converted into images. Please ' \
                    'ensure that Ghostscript (gs) is installed on your ' \
                    'system and the "gs" program is in the path.'
 CONVERT_ERROR = 'Program "convert", from imagemagick, must be installed and ' \
-                'in the path for converting a SVG file into a PNG file.'
+                'in the path for converting a SVG file into a PNG file. ' \
+                'Conversion of SVG files must also be enabled. On Ubuntu: ' \
+                'apt-get install librsvg2-bin'
+TO_PDF_ERROR = 'ConvertImporter error while converting a doc to PDF: %s.'
 
 # ------------------------------------------------------------------------------
 class DocImporter:
@@ -83,8 +86,7 @@ class DocImporter:
                 f = file(self.importPath, 'wb')
                 f.write(fileContent)
                 f.close()
-        # ImageImporter adds image-specific attrs, through
-        # ImageImporter.setImageInfo.
+        # Some importers add specific attrs, through method init.
 
     def getUuid(self):
         '''Creates a unique id for images/documents to be imported into an
@@ -116,37 +118,83 @@ class DocImporter:
         '''In the case parameter "at" was used, we may want to move the file at
            p_at within the ODT result in p_importPath (for images) or do
            nothing (for docs). In the latter case, the file to import stays
-           at _at, and is not copied into p_importPath.'''
+           at _at, and is not copied into p_importPath. So the previously
+           computed p_importPath is not used at all.'''
         return at
 
 class OdtImporter(DocImporter):
     '''This class allows to import the content of another ODT document into a
        pod template.'''
     def getImportFolder(self): return '%s/docImports' % self.tempFolder
+
+    def init(self, pageBreakBefore, pageBreakAfter):
+        '''OdtImporter-specific constructor.'''
+        self.pageBreakBefore = pageBreakBefore
+        self.pageBreakAfter = pageBreakAfter
+
     def run(self):
+        # Define a "pageBreak" if needed.
+        if self.pageBreakBefore or self.pageBreakAfter:
+            pageBreak = '<%s:p %s:style-name="podPageBreak"></%s:p>' % \
+                        (self.textNs, self.textNs, self.textNs)
+        # Insert a page break before importing the doc if needed
+        if self.pageBreakBefore: self.res += pageBreak
+        # Import the external odt document
         self.res += '<%s:section %s:name="PodImportSection%f">' \
                     '<%s:section-source %s:href="%s" ' \
                     '%s:filter-name="writer8"/></%s:section>' % (
                         self.textNs, self.textNs, time.time(), self.textNs,
                         self.linkNs, self.importPath, self.textNs, self.textNs)
+        # Insert a page break after importing the doc if needed
+        if self.pageBreakAfter: self.res += pageBreak
         return self.res
+
+class PodImporter(DocImporter):
+    '''This class allows to import the result of applying another POD template,
+       into the current POD result.'''
+    def getImportFolder(self): return '%s/docImports' % self.tempFolder
+
+    def init(self, context, pageBreakBefore, pageBreakAfter):
+        '''PodImporter-specific constructor.'''
+        self.context = context
+        self.pageBreakBefore = pageBreakBefore
+        self.pageBreakAfter = pageBreakAfter
+
+    def run(self):
+        # Define where to store the pod result in the temp folder
+        r = self.renderer
+        # Define where to store the ODT result.
+        op = os.path
+        resOdt = op.join(self.getImportFolder(), '%s.odt' % self.getUuid())
+        # The POD template is in self.importPath
+        renderer = r.__class__(self.importPath, self.context, resOdt,
+                               pythonWithUnoPath=r.pyPath,
+                               ooPort=r.ooPort, forceOoCall=r.forceOoCall,
+                               imageResolver=r.imageResolver)
+        renderer.stylesManager.stylesMapping = r.stylesManager.stylesMapping
+        renderer.run()
+        # The POD result is in "resOdt". Import it into the main POD result
+        # using an OdtImporter.
+        odtImporter = OdtImporter(None, resOdt, 'odt', self.renderer)
+        odtImporter.init(self.pageBreakBefore, self.pageBreakAfter)
+        return odtImporter.run()
 
 class PdfImporter(DocImporter):
     '''This class allows to import the content of a PDF file into a pod
        template. It calls gs to split the PDF into images and calls the
        ImageImporter for importing it into the result.'''
-    imagePrefix = 'PdfPart'
     def getImportFolder(self): return '%s/docImports' % self.tempFolder
     def run(self):
+        imagePrefix = os.path.splitext(os.path.basename(self.importPath))[0]
         # Split the PDF into images with Ghostscript
         imagesFolder = os.path.dirname(self.importPath)
         cmd = 'gs -dNOPAUSE -dBATCH -sDEVICE=jpeg -r125x125 ' \
               '-sOutputFile=%s/%s%%d.jpg %s' % \
-              (imagesFolder, self.imagePrefix, self.importPath)
+              (imagesFolder, imagePrefix, self.importPath)
         os.system(cmd)
         # Check that at least one image was generated
         succeeded = False
-        firstImage = '%s1.jpg' % self.imagePrefix
+        firstImage = '%s1.jpg' % imagePrefix
         for fileName in os.listdir(imagesFolder):
             if fileName == firstImage:
                 succeeded = True
@@ -157,16 +205,30 @@ class PdfImporter(DocImporter):
         i = 0
         while not noMoreImages:
             i += 1
-            nextImage = '%s/%s%d.jpg' % (imagesFolder, self.imagePrefix, i)
+            nextImage = '%s/%s%d.jpg' % (imagesFolder, imagePrefix, i)
             if os.path.exists(nextImage):
                 # Use internally an Image importer for doing this job.
-                imgImporter =ImageImporter(None, nextImage, 'jpg',self.renderer)
-                imgImporter.setImageInfo('paragraph', True, None, None, None)
+                imgImporter= ImageImporter(None, nextImage, 'jpg',self.renderer)
+                imgImporter.init('paragraph', True, None, None, None)
                 self.res += imgImporter.run()
                 os.remove(nextImage)
             else:
                 noMoreImages = True
         return self.res
+
+class ConvertImporter(DocImporter):
+    '''This class allows to import the content of any file that LibreOffice (LO)
+       can convert into PDF: doc, rtf, xls. It first calls LO to convert the
+       document into PDF, then calls a PdfImporter.'''
+    def getImportFolder(self): return '%s/docImports' % self.tempFolder
+    def run(self):
+        # Convert the document into PDF with LibreOffice
+        output = self.renderer.callLibreOffice(self.importPath, 'pdf')
+        if output: raise PodError(TO_PDF_ERROR % output)
+        pdfFile = '%s.pdf' % os.path.splitext(self.importPath)[0]
+        # Launch a PdfImporter to import this PDF into the POD result.
+        pdfImporter = PdfImporter(None, pdfFile, 'pdf', self.renderer)
+        return pdfImporter.run()
 
 # Compute size of images -------------------------------------------------------
 jpgTypes = ('jpg', 'jpeg')
@@ -279,7 +341,8 @@ class ImageImporter(DocImporter):
             appyFile.dump(importPath)
         return importPath
 
-    def setImageInfo(self, anchor, wrapInPara, size, sizeUnit, style):
+    def init(self, anchor, wrapInPara, size, sizeUnit, style):
+        '''ImageImporter-specific constructor.'''
         # Initialise anchor
         if anchor not in self.anchorTypes:
             raise PodError(self.WRONG_ANCHOR % str(self.anchorTypes))

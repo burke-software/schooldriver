@@ -467,6 +467,7 @@ class Student(MdlUser, CustomFieldModel):
             ("view_mentor_student", "View mentoring information student"),
             ("reports", "View reports"),
         )
+    report_builder_exclude_fields = ('alert',)
     
     def __unicode__(self):
         return u"{0}, {1}".format(self.lname, self.fname)

@@ -333,7 +333,7 @@ class TableParser:
         if self.specialChars.has_key(specialChar):
             self.contentBuffer.write(self.specialChars[specialChar])
         else:
-            print 'Warning: char %d not known.' % specialChar
+            print('Warning: char %d not known.' % specialChar)
         self.state = TableParser.READING_CONTENT
     def bufferize(self, char):
         if self.state == TableParser.READING_CONTROL_WORD:
@@ -497,7 +497,6 @@ class RtfTablesParser:
 if __name__ =='__main__':
     tables = RtfTablesParser("Tests.rtf").parse()
     for key, item in tables.iteritems():
-        print 'Table %s' % key
-        print item
-        print
+        print('Table %s' % key)
+        print(item)
 # -----------------------------------------------------------------------------

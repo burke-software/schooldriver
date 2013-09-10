@@ -25,25 +25,31 @@ class AdministrationLinksListDashlet(LinksListDashlet):
             'text': 'School import',
             'link': reverse('simple_import.views.start_import'),
             'desc': '',
-            'perm': ('simple_import.change_importlog'),
+            'perm': ('simple_import.change_importlog',),
         },
                 {
             'text': 'Configuration',
             'link': reverse('admin:administration_configuration_changelist'),
             'desc': '',
-            'perm': ('administration.change_configuration'),
+            'perm': ('administration.change_configuration',),
         },
         {
             'text': 'Custom Fields',
             'link': reverse('admin:custom_field_customfield_changelist'),
             'desc': '',
-            'perm': ('custom_field.change_custom_field'),
+            'perm': ('custom_field.change_custom_field',),
         },
         {
             'text': 'Canvas Sync',
             'link': '/canvas_sync/setup',
             'desc': '',
-            'perm': ('sis.reports'),
+            'perm': ('sis.reports',),
+        },
+        {
+            'text': 'Engrade Sync',
+            'link': reverse('ecwsp.engrade_sync.views.setup'),
+            'perm': ('sis.reports',),
+            'required_apps': ('ecwsp.engrade_sync',),
         },
         {
             'text': 'Change School Year',
@@ -54,20 +60,14 @@ class AdministrationLinksListDashlet(LinksListDashlet):
         {
             'text': 'Preferences',
             'link': '/sis/preferences',
-            'desc': '',
-            'perm': (''),
         },
         {
             'text': 'Change Password',
             'link': reverse('admin:password_change'),
-            'desc': '',
-            'perm': (''),
         },
         {
             'text': 'Log Out',
             'link': reverse('admin:logout'),
-            'desc': '',
-            'perm': (''),
         },
     ]
 

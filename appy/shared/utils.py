@@ -40,7 +40,7 @@ def cleanFolder(folder, exts=extsToClean, folders=(), verbose=False):
     '''This function allows to remove, in p_folder and subfolders, any file
        whose extension is in p_exts, and any folder whose name is in
        p_folders.'''
-    if verbose: print 'Cleaning folder', folder, '...'
+    if verbose: print('Cleaning folder %s...' % folder)
     # Remove files with an extension listed in p_exts
     if exts:
         for root, dirs, files in os.walk(folder):
@@ -48,7 +48,7 @@ def cleanFolder(folder, exts=extsToClean, folders=(), verbose=False):
                 ext = os.path.splitext(fileName)[1]
                 if (ext in exts) or ext.endswith('~'):
                     fileToRemove = os.path.join(root, fileName)
-                    if verbose: print 'Removing file %s...' % fileToRemove
+                    if verbose: print('Removing file %s...' % fileToRemove)
                     os.remove(fileToRemove)
     # Remove folders whose names are in p_folders.
     if folders:
@@ -56,7 +56,7 @@ def cleanFolder(folder, exts=extsToClean, folders=(), verbose=False):
             for folderName in dirs:
                 if folderName in folders:
                     toDelete = os.path.join(root, folderName)
-                    if verbose: print 'Removing folder %s...' % toDelete
+                    if verbose: print('Removing folder %s...' % toDelete)
                     FolderDeleter.delete(toDelete)
 
 # ------------------------------------------------------------------------------
@@ -227,11 +227,18 @@ def normalizeString(s, usage='fileName'):
         res = s
     return res
 
-# ------------------------------------------------------------------------------
 def normalizeText(s):
     '''Normalizes p_s: remove special chars, lowerizes it, etc, for indexing
        purposes.'''
     return normalizeString(s, usage='extractedText').strip().lower()
+
+def keepDigits(s):
+    '''Returns string p_s whose non-number chars have been removed.'''
+    if s is None: return s
+    res = ''
+    for c in s:
+        if c.isdigit(): res += c
+    return res
 
 # ------------------------------------------------------------------------------
 def formatNumber(n, sep=',', precision=2, tsep=' '):
@@ -266,7 +273,7 @@ def formatNumber(n, sep=',', precision=2, tsep=' '):
         try:
             decPart = int(splitted[1])
             if decPart != 0:
-                res += sep + str(decPart)
+                res += sep + splitted[1]
         except ValueError:
             # This exception may occur when the float value has an "exp"
             # part, like in this example: 4.345e-05
@@ -393,8 +400,8 @@ class CodeAnalysis:
         if not lines: return
         commentRate = (self.commentLines / float(lines)) * 100.0
         blankRate = (self.emptyLines / float(lines)) * 100.0
-        print '%s: %d files, %d lines (%.0f%% comments, %.0f%% blank)' % \
-              (self.name, self.numberOfFiles, lines, commentRate, blankRate)
+        print('%s: %d files, %d lines (%.0f%% comments, %.0f%% blank)' % \
+              (self.name, self.numberOfFiles, lines, commentRate, blankRate))
 
 # ------------------------------------------------------------------------------
 class LinesCounter:

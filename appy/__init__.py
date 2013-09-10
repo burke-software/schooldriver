@@ -38,4 +38,5 @@ class Object:
         return res.encode('utf-8')
     def __nonzero__(self):
         return bool(self.__dict__)
+    def get(self, name, default=None): return getattr(self, name, default)
 # ------------------------------------------------------------------------------

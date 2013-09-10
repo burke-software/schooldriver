@@ -25,13 +25,13 @@ import appy.pod, time, cgi
 from appy.pod import PodError
 from appy.shared import mimeTypes, mimeTypesExts
 from appy.shared.xml_parser import XmlElement
-from appy.shared.utils import FolderDeleter, executeCommand
-from appy.shared.utils import FileWrapper
+from appy.shared.utils import FolderDeleter, executeCommand, FileWrapper
 from appy.pod.pod_parser import PodParser, PodEnvironment, OdInsert
 from appy.pod.converter import FILE_TYPES
 from appy.pod.buffers import FileBuffer
 from appy.pod.xhtml2odt import Xhtml2OdtConverter
-from appy.pod.doc_importers import OdtImporter, ImageImporter, PdfImporter
+from appy.pod.doc_importers import \
+     OdtImporter, ImageImporter, PdfImporter, ConvertImporter, PodImporter
 from appy.pod.styles_manager import StylesManager
 
 # ------------------------------------------------------------------------------
@@ -232,7 +232,9 @@ class Renderer:
         evalContext = {'xhtml': self.renderXhtml,
                        'text':  self.renderText,
                        'test': self.evalIfExpression,
-                       'document': self.importDocument} # Default context
+                       'document': self.importDocument,
+                       'pod': self.importPod,
+                       'pageBreak': self.insertPageBreak} # Default context
         if hasattr(context, '__dict__'):
             evalContext.update(context.__dict__)
         elif isinstance(context, dict) or isinstance(context, UserDict):
@@ -274,9 +276,11 @@ class Renderer:
 
     imageFormats = ('png', 'jpeg', 'jpg', 'gif', 'svg')
     ooFormats = ('odt',)
+    convertibleFormats = FILE_TYPES.keys()
     def importDocument(self, content=None, at=None, format=None,
                        anchor='as-char', wrapInPara=True, size=None,
-                       sizeUnit='cm', style=None):
+                       sizeUnit='cm', style=None,
+                       pageBreakBefore=False, pageBreakAfter=False):
         '''If p_at is not None, it represents a path or url allowing to find
            the document. If p_at is None, the content of the document is
            supposed to be in binary format in p_content. The document
@@ -295,17 +299,21 @@ class Renderer:
            * If p_style is given, it is the content of a "style" attribute,
              containing CSS attributes. If "width" and "heigth" attributes are
              found there, they will override p_size and p_sizeUnit.
+
+           p_pageBreakBefore and p_pageBreakAfter are only relevant for import
+           of external odt documents, and allows to insert a page break
+           before/after the inserted document.
         '''
         importer = None
         # Is there someting to import?
         if not content and not at:
             raise PodError(DOC_NOT_SPECIFIED)
+        # Convert Zope files into Appy wrappers.
+        if content.__class__.__name__ in ('File', 'Image'):
+            content = FileWrapper(content)
         # Guess document format
         if isinstance(content, FileWrapper):
             format = content.mimeType
-        elif hasattr(content, 'filename') and content.filename:
-            format = os.path.splitext(content.filename)[1][1:]
-            content = content.data
         if not format:
             # It should be deduced from p_at
             if not at:
@@ -316,22 +324,55 @@ class Renderer:
             if mimeTypesExts.has_key(format):
                 format = mimeTypesExts[format]
         isImage = False
+        isOdt = False
         if format in self.ooFormats:
             importer = OdtImporter
             self.forceOoCall = True
+            isOdt = True
         elif (format in self.imageFormats) or not format:
             # If the format can't be guessed, we suppose it is an image.
             importer = ImageImporter
             isImage = True
         elif format == 'pdf':
             importer = PdfImporter
+        elif format in self.convertibleFormats:
+            importer = ConvertImporter
         else:
             raise PodError(DOC_WRONG_FORMAT % format)
         imp = importer(content, at, format, self)
         # Initialise image-specific parameters
-        if isImage: imp.setImageInfo(anchor, wrapInPara, size, sizeUnit, style)
-        res = imp.run()
-        return res
+        if isImage: imp.init(anchor, wrapInPara, size, sizeUnit, style)
+        elif isOdt: imp.init(pageBreakBefore, pageBreakAfter)
+        return imp.run()
+
+    def importPod(self, content=None, at=None, format='odt', context=None,
+                  pageBreakBefore=False, pageBreakAfter=False):
+        '''Similar to m_importDocument, but allows to import the result of
+           executing the POD template specified in p_content or p_at, and
+           include it in the POD result.'''
+        # Is there a pod template defined?
+        if not content and not at:
+            raise PodError(DOC_NOT_SPECIFIED)
+        # If the POD template is specified as a Zope file, convert it into a
+        # Appy FileWrapper.
+        if content.__class__.__name__ == 'File':
+            content = FileWrapper(content)
+        imp = PodImporter(content, at, format, self)
+        self.forceOoCall = True
+        # Define the context to use: either the current context of the current
+        # POD renderer, or p_context if given.
+        if context:
+            ctx = context
+        else:
+            ctx = self.contentParser.env.context
+        imp.init(ctx, pageBreakBefore, pageBreakAfter)
+        return imp.run()
+
+    def insertPageBreak(self):
+        '''Inserts a page break into the result.'''
+        textNs = self.currentParser.env.namespaces[PodEnvironment.NS_TEXT]
+        return '<%s:p %s:style-name="podPageBreak"></%s:p>' % \
+               (textNs, textNs, textNs)
 
     def prepareFolders(self):
         # Check if I can write the result
@@ -457,7 +498,7 @@ class Renderer:
             # an ODT or ODS to return to the user. So we produce a warning
             # instead of raising an error.
             if (resultType in self.templateTypes) and self.forceOoCall:
-                print WARNING_INCOMPLETE_OD % str(pe)
+                print(WARNING_INCOMPLETE_OD % str(pe))
             else:
                 raise pe
         return loOutput
@@ -501,7 +542,7 @@ class Renderer:
             try:
                 self.finalizeFunction(self.unzipFolder)
             except Exception, e:
-                print WARNING_FINALIZE_ERROR % str(e)
+                print(WARNING_FINALIZE_ERROR % str(e))
         # Re-zip the result, first as an OpenDocument file of the same type as
         # the POD template (odt, ods...)
         resultExt = self.getTemplateType()
@@ -516,8 +557,13 @@ class Renderer:
         # Linux/Unix, are unable to detect the correct mimetype for a pod result
         # (it simply recognizes it as a "application/zip" and not a
         # "application/vnd.oasis.opendocument.text)".
-        resultZip.write(os.path.join(self.unzipFolder, 'mimetype'),
-                        'mimetype', zipfile.ZIP_STORED)
+        mimetypeFile = os.path.join(self.unzipFolder, 'mimetype')
+        # This file may not exist (presumably, ods files from Google Drive)
+        if not os.path.exists(mimetypeFile):
+            f = open(mimetypeFile, 'w')
+            f.write(mimeTypes[resultExt])
+            f.close()
+        resultZip.write(mimetypeFile, 'mimetype', zipfile.ZIP_STORED)
         for dir, dirnames, filenames in os.walk(self.unzipFolder):
             for f in filenames:
                 folderName = dir[len(self.unzipFolder)+1:]
