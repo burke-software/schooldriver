@@ -8,7 +8,7 @@ import datetime
 
 class AttendanceDashlet(ListDashlet):
     model = StudentAttendance
-    require_permissions = ('alumni.change_alumni',)
+    require_permissions = ('attendance.change_studentattendance',)
     fields = ('student', 'date', 'status')
     first_column_is_link = True
     count = 15
@@ -29,7 +29,7 @@ class AttendanceLinksListDashlet(LinksListDashlet):
         {
             'text': 'Reports',
             'link': reverse('ecwsp.attendance.views.attendance_report'),
-            'perm': ('studentattendance.reports'),
+            'perm': ('sis.reports'),
         },
     ]
 
