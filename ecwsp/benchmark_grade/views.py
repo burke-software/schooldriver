@@ -30,6 +30,7 @@ from ecwsp.sis.models import SchoolYear, Student, Faculty
 #from ecwsp.sis.uno_report import *
 from ecwsp.schedule.models import Course, MarkingPeriod
 #from ecwsp.schedule.forms import 
+from ecwsp.grades.models import Grade
 from ecwsp.grades.forms import GradeUpload
 #from ecwsp.administration.models import *
 from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule, AggregateTask
@@ -742,3 +743,46 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
             'mps': mps,
             'other_mps': other_mps
         }, RequestContext(request, {}),)
+
+@staff_member_required
+def comments(request, course_id):
+    course = get_object_or_404(Course, pk=course_id)
+    school_year = course.marking_period.all()[0].school_year
+    teacher_courses = get_teacher_courses(request.user.username)
+    if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
+    (teacher_courses is None or course not in teacher_courses):
+        messages.add_message(request, messages.ERROR,
+            'You do not have access to the gradebook for ' + course.fullname + '.')
+        return HttpResponseRedirect(reverse('admin:index'))
+
+    # lots of stuff will fail unceremoniously if there are no MPs assigned
+    if not course.marking_period.count():
+        messages.add_message(request, messages.ERROR,
+            'The gradebook cannot be opened because there are no marking periods assigned to the course ' +
+            course.fullname + '.')
+        return HttpResponseRedirect(reverse('admin:index'))
+
+    marking_periods = list(course.marking_period.order_by('start_date'))
+    for marking_period in reversed(marking_periods):
+        if marking_period.active:
+            marking_period.current = True
+            break
+    else:
+        marking_periods[0].current = True
+
+    for marking_period in marking_periods:
+        marking_period.students = course.get_enrolled_students() # ugh, gross
+        for student in marking_period.students:
+            try:
+                grade = Grade.objects.get(student=student, course=course, marking_period=marking_period)
+                student.marking_period_average_pk = grade.pk
+                student.marking_period_average = Grade.objects.get(student=student, course=course, marking_period=marking_period)
+                student.comment = grade.comment
+            except Grade.DoesNotExist:
+                student.marking_period_average = None
+                student.comment = None
+
+    return render_to_response('benchmark_grade/comments.html', {
+        'course' : course,
+        'marking_periods': marking_periods,
+    }, RequestContext(request, {}),)
