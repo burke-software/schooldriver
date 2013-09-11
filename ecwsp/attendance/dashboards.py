@@ -45,13 +45,17 @@ class AttendanceReportBuilderDashlet(ReportBuilderDashlet):
         return super(ReportBuilderDashlet, self)._render(**kwargs)
 
 
+class AttendanceAdminListDashlet(AdminListDashlet):
+    require_permissions = ('attendance.change_studentattendance',)
+
+
 class AttendanceDashboard(Dashboard):
     app = 'attendance'
     dashlets = [
         AttendanceDashlet(title="Recent Attendance"),
         AttendanceLinksListDashlet(title="Links"),
         AttendanceReportBuilderDashlet(title="Reports",),
-        AdminListDashlet(title="Edit", app_label="attendance"),
+        AttendanceAdminListDashlet(title="Edit", app_label="attendance"),
     ]
 
 
