@@ -19,17 +19,17 @@ class AttendanceLinksListDashlet(LinksListDashlet):
         {
             'text': 'Take Homeroom Attendance',
             'link': reverse('ecwsp.attendance.views.teacher_attendance'),
-            'perm': ('attendance.take_studentattendance'),
+            'perm': ('attendance.take_studentattendance',),
         },
         {
             'text': 'Take Course Attendance',
             'link': reverse('ecwsp.attendance.views.select_course_for_attendance'),
-            'perm': ('attendance.take_studentattendance'),
+            'perm': ('attendance.take_studentattendance',),
         },
         {
             'text': 'Reports',
             'link': reverse('ecwsp.attendance.views.attendance_report'),
-            'perm': ('sis.reports'),
+            'perm': ('sis.reports',),
         },
     ]
 
