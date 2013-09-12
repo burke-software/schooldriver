@@ -78,7 +78,8 @@ function recalc_ytd_grade(mp_grade_inputs, ytd_input) {
                 grade += 100;
                 num_mp_grades += 1;
                 letter_grade = true;
-            } else if (mp_grade_value.toLowerCase() == "f") {
+            } else if (mp_grade_value.toLowerCase() == "f" ||
+                       mp_grade_value.toLowerCase() == "m") {
                 num_mp_grades += 1;
                 letter_grade = true;
             }

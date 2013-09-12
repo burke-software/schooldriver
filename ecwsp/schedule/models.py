@@ -357,7 +357,7 @@ class Course(models.Model):
                         final += 100 * (grade.marking_period.weight / total_weight)
                         number += 1
                         letter_grade = True
-                    elif grade.get_grade() == 'F':
+                    elif grade.get_grade() in ['F', 'M']:
                         number += 1
                         letter_grade = True
                     
