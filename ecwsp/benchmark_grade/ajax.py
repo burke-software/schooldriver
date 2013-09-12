@@ -38,6 +38,7 @@ def save_marking_period_average_comment(request, grade_pk, comment):
             raise Exception(message)
         if marking_period_average.comment != comment:
             marking_period_average.comment = comment
+            marking_period_average.full_clean() # save() doesn't do validation
             marking_period_average.save()
             dajax.add_css_class('#grade-comment{}'.format(grade_pk), 'success')
         else:
@@ -48,5 +49,9 @@ def save_marking_period_average_comment(request, grade_pk, comment):
     except Exception as e:
         dajax.remove_css_class('#grade-comment{}'.format(grade_pk), 'success')
         dajax.add_css_class('#grade-comment{}'.format(grade_pk), 'danger')
-        dajax.script('showAttentionGetter("{}");'.format(e.message))
+        if hasattr(e, 'messages'):
+            message = '; '.join(e.messages)
+        elif hasattr(e, 'message'):
+            message = e.message
+        dajax.script('showAttentionGetter("{}");'.format(message))
     return dajax.json()

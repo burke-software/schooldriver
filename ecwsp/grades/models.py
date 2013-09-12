@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MaxLengthValidator
 from ecwsp.schedule.models import *
 
 from decimal import Decimal, ROUND_HALF_UP
@@ -22,7 +23,8 @@ class Grade(models.Model):
     date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     override_final = models.BooleanField(help_text="Override final grade for marking period instead of calculating it.")
-    comment = models.CharField(max_length=500, blank=True)
+    comment = models.CharField(max_length=500, blank=True, validators=[
+        MaxLengthValidator(int(Configuration.get_or_default('Grade comment length limit').value))])
     letter_grade_choices = (
             ("I", "Incomplete"),
             ("P", "Pass"),

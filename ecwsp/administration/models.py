@@ -98,6 +98,7 @@ class Configuration(models.Model):
         'admissions_hide_inquiry_grade': ('', 'IDs of grade (fresh, soph, etc) to exclude on inquiry form. Comma seperated are ok.'),
         'Google Analytics': ('', 'Google Analytics Code'),
         'grades_allow_spreadsheet_import': ('True', 'Allow users to import a spreadsheet to submit grades'),
+        'Grade comment length limit': ('500', 'Maximum number of characters allowed in grade comments; values above 500 ignored'),
     }
     
     def __unicode__(self):
