@@ -26,7 +26,7 @@
             $.ajax({
               url: '/sis/ajax_view_student_dashlet/'+pk+'/',
             }).done(function ( data ) {
-                $('#dashlet_Student').html(data);
+                $('#form_view_student_dashlet').parent().parent('.dashlet_body').parent().html(data);
             });
         });
         });//]]>

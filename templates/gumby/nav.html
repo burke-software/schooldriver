@@ -91,15 +91,7 @@
   
   {% if perms.counseling.add_referralform and 'ecwsp.counseling' in settings.INSTALLED_APPS %}
     <li>
-      <a href="javascript://"> Counseling </a>
-      <div class="dropdown">
-        <ul>
-          {% if perms.counseling.change_studentmeeting %}
-            <li><a href="{% url "admin:app_list" 'counseling'%}">{% trans 'Counseling Admin' %}</a></li>
-          {% endif %}
-          <li><a href="{% url "admin:counseling_referralform_add" %}">{% trans 'Submit Referral Form' %}</a></li>
-        </ul>
-      </div>
+      <a href="/counseling/dashboard"> Counseling </a>
     </li>
   {% endif %}
   
