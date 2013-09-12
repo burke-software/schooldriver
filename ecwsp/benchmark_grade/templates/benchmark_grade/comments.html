@@ -5,6 +5,14 @@
     {{ block.super }}
     {% load staticfiles %}
     <script type="text/javascript" src="{% static "dajax/jquery.dajax.core.js" %}"></script>
+    <style>
+    #attention-getter {
+      position: fixed;
+      top: 1%;
+      z-index: 1337;
+      visibility: hidden;
+    }
+    </style>
 {% endblock %}
 
 {% block nav %}
@@ -26,6 +34,12 @@
 {% endblock %}
 
 {% block bigcontent %}
+<div class="row hidden" id="attention-getter">
+  <div class="four columns centered text-center">
+    <li class="danger alert" id="attention-getter-text"></li>
+  </div>
+</div>
+
 <div class="row">
   <h2>{{ course.shortname }} Comments</h2>
 </div>
@@ -75,7 +89,7 @@ $("input.grade-comment").keydown(function(event) {
   var focusMe;
   if(event.which == 38) { // up
     focusMe = parentRow.prev();
-  } else if(event.which == 40) { //down
+  } else if(event.which == 40 || event.which == 13) { // down or enter
     focusMe = parentRow.next();
   } else {
     // not our business
@@ -88,7 +102,14 @@ $("input.grade-comment").keydown(function(event) {
 $("input.grade-comment").blur(function(event) {
   Dajaxice.ecwsp.benchmark_grade.save_marking_period_average_comment(Dajax.process, {'grade_pk': event.target.name, 'comment': event.target.value});
 });
+function showAttentionGetter(message) {
+  $("#attention-getter-text").html(message);
+  $("#attention-getter").css("visibility", "visible");
+  $("#attention-getter").effect("shake");
+}
+function hideAttentionGetter() {
+  $("#attention-getter-text").html("");
+  $("#attention-getter").css("visibility", "hidden");
+}
 </script>
-
-
 {% endblock %}
