@@ -24,7 +24,7 @@ class ReportBuilderDashlet(ListDashlet):
     show_change = False
     fields = ('edit', 'name', 'download_xlsx')
     require_apps = ('report_builder',)
-    require_permissions = ('report_builder.change_report')
+    require_permissions = ('report_builder.change_report',)
     def _render(self, **kwargs):
         self.queryset = Report.objects.filter(root_model__app_label='admissions')
         # Show only starred when there are a lot of reports
