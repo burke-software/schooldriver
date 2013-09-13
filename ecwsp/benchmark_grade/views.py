@@ -32,7 +32,7 @@ from ecwsp.schedule.models import Course, MarkingPeriod
 #from ecwsp.schedule.forms import 
 from ecwsp.grades.models import Grade
 from ecwsp.grades.forms import GradeUpload
-#from ecwsp.administration.models import *
+from ecwsp.administration.models import Configuration
 from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule, AggregateTask
 from ecwsp.benchmark_grade.forms import GradebookFilterForm, ItemForm, DemonstrationForm, FillAllForm
 from ecwsp.benchmarks.models import Benchmark
@@ -785,4 +785,5 @@ def comments(request, course_id):
     return render_to_response('benchmark_grade/comments.html', {
         'course' : course,
         'marking_periods': marking_periods,
+        'max_length': Configuration.get_or_default('Grade comment length limit').value,
     }, RequestContext(request, {}),)
