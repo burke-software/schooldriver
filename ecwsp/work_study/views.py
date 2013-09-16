@@ -398,7 +398,10 @@ def contracts_report():
 @user_passes_test(lambda u: u.groups.filter(name='company').count() > 0 or u.is_superuser, login_url='/')    
 def change_supervisor(request, studentId):
     thisStudent = StudentWorker.objects.get(id = studentId)
-    comp = WorkTeam.objects.filter(login=request.user)[0]
+    try:
+        comp = WorkTeam.objects.filter(login=request.user)[0]
+    except:
+        comp = None
     if thisStudent.placement == comp:
         if request.method == 'POST':
             if 'save' in request.POST:
