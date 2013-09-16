@@ -20,7 +20,7 @@ from django.db import models
 from django.db.models import Avg, Count, Max, Min, StdDev, Sum, Variance
 #from django.contrib.localflavor.us.models import *
 from django.conf import settings
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from datetime import datetime
 from ecwsp.grades.models import Grade
 
@@ -230,10 +230,10 @@ class Mark(models.Model):
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     normalized_mark = models.FloatField(blank=True, null=True)
+    letter_grade = models.CharField(max_length=3, blank=True, null=True, help_text="Overrides numerical Mark.")
     class Meta:
         unique_together = ('item', 'demonstration', 'student',)
 
-    # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def save(self, *args, **kwargs):
         if self.mark is not None and self.item.points_possible is not None:
             # ideally, store a value between 0 and 1, but that only happens if 0 <= self.mark <= self.item.points_possible
@@ -245,6 +245,27 @@ class Mark(models.Model):
         from django.core.exceptions import ValidationError
         if self.item.category.fixed_granularity and self.mark and self.mark % self.item.category.fixed_granularity != 0:
             raise ValidationError('Mark does not conform to fixed granularity of {}.'.format(self.item.category.fixed_granularity))
+    
+    def set_grade(self, grade): # in the tradition of Grades.grade
+        if grade is None:
+            self.mark = self.letter_grade = None
+            return
+        try:
+            self.mark = Decimal(grade)
+            self.letter_grade = None
+        except InvalidOperation:
+            self.letter_grade = grade.upper().strip()
+            try:
+                self.mark = Grade.letter_grade_behavior[self.letter_grade][0]
+            except KeyError:
+                self.mark = None
+
+    def get_grade(self):
+        if self.letter_grade is not None:
+            return self.letter_grade
+        else:
+            return self.mark
+
     def __unicode__(self):
         return unicode(self.mark) + u' - ' + unicode(self.student) + u'; ' + unicode(self.item)
     
