@@ -55,7 +55,7 @@ class StudentMeeting(models.Model):
     def display_students(self):
         txt = ''
         for student in self.students.all():
-            txt += '%s, ' % (student)
+            txt += u'%s, ' % (student)
         return unicode(txt[:-2])
         
     class Meta:
