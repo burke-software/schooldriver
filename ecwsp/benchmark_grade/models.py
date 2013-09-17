@@ -259,7 +259,10 @@ class Mark(models.Model):
             try:
                 if self.item.points_possible is None:
                     raise Exception("Cannot assign a letter grade to a Mark whose Item does not have a points possible value")
-                self.mark = Grade.letter_grade_behavior[self.letter_grade][0] * self.item.points_possible
+                self.mark = Grade.letter_grade_behavior[self.letter_grade][0]
+                if self.mark is not None:
+                    # numerical equivalents for letter grade are given as normalized values
+                    self.mark *= self.item.points_possible
             except KeyError:
                 self.mark = None
 
