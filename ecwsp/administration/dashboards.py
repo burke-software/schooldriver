@@ -19,6 +19,13 @@ class EngradeSyncListDashlet(AdminListDashlet):
     required_apps = ('engrade_sync',)
     require_permissions = ('engrade_sync.course_sync',)
     
+
+# Yes I suck and deserve killed for this
+# Don't freak the fuck out when reverse fails
+try:
+    annoying_link = reverse('ecwsp.engrade_sync.views.setup')
+except:
+    annoying_link = ""
 class AdministrationLinksListDashlet(LinksListDashlet):
     links = [
         {
@@ -47,7 +54,7 @@ class AdministrationLinksListDashlet(LinksListDashlet):
         },
         {
             'text': 'Engrade Sync',
-            'link': reverse('ecwsp.engrade_sync.views.setup'),
+            'link': annoying_link,
             'perm': ('sis.reports',),
             'required_apps': ('ecwsp.engrade_sync',),
         },
