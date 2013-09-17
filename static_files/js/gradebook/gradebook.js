@@ -153,12 +153,14 @@ function mark_change(event) {
             if (data.success == "SUCCESS") {
                 var new_value = data.value;
                 $(event.target).replaceWith('<div class="save_success">' + new_value + '</div>');
-                // should be atomic since js is not multithreaded... right?
-                pending_aggregate_pks = pending_aggregate_pks.concat(data.affected_aggregates);
-                // highlight pending immediately, but wait a bit before trying to get calculation result
-                highlight_pending();
-                window.setTimeout(task_poll, 4000);
-                window.setTimeout(highlight_cell, 1000, cell);
+                if(data.affected_aggregates) { // don't concatenate nulls
+                    // should be atomic since js is not multithreaded... right?
+                    pending_aggregate_pks = pending_aggregate_pks.concat(data.affected_aggregates);
+                    // highlight pending immediately, but wait a bit before trying to get calculation result
+                    highlight_pending();
+                    window.setTimeout(task_poll, 4000);
+                    window.setTimeout(highlight_cell, 1000, cell);
+                }
             }
           }, "json"  
         )

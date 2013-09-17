@@ -32,7 +32,7 @@ from ecwsp.schedule.models import Course, MarkingPeriod
 #from ecwsp.schedule.forms import 
 from ecwsp.grades.models import Grade
 from ecwsp.grades.forms import GradeUpload
-#from ecwsp.administration.models import *
+from ecwsp.administration.models import Configuration
 from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule, AggregateTask
 from ecwsp.benchmark_grade.forms import GradebookFilterForm, ItemForm, DemonstrationForm, FillAllForm
 from ecwsp.benchmarks.models import Benchmark
@@ -522,7 +522,7 @@ def ajax_get_fill_all_form(request, course_id, object_type, object_id):
                 )
         if form.is_valid():
             for m in item_or_demonstration.mark_set.all():
-                m.mark = form.cleaned_data['mark']
+                m.set_grade(form.cleaned_data['mark'])
                 m.save()
             messages.success(request, 'Marked all students {} for {}'.format(form.cleaned_data['mark'], item_or_demonstration))
             return HttpResponse('SUCCESS')
@@ -553,9 +553,9 @@ def ajax_save_grade(request):
             return HttpResponse(status=403)
 
         if len(value) and value.lower != 'none':
-            mark.mark = value
+            mark.set_grade(value)
         else:
-            mark.mark = None
+            mark.set_grade(None)
             value = 'None'
         try:
             with reversion.create_revision():
@@ -565,7 +565,12 @@ def ajax_save_grade(request):
                 reversion.set_comment("gradebook")
         except Exception as e:
             return HttpResponse(e, status=400)
-        affected_agg_pks = [x.pk for x in gradebook_recalculate_on_mark_change(mark)]
+        try:
+            affected_agg_pks = [x.pk for x in gradebook_recalculate_on_mark_change(mark)]
+        except:
+            # BAD BAD BAD... stale Aggregates ahead!
+            logging.error("Mark {} saved successfully but Aggregate calculation failed".format(mark.pk), exc_info=True)
+            affected_agg_pks = None
         # just the whole course average for now
         # TODO: update filtered average
         #average = gradebook_get_average(mark.student, mark.item.course, None, None, None) 
@@ -785,4 +790,5 @@ def comments(request, course_id):
     return render_to_response('benchmark_grade/comments.html', {
         'course' : course,
         'marking_periods': marking_periods,
+        'max_length': Configuration.get_or_default('Grade comment length limit').value,
     }, RequestContext(request, {}),)

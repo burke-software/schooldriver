@@ -20,9 +20,10 @@ from django.db import models
 from django.db.models import Avg, Count, Max, Min, StdDev, Sum, Variance
 #from django.contrib.localflavor.us.models import *
 from django.conf import settings
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from datetime import datetime
 from ecwsp.grades.models import Grade
+import logging
 
 ####### TURN ME INTO A MANAGER #######
 def benchmark_find_calculation_rule(school_year):
@@ -230,10 +231,10 @@ class Mark(models.Model):
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     normalized_mark = models.FloatField(blank=True, null=True)
+    letter_grade = models.CharField(max_length=3, blank=True, null=True, help_text="Overrides numerical Mark.")
     class Meta:
         unique_together = ('item', 'demonstration', 'student',)
 
-    # I haven't decided how I want to handle letter grades yet. TC never enters grades as letters.
     def save(self, *args, **kwargs):
         if self.mark is not None and self.item.points_possible is not None:
             # ideally, store a value between 0 and 1, but that only happens if 0 <= self.mark <= self.item.points_possible
@@ -245,6 +246,32 @@ class Mark(models.Model):
         from django.core.exceptions import ValidationError
         if self.item.category.fixed_granularity and self.mark and self.mark % self.item.category.fixed_granularity != 0:
             raise ValidationError('Mark does not conform to fixed granularity of {}.'.format(self.item.category.fixed_granularity))
+    
+    def set_grade(self, grade): # in the tradition of Grades.grade
+        if grade is None:
+            self.mark = self.letter_grade = None
+            return
+        try:
+            self.mark = Decimal(grade)
+            self.letter_grade = None
+        except InvalidOperation:
+            self.letter_grade = grade.upper().strip()
+            try:
+                if self.item.points_possible is None:
+                    raise Exception("Cannot assign a letter grade to a Mark whose Item does not have a points possible value")
+                self.mark = Grade.letter_grade_behavior[self.letter_grade][0]
+                if self.mark is not None:
+                    # numerical equivalents for letter grade are given as normalized values
+                    self.mark *= self.item.points_possible
+            except KeyError:
+                self.mark = None
+
+    def get_grade(self):
+        if self.letter_grade is not None:
+            return self.letter_grade
+        else:
+            return self.mark
+
     def __unicode__(self):
         return unicode(self.mark) + u' - ' + unicode(self.student) + u'; ' + unicode(self.item)
     
@@ -391,6 +418,15 @@ class Aggregate(models.Model):
             raise Exception('Contradictory display_as substitutions for Aggregate {}: {}'.format(self.pk, plures))
         return unus
 
+    def _fallback_points_possible(self):
+        if self.points_possible is not None:
+            return self.points_possible
+        if self.category is not None and self.category.fixed_points_possible is not None:
+            return self.category.fixed_points_possible
+        rule = self.calculation_rule
+        if rule is not None and rule.points_possible is not None:
+            return rule.points_possible
+
     def max(self):
         if self.points_possible is None:
             #return None
@@ -407,25 +443,17 @@ class Aggregate(models.Model):
             return None, display_as
 
     def min(self):
-        if self.points_possible is None:
-            #return None
-            # This is dumb. Probably should eradicate and use Category.points_possible
-            self.points_possible = 4
         mark_values_list = self.mark_values_list(normalize=True)
         if not len(mark_values_list):
             return None, None
         mark, display_as, item_points_possible = zip(*mark_values_list)
         display_as = self._e_pluribus_unum(display_as)
         if len(mark):
-            return Decimal(min(mark)) * self.points_possible
+            return Decimal(min(mark)) * self._fallback_points_possible()
         else:
             return None, display_as
 
     def mean(self, normalize=False):
-        if self.points_possible is None:
-            #return None
-            # This is dumb. Probably should eradicate and use Category.points_possible
-            self.points_possible = 4
         mark_values_list = self.mark_values_list(normalize)
         if not len(mark_values_list):
             return None, None
@@ -433,7 +461,7 @@ class Aggregate(models.Model):
         display_as = self._e_pluribus_unum(display_as)
         total_points_possible = sum(item_points_possible)
         if total_points_possible:
-            return Decimal(sum(mark) / total_points_possible) * self.points_possible, display_as
+            return Decimal(sum(mark) / total_points_possible) * self._fallback_points_possible(), display_as
         else:
             return None, display_as
 
@@ -446,7 +474,16 @@ class Aggregate(models.Model):
             g.letter_grade = self.cached_substitution[:letter_grade_max_length]
             g.grade = None
         else:
-            g.set_grade(self.cached_value)
+            grade_max_value = Grade._meta.get_field_by_name('grade')[0]
+            # whee...
+            grade_max_value = 10 ** (grade_max_value.max_digits - grade_max_value.decimal_places) - 10 ** (-1 * grade_max_value.decimal_places)
+            if self.cached_value > grade_max_value:
+                # people abuse points_possible (set marks way above it),
+                # either to give out extra credit or because they are just screwing around.
+                # don't attempt to set a Grade larger than the maximum permissable value
+                g.set_grade(grade_max_value)
+            else:
+                g.set_grade(self.cached_value)
         g.save()
         return g, g_created
 

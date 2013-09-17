@@ -18,6 +18,7 @@ def check_fixed_points_possible(request, category):
 @dajaxice_register
 def save_marking_period_average_comment(request, grade_pk, comment):
     dajax = Dajax()
+    message = ""
     try:
         marking_period_average = Grade.objects.get(pk=grade_pk)
         authorized = False
@@ -29,18 +30,28 @@ def save_marking_period_average_comment(request, grade_pk, comment):
                 # regular folk can't touch inactive marking periods
                 if marking_period_average.marking_period.active:
                     authorized = True
+                else:
+                    message = "You may not modify an inactive marking period."
+            else:
+                message = "You may not modify this course."
         if not authorized:
-            raise Exception() # ew. get a message framework already.
+            raise Exception(message)
         if marking_period_average.comment != comment:
             marking_period_average.comment = comment
+            marking_period_average.full_clean() # save() doesn't do validation
             marking_period_average.save()
-            dajax.remove_css_class('#grade-comment{}'.format(grade_pk), 'danger')
             dajax.add_css_class('#grade-comment{}'.format(grade_pk), 'success')
         else:
             # we did nothing
-            dajax.remove_css_class('#grade-comment{}'.format(grade_pk), 'danger')
             dajax.remove_css_class('#grade-comment{}'.format(grade_pk), 'success')
-    except:
+        dajax.remove_css_class('#grade-comment{}'.format(grade_pk), 'danger')
+        dajax.script('hideAttentionGetter();')
+    except Exception as e:
         dajax.remove_css_class('#grade-comment{}'.format(grade_pk), 'success')
         dajax.add_css_class('#grade-comment{}'.format(grade_pk), 'danger')
+        if hasattr(e, 'messages'):
+            message = '; '.join(e.messages)
+        elif hasattr(e, 'message'):
+            message = e.message
+        dajax.script('showAttentionGetter("{}");'.format(message))
     return dajax.json()

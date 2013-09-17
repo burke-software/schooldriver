@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MaxLengthValidator
 from ecwsp.schedule.models import *
 
 from decimal import Decimal, ROUND_HALF_UP
@@ -22,7 +23,8 @@ class Grade(models.Model):
     date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     override_final = models.BooleanField(help_text="Override final grade for marking period instead of calculating it.")
-    comment = models.CharField(max_length=500, blank=True)
+    comment = models.CharField(max_length=500, blank=True, validators=[
+        MaxLengthValidator(int(Configuration.get_or_default('Grade comment length limit').value))])
     letter_grade_choices = (
             ("I", "Incomplete"),
             ("P", "Pass"),
@@ -33,8 +35,19 @@ class Grade(models.Model):
             ("D", "D"),
             ("HP", "High Pass"),
             ("LP", "Low Pass"),
+            ("M", "Missing"),
         )
     letter_grade = models.CharField(max_length=2, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
+    letter_grade_behavior = {
+        # Letter grade: (*normalized* value for calculations, dominate any average)
+        "I": (None, True),
+        "P": (1, False),
+        "F": (0, False),
+        # Should A be 90 or 100? A-D aren't used in calculations yet, so just omit them.
+        "HP": (1, False),
+        "LP": (1, False),
+        "M": (0, False),
+    }
     
     class Meta:
         unique_together = (("student", "course", "marking_period"),)

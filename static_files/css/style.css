@@ -264,7 +264,8 @@ input.timecard-datefield { width: 80%; font: Helvetica, sans-serif; border-radiu
 .timecard-comments p{ font: 0.8em Helvetica, sans-serif; }
 textarea.timecard-commentsbox { width: 80%; height: 80px; font: 0.8em Helvetica, sans-serif; border-radius: 3px; -webkit-border-radius: 3px; outline: none; display: inline-block; border: 1px solid #CCC; padding: 5px; resize: none; }
 
-select.timecard-performance { font: 1.2em Helvetica, sans-serif; }
+/* don't apply directly to select or IE 8 will have a spasm. http://stackoverflow.com/a/13185577 */
+select.timecard-performance option { font: 1.2em Helvetica, sans-serif; }
 
 
 /* SUBMITTED CARD TABLE */
