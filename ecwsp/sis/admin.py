@@ -88,6 +88,18 @@ class StudentECInline(admin.TabularInline):
 class MarkingPeriodInline(admin.StackedInline):
     model = MarkingPeriod
     extra = 0
+    fieldsets = (
+        ('', {
+            'fields': ('active','name','shortname',('start_date','end_date'),
+                       'grades_due','school_year','show_reports',
+                       'school_days','weight'),
+        },),
+        ('Change active days', {
+            'classes': ('grp-collapse grp-closed',),
+            'fields': ('monday','tuesday','wednesday','thursday',
+                       'friday','saturday','sunday',),
+        },),
+    )
 
 class StudentCourseInline(admin.TabularInline):
     model = CourseEnrollment

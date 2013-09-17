@@ -1,6 +1,7 @@
 from django.contrib.localflavor.us.models import *
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import m2m_changed
 from custom_field.custom_field import CustomFieldModel
@@ -13,7 +14,10 @@ if not 'ecwsp.standard_test' in settings.INSTALLED_APPS:
     raise ImproperlyConfigured('admissions requires standard_test please add ecwsp.standard_test to INSTALLED_APPS')
 
 class AdmissionLevel(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        validators = [RegexValidator(r'^[a-zA-Z0-9- ]*$', message='Must be Alphanumeric')])
     order = models.IntegerField(unique=True, help_text="Order in which level appears. 1 being first.")
     def __unicode__(self):
         return unicode(self.name)

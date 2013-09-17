@@ -71,6 +71,18 @@ admin.site.register(CourseEnrollment, CourseEnrollmentAdmin)
 
 class MarkingPeriodAdmin(admin.ModelAdmin):
     inlines = [DaysOffInline]
+    fieldsets = (
+        ('', {
+            'fields': ('active','name','shortname',('start_date','end_date'),
+                       'grades_due','school_year','show_reports',
+                       'school_days','weight'),
+        },),
+        ('Change active days', {
+            'classes': ('grp-collapse grp-closed',),
+            'fields': ('monday','tuesday','wednesday','thursday',
+                       'friday','saturday','sunday',),
+        },),
+    )
 admin.site.register(MarkingPeriod, MarkingPeriodAdmin)
 
 admin.site.register(Period)

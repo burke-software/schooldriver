@@ -35,9 +35,13 @@ class MarkingPeriod(models.Model):
     shortname = models.CharField(max_length=255) 
     start_date = models.DateField(validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(validators=settings.DATE_VALIDATORS)
+    grades_due = models.DateField(validators=settings.DATE_VALIDATORS, blank=True, null=True,
+				  help_text="If filled out, teachers will be notified when grades are due.")
     school_year = models.ForeignKey('sis.SchoolYear')
     active = models.BooleanField(help_text="Teachers may only enter grades for active marking periods. There may be more than one active marking period.")
     show_reports = models.BooleanField(default=True, help_text="If checked this marking period will show up on reports.")
+    school_days = models.IntegerField(blank=True, null=True, help_text="If set, this will be the number of days school is in session. If unset, the value is calculated by the days off.")
+    weight = models.DecimalField(max_digits=5, decimal_places=3, default=1, help_text="Weight for this marking period when calculating grades.")
     monday = models.BooleanField(default=True)
     tuesday = models.BooleanField(default=True)
     wednesday = models.BooleanField(default=True)
@@ -45,8 +49,6 @@ class MarkingPeriod(models.Model):
     friday = models.BooleanField(default=True)
     saturday = models.BooleanField()
     sunday = models.BooleanField()
-    school_days = models.IntegerField(blank=True, null=True, help_text="If set, this will be the number of days school is in session. If unset, the value is calculated by the days off.")
-    weight = models.DecimalField(max_digits=5, decimal_places=3, default=1, help_text="Weight for this marking period when calculating grades.")
     
     class Meta:
         ordering = ('-start_date',)

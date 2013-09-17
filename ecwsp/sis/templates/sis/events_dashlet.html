@@ -1,0 +1,45 @@
+{% extends "responsive_dashboard/dashlet.html" %}
+
+{% block dashlet_body %}
+    {% for alert in news_alerts %}
+        <div class="row">
+            <h4>{{ alert }}</h4>
+        </div>
+    {% endfor %}
+    <div class="row">
+        {% if school_year %}
+            Current School Year:
+            {% if perms.sis.change_schoolyear %}
+                <a href="{% url 'admin:sis_schoolyear_change' school_year.id %}">{{ school_year }}</a>
+            {% else %}
+                {{ school_year }}
+            {% endif %}
+        {% else %}
+            No School Year is Active.
+            {% if perms.sis.change_schoolyear %}
+                Perhaps you want to <a href="{% url 'admin:sis_schoolyear_changelist' %}">change</a> them?
+            {%endif%}
+        {% endif %}
+    </div>
+    <div class="row">
+        {% if marking_period %}
+            It is
+            {% if perms.schedule.change_markingperiod %}
+                <a href="{% url 'admin:schedule_markingperiod_change' marking_period.id %}">{{ marking_period }}</a>
+            {% else %}
+                {{ marking_period }}
+            {% endif %}
+            which ends on {{ marking_period.end_date }}.
+        {% else %}
+            It is currently not a marking period.
+            {% if next_marking_period %}
+                {{ next_marking_period }} starts on {{ next_marking_period.start_date }}
+            {% else %}
+                There is no futuring marking period coming up.
+                {% if perms.schedule.change_markingperiod %}
+                    Perhaps it's time to <a href="{% url 'admin:schedule_markingperiod_changelist' %}">make a new one</a>?
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}
