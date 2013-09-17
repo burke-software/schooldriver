@@ -432,7 +432,7 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
                 mp_denom += 1
 
         if mp_denom > 0:
-            mp_numer *= rule.points_possible
+            mp_numer *= float(rule.points_possible)
             student_numer += mp_numer / mp_denom * mp_denom_before_categories 
             student_denom += mp_denom_before_categories
             mp_denom = mp_denom_before_categories # in this version, mp_denom isn't used again, but this may save someone pain in the future.
