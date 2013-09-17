@@ -39,13 +39,13 @@ class Grade(models.Model):
         )
     letter_grade = models.CharField(max_length=2, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
     letter_grade_behavior = {
-        # Letter grade, value for calculations, dominate any average
+        # Letter grade: (*normalized* value for calculations, dominate any average)
         "I": (None, True),
-        "P": (100, False),
+        "P": (1, False),
         "F": (0, False),
         # Should A be 90 or 100? A-D aren't used in calculations yet, so just omit them.
-        "HP": (100, False),
-        "LP": (100, False),
+        "HP": (1, False),
+        "LP": (1, False),
         "M": (0, False),
     }
     

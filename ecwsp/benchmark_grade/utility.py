@@ -165,7 +165,7 @@ def benchmark_calculate_course_category_aggregate(student, course, category, mar
             if display_as is not None:
                 agg.cached_substitution = display_as
     if category_denom:
-        agg.cached_value = category_numer / category_denom * 4 # TODO: don't hard code this
+        agg.cached_value = category_numer / category_denom * agg._fallback_points_possible()
     else:
         agg.cached_value = None
     if save:
@@ -344,7 +344,7 @@ def gradebook_get_average_and_pk(student, course, category=None, marking_period=
     elif agg.cached_value is not None:
         calculation_rule = benchmark_find_calculation_rule(course.marking_period.all()[0].school_year)
         if category is not None and category.display_scale is not None:
-            pretty = agg.cached_value / 4 * category.display_scale # TODO: use agg.points_possible (and actually set it when aggregates are calculated)
+            pretty = agg.cached_value / agg._fallback_points_possible() * category.display_scale
             pretty = '{}{}'.format(pretty.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP), category.display_symbol)
         else:
             pretty = agg.cached_value.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP)
@@ -362,7 +362,7 @@ def gradebook_get_category_average(student, category, marking_period):
     elif agg.cached_value is not None:
         calculation_rule = benchmark_find_calculation_rule(marking_period.school_year)
         if category.display_scale is not None:
-            pretty = agg.cached_value / 4 * category.display_scale # TODO: use agg.points_possible (and actually set it when aggregates are calculated)
+            pretty = agg.cached_value / agg._fallback_points_possible() * category.display_scale
             pretty = '{}{}'.format(pretty.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP), category.display_symbol)
         else:
             pretty = agg.cached_value.quantize(Decimal(10) ** (-1 * calculation_rule.decimal_places), ROUND_HALF_UP)
@@ -432,7 +432,7 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
                 mp_denom += 1
 
         if mp_denom > 0:
-            mp_numer *= 4 # HARD CODED 4.0 SCALE!!!
+            mp_numer *= rule.points_possible
             student_numer += mp_numer / mp_denom * mp_denom_before_categories 
             student_denom += mp_denom_before_categories
             mp_denom = mp_denom_before_categories # in this version, mp_denom isn't used again, but this may save someone pain in the future.
