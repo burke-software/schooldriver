@@ -16,6 +16,11 @@ class GradeComment(models.Model):
         ordering = ('id',)
         
 
+def grade_comment_length_validator(value):
+    max_length = int(Configuration.get_or_default('Grade comment length limit').value)
+    validator = MaxLengthValidator(max_length)
+    return validator(value)
+
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
     course = models.ForeignKey(Course)
@@ -23,8 +28,7 @@ class Grade(models.Model):
     date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     override_final = models.BooleanField(help_text="Override final grade for marking period instead of calculating it.")
-    comment = models.CharField(max_length=500, blank=True, validators=[
-        MaxLengthValidator(int(Configuration.get_or_default('Grade comment length limit').value))])
+    comment = models.CharField(max_length=500, blank=True, validators=[grade_comment_length_validator])
     letter_grade_choices = (
             ("I", "Incomplete"),
             ("P", "Pass"),

@@ -50,8 +50,8 @@ def save_marking_period_average_comment(request, grade_pk, comment):
         dajax.remove_css_class('#grade-comment{}'.format(grade_pk), 'success')
         dajax.add_css_class('#grade-comment{}'.format(grade_pk), 'danger')
         if hasattr(e, 'messages'):
-            message = '; '.join(e.messages)
+            message = u'; '.join(e.messages)
         elif hasattr(e, 'message'):
             message = e.message
-        dajax.script('showAttentionGetter("{}");'.format(message))
+        dajax.script(u'showAttentionGetter("{}");'.format(message))
     return dajax.json()
