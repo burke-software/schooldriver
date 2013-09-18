@@ -186,35 +186,6 @@ class ReportField(models.Model):
         return unicode(self.name)
 
 
-class MdlUser(models.Model):
-    """Generic person model. Named when it was though sword would depend
-    heavily with Moodle. A person is any person in the school, such as a student
-    or teacher. It's not a login user though may be related to a login user"""
-    inactive = models.BooleanField()
-    username = models.CharField(unique=True, max_length=255)
-    fname = models.CharField(max_length=300, verbose_name="First Name")
-    lname = models.CharField(max_length=300, verbose_name="Last Name")
-    email = models.EmailField(blank=True)
-    city = models.CharField(max_length=360, blank=True)
-    class Meta:
-        ordering = ('lname','fname')
-        
-    def __unicode__(self):
-        return self.lname + ", " + self.fname
-    
-    @property
-    def deleted(self):
-        # For backwards compatibility
-        return self.inactive
-        
-    def django_user(self):
-        return User.objects.get(username=self.username)
-        
-        
-        
-########################################################################
-
-
 class PhoneNumber(models.Model):
     number = PhoneNumberField()
     ext = models.CharField(max_length=10, blank=True, null=True)
@@ -309,15 +280,15 @@ class EmergencyContactNumber(PhoneNumber):
             return self.get_type_display() + ":" + self.number
 
 
-class Faculty(MdlUser):
-    alt_email = models.EmailField(blank=True)
+class Faculty(models.Model):
+    user = models.OneToOneField(User)
     number = PhoneNumberField(blank=True)
     ext = models.CharField(max_length=10, blank=True, null=True)
     teacher = models.BooleanField()
     
     class Meta:
         verbose_name_plural = "Faculty"
-        ordering = ("lname", "fname")
+        ordering = ("user__last_name", "user__first_name")
     
     def save(self, *args, **kwargs):
         if Student.objects.filter(id=self.id).count():
@@ -427,8 +398,8 @@ def get_default_language():
     if LanguageChoice.objects.filter(default=True).count():
         return LanguageChoice.objects.filter(default=True)[0]
 
-class Student(MdlUser, CustomFieldModel):
-    """student based on a Moodle user"""
+class Student(models.Model, CustomFieldModel):
+    user = models.OneToOneField(User)
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     pic = ImageWithThumbsField(upload_to="student_pics", blank=True, null=True, sizes=((70,65),(530, 400)))
@@ -450,7 +421,7 @@ class Student(MdlUser, CustomFieldModel):
     parent_email = models.EmailField(blank=True, editable=False)
     
     family_preferred_language = models.ForeignKey(LanguageChoice, blank=True, null=True, default=get_default_language)
-    family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True)
+    family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True, related_name="+")
     alt_email = models.EmailField(blank=True, help_text="Alternative student email that is not their school email.")
     notes = models.TextField(blank=True)
     emergency_contacts = models.ManyToManyField(EmergencyContact, verbose_name="Student Contact", blank=True)

@@ -404,8 +404,8 @@ if 'djcelery' in INSTALLED_APPS:
 INSTALLED_APPS += (
     'grappelli.dashboard',
     'grappelli',
-    'ecwsp.schedule',
     'ecwsp.administration',
+    'ecwsp.schedule',
     'ecwsp.admissions',
     'ecwsp.alumni',
     'ecwsp.discipline',

@@ -136,7 +136,7 @@ class Location(models.Model):
 
 class CourseEnrollment(models.Model):
     course = models.ForeignKey('Course')
-    user = models.ForeignKey('sis.MdlUser')
+    user = models.ForeignKey('auth.User')
     role = models.CharField(max_length=255, default="Student", blank=True)
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance")
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
@@ -218,7 +218,7 @@ class Course(models.Model):
     secondary_teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True, related_name="secondary_teachers")
     homeroom = models.BooleanField(help_text="Homerooms can be used for attendance")
     graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
-    enrollments = models.ManyToManyField('sis.MdlUser', through=CourseEnrollment, blank=True, null=True)
+    enrollments = models.ManyToManyField('auth.User', through=CourseEnrollment, blank=True, null=True)
     description = models.TextField(blank=True)
     credits = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Credits effect gpa.")
     department = models.ForeignKey(Department, blank=True, null=True)
