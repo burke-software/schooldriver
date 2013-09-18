@@ -76,7 +76,7 @@ class CompanyAdmin(admin.ModelAdmin):
             txt += '<a href="{0}">{0}</a>'.format(settings.BASE_URL + reverse('ecwsp.work_study.views.company_contract1', args=(context['original'].id,)))
             context['adminform'].form.fields['name'].help_text = txt
         return super(CompanyAdmin, self).render_change_form(request, context, args, kwargs)
-    search_fields = ('workteam__studentworker__fname', 'workteam__studentworker__lname', 'workteam__team_name')
+    search_fields = ('workteam__studentworker__first_name', 'workteam__studentworker__last_name', 'workteam__team_name')
     list_display = ('name','fte')
     inlines = [CompContractInline]
 admin.site.register(Company, CompanyAdmin)
@@ -88,7 +88,7 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
         """override to hide inactive workteams by default"""
         try:
             test = request.META['HTTP_REFERER'].split(request.META['PATH_INFO'])
-            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('inactive__exact'):
+            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('is_active__exact'):
                 return HttpResponseRedirect("/admin/work_study/workteam/?inactive__exact=0")
         except: pass # In case there is no referer
         return super(WorkTeamAdmin,self).changelist_view(request, extra_context=extra_context)
@@ -176,8 +176,8 @@ class StudentAdmin(ReadPermissionModelAdmin):
         """override to hide inactive students by default"""
         try:
             test = request.META['HTTP_REFERER'].split(request.META['PATH_INFO'])
-            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('inactive__exact') and not request.GET.has_key('id__in'):
-                return HttpResponseRedirect("/admin/work_study/studentworker/?inactive__exact=0")
+            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('is_active__exact') and not request.GET.has_key('id__in'):
+                return HttpResponseRedirect("/admin/work_study/studentworker/?is_active__exact=1")
         except: pass # In case there is no referer
         return super(StudentAdmin,self).changelist_view(request, extra_context=extra_context)
 
@@ -234,7 +234,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
         return super(StudentAdmin, self).render_change_form(request, context, *args, **kwargs)
         
     fieldsets = [
-        (None, {'fields': ['inactive', ('fname', 'lname'), 'mname', 'sex', 'bday', 'day', 'transport_exception',
+        (None, {'fields': ['is_active', ('first_name', 'last_name'), 'mname', 'sex', 'bday', 'day', 'transport_exception',
                            'pic', 'unique_id', 'adp_number', 'ssn', 'username', 'work_permit_no',
                            'year', 'placement', ('school_pay_rate', 'student_pay_rate'),
                            ('am_route','pm_route'), 'primary_contact']}),
@@ -251,11 +251,11 @@ class StudentAdmin(ReadPermissionModelAdmin):
         return super(StudentAdmin, self).get_readonly_fields(request, obj=obj)
 
     inlines = [StudentNumberInline, StudentFileInline, CompanyHistoryInline]
-    list_filter = ['day', 'year', 'inactive','placement__cras']
-    list_display = ('fname', 'lname', 'day', 'company', 'pickUp', 'cra', 'contact')
+    list_filter = ['day', 'year', 'is_active','placement__cras']
+    list_display = ('first_name', 'last_name', 'day', 'company', 'pickUp', 'cra', 'contact')
     filter_horizontal = ('handout33',)
-    search_fields = ['fname', 'lname', 'unique_id', 'placement__team_name', 'username', 'id']
-    readonly_fields = ['inactive', 'fname', 'lname', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']    
+    search_fields = ['first_name', 'last_name', 'unique_id', 'placement__team_name', 'username', 'id']
+    readonly_fields = ['is_active', 'first_name', 'last_name', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']    
 admin.site.register(StudentWorker, StudentAdmin)
 admin.site.register(StudentWorkerRoute)
 admin.site.register(PresetComment)
@@ -264,8 +264,8 @@ class StudentInteractionAdmin(admin.ModelAdmin):
     form = make_ajax_form(StudentInteraction, dict(student='studentworker'))
     
     list_display = ('students', 'date', 'type', 'cra', 'comment_Brief', 'reported_by')
-    list_filter = ['type', 'date', 'student','student__inactive']
-    search_fields = ['comments', 'student__fname', 'student__lname', 'type', 'companies__team_name', 'reported_by__first_name' , 'reported_by__last_name']
+    list_filter = ['type', 'date', 'student','student__is_active']
+    search_fields = ['comments', 'student__first_name', 'student__last_name', 'type', 'companies__team_name', 'reported_by__first_name' , 'reported_by__last_name']
     filter_horizontal = ('preset_comment',)
     readonly_fields = ['companies', ]
     fields = ['type', 'student', 'comments', 'preset_comment','companies', 'reported_by']
@@ -327,9 +327,9 @@ class TimeSheetAdmin(admin.ModelAdmin):
             context['adminform'].form.fields['approved'].help_text = 'Supervisor Approve Link <a href="%s">%s</a>' % (url,url)
         return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
         
-    search_fields = ['student__fname', 'student__lname', 'company__team_name']
+    search_fields = ['student__first_name', 'student__last_name', 'company__team_name']
     list_filter = [('date', DateRangeFilter),'creation_date', 'approved', 'performance', 'for_pay', 'make_up', 'company',
-                   'student__inactive']
+                   'student__is_active']
     list_display = ('student', 'date', 'company', 'performance', 'student_Accomplishment_Brief', 'supervisor_Comment_Brief',
                     'approved', 'for_pay', 'make_up',)
     readonly_fields = ['hours', 'school_net', 'student_net', 'creation_date']
@@ -342,7 +342,7 @@ admin.site.register(CompanyHistory)
 
 class AttendanceAdmin(admin.ModelAdmin):
     form = make_ajax_form(Attendance, dict(student='studentworker'))
-    search_fields = ['student__fname', 'student__lname', 'absence_date']
+    search_fields = ['student__first_name', 'student__last_name', 'absence_date']
     list_editable = ('makeup_date','reason', 'fee', 'billed')
     list_filter = [('absence_date', DateRangeFilter), 'makeup_date', 'reason', 'fee', 'student','tardy']
     list_display = ('absence_date', 'makeup_date', 'reason', 'fee', 'student', 'billed','tardy')
@@ -382,7 +382,7 @@ class ClientVisitAdmin(admin.ModelAdmin):
 admin.site.register(ClientVisit, ClientVisitAdmin)
 
 class SurveyAdmin(admin.ModelAdmin):
-    search_fields = ['student__fname', 'student__lname','survey','question','answer','company__team_name']
+    search_fields = ['student__first_name', 'student__last_name','survey','question','answer','company__team_name']
     list_display = ('survey', 'student', 'question', 'answer', 'date', 'company')
     list_filter = ['survey','question']
 admin.site.register(Survey, SurveyAdmin)

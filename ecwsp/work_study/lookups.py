@@ -7,8 +7,8 @@ class StudentLookup(LookupChannel):
     def get_query(self,q,request):
         qs = Student.objects.all()
         for word in q.split():
-            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word) | Q(username__istartswith=q))
-        return qs.order_by('lname')
+            qs = qs.filter(Q(last_name__icontains=word) | Q(first_name__icontains=word) | Q(username__istartswith=q))
+        return qs.order_by('last_name')
 
     def format_match(self,student):
         year = student.year
@@ -25,7 +25,7 @@ class StudentLookup(LookupChannel):
             if not company: company = "No placement"
         except: company = "None"
         txt = '<img align="left" src="%s"/> %s %s <br/>%s<br/>%s' \
-             % (image, student.fname, student.lname, year, company)
+             % (image, student.first_name, student.last_name, year, company)
         return txt
 
     def format_item_display(self,student):
@@ -46,11 +46,11 @@ class StudentLookup(LookupChannel):
         if student.primary_contact:
             contact_number = student.primary_contact.phone
         txt = '<img align="left" src="%s"/> <a href=\"/sis/get_student/%s/\" target=\"_blank\">  %s %s</a><br/>%s<br/>CRA: %s<br/>%s<br/>%s %s' \
-             % (image, student.id, student.fname, student.lname, year, cra, company, student.primary_contact, contact_number)
+             % (image, student.id, student.first_name, student.last_name, year, cra, company, student.primary_contact, contact_number)
         return txt
 
     def get_objects(self,ids):
-        return Student.objects.filter(pk__in=ids).order_by('lname')
+        return Student.objects.filter(pk__in=ids).order_by('last_name')
 
 
 

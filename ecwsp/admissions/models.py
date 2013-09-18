@@ -173,7 +173,7 @@ class Applicant(models.Model, CustomFieldModel):
         null=True,
         on_delete=models.SET_NULL,
         default=get_default_language)
-    siblings = models.ManyToManyField('sis.Student', blank=True)
+    siblings = models.ManyToManyField('sis.Student', blank=True, related_name="+")
     year = models.ForeignKey(
         'sis.GradeLevel',
         blank=True,

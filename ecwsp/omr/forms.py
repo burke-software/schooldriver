@@ -18,7 +18,7 @@ class TestForm(forms.ModelForm):
         fields = ('name', 'school_year', 'teachers', 'department', 'marking_period', 'courses')
     teachers = AutoCompleteSelectMultipleField('faculty', required=True, help_text="")
     students = forms.ModelMultipleChoiceField(
-        queryset = Student.objects.filter(inactive=False),
+        queryset = Student.objects.filter(is_active=True),
         widget = forms.SelectMultiple(attrs={'class':'multiselect'}),
         required = False
         )

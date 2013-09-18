@@ -18,8 +18,8 @@ class StudentLookup(LookupChannel):
         if not UserPreference.objects.get_or_create(user=request.user)[0].include_deleted_students:
             qs = qs.filter(inactive=False)
         for word in q.split():
-            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word))
-        return qs.order_by('lname')
+            qs = qs.filter(Q(last_name__icontains=word) | Q(first_name__icontains=word))
+        return qs.order_by('last_name')
 
     def format_match(self,student):
         year = student.year
@@ -27,7 +27,7 @@ class StudentLookup(LookupChannel):
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
         return '<div style="width:250px;"><img style="float:left; margin-right: 3px;" src="%s" /> %s %s <br/> %s </div> <div style="clear: both;"/>' \
-            % (image, student.fname, student.lname, year)
+            % (image, student.first_name, student.last_name, year)
 
     def format_item_display(self,student):
         year = student.year
@@ -35,10 +35,10 @@ class StudentLookup(LookupChannel):
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
         return '<div style="min-width:250px; min-height:53px;"><img style="float:left; margin-right: 3px;" src="%s" /> %s %s <br/> %s </div><div/>' \
-            % (image, student.fname, student.lname, year) 
+            % (image, student.first_name, student.last_name, year) 
 
     def get_objects(self,ids):
-        return Student.objects.filter(pk__in=ids).order_by('lname')
+        return Student.objects.filter(pk__in=ids).order_by('last_name')
 
 
 class AllStudentLookup(StudentLookup):
@@ -46,8 +46,8 @@ class AllStudentLookup(StudentLookup):
     def get_query(self,q,request):
         qs = Student.objects.all()
         for word in q.split():
-            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word))
-        return qs.order_by('lname')
+            qs = qs.filter(Q(last_name__icontains=word) | Q(first_name__icontains=word))
+        return qs.order_by('last_name')
 
 class StudentLookupSmall(StudentLookup):
     def format_match(self,student):
@@ -56,10 +56,10 @@ class StudentLookupSmall(StudentLookup):
         image = student.pic.url_70x65
         if not image: image = "/static/images/noimage.jpg"
         return '<div style="float:left"><img style="height:30px;" src="%s" /></div><div>%s %s<br/>%s</div>' \
-            % (image, student.fname, student.lname, year)
+            % (image, student.first_name, student.last_name, year)
 
     def format_item_display(self,student):
-        return "%s %s" % (student.fname, student.lname)
+        return "%s %s" % (student.first_name, student.last_name)
 
 class EmergencyContactLookup(LookupChannel):
     model = EmergencyContact
@@ -98,11 +98,11 @@ class FacultyLookup(LookupChannel):
     def get_query(self,q,request):
         qs = Faculty.objects.all()
         for word in q.split():
-            qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word) | Q(username__istartswith=q))
-        return qs.order_by('lname')
+            qs = qs.filter(Q(last_name__icontains=word) | Q(first_name__icontains=word) | Q(username__istartswith=q))
+        return qs.order_by('last_name')
 
     def get_objects(self,ids):
-        return Faculty.objects.filter(pk__in=ids).order_by('lname')
+        return Faculty.objects.filter(pk__in=ids).order_by('last_name')
 
 class FacultyUserLookup(object):
     def get_query(self,q,request):

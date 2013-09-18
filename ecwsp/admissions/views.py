@@ -241,9 +241,9 @@ def applicants_to_students(request, year_id):
         applicants = Applicant.objects.filter(ready_for_export=True, sis_student=None, school_year=school_year)
         for appl in applicants:
             student = Student(
-                fname=appl.fname,
+                first_name=appl.fname,
                 mname=appl.mname,
-                lname=appl.lname,
+                last_name=appl.lname,
                 sex=appl.sex,
                 ssn=appl.ssn,
                 bday=appl.bday,
@@ -254,7 +254,7 @@ def applicants_to_students(request, year_id):
                 family_preferred_language=appl.family_preferred_language,
             )
             if not student.username:
-                student.username = imp.gen_username(student.fname, student.lname)
+                student.username = imp.gen_username(student.first_name, student.last_name)
             student.save()
             
             add_worker = Configuration.get_or_default("Admissions to student also makes student worker", "False")

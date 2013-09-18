@@ -127,7 +127,7 @@ class Company(models.Model, CustomFieldModel):
     
     def fte(self):
         try:
-            noStudents = StudentWorker.objects.filter(placement__company=self,inactive=False).count()
+            noStudents = StudentWorker.objects.filter(placement__company=self,is_active=True).count()
             student_fte = Configuration.objects.get_or_create(name="Students per FTE")[0].value
             return noStudents/float(student_fte)
         except:
@@ -423,7 +423,7 @@ class StudentWorker(Student):
     pm_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="pm_student_set")
     
     class Meta:
-        ordering = ('user__active','user__last_name','user__first_name',)
+        ordering = ('is_active','last_name','first_name',)
     
     def company(self):
         try:
@@ -521,12 +521,12 @@ class StudentWorker(Student):
         except: return ""
     
     def __unicode__(self):
-        return unicode(self.lname) + ", " + unicode(self.fname)
+        return unicode(self.last_name) + ", " + unicode(self.first_name)
 
 
 class Survey(models.Model):
     survey = models.CharField(max_length=255, help_text="Title of Survey ex: MP2 2010")
-    student = models.ForeignKey(StudentWorker, limit_choices_to={'inactive': False})
+    student = models.ForeignKey(StudentWorker, limit_choices_to={'is_active': True})
     company = models.ForeignKey(WorkTeam, blank=True, null=True)
     question = models.CharField(max_length=255)
     answer = models.CharField(max_length=510, blank=True)
@@ -575,7 +575,12 @@ class PresetComment(models.Model):
 
 
 class StudentInteraction(models.Model):
-    student = models.ManyToManyField(StudentWorker, limit_choices_to={'inactive': False}, blank=True, help_text="A email will automatically be sent to the CRA of this student if type is mentoring")
+    student = models.ManyToManyField(
+        StudentWorker,
+        limit_choices_to={'is_active': True},
+        blank=True,
+        related_name="student_interaction_set",
+        help_text="A email will automatically be sent to the CRA of this student if type is mentoring")
     reported_by = models.ForeignKey(User, blank=True, null=True)
     date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     type = models.CharField(max_length=1, choices=(('M', 'Mentoring'), ('D', 'Discipline'), ('P', 'Parent'), ('C', 'Company'), ('S', 'Supervisor'), ('O', 'Other')))
