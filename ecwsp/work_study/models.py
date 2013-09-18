@@ -423,7 +423,7 @@ class StudentWorker(Student):
     pm_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="pm_student_set")
     
     class Meta:
-        ordering = ('inactive','lname','fname',)
+        ordering = ('user__active','user__last_name','user__first_name',)
     
     def company(self):
         try:
