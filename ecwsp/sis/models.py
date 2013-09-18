@@ -45,8 +45,8 @@ def create_faculty(instance):
     if True:
         faculty, created = Faculty.objects.get_or_create(username=instance.username)
         if created:
-            faculty.fname = instance.first_name
-            faculty.lname = instance.last_name
+            faculty.first_name = instance.first_name
+            faculty.last_name = instance.last_name
             faculty.email = instance.email
             faculty.teacher = True
             faculty.save()
@@ -280,15 +280,14 @@ class EmergencyContactNumber(PhoneNumber):
             return self.get_type_display() + ":" + self.number
 
 
-class Faculty(models.Model):
-    user = models.OneToOneField(User)
+class Faculty(User):
     number = PhoneNumberField(blank=True)
     ext = models.CharField(max_length=10, blank=True, null=True)
     teacher = models.BooleanField()
     
     class Meta:
         verbose_name_plural = "Faculty"
-        ordering = ("user__last_name", "user__first_name")
+        ordering = ("last_name", "first_name")
     
     def save(self, *args, **kwargs):
         if Student.objects.filter(id=self.id).count():
@@ -398,8 +397,7 @@ def get_default_language():
     if LanguageChoice.objects.filter(default=True).count():
         return LanguageChoice.objects.filter(default=True)[0]
 
-class Student(models.Model, CustomFieldModel):
-    user = models.OneToOneField(User)
+class Student(User, CustomFieldModel):
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     pic = ImageWithThumbsField(upload_to="student_pics", blank=True, null=True, sizes=((70,65),(530, 400)))
@@ -417,6 +415,7 @@ class Student(models.Model, CustomFieldModel):
     parent_guardian = models.CharField(max_length=150, blank=True, editable=False)
     street = models.CharField(max_length=150, blank=True, editable=False)
     state = USStateField(blank=True, editable=False, null=True)
+    city = models.CharField(max_length=255, blank=True)
     zip = models.CharField(max_length=10, blank=True, editable=False)
     parent_email = models.EmailField(blank=True, editable=False)
     
@@ -439,9 +438,20 @@ class Student(models.Model, CustomFieldModel):
             ("reports", "View reports"),
         )
     report_builder_exclude_fields = ('alert',)
-    
+
     def __unicode__(self):
-        return u"{0}, {1}".format(self.lname, self.fname)
+        return u"{0}, {1}".format(self.last_name, self.first_name)
+    
+    def get_absolute_url():
+        pass
+    
+    # Legacy first and last name properties
+    @property
+    def fname(self, ):
+        return self.first_name
+    @property
+    def lname(self, ):
+        return self.last_name    
     
     @property
     def primary_cohort(self):
@@ -638,11 +648,9 @@ class Student(models.Model, CustomFieldModel):
             except:
                 return None
     
-    def save(self, *args, **kwargs):
-        if Faculty.objects.filter(id=self.id).count():
-            raise ValidationError('Cannot have someone be a student AND faculty!')
+    def save(self, creating_worker=False, *args, **kwargs):
         self.cache_cohorts()
-        if self.inactive == True and (Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "True" \
+        if self.is_active == False and (Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "True" \
         or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "true" \
         or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "T"):
             try:
@@ -652,12 +660,19 @@ class Student(models.Model, CustomFieldModel):
         self.determine_year()
             
         super(Student, self).save(*args, **kwargs)
-        user, created = User.objects.get_or_create(username=self.username)
-        if created:
-            user.password = "!"
-            user.save()
+        
+        # Create student worker if the app is installed.
+        # No other way to do it see:
+        # https://code.djangoproject.com/ticket/7623
+        if 'ecwsp.work_study' in settings.INSTALLED_APPS:
+            if not creating_worker and not hasattr(self, 'studentworker_ptr'):
+                from ecwsp.work_study.models import StudentWorker
+                worker = StudentWorker(user_ptr_id=self.user_ptr_id)
+                worker.__dict__.update(self.__dict__)
+                worker.save(creating_worker=True)
+        
         group, gcreated = Group.objects.get_or_create(name="students")
-        user.groups.add(group)
+        self.user_ptr.groups.add(group)
         
         
     def clean(self, *args, **kwargs):

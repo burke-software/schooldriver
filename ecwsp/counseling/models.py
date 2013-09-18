@@ -38,7 +38,7 @@ class StudentMeetingCategory(models.Model):
         return unicode(self.name)
 
 class StudentMeeting(models.Model):
-    students = models.ManyToManyField(Student)
+    students = models.ManyToManyField(Student, related_name="student_meeting_set")
     category = models.ForeignKey(StudentMeetingCategory,blank=True,null=True)
     date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     notes = RichTextField(blank=True)
@@ -76,7 +76,7 @@ class ReferralForm(models.Model):
     classroom_teacher = models.ForeignKey(User,limit_choices_to = {'groups__name': 'faculty'},related_name='referral_classroom_teacher')
     date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     referred_by = models.ForeignKey(User,limit_choices_to = {'groups__name': 'faculty'})
-    student = models.ForeignKey(Student)
+    student = models.ForeignKey(Student, related_name="+")
     comments = models.TextField(blank=True)
     referral_reasons = models.ManyToManyField(ReferralReason, blank=True,null=True)
     
