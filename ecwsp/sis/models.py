@@ -290,8 +290,8 @@ class Faculty(User):
         ordering = ("last_name", "first_name")
     
     def save(self, *args, **kwargs):
-        if Student.objects.filter(id=self.id).count():
-            raise ValidationError('Cannot have someone be a student AND faculty!')
+        #if Student.objects.filter(id=self.id).count():
+        #    raise ValidationError('Cannot have someone be a student AND faculty!')
         super(Faculty, self).save(*args, **kwargs)
         user, created = User.objects.get_or_create(username=self.username)
         if created:
