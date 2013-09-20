@@ -55,8 +55,8 @@ class ReportManager(object):
         row_answers = ["Student"]
         row_abc = ["Student"]
         for i,question in enumerate(test.question_set.all()):
-            row_points.append("%s %s" % (question.order, strip_tags(question.question).strip()))
-            row_answers.append("%s %s" % (question.order, strip_tags(question.question).strip()))
+            row_points.append("%s %s" % (question.get_order_start_one, strip_tags(question.question).strip()))
+            row_answers.append("%s %s" % (question.get_order_start_one, strip_tags(question.question).strip()))
             row_abc.append("Question {0}".format(i+1))
         data_points.append(row_points)
         data_answers.append(row_answers)
@@ -143,7 +143,7 @@ class ReportManager(object):
         report = TemplateReport()
         report.file_format = format
         test_instances = test.testinstance_set.all()
-        benchmarks = Benchmark.objects.filter(question__test=test)
+        benchmarks = Benchmark.objects.filter(question__test=test).distinct()
         
         for benchmark in benchmarks:
             benchmark.points_possible = test.question_set.filter(benchmarks=benchmark).aggregate(Sum('point_value'))['point_value__sum']
@@ -158,7 +158,7 @@ class ReportManager(object):
                 benchmark_instance.points_earned = benchmark_instance.answers.aggregate(Sum('points_earned'))['points_earned__sum']
                 benchmark_instance.questions = ''
                 for answer in benchmark_instance.answers.all():
-                    benchmark_instance.questions += '{}, '.format(answer.question.order)
+                    benchmark_instance.questions += '{}, '.format(answer.question.get_order_start_one)
                 benchmark_instance.questions = benchmark_instance.questions[:-2]
                 benchmark_instances.append(benchmark_instance)
             test_instance.benchmarks = benchmark_instances
