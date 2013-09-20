@@ -138,6 +138,22 @@ class ReportManager(object):
         
         return report.as_download()
         
+    def download_teacher_results(self, test, format, template):
+        """ Make appy based report showing results for a whole class """
+        report = TemplateReport()
+        report.file_format = format
+        test_instances = test.testinstance_set.all()
+        benchmarks = Benchmark.objects.filter(question__test=test).distinct()
+        
+        for benchmark in benchmarks:
+            benchmark.points_possible = test.question_set.filter(benchmarks=benchmark).aggregate(Sum('point_value'))['point_value__sum']
+            
+        report.data['test'] = test
+        report.data['tests'] = test_instances
+        
+        report.filename = 'Teacher Results for ' + unicode(test)
+        return report.pod_save(template)  
+        
     def download_student_results(self, test, format, template):
         """ Make appy based report showing results for each student """
         report = TemplateReport()

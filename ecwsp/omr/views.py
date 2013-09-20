@@ -336,12 +336,12 @@ def ajax_new_question_form(request, test_id):
 def ajax_benchmarks_form(request, test_id, question_id):
     question = get_object_or_404(Question, pk=question_id)
     if request.POST:
-        form = QuestionBenchmarkForm(request.POST, instance=question)
+        form = QuestionBenchmarkForm(request.POST, prefix="qid{}".format(question_id), instance=question)
         if form.is_valid():
             form.save()
             form = None
     else:
-        form = QuestionBenchmarkForm(instance=question)
+        form = QuestionBenchmarkForm(prefix="qid{}".format(question_id), instance=question)
     return render_to_response('omr/one_test_question_benchmark.html', {
         'question': question,
         'form': form,
