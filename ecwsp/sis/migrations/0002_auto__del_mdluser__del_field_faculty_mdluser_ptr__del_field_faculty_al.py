@@ -7,59 +7,48 @@ from ecwsp.sis.helper_functions import copy_model_instance
 from django.contrib.auth.models import User
 
 from ecwsp.sis.models import Student, Faculty
+import copy
 
 class Migration(SchemaMigration):
     no_dry_run = True
     def forwards(self, orm):
-        # Adding field 'Student.user_ptr'
-        #db.delete_primary_key('sis_mdluser')
-        #db.delete_primary_key('sis_student')
         db.add_column('sis_student', 'user_ptr_id', models.IntegerField(null=True))
         db.add_column('sis_faculty', 'user_ptr_id', models.IntegerField(null=True))
-        #db.add_column(u'sis_student', u'user_ptr',
-        #              self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'],unique=True, primary_key=True ),
-        #              keep_default=False)
-        # Adding field 'Student.city'
+        print 1
         db.add_column(u'sis_student', 'city',
                       self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True),
                       keep_default=False)
+        print 2
         # Migrate data
         db.execute('update sis_student set user_ptr_id = mdluser_ptr_id;')
         results = db.execute('select mdluser_ptr_id, username, fname, lname from sis_student left join sis_mdluser on sis_mdluser.id=sis_student.mdluser_ptr_id;')
+        print 3
         for (mdluser_ptr_id, username, fname, lname) in results:
             user_collision = db.execute('select id, username from auth_user where id = {};'.format(mdluser_ptr_id))
             if user_collision:
-                print "Collision found student {}".format(username)
+                print user_collision
                 # We want to retain the Student ID. The collided user will just have to change.
                 (collided_id, collided_username) = user_collision[0]
                 # Make a new user, delete the old. Make sure everything is copied.
                 new_user = User.objects.get(id=collided_id)
                 
-                print "Going to move {}".format(new_user.username)
                 temp_username = "migration_move"
                 new_username = new_user.username
                 
-                #db.execute('update auth_user set username="{}" where id={}'.format(temp_username, collided_id))
-                print User.objects.filter(username="DELME")
-                new_user.username = "DELME"
+                new_user.username = "MIGRATIONDELME"
                 new_user.save()
                 new_user.pk = None
                 new_user.username = unicode(new_username)
                 
-                print "Save some asshole now"
                 new_user.save()
-                print "Done"
+                print "Moved collided user to {}".format(new_user.id)
                 bad_user = User.objects.get(id=collided_id)
                 
                 new_user.user_permissions = bad_user.user_permissions.all()
-                print 1
                 new_user.groups = bad_user.groups.all()
-                print 2
-                new_user.userpreference_set = bad_user.userpreference_set.all()
                 new_user.accesslog_set = bad_user.accesslog_set.all()
                 new_user.alumniaction_set = bad_user.alumniaction_set.all()
                 new_user.alumninote_set = bad_user.alumninote_set.all()
-                print 3
                 new_user.applicant_set = bad_user.applicant_set.all()
                 new_user.attendancelog_set = bad_user.attendancelog_set.all()
                 new_user.contactlog_set = bad_user.contactlog_set.all()
@@ -68,7 +57,6 @@ class Migration(SchemaMigration):
                 new_user.cracontact_set = bad_user.cracontact_set.all()
                 new_user.importlog_set = bad_user.importlog_set.all()
                 new_user.importsetting_set = bad_user.importsetting_set.all()
-                print 4
                 new_user.logentry_set = bad_user.logentry_set.all()
                 new_user.referralform_set = bad_user.referralform_set.all()
                 new_user.report_modified_set = bad_user.report_modified_set.all()
@@ -79,32 +67,47 @@ class Migration(SchemaMigration):
                 new_user.studentmeeting_set = bad_user.studentmeeting_set.all()
                 new_user.userdashboard_set = bad_user.userdashboard_set.all()
                 new_user.userpreference_set = bad_user.userpreference_set.all()
-                print 5
-                # Execute indeed
-                #db.execute('delete from auth_user where id={}'.format(mdluser_ptr_id))
-                print "Execute {}".format(collided_id)
-                bad_user.delete()
+                
+                db.execute('delete from auth_user where id={}'.format(collided_id));
+                db.execute('delete from auth_user_groups where user_id={}'.format(collided_id));
+                db.execute('delete from auth_user_user_permissions where user_id={}'.format(collided_id));
+                db.execute('delete from schedule_courseenrollment where user_id={}'.format(collided_id));
+                #bad_user.delete()
             # Now it's safe to switch the ID that we know is free.
-            print "Update ID {}!".format(mdluser_ptr_id)
+            print "Student {}, change auth id to {}".format(username, mdluser_ptr_id)
+            old_student_id = db.execute('select id from auth_user where username="{}"'.format(username))[0][0]
             db.execute(u'update auth_user set id={0}, first_name="{1}", last_name="{2}" where username="{3}"'.format(
-                mdluser_ptr_id, unicode(fname), unicode(lname), unicode(username)));
-            print "Tengo down"
-        
+                mdluser_ptr_id, unicode(fname), unicode(lname), username));
+            # Change the groups over too
+            db.execute('update auth_user_groups set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update auth_user_user_permissions set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update sis_userpreference set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update administration_accesslog set login_id={0} where login_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update alumni_alumniaction set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update alumni_alumninote set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update schedule_courseenrollment set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update admissions_applicant set application_decision_by_id={0} where application_decision_by_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update attendance_attendancelog set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update simple_import_importlog set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update simple_import_importsetting set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update report_builder_report set user_created_id={0} where user_created_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update report_builder_report set user_modified_id={0} where user_modified_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update reversion_revision set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update work_study_studentinteraction set reported_by_id={0} where reported_by_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update counseling_studentmeeting set reported_by_id={0} where reported_by_id={1}'.format(mdluser_ptr_id, old_student_id))
+            db.execute('update responsive_dashboard_userdashboard set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            
+        db.delete_column(u'sis_student', u'mdluser_ptr_id')
+        print 6
         db.delete_table(u'sis_mdluser')
+        print 7
         db.delete_column(u'sis_faculty', u'mdluser_ptr_id')
         db.delete_column(u'sis_faculty', 'alt_email')
-        # FIX
-        #db.add_column(u'sis_faculty', u'user_ptr',
-        #              self.gf('django.db.models.fields.related.OneToOneField')(default=0, to=orm['auth.User'], unique=True, primary_key=True),
-        #              keep_default=False)
-        db.alter_column('sis_faculty', 'user_ptr', self.gf('django.db.models.fields.related.OneToOneField')(default=0, to=orm['auth.User'], unique=True, primary_key=True),)
-        #db.create_primary_key('sis_faculty', 'user_ptr')
-        db.delete_column(u'sis_student', u'mdluser_ptr_id')
-        #FIX
-        #db.add_column(u'sis_student', u'user_ptr',
-        #              self.gf('django.db.models.fields.related.OneToOneField')(default=0, to=orm['auth.User'], unique=True, primary_key=True),
-        #              keep_default=False)
-        db.alter_column('sis_student', 'user_ptr', self.gf('django.db.models.fields.related.OneToOneField')(default=0, to=orm['auth.User'], unique=True, primary_key=True),)
+        
+        db.execute('ALTER TABLE sis_faculty MODIFY COLUMN user_ptr_id INT NOT NULL AUTO_INCREMENT primary key;')
+        
+        print 8
+        db.execute('ALTER TABLE sis_student MODIFY COLUMN user_ptr_id INT NOT NULL AUTO_INCREMENT primary key;')
 
 
     def backwards(self, orm):
