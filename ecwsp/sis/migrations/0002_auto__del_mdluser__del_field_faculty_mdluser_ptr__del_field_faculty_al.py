@@ -21,9 +21,9 @@ class Migration(SchemaMigration):
         print 2
         # Migrate data
         db.execute('update sis_student set user_ptr_id = mdluser_ptr_id;')
-        results = db.execute('select mdluser_ptr_id, username, fname, lname from sis_student left join sis_mdluser on sis_mdluser.id=sis_student.mdluser_ptr_id;')
+        results = db.execute('select mdluser_ptr_id, username, fname, lname, inactive from sis_student left join sis_mdluser on sis_mdluser.id=sis_student.mdluser_ptr_id;')
         print 3
-        for (mdluser_ptr_id, username, fname, lname) in results:
+        for (mdluser_ptr_id, username, fname, lname, inactive) in results:
             user_collision = db.execute('select id, username from auth_user where id = {};'.format(mdluser_ptr_id))
             if user_collision:
                 print user_collision
@@ -78,6 +78,8 @@ class Migration(SchemaMigration):
             old_student_id = db.execute('select id from auth_user where username="{}"'.format(username))[0][0]
             db.execute(u'update auth_user set id={0}, first_name="{1}", last_name="{2}" where username="{3}"'.format(
                 mdluser_ptr_id, unicode(fname), unicode(lname), username));
+            if inactive:
+                db.execute(u'update auth_user set is_active = False where username="{}"'.format(username))
             # Change the groups over too
             db.execute('update auth_user_groups set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
             db.execute('update auth_user_user_permissions set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
@@ -108,6 +110,7 @@ class Migration(SchemaMigration):
         
         print 8
         db.execute('ALTER TABLE sis_student MODIFY COLUMN user_ptr_id INT NOT NULL AUTO_INCREMENT primary key;')
+        
 
 
     def backwards(self, orm):
