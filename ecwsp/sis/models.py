@@ -42,7 +42,7 @@ if 'south' in settings.INSTALLED_APPS:
     add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
 
 def create_faculty(instance):
-    if True:
+    if False:
         faculty, created = Faculty.objects.get_or_create(username=instance.username)
         if created:
             faculty.first_name = instance.first_name
