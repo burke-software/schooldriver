@@ -17,6 +17,7 @@
 #   MA 02110-1301, USA.
 
 from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark, Category, AggregateTask, CalculationRulePerCourseCategory
+from ecwsp.benchmark_grade.models import benchmark_get_or_flush, benchmark_get_create_or_flush
 from ecwsp.schedule.models import MarkingPeriod, Department, Course
 from ecwsp.benchmark_grade.tasks import benchmark_aggregate_task
 from django.db.models import Avg, Sum, Min, Max
@@ -47,45 +48,6 @@ def benchmark_find_calculation_rule(school_year):
             # The school has touched the configuration; don't guess at what they want
             raise Exception('There is no suitable calculation rule for the school year {}.'.format(school_year))
     return rule
-
-def benchmark_get_create_or_flush(model_base_or_set, **kwargs):
-    ''' make sure there is one and only one object matching our criteria '''
-
-    # How does it quack?
-    try:
-        manager = model_base_or_set.objects
-    except AttributeError:
-        manager = model_base_or_set
-
-    try:
-        model, created = manager.get_or_create(**kwargs)
-    except manager.model.MultipleObjectsReturned:
-        # unsure why this happens, but it does
-        bad = manager.filter(**kwargs)
-        logging.error('Expected 0 or 1 {} but found {}; flushing them all!'.format(str(manager.model).split("'")[1], bad.count()), exc_info=True)
-        bad.delete()
-        model, created = manager.get_or_create(**kwargs)
-    return model, created
-
-def benchmark_get_or_flush(model_base_or_set, **kwargs):
-    ''' make sure there is at most one object matching our criteria
-    if there are two or more, don't try to guess at the correct one; just delete them '''
-
-    # How does it quack?
-    try:
-        manager = model_base_or_set.objects
-    except AttributeError:
-        manager = model_base_or_set
-
-    try:
-        model = manager.get(**kwargs)
-    except manager.model.MultipleObjectsReturned:
-        # unsure why this happens, but it does
-        bad = manager.filter(**kwargs)
-        logging.error('Expected 1 {} but found {}; flushing them all!'.format(str(manager.model).split("'")[1], bad.count()), exc_info=True)
-        bad.delete()
-        raise manager.model.DoesNotExist
-    return model
 
 def benchmark_calculate_category_as_course_aggregate(student, category, marking_period):
     agg, created = benchmark_get_create_or_flush(student.aggregate_set, course=None, category=category, marking_period=marking_period)
