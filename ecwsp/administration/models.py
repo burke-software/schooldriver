@@ -99,6 +99,8 @@ class Configuration(models.Model):
         'Google Analytics': ('', 'Google Analytics Code'),
         'grades_allow_spreadsheet_import': ('True', 'Allow users to import a spreadsheet to submit grades'),
         'Grade comment length limit': ('500', 'Maximum number of characters allowed in grade comments; values above 500 ignored'),
+        'Gradebook extra information': ('averages', "Set to 'averages' to see the class average for each assignment. \
+Use 'demonstrations' to see counts of demonstrations for students and assignments."),
     }
     
     def __unicode__(self):

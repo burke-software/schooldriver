@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
-from django.db.models import Q, Max, Count
+from django.db.models import Q, Max, Count, Avg
 from django.db import transaction
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
@@ -81,7 +81,10 @@ def get_teacher_courses(username):
 def gradebook(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
     school_year = course.marking_period.all()[0].school_year
+    calculation_rule = benchmark_find_calculation_rule(school_year)
     teacher_courses = get_teacher_courses(request.user.username)
+    extra_info = Configuration.get_or_default('Gradebook extra information').value.lower().strip()
+    quantizer = Decimal(10) ** (-1 * calculation_rule.decimal_places)
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
     (teacher_courses is None or course not in teacher_courses):
         messages.add_message(request, messages.ERROR,
@@ -189,7 +192,7 @@ def gradebook(request, course_id):
             filter_marking_period = cleaned_or_initial.get('marking_period', None)
             filter_items = items if temporary_aggregate else None
             student.filtered_average = gradebook_get_average(student, course, filter_category, filter_marking_period, filter_items)
-        if school_year.benchmark_grade:
+        if school_year.benchmark_grade and extra_info == 'demonstrations':
             # TC's column of counts
             # TODO: don't hardcode
             standards_category = Category.objects.get(name='Standards')
@@ -223,8 +226,25 @@ def gradebook(request, course_id):
                 else:
                     item.marks_counts = None
 
+    if extra_info == 'averages':
+        for item in items:
+            # listify the QuerySet now so we can modify it and use it in the template
+            # if the template just reads the DB and instantiates new objects, they will not have our class_average attribute
+            item.demonstration_list = list(item.demonstration_set.all())
+            for demonstration in item.demonstration_list:
+                # TODO: make sure we only count enrolled students
+                demonstration.class_average = demonstration.mark_set.aggregate(Avg('mark'))['mark__avg']
+                try:
+                    demonstration.class_average = Decimal(demonstration.class_average).quantize(quantizer)
+                except TypeError: # e.g. Decimal(None)
+                    pass
+            item.class_average = item.mark_set.aggregate(Avg('mark'))['mark__avg']
+            try:
+                item.class_average = Decimal(item.class_average).quantize(quantizer)
+            except TypeError: # e.g. Decimal(None)
+                pass
+
     # Gather visual flagging criteria
-    calculation_rule = benchmark_find_calculation_rule(school_year)
     category_flag_criteria = {}
     for category in Category.objects.filter(item__in=items).distinct():
         category_flag_criteria[category.pk] = []
@@ -242,6 +262,7 @@ def gradebook(request, course_id):
         'filtered' : filtered,
         'filter_form': filter_form,
         'category_flag_criteria': category_flag_criteria,
+        'extra_info': extra_info,
     }, RequestContext(request, {}),)
 
 @staff_member_required
