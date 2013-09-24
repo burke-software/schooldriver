@@ -187,7 +187,7 @@ class Question(QuestionAbstract):
     
     @property
     def get_order_start_one(self):
-        return order + 1
+        return self.order + 1
     
     def copy_to_bank(self):
         """ Copy question and answer to bank unless a question with the exact same wording already exists."""
