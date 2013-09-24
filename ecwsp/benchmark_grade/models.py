@@ -23,6 +23,7 @@ from django.conf import settings
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 from ecwsp.grades.models import Grade
+from ecwsp.benchmark_grade.utility import benchmark_get_create_or_flush
 import logging
 
 ####### TURN ME INTO A MANAGER #######
@@ -354,7 +355,7 @@ class Aggregate(models.Model):
             # Not currently used? Gets created by gradebook_recalculate_on_item_change()
             marking_periods = self.course.marking_period.all()
             for marking_period in marking_periods:
-                aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
+                aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
                     course_id=self.course_id, category_id=self.category_id, marking_period_id=marking_period.pk) + (marking_period.weight,))
             return aggregate_tuples
         if ours == [True, True, False, True]:
@@ -362,7 +363,7 @@ class Aggregate(models.Model):
             rule = self.calculation_rule
             per_course_categories = rule.per_course_category_set.filter(apply_to_departments=self.course.department)
             for per_course_category in per_course_categories:
-                aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
+                aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
                     course_id=self.course_id, category_id=per_course_category.category_id,
                     marking_period_id=self.marking_period_id) + (per_course_category.weight,))
             return aggregate_tuples
@@ -370,7 +371,7 @@ class Aggregate(models.Model):
             ''' Overall course grade, for the entire duration of the course. '''
             marking_periods = self.course.marking_period.all()
             for marking_period in marking_periods:
-                aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
+                aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
                     course_id=self.course_id, category_id=None, marking_period_id=marking_period.pk) + (marking_period.weight,))
             return aggregate_tuples
         if ours == [True, False, True, True]:
@@ -382,7 +383,7 @@ class Aggregate(models.Model):
                 department__in=departments, graded=True)
             for course in courses:
                 weight = Decimal(course.credits) / course.marking_period.count()
-                aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
+                aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
                     course_id=course.pk, category_id=self.category_id, marking_period_id=self.marking_period_id) + (weight,))
             return aggregate_tuples
         raise Exception("Aggregate type unrecognized.")

@@ -97,7 +97,7 @@ def benchmark_calculate_category_as_course_aggregate(student, category, marking_
     for course in Course.objects.filter(courseenrollment__user__username=student.username, marking_period=marking_period, department__in=category_as_course.include_departments.all()).distinct():
         credits = Decimal(course.credits) / course.marking_period.count()
         try:
-            category_aggregate = Aggregate.objects.get(student=student, marking_period=marking_period, category=category, course=course)
+            category_aggregate = benchmark_get_or_flush(Aggregate, student=student, marking_period=marking_period, category=category, course=course)
         except Aggregate.DoesNotExist:
             category_aggregate = benchmark_calculate_course_category_aggregate(student, course, category, marking_period)[0]
         if category_aggregate is not None and category_aggregate.cached_value is not None:
@@ -177,7 +177,7 @@ def benchmark_calculate_course_aggregate(student, course, marking_period, items=
     if items is None:
         # QUICK HACK to use new Aggregate calculation method
         # TODO: Subclass Aggregate and override mark_set for one-off sets of Items
-        agg, created = Aggregate.objects.get_or_create(student=student, course=course, marking_period=marking_period, category=None)
+        agg, created = benchmark_get_create_or_flush(Aggregate, student=student, course=course, marking_period=marking_period, category=None)
         agg.calculate(recalculate_all_categories)
         return agg, created
         # /HACK (haha, right.)
@@ -400,7 +400,7 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
             # Handle per-course categories according to the calculation rule
             course_numer = course_denom = float(0)
             for category in rule.per_course_category_set.filter(apply_to_departments=course.department):
-                try: category_aggregate = Aggregate.objects.get(student=student, marking_period=mp, course=course, category=category.category)
+                try: category_aggregate = benchmark_get_or_flush(Aggregate, student=student, marking_period=mp, course=course, category=category.category)
                 except Aggregate.DoesNotExist: category_aggregate = None
                 if category_aggregate is not None and category_aggregate.cached_value is not None:
                     # simplified normalization; assumes minimum is 0
@@ -420,7 +420,7 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
             category_numer = category_denom = float(0)
             for course in courses.filter(marking_period=mp, department__in=category.include_departments.all()).distinct():
                 credits = float(course.credits) / course.marking_period.count()
-                try: category_aggregate = Aggregate.objects.get(student=student, marking_period=mp, category=category.category, course=course)
+                try: category_aggregate = benchmark_get_or_flush(Aggregate, student=student, marking_period=mp, category=category.category, course=course)
                 except Aggregate.DoesNotExist: category_aggregate = None
                 if category_aggregate is not None and category_aggregate.cached_value is not None:
                     # simplified normalization; assumes minimum is 0
