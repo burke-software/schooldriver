@@ -138,19 +138,19 @@ def test_copy(request, test_id):
     try:
         new_test.teachers.add(Faculty.objects.get(username=request.user.username))
     except:
-        new_test.teachers = old_test.teachers
+        new_test.teachers = old_test.teachers.all()
     new_test.finalized = False
     new_test.save()
     for old_question in old_test.question_set.all():
         new_question = copy_model_instance(old_question)
+        new_question.test = new_test
         new_question.save()
         for benchmark in old_question.benchmarks.all():
             new_question.benchmarks.add(benchmark)
-        new_test.question_set.add(new_question)
         for old_answer in old_question.answer_set.all():
             new_answer = copy_model_instance(old_answer)
+            new_answer.question = new_question
             new_answer.save()
-            new_question.answer_set.add(new_answer)
     messages.success(request, "Test copied!")
     # Redirect to either admin or teacher edit page
     if Faculty.objects.filter(username=request.user.username).count():
