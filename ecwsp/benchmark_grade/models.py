@@ -349,11 +349,17 @@ class Aggregate(models.Model):
             ''' As specific as it gets. Average for one category
             in one course during one marking period. '''
             return aggregate_tuples
-        #if ours == [True, True, True, False]:
-            # Not currently used
+        if ours == [True, True, True, False]:
+            ''' Average for one category across the entire duration of the course. ''' 
+            # Not currently used? Gets created by gradebook_recalculate_on_item_change()
+            marking_periods = self.course.marking_period.all()
+            for marking_period in marking_periods:
+                aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
+                    course_id=self.course_id, category_id=self.category_id, marking_period_id=marking_period.pk) + (marking_period.weight,))
+            return aggregate_tuples
         if ours == [True, True, False, True]:
             ''' Course grade for one marking period. '''
-            rule = self. calculation_rule
+            rule = self.calculation_rule
             per_course_categories = rule.per_course_category_set.filter(apply_to_departments=self.course.department)
             for per_course_category in per_course_categories:
                 aggregate_tuples.append(Aggregate.objects.get_or_create(student_id=self.student_id,
@@ -370,7 +376,7 @@ class Aggregate(models.Model):
         if ours == [True, False, True, True]:
             ''' Average of a category across all courses for one marking period.
             TC used this last year and counted it in GPAs as if it were a course. '''
-            rule = self. calculation_rule
+            rule = self.calculation_rule
             departments = rule.category_as_course_set.get(category_id=self.category_id).include_departments.all()
             courses = self.student.course_set.filter(marking_period=self.marking_period_id,
                 department__in=departments, graded=True)
@@ -428,17 +434,13 @@ class Aggregate(models.Model):
             return rule.points_possible
 
     def max(self):
-        if self.points_possible is None:
-            #return None
-            # This is dumb. Probably should eradicate and use Category.points_possible
-            self.points_possible = 4
         mark_values_list = self.mark_values_list(normalize=True)
         if not len(mark_values_list):
             return None, None
         mark, display_as, item_points_possible = zip(*mark_values_list)
         display_as = self._e_pluribus_unum(display_as)
         if len(mark):
-            return (Decimal(max(mark)) * self.points_possible, display_as)
+            return (Decimal(max(mark)) * self._fallback_points_possible(), display_as)
         else:
             return None, display_as
 
