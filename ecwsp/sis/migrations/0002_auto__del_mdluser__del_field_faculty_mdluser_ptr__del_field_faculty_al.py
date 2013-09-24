@@ -111,6 +111,9 @@ class Migration(SchemaMigration):
         print 8
         db.execute('ALTER TABLE sis_student MODIFY COLUMN user_ptr_id INT NOT NULL AUTO_INCREMENT primary key;')
         
+        # Clear sessions
+        from django.contrib.sessions.models import Session
+        Session.objects.all().delete()
 
 
     def backwards(self, orm):
