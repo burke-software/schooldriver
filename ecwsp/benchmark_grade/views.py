@@ -33,7 +33,7 @@ from ecwsp.schedule.models import Course, MarkingPeriod
 from ecwsp.grades.models import Grade
 from ecwsp.grades.forms import GradeUpload
 from ecwsp.administration.models import Configuration
-from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule, AggregateTask
+from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule, AggregateTask, CalculationRulePerCourseCategory
 from ecwsp.benchmark_grade.forms import GradebookFilterForm, ItemForm, DemonstrationForm, FillAllForm
 from ecwsp.benchmarks.models import Benchmark
 from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_get_average_and_pk, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
@@ -678,9 +678,14 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
                 course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
                 course.category_by_name = {}
                 for category in course.categories:
-                    category.percentage = calculation_rule.per_course_category_set.get(
-                        category=category, apply_to_departments=course.department).weight * 100
-                    category.percentage = category.percentage.quantize(Decimal('0'))
+                    try:
+                        category.percentage = calculation_rule.per_course_category_set.get(
+                            category=category, apply_to_departments=course.department).weight * 100
+                        category.percentage = category.percentage.quantize(Decimal('0'))
+                    except CalculationRulePerCourseCategory.DoesNotExist:
+                        # sometimes a course has items belonging to categories that don't count in the course average
+                        # but we want to display them anyway
+                        category.percentage = 0
                     category.average = gradebook_get_average(student, course, category, mp, None)
                     items = Item.objects.filter(course=course, category=category, marking_period=mp, mark__student=student).annotate(best_mark=Max('mark__mark'))
                     counts = {}
