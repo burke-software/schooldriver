@@ -7,7 +7,7 @@ from ecwsp.alumni.models import *
 from ecwsp.alumni.forms import *
 
 class CollegeEnrollmentAdmin(admin.ModelAdmin):
-    search_fields = ['college__name', 'alumni__student__fname', 'alumni__student__lname']
+    search_fields = ['college__name', 'alumni__student__first_name', 'alumni__student__last_name']
     list_display = ['college', 'alumni', 'graduated', 'begin', 'end']
     list_filter = ['program_years', 'status', 'graduated']
 admin.site.register(CollegeEnrollment, CollegeEnrollmentAdmin)
@@ -53,7 +53,7 @@ admin.site.register(AlumniAction, AlumniActionAdmin)
 
 class AlumniAdmin(admin.ModelAdmin):
     form = AlumniForm
-    search_fields = ['student__fname', 'student__lname', 'college__name']
+    search_fields = ['student__first_name', 'student__last_name', 'college__name']
     list_filter = ['graduated', 'program_years', 'college', 'college_override', 'student__class_of_year']
     list_display = ['student', 'graduated', 'college']
     inlines = [AlumniEmailInline,AlumniPhoneNumberInline,WithdrawlInline, AlumniNoteInline,EnrollmentInline]
