@@ -122,9 +122,17 @@ class Grade(models.Model):
         super(Grade, self).save(*args, **kwargs)
         
         #cache course final grade
-        enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
-        enrollment.set_cache_grade()
-        enrollment.save()
+        try:
+            enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
+            enrollment.set_cache_grade()
+            enrollment.save()
+        except CourseEnrollment.DoesNotExist:
+            # sometimes students get grades in courses and are then unenrolled
+            # we don't delete those grades in case they're re-enrolled later
+            # still, these grades don't affect the student's GPA
+            # so don't bother recalculating it
+            return
+
         #cache student's GPA
         if self.grade and self.student:
             self.student.cache_gpa = self.student.calculate_gpa()
