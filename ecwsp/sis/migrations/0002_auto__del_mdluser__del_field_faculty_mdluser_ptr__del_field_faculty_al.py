@@ -37,7 +37,6 @@ class Migration(SchemaMigration):
                 # Make a new user, delete the old. Make sure everything is copied.
                 new_user = User.objects.get(id=collided_id)
                 
-                temp_username = "migration_move"
                 new_username = new_user.username
                 
                 new_user.username = "MIGRATIONDELME"
