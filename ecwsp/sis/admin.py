@@ -89,6 +89,13 @@ class MarkingPeriodInline(admin.StackedInline):
                        'friday','saturday','sunday',),
         },),
     )
+    
+
+class FacultyAdmin(admin.ModelAdmin):
+    fields = ['username', 'is_active', 'first_name', 'last_name', 'email', 'number', 'ext', 'teacher']
+    search_fields = list_display = ['username', 'first_name', 'last_name', 'is_active']
+    
+admin.site.register(Faculty, FacultyAdmin)
 
 class StudentCourseInline(admin.TabularInline):
     model = CourseEnrollment

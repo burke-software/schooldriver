@@ -1,0 +1,9 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_modify grp_tags %}
+
+{% block object-tools-items %}
+    <li><a href="history/">{% trans "History" %}</a></li>
+    {% if object_id %}
+        <li><a href="{% url "admin:auth_user_change" object_id %}">User Permissions and Password</a></li>
+    {% endif %}
+{% endblock %}

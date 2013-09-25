@@ -87,8 +87,6 @@ admin.site.register(MarkingPeriod, MarkingPeriodAdmin)
 
 admin.site.register(Period)
 
-admin.site.register(Faculty)
-
 admin.site.register(Location)
 
 admin.site.register(OmitCourseGPA)
