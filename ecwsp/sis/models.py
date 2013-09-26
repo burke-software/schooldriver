@@ -42,22 +42,38 @@ if 'south' in settings.INSTALLED_APPS:
     add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
 
 def create_faculty(instance):
-    if False:
-        faculty, created = Faculty.objects.get_or_create(username=instance.username)
-        if created:
-            faculty.first_name = instance.first_name
-            faculty.last_name = instance.last_name
-            faculty.email = instance.email
-            faculty.teacher = True
-            faculty.save()
+    """ Create a sis.Faculty object that is linked to the given
+    auth_user instance. Important as there is no way to do this
+    from Django admin. See 
+    http://stackoverflow.com/questions/4064808/django-model-inheritance-create-sub-instance-of-existing-instance-downcast
+    """
+    if not hasattr(instance, "faculty"):
+        faculty = Faculty(user_ptr_id=instance.id)
+        faculty.__dict__.update(instance.__dict__)
+        faculty.save()
+
+def create_student(instance):
+    """ Create a sis.Student object that is linked to the given auth_user
+    instance. See create_faculty for more details.  
+    """
+    if not hasattr(instance, "student"):
+        student = Student(user_ptr_id=instance.id)
+        student.__dict__.update(instance.__dict__)
+        student.save()
+    
 
 def create_faculty_profile(sender, instance, created, **kwargs):
     if instance.groups.filter(name="teacher").count():
         create_faculty(instance)
+    if instance.groups.filter(name="students").count():
+        create_student(instance)
 
 def create_faculty_profile_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     if action == 'post_add' and instance.groups.filter(name="teacher").count():
         create_faculty(instance)
+    if action == 'post_add' and instance.groups.filter(name="students").count():
+        create_student(instance)
+
 
 post_save.connect(create_faculty_profile, sender=User)
 m2m_changed.connect(create_faculty_profile_m2m, sender=User.groups.through)
@@ -290,24 +306,11 @@ class Faculty(User):
         ordering = ("last_name", "first_name")
     
     def save(self, *args, **kwargs):
-        #if Student.objects.filter(id=self.id).count():
-        #    raise ValidationError('Cannot have someone be a student AND faculty!')
+        self.is_staff = True
         super(Faculty, self).save(*args, **kwargs)
-        user, created = User.objects.get_or_create(username=self.username)
-        if created:
-            user.password = "!"
-            user.save()
         group, created = Group.objects.get_or_create(name="faculty")
-        if created: group.save()
-        user.groups.add(group)
-        user.save()
+        self.groups.add(group)
         
-    def full_clean(self, *args, **kwargs):
-        """ Check if a Faculty exists, can't have someone be a Student and Faculty """
-        if Student.objects.filter(id=self.id).count():
-            raise ValidationError('Cannot have someone be a student AND faculty!')
-        super(Faculty, self).full_clean(*args, **kwargs)
-
 
 class Cohort(models.Model):
     name = models.CharField(max_length=255)

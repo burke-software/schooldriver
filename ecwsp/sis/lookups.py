@@ -16,7 +16,7 @@ class StudentLookup(LookupChannel):
     def get_query(self,q,request):
         qs = Student.objects.all()
         if not UserPreference.objects.get_or_create(user=request.user)[0].include_deleted_students:
-            qs = qs.filter(inactive=False)
+            qs = qs.filter(is_active=True)
         for word in q.split():
             qs = qs.filter(Q(last_name__icontains=word) | Q(first_name__icontains=word))
         return qs.order_by('last_name')
