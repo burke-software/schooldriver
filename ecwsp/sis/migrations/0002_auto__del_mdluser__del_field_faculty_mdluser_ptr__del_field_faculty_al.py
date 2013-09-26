@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import sys
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -31,33 +32,43 @@ class Migration(SchemaMigration):
         for (mdluser_ptr_id, username, fname, lname, inactive) in results:
             user_collision = db.execute('select id, username from auth_user where id = {};'.format(mdluser_ptr_id))
             if user_collision:
-                print user_collision
                 # We want to retain the Student ID. The collided user will just have to change.
                 (collided_id, collided_username) = user_collision[0]
+                sys.stdout.write(u'User {} ({}) collides with student {} ({}) and will be moved...'.format(collided_username, collided_id, username, mdluser_ptr_id))
+
                 # Make a new user, delete the old. Make sure everything is copied.
-                new_user = User.objects.get(id=collided_id)
-                
-                new_username = new_user.username
-                
-                new_user.username = "MIGRATIONDELME"
-                new_user.save()
-                new_user.pk = None
-                new_user.username = unicode(new_username)
-                
-                new_user.save()
-                print "Moved collided user to {}".format(new_user.id)
                 bad_user = User.objects.get(id=collided_id)
-                
+                # Store the real username
+                new_username = bad_user.username
+                # Change the username to something fake to get it out of the way
+                bad_user.username = "MIGRATIONDELME"
+                bad_user.save()
+                # Make a new user by changing the username back and asking Django to generate a new PK
+                new_user = User.objects.get(id=collided_id)
+                new_user.username = unicode(new_username)
+                new_user.pk = None
+                new_user.save()
+                print u" Moved collided user {} to {}.".format(new_user.username, new_user.pk)
+                bad_user = User.objects.get(id=collided_id)
+                sys.stdout.write(u'Copying relationships from {} to {}...'.format(bad_user.pk, new_user.pk))
+                ''' The list of what we're interested in seems to be given by:
+                    [x.name for x in User._meta.many_to_many] + \
+                    [x.get_accessor_name() for x in User._meta.get_all_related_objects()] + \
+                    [x.get_accessor_name() for x in User._meta.get_all_related_many_to_many_objects()]
+                when run under the old schema. '''
                 new_user.user_permissions = bad_user.user_permissions.all()
                 new_user.groups = bad_user.groups.all()
+                new_user.referral_classroom_teacher = bad_user.referral_classroom_teacher.all()
+                new_user.simple_import_log = bad_user.simple_import_log.all()
                 new_user.accesslog_set = bad_user.accesslog_set.all()
                 new_user.alumniaction_set = bad_user.alumniaction_set.all()
                 new_user.alumninote_set = bad_user.alumninote_set.all()
                 new_user.applicant_set = bad_user.applicant_set.all()
                 new_user.attendancelog_set = bad_user.attendancelog_set.all()
                 new_user.contactlog_set = bad_user.contactlog_set.all()
+                # neither of these were related to User before the schema change
                 #new_user.course_set = bad_user.course_set.all()
-                new_user.courseenrollment_set = bad_user.courseenrollment_set.all()
+                #new_user.courseenrollment_set = bad_user.courseenrollment_set.all()
                 new_user.cracontact_set = bad_user.cracontact_set.all()
                 new_user.importlog_set = bad_user.importlog_set.all()
                 new_user.importsetting_set = bad_user.importsetting_set.all()
@@ -71,12 +82,14 @@ class Migration(SchemaMigration):
                 new_user.studentmeeting_set = bad_user.studentmeeting_set.all()
                 new_user.userdashboard_set = bad_user.userdashboard_set.all()
                 new_user.userpreference_set = bad_user.userpreference_set.all()
-                
+                print ' Done.'
+                sys.stdout.write('Deleting {}...'.format(collided_id))
                 db.execute('delete from auth_user where id={}'.format(collided_id));
                 db.execute('delete from auth_user_groups where user_id={}'.format(collided_id));
                 db.execute('delete from auth_user_user_permissions where user_id={}'.format(collided_id));
-                db.execute('delete from schedule_courseenrollment where user_id={}'.format(collided_id));
+                #db.execute('delete from schedule_courseenrollment where user_id={}'.format(collided_id));
                 #bad_user.delete()
+                print ' Done.'
             # Now it's safe to switch the ID that we know is free.
             print "Student {}, change auth id to {}".format(username, mdluser_ptr_id)
             old_student_id = db.execute('select id from auth_user where username="{}"'.format(username))[0][0]
@@ -91,7 +104,8 @@ class Migration(SchemaMigration):
             db.execute('update administration_accesslog set login_id={0} where login_id={1}'.format(mdluser_ptr_id, old_student_id))
             db.execute('update alumni_alumniaction set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
             db.execute('update alumni_alumninote set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update schedule_courseenrollment set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
+            # In the old schema, CourseEnrollment.user pointed at sis.MdlUser, not auth.User, so its FKs are already correct. 
+            #db.execute('update schedule_courseenrollment set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
             db.execute('update admissions_applicant set application_decision_by_id={0} where application_decision_by_id={1}'.format(mdluser_ptr_id, old_student_id))
             db.execute('update attendance_attendancelog set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
             db.execute('update simple_import_importlog set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
