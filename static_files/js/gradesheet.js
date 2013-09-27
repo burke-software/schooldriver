@@ -56,6 +56,8 @@ function keyboard_nav(event) {
 }
 
 function recalc_ytd_grade(mp_grade_inputs, ytd_input) {
+    // TODO: this needs help!
+    // https://github.com/burke-software/django-sis/issues/140
     if (ytd_input.attr('class') != 'grade_form final_override') {
         grade = 0;
         num_mp_grades = 0;

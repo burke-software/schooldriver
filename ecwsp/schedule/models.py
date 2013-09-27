@@ -345,23 +345,26 @@ class Course(models.Model):
                 grades = grades.filter(marking_period__end_date__lte=date_report)
             total_weight = Decimal(0)
             for grade in grades:
-                total_weight += grade.marking_period.weight
-            for grade in grades:
                 try:
-                    final += Decimal(grade.get_grade()) * (grade.marking_period.weight / total_weight)
+                    final += Decimal(grade.get_grade()) * grade.marking_period.weight
                     number += 1
+                    total_weight += grade.marking_period.weight
                 # otherwise it's a letter grade.
                 except:
                     # I (Incomplete) results in the final grade being I
                     if grade.get_grade() == "I":
                         return "I"
                     elif grade.get_grade() in ["P","HP","LP"]:
-                        final += 100 * (grade.marking_period.weight / total_weight)
+                        final += 100 * grade.marking_period.weight
                         number += 1
                         letter_grade = True
+                        total_weight += grade.marking_period.weight
                     elif grade.get_grade() in ['F', 'M']:
                         number += 1
                         letter_grade = True
+                        total_weight += grade.marking_period.weight
+            if final is not None and total_weight:
+                final /= total_weight
                     
             if number != 0:
                 final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
