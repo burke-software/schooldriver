@@ -64,18 +64,6 @@ class AdministrationLinksListDashlet(LinksListDashlet):
             'desc': '',
             'perm': ('sis.change_student', 'sis.change_schoolyear'),
         },
-        {
-            'text': 'Preferences',
-            'link': '/sis/preferences',
-        },
-        {
-            'text': 'Change Password',
-            'link': reverse('admin:password_change'),
-        },
-        {
-            'text': 'Log Out',
-            'link': reverse('admin:logout'),
-        },
     ]
 
 

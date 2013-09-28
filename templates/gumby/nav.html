@@ -32,6 +32,25 @@
 
 
    </li>
+  <li class="mobile_only">
+    <a href="javascript:void(0);">
+      {{ user.first_name }} {{ user.last_name }} 
+      <i class="icon-down-dir"></i>
+    </a>
+    <div class="dropdown">
+      <ul>
+        <li>
+          <a href="/sis/preferences">Preferences</a>
+        </li>
+        <li>
+          <a href="{% url 'admin:password_change' %}">Change Password</a>
+        </li>
+        <li>
+          <a href="{% url 'admin:logout' %}">Log Out</a>
+        </li>
+      </ul>
+    </div>
+  </li>
     {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
       <li>
           <a href="/sis/dashboard/">Student</a>
@@ -110,5 +129,7 @@
   <li>
     <a href="/administration/dashboard/"> Admin </a>
   </li>
+
+  
   </ul>
 </div>

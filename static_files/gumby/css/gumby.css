@@ -2625,6 +2625,15 @@ h1, h2, h3, h4, h5, h6 { font-weight: 300; }
 
 @media screen and (max-width: 768px) { .breadcrumbs { display: none; }
   .navbar .logo { display: inline !important; } }
+.navbar .breadcrumbs ul li, .navbar .breadcrumbs ul li > a, .navbar .breadcrumbs div#breadcrumbs > a { height: 40px; line-height: 38px; }
+
+.name_dropdown { width: 180px !important; margin-left: -30px; }
+
+.navbar .breadcrumbs ul li > a { color: inherit; text-shadow: inherit; }
+
+img.dashboard_gear { max-width: 13px; }
+
+@media screen and (min-width: 768px) { .mobile_only { display: none !important; } }
 #save_status.alert { margin-bottom: 0px; }
 
 .field select[multiple] { height: 6em; }

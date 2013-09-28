@@ -18,10 +18,46 @@
     <div class="breadcrumbs">
     <div id="breadcrumbs_area" class="row">
       <div class="sixteen columns">
-      {% block breadcrumbs %}
-        <a href="/">{% trans 'Home' %}</a>
-        
-      {% endblock %}
+        <div class="pull_left" id="breadcrumbs"> 
+          {% block breadcrumbs %}
+              <a href="/"> Home </a> 
+          {% endblock %}
+        </div>
+        <div class="pull_right">
+          <ul>
+            <li>
+              <a href="javascript:void(0)" onclick="customize_dashboard(this);">
+                CUSTOMIZE
+                <img class="dashboard_gear" src="/static/responsive_dashboard/img/gear.svg"/>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'admin:index' %}">
+                VIEW SITE ADMIN
+                <img class="" src=""/>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                {{ user.first_name }} {{ user.last_name }} 
+                <i class="icon-down-dir"></i>
+              </a>
+              <div class="dropdown name_dropdown">
+                <ul>
+                  <li>
+                    <a href="/sis/preferences">Preferences</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'admin:password_change' %}">Change Password</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'admin:logout' %}">Log Out</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
     </div>
