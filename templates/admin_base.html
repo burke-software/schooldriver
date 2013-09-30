@@ -28,19 +28,19 @@
             <li>
               <a href="javascript:void(0)" onclick="customize_dashboard(this);">
                 CUSTOMIZE
-                <img class="dashboard_gear" src="/static/responsive_dashboard/img/gear.svg"/>
+                <img class="nav_icon" src="/static/responsive_dashboard/img/gear.svg"/>
               </a>
             </li>
             <li>
               <a href="{% url 'admin:index' %}">
                 VIEW SITE ADMIN
-                <img class="" src=""/>
+                <img class="nav_icon" src="/static/images/adminview.svg"/>
               </a>
             </li>
             <li>
               <a href="javascript:void(0);">
-                {{ user.first_name }} {{ user.last_name }} 
-                <i class="icon-down-dir"></i>
+                {{ user.first_name }} {{ user.last_name }}
+                <i style="margin: 0px;" class="icon-down-dir"></i>
               </a>
               <div class="dropdown name_dropdown">
                 <ul>
