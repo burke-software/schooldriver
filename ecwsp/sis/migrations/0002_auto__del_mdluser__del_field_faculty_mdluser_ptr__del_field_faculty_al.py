@@ -4,11 +4,6 @@ import sys
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
-from ecwsp.sis.helper_functions import copy_model_instance
-from django.contrib.auth.models import User
-
-from ecwsp.sis.models import Student, Faculty
-import copy
 
 class Migration(SchemaMigration):
     no_dry_run = True
@@ -55,8 +50,7 @@ class Migration(SchemaMigration):
         print 2
 
         # Migrate data if there's any to migrate
-        if db.execute('select count(*) from sis_student')[0][0] and
-            db.execute('select count(*) from sis_faculty'):
+        if db.execute('select count(*) from sis_student')[0][0] and db.execute('select count(*) from sis_faculty')[0][0]:
             db.execute('update sis_student set user_ptr_id = mdluser_ptr_id;')
             db.execute('update sis_faculty set user_ptr_id = mdluser_ptr_id;')
             db.execute('update sis_student, sis_mdluser set sis_student.city = sis_mdluser.city \
@@ -89,16 +83,16 @@ class Migration(SchemaMigration):
                        sys.stdout.write('.')
                     print ' All references updated.'
                 # Now it's safe to switch the ID that we know is free.
-                old_student_id = db.execute('select id from auth_user where username="%s"', [username])[0][0]
+                old_student_id = db.execute('select id from auth_user where username=%s', [username])[0][0]
                 sys.stdout.write("Will change auth_user id from {} to {} for student/faculty {}".format(old_student_id, mdluser_ptr_id, username))
-                db.execute(u'update auth_user set id=%s, first_name="%s", last_name="%s" where username="%s"',
+                db.execute(u'update auth_user set id=%s, first_name=%s, last_name=%s where username=%s',
                     [mdluser_ptr_id, unicode(fname), unicode(lname), username])
                 # Translate inactive flag
                 if inactive:
-                    db.execute(u'update auth_user set is_active = False where username="%s"', [username])
+                    db.execute(u'update auth_user set is_active = False where username=%s', [username])
                 # Update all references to auth_user id in other tables
                 for table, column in tables_and_columns:
-                   db.execute(u'update `{0}` set `{1}` = %s where `{1}` = %s'.format(table, column), [new_id, collided_id])
+                   db.execute(u'update `{0}` set `{1}` = %s where `{1}` = %s'.format(table, column), [mdluser_ptr_id, old_student_id])
                    sys.stdout.write('.')
                 print ' All references updated.'
              
