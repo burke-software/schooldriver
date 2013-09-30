@@ -72,8 +72,9 @@ class Migration(SchemaMigration):
         for (mdluser_ptr_id, username, fname, lname, inactive) in results:
             user_collision = db.execute('select id, username from auth_user where id = {};'.format(mdluser_ptr_id))
             if user_collision:
-                # We want to retain the Student ID. The collided user will just have to change.
-                # Faculty IDs that don't collide with Student IDs will also be retained.
+                # All sis_mdluser.ids must be retained! If one collides with an auth_user.id,
+                # the auth_user will be moved to a new id. A faculty auth_user.id may be changed twice,
+                # once to accommodate a collided student, and then finally to match its sis_mdluser.id.
                 (collided_id, collided_username) = user_collision[0]
                 sys.stdout.write(u'User {} ({}) collides with student {} ({}) and will be moved...'.format(collided_username, collided_id, username, mdluser_ptr_id))
                 new_id = db.execute('select max(id) + 1 from auth_user')[0][0]
