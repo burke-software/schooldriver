@@ -13,6 +13,39 @@ import copy
 class Migration(SchemaMigration):
     no_dry_run = True
     def forwards(self, orm):
+        # These are all the tables and columns that referenced auth_user.id
+        # under the old schema. Retrieved via:
+        #    tables_and_columns = \
+        #    [(field.m2m_db_table(), field.m2m_column_name()) for field in User._meta.many_to_many] + \
+        #    [(ob.field.model._meta.db_table, ob.field.column) for ob in User._meta.get_all_related_objects()] + \
+        #    [(ob.field.m2m_db_table(), ob.field.m2m_reverse_name()) for ob in User._meta.get_all_related_many_to_many_objects()]
+        tables_and_columns = [
+            (u'auth_user_groups', 'user_id'),
+            (u'auth_user_user_permissions', 'user_id'),
+            (u'reversion_revision', 'user_id'),
+            (u'administration_accesslog', 'login_id'),
+            (u'sis_userpreference', 'user_id'),
+            (u'sis_importlog', 'user_id'),
+            (u'work_study_cracontact', 'name_id'),
+            (u'work_study_studentinteraction', 'reported_by_id'),
+            (u'admissions_applicant', 'application_decision_by_id'),
+            (u'admissions_contactlog', 'user_id'),
+            (u'alumni_alumninote', 'user_id'),
+            (u'alumni_alumniaction', 'user_id'),
+            (u'attendance_attendancelog', 'user_id'),
+            (u'counseling_studentmeeting', 'reported_by_id'),
+            (u'counseling_referralform', 'classroom_teacher_id'),
+            (u'counseling_referralform', 'referred_by_id'),
+            (u'django_admin_log', 'user_id'),
+            (u'report_builder_report', 'user_created_id'),
+            (u'report_builder_report', 'user_modified_id'),
+            (u'responsive_dashboard_userdashboard', 'user_id'),
+            (u'simple_import_importsetting', 'user_id'),
+            (u'simple_import_importlog', 'user_id'),
+            (u'report_builder_report_starred', 'user_id')
+        ]
+
+        # Add columns
         db.add_column('sis_student', 'user_ptr_id', models.IntegerField(null=True))
         db.add_column('sis_faculty', 'user_ptr_id', models.IntegerField(null=True))
         print 1
@@ -20,103 +53,52 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True),
                       keep_default=False)
         print 2
+
         # Migrate data
         db.execute('update sis_student set user_ptr_id = mdluser_ptr_id;')
         db.execute('update sis_faculty set user_ptr_id = mdluser_ptr_id;')
+        db.execute('update sis_student, sis_mdluser set sis_student.city = sis_mdluser.city \
+            where sis_student.mdluser_ptr_id = sis_mdluser.id')
+
         # Get all students and faculty
-        results = db.execute('select mdluser_ptr_id, username, fname, lname, inactive from sis_student left join sis_mdluser on sis_mdluser.id=sis_student.mdluser_ptr_id;')
+        results = db.execute('select mdluser_ptr_id, username, fname, lname, inactive from sis_student \
+            left join sis_mdluser on sis_mdluser.id=sis_student.mdluser_ptr_id;')
         # Lname can't be blank, so if it is it's database crud and we can ignore it.
-        results += db.execute('select mdluser_ptr_id, sis_mdluser.username, fname, lname, inactive from sis_faculty left join sis_mdluser on sis_mdluser.id=sis_faculty.mdluser_ptr_id join auth_user on sis_mdluser.username=auth_user.username where lname!=""and sis_mdluser.id != auth_user.id;')
+        results += db.execute('select mdluser_ptr_id, sis_mdluser.username, fname, lname, inactive \
+            from sis_faculty left join sis_mdluser on sis_mdluser.id=sis_faculty.mdluser_ptr_id \
+            join auth_user on sis_mdluser.username=auth_user.username where lname!=""and sis_mdluser.id != auth_user.id;')
         print 3
         
         for (mdluser_ptr_id, username, fname, lname, inactive) in results:
             user_collision = db.execute('select id, username from auth_user where id = {};'.format(mdluser_ptr_id))
             if user_collision:
                 # We want to retain the Student ID. The collided user will just have to change.
+                # Faculty IDs that don't collide with Student IDs will also be retained.
                 (collided_id, collided_username) = user_collision[0]
                 sys.stdout.write(u'User {} ({}) collides with student {} ({}) and will be moved...'.format(collided_username, collided_id, username, mdluser_ptr_id))
-
-                # Make a new user, delete the old. Make sure everything is copied.
-                bad_user = User.objects.get(id=collided_id)
-                # Store the real username
-                new_username = bad_user.username
-                # Change the username to something fake to get it out of the way
-                bad_user.username = "MIGRATIONDELME"
-                bad_user.save()
-                # Make a new user by changing the username back and asking Django to generate a new PK
-                new_user = User.objects.get(id=collided_id)
-                new_user.username = unicode(new_username)
-                new_user.pk = None
-                new_user.save()
-                print u" Moved collided user {} to {}.".format(new_user.username, new_user.pk)
-                bad_user = User.objects.get(id=collided_id)
-                sys.stdout.write(u'Copying relationships from {} to {}...'.format(bad_user.pk, new_user.pk))
-                ''' The list of what we're interested in seems to be given by:
-                    [x.name for x in User._meta.many_to_many] + \
-                    [x.get_accessor_name() for x in User._meta.get_all_related_objects()] + \
-                    [x.get_accessor_name() for x in User._meta.get_all_related_many_to_many_objects()]
-                when run under the old schema. '''
-                new_user.user_permissions = bad_user.user_permissions.all()
-                new_user.groups = bad_user.groups.all()
-                new_user.referral_classroom_teacher = bad_user.referral_classroom_teacher.all()
-                new_user.simple_import_log = bad_user.simple_import_log.all()
-                new_user.accesslog_set = bad_user.accesslog_set.all()
-                new_user.alumniaction_set = bad_user.alumniaction_set.all()
-                new_user.alumninote_set = bad_user.alumninote_set.all()
-                new_user.applicant_set = bad_user.applicant_set.all()
-                new_user.attendancelog_set = bad_user.attendancelog_set.all()
-                new_user.contactlog_set = bad_user.contactlog_set.all()
-                # neither of these were related to User before the schema change
-                #new_user.course_set = bad_user.course_set.all()
-                #new_user.courseenrollment_set = bad_user.courseenrollment_set.all()
-                new_user.cracontact_set = bad_user.cracontact_set.all()
-                new_user.importlog_set = bad_user.importlog_set.all()
-                new_user.importsetting_set = bad_user.importsetting_set.all()
-                new_user.logentry_set = bad_user.logentry_set.all()
-                new_user.referralform_set = bad_user.referralform_set.all()
-                new_user.report_modified_set = bad_user.report_modified_set.all()
-                new_user.report_set = bad_user.report_set.all()
-                new_user.report_starred_set = bad_user.report_starred_set.all()
-                new_user.revision_set = bad_user.revision_set.all()
-                new_user.studentinteraction_set = bad_user.studentinteraction_set.all()
-                new_user.studentmeeting_set = bad_user.studentmeeting_set.all()
-                new_user.userdashboard_set = bad_user.userdashboard_set.all()
-                new_user.userpreference_set = bad_user.userpreference_set.all()
-                print ' Done.'
-                sys.stdout.write('Deleting {}...'.format(collided_id))
-                db.execute('delete from auth_user where id={}'.format(collided_id));
-                db.execute('delete from auth_user_groups where user_id={}'.format(collided_id));
-                db.execute('delete from auth_user_user_permissions where user_id={}'.format(collided_id));
-                #db.execute('delete from schedule_courseenrollment where user_id={}'.format(collided_id));
-                #bad_user.delete()
-                print ' Done.'
+                new_id = db.execute('select max(id) + 1 from auth_user')[0][0]
+                db.execute('update auth_user set id = {} where id = {}'.format(new_id, collided_id))
+                db.execute('alter table auth_user auto_increment = {}'.format(new_id + 1)) # doesn't happen automatically
+                sys.stdout.write(u' New ID for {} is {}'.format(collided_username, new_id))
+                # Update all references to auth_user id in other tables
+                for table, column in tables_and_columns:
+                   db.execute(u'update `{0}` set `{1}` = {2} where `{1}` = {3}'.format(table, column, new_id, collided_id))
+                   sys.stdout.write('.')
+                print ' All references updated.'
             # Now it's safe to switch the ID that we know is free.
-            print "Student {}, change auth id to {}".format(username, mdluser_ptr_id)
             old_student_id = db.execute('select id from auth_user where username="{}"'.format(username))[0][0]
+            sys.stdout.write("Will change auth_user id from {} to {} for student/faculty {}".format(old_student_id, mdluser_ptr_id, username))
             db.execute(u'update auth_user set id={0}, first_name="{1}", last_name="{2}" where username="{3}"'.format(
-                mdluser_ptr_id, unicode(fname), unicode(lname), username));
+                mdluser_ptr_id, unicode(fname), unicode(lname), username))
+            # Translate inactive flag
             if inactive:
                 db.execute(u'update auth_user set is_active = False where username="{}"'.format(username))
-            # Change the groups over too
-            db.execute('update auth_user_groups set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update auth_user_user_permissions set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update sis_userpreference set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update administration_accesslog set login_id={0} where login_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update alumni_alumniaction set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update alumni_alumninote set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            # In the old schema, CourseEnrollment.user pointed at sis.MdlUser, not auth.User, so its FKs are already correct. 
-            #db.execute('update schedule_courseenrollment set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update admissions_applicant set application_decision_by_id={0} where application_decision_by_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update attendance_attendancelog set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update simple_import_importlog set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update simple_import_importsetting set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update report_builder_report set user_created_id={0} where user_created_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update report_builder_report set user_modified_id={0} where user_modified_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update reversion_revision set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update work_study_studentinteraction set reported_by_id={0} where reported_by_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update counseling_studentmeeting set reported_by_id={0} where reported_by_id={1}'.format(mdluser_ptr_id, old_student_id))
-            db.execute('update responsive_dashboard_userdashboard set user_id={0} where user_id={1}'.format(mdluser_ptr_id, old_student_id))
-            
+            # Update all references to auth_user id in other tables
+            for table, column in tables_and_columns:
+               db.execute(u'update `{0}` set `{1}` = {2} where `{1}` = {3}'.format(table, column, mdluser_ptr_id, old_student_id))
+               sys.stdout.write('.')
+            print ' All references updated.'
+             
         db.delete_column(u'sis_student', u'mdluser_ptr_id')
         print 6
         db.delete_table(u'sis_mdluser')

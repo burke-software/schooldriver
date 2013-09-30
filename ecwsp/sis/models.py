@@ -310,6 +310,9 @@ class Faculty(User):
         super(Faculty, self).save(*args, **kwargs)
         group, created = Group.objects.get_or_create(name="faculty")
         self.groups.add(group)
+
+    def __unicode__(self):
+        return u"{0}, {1}".format(self.last_name, self.first_name)
         
 
 class Cohort(models.Model):
