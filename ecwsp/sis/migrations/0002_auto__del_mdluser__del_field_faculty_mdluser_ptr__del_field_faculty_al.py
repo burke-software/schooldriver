@@ -54,51 +54,53 @@ class Migration(SchemaMigration):
                       keep_default=False)
         print 2
 
-        # Migrate data
-        db.execute('update sis_student set user_ptr_id = mdluser_ptr_id;')
-        db.execute('update sis_faculty set user_ptr_id = mdluser_ptr_id;')
-        db.execute('update sis_student, sis_mdluser set sis_student.city = sis_mdluser.city \
-            where sis_student.mdluser_ptr_id = sis_mdluser.id')
+        # Migrate data if there's any to migrate
+        if db.execute('select count(*) from sis_student')[0][0] and
+            db.execute('select count(*) from sis_faculty'):
+            db.execute('update sis_student set user_ptr_id = mdluser_ptr_id;')
+            db.execute('update sis_faculty set user_ptr_id = mdluser_ptr_id;')
+            db.execute('update sis_student, sis_mdluser set sis_student.city = sis_mdluser.city \
+                where sis_student.mdluser_ptr_id = sis_mdluser.id')
 
-        # Get all students and faculty
-        results = db.execute('select mdluser_ptr_id, username, fname, lname, inactive from sis_student \
-            left join sis_mdluser on sis_mdluser.id=sis_student.mdluser_ptr_id;')
-        # Lname can't be blank, so if it is it's database crud and we can ignore it.
-        results += db.execute('select mdluser_ptr_id, sis_mdluser.username, fname, lname, inactive \
-            from sis_faculty left join sis_mdluser on sis_mdluser.id=sis_faculty.mdluser_ptr_id \
-            join auth_user on sis_mdluser.username=auth_user.username where lname!=""and sis_mdluser.id != auth_user.id;')
-        print 3
-        
-        for (mdluser_ptr_id, username, fname, lname, inactive) in results:
-            user_collision = db.execute('select id, username from auth_user where id = {};'.format(mdluser_ptr_id))
-            if user_collision:
-                # All sis_mdluser.ids must be retained! If one collides with an auth_user.id,
-                # the auth_user will be moved to a new id. A faculty auth_user.id may be changed twice,
-                # once to accommodate a collided student, and then finally to match its sis_mdluser.id.
-                (collided_id, collided_username) = user_collision[0]
-                sys.stdout.write(u'User {} ({}) collides with student {} ({}) and will be moved...'.format(collided_username, collided_id, username, mdluser_ptr_id))
-                new_id = db.execute('select max(id) + 1 from auth_user')[0][0]
-                db.execute('update auth_user set id = {} where id = {}'.format(new_id, collided_id))
-                db.execute('alter table auth_user auto_increment = {}'.format(new_id + 1)) # doesn't happen automatically
-                sys.stdout.write(u' New ID for {} is {}'.format(collided_username, new_id))
+            # Get all students and faculty
+            results = db.execute('select mdluser_ptr_id, username, fname, lname, inactive from sis_student \
+                left join sis_mdluser on sis_mdluser.id=sis_student.mdluser_ptr_id;')
+            # Lname can't be blank, so if it is it's database crud and we can ignore it.
+            results += db.execute('select mdluser_ptr_id, sis_mdluser.username, fname, lname, inactive \
+                from sis_faculty left join sis_mdluser on sis_mdluser.id=sis_faculty.mdluser_ptr_id \
+                join auth_user on sis_mdluser.username=auth_user.username where lname!=""and sis_mdluser.id != auth_user.id;')
+            print 3
+            
+            for (mdluser_ptr_id, username, fname, lname, inactive) in results:
+                user_collision = db.execute('select id, username from auth_user where id = %s;', [mdluser_ptr_id])
+                if user_collision:
+                    # All sis_mdluser.ids must be retained! If one collides with an auth_user.id,
+                    # the auth_user will be moved to a new id. A faculty auth_user.id may be changed twice,
+                    # once to accommodate a collided student, and then finally to match its sis_mdluser.id.
+                    (collided_id, collided_username) = user_collision[0]
+                    sys.stdout.write(u'User {} ({}) collides with student {} ({}) and will be moved...'.format(collided_username, collided_id, username, mdluser_ptr_id))
+                    new_id = db.execute('select max(id) + 1 from auth_user')[0][0]
+                    db.execute('update auth_user set id = %s where id = %s', [new_id, collided_id])
+                    db.execute('alter table auth_user auto_increment = %s', [new_id + 1]) # doesn't happen automatically
+                    sys.stdout.write(u' New ID for {} is {}'.format(collided_username, new_id))
+                    # Update all references to auth_user id in other tables
+                    for table, column in tables_and_columns:
+                       db.execute(u'update `{0}` set `{1}` = %s where `{1}` = %s'.format(table, column), [new_id, collided_id])
+                       sys.stdout.write('.')
+                    print ' All references updated.'
+                # Now it's safe to switch the ID that we know is free.
+                old_student_id = db.execute('select id from auth_user where username="%s"', [username])[0][0]
+                sys.stdout.write("Will change auth_user id from {} to {} for student/faculty {}".format(old_student_id, mdluser_ptr_id, username))
+                db.execute(u'update auth_user set id=%s, first_name="%s", last_name="%s" where username="%s"',
+                    [mdluser_ptr_id, unicode(fname), unicode(lname), username])
+                # Translate inactive flag
+                if inactive:
+                    db.execute(u'update auth_user set is_active = False where username="%s"', [username])
                 # Update all references to auth_user id in other tables
                 for table, column in tables_and_columns:
-                   db.execute(u'update `{0}` set `{1}` = {2} where `{1}` = {3}'.format(table, column, new_id, collided_id))
+                   db.execute(u'update `{0}` set `{1}` = %s where `{1}` = %s'.format(table, column), [new_id, collided_id])
                    sys.stdout.write('.')
                 print ' All references updated.'
-            # Now it's safe to switch the ID that we know is free.
-            old_student_id = db.execute('select id from auth_user where username="{}"'.format(username))[0][0]
-            sys.stdout.write("Will change auth_user id from {} to {} for student/faculty {}".format(old_student_id, mdluser_ptr_id, username))
-            db.execute(u'update auth_user set id={0}, first_name="{1}", last_name="{2}" where username="{3}"'.format(
-                mdluser_ptr_id, unicode(fname), unicode(lname), username))
-            # Translate inactive flag
-            if inactive:
-                db.execute(u'update auth_user set is_active = False where username="{}"'.format(username))
-            # Update all references to auth_user id in other tables
-            for table, column in tables_and_columns:
-               db.execute(u'update `{0}` set `{1}` = {2} where `{1}` = {3}'.format(table, column, mdluser_ptr_id, old_student_id))
-               sys.stdout.write('.')
-            print ' All references updated.'
              
         db.delete_column(u'sis_student', u'mdluser_ptr_id')
         print 6
