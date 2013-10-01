@@ -181,13 +181,14 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         return form
     
     fieldsets = [
-        (None, {'fields': [('last_name', 'first_name'), ('mname', 'is_active'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'class_of_year',('unique_id','ssn'),
+        (None, {'fields': [('last_name', 'first_name'), ('mname', 'is_active'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), ('class_of_year', 'year'),('unique_id','ssn'),
             'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
     ]
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
         fieldsets[0][1]['fields'].append('family_access_users')
     change_list_template = "admin/sis/student/change_list.html"
     form = StudentForm
+    readonly_fields = ['year']
     search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
     actions = [mark_inactive]
