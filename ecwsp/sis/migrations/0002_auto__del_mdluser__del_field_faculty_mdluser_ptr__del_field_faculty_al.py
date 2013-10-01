@@ -118,6 +118,12 @@ class Migration(SchemaMigration):
         # Fix foreign key constraints
         # Maybe these should be split into migrations for different apps?
         # Still, we (sis) are causing the mess and need to clean it up immediately.
+        # Source:
+        # First, run manage.py --syncdb all on a fresh db with the new schema
+        # Beware that KEY_COLUMN_USAGE includes all databases, and execute:
+        # use information_schema;
+        # select TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME
+        # from KEY_COLUMN_USAGE where REFERENCED_COLUMN_NAME='user_ptr_id';
         foreign_key_constraints = (
             #('APP', 'TABLE_NAME', 'COLUMN_NAME', 'CONSTRAINT_NAME', 'REFERENCED_TABLE_NAME', 'REFERENCED_COLUMN_NAME'),
             ('ecwsp.admissions', 'admissions_applicant', 'sis_student_id', 'sis_student_id_refs_user_ptr_id_a71f4c9d', 'sis_student', 'user_ptr_id'),
