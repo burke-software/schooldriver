@@ -50,7 +50,7 @@ class Migration(SchemaMigration):
         print 2
 
         # Migrate data if there's any to migrate
-        if db.execute('select count(*) from sis_student')[0][0] and db.execute('select count(*) from sis_faculty')[0][0]:
+        if db.execute('select count(*) from sis_student')[0][0] or db.execute('select count(*) from sis_faculty')[0][0]:
             db.execute('update sis_student set user_ptr_id = mdluser_ptr_id;')
             db.execute('update sis_faculty set user_ptr_id = mdluser_ptr_id;')
             db.execute('update sis_student, sis_mdluser set sis_student.city = sis_mdluser.city \
@@ -84,7 +84,7 @@ class Migration(SchemaMigration):
                     print ' All references updated.'
                 # Now it's safe to switch the ID that we know is free.
                 old_student_id = db.execute('select id from auth_user where username=%s', [username])[0][0]
-                sys.stdout.write("Will change auth_user id from {} to {} for student/faculty {}".format(old_student_id, mdluser_ptr_id, username))
+                sys.stdout.write(u"Will change auth_user id from {} to {} for student/faculty {}".format(old_student_id, mdluser_ptr_id, username))
                 db.execute(u'update auth_user set id=%s, first_name=%s, last_name=%s where username=%s',
                     [mdluser_ptr_id, unicode(fname), unicode(lname), username])
                 # Translate inactive flag
@@ -95,6 +95,8 @@ class Migration(SchemaMigration):
                    db.execute(u'update `{0}` set `{1}` = %s where `{1}` = %s'.format(table, column), [mdluser_ptr_id, old_student_id])
                    sys.stdout.write('.')
                 print ' All references updated.'
+        else:
+            print 'No student or faculty records found to migrate.'
              
         db.delete_column(u'sis_student', u'mdluser_ptr_id')
         print 6
