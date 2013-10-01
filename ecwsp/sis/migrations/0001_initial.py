@@ -278,6 +278,13 @@ class Migration(SchemaMigration):
             ('end_date', self.gf('django.db.models.fields.DateField')(default=datetime.date.today)),
         ))
         db.send_create_signal(u'sis', ['MessageToStudent'])
+        
+        # Create proxy model's m2m table
+        db.execute('CREATE TABLE `sis_student_family_access_users` ('
+            '`id` integer NOT NULL PRIMARY KEY, '
+            '`student_id` integer NOT NULL, '
+            '`familyaccessuser_id` integer NOT NULL, '
+            'UNIQUE (`student_id`, `familyaccessuser_id`));');
 
 
     def backwards(self, orm):
