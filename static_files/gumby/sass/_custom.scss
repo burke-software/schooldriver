@@ -62,8 +62,9 @@ h1, h2, h3, h4, h5, h6 {
   color: inherit;
   text-shadow: inherit;
 }
-img.dashboard_gear {
-    max-width: 13px;
+img.nav_icon {
+    height: 1.6em;
+    margin-bottom: -6px;
 }
 
 @media screen and (min-width: $tablet-device-width){

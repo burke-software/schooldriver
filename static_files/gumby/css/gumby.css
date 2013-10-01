@@ -2631,7 +2631,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 300; }
 
 .navbar .breadcrumbs ul li > a { color: inherit; text-shadow: inherit; }
 
-img.dashboard_gear { max-width: 13px; }
+img.nav_icon { height: 1.6em; margin-bottom: -6px; }
 
 @media screen and (min-width: 768px) { .mobile_only { display: none !important; } }
 #save_status.alert { margin-bottom: 0px; }

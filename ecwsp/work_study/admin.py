@@ -67,7 +67,7 @@ class CompanyAdmin(admin.ModelAdmin):
             txt += "<h5>Current Students</h5>"
             students = StudentWorker.objects.filter(placement__company=context['original'].id)
             for student in students:
-                txt += '<a href="/admin/work_study/studentworker/%s/" target="_blank"/> %s </a></br>' % (student.id, student,)
+                txt += u'<a href="/admin/work_study/studentworker/%s/" target="_blank"/> %s </a></br>' % (student.id, student,)
             txt += "<h5>Past Students</h5>"
             histories = CompanyHistory.objects.filter(placement__company=context['original'].id)
             for history in histories:

@@ -15,6 +15,12 @@ left: -9999px;
   }
 }
 
+@media screen and (min-width: 768px){
+  .mobile_only {
+    display: none !important;
+  }
+}
+
 /* jquery UI theme overrides */
 .ui-menu li.ui-menu-item a {
   display: block;

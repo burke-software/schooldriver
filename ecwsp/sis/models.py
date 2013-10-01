@@ -410,7 +410,12 @@ class Student(User, CustomFieldModel):
     alert = models.CharField(max_length=500, blank=True, help_text="Warn any user who accesses this record with this text")
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date", validators=settings.DATE_VALIDATORS)
-    year = models.ForeignKey(GradeLevel, blank=True, null=True, on_delete=models.SET_NULL)
+    year = models.ForeignKey(
+        GradeLevel,
+        blank=True, 
+        null=True, 
+        on_delete=models.SET_NULL,
+        help_text="School year (ie freshman, senior, etc). Determined by class of.")
     class_of_year = models.ForeignKey(ClassYear, blank=True, null=True)
     date_dismissed = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
