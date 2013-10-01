@@ -4,6 +4,7 @@ import sys
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
+from django.conf import settings
 
 class Migration(SchemaMigration):
     no_dry_run = True
@@ -113,6 +114,53 @@ class Migration(SchemaMigration):
         # Clear sessions
         from django.contrib.sessions.models import Session
         Session.objects.all().delete()
+
+        # Fix foreign key constraints
+        # Maybe these should be split into migrations for different apps?
+        # Still, we (sis) are causing the mess and need to clean it up immediately.
+        foreign_key_constraints = (
+            #('APP', 'TABLE_NAME', 'COLUMN_NAME', 'CONSTRAINT_NAME', 'REFERENCED_TABLE_NAME', 'REFERENCED_COLUMN_NAME'),
+            ('ecwsp.admissions', 'admissions_applicant', 'sis_student_id', 'sis_student_id_refs_user_ptr_id_a71f4c9d', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.admissions', 'admissions_applicant_siblings', 'student_id', 'student_id_refs_user_ptr_id_8d9d9181', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.alumni', 'alumni_alumni', 'student_id', 'student_id_refs_user_ptr_id_4e3f1555', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.attendance', 'attendance_courseattendance', 'student_id', 'student_id_refs_user_ptr_id_2e0dedd7', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.attendance', 'attendance_studentattendance', 'student_id', 'student_id_refs_user_ptr_id_c5f69a8a', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.benchmark_grade', 'benchmark_grade_aggregate', 'student_id', 'student_id_refs_user_ptr_id_284aef5c', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.benchmark_grade', 'benchmark_grade_mark', 'student_id', 'student_id_refs_user_ptr_id_956a0ff6', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.counseling', 'counseling_referralform', 'student_id', 'student_id_refs_user_ptr_id_6cecab43', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.counseling', 'counseling_studentmeeting_students', 'student_id', 'student_id_refs_user_ptr_id_2b8f10d3', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.discipline', 'discipline_studentdiscipline', 'teacher_id', 'teacher_id_refs_user_ptr_id_b15fa949', 'sis_faculty', 'user_ptr_id'),
+            ('ecwsp.discipline', 'discipline_studentdiscipline_students', 'student_id', 'student_id_refs_user_ptr_id_bf2eaf11', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.engrade_sync', 'engrade_sync_teachersync', 'teacher_id', 'teacher_id_refs_user_ptr_id_ba04cd3a', 'sis_faculty', 'user_ptr_id'),
+            ('ecwsp.grades', 'grades_grade', 'student_id', 'student_id_refs_user_ptr_id_c8c6f848', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.omr', 'omr_test_teachers', 'faculty_id', 'faculty_id_refs_user_ptr_id_74cc6686', 'sis_faculty', 'user_ptr_id'),
+            ('ecwsp.omr', 'omr_testinstance', 'student_id', 'student_id_refs_user_ptr_id_3b3dfc2b', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.omr', 'omr_testinstance_teachers', 'faculty_id', 'faculty_id_refs_user_ptr_id_dd34476f', 'sis_faculty', 'user_ptr_id'),
+            ('ecwsp.schedule', 'schedule_awardstudent', 'student_id', 'student_id_refs_user_ptr_id_0a705f6c', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.schedule', 'schedule_course', 'teacher_id', 'teacher_id_refs_user_ptr_id_ab6ba283', 'sis_faculty', 'user_ptr_id'),
+            ('ecwsp.schedule', 'schedule_course_secondary_teachers', 'faculty_id', 'faculty_id_refs_user_ptr_id_e9b8cc1f', 'sis_faculty', 'user_ptr_id'),
+            ('ecwsp.schedule', 'schedule_omitcoursegpa', 'student_id', 'student_id_refs_user_ptr_id_ed8ee2e3', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.schedule', 'schedule_omityeargpa', 'student_id', 'student_id_refs_user_ptr_id_b51b9a96', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_asphistory', 'student_id', 'student_id_refs_user_ptr_id_f3a1c69c', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_student_emergency_contacts', 'student_id', 'student_id_refs_user_ptr_id_3764101d', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_student_family_access_users', 'student_id', 'student_id_refs_user_ptr_id_9713a33d', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_student_siblings', 'to_student_id', 'to_student_id_refs_user_ptr_id_4b6d8b84', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_student_siblings', 'from_student_id', 'from_student_id_refs_user_ptr_id_4b6d8b84', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_studentcohort', 'student_id', 'student_id_refs_user_ptr_id_99c0bf0d', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_studentfile', 'student_id', 'student_id_refs_user_ptr_id_12e8be34', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_studenthealthrecord', 'student_id', 'student_id_refs_user_ptr_id_3b6a60e0', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_studentnumber', 'student_id', 'student_id_refs_user_ptr_id_b34a53be', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.sis', 'sis_transcriptnote', 'student_id', 'student_id_refs_user_ptr_id_7472610e', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.standard_test', 'standard_test_standardtestresult', 'student_id', 'student_id_refs_user_ptr_id_a9e23d56', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.volunteer_track', 'volunteer_track_volunteer', 'student_id', 'student_id_refs_user_ptr_id_82c8545b', 'sis_student', 'user_ptr_id'),
+            ('ecwsp.work_study', 'work_study_studentworker', 'student_ptr_id', 'student_ptr_id_refs_user_ptr_id_0a4d0e06', 'sis_student', 'user_ptr_id'),
+        )
+        for app, table_name, column_name, constraint_name, referenced_table_name, referenced_column_name in foreign_key_constraints:
+            if not app in settings.INSTALLED_APPS:
+                continue
+            db.execute('alter table `{}` add constraint `{}` foreign key (`{}`) references `{}` (`{}`)'.format(
+                table_name, constraint_name, column_name, referenced_table_name, referenced_column_name))
+        print 9
 
 
     def backwards(self, orm):
