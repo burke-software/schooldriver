@@ -228,6 +228,8 @@ function get_edit_demonstration_form(event){
 }
 
 function show_student_overlay(event) {
+    $("#modal_content").html("Loading...");
+    $("#modal_form").addClass('active');
     student_id = event.target.id.replace(/^student(\d+)$/, '$1').trim();
     $.get(
         "ajax_get_student_info/" + student_id + "/",
