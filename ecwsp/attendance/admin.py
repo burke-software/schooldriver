@@ -32,7 +32,7 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
         ('date', DateRangeFilter),
         'status'
         ]
-    list_editable = ['status', 'notes']
+    #list_editable = ['status', 'notes']
     search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
     def save_model(self, request, obj, form, change):
         #HACK to work around bug 13091
