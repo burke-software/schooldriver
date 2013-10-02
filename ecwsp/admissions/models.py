@@ -136,8 +136,8 @@ class ImmigrationOption(models.Model):
     def __unicode__(self):
         return unicode(self.name)
     class Meta:
-        ordering = ['name']
- 
+        ordering = ['name'] 
+
 
 def get_default_country():
     return CountryOption.objects.get_or_create(name=settings.ADMISSIONS_DEFAULT_COUNTRY)[0]
@@ -291,6 +291,14 @@ def cache_applicant_m2m(sender, instance, action, reverse, model, pk_set, **kwar
         ec.cache_student_addresses()
 
 m2m_changed.connect(cache_applicant_m2m, sender=Applicant.parent_guardians.through)
+
+
+class ApplicantFile(models.Model):
+    applicant_file = models.FileField(upload_to="applicant_files")
+    applicant = models.ForeignKey(Applicant)
+    def __unicode__(self):
+        return unicode(self.applicant_file)
+
 
 class ContactLog(models.Model):
     applicant = models.ForeignKey(Applicant)

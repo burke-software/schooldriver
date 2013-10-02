@@ -14,11 +14,10 @@
   <!-- Mobile viewport optimized: j.mp/bplateviewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
-  <link rel="stylesheet" href="/static/gumby/css/gumby.css">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'gumby/css/gumby.css' %}"/>
   
-  <script src="/static/gumby/js/libs/modernizr-2.6.2.min.js"></script> 
+  <script src="{% static 'gumby/js/libs/modernizr-2.6.2.min.js' %}"></script> 
 
-  <script gumby-path="/static/gumby/js/libs" src="/static/gumby/js/libs/gumby.min.js"></script>
-  <script src="/static/gumby/js/plugins.js"></script>
-  <script src="/static/gumby/js/main.js"></script>
+  <script gumby-path="{% static 'gumby/js/libs' %}" src="{% static 'gumby/js/libs/gumby.min.js' %}"></script>
 

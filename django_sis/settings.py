@@ -34,7 +34,7 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = root('media/')
 CKEDITOR_UPLOAD_PATH = root('media/uploads')
-
+BOWER_COMPONENTS_ROOT = root('components/')
 
 # Django stuff
 LOGIN_REDIRECT_URL = "/"
@@ -138,11 +138,18 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'djangobower.finders.BowerFinder',
 )
 DEBUG = True
 TEMPLATE_DEBUG = True
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
+#BOWER
+BOWER_INSTALLED_APPS = (
+    'jquery#2.0',
+    'jquery-ui#1.10',
+    'gumby',
+)
 
 #GRAPPELLI
 ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
@@ -437,6 +444,7 @@ INSTALLED_APPS += (
     'responsive_dashboard',
     'simple_import',
     'floppyforms',
+    'djangobower',
 )
 
 if 'test' in sys.argv:

@@ -1,3 +1,4 @@
 *.pyc
 *.swp
 settings_local.py
+*.sass-cache/

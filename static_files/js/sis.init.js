@@ -11,4 +11,4 @@ if ($(".simple_multiselect").is('*')) {
     $(".simple_multiselect").simple_multiselect();
 }
 
-if ($(".datepicker").is('*')) { $(".datepicker").datepicker(); }
+if ($(".datepicker,.vDateField").is('*')) { $(".datepicker,.vDateField").datepicker(); }
