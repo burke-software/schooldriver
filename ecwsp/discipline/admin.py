@@ -34,7 +34,7 @@ class StudentDisciplineAdmin(admin.ModelAdmin):
     fields = ['date', 'students', 'teacher', 'infraction', 'comments', 'private_note']
     list_display = ('show_students', 'date', 'comment_brief', 'infraction')
     list_filter = [('date',DateRangeFilter), 'infraction', 'action',]
-    search_fields = ['comments', 'students__fname', 'students__lname']
+    search_fields = ['comments', 'students__first_name', 'students__last_name']
     inlines = [DisciplineActionInstanceInline]
     
     def lookup_allowed(self, lookup, *args, **kwargs):

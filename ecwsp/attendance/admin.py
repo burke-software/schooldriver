@@ -32,8 +32,7 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
         ('date', DateRangeFilter),
         'status'
         ]
-    #list_editable = ['status', 'notes']
-    search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
+    search_fields = ['student__first_name', 'student__last_name', 'notes', 'status__name']
     def save_model(self, request, obj, form, change):
         #HACK to work around bug 13091
         try:
@@ -55,7 +54,7 @@ class CourseAttendanceAdmin(admin.ModelAdmin):
         ('date', DateRangeFilter),
         'status'
         ]
-    search_fields = ['student__fname', 'student__lname', 'notes', 'status__name']
+    search_fields = ['student__first_name', 'student__last_name', 'notes', 'status__name']
     
     def lookup_allowed(self, lookup, *args, **kwargs):
         if lookup in ('student','student__id__exact',):

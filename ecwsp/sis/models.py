@@ -42,22 +42,38 @@ if 'south' in settings.INSTALLED_APPS:
     add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
 
 def create_faculty(instance):
-    if True:
-        faculty, created = Faculty.objects.get_or_create(username=instance.username)
-        if created:
-            faculty.fname = instance.first_name
-            faculty.lname = instance.last_name
-            faculty.email = instance.email
-            faculty.teacher = True
-            faculty.save()
+    """ Create a sis.Faculty object that is linked to the given
+    auth_user instance. Important as there is no way to do this
+    from Django admin. See 
+    http://stackoverflow.com/questions/4064808/django-model-inheritance-create-sub-instance-of-existing-instance-downcast
+    """
+    if not hasattr(instance, "faculty"):
+        faculty = Faculty(user_ptr_id=instance.id)
+        faculty.__dict__.update(instance.__dict__)
+        faculty.save()
+
+def create_student(instance):
+    """ Create a sis.Student object that is linked to the given auth_user
+    instance. See create_faculty for more details.  
+    """
+    if not hasattr(instance, "student"):
+        student = Student(user_ptr_id=instance.id)
+        student.__dict__.update(instance.__dict__)
+        student.save()
+    
 
 def create_faculty_profile(sender, instance, created, **kwargs):
     if instance.groups.filter(name="teacher").count():
         create_faculty(instance)
+    if instance.groups.filter(name="students").count():
+        create_student(instance)
 
 def create_faculty_profile_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     if action == 'post_add' and instance.groups.filter(name="teacher").count():
         create_faculty(instance)
+    if action == 'post_add' and instance.groups.filter(name="students").count():
+        create_student(instance)
+
 
 post_save.connect(create_faculty_profile, sender=User)
 m2m_changed.connect(create_faculty_profile_m2m, sender=User.groups.through)
@@ -186,35 +202,6 @@ class ReportField(models.Model):
         return unicode(self.name)
 
 
-class MdlUser(models.Model):
-    """Generic person model. Named when it was though sword would depend
-    heavily with Moodle. A person is any person in the school, such as a student
-    or teacher. It's not a login user though may be related to a login user"""
-    inactive = models.BooleanField()
-    username = models.CharField(unique=True, max_length=255)
-    fname = models.CharField(max_length=300, verbose_name="First Name")
-    lname = models.CharField(max_length=300, verbose_name="Last Name")
-    email = models.EmailField(blank=True)
-    city = models.CharField(max_length=360, blank=True)
-    class Meta:
-        ordering = ('lname','fname')
-        
-    def __unicode__(self):
-        return self.lname + ", " + self.fname
-    
-    @property
-    def deleted(self):
-        # For backwards compatibility
-        return self.inactive
-        
-    def django_user(self):
-        return User.objects.get(username=self.username)
-        
-        
-        
-########################################################################
-
-
 class PhoneNumber(models.Model):
     number = PhoneNumberField()
     ext = models.CharField(max_length=10, blank=True, null=True)
@@ -309,35 +296,24 @@ class EmergencyContactNumber(PhoneNumber):
             return self.get_type_display() + ":" + self.number
 
 
-class Faculty(MdlUser):
-    alt_email = models.EmailField(blank=True)
+class Faculty(User):
     number = PhoneNumberField(blank=True)
     ext = models.CharField(max_length=10, blank=True, null=True)
     teacher = models.BooleanField()
     
     class Meta:
         verbose_name_plural = "Faculty"
-        ordering = ("lname", "fname")
+        ordering = ("last_name", "first_name")
     
     def save(self, *args, **kwargs):
-        if Student.objects.filter(id=self.id).count():
-            raise ValidationError('Cannot have someone be a student AND faculty!')
+        self.is_staff = True
         super(Faculty, self).save(*args, **kwargs)
-        user, created = User.objects.get_or_create(username=self.username)
-        if created:
-            user.password = "!"
-            user.save()
         group, created = Group.objects.get_or_create(name="faculty")
-        if created: group.save()
-        user.groups.add(group)
-        user.save()
-        
-    def full_clean(self, *args, **kwargs):
-        """ Check if a Faculty exists, can't have someone be a Student and Faculty """
-        if Student.objects.filter(id=self.id).count():
-            raise ValidationError('Cannot have someone be a student AND faculty!')
-        super(Faculty, self).full_clean(*args, **kwargs)
+        self.groups.add(group)
 
+    def __unicode__(self):
+        return u"{0}, {1}".format(self.last_name, self.first_name)
+        
 
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
@@ -427,15 +403,19 @@ def get_default_language():
     if LanguageChoice.objects.filter(default=True).count():
         return LanguageChoice.objects.filter(default=True)[0]
 
-class Student(MdlUser, CustomFieldModel):
-    """student based on a Moodle user"""
+class Student(User, CustomFieldModel):
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     pic = ImageWithThumbsField(upload_to="student_pics", blank=True, null=True, sizes=((70,65),(530, 400)))
     alert = models.CharField(max_length=500, blank=True, help_text="Warn any user who accesses this record with this text")
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date", validators=settings.DATE_VALIDATORS)
-    year = models.ForeignKey(GradeLevel, blank=True, null=True, on_delete=models.SET_NULL)
+    year = models.ForeignKey(
+        GradeLevel,
+        blank=True, 
+        null=True, 
+        on_delete=models.SET_NULL,
+        help_text="School year (ie freshman, senior, etc). Determined by class of.")
     class_of_year = models.ForeignKey(ClassYear, blank=True, null=True)
     date_dismissed = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
@@ -446,11 +426,12 @@ class Student(MdlUser, CustomFieldModel):
     parent_guardian = models.CharField(max_length=150, blank=True, editable=False)
     street = models.CharField(max_length=150, blank=True, editable=False)
     state = USStateField(blank=True, editable=False, null=True)
+    city = models.CharField(max_length=255, blank=True)
     zip = models.CharField(max_length=10, blank=True, editable=False)
     parent_email = models.EmailField(blank=True, editable=False)
     
     family_preferred_language = models.ForeignKey(LanguageChoice, blank=True, null=True, default=get_default_language)
-    family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True)
+    family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True, related_name="+")
     alt_email = models.EmailField(blank=True, help_text="Alternative student email that is not their school email.")
     notes = models.TextField(blank=True)
     emergency_contacts = models.ManyToManyField(EmergencyContact, verbose_name="Student Contact", blank=True)
@@ -468,9 +449,20 @@ class Student(MdlUser, CustomFieldModel):
             ("reports", "View reports"),
         )
     report_builder_exclude_fields = ('alert',)
-    
+
     def __unicode__(self):
-        return u"{0}, {1}".format(self.lname, self.fname)
+        return u"{0}, {1}".format(self.last_name, self.first_name)
+    
+    def get_absolute_url():
+        pass
+    
+    # Legacy first and last name properties
+    @property
+    def fname(self, ):
+        return self.first_name
+    @property
+    def lname(self, ):
+        return self.last_name    
     
     @property
     def primary_cohort(self):
@@ -667,11 +659,9 @@ class Student(MdlUser, CustomFieldModel):
             except:
                 return None
     
-    def save(self, *args, **kwargs):
-        if Faculty.objects.filter(id=self.id).count():
-            raise ValidationError('Cannot have someone be a student AND faculty!')
+    def save(self, creating_worker=False, *args, **kwargs):
         self.cache_cohorts()
-        if self.inactive == True and (Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "True" \
+        if self.is_active == False and (Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "True" \
         or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "true" \
         or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "T"):
             try:
@@ -681,12 +671,19 @@ class Student(MdlUser, CustomFieldModel):
         self.determine_year()
             
         super(Student, self).save(*args, **kwargs)
-        user, created = User.objects.get_or_create(username=self.username)
-        if created:
-            user.password = "!"
-            user.save()
+        
+        # Create student worker if the app is installed.
+        # No other way to do it see:
+        # https://code.djangoproject.com/ticket/7623
+        if 'ecwsp.work_study' in settings.INSTALLED_APPS:
+            if not creating_worker and not hasattr(self, 'studentworker_ptr'):
+                from ecwsp.work_study.models import StudentWorker
+                worker = StudentWorker(user_ptr_id=self.user_ptr_id)
+                worker.__dict__.update(self.__dict__)
+                worker.save(creating_worker=True)
+        
         group, gcreated = Group.objects.get_or_create(name="students")
-        user.groups.add(group)
+        self.user_ptr.groups.add(group)
         
         
     def clean(self, *args, **kwargs):

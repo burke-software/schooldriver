@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin_base.html" %}
 
 {% block breadcrumbs %}
 <div id="breadcrumbs"> 
@@ -11,7 +11,11 @@
 {% endblock %}
 
 {% block content %}
-    <div style="height:590px;">
+    <div id="report_builder_wrapper" style="height:590px;">
     {% include "report_builder:report_builder/report_form.html" %}
     </div>
+    <script>
+      win_height = $(window).height();
+      $('#report_builder_wrapper').css('height', win_height - 120);
+    </script>
 {% endblock %}

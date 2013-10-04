@@ -546,7 +546,7 @@ def report_builder_view(request):
                         else: makeup = at.makeup_date
                         if at.billed: billed = "Yes"
                         else: billed = "No"
-                        data.append([at.absence_date, at.student.fname, at.student.lname, at.student.year, half, at.reason, makeup, at.fee, billed])
+                        data.append([at.absence_date, at.student.first_name, at.student.last_name, at.student.year, half, at.reason, makeup, at.fee, billed])
                     
                     report = XlReport(file_name="attendance_report")
                     report.add_sheet(data, header_row=titles, title="Total")
@@ -558,7 +558,7 @@ def report_builder_view(request):
                     for at in waivers:
                         if at.half_day: half = "1/2"
                         else: half = "1"
-                        data.append([at.absence_date, at.student.fname, at.student.lname, at.student.placement, at.student.year, half, at.reason, at.fee])
+                        data.append([at.absence_date, at.student.first_name, at.student.last_name, at.student.placement, at.student.year, half, at.reason, at.fee])
                     report.add_sheet(data, header_row=titles, title="Waived")
                     
                     # pending meaning no makeup date and not waived
@@ -572,7 +572,7 @@ def report_builder_view(request):
                         else: makeup = at.makeup_date
                         if at.billed: billed = "Yes"
                         else: billed = "No"
-                        data.append([at.absence_date, at.student.fname, at.student.lname, at.student.placement, at.student.year, half, at.reason, at.student.get_day_display(), makeup, at.fee, billed])
+                        data.append([at.absence_date, at.student.first_name, at.student.last_name, at.student.placement, at.student.year, half, at.reason, at.student.get_day_display(), makeup, at.fee, billed])
                     report.add_sheet(data, header_row=titles, title="Pending")
                     
                     # scheduled
@@ -584,19 +584,19 @@ def report_builder_view(request):
                         else: half = "1"
                         if at.waive: makeup = "Waived"
                         else: makeup = at.makeup_date
-                        data.append([at.absence_date, at.student.fname, at.student.lname, at.student.placement, at.student.primary_contact, at.student.year, half, at.reason, makeup, at.fee])
+                        data.append([at.absence_date, at.student.first_name, at.student.last_name, at.student.placement, at.student.primary_contact, at.student.year, half, at.reason, makeup, at.fee])
                     report.add_sheet(data, header_row=titles, title="Scheduled")
                     
                     # outstanding bills, sum of student's fee - paid
                     bills = attend.filter(billed=None)
-                    summary = bills.values('student').annotate(Sum('fee__value'), Sum('paid')).values('student__fname', 'student__lname', 'fee__value__sum', 'paid__sum')
+                    summary = bills.values('student').annotate(Sum('fee__value'), Sum('paid')).values('student__first_name', 'student__last_name', 'fee__value__sum', 'paid__sum')
                     data = []
                     for at in summary:
                         if at['fee__value__sum'] or at['paid__sum']:
                             total_owes = 0
                             if at['fee__value__sum'] and at['paid__sum']:
                                 total_owes = at['fee__value__sum'] - at['paid__sum']
-                            data.append([at['student__fname'], at['student__lname'], at['fee__value__sum'], at['paid__sum'], total_owes])
+                            data.append([at['student__first_name'], at['student__last_name'], at['fee__value__sum'], at['paid__sum'], total_owes])
                         
                     titles = ["Fname", "Lname", "Total Fee", "Total Paid", "Total owes school (does not include students who were already billed)"]
                     report.add_sheet(data, header_row=titles, title="Bill Summary")
@@ -605,7 +605,7 @@ def report_builder_view(request):
                     data = []
                     titles = ["Date", "First Name", "Last", "Grade", "WorkTeam", "Hours", "School Net Pay", "Student Net Pay"]
                     for ts in timesheets:
-                        data.append([ts.date, ts.student.fname, ts.student.lname, ts.student.year, ts.company, ts.hours, ts.school_net, ts.student_net])
+                        data.append([ts.date, ts.student.first_name, ts.student.last_name, ts.student.year, ts.company, ts.hours, ts.school_net, ts.student_net])
                     report.add_sheet(data, header_row=titles, title="TimeSheets")
                     return report.as_download()
                 
@@ -613,7 +613,7 @@ def report_builder_view(request):
                 elif 'student_timesheet' in request.POST:
                     data = []
                     titles = ["Student", "Work Day", "Placement", "Number of work study Presents", "Number of time sheets submitted", "Dates"]
-                    students = StudentWorker.objects.filter(inactive=False)
+                    students = StudentWorker.objects.filter(is_active=True)
                     for student in students:
                         ts = TimeSheet.objects.filter(student=student).filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end']))
                         present_count = student.attendance_set.filter(absence_date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end']), tardy="P").count()
@@ -644,7 +644,7 @@ def report_builder_view(request):
                                     new_company = False
                                     company_total = timesheets.filter(company__id__iexact=company.id).aggregate(Sum('school_net'))
                                     data.append([company.company, company, "", "", "", "", "", ""])
-                                data.append(["", "", timesheet.student.fname, timesheet.student.lname, timesheet.date, timesheet.hours, \
+                                data.append(["", "", timesheet.student.first_name, timesheet.student.last_name, timesheet.date, timesheet.hours, \
                                     timesheet.student_net, timesheet.school_net])
                                 studenti += 1
                                 # if last day for this student print out the student's totals
@@ -696,7 +696,7 @@ def report_builder_view(request):
                     students = StudentWorker.objects.filter(timesheet__in=timesheets)
                     for student in students:
                         ts = timesheets.filter(student=student).aggregate(Sum('hours'), Sum('student_net'))
-                        data.append([student.unique_id, student.fname, student.lname, student.adp_number, ts['hours__sum'], ts['student_net__sum']])
+                        data.append([student.unique_id, student.first_name, student.last_name, student.adp_number, ts['hours__sum'], ts['student_net__sum']])
                     titles = ['Unique ID', 'First Name', 'Last Name', 'ADP #', 'Hours Worked', 'Gross Pay']
                     report.add_sheet(data, header_row=titles, title="Payroll (ADP #s)")
                     
@@ -705,7 +705,7 @@ def report_builder_view(request):
                     for student in students:
                         if not student.adp_number:
                             ts = timesheets.filter(student=student).aggregate(Sum('student_net'))
-                            data.append([student.lname, student.fname, student.parent_guardian, student.street, \
+                            data.append([student.last_name, student.first_name, student.parent_guardian, student.street, \
                                 student.city, student.state, student.zip, student.ssn, ts['student_net__sum']])
                     titles = ['lname', 'fname', 'parent', 'address', 'city', 'state', 'zip', 'ss', 'pay']
                     report.add_sheet(data, header_row=titles, title="Student info wo ADP #")
@@ -719,7 +719,7 @@ def report_builder_view(request):
                               "creation date", "date", "Time In", "Lunch", "Lunch Return", "Out", "Hours",
                               "Student net", "School net", "Student Accomplishment", "Performance", "Supervisor Comment"]
                     for ts in timesheets:
-                        data.append([ts.student.fname, ts.student.lname, ts.for_pay, ts.make_up,
+                        data.append([ts.student.first_name, ts.student.last_name, ts.for_pay, ts.make_up,
                                      ts.approved, ts.company, ts.creation_date, ts.date, ts.time_in,
                                      ts.time_lunch, ts.time_lunch_return, ts.time_out, ts.hours,
                                      ts.student_net, ts.school_net, ts.student_accomplishment,
@@ -730,7 +730,7 @@ def report_builder_view(request):
                     
                 # master contact list
                 elif 'master' in request.POST:
-                    workers = (StudentWorker.objects.all()).exclude(inactive=True)
+                    workers = (StudentWorker.objects.all()).exclude(is_active=False)
                     data = []
                     for worker in workers:
                         eFname = eLname = eHome = eWork = eCell = ""
@@ -759,7 +759,7 @@ def report_builder_view(request):
                             supCell = " "
                             supEmail =" "
                         
-                        data.append([worker.fname, worker.lname, worker.mname, worker.year, worker.day, supFname,\
+                        data.append([worker.first_name, worker.last_name, worker.mname, worker.year, worker.day, supFname,\
                             supLname,supPhone, supCell,supEmail,number,eFname,eLname,eHome,eCell,eWork])   
                     titles = ['First Name', 'Last Name', 'Middle Name','Year', 'Work Day', 'Supervisor First Name', 'Supervisor Last Name', 'Supervisor Phone', \
                         'Supervisor Cell', 'Supervisor Email', 'Student Cell', 'Parent First Name', 'Parent Last Name', 'Parent Home', 'Parent Cell', 'Parent Work']
@@ -834,7 +834,7 @@ def student_meeting(request):
     except: start_date = None
     meetings = []
     
-    for student in StudentWorker.objects.filter(inactive=False):
+    for student in StudentWorker.objects.filter(is_active=True):
         meeting = struct()
         meeting.student = student
         interactions = StudentInteraction.objects.filter(type="M", student=student).order_by('-date')
@@ -1006,7 +1006,7 @@ def take_attendance(request, work_day=None):
             work_day = StudentWorker.dayOfWeek[today.weekday()][0]
         except IndexError:
             work_day = StudentWorker.dayOfWeek[0][0]
-    students = StudentWorker.objects.filter(day=work_day, inactive=False)
+    students = StudentWorker.objects.filter(day=work_day, is_active=True)
     extra = students.count() - students.filter(attendance__absence_date=today).count()
     AttendanceFormSet = modelformset_factory(Attendance, form=QuickAttendanceForm, extra=extra)
     

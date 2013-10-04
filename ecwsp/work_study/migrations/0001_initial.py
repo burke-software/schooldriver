@@ -383,7 +383,13 @@ class Migration(SchemaMigration):
             ('end_date', self.gf('django.db.models.fields.DateField')(default=datetime.date.today)),
         ))
         db.send_create_signal(u'work_study', ['MessageToSupervisor'])
-
+        
+        db.execute('CREATE TABLE `work_study_workteam_login` ('
+            '`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, '
+            '`workteam_id` integer NOT NULL, '
+            '`workteamuser_id` integer NOT NULL, '
+            'UNIQUE (`workteam_id`, `workteamuser_id`)'
+            ');')
 
     def backwards(self, orm):
         # Removing unique constraint on 'CompanyHistory', fields ['student', 'placement', 'date']

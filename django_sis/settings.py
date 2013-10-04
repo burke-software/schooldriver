@@ -26,15 +26,16 @@ PROJECT_ROOT = here("..",)
 root = lambda *x: join(abspath(PROJECT_ROOT), *x)
 
 TEMPLATE_DIRS = root('templates/')
-STATICFILES_DIRS = ((''),
+STATICFILES_DIRS = (
     root('static_files/'),
+    ('gumby_css', root('components/css/')),
 )
 STATIC_ROOT = root('static/')
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = root('media/')
 CKEDITOR_UPLOAD_PATH = root('media/uploads')
-
+BOWER_COMPONENTS_ROOT = root('components/')
 
 # Django stuff
 LOGIN_REDIRECT_URL = "/"
@@ -138,11 +139,19 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'djangobower.finders.BowerFinder',
 )
 DEBUG = True
 TEMPLATE_DEBUG = True
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
+#BOWER
+BOWER_INSTALLED_APPS = (
+    'jquery',
+    'jquery-ui',
+    'gumby',
+    'jquery-migrate',
+)
 
 #GRAPPELLI
 ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
@@ -404,8 +413,8 @@ if 'djcelery' in INSTALLED_APPS:
 INSTALLED_APPS += (
     'grappelli.dashboard',
     'grappelli',
-    'ecwsp.schedule',
     'ecwsp.administration',
+    'ecwsp.schedule',
     'ecwsp.admissions',
     'ecwsp.alumni',
     'ecwsp.discipline',
@@ -437,6 +446,7 @@ INSTALLED_APPS += (
     'responsive_dashboard',
     'simple_import',
     'floppyforms',
+    'djangobower',
 )
 
 if 'test' in sys.argv:

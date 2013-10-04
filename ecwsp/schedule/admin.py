@@ -65,7 +65,7 @@ class DaysOffInline(admin.TabularInline):
 admin.site.register(Day)
     
 class CourseEnrollmentAdmin(admin.ModelAdmin):
-    search_fields = ['course__fullname', 'user__username', 'user__fname', 'role']
+    search_fields = ['course__fullname', 'user__username', 'user__first_name', 'role']
     list_display = ['course', 'user', 'role', 'attendance_note']
 admin.site.register(CourseEnrollment, CourseEnrollmentAdmin)
 
@@ -86,8 +86,6 @@ class MarkingPeriodAdmin(admin.ModelAdmin):
 admin.site.register(MarkingPeriod, MarkingPeriodAdmin)
 
 admin.site.register(Period)
-
-admin.site.register(Faculty)
 
 admin.site.register(Location)
 

@@ -15,21 +15,10 @@ from ecwsp.sis.forms import *
 from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
 from custom_field.custom_field import CustomFieldAdmin
 
-# Global actions
-def promote_to_worker(modeladmin, request, queryset):
-    for object in queryset:
-        object.promote_to_worker()
-        LogEntry.objects.log_action(
-                    user_id         = request.user.pk, 
-                    content_type_id = ContentType.objects.get_for_model(object).pk,
-                    object_id       = object.pk,
-                    object_repr     = unicode(object), 
-                    action_flag     = CHANGE
-                )
-        
+
 def mark_inactive(modeladmin, request, queryset):
     for object in queryset:
-        object.inactive=True
+        object.is_active=False
         LogEntry.objects.log_action(
                     user_id         = request.user.pk, 
                     content_type_id = ContentType.objects.get_for_model(object).pk,
@@ -100,6 +89,13 @@ class MarkingPeriodInline(admin.StackedInline):
                        'friday','saturday','sunday',),
         },),
     )
+    
+
+class FacultyAdmin(admin.ModelAdmin):
+    fields = ['username', 'is_active', 'first_name', 'last_name', 'email', 'number', 'ext', 'teacher']
+    search_fields = list_display = ['username', 'first_name', 'last_name', 'is_active']
+    
+admin.site.register(Faculty, FacultyAdmin)
 
 class StudentCourseInline(admin.TabularInline):
     model = CourseEnrollment
@@ -113,14 +109,15 @@ class StudentCourseInline(admin.TabularInline):
     extra = 0
 
 admin.site.register(GradeLevel)
+        
 
 class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     def changelist_view(self, request, extra_context=None):
         """override to hide inactive students by default"""
         try:
             test = request.META['HTTP_REFERER'].split(request.META['PATH_INFO'])
-            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('inactive__exact') and not request.GET.has_key('id__in'):
-                return HttpResponseRedirect("/admin/sis/student/?inactive__exact=0")
+            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('is_active__exact') and not request.GET.has_key('id__in'):
+                return HttpResponseRedirect("/admin/sis/student/?is_active__exact=1")
         except: pass # In case there is no referer
         return super(StudentAdmin,self).changelist_view(request, extra_context=extra_context)
 
@@ -184,17 +181,18 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         return form
     
     fieldsets = [
-        (None, {'fields': [('lname', 'fname'), ('mname', 'inactive'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), 'class_of_year',('unique_id','ssn'),
+        (None, {'fields': [('last_name', 'first_name'), ('mname', 'is_active'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), ('class_of_year', 'year'),('unique_id','ssn'),
             'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
     ]
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
         fieldsets[0][1]['fields'].append('family_access_users')
     change_list_template = "admin/sis/student/change_list.html"
     form = StudentForm
-    search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
+    readonly_fields = ['year']
+    search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
-    actions = [promote_to_worker, mark_inactive]
-    list_filter = ['inactive', 'year', 'class_of_year']
+    actions = [mark_inactive]
+    list_filter = ['is_active', 'year', 'class_of_year']
     list_display = ['__unicode__','year']
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
         filter_horizontal = ('family_access_users',)
@@ -205,6 +203,7 @@ except ImportError:
     pass
 else:
     add_import(StudentAdmin)
+
 admin.site.register(Student, StudentAdmin)
 admin.site.register(ClassYear)
 
@@ -214,9 +213,9 @@ class StudentCourse(Student):
         proxy = True
 class StudentCourseAdmin(admin.ModelAdmin):
     inlines = [StudentCourseInline]
-    search_fields = ['fname', 'lname', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
-    fields = ['fname', 'lname']
-    list_filter = ['inactive','year']
+    search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
+    fields = ['first_name', 'last_name']
+    list_filter = ['is_active','year']
     readonly_fields = fields
 admin.site.register(StudentCourse, StudentCourseAdmin)
 
@@ -232,12 +231,10 @@ class EmergencyContactAdmin(admin.ModelAdmin):
         fieldsets[0][1]['fields'].append('sync_schoolreach')
     list_filter = ['primary_contact',]
     inlines = [EmergencyContactInline, StudentECInline]
-    search_fields = ['fname', 'lname', 'email', 'student__fname', 'student__lname']
+    search_fields = ['fname', 'lname', 'email', 'student__fname', 'student__last_name']
     list_display = ['fname', 'lname', 'primary_contact', 'relationship_to_student', 'show_student']
     
 admin.site.register(EmergencyContact, EmergencyContactAdmin)
-
-admin.site.register(MdlUser) # Not used?
 
 admin.site.register(LanguageChoice)
 
@@ -317,7 +314,7 @@ admin.site.register(SchoolYear, SchoolYearAdmin)
 
 class ImportLogAdmin(admin.ModelAdmin):
     list_display = ['user','date','errors']
-    search_fields = ['user__username', 'user__first_name', 'user__last_name']
+    search_fields = ['username', 'first_name', 'last_name']
 admin.site.register(ImportLog, ImportLogAdmin)
 
 admin.site.register(MessageToStudent)

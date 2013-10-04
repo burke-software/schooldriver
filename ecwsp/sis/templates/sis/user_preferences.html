@@ -1,5 +1,10 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin_base.html" %}
 {% load i18n %}
+
+{% block breadcrumbs %}
+<a href="/"> Home ></a>
+Preferences
+{% endblock %}
 
 {% block content %}
     <h2>User Preferences</h2>

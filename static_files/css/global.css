@@ -10,8 +10,14 @@ left: -9999px;
 
 @media screen and (min-width: 768px){
   .container{
-    margin-top: 82px;
+    margin-top: 104px;
     padding-bottom: 50px;
+  }
+}
+
+@media screen and (min-width: 768px){
+  .mobile_only {
+    display: none !important;
   }
 }
 
@@ -40,12 +46,6 @@ left: -9999px;
   z-index: 99999;
   min-width: 200px;
 }
-.navbar ul li > a {
-  padding-left: 5%;
-  padding-right: 5%;
-  margin-left: 2px;
-  margin-right: 2px;
-}
 .navbar .logo a {
   padding-left: 0px;
 }
@@ -59,3 +59,4 @@ left: -9999px;
     display: none;
   }
 }
+

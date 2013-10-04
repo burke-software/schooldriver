@@ -14,6 +14,7 @@ from ecwsp.admissions.models import SchoolType, OpenHouse, HeardAboutUsOption, F
 from ecwsp.admissions.models import PlaceOfWorship, ApplicationDecisionOption, WithdrawnChoices
 from ecwsp.admissions.models import BoroughOption, CountryOption, ImmigrationOption, AdmissionLevel
 from ecwsp.admissions.models import Applicant, ApplicantStandardTestResult, ApplicantStandardCategoryGrade
+from ecwsp.admissions.models import ApplicantFile
 from ecwsp.admissions.forms import ApplicantForm
 from ecwsp.sis.models import SchoolYear
 
@@ -42,6 +43,10 @@ class AdmissionCheckInline(admin.TabularInline):
     extra = 0
     verbose_name_plural = "Items needed to be completed to attain this level in the process"
 
+class ApplicantFileInline(admin.TabularInline):
+    model = ApplicantFile
+    extra = 0
+
 class AdmissionLevelAdmin(admin.ModelAdmin):
     list_display = ('edit','name', 'order','show_checks')
     list_display_links = ('edit',)
@@ -67,7 +72,7 @@ class ApplicantAdmin(CustomFieldAdmin):
     list_filter = ['from_online_inquiry', 'school_year', 'level', 'checklist', 'ready_for_export',
                    'application_decision','present_school','ethnicity', 'heard_about_us', 'first_contact', 'year']
     search_fields = ['lname', 'fname', 'present_school__name']
-    inlines = [ContactLogInline]
+    inlines = [ContactLogInline, ApplicantFileInline]
     ordering = ('-id',)
     fieldsets = [
         (
@@ -173,6 +178,9 @@ class ApplicantAdmin(CustomFieldAdmin):
                 if(not instance.user):
                     instance.user = request.user        
                 instance.save()
+        formset.save()
+        formset.save_m2m()
+
     
     def save_model(self, request, obj, form, change):
         if 'checkmark_data' in request.POST: # This confirms the checks are there, in case we call this from somewhere odd say mass-edit.

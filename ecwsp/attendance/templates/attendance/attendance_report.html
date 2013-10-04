@@ -1,13 +1,8 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin_base.html" %}
 {% load i18n %}
 
 {% block extrahead %}
     {{ form.media }}
-    <script type="text/javascript">
-        $(document).ready(function() {
-            grappelli.initDateAndTimePicker();
-        });
-    </script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -16,7 +11,7 @@
 Home
 </a> 
 &rsaquo; 
-<a href="/admin/sis/studentattendance/"> 
+<a href="{% url 'admin:attendance_studentattendance_changelist' %}"> 
  Student Attendance
 </a> 
 &rsaquo; Attendance Reports</div> 
@@ -36,7 +31,6 @@ Home
             <input type="submit" name="attendance_daily_stat" value="Daily Attendance Stats"/><br/>
         </fieldset>
     </form>
-    <br/><br/>
     <form action="" method="post" style="width:850px;">
         <fieldset>
             <legend>Daily Attendance</legend>
@@ -45,7 +39,6 @@ Home
         </fieldset>
     </form>
     
-    <br/><br/>
     <form action="" id="myform" method="post" style="width:850px;">
         <fieldset>
             <legend>Lookup student</legend>

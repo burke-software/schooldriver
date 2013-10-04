@@ -8,11 +8,64 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        pass
+        # Adding model 'StandardTest'
+        db.create_table(u'standard_test_standardtest', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
+            ('calculate_total', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('cherry_pick_categories', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('cherry_pick_final', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('show_on_reports', self.gf('django.db.models.fields.BooleanField')(default=True)),
+        ))
+        db.send_create_signal(u'standard_test', ['StandardTest'])
+
+        # Adding model 'StandardCategory'
+        db.create_table(u'standard_test_standardcategory', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('test', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['standard_test.StandardTest'])),
+            ('is_total', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'standard_test', ['StandardCategory'])
+
+        # Adding model 'StandardTestResult'
+        db.create_table(u'standard_test_standardtestresult', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 10, 1, 0, 0))),
+            ('student', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.Student'])),
+            ('test', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['standard_test.StandardTest'])),
+            ('show_on_reports', self.gf('django.db.models.fields.BooleanField')(default=True)),
+        ))
+        db.send_create_signal(u'standard_test', ['StandardTestResult'])
+
+        # Adding unique constraint on 'StandardTestResult', fields ['date', 'student', 'test']
+        db.create_unique(u'standard_test_standardtestresult', ['date', 'student_id', 'test_id'])
+
+        # Adding model 'StandardCategoryGrade'
+        db.create_table(u'standard_test_standardcategorygrade', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['standard_test.StandardCategory'])),
+            ('result', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['standard_test.StandardTestResult'])),
+            ('grade', self.gf('django.db.models.fields.DecimalField')(max_digits=6, decimal_places=2)),
+        ))
+        db.send_create_signal(u'standard_test', ['StandardCategoryGrade'])
 
 
     def backwards(self, orm):
-        pass
+        # Removing unique constraint on 'StandardTestResult', fields ['date', 'student', 'test']
+        db.delete_unique(u'standard_test_standardtestresult', ['date', 'student_id', 'test_id'])
+
+        # Deleting model 'StandardTest'
+        db.delete_table(u'standard_test_standardtest')
+
+        # Deleting model 'StandardCategory'
+        db.delete_table(u'standard_test_standardcategory')
+
+        # Deleting model 'StandardTestResult'
+        db.delete_table(u'standard_test_standardtestresult')
+
+        # Deleting model 'StandardCategoryGrade'
+        db.delete_table(u'standard_test_standardcategorygrade')
 
 
     models = {
@@ -61,12 +114,13 @@ class Migration(SchemaMigration):
         u'sis.cohort': {
             'Meta': {'object_name': 'Cohort'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'long_name': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'students': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['sis.Student']", 'null': 'True', 'db_table': "'sis_studentcohort'", 'blank': 'True'})
         },
         u'sis.emergencycontact': {
-            'Meta': {'ordering': "('primary_contact', 'emergency_only', 'lname')", 'object_name': 'EmergencyContact'},
+            'Meta': {'ordering': "('primary_contact', 'lname')", 'object_name': 'EmergencyContact'},
             'city': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
             'emergency_only': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -96,7 +150,7 @@ class Migration(SchemaMigration):
         u'sis.mdluser': {
             'Meta': {'ordering': "('lname', 'fname')", 'object_name': 'MdlUser'},
             'city': ('django.db.models.fields.CharField', [], {'max_length': '360', 'blank': 'True'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
+            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
             'fname': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'inactive': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -120,7 +174,7 @@ class Migration(SchemaMigration):
             'date_dismissed': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'emergency_contacts': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.EmergencyContact']", 'symmetrical': 'False', 'blank': 'True'}),
             'family_access_users': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.User']", 'symmetrical': 'False', 'blank': 'True'}),
-            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
+            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
             'grad_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'individual_education_program': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'mdluser_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['sis.MdlUser']", 'unique': 'True', 'primary_key': 'True'}),
@@ -171,7 +225,7 @@ class Migration(SchemaMigration):
         },
         u'standard_test.standardtestresult': {
             'Meta': {'unique_together': "(('date', 'student', 'test'),)", 'object_name': 'StandardTestResult'},
-            'date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 1, 6, 0, 0)'}),
+            'date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 10, 1, 0, 0)'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'show_on_reports': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"}),

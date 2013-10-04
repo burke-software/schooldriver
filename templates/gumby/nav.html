@@ -7,6 +7,7 @@
     </a>
   </div>
   <ul class="fourteen columns" style="float: right;">
+    {% if perms.auth.change_student or perms.auth.view_student %}
     <li class="field">
         <div class="admin-title view_student" style="heig;">
             <form id="form_view_student" style="margin-bottom: 0px;" class="view_student" action="/sis/view_student/" method="post">
@@ -32,6 +33,26 @@
 
 
    </li>
+   {% endif %}
+  <li class="mobile_only">
+    <a href="javascript:void(0);">
+      {{ user.first_name }} {{ user.last_name }} 
+      <i class="icon-down-dir"></i>
+    </a>
+    <div class="dropdown">
+      <ul>
+        <li>
+          <a href="/sis/preferences">Preferences</a>
+        </li>
+        <li>
+          <a href="{% url 'admin:password_change' %}">Change Password</a>
+        </li>
+        <li>
+          <a href="{% url 'admin:logout' %}">Log Out</a>
+        </li>
+      </ul>
+    </div>
+  </li>
     {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
       <li>
           <a href="/sis/dashboard/">Student</a>
@@ -107,8 +128,12 @@
     </li>
   {% endif %}{% endif %}
 
+  {% if perms.auth.change_user or perms.administration.change_configuration or perms.engrade_sync.change_coursesync %}
   <li>
     <a href="/administration/dashboard/"> Admin </a>
   </li>
+  {% endif %}
+
+  
   </ul>
 </div>

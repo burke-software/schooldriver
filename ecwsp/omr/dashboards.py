@@ -36,7 +36,7 @@ class OmrMyTestsDashlet(Dashlet):
                 'tests': tests,
             }.items())
         except:
-            messages.warning(request, "You are not a teacher!")
+            messages.warning(self.request, "You are not a teacher!")
         return super(OmrMyTestsDashlet, self)._render(**kwargs)
     
 
