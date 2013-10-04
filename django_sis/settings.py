@@ -26,8 +26,9 @@ PROJECT_ROOT = here("..",)
 root = lambda *x: join(abspath(PROJECT_ROOT), *x)
 
 TEMPLATE_DIRS = root('templates/')
-STATICFILES_DIRS = ((''),
+STATICFILES_DIRS = (
     root('static_files/'),
+    ('gumby_css', root('components/css/')),
 )
 STATIC_ROOT = root('static/')
 STATIC_URL = '/static/'
@@ -146,9 +147,10 @@ AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
 #BOWER
 BOWER_INSTALLED_APPS = (
-    'jquery#2.0',
-    'jquery-ui#1.10',
+    'jquery',
+    'jquery-ui',
     'gumby',
+    'jquery-migrate',
 )
 
 #GRAPPELLI
