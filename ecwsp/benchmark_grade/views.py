@@ -531,7 +531,9 @@ def ajax_get_fill_all_form(request, course_id, object_type, object_id):
         raise Exception('This {} has no Marks.'.format(item_or_demonstration._meta.object_name))
 
     if request.POST:
-        form = FillAllForm(request.POST, prefix="fill_all")
+        # we must pass in an instance, otherwise we fail unique validation 
+        instance = item_or_demonstration.mark_set.all()[0]
+        form = FillAllForm(request.POST, instance=instance, prefix="fill_all")
         try:
             marking_period = item_or_demonstration.marking_period
         except AttributeError:
@@ -544,8 +546,14 @@ def ajax_get_fill_all_form(request, course_id, object_type, object_id):
         if form.is_valid():
             for m in item_or_demonstration.mark_set.all():
                 m.set_grade(form.cleaned_data['mark'])
-                m.save()
+                with reversion.create_revision():
+                    m.save()
+                    reversion.set_user(request.user)
+                    reversion.set_comment("gradebook fill all")
+                # really expensive!
+                gradebook_recalculate_on_mark_change(m)
             messages.success(request, 'Marked all students {} for {}'.format(form.cleaned_data['mark'], item_or_demonstration))
+            # the client will reload the whole page, so there's no need to pass a list of affected aggregate pks
             return HttpResponse('SUCCESS')
     else:
         form = FillAllForm(instance=item_or_demonstration.mark_set.all()[0], prefix="fill_all")
