@@ -5,5 +5,8 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 if not settings.DEBUG:
-    call_command('clearsessions')
+    try:
+        call_command('clearsessions')
+    except:
+        print "Can't clear stale sessions, but who cares"
 
