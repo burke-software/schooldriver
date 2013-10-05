@@ -259,7 +259,7 @@ class Course(models.Model):
         if show_deleted:
             return Student.objects.filter(courseenrollment__course=self)
         else:
-            return Student.objects.filter(courseenrollment__course=self, inactive=False)
+            return Student.objects.filter(courseenrollment__course=self, is_active=True)
     
     def is_passing(self, student, date_report=None, cache_grade=None, cache_passing=None, cache_letter_passing=None):
         """ Is student passing course? """
@@ -284,8 +284,8 @@ class Course(models.Model):
         """ Should be one line of code. Sorry this is so aweful
         Couldn't figure out any other way """
         today, created = Day.objects.get_or_create(day=str(date.today().isoweekday()))
-        all = Student.objects.filter(courseenrollment__course=self, inactive=False)
-        exclude = Student.objects.filter(courseenrollment__course=self, inactive=False, courseenrollment__exclude_days=today)
+        all = Student.objects.filter(courseenrollment__course=self, is_active=True)
+        exclude = Student.objects.filter(courseenrollment__course=self, is_active=True, courseenrollment__exclude_days=today)
         ids = []
         for id in exclude.values('id'):
             ids.append(int(id['id']))
