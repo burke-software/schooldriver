@@ -98,7 +98,7 @@ def gradebook(request, course_id):
             course.fullname + '.')
         return HttpResponseRedirect(reverse('admin:index'))
 
-    students = Student.objects.filter(inactive=False,course=course)
+    students = Student.objects.filter(is_active=True,course=course)
     #students = Student.objects.filter(course=course)
     items = Item.objects.filter(course=course)
     filtered = False
