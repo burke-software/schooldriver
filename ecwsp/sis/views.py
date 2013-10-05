@@ -122,7 +122,7 @@ def family_redirect(request):
 def photo_flash_card(request, year=None):
     """ Simple flash card game
     """
-    students = Student.objects.filter(inactive=False)
+    students = Student.objects.filter(is_active=True)
     grade_levels = GradeLevel.objects.all()
     try:
         if request.POST:
@@ -137,7 +137,7 @@ def photo_flash_card(request, year=None):
                 student_id = students.filter(year=GradeLevel.objects.get(id=year)).order_by('?')[0].pk
             else:
                 student_id = students.order_by('?')[0].pk
-        student = Student.objects.filter(inactive=False).get(pk=student_id)
+        student = Student.objects.filter(is_active=True).get(pk=student_id)
     except:
         messages.error(request, 'Student not found')
         return HttpResponseRedirect(reverse('admin:index'))
@@ -340,14 +340,14 @@ def view_student(request, id=None):
             preference = UserPreference.objects.get_or_create(user=request.user)[0]
             if 'next' in request.GET:
                 if preference.include_deleted_students:
-                    students = Student.objects.order_by('lname','fname')
+                    students = Student.objects.order_by('last_name','first_name')
                 else:
-                    students = Student.objects.filter(inactive=False).order_by('lname','fname')
+                    students = Student.objects.filter(is_active=True).order_by('last_name','first_name')
             elif 'previous' in request.GET:
                 if preference.include_deleted_students:
-                    students = Student.objects.order_by('-lname','-fname')
+                    students = Student.objects.order_by('-last_name','-first_name')
                 else:
-                    students = Student.objects.filter(inactive=False).order_by('-lname','-fname')
+                    students = Student.objects.filter(is_active=True).order_by('-last_name','-first_name')
             for student in students:
                 if found:
                     return HttpResponseRedirect('/sis/view_student/' + str(student.id))
@@ -511,7 +511,7 @@ class StudentViewDashletView(generic.DetailView):
 def increment_year_confirm(request, year_id):
     """ Show user a preview of what increment year will do before making it
     """
-    students = Student.objects.filter(inactive=False)
+    students = Student.objects.filter(is_active=True)
     subtitle = "Are you sure you want to make the following changes?"
     msg = "You can always change some manually later if you want to hold them back a year. Maybe you want to open them in new tabs now."
     year = get_object_or_404(SchoolYear, pk=year_id)
