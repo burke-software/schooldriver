@@ -87,7 +87,6 @@ class UserPreference(models.Model):
     )
     prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
     include_deleted_students = models.BooleanField(help_text="When searching for students, include deleted (previous) students.")
-    additional_report_fields = models.ManyToManyField('ReportField', blank=True, null=True, help_text="These fields will be added to spreadsheet reports. WARNING adding fields with multiple results will GREATLY increase the time it takes to generate reports")
     course_sort_choices = (
         ('department', 'Department order rank'),
         ('marking_period,department', 'Marking period, Department order rank'),
@@ -194,12 +193,6 @@ class UserPreference(models.Model):
             return courses.annotate(Count('marking_period'), Max('marking_period__end_date')).order_by('-marking_period__count', 'marking_period__end_date__max', 'fullname')
         # wut?
         return courses
-
-
-class ReportField(models.Model):
-    name = models.CharField(unique=True, max_length=255)
-    def __unicode__(self):
-        return unicode(self.name)
 
 
 class PhoneNumber(models.Model):

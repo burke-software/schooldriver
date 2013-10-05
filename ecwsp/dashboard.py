@@ -141,20 +141,11 @@ class CustomIndexDashboard(Dashboard):
             models=('ecwsp.omr.*',),
         ))
         
-        self.children.append(modules.Feed(
-            title='Annoucements',
-            column=2,
-            # Run feed through feedburner to prevent pain if it gets slow or something happens.
-            feed_url='http://feeds.feedburner.com/FeedForBurkeSoftwareAndConsultingLlc',
-            limit=2
-        ))
-        
         self.children.append(modules.AppList(
             title='Administration',
             column=2,
             models=(
                 'django.contrib.*',
-                'ecwsp.sis.models.ReportField',
                 'ecwsp.administration.*',
                 'ecwsp.engrade_sync.*',
                 'ldap_groups.*',
@@ -173,18 +164,14 @@ class CustomIndexDashboard(Dashboard):
             column=2,
             children=(
                 {
-                    'title': 'SWORD Wiki and Manual',
-                    'url': 'https://sites.google.com/a/cristoreyny.org/sword-wiki/',
+                    'title': 'django-sis Wiki and Manual',
+                    'url': 'https://sword.readthedocs.org',
                     'external': True,
                 },
                 {
                     'title': 'Student Worker Relation Database Community',
-                    'url': 'http://code.google.com/p/student-worker-relational-database/',
+                    'url': 'http://github.com/burke-software/django-sis',
                     'external': True,
-                },
-                {
-                    'title': 'Database documentation',
-                    'url': 'admin/doc',
                 },
                 {
                     'title': 'Burke Software',
