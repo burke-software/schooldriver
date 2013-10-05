@@ -51,9 +51,9 @@ class EventsDashlet(Dashlet):
         if school_year:
             date_delta = school_year.start_date - today
             date_delta = date_delta.days
-            if date_delta >= 0 and date_delta < 60:
+            if date_delta <= 0 and date_delta > -30:
                 news_alerts += ["A new school year has started on {}".format(school_year.start_date)]
-            elif date_delta > -60:
+            elif date_delta < 60:
                 news_alerts += ['A new school year will start on {}'.format(school_year.start_date)]
             
         

@@ -299,7 +299,6 @@ class PerCourseCohortAdmin(CohortAdmin):
 admin.site.register(PerCourseCohort, PerCourseCohortAdmin)
 
 admin.site.register(ReasonLeft)
-admin.site.register(ReportField)
 
 admin.site.register(TranscriptNoteChoices)
 

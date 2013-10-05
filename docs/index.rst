@@ -1,18 +1,18 @@
 =====================
-SWoRD Documentation
+Django School Information System Documentation
 =====================
 
 :Date: March 29, 2013
 
-Django-sis/SWoRD, Student Worker Relational Database, is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.) and is intended for schools with or without work study programs. SWoRD is able to integrate with Naviance Premium Accounts for college preparedness, Engrade for grades, SugarCRM for sales and customer tracking, and National Student Clearinghouse for tracking alumni.
+Django-SIS is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc.) and is intended for schools with or without work study programs. Django-SIS is able to integrate with Naviance Premium Accounts for college preparedness, Engrade for grades, SugarCRM for sales and customer tracking, and National Student Clearinghouse for tracking alumni.
 
-In sum, SWoRD includes pluggable apps designed to cover most if not all a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
+In sum, Django-SIS includes pluggable apps designed to cover most if not all a school's needs. The apps include: School Information, Admissions, Alumni, Attendance, Discipline, Schedules/Courses/Grades, Volunteer Tracking, and Work-Study.
 
-The purpose of this documentation is to be a user manual for end users. Most features will be highlighted and discussed, along with explanations and how-tos for everyday tasks. If you are a developer more interested in the technical aspects of SWoRD, please refer to our github page.
+The purpose of this documentation is to be a user manual for end users. Most features will be highlighted and discussed, along with explanations and how-tos for everyday tasks. If you are a developer more interested in the technical aspects of Django-SIS, please refer to our github page.
 
 .. contents:: Table of Contents
 =========================================
-Developer and Administrator Information 
+Administrator Information 
 =========================================
 **Libreoffice on the server**
 
@@ -27,57 +27,9 @@ Should be run as an upstart job like /etc/init/libreoffice.conf::
 
 Then start with "start libreoffice"
 
-quexf
-------
-**Send PDF by email**::
-
-    apt-get purge bsd-mailx rmail sendmail sensible-mda sendmail-bin
-    sendmail-base sendmail-cf sendmail-doc
-    kill `pidof 'sendmail: MTA: accepting connections'`
-    rm -r '/var/spool/mqueue-client'
-    rm -r '/etc/mail'
-    rm /etc/aliases
-    apt-get install postfix
-    # internet site with smarthost
-    # smtp relay host: smtp.server.com
-    # procmail was already installed
-    # DON'T apt-get install uudeview; Debian package is broken
-    # compile it from source; put the binary in /opt
-    touch /var/log/procmail.log
-    chgrp www-data /var/log/procmail.log
-    chmod g+w /var/log/procmail.log
-
-    Create /opt/new-receiver.sh:
-    #!/bin/bash
-    # John Milner
-    # 20120309
-    if [ `whoami` != 'root' ]
-    then
-        echo "Run this script as root, please." >&2
-        exit 1
-    fi
-    if [ $# -ne 1 ]
-    then
-        echo "Usage: $0 NEW_SCHOOL_ABBREVIATION" >&2
-        exit 1
-    fi 
-
-    randomness="`wget --quiet -O - 'http://www.random.org/strings/?num=1&len=10&digits=on&loweralpha=on&unique=on&format=plain&rnd=new'`"
-    lower="`echo \"$1\" | tr '[A-Z]' '[a-z]'`"
-    upper="`echo \"$1\" | tr '[a-z]' '[A-Z]'`"
-    new_user="$lower-$randomness"
-    adduser --disabled-login --ingroup www-data --gecos "$upper Scanned Form Receiver" "$new_user" >&2
-    cat <<END > `eval echo "~$new_user/.procmailrc"`
-    LOGFILE=/var/log/procmail.log
-    UMASK=027
-    :0
-    | /opt/uudeview -i +a -m -p /var/www/quexf_$lower/doc/filled -
-    END
-    echo "$new_user@`postconf -h myhostname`"
-
 User Permissions
 ---------------------
-SWoRD allows administrators to control individual user permissions. To simplify this process, SWoRD groups individual permissions into larger groups which the administrator can designate accordingly. Some of the groups are as follows:
+Django-SIS allows administrators to control individual user permissions. To simplify this process, Django-SIS groups individual permissions into larger groups which the administrator can designate accordingly. Some of the groups are as follows:
 
 **Teachers**: Users with this designation may create tests, view students, enter grades, and take attendance.
 
@@ -96,17 +48,17 @@ It is possible to assign individual user permissions that are found in one group
 
 Importing Data Into Sword
 -------------------------------
-SWoRD supports the import of data into its database.
+Django-SIS supports the import of data into its database.
 
-In order to make the import process as simple as possible for schools transitioning into SWoRD or schools preparing for the new school year, SWoRD allows data to be imported via Excel or LibreOffice documents.
+In order to make the import process as simple as possible for schools transitioning into Django-SIS or schools preparing for the new school year, Django-SIS allows data to be imported via Excel or LibreOffice documents.
 
-Keep in mind that this section is for **importing** data, and not *updating* data. This section assumes that students, applicants, etc. do not yet exist in SWoRD (i.e.: new incoming freshmen or new applicants).
+Keep in mind that this section is for **importing** data, and not *updating* data. This section assumes that students, applicants, etc. do not yet exist in Django-SIS (i.e.: new incoming freshmen or new applicants).
 
 If you want to use simple import to mass update information (i.e: assigning existing student workers work days and placements). Then please refer to the next chapter.
 
 **Before you Import**
 
-Prior to importing data, you will need an Excel spreadsheet with information pertinent to the model you are attempting to import. Set column headers accordingly. SWoRD is able to import all information that is able to be entered manually in a field. Here's a reference list of some column headers you can use for importing the most common models:
+Prior to importing data, you will need an Excel spreadsheet with information pertinent to the model you are attempting to import. Set column headers accordingly. Django-SIS is able to import all information that is able to be entered manually in a field. Here's a reference list of some column headers you can use for importing the most common models:
 
 *Students*
 
@@ -123,7 +75,7 @@ First Name, Last Name, middle name, Username, notes, ADP Number, alert, alt emai
 First name, Last name, middle name, birth date, present school, heard about us, first contact, withdrawn note, total income, adjusted available income, application decsion, application decision by, SSN, Sex, Ethnicity, Religion, Place of Worship, Year, School year, HS grad yr, Elem grad yr, email, notes, country of birth, family preferred language, lives with
 
 
-NOTE: SWoRD will guess matches based off your column headers, so if you enter First Name or fname, or FiRSt NaME as a header on your Excel doc, SWoRD will determine which field that refers to.
+NOTE: Django-SIS will guess matches based off your column headers, so if you enter First Name or fname, or FiRSt NaME as a header on your Excel doc, Django-SIS will determine which field that refers to.
 
 
 **How To Import Data**
@@ -139,7 +91,7 @@ Importing data *requires* the appropiate permissions for the user. The method is
 .. image:: /images/importcap1.png
 
 6. Click Submit.
-7. The next page will give users a preview of what their import will look like. SWoRD tries to match the column headers in your document with an available field in SWoRD. You can always edit the field (via drop down box) if SWoRD displays an incorrect field.
+7. The next page will give users a preview of what their import will look like. Django-SIS tries to match the column headers in your document with an available field in Django-SIS. You can always edit the field (via drop down box) if Django-SIS displays an incorrect field.
 
 .. image:: /images/importcap2.png
 
@@ -150,7 +102,7 @@ Updating data using Simple Import
 
 Some things to keep in mind prior to using the simple import for updating student data.
 
-1. You will **always** need to have an update key. This lets SWoRD reference what object is being updated. Typically, you will want to use a username, SWoRD ID or unique ID. Getting IDs for objects is easy. Utilize the export to xls feature from your chosen page (student, student worker, applicant, etc.), and select ID, username or unique ID.
+1. You will **always** need to have an update key. This lets Django-SIS reference what object is being updated. Typically, you will want to use a username, Django-SIS ID or unique ID. Getting IDs for objects is easy. Utilize the export to xls feature from your chosen page (student, student worker, applicant, etc.), and select ID, username or unique ID.
 2. Data must already exist for that model. For example, you can't update information on a student that doesn't already exist. You **can** however utilize the "Create and Update" import type to do something like this, but this can't be done on the "Update Only" type. 
 3. Make sure you select the correct model type.
 
@@ -184,9 +136,9 @@ NOTE: Notice in the image above I have selected username as the **update key**. 
 
 Configurations
 ---------------
-SWoRD contains a number of built-in configurations that are created with each new instance designed to make functions easier to edit or implement. 
+Django-SIS contains a number of built-in configurations that are created with each new instance designed to make functions easier to edit or implement. 
 
-For example, in configurations for email in the **How to obtain student email** function, users may designate three values designed to direct SWoRD emails. 
+For example, in configurations for email in the **How to obtain student email** function, users may designate three values designed to direct Django-SIS emails. 
 **Append** appends the domain name after a student's username like jstudent@domainname.org. 
 **User** takes the email address from the Auth->User record.
 **Student** takes the email address marked from the *alt email* field of a student record page. 
@@ -209,9 +161,9 @@ Overall, the groupings are self explanatory- if you're creating a registrar, ass
 Getting Started
 ----------------
 
-**Server:** SWoRD can be installed in any platform that can run Django. It should be noted, however, that all testing is done in Ubuntu Linux 10.04 with MySQL.
+**Server:** Django-SIS can be installed in any platform that can run Django. It should be noted, however, that all testing is done in Ubuntu Linux 10.04 with MySQL.
 
-**Client:** SWoRD is divided into two parts: the admin site and the student/company-facing site. The student/company-facing site is tested in Firefox, Chrome, Opera, and IE 6,7,8. The admin site is tested only in standards-compliant browsers such as Firefox, Opera, and Chrome. If using IE, you should install the Chrome Frame add-on.
+**Client:** Django-SIS is divided into two parts: the admin site and the student/company-facing site. The student/company-facing site is tested in Firefox, Chrome, Opera, and IE 6,7,8. The admin site is tested only in standards-compliant browsers such as Firefox, Opera, and Chrome. If using IE, you should install the Chrome Frame add-on.
 
 **Editing Templates** requires Office software. Creating report templates require LibreOffice and *must* be saved in ODT format. Keep in mind that end-users may select their preferred office format preference, so ODT is *not* required to just view a report.
 
@@ -219,7 +171,7 @@ Using the ISO-supported Open Document format is recommended for best inter-opera
 
 Log Entries
 --------------
-Log entries record all actions completed during a SWoRD's instance. This allows administrators and superusers to locate any changes made at specific dates or times. Admins will see a dashboard similar to what is shown below:
+Log entries record all actions completed during a Django-SIS's instance. This allows administrators and superusers to locate any changes made at specific dates or times. Admins will see a dashboard similar to what is shown below:
 
 .. image:: /images/logentries.png
 
@@ -233,25 +185,25 @@ Log entries record all actions completed during a SWoRD's instance. This allows 
 
 **Is Addition, Is Deletion, Is Change**: True/False indicator which shows what type of action was completed.
 
-Similar to other dashboards in SWoRD, users may sort by clicking column headers and using the filter tool.
+Similar to other dashboards in Django-SIS, users may sort by clicking column headers and using the filter tool.
 
 Templates
 ------------
-All SWoRD instances come packaged with a set of general templates. These templates allow users to generate a number of varied reports, including:Tardy Letters, Daily Attendance, Progress Reports, Transcripts, Travel Maps, Test Results, Discipline Report
+All Django-SIS instances come packaged with a set of general templates. These templates allow users to generate a number of varied reports, including:Tardy Letters, Daily Attendance, Progress Reports, Transcripts, Travel Maps, Test Results, Discipline Report
 
 A list of all available templates, free to download is found `here
 <https://sites.google.com/a/cristoreyny.org/sword-wiki/preparing-for-a-new-school-year/templates>`_.
 
-SWoRD further allows users to create and edit their own templates to be used accordingly and will be discussed in the next section, Report Writing.
+Django-SIS further allows users to create and edit their own templates to be used accordingly and will be discussed in the next section, Report Writing.
 
 Report Writing and Creating Templates
 ---------------------------------------
 **Note** Before you proceed, please be aware that in most cases it's best to simply edit existing templates found in your templates location, rather than creating entirely new templates as this section will discuss. 
 
-SWoRD provides the means for end users to create and utilize their own customized reports/templates. All reports are made using the `Appy Framework
+Django-SIS provides the means for end users to create and utilize their own customized reports/templates. All reports are made using the `Appy Framework
 <http://appyframework.org/pod.html>`_.
 
-The basic process works like this: user creates report template in a word processor >>> the template gets uploaded into SWoRD >>> Download/use finished report.
+The basic process works like this: user creates report template in a word processor >>> the template gets uploaded into Django-SIS >>> Download/use finished report.
 
 To get started, it is first recommended that you use `LibreOffice
 <http://www.libreoffice.org/>`_ with the Insert Field extension found `here
@@ -270,22 +222,22 @@ To get started, it is first recommended that you use `LibreOffice
 
 3. Edit a field by double clicking on one.
 
-*Note:* You can see a list of available fields to choose from by typing this into your SWoRD instance's URL. SAMPLESCHOOLURL/admin/doc/models. Some fields are calculated, for example he_she is based off of the sex of a student. Any type: list field cannot be used directly, but must be placed in a loop.
+*Note:* You can see a list of available fields to choose from by typing this into your Django-SIS instance's URL. SAMPLESCHOOLURL/admin/doc/models. Some fields are calculated, for example he_she is based off of the sex of a student. Any type: list field cannot be used directly, but must be placed in a loop.
 
-**Logic in Templates** You may use any Python logic in a template. For example in the above screenshot there is a note "do section for student in students". This logic can technically be placed in a field, however it's easier to read in a note. To create a note click Insert > Comment. In the example a section is being created for each student in the field "students". students is a list of students as defined in "School Reports" in SWORD. To create a section click Insert, Section. In the example the section includes a page break. SWoRD will create a section (page break included) for each student in your list of students. This makes for similar results of a mail merge. You may also "do row" or "do cell" to create tables.
+**Logic in Templates** You may use any Python logic in a template. For example in the above screenshot there is a note "do section for student in students". This logic can technically be placed in a field, however it's easier to read in a note. To create a note click Insert > Comment. In the example a section is being created for each student in the field "students". students is a list of students as defined in "School Reports" in Django-SIS. To create a section click Insert, Section. In the example the section includes a page break. Django-SIS will create a section (page break included) for each student in your list of students. This makes for similar results of a mail merge. You may also "do row" or "do cell" to create tables.
 
 You may even include Django specific code, for example students.filter(fname="Joe") would result in a list of students with the first name of "Joe". For more see`Django's retrieving objects
-<https://docs.djangoproject.com/en/dev/topics/db/queries/#retrieving-objects>`_. This may get complex fast, therefore SWORD offers some basic sorting and filtering options for you. See School Reports with SWORD. Essentially School Reports will give you the variable students, with your desired filters. If you selected only one student, you will instead have a "student" variable. From here you usually want some type of logic, such as do section for student in students. 
+<https://docs.djangoproject.com/en/dev/topics/db/queries/#retrieving-objects>`_. This may get complex fast, therefore Django-SIS offers some basic sorting and filtering options for you. See School Reports with Django-SIS. Essentially School Reports will give you the variable students, with your desired filters. If you selected only one student, you will instead have a "student" variable. From here you usually want some type of logic, such as do section for student in students. 
 
 **Spreadsheet Reports** work differently. You can add additional fields to any student related spreadsheet. Select User Preferences and add additional fields here. These additional fields are defined by an administrator and follow the typical . notation (placement.address gets the address of the placement). The gradebook spreadsheet is a special case and a template can be used here. See the included template called "grade spreadsheet".
 
 **Database Field Names** Click on Documentation, then Models to view various Database models. You can chain them by placing . to any related fields. For example student.placement.address would yield the address of the placement of that student.
 
-Exporting SWoRD data to Excel
+Exporting Django-SIS data to Excel
 -------------------------------
-SWoRD allows users to export into Excel any and all data that users have input into their respective SWoRD instance. The process of exporting information is very simple, and detailed below:
+Django-SIS allows users to export into Excel any and all data that users have input into their respective Django-SIS instance. The process of exporting information is very simple, and detailed below:
 
-    1. Click on any model you want to edit from your SWoRD home dash- ex. students, applicants, student workers, discipline, etc.
+    1. Click on any model you want to edit from your Django-SIS home dash- ex. students, applicants, student workers, discipline, etc.
     2. This will take you to the basic familiar dashboard for that model.
     3. Click the checkbox next to each student you want to pull info from.
     4. Select the black drop down box located towards the bottom of the page.
@@ -318,7 +270,7 @@ NB: Boolean refers to a simple checkbox. The box can be checked or unchecked whe
 ====================
 Student Information
 ====================
-The SIS is the central module of SWoRD which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please follow the pertinent headings. 
+The SIS is the central module of Django-SIS which contains profiles, attendance, discipline, work study, and other details pertaining to the student. For information on admissions, adding students, attendance, and discipline, please follow the pertinent headings. 
 
 Adding Students
 -----------------
@@ -349,7 +301,7 @@ The starting, ending, and graduation dates of school years may be stored here. O
 
 Year Classifications
 -----------------------
-Year classifications are the various grades SWORD supports and their associated names. The defaults in SWORD are:
+Year classifications are the various grades Django-SIS supports and their associated names. The defaults in Django-SIS are:
 
 - Freshman: 9
 - Sophomore: 10
@@ -359,7 +311,7 @@ Year classifications are the various grades SWORD supports and their associated 
 Student Phone Numbers
 -----------------------
 
-In SWoRD, you will see areas for Student phone numbers and for Student Contact phone numbers.
+In Django-SIS, you will see areas for Student phone numbers and for Student Contact phone numbers.
 To get proper information out of the system, you need to enter the numbers in the correct areas.
 
 **Student phone numbers-** are for numbers to contact the student, for example a student's cell phone.  If you use the home number in this spot, you should also put it into the contact area for the parent.
@@ -369,7 +321,7 @@ To get proper information out of the system, you need to enter the numbers in th
 Family Access Users
 ---------------------
 
-SWoRD allows for parents/guardians to log in and view grade information pertaining to their child. This section will show registrars or admins how to set up parent logins. 
+Django-SIS allows for parents/guardians to log in and view grade information pertaining to their child. This section will show registrars or admins how to set up parent logins. 
 
 1. Under the **School Information** tab, select Add+ by the choice, **Family Access Users**
 
@@ -391,7 +343,7 @@ Cohorts are groupings of students within a school; the registrar may find this t
 Creating Courses
 ------------------
 
-Creating courses in SWoRD is a 3 step process:
+Creating courses in Django-SIS is a 3 step process:
 
 1. Under the Courses and Grades tab, select +Add under **courses**
 
@@ -421,7 +373,7 @@ Submitting Grades
 -------------------
 Teachers may submit grades using three methods: manually, import via spreadsheet, or using Engrade.
 
-**IMPORTANT:** SWoRD only stores final grades.
+**IMPORTANT:** Django-SIS only stores final grades.
 
 **Manual Method**
 
@@ -434,7 +386,7 @@ The manual method of entering final grades works as follows:
 
 **Spreadsheet Method**
 
-NOTE: Only final grades are stored in SWORD. Assignments should be stored in a Spreadsheet based on a template your administrator created. 
+NOTE: Only final grades are stored in Django-SIS. Assignments should be stored in a Spreadsheet based on a template your administrator created. 
 
 Access the course page, similar to step 1 from above.
 
@@ -448,7 +400,7 @@ Access the course page, similar to step 1 from above.
 
 .. image:: /images/gradesspreadsheet2.png
 
-5. SWoRD will then set the grades and comments in accordance with your spreadsheet. 
+5. Django-SIS will then set the grades and comments in accordance with your spreadsheet. 
 
 .. image:: /images/gradesspreadsheet3.png
 
@@ -464,23 +416,23 @@ Access the course page, similar to step 1 from above.
 
 *Tips:*
 
-- SWoRD stores only two decimals, although calculations may be done with more.
+- Django-SIS stores only two decimals, although calculations may be done with more.
 - You may enter approved Letter grades if desired such as P and F. These will not effect calculations.
-- You may only be allowed to change specific marking period grades determined by your administrator. If you've made a mistake you may need to contact an administrator or registrar. It is possible to grant you access to directly enter grades in SWoRD. This may be useful for Pass/Fail grades.
+- You may only be allowed to change specific marking period grades determined by your administrator. If you've made a mistake you may need to contact an administrator or registrar. It is possible to grant you access to directly enter grades in Django-SIS. This may be useful for Pass/Fail grades.
 
 **Engrade Method**
 
-SWoRD is able to sync with the online gradebook, Engrade so teachers my store all assignments there, then sync final grades there to appear in SWoRD.
+Django-SIS is able to sync with the online gradebook, Engrade so teachers my store all assignments there, then sync final grades there to appear in Django-SIS.
 
  1. Under the Grades menu item at the top, select **Submit Grades** 
  2. This will reveal your list of courses, along with the option to download a blank gradebook. Below these options is the button **Sync all grades from Engrade**. 
 
- **Keep in mind that all grades synched from Engrade will override any grades that have been entered into SWoRD for that marking period.**
+ **Keep in mind that all grades synched from Engrade will override any grades that have been entered into Django-SIS for that marking period.**
 
 Standard Tests
 -----------------------
 
-SWoRD allows users to create and enter information for various standard tests (ACT, SAT, PLAN, etc.).
+Django-SIS allows users to create and enter information for various standard tests (ACT, SAT, PLAN, etc.).
 
 **Creating a New Standard Test**
 
@@ -508,7 +460,7 @@ SWoRD allows users to create and enter information for various standard tests (A
 Omit Course GPA
 -----------------
 
-SWoRD allows users to quickly omit a student's grades for a particular course.
+Django-SIS allows users to quickly omit a student's grades for a particular course.
 
 1. Under the Courses and Grades tab, select +Add by the **omit course GPA** selection
 
@@ -521,7 +473,7 @@ SWoRD allows users to quickly omit a student's grades for a particular course.
 Omit Year GPA
 ---------------
 
-Similar to omitting course GPAs, SWoRD allows users to omit an entire year of grades for a student so that particular year will not be calculated into GPAs and transcripts. The process is similar to omitting for a course, as shown above.
+Similar to omitting course GPAs, Django-SIS allows users to omit an entire year of grades for a student so that particular year will not be calculated into GPAs and transcripts. The process is similar to omitting for a course, as shown above.
 
 1. Under the Courses and Grades tab, select +Add by the **omit year GPA** selection
 
@@ -531,10 +483,10 @@ Similar to omitting course GPAs, SWoRD allows users to omit an entire year of gr
 3. Save
 
 =======================
-SWoRD Gradebook
+Django-SIS Gradebook
 =======================
 
-SWoRD comes packaged with a gradebook for teachers to utilize to store and track grades. This section will discuss and review how to use and configure the gradebook for your needs.
+Django-SIS comes packaged with a gradebook for teachers to utilize to store and track grades. This section will discuss and review how to use and configure the gradebook for your needs.
 
 
 Accessing the Gradebook
@@ -542,12 +494,12 @@ Accessing the Gradebook
 
 To access your gradebook to submit grades, do the following:
 
-1. Log in to SWoRD
+1. Log in to Django-SIS
 2. Select **Submit Grades** from the *Student* drop down at the top menu.
 
 .. image:: /images/gradebook1.png
 
-3. SWoRD will show you a list of your courses. Click on **Gradebook** by the appropriate course.
+3. Django-SIS will show you a list of your courses. Click on **Gradebook** by the appropriate course.
 
 .. image:: /images/gradebook2.png
 
@@ -570,7 +522,7 @@ See the image below:
 
 .. image:: /images/gradebook4.png
 
-**Note:** SWoRD will calculate grades based off the number you enter for **points possible**. For example, if your assignment is one where 10 points is the max, and a student gets a 7, that will accordingly effect his overall average as if it were a 70. 
+**Note:** Django-SIS will calculate grades based off the number you enter for **points possible**. For example, if your assignment is one where 10 points is the max, and a student gets a 7, that will accordingly effect his overall average as if it were a 70. 
 
 3. Your newly created assignment will now be listed as a column header. Hovering your mouse over it shows the details of it. See image.
 
@@ -618,7 +570,7 @@ In this example, the full title of the course is "My Test Course", however, on t
 
 -**Class average** will also calculate automatically.
 
--Always enter a category for assignments so SWoRD knows how to calculate averages.
+-Always enter a category for assignments so Django-SIS knows how to calculate averages.
 
 -**Course average** column is what students will see as their grade for the course on report cards.
 
@@ -629,7 +581,7 @@ In this example, the full title of the course is "My Test Course", however, on t
 Admissions
 =====================
 
-The admissions module allows schools to keep track of applicants, and their status in the application process. Each step in the application process can be customized to fit a school's unique need. Users can designate steps that need to be completed before moving onto the next level. Additionally, SWoRD may track any open houses a student has attended and how the student heard about the school. 
+The admissions module allows schools to keep track of applicants, and their status in the application process. Each step in the application process can be customized to fit a school's unique need. Users can designate steps that need to be completed before moving onto the next level. Additionally, Django-SIS may track any open houses a student has attended and how the student heard about the school. 
 
 .. image:: /images/applicantdashboard.png
 
@@ -644,13 +596,13 @@ To add an applicant:
 2. Enter information about the applicant accordingly. First and Last Name fields are required.
 3. Click **Save**.
 
-SWoRD will then return you to the applicant's dashboard where you will see your newly-created applicant at the top.
+Django-SIS will then return you to the applicant's dashboard where you will see your newly-created applicant at the top.
 
 
 
 Admissions Levels
 ------------------
-SWoRD allows schools to control admissions levels/steps that are unique to their process. Each step is customizable as follows:
+Django-SIS allows schools to control admissions levels/steps that are unique to their process. Each step is customizable as follows:
 
 1. Select **Admissions Levels** under the Admissions module.
 2. You will see the screen shown below.
@@ -668,7 +620,7 @@ Users may designate levels required in order to advance. For example, schools ma
 
 Filtering Applicants
 ---------------------
-To maximize organization, efficiency, and promote the ease of collecting various admissions data for report preparation, SWoRD contains several filters and functions accessible through the main applicant page. Each column header in the image below will sort accordingly. For example, clicking on Last Name will filter by last name, application decision by decision, etc. 
+To maximize organization, efficiency, and promote the ease of collecting various admissions data for report preparation, Django-SIS contains several filters and functions accessible through the main applicant page. Each column header in the image below will sort accordingly. For example, clicking on Last Name will filter by last name, application decision by decision, etc. 
 
 .. image:: /images/applicantsalpha.png
 Alternatively, users may choose from the available filters located directly to the right of the applicant list. The drop down list allows users to select and combine the following filters: school year, level, checklist, ready for export, present school, ethnicity, heard about us, and year. The filter tool will do so in real time, no need to select and save.
@@ -676,26 +628,26 @@ Alternatively, users may choose from the available filters located directly to t
 
 Exporting Applicants
 ---------------------
-SWoRD allows for easy export into an Excel document for sharing or distribution. After applying filters to applicants, follow the steps below to export into an Excel file.
+Django-SIS allows for easy export into an Excel document for sharing or distribution. After applying filters to applicants, follow the steps below to export into an Excel file.
 
 1. Select each applicant you would like to export or select all by selecting the top left checkbox.
 2. Click the drop down menu located on the black toolbar at the bottom of the page.
 3. Select **Export to XLS**. A box opens up with options on what to export.
 4. Choose Select All to export all information entered for each applicant or check specific boxes.
 5. Scroll down and select **Submit**.
-6. SWoRD will then open an Excel document.
+6. Django-SIS will then open an Excel document.
 
 
 Admission Reports
 --------------------
-Some basic Admission Reports are available built in to SWoRD that allows users to quickly process statistics based on a school year's applicants. 
+Some basic Admission Reports are available built in to Django-SIS that allows users to quickly process statistics based on a school year's applicants. 
 
 1. Under the **Admissions** tab in the navigation bar, select **Reports**
 
 .. image:: /images/admreports1.png
 
 2. Select a year and click **Process Statistics**.
-3. SWoRD will generate an Excel document detailing some basic admission statistics such as number of applicants by grade or number of applicants on a particular level in the process.  
+3. Django-SIS will generate an Excel document detailing some basic admission statistics such as number of applicants by grade or number of applicants on a particular level in the process.  
 
 In step 2, another option is to choose **Funnel**, which generates on-screen admissions statistics from each step in the admissions process. The report shows total, current, male/female, and rejected reasons.
 
@@ -732,7 +684,7 @@ The remaining selections found under Admission Administration such as feeder sch
 ====================
 Attendance
 ====================
-SWoRD has a built-in attendance module that allows teachers to record daily attendance. Homerooms must already be in place, which are simply courses that are designated as such. 
+Django-SIS has a built-in attendance module that allows teachers to record daily attendance. Homerooms must already be in place, which are simply courses that are designated as such. 
 
 
 Taking Attendance
@@ -780,7 +732,7 @@ This dashboard also contains a filter option located to the right of the screen,
 
 Mass Edit Attendance
 ---------------------
-SWoRD allows users to edit multiple records at once, using the mass edit tool as detailed and shown:
+Django-SIS allows users to edit multiple records at once, using the mass edit tool as detailed and shown:
 
 1. Select Attendance > Edit
 2. Select students for edit
@@ -801,18 +753,18 @@ SWoRD allows users to edit multiple records at once, using the mass edit tool as
 Discipline
 ===================
 
-The discipline module tracks a student’s discipline information including infractions, actions to be taken, and the teacher who reported the infraction. Similar to the other modules in SWoRD, discipline reports can be generated and exported into an Excel document. 
+The discipline module tracks a student’s discipline information including infractions, actions to be taken, and the teacher who reported the infraction. Similar to the other modules in Django-SIS, discipline reports can be generated and exported into an Excel document. 
 
 View Discipline
 -----------------
 For fast lookup of a particular student's discipline record:
 
 1. Select **Discipline** from the navigation menu, then **View**. 
-2. Begin typing in the name of the student in the text box, and SWoRD will present you with a list of available students as shown below:
+2. Begin typing in the name of the student in the text box, and Django-SIS will present you with a list of available students as shown below:
 
 .. image:: /images/viewdiscipline.png
 
-3. Once a particular student has been selected, SWoRD will present all discipline information that has been input for the student:
+3. Once a particular student has been selected, Django-SIS will present all discipline information that has been input for the student:
 
 .. image:: /images/viewdiscipline2.png
 
@@ -838,7 +790,7 @@ The link to **Discipline Actions** is located in **Home** under **Discipline**.
 Here disciplinary actions available from the dropdown menu may be modified. 
 Clicking **Discipline Actions** presents a list of current discipline actions. To add an action, click **+Add Discipline Action**, enter a new discipline, then Save. 
 
-*Schools beginning to use SWoRD should add all discipline actions that the school currently utilizes.* 
+*Schools beginning to use Django-SIS should add all discipline actions that the school currently utilizes.* 
 
 .. image:: /images/disciplineactions.png
 
@@ -846,15 +798,15 @@ Clicking **Discipline Actions** presents a list of current discipline actions. T
 =================
 Work Study
 =================
-The SWoRD work study module allows users to keep track of student worker information, including: detailed company information, work assignments, work attendance, directions, work teams, performance reviews, time sheets and more.
+The Django-SIS work study module allows users to keep track of student worker information, including: detailed company information, work assignments, work attendance, directions, work teams, performance reviews, time sheets and more.
 
 Electronic Time Card System
 -----------------------------
-At the heart of SWoRD's work-study module is the electronic time card system. The electronic time card system allows the school to keep track of a student's working day, what that student did at work, and how their work supervisor felt the student did on a particular day. Additionally, all time cards created by students will be stored neatly into SWoRD where work-study staff can then filter or create reports accordingly. The basic steps are outlined in the image below:
+At the heart of Django-SIS's work-study module is the electronic time card system. The electronic time card system allows the school to keep track of a student's working day, what that student did at work, and how their work supervisor felt the student did on a particular day. Additionally, all time cards created by students will be stored neatly into Django-SIS where work-study staff can then filter or create reports accordingly. The basic steps are outlined in the image below:
 
 .. image:: /images/timecardprocess.jpg
 
-SWoRD then stores all timecards in the main timecard dash. Users with access to these stored time sheets are able to view each time sheet’s information including date, hours, student accomplishments, and supervisor comments.
+Django-SIS then stores all timecards in the main timecard dash. Users with access to these stored time sheets are able to view each time sheet’s information including date, hours, student accomplishments, and supervisor comments.
 
 
 .. image:: /images/timesheetdash.png
@@ -877,7 +829,7 @@ Creating student workers involves creating a student first, then "promoting" the
 Creating Supervisor Logins
 ---------------------------
 
-1. Under the CWSP section from the main SWoRD dash, select **work teams** and click on your desired work team.
+1. Under the CWSP section from the main Django-SIS dash, select **work teams** and click on your desired work team.
 2. Select an available login, or click the blue plus located to the right of the box.
 
 
@@ -895,7 +847,7 @@ Creating Contact Supervisors
 
 Contact supervisors are individuals at companies that supervise a school's student worker. Accordingly, these contact supervisors are those people who will be receiving emails to evaluate/appraise a student worker's time card that has been submitted to them. To set them up, follow the directions below:
 
-1. Under the **Company Data** tab from the SWoRD dash, select Add+ by **Contact Supervisors**
+1. Under the **Company Data** tab from the Django-SIS dash, select Add+ by **Contact Supervisors**
 2. Fill out the available data fields.
 3. Save
 
@@ -973,7 +925,7 @@ School staff are able to set a pay rate that an individual student and a company
 
 .. image:: /images/studentpayrate1.png
 
-**Note** Schools have the option of setting a default pay rate in SWoRD's configurations. This price will by default appear on time sheets and student worker pages, including being a default when new students are created. 
+**Note** Schools have the option of setting a default pay rate in Django-SIS's configurations. This price will by default appear on time sheets and student worker pages, including being a default when new students are created. 
 
 In instances where certain students get paid differently than others, you can edit the student/s by clicking on their individual student worker page as shown above, or mass editing the change from the student worker dashboard.
 
@@ -993,15 +945,15 @@ From here, the supervisor may write questions/comments in the provided text box,
 Work Study Attendance
 ------------------------
 
-The work study attendance feature will allow SWoRD to sync work study attendance with the SIS attendance taken by homeroom teachers throughout the day and update as needed. Work Study staff will select the "Take today's attendance" button from their CWSP Attendance page.
+The work study attendance feature will allow Django-SIS to sync work study attendance with the SIS attendance taken by homeroom teachers throughout the day and update as needed. Work Study staff will select the "Take today's attendance" button from their CWSP Attendance page.
 
  .. image:: /images/wsatnd1.png
 
- SWoRD will then display a list of students whose working day is that particular day, as shown:
+ Django-SIS will then display a list of students whose working day is that particular day, as shown:
 
  .. image:: /images/wsatndlist.png
 
- Once submitted, SWoRD will then display both Present students and Absent students in the dashboard, in addition to Tardy and Absent/Half Day as they are marked by homeroom teachers. This allows work study staff to determine whether or not a student should submit a time sheet. 
+ Once submitted, Django-SIS will then display both Present students and Absent students in the dashboard, in addition to Tardy and Absent/Half Day as they are marked by homeroom teachers. This allows work study staff to determine whether or not a student should submit a time sheet. 
 
  .. image:: /images/wsatnd2.png
 
@@ -1009,26 +961,26 @@ The work study attendance feature will allow SWoRD to sync work study attendance
 Electronic Contracts
 ----------------------
 
-SWoRD supports the ability to store and sign fully electronic work study contracts between the school and the student's work placement. Contracts can be filled out by the client from a web interface, or manually added to a company under the **Companies** selection from the CWSP header. 
+Django-SIS supports the ability to store and sign fully electronic work study contracts between the school and the student's work placement. Contracts can be filled out by the client from a web interface, or manually added to a company under the **Companies** selection from the CWSP header. 
 
 **Note:** Contracts are linked to companies, not work teams.
 
-1. For fully electronic contracts, start by editing or creating a template, and be make certain that it's named "Work Study Contract". If your school has purchased SWoRD support, feel free to email for assistance in this  regard, otherwise refer to the "Report Writing and Creating Templates" section above to do so indepedently. 
+1. For fully electronic contracts, start by editing or creating a template, and be make certain that it's named "Work Study Contract". If your school has purchased Django-SIS support, feel free to email for assistance in this  regard, otherwise refer to the "Report Writing and Creating Templates" section above to do so indepedently. 
 
 .. image:: /images/cwspaddtemplate.png
 
 2. Next, you will need to generate special web links for **each** company you want to get a contract from. It is recommended that you try this first with a fake companay to see how it works.
 
-3. To get to this link, enter <site url>/work_study/company_contract/<company id #> Where site url is replaced with the URL for your SWoRD installation. Company ID # can be downloaded with the export to XLS tool. Go to **companies**, check off the companies you want to get IDs for, click **Export to XLS** and make sure the ID column option is checked.
+3. To get to this link, enter <site url>/work_study/company_contract/<company id #> Where site url is replaced with the URL for your Django-SIS installation. Company ID # can be downloaded with the export to XLS tool. Go to **companies**, check off the companies you want to get IDs for, click **Export to XLS** and make sure the ID column option is checked.
 
 A finished url might look something like: sis.YOURSCHOOL.org/work_study/company_contract/123
 
-You may send this link to your client and wait for the results to come in. Because SWoRD stores contracts, you may review it once it has been submitted under Work_study > Company Contracts.
+You may send this link to your client and wait for the results to come in. Because Django-SIS stores contracts, you may review it once it has been submitted under Work_study > Company Contracts.
 
 
 Message to Supervisors
 ------------------------
-SWoRD allows school officials to send out messages/reminders for all supervisors to see when they log in to approve a student's time card. The steps are as follows, with an attached picture depicting the steps and outcome:
+Django-SIS allows school officials to send out messages/reminders for all supervisors to see when they log in to approve a student's time card. The steps are as follows, with an attached picture depicting the steps and outcome:
 
 1. Under **Company Data**, select ADD under the *Message to Supervisors* subheading.	
 2. Type out your desired message to display to all supervisors.
@@ -1037,14 +989,14 @@ SWoRD allows school officials to send out messages/reminders for all supervisors
 
 .. image:: /images/msgtosuper.png
 
-After the previous steps above have been completed, SWoRD will then display your message to supervisors on their dashboard page, as shown below:
+After the previous steps above have been completed, Django-SIS will then display your message to supervisors on their dashboard page, as shown below:
 
 .. image:: /images/msgtosuper2.png
 
 CWSP Reports
 --------------
 
-Similar to other modules, the Work Study module in SWoRD comes packaged with a number of pre-built work study reports. In addition to the pre made reports, there is a section available for template based reports which will generate reports that a user has created. A description of the three major types of reports, along with examples will be shown below:
+Similar to other modules, the Work Study module in Django-SIS comes packaged with a number of pre-built work study reports. In addition to the pre made reports, there is a section available for template based reports which will generate reports that a user has created. A description of the three major types of reports, along with examples will be shown below:
 
 **Pre-made Reports**
 
@@ -1066,7 +1018,7 @@ The pre-made reports are one click reports that cover: FTE, MISC, Atendance drop
 
 **Date based reports**
 
-These reports require the user to set up a date range. Once the date range is set, the user may click on a report in which SWoRD will tailor to the dates accordingly.
+These reports require the user to set up a date range. Once the date range is set, the user may click on a report in which Django-SIS will tailor to the dates accordingly.
 
 .. image:: /images/cwspdatebasedreports.png
 
@@ -1082,7 +1034,7 @@ These reports require the user to set up a date range. Once the date range is se
 
 **Template Based Reports**
 
-These reports allow users to generate reports that they have created themselves, although SWoRD does come packaged with some already made generic templates, including a travel maps/directions to help work study students get to their work site, as shown below:
+These reports allow users to generate reports that they have created themselves, although Django-SIS does come packaged with some already made generic templates, including a travel maps/directions to help work study students get to their work site, as shown below:
 
 .. image:: /images/cwsptemplatebasedreport.png
 
@@ -1091,12 +1043,12 @@ These reports allow users to generate reports that they have created themselves,
 Volunteer Tracking
 ===================
 
-Some schools require students to complete a certain number of volunteer hours every school year. Accordingly, SWoRD allows school staff to keep track of a student's volunteer hours, sites, and site supervisors. Tracking volunteers works similar to other modules in terms of adding and storing data.
+Some schools require students to complete a certain number of volunteer hours every school year. Accordingly, Django-SIS allows school staff to keep track of a student's volunteer hours, sites, and site supervisors. Tracking volunteers works similar to other modules in terms of adding and storing data.
 
 
 Adding a Volunteer
 -------------------
-Locate the **Volunteer_track** module of SWoRD from your main dashboard screen. Once found, select **add** by the **volunteers** option. The following page will be displayed:
+Locate the **Volunteer_track** module of Django-SIS from your main dashboard screen. Once found, select **add** by the **volunteers** option. The following page will be displayed:
 
 .. image:: /images/volunteeradd.png
 
@@ -1190,12 +1142,12 @@ How to: refer to `Enrolling Students`_.
 Alumni
 ==========
 
-The alumni module allows schools using SWoRD to keep track of students who have graduated or left their respective schools. When schools increment school years in preparation for the new year, all classes at that time will move up one year (Freshmen become Sophomores, etc.). Seniors will then graduate and become alumni in the system. Optionally, SWoRD can sync with National Student Clearinghouse to help track online. 
+The alumni module allows schools using Django-SIS to keep track of students who have graduated or left their respective schools. When schools increment school years in preparation for the new year, all classes at that time will move up one year (Freshmen become Sophomores, etc.). Seniors will then graduate and become alumni in the system. Optionally, Django-SIS can sync with National Student Clearinghouse to help track online. 
 
 Alumni Dashboard
 ------------------
 
-You can access the alumni module by clicking on Alumni > Alumni Administration at the top menu bar in SWoRD. From here, select **Alumni** to get to the dashboard.
+You can access the alumni module by clicking on Alumni > Alumni Administration at the top menu bar in Django-SIS. From here, select **Alumni** to get to the dashboard.
 
 The alumni dashboard is pictured below:
 
@@ -1205,7 +1157,7 @@ This dashboard allows users to gather and export a list of alumni as well as uti
 
 **Alumni Filters**
 
-In sum, users have 5 filters available to utilize that SWoRD will sort accordingly:
+In sum, users have 5 filters available to utilize that Django-SIS will sort accordingly:
 
 *Graduated*
 
@@ -1247,7 +1199,7 @@ In addition to the basic data outlined above, the Alumni module allows school st
 Custom Report Builder
 =======================
 
-Packaged with every instance of SWoRD is the custom report builder tool. This tool allows users with permission to easily create custom reports utilizing a drag and drop method. This section will cover how to utilize this tool.
+Packaged with every instance of Django-SIS is the custom report builder tool. This tool allows users with permission to easily create custom reports utilizing a drag and drop method. This section will cover how to utilize this tool.
 
 
 Report Builder Dashboard
@@ -1296,9 +1248,8 @@ Using the example above, consider the use case of a user wanting to pull the stu
 
 .. image:: /images/reportfilterstab.png
 
+====================
+Developing Django-SIS
+====================
 
-
-
-
-
-
+`Contact us <http://burkesoftware.com/contact-us>`_! We'd be happy to point you in the right direction.

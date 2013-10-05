@@ -56,7 +56,7 @@
 {% block dashlet_footer %}
     {% if perms.sis.change_student %}
       <div class="links">
-         <a href="{% url 'admin:work_study_studentworker_changelist' %}">Change Students</a>
+         <a href="{% url 'admin:sis_student_changelist' %}">Change Students</a>
       </div>
     {% endif %}
 {% endblock %}
