@@ -9,6 +9,8 @@ from django.conf import settings
 class Migration(SchemaMigration):
     no_dry_run = True
     def forwards(self, orm):
+        if sys.stdout.encoding.lower().find('utf-8') == -1:
+            raise Exception('Please set your terminal to use a UTF-8 encoding, e.g. `export LC_ALL=en_US.UTF-8`, and try again.')
         # These are all the tables and columns that referenced auth_user.id
         # under the old schema. Retrieved via:
         #    tables_and_columns = \
