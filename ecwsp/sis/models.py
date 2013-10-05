@@ -41,7 +41,7 @@ if 'south' in settings.INSTALLED_APPS:
     from south.modelsinspector import add_introspection_rules
     add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
 
-def create_faculty(instance):
+def create_faculty(instance, make_user_group=True):
     """ Create a sis.Faculty object that is linked to the given
     auth_user instance. Important as there is no way to do this
     from Django admin. See 
@@ -50,7 +50,7 @@ def create_faculty(instance):
     if not hasattr(instance, "faculty"):
         faculty = Faculty(user_ptr_id=instance.id)
         faculty.__dict__.update(instance.__dict__)
-        faculty.save()
+        faculty.save(make_user_group=make_user_group)
 
 def create_student(instance):
     """ Create a sis.Student object that is linked to the given auth_user
@@ -64,13 +64,13 @@ def create_student(instance):
 
 def create_faculty_profile(sender, instance, created, **kwargs):
     if instance.groups.filter(name="teacher").count():
-        create_faculty(instance)
+        create_faculty(instance, make_user_group=False)
     if instance.groups.filter(name="students").count():
         create_student(instance)
 
 def create_faculty_profile_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     if action == 'post_add' and instance.groups.filter(name="teacher").count():
-        create_faculty(instance)
+        create_faculty(instance, make_user_group=False)
     if action == 'post_add' and instance.groups.filter(name="students").count():
         create_student(instance)
 
@@ -305,11 +305,12 @@ class Faculty(User):
         verbose_name_plural = "Faculty"
         ordering = ("last_name", "first_name")
     
-    def save(self, *args, **kwargs):
+    def save(self, make_user_group=True, *args, **kwargs):
         self.is_staff = True
         super(Faculty, self).save(*args, **kwargs)
-        group, created = Group.objects.get_or_create(name="faculty")
-        self.groups.add(group)
+        if make_user_group:
+            group, created = Group.objects.get_or_create(name="faculty")
+            self.groups.add(group)
 
     def __unicode__(self):
         return u"{0}, {1}".format(self.last_name, self.first_name)
