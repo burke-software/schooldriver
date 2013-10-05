@@ -179,7 +179,7 @@ def student_incomplete_courses(request):
     students = method(aggregate__in=Aggregate.objects.filter(course__marking_period__school_year=school_year, **AGGREGATE_CRITERIA).distinct()).distinct()
     students = students.filter(inactive=False).order_by('year', 'lname', 'fname')
     '''
-    students = Student.objects.filter(inactive=False).order_by('year', 'lname', 'fname')
+    students = Student.objects.filter(is_active=True).order_by('year', 'last_name', 'first_name')
     data = []
     titles = ['Last Name', 'First Name', 'Year', 'Work Day', 'Incomplete Courses']
     for student in students:
@@ -245,7 +245,7 @@ def count_items_by_category_across_courses(year_category_names, current_marking_
     marking_period = school_year.markingperiod_set.filter(show_reports=True, start_date__lt=date.today()).order_by('-start_date')[0]
 
     data = []
-    for student in Student.objects.filter(inactive=False).order_by('year', 'lname', 'fname'):
+    for student in Student.objects.filter(is_active=True).order_by('year', 'last_name', 'first_name'):
         try:
             work_day = StudentWorker.objects.get(username=student.username).day
         except StudentWorker.DoesNotExist:
