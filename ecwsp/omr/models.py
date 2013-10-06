@@ -63,6 +63,15 @@ class Test(models.Model):
         points_possible = self.testinstance_set.all()[0].points_possible
         return float(total_test_earned) / (total_tests_taken * points_possible)
     
+    def get_percent_scoring_over(self, min_score=70):
+        """ Calculate the percent of test takers scoring over the min_score
+            Defaults to 70.
+        """
+        total_test_earned =  self.testinstance_set.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']
+        total_tests_taken = self.testinstance_set.annotate(earned=Sum('answerinstance__points_earned')).filter(earned__gt=0).count()
+        points_possible = self.testinstance_set.all()[0].points_possible
+        return float(total_test_earned) / (total_tests_taken * points_possible)
+    
     
     def link_copy(self):
         from ecwsp.omr.views import test_copy
@@ -269,6 +278,13 @@ class AnswerAbstract(models.Model):
     def __unicode__(self):
         return strip_tags(self.answer)
     
+    @property
+    def letter(self):
+        if self.question.type == "True/False":
+            return self.answer[0]
+        else:
+            return chr(self.order + 65)
+    
 class AnswerBank(AnswerAbstract):
     question = models.ForeignKey(QuestionBank)
     
@@ -279,12 +295,6 @@ class Answer(AnswerAbstract):
     class Meta:
         ordering = ('order',)
 
-    @property
-    def letter(self):
-        if self.question.type == "True/False":
-            return self.answer[0]
-        else:
-            return chr(self.order + 65)
     
 class TestInstance(models.Model):
     student = models.ForeignKey('sis.Student')
