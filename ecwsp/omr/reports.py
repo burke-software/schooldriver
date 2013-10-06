@@ -142,11 +142,49 @@ class ReportManager(object):
         """ Make appy based report showing results for a whole class """
         report = TemplateReport()
         report.file_format = format
-        test_instances = test.testinstance_set.all()
-        benchmarks = Benchmark.objects.filter(question__test=test).distinct()
+        test_instances = test.testinstance_set.annotate(Sum('answerinstance__points_earned'))
+        test.benchmarks = Benchmark.objects.filter(question__test=test).distinct()
         
-        for benchmark in benchmarks:
-            benchmark.points_possible = test.question_set.filter(benchmarks=benchmark).aggregate(Sum('point_value'))['point_value__sum']
+        points_possible = test.points_possible
+        points_to_earn = 0.70 * test.points_possible
+        number_above_70 = test_instances.filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
+        total_test_takers = test.testinstance_set.filter(answerinstance__points_earned__gt=0).distinct().count()
+        test.percent_over_70 = float(number_above_70) / total_test_takers
+
+        for benchmark in test.benchmarks:
+            question_benchmarks = test.question_set.filter(benchmarks=benchmark)
+            benchmark.points_possible = question_benchmarks.aggregate(Sum('point_value'))['point_value__sum']
+            benchmark.total_points_possible = benchmark.points_possible * test_instances.count()
+            benchmark.total_points_earned = question_benchmarks.aggregate(Sum('answerinstance__points_earned'))['answerinstance__points_earned__sum']
+            benchmark.average = float(benchmark.total_points_earned) / benchmark.total_points_possible 
+           
+            # Percent students over 70%
+            test_instances_over_70 = 0
+            for test_instance in test_instances:
+                 answers = test_instance.answerinstance_set.filter(question__benchmarks=benchmark)
+                 answers_points = answers.aggregate(Sum('points_earned'), Sum('points_possible'))
+                 instance_points_earned = answers_points['points_earned__sum']
+                 instance_points_possible = answers_points['points_possible__sum']
+                 instance_average = float(instance_points_earned) / instance_points_possible
+                 if instance_average >= 0.70:
+                     test_instances_over_70 += 1
+            benchmark.over_70 = float(test_instances_over_70) / test_instances.count()
+
+            benchmark.assessed_on = ""
+            for question_benchmark in question_benchmarks:
+                benchmark.assessed_on += "{}, ".format(question_benchmark.get_order_start_one)
+            benchmark.assessed_on = benchmark.assessed_on[:-2]
+        
+        test.questions = test.question_set.all()
+        for question in test.questions:
+            question.benchmark_text = ''
+            for benchmark in question.benchmarks.all():
+                question.benchmark_text += '{}, '.format(benchmark.number)
+            question.benchmark_text = question.benchmark_text[:-2]
+            question.num_correct = question.answerinstance_set.filter(points_earned__gte=F('points_possible')).count()
+            question.num_total = question.answerinstance_set.count()
+            question.percent_correct = float(question.num_correct) / question.num_total
+
             
         report.data['test'] = test
         report.data['tests'] = test_instances

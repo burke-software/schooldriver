@@ -189,11 +189,11 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     change_list_template = "admin/sis/student/change_list.html"
     form = StudentForm
     readonly_fields = ['year']
-    search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
+    search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id', 'studentnumber__number']
     inlines = [StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
     actions = [mark_inactive]
     list_filter = ['is_active', 'year', 'class_of_year']
-    list_display = ['__unicode__','year']
+    list_display = ['first_name','last_name','year','is_active','primary_cohort', 'phone', 'gpa']
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
         filter_horizontal = ('family_access_users',)
         

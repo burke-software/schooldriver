@@ -466,6 +466,16 @@ def download_student_results(request, test_id):
     if not template:
         return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
     return report.download_student_results(test, format, template)
+
+
+@user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
+def download_teacher_results(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
+    template = Template.objects.get_or_create(name="OMR Teacher Test Result")[0].get_template(request)
+    if not template:
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+    return report.download_teacher_results(test, format, template)
     
     
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
