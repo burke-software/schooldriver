@@ -192,7 +192,7 @@ def discipline_report_view(request):
                 start_date = merit_form.cleaned_data['start_date']
                 end_date = merit_form.cleaned_data['end_date']
                 
-                students = Student.objects.filter(inactive=False)
+                students = Student.objects.filter(is_active=True)
                 if merit_form.cleaned_data['sort_by'] == 'year':
                     students = students.order_by('year')
                 elif merit_form.cleaned_data['sort_by'] == 'cohort':
@@ -232,7 +232,7 @@ def discipline_report_view(request):
                             # students belonging to this school year
                             students = students.filter(course__marking_period__school_year__exact=school_year).distinct()
                     if not form.cleaned_data['include_deleted'] :
-                        students = students.exclude(inactive=True)
+                        students = students.exclude(is_active=False)
                     if form.cleaned_data['order_by'] == "Year":
                         students = students.order_by('year')
                     subtitles = ["Student",]

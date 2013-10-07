@@ -39,8 +39,8 @@ def supervisor_xls(request):
     studenti = 0
     for timesheet in timesheets:
         data.append(["",
-                     timesheet.student.fname,
-                     timesheet.student.lname,
+                     timesheet.student.first_name,
+                     timesheet.student.last_name,
                      timesheet.date,
                      timesheet.for_pay,
                      timesheet.make_up,
@@ -154,15 +154,15 @@ def gen_attendance_report_day(day, is_pickup=False):
         
         y=2
         if is_pickup == True:
-            students = StudentWorker.objects.filter(day=day[1], placement__pm_transport_group__location=pickup).filter(inactive=False)
+            students = StudentWorker.objects.filter(day=day[1], placement__pm_transport_group__location=pickup).filter(is_active=True)
         else:
-            students = StudentWorker.objects.filter(day=day[1], placement__am_transport_group__location=pickup).filter(inactive=False)
+            students = StudentWorker.objects.filter(day=day[1], placement__am_transport_group__location=pickup).filter(is_active=True)
         for stu in students:
             if stu.fax:
                 ws.write(y,0,"txt", myFontStyle)                            #Small font fax.
             else:
                 ws.write(y,0," ", myFontStyle)                                #blank for absent/late
-            ws.write(y,1,unicode(stu.fname + " " +stu.lname), myFontStyle)    #name
+            ws.write(y,1,unicode(stu.first_name + " " +stu.last_name), myFontStyle)    #name
             ws.write(y,2,unicode(stu.placement), myFontStyle)                #placement
             ws.write(y,3,unicode(stu.placement.travel_route), myFontStyle)    #train line
             ws.write(y,4,unicode(stu.placement.stop_location), myFontStyle)    #stop Location
@@ -231,9 +231,9 @@ def am_route_attendance(request):
     for route in StudentWorkerRoute.objects.all():
         data = []
         if 'am_route_attendance' in request.POST:
-            students =  StudentWorker.objects.filter(am_route=route, inactive = False)
+            students =  StudentWorker.objects.filter(am_route=route, is_active = True)
         else:
-            students =  StudentWorker.objects.filter(pm_route=route, inactive = False)
+            students =  StudentWorker.objects.filter(pm_route=route, is_active = True)
         for student in students:
             row = []
             if hasattr(student,'placement') and student.placement:

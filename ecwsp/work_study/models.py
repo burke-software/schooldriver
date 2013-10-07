@@ -144,6 +144,9 @@ class WorkTeamUser(User):
     """
     class Meta:
         proxy = True
+        ordering = ("last_name", "first_name")
+    def __unicode__(self):
+        return u"{0}, {1}".format(self.last_name, self.first_name)
     def save(self, *args, **kwargs):
         super(WorkTeamUser, self).save(*args, **kwargs)
         self.groups.add(Group.objects.get_or_create(name='Company')[0])

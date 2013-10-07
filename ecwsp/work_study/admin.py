@@ -88,7 +88,7 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
         """override to hide inactive workteams by default"""
         try:
             test = request.META['HTTP_REFERER'].split(request.META['PATH_INFO'])
-            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('is_active__exact'):
+            if test and test[-1] and not test[-1].startswith('?') and not request.GET.has_key('inactive__exact') and not request.GET.has_key('id__in'):
                 return HttpResponseRedirect("/admin/work_study/workteam/?inactive__exact=0")
         except: pass # In case there is no referer
         return super(WorkTeamAdmin,self).changelist_view(request, extra_context=extra_context)

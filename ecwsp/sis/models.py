@@ -442,6 +442,8 @@ class Student(User, CustomFieldModel):
             ("view_mentor_student", "View mentoring information student"),
             ("reports", "View reports"),
         )
+        ordering = ("last_name", "first_name")
+
     report_builder_exclude_fields = ('alert',)
 
     def __unicode__(self):
@@ -865,6 +867,9 @@ class FamilyAccessUser(User):
     """
     class Meta:
         proxy = True
+        ordering = ("last_name", "first_name")
+    def __unicode__(self):
+        return u"{0}, {1}".format(self.last_name, self.first_name)
     def save(self, *args, **kwargs):
         super(FamilyAccessUser, self).save(*args, **kwargs)
         self.groups.add(Group.objects.get_or_create(name='family')[0])
