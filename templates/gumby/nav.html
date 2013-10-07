@@ -7,7 +7,7 @@
     </a>
   </div>
   <ul class="fourteen columns" style="float: right;">
-    {% if perms.auth.change_student or perms.auth.view_student %}
+    {% if perms.sis.change_student or perms.sis.view_student %}
     <li class="field">
         <div class="admin-title view_student" style="heig;">
             <form id="form_view_student" style="margin-bottom: 0px;" class="view_student" action="/sis/view_student/" method="post">
