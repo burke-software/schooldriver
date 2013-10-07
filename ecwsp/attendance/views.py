@@ -410,7 +410,7 @@ def attendance_report(request):
                 if 'student' in request.POST: # by student
                     students = Student.objects.all()
                     if not form.cleaned_data['include_deleted']:
-                        students = students.filter(inactive=False)
+                        students = students.filter(is_active=True)
                     students = students.filter()
                     
                     titles.append("Student")
@@ -484,7 +484,7 @@ def attendance_report(request):
                         students = Student.objects.all()
                         perfect_students = []
                         if not form.cleaned_data['include_deleted']:
-                            students = students.filter(inactive=False)
+                            students = students.filter(is_active=True)
                         for student in students:
                             total_absent = attendances.filter(status__absent=True, student=student).count()
                             total_tardy = attendances.filter(status__tardy=True, student=student).count()
@@ -518,7 +518,7 @@ def attendance_report(request):
                     data.append(stats)
                     data.append([])
                     
-                    students = Student.objects.filter(inactive=False).count()
+                    students = Student.objects.filter(is_active=True).count()
                     absents = attendances.filter(status__absent=True).count()
                     if form.cleaned_data['marking_period']:
                         days = 0
