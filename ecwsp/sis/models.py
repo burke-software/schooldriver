@@ -670,7 +670,7 @@ class Student(User, CustomFieldModel):
         # No other way to do it see:
         # https://code.djangoproject.com/ticket/7623
         if 'ecwsp.work_study' in settings.INSTALLED_APPS:
-            if not creating_worker and not hasattr(self, 'studentworker_ptr'):
+            if not creating_worker and not hasattr(self, 'studentworker'):
                 from ecwsp.work_study.models import StudentWorker
                 worker = StudentWorker(user_ptr_id=self.user_ptr_id)
                 worker.__dict__.update(self.__dict__)
