@@ -1,14 +1,15 @@
 {% extends "admin/base.html" %}
 {% load i18n grp_tags %}
 {% load sis_extras %}
+{% load static %}
 
 {% block title %}{{ title }} | {% trans 'Django site admin' %}{% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
-<script type="text/javascript" src="/static/js/jquery.js"></script>
+<script type="text/javascript" src='{% static 'jquery/jquery.js' %}'></script>
 <script type="text/javascript" src="/static/js/ajax_select.js "></script>
-<script type="text/javascript" src="/static/js/jquery-ui.js"></script>
+<script type="text/javascript" src="{% static 'jquery-ui/ui/minified/jquery-ui.min.js' %}"></script>
 <script type="text/javascript" src="/static/js/admin_django_sis.js"></script>
 
 {% if google_analytics_code %}
