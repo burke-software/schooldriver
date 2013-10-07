@@ -231,7 +231,7 @@ class EmergencyContactAdmin(admin.ModelAdmin):
         fieldsets[0][1]['fields'].append('sync_schoolreach')
     list_filter = ['primary_contact',]
     inlines = [EmergencyContactInline, StudentECInline]
-    search_fields = ['fname', 'lname', 'email', 'student__fname', 'student__last_name']
+    search_fields = ['fname', 'lname', 'email', 'student__first_name', 'student__last_name']
     list_display = ['fname', 'lname', 'primary_contact', 'relationship_to_student', 'show_student']
     
 admin.site.register(EmergencyContact, EmergencyContactAdmin)
