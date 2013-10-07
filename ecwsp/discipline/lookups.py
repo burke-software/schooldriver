@@ -25,7 +25,7 @@ class StudentWithDisciplineLookup(StudentLookup):
         return output
 
     def get_objects(self,ids):
-        return Student.objects.filter(pk__in=ids).order_by('lname')
+        return Student.objects.filter(pk__in=ids).order_by('last_name')
 
 
 class DisciplineViewStudentLookup(StudentLookup):
