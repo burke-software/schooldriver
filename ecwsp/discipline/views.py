@@ -272,7 +272,6 @@ def discipline_report_view(request):
                                 if actions < form.cleaned_data['minimum_action']:
                                     add = False
                              
-                        pref.get_additional_student_fields(stats, student, students, titles)
                         if add: data.append(stats)
                     
                     report = XlReport(file_name="disc_stats")

@@ -462,7 +462,6 @@ def attendance_report(request):
                                         student=student,
                                         status=status).count() < form.cleaned_data['filter_count']):
                                     add = False
-                            pref.get_additional_student_fields(row, student, students, titles)
                             if add: data.append(row)
                     report = XlReport(file_name="attendance_report")
                     report.add_sheet(data, header_row=titles, title="Attendance Report", heading="Attendance Report")

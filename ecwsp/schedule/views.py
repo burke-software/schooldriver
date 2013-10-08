@@ -116,7 +116,7 @@ def grade_analytics(request):
             
             students = Student.objects.all()
             if not data['include_deleted']:
-                students = students.filter(inactive=False)
+                students = students.filter(is_active=True)
             if data['filter_year']:
                 students = students.filter(year__in=data['filter_year'])
             if data['in_individual_education_program']:
@@ -330,7 +330,6 @@ def grade_analytics(request):
                 for student in show_students:
                     if unicode(student.id) in request.POST.getlist('selected'):
                         row = [student]
-                        pref.get_additional_student_fields(row, student, show_students, titles)
                         i = 0
                         for course in student.courses:
                             row.append(course.replace("<br/>", " "))
