@@ -1,6 +1,9 @@
 // Your custom SCSS should be written here...
 
 // Things I don't like about gumby
+table {
+  width: inherit;
+}
 table tr td:first-child {
    font-weight: inherit;
 }
@@ -9,6 +12,17 @@ table tr td:first-child {
   margin: 2px;    
 }
 
+// General use tools
+.no_padding {
+    padding: 0px;
+}
+
+// Alight right until break
+@media screen and (min-width: $tablet-device-width){
+  .align_right_until_break {
+    text-align: right;
+  }
+}
 // OMR ajax editing
 [contenteditable="true"]:focus{
   outline: 1px solid teal;

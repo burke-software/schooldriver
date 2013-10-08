@@ -33,12 +33,6 @@ a.subsection {
 
 .sub-expanded { background: #eaeaea url('/static/images/down-arrow-gray.gif') no-repeat 10px center!important; }
 
-h1 {
-	font-family: Verdana;
-	text-transform: uppercase;
-	font-size: 24px;
-}
-
 .sv-name {
 	margin-bottom: 0; padding-bottom: 0;
 }
@@ -86,7 +80,6 @@ h1 {
 
 .sv-section {
 	position: relative;
-	width: 960px;
 	margin-bottom: 10px;
 }
 
@@ -102,8 +95,6 @@ th {
 
 #transcript {
 	color: #2BC9ED;
-	float: right;
-	text-align: right;
 	margin-top: 12px;
 }
 
@@ -112,7 +103,6 @@ th {
 }
 
 #student-header {
-	width: 960px;
 	position: relative;
 	overflow: hidden;
 	margin-bottom: 16px;
