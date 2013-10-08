@@ -99,7 +99,6 @@ class UserPreference(models.Model):
     gradebook_preference = models.CharField(max_length=10, blank=True, choices=(
          ('O', 'Online Gradebook'), ('S','Spreadsheet'), ('E', 'Engrade'), ('M', 'Manual')))
     user = models.ForeignKey(User, unique=True, editable=False)
-    names = None    # extra field names. (Attempt to speed up reports so these don't get called up over and over)
     first = True
     
     def get_format(self, type="document"):
@@ -120,70 +119,6 @@ class UserPreference(models.Model):
             elif self.prefered_file_format == "x":
                 return "xlsx"
             
-    def get_additional_student_fields(self, row, student, students, titles, buffer=1):
-        """ row: table row
-        Get additional fields based on user preferences
-        """
-        import copy
-        students_workaround = copy.copy(students) # THIS IS UGLY! But Django will otherwise stop iterating after 100 students
-        if not self.names:
-            self.set_names()
-        for name in self.names:
-            # If there is a m2m field we need to pad the titles.
-            # In case the m2m has a max of 5 fields we need five title cells
-            buffer = self.get_additional_student_fields_buffer(students_workaround, name)
-            if self.first:
-                i = 0
-                while i < buffer:
-                    titles.append(name)
-                    i += 1
-            space = 0
-            try:
-                many = False
-                object = student
-                for name_split in name.split('.'):
-                    object = object.__getattribute__(name_split)
-                    if str(object)[:51] == "<django.db.models.fields.related.ManyRelatedManager":
-                        for one_of_many in object.all():
-                            row.append(unicode(one_of_many))
-                            space += 1
-                            many = True
-                if not many:
-                    row.append(unicode(object))
-                    space += 1
-            except:
-                row.append("")
-                space += 1
-            while space < buffer:
-                row.append("")
-                space += 1
-        self.first = False
-    
-    def get_additional_student_fields_buffer(self, students, name):
-        """ buffer is the number of columns to use for a "field"
-        Example: A M2M field can return up to 5 fields so buffer is 5
-        """
-        buffer = 1
-        for student in students:
-            try:
-                object = student
-                for name_split in name.split('.'):
-                    object = object.__getattribute__(name_split)
-                    if str(object)[:51] == "<django.db.models.fields.related.ManyRelatedManager":
-                        number = object.all().count()
-                        if number > buffer: buffer = number
-            except:
-                pass
-        return buffer
-                
-    
-    def set_names(self):
-        fields = self.additional_report_fields.all()
-        self.names = []
-        for field in fields:    
-            self.names.append(field.name)
-        self.names
-
     def sort_courses(self, courses):
         if self.course_sort == 'department':
             return courses.order_by('department')

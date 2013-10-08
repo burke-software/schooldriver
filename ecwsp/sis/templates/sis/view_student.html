@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin_base.html" %}
 {% load i18n %}
 
 {% block extrahead %}
@@ -53,39 +53,57 @@
                  />
                 Include inactive in search?
             </div>
+        <div class="row">
+		  <div class="eight columns">
             
-		  <div id="name-and-grade">
-			<h1 class="sv-name">{{ student }}</h1>
-			{{ student.year }} - {{ student.class_of_year }}
-			{% if location %}<p>Location: {{ location }}</p>{% endif %}
+			<h1 class="no_padding">{{ student }}</h1>
+			<h3>
+              {{ student.year }} - {{ student.class_of_year }}
+			  {% if location %}<p>Location: {{ location }}</p>{% endif %}
+            </h3>
 		  </div>
 		  
-		  <div id="transcript">   
-		  <a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a><br/>
-		  Profile generated on {{ date }}
+		  <div class="four columns align_right_until_break" id="transcript">   
+		    <a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a><br/>
+		    Profile generated on {{ date }}
 		  </div>
+        </div>
 	</div>
-	<div class="sv-section">
-            <div id="a_general" class="section-header">
-                <a  href="javascript:void(0)">General Information</a>
-                
-            </div>
+	<div class="row sv-section">
+        <div id="a_general" class="section-header">
+            <a  href="javascript:void(0)">General Information</a>
+        </div>
 	<div class="sv-main">
-            {% if perms.sis.change_student %} <a class="edit_link" href="{% url "admin:sis_student_change" student.id %}"> Edit </a><br /> {% endif %}
-		<!--<div id="student-image"><a href="/media/{{ student.pic }}"><img src="http://placekitten.com/350/250"/></a> </div>-->
-		{% if student.pic %} <div id="student-image"><a href="/media/{{ student.pic }}"><img style="max-height: 250px;" src="{{ student.pic.url_530x400 }}"/></a> </div>{% endif %}
-		<table class="section-table">
-			<tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname|default_if_none:"" }} {{ student.lname }} </td></tr>
-			<tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
-			<tr><td class="thing"> Birthdate </td><td> {{ student.bday }} </td></tr>
-			<tr><td class="thing"> Primary Cohort </td><td> {{ student.primary_cohort }} </td></tr>
-			<tr><td class="thing"> Alert </td><td> {{ student.alert }} </td></tr>
-			<tr><td class="thing"> Notes </td><td> {{ student.notes }} </td></tr>
-			<tr><td class="thing"> Parent/Guardian </td><td> {{ student.parent_guardian }} </td></tr>
-			<tr><td class="thing"> Address </td><td> {{ student.street }} <br /> {{ student.city }}, {{ student.state }} {{ student.zip }} </td></tr>
-			<tr><td class="thing"> Parent E-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
-			<tr><td class="thing"> Student Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
-		</table>
+      {% if perms.sis.change_student %} 
+         <div class="row">
+         <a class="edit_link" href="{% url "admin:sis_student_change" student.id %}">
+            Edit 
+         </a>
+         </div> 
+      {% endif %}
+      <div class="row">
+        <div class="seven columns">
+          <table class="section-table">
+              <tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname|default_if_none:"" }} {{ student.lname }} </td></tr>
+              <tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
+              <tr><td class="thing"> Birthdate </td><td> {{ student.bday }} </td></tr>
+              <tr><td class="thing"> Primary Cohort </td><td> {{ student.primary_cohort }} </td></tr>
+              <tr><td class="thing"> Alert </td><td> {{ student.alert }} </td></tr>
+              <tr><td class="thing"> Notes </td><td> {{ student.notes }} </td></tr>
+              <tr><td class="thing"> Parent/Guardian </td><td> {{ student.parent_guardian }} </td></tr>
+              <tr><td class="thing"> Address </td><td> {{ student.street }} <br /> {{ student.city }}, {{ student.state }} {{ student.zip }} </td></tr>
+              <tr><td class="thing"> Parent E-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
+              <tr><td class="thing"> Student Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
+          </table>
+        </div>
+        <div class="five columns">
+		  {% if student.pic %}
+            <a href="/media/{{ student.pic }}">
+              <img src="{{ student.pic.url_530x400 }}"/>
+            </a>
+          {% endif %}
+        </div>
+      </div>
 			
 		<div class="sv-section noprint"><a class="section-header subsection noprint" href="javascript:void(0)">Additional Information</a>
 		 

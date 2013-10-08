@@ -45,9 +45,6 @@ class StudentForm(forms.ModelForm):
 class UserPreferenceForm(forms.ModelForm):
     class Meta:
         model = UserPreference
-        widgets = {
-            'additional_report_fields': forms.CheckboxSelectMultiple,
-        }
 
 
 class DeletedStudentLookupForm(forms.Form):
