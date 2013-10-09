@@ -11,13 +11,24 @@ body {
     margin: 0 auto;
     height: 60px;
     border-bottom: 1px solid #000;
+    position: relative;
 }
 
 .logo {
     font: bold 50px Helvetica;
     color: black;
     letter-spacing: -5px;
-    position: relative;
+}
+
+#comments {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: 1px solid black;
+    border-bottom: none;
+    padding: 5px 10px 5px;
+    background: #f3f3f3;
+    font: 400 14px Helvetica;
 }
 
 .clear {

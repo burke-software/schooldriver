@@ -23,9 +23,13 @@ a.edit_link:hover {
     color: #444;
 }
 
+@media only screen and (min-width: 767px){ 
+    a.subsection {
+        margin: 0 0 0 32px;
+    }
+}
 a.subsection {
 	background: #eaeaea url('/static/images/right-arrow-gray.gif') no-repeat 10px center;
-	margin: 0 0 0 32px;
 	color: #5f5f5f;
 }
 
@@ -48,8 +52,12 @@ a.subsection {
 	margin-top: 20px;
 }
 
-.section-table {
-	margin: 10px 32px;
+@media only screen and (min-width: 767px){ 
+    .section-table {
+        margin: 10px 32px;
+    }
+}
+.section-table{
 	font-family: Verdana;
 }
 

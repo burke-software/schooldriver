@@ -9,8 +9,6 @@ from django.conf import settings
 class Migration(SchemaMigration):
     no_dry_run = True
     def forwards(self, orm):
-        if sys.stdout.encoding.lower().find('utf-8') == -1:
-            raise Exception('Please set your terminal to use a UTF-8 encoding, e.g. `export LC_ALL=en_US.UTF-8`, and try again.')
         # These are all the tables and columns that referenced auth_user.id
         # under the old schema. Retrieved via:
         #    tables_and_columns = \
@@ -75,11 +73,12 @@ class Migration(SchemaMigration):
                     # the auth_user will be moved to a new id. A faculty auth_user.id may be changed twice,
                     # once to accommodate a collided student, and then finally to match its sis_mdluser.id.
                     (collided_id, collided_username) = user_collision[0]
-                    sys.stdout.write(u'User {} ({}) collides with student {} ({}) and will be moved...'.format(collided_username, collided_id, username, mdluser_ptr_id))
+                    sys.stdout.write(u'User {} ({}) collides with student {} ({}) and will be moved...'.\
+                        format(collided_username, collided_id, username, mdluser_ptr_id).encode('utf-8'))
                     new_id = db.execute('select max(id) + 1 from auth_user')[0][0]
                     db.execute('update auth_user set id = %s where id = %s', [new_id, collided_id])
                     db.execute('alter table auth_user auto_increment = %s', [new_id + 1]) # doesn't happen automatically
-                    sys.stdout.write(u' New ID for {} is {}'.format(collided_username, new_id))
+                    sys.stdout.write(u' New ID for {} is {}'.format(collided_username, new_id).encode('utf-8'))
                     # Update all references to auth_user id in other tables
                     for table, column in tables_and_columns:
                        db.execute(u'update `{0}` set `{1}` = %s where `{1}` = %s'.format(table, column), [new_id, collided_id])
@@ -87,7 +86,8 @@ class Migration(SchemaMigration):
                     print ' All references updated.'
                 # Now it's safe to switch the ID that we know is free.
                 old_student_id = db.execute('select id from auth_user where username=%s', [username])[0][0]
-                sys.stdout.write(u"Will change auth_user id from {} to {} for student/faculty {}".format(old_student_id, mdluser_ptr_id, username))
+                sys.stdout.write(u"Will change auth_user id from {} to {} for student/faculty {}".\
+                    format(old_student_id, mdluser_ptr_id, username).encode('utf-8'))
                 db.execute(u'update auth_user set id=%s, first_name=%s, last_name=%s where username=%s',
                     [mdluser_ptr_id, unicode(fname), unicode(lname), username])
                 # Translate inactive flag

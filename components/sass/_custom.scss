@@ -12,7 +12,9 @@ table tr td:first-child {
   margin: 2px;    
 }
 
-// General use tools
+///////////////////////////
+// General use tools///////
+///////////////////////////
 .no_padding {
     padding: 0px;
 }
@@ -23,6 +25,8 @@ table tr td:first-child {
     text-align: right;
   }
 }
+
+
 // OMR ajax editing
 [contenteditable="true"]:focus{
   outline: 1px solid teal;
