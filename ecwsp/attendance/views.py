@@ -29,7 +29,7 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
-from models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog, AttendanceDailyStat
+from models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
 from forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
 from forms import StudentAttendanceForm, StudentMultpleAttendanceForm
 from ecwsp.schedule.models import Course
@@ -492,21 +492,6 @@ def attendance_report(request):
                         
                         format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
                         return pod_report_all(template, students=perfect_students, format=format)
-                        
-                elif 'attendance_daily_stat' in request.POST:
-                    form = AttendanceReportForm(request.POST)
-                    if form.is_valid():
-                        days = AttendanceDailyStat.objects.filter(date__range=form.get_dates())
-                        data = []
-                        titles = ['Date', 'Present', 'Absent', 'Absent Percentage']
-                        row = 3
-                        for day in days:
-                            # Formula C3/(B3+C3)
-                            percentage = '=C{0}/(B{0}+C{0}'.format(str(row))
-                            data.append([day.date, day.present, day.absent, percentage])
-                            row += 1
-                        report = XlReport(file_name="attendance_daily_stats_report")
-                        report.add_sheet(data, header_row=titles, title="Attendance Daily Stats")
                         
                 else: # Aggregate report
                     stats = []

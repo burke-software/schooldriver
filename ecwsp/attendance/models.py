@@ -129,21 +129,3 @@ class AttendanceLog(models.Model):
     asp = models.BooleanField(help_text="ASP attendance, if unchecked this is for a homeroom")
     def __unicode__(self):
         return unicode(self.user) + " " + unicode(self.date)
-
-
-class AttendanceDailyStat(models.Model):
-    date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
-    present = models.IntegerField()
-    absent = models.IntegerField()
-    tardy = models.IntegerField()
-    
-    def set_all(self):
-        """ Records fields and saves """
-        all_students = Student.objects.filter(inactive=False).count()
-        absents = StudentAttendance.objects.filter(date=date.today(), status__absent=True).count()
-        tardies = StudentAttendance.objects.filter(date=date.today(), status__tardy=True).count()
-        
-        self.present = all_students - absents
-        self.absent = absents
-        self.tardy = tardies
-        self.save()
