@@ -2644,3 +2644,8 @@ table#gradebook_table img.cancel { margin-top: 2px; padding-right: 1px; }
 .fht-table-wrapper { /* Hack to make fixedheadertable not create pointless horizontal scroll bar */ width: 101% !important; }
 
 #content { /* Why does grappelli have this? */ margin-bottom: 0px; }
+
+.dashlet { border: 1px solid #bebdbd !important; border-radius: 2px; }
+.dashlet .dashlet_body .row { padding: 5px; }
+
+.list_item { padding: 5px; }

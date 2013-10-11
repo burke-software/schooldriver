@@ -152,3 +152,19 @@ table#gradebook_table img.cancel {
     /* Why does grappelli have this? */
     margin-bottom: 0px;
 }
+
+.dashlet{
+	border: 1px solid #bebdbd !important;
+	border-radius: 2px;
+	.dashlet_body{
+		.row{
+			padding: 5px;
+		}
+	}
+}
+
+
+
+.list_item{
+	padding: 5px;
+}
