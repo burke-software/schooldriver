@@ -41,7 +41,7 @@ def schedule(request):
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')   
 def schedule_enroll(request, id):
-    course = Course.objects.get(id=id)
+    course = get_object_or_404(Course, pk=id)
     if request.method == 'POST':
         form = EnrollForm(request.POST)
         if form.is_valid():
