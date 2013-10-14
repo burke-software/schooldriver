@@ -45,19 +45,12 @@ ADMINS = (
 MANAGERS = ADMINS
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'sword',
         'USER': 'sword',
         'PASSWORD': '1234',
         'HOST': 'localhost', 
     },
-    'mysql': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sword',
-        'USER': 'sword',
-        'PASSWORD': '1234',
-        'HOST': 'localhost', 
-    }
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
 # Prefered file format, may be changed in user preferences.
@@ -378,8 +371,10 @@ REPORT_BUILDER_GLOBAL_EXPORT = True
 
 # this will load additional settings from the file settings_local.py
 # this is useful when managing multiple sites with different configurations
-from settings_local import *
-
+try:
+    from settings_local import *
+except ImportError:
+    print("Warning: Could not import settings_local.py")
 # must do this after importing settings_local
 if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
