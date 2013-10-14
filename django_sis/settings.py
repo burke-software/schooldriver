@@ -101,7 +101,7 @@ INSTALLED_APPS = (
     'ecwsp.work_study',
     'ecwsp.engrade_sync',
     'ecwsp.benchmarks',
-    'ecwsp.omr',
+    #'ecwsp.omr',
     'ecwsp.integrations.canvas_sync',
     #'django_extensions',
     #'google_auth',
