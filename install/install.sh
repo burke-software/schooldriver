@@ -39,7 +39,7 @@ apt-get install apache2 mysql-server python-uno python-reportlab python-mysqldb 
 
 # now install python libs that aren't in deb
 # stable version of ldap-groups may not work with mysql
-pip install --upgrade -r dependencies.txt
+pip install --upgrade -r ../requirements.txt
 # optional auth related
 # pip install django-auth-gapps django_cas
 

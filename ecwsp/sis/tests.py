@@ -14,7 +14,7 @@ class AttendanceTest(TestCase):
         """
         Prepares simple school data
         """
-        self.student = Student(fname="Joe", lname="Student", username="jstudent")
+        self.student = Student(first_name="Joe", last_name="Student", username="jstudent")
         self.student.save()
         self.year = SchoolYear(name="2010-2011", start_date=date(2010,7,1), end_date=date(2011,5,1), active_year=True)
         self.year.save()
@@ -24,7 +24,7 @@ class AttendanceTest(TestCase):
         self.mp2.save()
         self.mp3 = MarkingPeriod(name="tri3 2010", start_date=date(2011,3,2), end_date=date(2050,5,1), school_year=self.year, monday=True, friday=True)
         self.mp3.save()
-        self.teacher = Faculty(username="dburke", fname="david", lname="burke", teacher=True)
+        self.teacher = Faculty(username="dburke", first_name="david", last_name="burke", teacher=True)
         self.teacher.save()
         try:
             self.user = User.objects.create_user('dburke', 'ffdfsf@ffdsfsdf.com', 'aa')
