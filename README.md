@@ -4,6 +4,8 @@ This is an open source school information system built with Django. It relies he
 Burke Software and Consulting offers support and hosting for $3000/year for a school of < 500 students. 
 [Contact us](http://burkesoftware.com/contact-us/) for details.
 
+[![Build Status](https://travis-ci.org/burke-software/django-sis.png)](https://travis-ci.org/burke-software/django-sis)
+
 # Quick Install
 You should have at least basic django deployment experience to run django-sis. We test only in Ubuntu 12.04 and mysql.
 Other environments might work but are not supported.

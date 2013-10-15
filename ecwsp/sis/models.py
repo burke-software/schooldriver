@@ -241,7 +241,9 @@ class Faculty(User):
             self.groups.add(group)
 
     def __unicode__(self):
-        return u"{0}, {1}".format(self.last_name, self.first_name)
+        if self.last_name:
+            return u"{0}, {1}".format(self.last_name, self.first_name)
+        return self.username
         
 
 class Cohort(models.Model):

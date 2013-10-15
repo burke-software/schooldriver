@@ -15,6 +15,45 @@ class Migration(SchemaMigration):
         #    [(field.m2m_db_table(), field.m2m_column_name()) for field in User._meta.many_to_many] + \
         #    [(ob.field.model._meta.db_table, ob.field.column) for ob in User._meta.get_all_related_objects()] + \
         #    [(ob.field.m2m_db_table(), ob.field.m2m_reverse_name()) for ob in User._meta.get_all_related_many_to_many_objects()]
+        
+        if db.execute('select count(*) from sis_student')[0][0] or db.execute('select count(*) from sis_faculty')[0][0]:
+            new_db = False
+        else:
+            new_db = True
+        if new_db:
+            # Deleting model 'MdlUser'
+            db.delete_table(u'sis_mdluser')
+
+            # Deleting model 'ReportField'
+            db.delete_table(u'sis_reportfield')
+
+            # Deleting field 'Faculty.mdluser_ptr'
+            db.delete_column(u'sis_faculty', u'mdluser_ptr_id')
+
+            # Deleting field 'Faculty.alt_email'
+            db.delete_column(u'sis_faculty', 'alt_email')
+
+            # Adding field 'Faculty.user_ptr'
+            db.add_column(u'sis_faculty', u'user_ptr',
+                          self.gf('django.db.models.fields.related.OneToOneField')(default='', to=orm['auth.User'], unique=True, primary_key=True),
+                          keep_default=False)
+
+            # Removing M2M table for field additional_report_fields on 'UserPreference'
+            db.delete_table(db.shorten_name(u'sis_userpreference_additional_report_fields'))
+
+            # Deleting field 'Student.mdluser_ptr'
+            db.delete_column(u'sis_student', u'mdluser_ptr_id')
+
+            # Adding field 'Student.user_ptr'
+            db.add_column(u'sis_student', u'user_ptr',
+                          self.gf('django.db.models.fields.related.OneToOneField')(default='', to=orm['auth.User'], unique=True, primary_key=True),
+                          keep_default=False)
+
+            # Adding field 'Student.city'
+            db.add_column(u'sis_student', 'city',
+                          self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True),
+                          keep_default=False)
+            return
         tables_and_columns = [
             (u'auth_user_groups', 'user_id'),
             (u'auth_user_user_permissions', 'user_id'),
@@ -51,7 +90,7 @@ class Migration(SchemaMigration):
         print 2
 
         # Migrate data if there's any to migrate
-        if db.execute('select count(*) from sis_student')[0][0] or db.execute('select count(*) from sis_faculty')[0][0]:
+        if not new_db:
             db.execute('update sis_student set user_ptr_id = mdluser_ptr_id;')
             db.execute('update sis_faculty set user_ptr_id = mdluser_ptr_id;')
             db.execute('update sis_student, sis_mdluser set sis_student.city = sis_mdluser.city \
