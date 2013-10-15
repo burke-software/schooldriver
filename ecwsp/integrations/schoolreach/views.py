@@ -46,13 +46,13 @@ class SchoolReach:
         m3s = []
         m4s = []
         m5s = []
-        for student in Student.objects.filter(inactive=False):
+        for student in Student.objects.filter(is_active=True):
             student_number = student.get_phone_number()
             if student_number:
                 numbers += [student_number.number]
                 exts += [student_number.ext]
-                fnames += [student.fname]
-                lnames += [student.lname]
+                fnames += [student.first_name]
+                lnames += [student.last_name]
                 emails += [student.get_email]
                 m1s += [student.year]
                 m2s += [student.cache_cohort]
