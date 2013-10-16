@@ -10,7 +10,7 @@ from django.forms.widgets import RadioSelect
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 
 from ecwsp.omr.models import *
-from ecwsp.sis.models import Student
+from ecwsp.sis.models import Student, Cohort
 
 class TestForm(forms.ModelForm):
     class Meta:
@@ -24,6 +24,10 @@ class TestForm(forms.ModelForm):
         )
     quick_number_questions = forms.IntegerField(max_value=100, min_value=1, required=False)
     quick_number_answers = forms.IntegerField(max_value=6, min_value=2, required=False)
+    enroll_cohorts = forms.ModelMultipleChoiceField(
+        queryset = Cohort.objects.all(),
+        required = False,
+    )
     
     def save(self, *args, **kwargs):
         instance = super(TestForm, self).save(*args, **kwargs)
