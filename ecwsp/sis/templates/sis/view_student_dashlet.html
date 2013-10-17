@@ -1,62 +1,58 @@
 {% extends "responsive_dashboard/dashlet.html" %}
 
 {% block dashlet_header %}
+  <form id="form_view_student_dashlet" class="view_student" action="/sis/view_student/" method="post">
+    {% if perms.sis.change_student %}
+       <a href="{% url 'admin:sis_student_changelist' %}">Student</a>
+    {% else %}
+      Student 
+    {% endif %}
+    {% csrf_token %}
+    <span class="field">
+      <input class="input" type="text" placeholder="Search" name="view_student_dashlet_text" id="id_view_student_dashlet_text" style="margin-left: 2em; width:130px" value="" maxlength="255" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
+  </span>
+    <input type="hidden" name="student" id="id_view_student_dashlet" value="">
+    <div id="id_view_student_dashlet_on_deck" style="display: none;" class="results_on_deck"><div></div></div>
+    <script type="text/javascript">//<![CDATA[
+    jQuery(document).ready(function($){
+        addAutoComplete("id_view_student_dashlet", function(html_id) {
+            $("#"+html_id).autocompleteselect({
+                minLength: 1,
+                source: '/ajax_select/ajax_lookup/dstudent',
+            });
+        });
+    $("#id_view_student_dashlet_on_deck").bind('added',function() {
+      var pk = $('#id_view_student_dashlet').val();
+      $.ajax({
+       url: '/sis/ajax_view_student_dashlet/'+pk+'/',
+      }).done(function ( data ) {
+        $('#form_view_student_dashlet').parent().parent().html(data);
+      });
+    });
+    });//]]>
+    </script>
+  </form>
 {% endblock %}
 
 {% block dashlet_body %}
-    <header>
-    
-    <form id="form_view_student_dashlet" class="view_student" action="/sis/view_student/" method="post">
-        Student 
-        {% csrf_token %}
-        <input type="text" placeholder="Search" name="view_student_dashlet_text" id="id_view_student_dashlet_text" style="margin-left: 2em;" value="" maxlength="255" class="ui-autocomplete-input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
-        
-        <input type="hidden" name="student" id="id_view_student_dashlet" value="">
-        <div id="id_view_student_dashlet_on_deck" style="display: none;" class="results_on_deck"><div></div></div>
-        <script type="text/javascript">//<![CDATA[
-        jQuery(document).ready(function($){
-                addAutoComplete("id_view_student_dashlet", function(html_id) {
-                        $("#"+html_id).autocompleteselect({
-                                minLength: 1,
-                                source: '/ajax_select/ajax_lookup/dstudent',
-                        });
-                });
-        $("#id_view_student_dashlet_on_deck").bind('added',function() {
-            var pk = $('#id_view_student_dashlet').val();
-            $.ajax({
-              url: '/sis/ajax_view_student_dashlet/'+pk+'/',
-            }).done(function ( data ) {
-                $('#form_view_student_dashlet').parent().parent('.dashlet_body').parent().html(data);
-            });
-        });
-        });//]]>
-        </script>
-    </form>
-    
-    </header>
-    <div style="width: 55%; float:left;">
-       <img style="width: 100%; max-width: 530px;" src="{{ student.pic.url_530x400 }}"/>
-    </div>
-    <div style="width:45%; float:left; text-align: left;">
-      {% if not object %}
-        <p>Search for a student to get a photo and info</p>
-      {% endif %}
-      <p style="padding-top: 2em;">
-        Name: {{ object }}<br/>
-        Year: {{ object.year }}
-      </p>
-      {% if object %}
-      <p style="padding-top: 3em; text-align: center; text-transform:uppercase;">
-        <a href="{% url "ecwsp.sis.views.view_student" object.id %}">View Info</a>
-      </p>
-      {% endif %}
-    </div>
+  <div style="width: 55%; float:left;">
+    <img style="width: 100%; max-width: 530px;" src="{{ student.pic.url_530x400 }}"/>
+  </div>
+  <div style="width:45%; float:left; text-align: left;">
+   {% if not object %}
+    <p>Search for a student to get a photo and info</p>
+   {% endif %}
+   <p style="padding-top: 2em;">
+    Name: {{ object }}<br/>
+    Year: {{ object.year }}
+   </p>
+   {% if object %}
+   <p style="padding-top: 3em; text-align: center; text-transform:uppercase;">
+    <a href="{% url "ecwsp.sis.views.view_student" object.id %}">View Info</a>
+   </p>
+   {% endif %}
+  </div>
 {% endblock %}
 
 {% block dashlet_footer %}
-    {% if perms.sis.change_student %}
-      <div class="links">
-         <a href="{% url 'admin:sis_student_changelist' %}">Change Students</a>
-      </div>
-    {% endif %}
 {% endblock %}

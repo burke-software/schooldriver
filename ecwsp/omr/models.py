@@ -42,6 +42,7 @@ class Test(models.Model):
         permissions = (
             ('teacher_test', 'Teacher can make and edit tests'),
         )
+        ordering = ('-id',)
     
     def __unicode__(self):
         return self.name
