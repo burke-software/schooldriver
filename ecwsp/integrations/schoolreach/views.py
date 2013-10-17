@@ -95,6 +95,8 @@ class SchoolReach:
             xml_numbers += '<num>%s</num>' % data_string
         xml_exts = ''
         for data_string in exts:
+            if data_string == None:
+                data_string = ''
             xml_exts += '<ext>%s</ext>' % re.sub("[^0-9]", "", data_string)
         xml_fnames= ''
         for data_string in fnames:

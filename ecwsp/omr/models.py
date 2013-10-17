@@ -55,6 +55,11 @@ class Test(models.Model):
         instance.teachers = self.teachers.all()
         instance.save()
     
+    def enroll_students(self, students):
+        """ Enroll student queryset to test """
+        for student in students:
+            self.__enroll_student(student)
+
     @property
     def get_average(self):
         """ Calculate the average. Pretty fast so no caching is needed """

@@ -38,12 +38,13 @@
           {% formrow form.department %}
           {% formrow form.marking_period %}
           {% if not test.finalized %}
-          {% formrow test_form.courses %}
-          <h3>Select individual students</h3>
-          <div id="students_div" style="min-height: 300px;">
-            {% formrow test_form.students %}
-          </div>
-          <br/>
+              {% formrow test_form.courses %}
+              {% formrow test_form.enroll_cohorts %}
+              <h3>Select individual students</h3>
+              <div id="students_div" style="min-height: 300px;">
+                {% formrow test_form.students %}
+              </div>
+              <br/>
           {% endif %}
         </div>
         {% if add %}

@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.forms import UserChangeForm
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.conf import settings
@@ -331,3 +333,25 @@ class FamilyAccessUserAdmin(UserAdmin,admin.ModelAdmin):
         return User.objects.filter(groups__name='family')
 if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
     admin.site.register(FamilyAccessUser,FamilyAccessUserAdmin)
+
+class UserForm(UserChangeForm):
+    """ Extended User form to provide extra validation """
+    class Meta:
+        model = User
+
+    def clean(self):
+        super(UserForm, self).clean()
+        groups = self.cleaned_data.get(
+             'groups', None).all()
+        student_group = Group.objects.get_or_create(name="students")[0]
+        teacher_group = Group.objects.get_or_create(name="teacher")[0]
+        if student_group in groups and teacher_group in groups:
+            message = "User cannot be both a teacher and a student"
+            raise forms.ValidationError(message)
+        return self.cleaned_data
+
+class UserAdmin(UserAdmin):
+    form = UserForm
+
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)

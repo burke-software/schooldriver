@@ -193,13 +193,14 @@ def edit_test(request, id=None):
             test_form = TestForm(request.POST, instance=test)
         if test_form.is_valid():
             instance = test_form.save()
+            enroll_cohorts = test_form.cleaned_data['enroll_cohorts']
+            instance.enroll_students(
+                Student.objects.filter(cohort__in=enroll_cohorts))
             messages.success(request, 'Test %s saved!' % (instance,))
             
             # Quick test creation
             quick_number_questions = test_form.cleaned_data['quick_number_questions']
             quick_number_answers = test_form.cleaned_data['quick_number_answers']
-            print quick_number_questions
-            print quick_number_answers
             if quick_number_questions and quick_number_answers:
                 question_i = 0
                 default_points = UserPreference.objects.get(user=request.user).omr_default_point_value
