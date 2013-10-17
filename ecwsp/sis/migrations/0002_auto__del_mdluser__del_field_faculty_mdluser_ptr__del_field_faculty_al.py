@@ -9,13 +9,6 @@ from django.conf import settings
 class Migration(SchemaMigration):
     no_dry_run = True
     def forwards(self, orm):
-        # These are all the tables and columns that referenced auth_user.id
-        # under the old schema. Retrieved via:
-        #    tables_and_columns = \
-        #    [(field.m2m_db_table(), field.m2m_column_name()) for field in User._meta.many_to_many] + \
-        #    [(ob.field.model._meta.db_table, ob.field.column) for ob in User._meta.get_all_related_objects()] + \
-        #    [(ob.field.m2m_db_table(), ob.field.m2m_reverse_name()) for ob in User._meta.get_all_related_many_to_many_objects()]
-        
         if db.execute('select count(*) from sis_student')[0][0] or db.execute('select count(*) from sis_faculty')[0][0]:
             new_db = False
         else:
@@ -54,30 +47,41 @@ class Migration(SchemaMigration):
                           self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True),
                           keep_default=False)
             return
+
+        # These are all the tables and columns that referenced auth_user.id
+        # under the old schema. Retrieved via:
+        #    tables_and_columns = []
+        #    for model in User, WorkTeamUser, FamilyAccessUser:
+        #        tables_and_columns += [(field.m2m_db_table(), field.m2m_column_name()) for field in model._meta.many_to_many]
+        #        tables_and_columns += [(ob.field.model._meta.db_table, ob.field.column) for ob in model._meta.get_all_related_objects()]
+        #        tables_and_columns += [(ob.field.m2m_db_table(), ob.field.m2m_reverse_name()) for ob in model._meta.get_all_related_many_to_many_objects()]
+        #    tables_and_columns = sorted(set(tables_and_columns))
         tables_and_columns = [
-            (u'auth_user_groups', 'user_id'),
-            (u'auth_user_user_permissions', 'user_id'),
-            (u'reversion_revision', 'user_id'),
             (u'administration_accesslog', 'login_id'),
-            (u'sis_userpreference', 'user_id'),
-            (u'sis_importlog', 'user_id'),
-            (u'work_study_cracontact', 'name_id'),
-            (u'work_study_studentinteraction', 'reported_by_id'),
             (u'admissions_applicant', 'application_decision_by_id'),
             (u'admissions_contactlog', 'user_id'),
-            (u'alumni_alumninote', 'user_id'),
             (u'alumni_alumniaction', 'user_id'),
+            (u'alumni_alumninote', 'user_id'),
             (u'attendance_attendancelog', 'user_id'),
-            (u'counseling_studentmeeting', 'reported_by_id'),
+            (u'auth_user_groups', 'user_id'),
+            (u'auth_user_user_permissions', 'user_id'),
             (u'counseling_referralform', 'classroom_teacher_id'),
             (u'counseling_referralform', 'referred_by_id'),
+            (u'counseling_studentmeeting', 'reported_by_id'),
             (u'django_admin_log', 'user_id'),
             (u'report_builder_report', 'user_created_id'),
             (u'report_builder_report', 'user_modified_id'),
+            (u'report_builder_report_starred', 'user_id'),
             (u'responsive_dashboard_userdashboard', 'user_id'),
-            (u'simple_import_importsetting', 'user_id'),
+            (u'reversion_revision', 'user_id'),
             (u'simple_import_importlog', 'user_id'),
-            (u'report_builder_report_starred', 'user_id')
+            (u'simple_import_importsetting', 'user_id'),
+            (u'sis_importlog', 'user_id'),
+            (u'sis_student_family_access_users', 'familyaccessuser_id'),
+            (u'sis_userpreference', 'user_id'),
+            (u'work_study_cracontact', 'name_id'),
+            (u'work_study_studentinteraction', 'reported_by_id'),
+            (u'work_study_workteam_login', 'workteamuser_id')
         ]
 
         # Add columns
