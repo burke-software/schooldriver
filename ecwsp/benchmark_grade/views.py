@@ -142,7 +142,7 @@ def gradebook(request, course_id, for_export=False):
     else:
         # show only the active marking period by default
         active_mps = course.marking_period.filter(active=True)
-        if active_mps:
+        if active_mps and not for_export: # no default filtering on export requests
             filter_form = GradebookFilterForm(initial={'marking_period': active_mps[0]})
             items = items.filter(marking_period=active_mps[0])
             filtered = True
