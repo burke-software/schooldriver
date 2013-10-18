@@ -63,7 +63,10 @@
   <div style="padding: 0px 20px 0px;">
     <div class="topbar">
         <span class="logo">{{ course.shortname }} Gradebook</span>
-        <span id="comments"><a href="/benchmark_grade/comments/{{ course.id }}">Enter Comments for This Course</a></span>
+        <div id="topTools">
+            <span id="comments"><a href="/benchmark_grade/gradebook/export/{{ course.id }}" target="_blank">Export</a></span>
+            <span id="comments"><a href="/benchmark_grade/comments/{{ course.id }}" target="_blank">Enter Comments</a></span>
+        </div>
     </div><!-- topbar -->
     {% if teacher_courses %} 
         <div class="courseSelect">

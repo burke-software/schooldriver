@@ -24,6 +24,7 @@ urlpatterns = patterns('',
     (r'^gradebook/(?P<course_id>\d+)/ajax_get_item_tooltip/(?P<item_id>\d+)/$', views.ajax_get_item_tooltip),
     ('student_incomplete_courses', 'ecwsp.benchmark_grade.report.student_incomplete_courses'),
     ('student_zero_dp_standards', 'ecwsp.benchmark_grade.report.student_zero_dp_standards'),
+    (r'^gradebook/export/(?P<course_id>\d+)/$', 'ecwsp.benchmark_grade.report.gradebook_export'),
 )
 
 urlpatterns += staticfiles_urlpatterns()

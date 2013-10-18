@@ -20,10 +20,12 @@ body {
     letter-spacing: -5px;
 }
 
-#comments {
+#topTools {
     position: absolute;
-    bottom: 0;
+    bottom: 2px; /* seems fragile and arbitrary */
     right: 0;
+}
+#comments {
     border: 1px solid black;
     border-bottom: none;
     padding: 5px 10px 5px;

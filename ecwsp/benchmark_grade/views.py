@@ -78,7 +78,7 @@ def get_teacher_courses(username):
 
 
 @staff_member_required
-def gradebook(request, course_id):
+def gradebook(request, course_id, for_export=False):
     course = get_object_or_404(Course, pk=course_id)
     school_year = course.marking_period.all()[0].school_year
     calculation_rule = benchmark_find_calculation_rule(school_year)
@@ -252,7 +252,7 @@ def gradebook(request, course_id):
         for substitution in substitutions:
             category_flag_criteria[category.pk].append(substitution.operator + ' ' + str(substitution.match_value))
 
-    return render_to_response('benchmark_grade/gradebook.html', {
+    data_dictionary = {
         'items': items,
         'item_pks': ','.join(map(str,items.values_list('pk', flat=True))),
         'pending_aggregate_pks': json.dumps(map(str, pending_aggregate_pks)),
@@ -263,7 +263,12 @@ def gradebook(request, course_id):
         'filter_form': filter_form,
         'category_flag_criteria': category_flag_criteria,
         'extra_info': extra_info,
-    }, RequestContext(request, {}),)
+    }
+    if for_export:
+        return data_dictionary
+    else:
+        return render_to_response('benchmark_grade/gradebook.html', data_dictionary,
+            RequestContext(request, {}),)
 
 @staff_member_required
 @transaction.commit_on_success

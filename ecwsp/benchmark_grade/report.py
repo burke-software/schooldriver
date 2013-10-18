@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.core.servers.basehttp import FileWrapper
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Q
+from django.utils.text import slugify
 
 from ecwsp.sis.models import *
 from ecwsp.sis.uno_report import uno_save
@@ -12,6 +13,7 @@ from ecwsp.schedule.calendar import *
 from ecwsp.sis.report import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule, gradebook_get_average
+from ecwsp.benchmark_grade.views import gradebook
 
 import tempfile
 import os
@@ -291,3 +293,65 @@ def count_items_by_category_across_courses(year_category_names, current_marking_
     report = XlReport()
     report.add_sheet(data, header_row=titles, heading="Sheet1", auto_width=True)
     return report.as_download()
+
+@staff_member_required
+def gradebook_export(request, course_id):
+    gradebook_data = gradebook(request, course_id, for_export=True)
+    if type(gradebook_data) is not dict:
+        # something we can't use, like a 404 or a redirect
+        return gradebook_data
+    
+    from ecwsp.sis.xl_report import XlReport
+    report = XlReport(file_name=slugify(gradebook_data['course'].fullname))
+    rows = []
+    item_attributes = (
+        'category',
+        'name',
+        'marking_period',
+        'assignment_type',
+        'benchmark',
+        'date',
+        'points_possible',
+        'description',
+    )
+    demonstration_attributes = (
+        'name',
+    )
+    # explain all the header rows in the first column
+    for attribute in item_attributes:
+        rows.append([Item._meta.get_field(attribute).verbose_name.title()])
+    for attribute in demonstration_attributes:
+        rows.append([u'Demonstration ' + Demonstration._meta.get_field(attribute).verbose_name.title()])
+    # then list all the students in the first column
+    for student in gradebook_data['students']:
+        rows.append([student])
+    # fill in the column headers, with column one per item/demonstration
+    for item in gradebook_data['items']:
+        if item.demonstration_set.count():
+            for dem in item.demonstration_set.all():
+                row_counter = 0
+                for attribute in item_attributes:
+                    rows[row_counter].append(getattr(item, attribute))
+                    row_counter += 1
+                for attribute in demonstration_attributes:
+                    rows[row_counter].append(getattr(dem, attribute))
+                    row_counter += 1
+        else:
+            row_counter = 0
+            for attribute in item_attributes:
+                rows[row_counter].append(getattr(item, attribute))
+                row_counter += 1
+            for attribute in demonstration_attributes:
+                rows[row_counter].append('---------')
+                row_counter += 1
+    # add one-off label to the bottom header row of the last column
+    rows[row_counter - 1].append('Course Average')
+    # actually write out the students' grades
+    for student in gradebook_data['students']:
+        for mark in student.marks:
+            rows[row_counter].append(mark.get_grade())
+        rows[row_counter].append(student.average)
+        row_counter += 1
+                    
+    report.add_sheet(rows, title=gradebook_data['course'].fullname)
+    return report.as_download()  
