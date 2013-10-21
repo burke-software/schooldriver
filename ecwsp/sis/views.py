@@ -215,6 +215,7 @@ def school_report_builder_view(request):
             form = StudentReportWriterForm(request.POST, request.FILES)
             if form.is_valid():
                 data = form.cleaned_data
+                begin_end_dates = form.get_dates()
                 if data['template']:
                     # use selected template
                     template = data['template']
@@ -233,15 +234,39 @@ def school_report_builder_view(request):
                 report = TemplateReport(request.user)
                 students=form.get_students(data)
                 cal = Calendar()
-                current_mp = MarkingPeriod.objects.filter(end_date__gte=date.today()).order_by('-start_date')
+
+                if data['marking_period']:
+                    marking_periods = data['marking_period'].order_by('start_date')
+                else:
+                    marking_periods = MarkingPeriod.objects.filter(start_date__gte=begin_end_dates[0],
+                        end_date__lte=begin_end_dates[1]).order_by('start_date')
+                    if not marking_periods.count():
+                        # range doesn't include a full MP; relax the end date
+                        marking_periods = MarkingPeriod.objects.filter(start_date__gte=begin_end_dates[0]).order_by('start_date')
+                if marking_periods:
+                    current_mp = marking_periods.order_by('-start_date')[0]
+                else:
+                    current_mp = None
+
                 schedule_days = data['schedule_days']
                 if not len(schedule_days):
                     schedule_days = None
-                if current_mp:
-                    for student in students:
-                        student.schedule_days, student.periods = cal.build_schedule(student, current_mp[0],
+
+                for student in students:
+                    if current_mp:
+                        student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
                             schedule_days=schedule_days)
+                    student.discipline_records = student.studentdiscipline_set.filter(date__gte=begin_end_dates[0],
+                        date__lte=begin_end_dates[1])
+                    # TODO: put some method in TemplateReport to format dates nicely
+                    # also would be nice to have a formatted list maker to replace '; '.join() values_list() nastiness in the template
+                    for d in student.discipline_records:
+                        d.date = d.date.strftime('%b %d, %Y')
+
                 report.data['students'] = students
+                report.data['marking_periods'] = marking_periods 
+                report.data['begin_date'] = begin_end_dates[0].strftime('%b %d, %Y') # also gross
+                report.data['end_date'] = begin_end_dates[1].strftime('%b %d, %Y')
                 return report.pod_save(template)
             else:
                 return render_to_response('sis/reportBuilder.html', {'request':request, 'form':form})
