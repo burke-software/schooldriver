@@ -1,5 +1,6 @@
 {% extends "admin/index.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block content %}
     {{ msg }}
@@ -11,7 +12,7 @@
 
     <form action="/work_study/import/survey/" method="post" enctype="multipart/form-data">
         <h3>Import Survey</h3>
-        See <a href="/static/sample_survey.csv"> sample data </a> first. Do not rearrange it, student id's should always be the first column and questions belong in the header
+        See <a href="{% static "sample_survey.csv" %}"> sample data </a> first. Do not rearrange it, student id's should always be the first column and questions belong in the header
         {{ form_survey.as_p }}
 		<input type="submit" name="import_survey" value="Import Survey"/>
 	</form>

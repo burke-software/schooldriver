@@ -1,10 +1,6 @@
 {% extends "base.html" %}
-{% load admin_static %}{% load url from future %}{% load i18n grp_tags %}
 
-
-{% block head %}
-<script type="text/javascript" src="/static/js/jquery.js"></script>
-<script type="text/javascript" src="/static/js/jquery-ui.js"></script>
+{% block extrahead %}
 <script>
 	$(function() {
 		$(".vDateField").datepicker();
@@ -13,7 +9,6 @@
 		});
 	});
 </script>
-<link rel="stylesheet" href="/static/css/smoothness/jquery-ui.css" type="text/css" />
 {% endblock %}
 
 {% block content %}        

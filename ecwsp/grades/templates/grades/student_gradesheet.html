@@ -1,13 +1,14 @@
 {% extends "admin/base_site.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block extrahead %}
     <script type='text/javascript' >
         // Make sure this comes before loading other js!
         var letter_grade_required_for_pass = {{ letter_grade_required_for_pass }}; 
     </script>
-    <link rel="stylesheet" type="text/css" href="/static/css/gradesheet.css" />
-    <script type="text/javascript" src="/static/js/gradesheet.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static "css/gradesheet.css" %}" />
+    <script type="text/javascript" src="{% static "js/gradesheet.js" %}"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             $('.comment').hide();
@@ -87,7 +88,7 @@
                                 onkeydown="return keyboard_nav(event)"
 			     />
                             {% if course.final_override %}
-                                <img onclick="remove_grade(event,'id_coursefinalform_{{ course.id }}')" class="cancel" src="/static/images/cancel.png"/>
+                                <img onclick="remove_grade(event,'id_coursefinalform_{{ course.id }}')" class="cancel" src="{% static "images/cancel.png" %}"/>
                             {% endif %}
 			</td>
 		    </tr>

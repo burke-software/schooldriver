@@ -13,10 +13,11 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script type="text/javascript" src="/static/js/jquery.blockUI.js"></script>
-  <script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
-  <script type="text/javascript" src="/static/ckeditor/ckeditor/config.js"></script>
-  <script type="text/javascript" src="/static/omr/omr_questions.js"></script>
+  {% load static %}
+  <script type="text/javascript" src="{% static "blockui/jquery.blockUI.js" %}"></script>
+  <script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
+  <script type="text/javascript" src="{% static "ckeditor/ckeditor/config.js" %}"></script>
+  <script type="text/javascript" src="{% static "omr/omr_questions.js" %}"></script>
 {% endblock %}
 
 {% block stylesheets %}

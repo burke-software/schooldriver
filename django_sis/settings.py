@@ -144,6 +144,8 @@ BOWER_INSTALLED_APPS = (
     'jquery-ui',
     'gumby',
     'jquery-migrate',
+    'blockui',
+    'jquery-color',
 )
 
 #GRAPPELLI

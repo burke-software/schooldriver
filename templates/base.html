@@ -1,11 +1,12 @@
 {% extends "sis_base.html" %}
 {% load sis_extras %}
+{% load static %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css" media="screen" />
   <!--[if lt IE 8]>
-    <link rel="stylesheet" type="text/css" href="/static/css/styleie6.css" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/styleie6.css" %}" />
   <![endif]-->
   <style>
     .masthead { width: 550px; height: 70px; background: url('{{ header_image }}') no-repeat left; float: left; background-size:contain; }

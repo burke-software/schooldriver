@@ -1,7 +1,8 @@
 {% extends "responsive_dashboard/dashlet.html" %}
+{% load static %}
 
 {% block dashlet_body %}
-<script src="/static/dajaxice/dajaxice.core.js" type="text/javascript" charset="utf-8"></script>
+<script src="{% static "dajaxice/dajaxice.core.js" %}" type="text/javascript" charset="utf-8"></script>
 <ul>
     <li>
         <div class="medium primary btn"><a href="{% url "ecwsp.work_study.views.take_attendance" %}">Take Today's Attendance</a></div>

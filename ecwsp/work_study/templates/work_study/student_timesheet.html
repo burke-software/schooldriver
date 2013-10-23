@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block extrahead %}    
-    <script type="text/javascript" src="/static/js/jquery.ptTimeSelect.js"></script>    
-    <script type="text/javascript" src="/static/js/date.js"></script>
+    <script type="text/javascript" src="{% static "js/jquery.ptTimeSelect.js" %}"></script>    
+    <script type="text/javascript" src="{% static "js/date.js" %}"></script>
 
-    <link rel="stylesheet" type="text/css" href="/static/css/ui.core.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="/static/css/jquery.ptTimeSelect.css">
+    <link rel="stylesheet" type="text/css" href="{% static "css/ui.core.css" %}" media="screen">
+    <link rel="stylesheet" type="text/css" href="{% static "css/jquery.ptTimeSelect.css" %}">
     
     <script type="text/javascript">
     // Wow dates in javascript are soooooo bad
