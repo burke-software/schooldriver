@@ -30,6 +30,7 @@ urlpatterns = patterns('',
     (r'^ajax_filtered_fields/', include('ajax_filtered_fields.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
     (r'^slide_report/', include('slide_report.urls')),
+    url(r"^su/", include("django_su.urls")),
 )
 
 if settings.GAPPS:

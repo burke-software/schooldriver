@@ -192,6 +192,7 @@ if GAPPS:
     GAPPS_ALWAY_ADD_GROUPS = False
     AUTHENTICATION_BACKENDS += ('ecwsp.google_auth.backends.GoogleAppsBackend',)
 
+AUTHENTICATION_BACKENDS += ('django_su.backends.SuBackend',)
 
 #Django AJAX selects
 AJAX_LOOKUP_CHANNELS = {
@@ -445,6 +446,7 @@ INSTALLED_APPS += (
     'floppyforms',
     'djangobower',
     'slide_report',
+    'django_su',
 )
 
 if 'test' in sys.argv:
