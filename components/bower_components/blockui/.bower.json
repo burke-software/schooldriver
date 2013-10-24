@@ -1,0 +1,14 @@
+{
+  "name": "blockui",
+  "homepage": "https://github.com/malsup/blockui",
+  "_release": "35c4a7acf5",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "35c4a7acf5eff9ddfc631f488741b77d23fff041"
+  },
+  "_source": "git://github.com/malsup/blockui.git",
+  "_target": "*",
+  "_originalSource": "blockui",
+  "_direct": true
+}

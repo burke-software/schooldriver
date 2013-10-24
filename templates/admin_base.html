@@ -1,6 +1,7 @@
 {% extends "sis_base.html" %}
 {% load i18n %}
 {% load sis_extras %}
+{% load static %}
 
 {% block javascripts %}
 {{ block.super }}
@@ -8,7 +9,7 @@
 
 {% block stylesheets %}
 {{ block.super }}
-<link rel="stylesheet" type="text/css" href="/static/css/grappelli_lite.css"/> 
+<link rel="stylesheet" type="text/css" href="{% static "css/grappelli_lite.css" %}"/> 
 {% endblock %}
 
 {% block nav %}
@@ -29,13 +30,13 @@
             <li>
               <a href="javascript:void(0)" onclick="customize_dashboard(this);">
                 CUSTOMIZE
-                <img class="nav_icon" src="/static/responsive_dashboard/img/gear.svg"/>
+                <img class="nav_icon" src="{% static "responsive_dashboard/img/gear.svg" %}"/>
               </a>
             </li>
             <li>
               <a href="{% url 'admin:index' %}">
                 VIEW SITE ADMIN
-                <img class="nav_icon" src="/static/images/adminview.svg"/>
+                <img class="nav_icon" src="{% static "images/adminview.svg" %}"/>
               </a>
             </li>
             <li>

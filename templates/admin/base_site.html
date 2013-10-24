@@ -8,9 +8,9 @@
 {% block extrastyle %}
 {{ block.super }}
 <script type="text/javascript" src='{% static 'jquery/jquery.js' %}'></script>
-<script type="text/javascript" src="/static/js/ajax_select.js "></script>
+<script type="text/javascript" src="{% static "js/ajax_select.js " %}"></script>
 <script type="text/javascript" src="{% static 'jquery-ui/ui/minified/jquery-ui.min.js' %}"></script>
-<script type="text/javascript" src="/static/js/admin_django_sis.js"></script>
+<script type="text/javascript" src="{% static "js/admin_django_sis.js" %}"></script>
 
 {% if google_analytics_code %}
 <script type="text/javascript">
@@ -27,7 +27,7 @@
 </script>
 {% endif %}
 
-<link rel="stylesheet" href="/static/css/print.css" type="text/css" media="print" />
+<link rel="stylesheet" href="{% static "css/print.css" %}" type="text/css" media="print" />
 
 <style type="text/css">
     td, th {
@@ -98,10 +98,10 @@
 <div id="noie" style="font-size: 400%; line-height: 60px; height: 340px">
     Warning Internet Explorer is NOT supported. Please download a different browser.
     <br/>
-    <a href="http://www.mozilla.org/en-US/firefox"><img src="/static/ie/browser_firefox.gif"/></a>
-    <a href="http://www.google.com/chrome"><img src="/static/ie/browser_chrome.gif"/></a>
-    <a href="http://www.opera.com"><img src="/static/ie/browser_opera.gif"/></a>
-    <a href="http://www.apple.com/safari"><img src="/static/ie/browser_safari.gif"/></a>
+    <a href="http://www.mozilla.org/en-US/firefox"><img src="{% static "ie/browser_firefox.gif" %}"/></a>
+    <a href="http://www.google.com/chrome"><img src="{% static "ie/browser_chrome.gif" %}"/></a>
+    <a href="http://www.opera.com"><img src="{% static "ie/browser_opera.gif" %}"/></a>
+    <a href="http://www.apple.com/safari"><img src="{% static "ie/browser_safari.gif" %}"/></a>
 </div>
 <![endif]-->
 {% endblock %}

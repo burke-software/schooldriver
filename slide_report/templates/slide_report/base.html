@@ -1,0 +1,7 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script src="{% static 'slide_report/slide_report.js' %}"></script>  
+{% endblock %}

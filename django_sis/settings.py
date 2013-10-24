@@ -144,6 +144,8 @@ BOWER_INSTALLED_APPS = (
     'jquery-ui',
     'gumby',
     'jquery-migrate',
+    'blockui',
+    'jquery-color',
 )
 
 #GRAPPELLI
@@ -190,6 +192,7 @@ if GAPPS:
     GAPPS_ALWAY_ADD_GROUPS = False
     AUTHENTICATION_BACKENDS += ('ecwsp.google_auth.backends.GoogleAppsBackend',)
 
+AUTHENTICATION_BACKENDS += ('django_su.backends.SuBackend',)
 
 #Django AJAX selects
 AJAX_LOOKUP_CHANNELS = {
@@ -442,6 +445,8 @@ INSTALLED_APPS += (
     'simple_import',
     'floppyforms',
     'djangobower',
+    'slide_report',
+    'django_su',
 )
 
 if 'test' in sys.argv:

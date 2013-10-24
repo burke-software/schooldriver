@@ -113,6 +113,7 @@ class StudentCourseInline(admin.TabularInline):
 admin.site.register(GradeLevel)
         
 
+
 class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
     def changelist_view(self, request, extra_context=None):
         """override to hide inactive students by default"""

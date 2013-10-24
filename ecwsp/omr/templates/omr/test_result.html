@@ -1,5 +1,6 @@
 {% extends "admin_base.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block breadcrumbs %}
     <div id="breadcrumbs">
@@ -12,20 +13,20 @@
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="/static/js/jqplot/jquery.jqplot.min.css" /> 
+  <link rel="stylesheet" type="text/css" href="{% static "js/jqplot/jquery.jqplot.min.css" %}" /> 
 {% endblock %}
 
 {% block javascripts %}
   {{ block.super }}
   <script type="text/javascript" src="/admin/jsi18n/"></script>
-  <script type="text/javascript" src="/static/js/jqplot/jquery.jqplot.min.js"></script> 
-  <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
-  <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
-  <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.highlighter.min.js"></script>
-  <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.cursor.min.js"></script>
-  <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-  <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.pointLabels.min.js"></script>
-  <script type="text/javascript" src="/static/js/jqplot/plugins/jqplot.trendline.min.js"></script>
+  <script type="text/javascript" src="{% static "js/jqplot/jquery.jqplot.min.js" %}"></script> 
+  <script type="text/javascript" src="{% static "js/jqplot/plugins/jqplot.canvasTextRenderer.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/jqplot/plugins/jqplot.highlighter.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/jqplot/plugins/jqplot.cursor.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/jqplot/plugins/jqplot.pointLabels.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/jqplot/plugins/jqplot.trendline.min.js" %}"></script>
   <script type="text/javascript">
     $(document).ready(function() {
       var line1 = [
@@ -76,25 +77,25 @@
   <ul class="four_up tiles">
     <li class="icon"> 
       <a href="download_xls">
-	<img src="/static/omr/download_spread.jpg"/><br/>
+	<img src="{% static "omr/download_spread.jpg" %}"/><br/>
 	Results (spreadsheet)
       </a>
     </li>
     <li class="icon">
 	<a href="download_student_results">
-	  <img src="/static/omr/download_answer.jpg"/><br/>
+	  <img src="{% static "omr/download_answer.jpg" %}"/><br/>
 	  Student results (document)
 	</a>
     </li>
     <li class="icon">
 	<a href="download_teacher_results">
-	  <img src="/static/omr/download_answer.jpg"/><br/>
+	  <img src="{% static "omr/download_answer.jpg" %}"/><br/>
 	  Teacher results (document)
 	</a>
     </li>
     <li class="icon">
       <a href="download_answer_sheets">
-	<img src="/static/omr/download_bubble.jpg"/><br/>
+	<img src="{% static "omr/download_bubble.jpg" %}"/><br/>
 	Answer (bubble) Sheets
       </a>
     </li>

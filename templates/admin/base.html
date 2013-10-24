@@ -1,4 +1,5 @@
 {% load admin_static %}{% load url from future %}{% load i18n grp_tags %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
 <head>
@@ -62,10 +63,9 @@
     <!-- EXTRAHEAD -->
     
     {% include "gumby/head_lite.html" %}
-    <link rel="stylesheet" type="text/css" href="/static/ajax_select/css/ajax_select.css"/> 
-    <link rel="stylesheet" type="text/css" href="/static/css/ui.core.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/cupertino/jquery-ui-1.10.3.custom.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/global.css"/>
+    <link rel="stylesheet" type="text/css" href="{% static "css/ui.core.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "css/cupertino/jquery-ui-1.10.3.custom.min.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "css/global.css" %}"/>
     
     {% block extrahead %}{% endblock %}
 </head>
@@ -100,6 +100,7 @@
                         <header style="display:none"><h1>Page Tools</h1></header>
                         {% block page-tools %}{% endblock %}
                     </nav>
+
                 </div>
             {% endif %}
         </header>

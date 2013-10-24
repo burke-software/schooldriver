@@ -3,29 +3,15 @@
 
 {% block extrahead %}
     {{ block.super }}
-    <script type="text/javascript" src="/static/js/gradebook/sh_main.min.js"></script>
-    <script type="text/javascript" src="/static/js/gradebook/sh_javascript.js"></script>
-    <script type="text/javascript" src="/static/js/gradebook/fixedtable.js"></script>
-    <script type="text/javascript" src="/static/js/gradebook/gradebook.js?"></script>
-    <script type="text/javascript" src="/static/js/init_admin_datepicker.js"></script>
-
-
-
-    
-    <link rel="stylesheet" href="/static/js/jquery-tooltip/jquery.tooltip.css">
-    <script type="text/javascript" src="/static/js/jquery-tooltip/lib/jquery.bgiframe.js"></script>
-    <script type="text/javascript" src="/static/js/jquery-tooltip/lib/jquery.dimensions.js.BAD"></script>
-
-
-
-    <script type="text/javascript" src="/static/js/jquery-tooltip/jquery.tooltip.min.js"></script>
-
-    <script type="text/javascript" src="/static/js/jquery.color.plus-names-2.1.1.min.js"></script>
-
-    <link rel="stylesheet" href="/static/css/gradebook/style.css" type="text/css" media="screen">
-
     {% load staticfiles %}
     <script type="text/javascript" src="{% static "dajax/jquery.dajax.core.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/gradebook/fixedtable.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/gradebook/gradebook.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/jquery-tooltip/lib/jquery.bgiframe.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/jquery-tooltip/jquery.tooltip.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "jquery-color/jquery.color.svg-names.js" %}"></script> 
+    <link rel="stylesheet" href="{% static "css/gradebook/style.css" %}" type="text/css" media="screen">
+    <link rel="stylesheet" href="{% static "js/jquery-tooltip/jquery.tooltip.css" %}">
     
     <script>
         var item_pk_list = "{{ item_pks }}";
@@ -63,7 +49,12 @@
   <div style="padding: 0px 20px 0px;">
     <div class="topbar">
         <span class="logo">{{ course.shortname }} Gradebook</span>
-        <span id="comments"><a href="/benchmark_grade/comments/{{ course.id }}">Enter Comments for This Course</a></span>
+        <div id="topTools">
+            <!--
+            <span id="comments"><a href="/benchmark_grade/gradebook/export/{{ course.id }}" target="_blank">Export</a></span>
+            -->
+            <span id="comments"><a href="/benchmark_grade/comments/{{ course.id }}" target="_blank">Enter Comments</a></span>
+        </div>
     </div><!-- topbar -->
     {% if teacher_courses %} 
         <div class="courseSelect">

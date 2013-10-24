@@ -1,9 +1,10 @@
 {% load i18n %}
+{% load static %}
 <div class="row">
   <a class="toggle" gumby-trigger="#nav1 > .colgrid > .row > ul" href="#"><i class="icon-menu"></i></a>
   <div class="two columns logo">
     <a href="/">
-      <img style="height: 48px; padding-top:10px;" src="/static/images/logo.svg" />
+      <img style="height: 48px; padding-top:10px;" src="{% static "images/logo.svg" %}" />
     </a>
   </div>
   <ul class="fourteen columns" style="float: right;">
