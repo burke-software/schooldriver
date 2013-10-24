@@ -185,7 +185,7 @@ def aggregate_grade_report(request):
         report.add_sheet(data, header_row=titles, title="Class Dept aggregate")
         return report.as_download()
         
-
+#TODO Refactor this
 def date_based_gpa_report(request):
     input = request.POST.copy()
     input['template'] = 1 # Validation hack
@@ -248,7 +248,10 @@ def date_based_gpa_report(request):
             
             for year in years:
                 #cumulative gpa per year. Adds one day because it was acting weird and not giving me GPA for first year
-                gpa[count] = student.calculate_gpa(year.end_date + timedelta(days=1))
+                try:
+                    gpa[count] = student.calculate_gpa(year.end_date + timedelta(days=1))
+                except IndexError:
+                    logging.warning('GPA report failure. This function is marked to be redone.')
                 count +=1
             #if calculate_gpa does not return a value, it is set to "N/A"
             if not gpa[0]:
