@@ -1,8 +1,6 @@
 var flagged_color;
 
 $(document).ready(function() {
-    sh_highlightDocument();
-
     $(".tableDiv").each(function() {
         var Id = $(this).get(0).id;
         

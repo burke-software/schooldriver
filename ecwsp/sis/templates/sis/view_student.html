@@ -1,10 +1,11 @@
 {% extends "admin_base.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block extrahead %}
-    <link rel="stylesheet" type= "text/css" href="/static/css/view_student_style.css" />
+    <link rel="stylesheet" type= "text/css" href="{% static "css/view_student_style.css" %}" />
 		
-    <script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
+    <script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
     <script type='text/javascript'>
         {% if student.alumni %}
             var alumni_id = {{ student.alumni.id|default_if_none:"" }}
@@ -31,7 +32,7 @@
             }
         {% endif %}
     </script>
-    <script type="text/javascript" src="/static/js/view_student.js"></script>
+    <script type="text/javascript" src="{% static "js/view_student.js" %}"></script>
 
 {% endblock %}
 

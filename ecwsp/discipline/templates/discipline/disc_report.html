@@ -1,9 +1,10 @@
 {% extends "admin/base_site.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block extrahead %}
     <script type="text/javascript" src="/admin/jsi18n/"></script>
-    <script type="text/javascript" src="/static/js/time_actions.js"></script>
+    <script type="text/javascript" src="{% static "js/time_actions.js" %}"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             grappelli.initDateAndTimePicker();
