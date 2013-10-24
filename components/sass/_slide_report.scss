@@ -1,0 +1,27 @@
+#slide{
+  .active_filters {
+    background-color: #eee;
+    width: 66%;
+    padding: 5px;
+    float: left;
+  }
+  .select_filters {
+    background-color: #eee;
+    width: 33%;
+    padding: 5px;
+    float: right;
+  }
+
+  li {
+    border: 1px solid #bebdbd;
+    border-radius: 2px;
+    padding: 5px;
+    margin: 5px;
+  }
+  
+  .ui-state-highlight {
+    min-height: 2em;
+    padding: 5px;
+    margin: 5px;
+  }
+}

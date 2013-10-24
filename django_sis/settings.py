@@ -442,6 +442,7 @@ INSTALLED_APPS += (
     'simple_import',
     'floppyforms',
     'djangobower',
+    'slide_report',
 )
 
 if 'test' in sys.argv:
