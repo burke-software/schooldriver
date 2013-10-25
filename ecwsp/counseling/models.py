@@ -51,7 +51,10 @@ class StudentMeeting(models.Model):
         students = ''
         for student in self.students.all():
             students += u'{}, '.format(student)
-        return u'%s meeting with %s' % (unicode(self.reported_by),students[:-2])
+        # DRY stands for DO repeat yourself, right?
+        nice_user = u', '.join((self.reported_by.last_name, self.reported_by.first_name))
+        if not len(nice_user): nice_user = self.reported_by.username
+        return u'%s meeting with %s' % (nice_user,students[:-2])
     def display_students(self):
         txt = ''
         for student in self.students.all():

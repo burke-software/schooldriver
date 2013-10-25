@@ -3,7 +3,7 @@
 
 {% block extrahead %}
     {{ block.super }}
-    {% load staticfiles %}
+    {% load static from staticfiles %}
     <script type="text/javascript" src="{% static "dajax/jquery.dajax.core.js" %}"></script>
     <style>
     #attention-getter {

@@ -354,4 +354,7 @@ def gradebook_export(request, course_id):
         row_counter += 1
                     
     report.add_sheet(rows, title=gradebook_data['course'].fullname)
+    sheet = report.workbook.get_active_sheet()
+    for row_number in range(0, len(item_attributes) + len(demonstration_attributes)):
+        sheet.cell(row=row_number, column=0).style.font.bold = True
     return report.as_download()  
