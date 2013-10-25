@@ -21,6 +21,7 @@ from django.db.models import F, Sum
 from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
+from ecwsp.sis.models import Cohort
 from ecwsp.administration.models import Template
 from ecwsp.omr.models import AnswerInstance
 from ecwsp.benchmarks.models import Benchmark
@@ -138,24 +139,39 @@ class ReportManager(object):
         
         return report.as_download()
         
-    def download_teacher_results(self, test, format, template):
+    def download_teacher_results(self, test, format, template, cohorts=None):
         """ Make appy based report showing results for a whole class """
+        if not cohorts:
+            cohorts = Cohort.objects.all()
+        
+        # Stupid fucking hack
+        subquery = test.testinstance_set.filter(student__cohort__in=cohorts)
+
         report = TemplateReport()
         report.file_format = format
-        test_instances = test.testinstance_set.annotate(Sum('answerinstance__points_earned'))
+        test_instances = test.testinstance_set.filter(pk__in=subquery).annotate(Sum('answerinstance__points_earned'))
         test.benchmarks = Benchmark.objects.filter(question__test=test).distinct()
         
         points_possible = test.points_possible
         points_to_earn = 0.70 * test.points_possible
-        number_above_70 = test_instances.filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
-        total_test_takers = test.testinstance_set.filter(answerinstance__points_earned__gt=0).distinct().count()
+        number_above_70 = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
+        total_test_takers = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__gt=0).distinct().count()
         test.percent_over_70 = float(number_above_70) / total_test_takers
+        test.report_average = test.get_average(cohorts=cohorts)
 
         for benchmark in test.benchmarks:
-            question_benchmarks = test.question_set.filter(benchmarks=benchmark)
+            qb_subquery = test.question_set.filter(answerinstance__test_instance__student__cohort__in=cohorts)
+            question_benchmarks = test.question_set.filter(pk__in=qb_subquery).filter(benchmarks=benchmark).distinct()
             benchmark.points_possible = question_benchmarks.aggregate(Sum('point_value'))['point_value__sum']
             benchmark.total_points_possible = benchmark.points_possible * test_instances.count()
-            benchmark.total_points_earned = question_benchmarks.aggregate(Sum('answerinstance__points_earned'))['answerinstance__points_earned__sum']
+            # Really think this should work...but nope.
+            #benchmark.total_points_earned = question_benchmarks.aggregate(Sum('answerinstance__points_earned'))['answerinstance__points_earned__sum']
+            earned_sum = 0
+            for question_benchmark in question_benchmarks:
+                for answer in question_benchmark.answerinstance_set.filter(test_instance__student__cohort__in=cohorts).distinct():
+                    earned_sum += answer.points_earned
+            benchmark.total_points_earned = earned_sum
+
             benchmark.average = float(benchmark.total_points_earned) / benchmark.total_points_possible 
            
             # Percent students over 70%
@@ -181,8 +197,8 @@ class ReportManager(object):
             for benchmark in question.benchmarks.all():
                 question.benchmark_text += '{}, '.format(benchmark.number)
             question.benchmark_text = question.benchmark_text[:-2]
-            question.num_correct = question.answerinstance_set.filter(points_earned__gte=F('points_possible')).count()
-            question.num_total = question.answerinstance_set.count()
+            question.num_correct = question.answerinstance_set.filter(test_instance__student__cohort__in=cohorts).filter(points_earned__gte=F('points_possible')).count()
+            question.num_total = question.answerinstance_set.filter(test_instance__student__cohort__in=cohorts).count()
             question.percent_correct = float(question.num_correct) / question.num_total
 
             

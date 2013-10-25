@@ -61,12 +61,20 @@ class Test(models.Model):
         for student in students:
             self.__enroll_student(student)
 
-    @property
-    def get_average(self):
+    def get_average(self, cohorts=None):
         """ Calculate the average. Pretty fast so no caching is needed """
-        total_test_earned = self.testinstance_set.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']
-        total_tests_taken = self.testinstance_set.annotate(earned=Sum('answerinstance__points_earned')).filter(earned__gt=0).count()
-        points_possible = self.testinstance_set.all()[0].points_possible
+        test_instances = self.testinstance_set.all()
+        if not cohorts:
+            from ecwsp.sis.models import Cohort
+            cohorts = Cohorts.objects.all()
+
+        # http://stackoverflow.com/questions/4093910/django-aggregates-sums-in-postgresql-dont-use-distinct-is-this-a-bug/4917507#4917507
+        subquery = self.testinstance_set.filter(student__cohort__in=cohorts)
+        test_instances = test_instances.filter(pk__in=subquery)
+
+        total_test_earned = test_instances.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']
+        total_tests_taken = test_instances.annotate(earned=Sum('answerinstance__points_earned')).filter(earned__gt=0).distinct().count()
+        points_possible = test_instances.all()[0].points_possible
         return float(total_test_earned) / (total_tests_taken * points_possible)
     
     def get_percent_scoring_over(self, min_score=70):
