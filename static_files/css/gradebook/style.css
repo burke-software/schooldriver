@@ -22,12 +22,11 @@ body {
 
 #topTools {
     position: absolute;
-    bottom: 2px; /* seems fragile and arbitrary */
+    bottom: 1px; 
     right: 0;
 }
 #comments {
     border: 1px solid black;
-    border-bottom: none;
     padding: 5px 10px 5px;
     background: #f3f3f3;
     font: 400 14px Helvetica;

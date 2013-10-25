@@ -1,6 +1,6 @@
 {% extends "admin_base.html" %}
 {% load i18n %}
-{% load static %}
+{% load static from staticfiles %}
 
 {% block extrahead %}
     <link rel="stylesheet" type= "text/css" href="{% static "css/view_student_style.css" %}" />
@@ -365,7 +365,7 @@
                             {% if perms.counseling.change_studentmeeting %} <a class="edit_link" href="{% url "admin:counseling_studentmeeting_changelist" %}?students__id__exact={{ student.id }}"> Edit </a><br /> {% endif %}
 			<div class="section-div">
 			<ul>
-				{% for meeting in student.studentmeeting_set.all %}
+				{% for meeting in student.student_meeting_set.all %}
 				<li>
 					<p>
 					<h4>

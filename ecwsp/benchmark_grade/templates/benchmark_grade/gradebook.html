@@ -3,7 +3,7 @@
 
 {% block extrahead %}
     {{ block.super }}
-    {% load staticfiles %}
+    {% load static from staticfiles %}
     <script type="text/javascript" src="{% static "dajax/jquery.dajax.core.js" %}"></script>
     <script type="text/javascript" src="{% static "js/gradebook/fixedtable.js" %}"></script>
     <script type="text/javascript" src="{% static "js/gradebook/gradebook.js" %}"></script>
@@ -50,9 +50,7 @@
     <div class="topbar">
         <span class="logo">{{ course.shortname }} Gradebook</span>
         <div id="topTools">
-            <!--
             <span id="comments"><a href="/benchmark_grade/gradebook/export/{{ course.id }}" target="_blank">Export</a></span>
-            -->
             <span id="comments"><a href="/benchmark_grade/comments/{{ course.id }}" target="_blank">Enter Comments</a></span>
         </div>
     </div><!-- topbar -->
