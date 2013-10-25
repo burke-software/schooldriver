@@ -18,5 +18,5 @@ class StandardTestResultAdmin(admin.ModelAdmin):
     inlines = (StandardCategoryGradeInline,)
     list_display = ['student', 'test', 'date']
     list_filter = ['test', ('date', DateRangeFilter)]
-    search_fields = ['student__fname', 'student__lname', 'test__name']
+    search_fields = ['student__first_name', 'student__last_name', 'test__name']
 admin.site.register(StandardTestResult, StandardTestResultAdmin)

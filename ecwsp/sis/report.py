@@ -71,14 +71,10 @@ class GradeTemplateReport(TemplateReport):
             grades = course.grade_set.filter(student=student).filter(
                 marking_period__isnull=False,
                 marking_period__show_reports=True)
-            print "FDSHFH"
             i = 1
-            print grades
             for grade in grades:
                 # course.grade1, course.grade2, etc
                 setattr(course, "grade" + str(i), grade)
-                print grade.get_grade()
-                print grade.grade
                 i += 1
             while i <= 4:
                 setattr(course, "grade" + str(i), self.blank_grade)
