@@ -1,11 +1,11 @@
 from django import forms
 from django.forms.widgets import CheckboxSelectMultiple, TextInput
 from django.contrib.auth.models import User
-from django.contrib.localflavor.us.forms import *
-from django.contrib.localflavor.us.us_states import STATE_CHOICES
+from localflavor.us.forms import *
+from localflavor.us.us_states import STATE_CHOICES
 from django.core.validators import RegexValidator
 import re
-from django.contrib.localflavor.us import forms as us_forms
+from localflavor.us import forms as us_forms
 
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 

@@ -1,5 +1,4 @@
-from django.conf.urls.defaults import *
-#from django.views.generic import ListView
+from django.conf.urls import *
 from ecwsp.omr.views import *
 from ecwsp.omr.models import QuestionBank
 from ecwsp.benchmarks.models import Benchmark

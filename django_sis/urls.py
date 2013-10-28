@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from ecwsp.sis.views import *
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -27,7 +27,6 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls) ),
     
     (r'^ajax_select/', include('ajax_select.urls')),
-    (r'^ajax_filtered_fields/', include('ajax_filtered_fields.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
     (r'^slide_report/', include('slide_report.urls')),
     url(r"^su/", include("django_su.urls")),

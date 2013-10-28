@@ -25,7 +25,9 @@ here = lambda *x: join(abspath(dirname(__file__)), *x)
 PROJECT_ROOT = here("..",)
 root = lambda *x: join(abspath(PROJECT_ROOT), *x)
 
-TEMPLATE_DIRS = root('templates/')
+TEMPLATE_DIRS = (
+    root('templates/'),
+)
 STATICFILES_DIRS = (
     root('static_files/'),
     ('gumby_css', root('components/css/')),

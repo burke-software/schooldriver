@@ -1,4 +1,4 @@
-from django.contrib.localflavor.us.models import *
+from localflavor.us.models import *
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.validators import RegexValidator
