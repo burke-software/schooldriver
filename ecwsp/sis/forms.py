@@ -7,7 +7,6 @@ from django.conf import settings
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 from ajax_select import make_ajax_field
 from tempfile import mkstemp
-from ajax_filtered_fields.forms import ManyToManyByRelatedField
 
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
