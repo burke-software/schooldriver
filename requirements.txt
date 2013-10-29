@@ -1,5 +1,5 @@
 django>=1.5
-django-admin-export
+django-admin-export>=1.6
 django-ajax-selects>=1.2.4
 django-custom-field
 django-simple-import
