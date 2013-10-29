@@ -2,7 +2,7 @@ import floppyforms as forms
 import ecwsp.gumby_forms as forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.utils.safestring import mark_safe
-from django.contrib.localflavor.us.forms import *
+from localflavor.us.forms import *
 from django.conf import settings
 
 from ecwsp.schedule.models import *

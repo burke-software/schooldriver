@@ -18,7 +18,6 @@
 
 from django.db import models
 from django.db.models import Avg, Count, Max, Min, StdDev, Sum, Variance
-#from django.contrib.localflavor.us.models import *
 from django.conf import settings
 from decimal import Decimal, InvalidOperation
 from datetime import datetime

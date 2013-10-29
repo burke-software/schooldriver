@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from ecwsp.work_study import views
 
 urlpatterns = patterns('',

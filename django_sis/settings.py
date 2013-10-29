@@ -25,7 +25,9 @@ here = lambda *x: join(abspath(dirname(__file__)), *x)
 PROJECT_ROOT = here("..",)
 root = lambda *x: join(abspath(PROJECT_ROOT), *x)
 
-TEMPLATE_DIRS = root('templates/')
+TEMPLATE_DIRS = (
+    root('templates/'),
+)
 STATICFILES_DIRS = (
     root('static_files/'),
     ('gumby_css', root('components/css/')),
@@ -218,10 +220,9 @@ AJAX_LOOKUP_CHANNELS = {
     'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
     'course': {'model':'schedule.course', 'search_field':'fullname'},
     'day': ('ecwsp.schedule.lookups','DayLookup'),
-    'company'  : {'model':'work_study.workteam', 'search_field':'team_name'}
+    'company'  : {'model':'work_study.workteam', 'search_field':'team_name'},
+    'benchmark' : ('ecwsp.omr.lookups', 'BenchmarkLookup'),
 }
-if 'ecwsp.omr' in INSTALLED_APPS:
-    AJAX_LOOKUP_CHANNELS['benchmark'] = ('ecwsp.omr.lookups', 'BenchmarkLookup')
 
 #CKEDITOR
 CKEDITOR_MEDIA_PREFIX = "/static/ckeditor/"

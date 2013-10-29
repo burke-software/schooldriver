@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from ckeditor.fields import RichTextField
 from django.conf import settings
-from django.contrib.localflavor.us.models import *
+from localflavor.us.models import *
 
 from ecwsp.sis.models import SchoolYear, Student    
 

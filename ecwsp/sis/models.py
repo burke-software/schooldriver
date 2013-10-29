@@ -21,7 +21,7 @@ from django.db import models
 from django.db import connection
 from django.db.models.signals import post_save, m2m_changed
 from django.db.models import Count, Max
-from django.contrib.localflavor.us.models import USStateField, PhoneNumberField
+from localflavor.us.models import USStateField, PhoneNumberField
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 
