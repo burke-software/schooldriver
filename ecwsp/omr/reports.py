@@ -135,6 +135,7 @@ class ReportManager(object):
             row += [answer_data['points_possible__sum']]
             row += ['=C{0}/D{0}'.format(str(i))]
             data += [row]
+            i += 1
         report.add_sheet(data, title="Benchmarks for class", auto_width=True)
         
         return report.as_download()
@@ -181,9 +182,10 @@ class ReportManager(object):
                  answers_points = answers.aggregate(Sum('points_earned'), Sum('points_possible'))
                  instance_points_earned = answers_points['points_earned__sum']
                  instance_points_possible = answers_points['points_possible__sum']
-                 instance_average = float(instance_points_earned) / instance_points_possible
-                 if instance_average >= 0.70:
-                     test_instances_over_70 += 1
+                 if instance_points_earned and instance_points_possible:
+                     instance_average = float(instance_points_earned) / instance_points_possible
+                     if instance_average >= 0.70:
+                         test_instances_over_70 += 1
             benchmark.over_70 = float(test_instances_over_70) / test_instances.count()
 
             benchmark.assessed_on = ""

@@ -444,6 +444,7 @@ def ajax_finalize_test(request, test_id):
 @permission_required('omr.teacher_test')
 def test_result(request, test_id):
     test = get_object_or_404(Test, id=test_id)
+    cohort_form = CohortForm()
     
     for test_instance in test.testinstance_set.filter(results_received=False):
         if test_instance.answerinstance_set.all().count():
@@ -452,6 +453,7 @@ def test_result(request, test_id):
     
     return render_to_response('omr/test_result.html', {
         'test': test,
+        'cohort_form': cohort_form,
     }, RequestContext(request, {}),)
 
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
@@ -472,11 +474,16 @@ def download_student_results(request, test_id):
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
 def download_teacher_results(request, test_id):
     test = get_object_or_404(Test, id=test_id)
+    cohorts = None
+    if request.POST:
+        cohort_form = CohortForm(request.POST)
+        if cohort_form.is_valid():
+            cohorts = cohort_form.cleaned_data['cohorts']
     format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
     template = Template.objects.get_or_create(name="OMR Teacher Test Result")[0].get_template(request)
     if not template:
         return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
-    return report.download_teacher_results(test, format, template)
+    return report.download_teacher_results(test, format, template, cohorts=cohorts)
     
     
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))

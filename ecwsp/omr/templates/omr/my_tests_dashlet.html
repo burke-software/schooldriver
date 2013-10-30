@@ -11,13 +11,6 @@
           $("#student_queue_modal").html(data);
         }  
       );
-      
-      $("#student_queue_modal").overlay({
-          top: '3',
-          fixed: false
-      });
-      
-      $("#student_queue_modal").overlay().load();
     }
   </script>
   <div class="row">
@@ -46,7 +39,7 @@
             <td> {{ test.marking_period }} </td>
             <td><a href="{% url "ecwsp.omr.views.edit_test_questions" test.id %}"> {{ test.question_set.count }} </a></td>
             <td> {{ test.testinstance_set.count }} </td>
-            <td> <a href="javascript:;" onclick="show_queue({{ test.id }});">{{ test.students_in_queue }}</a> </td>
+            <td> {{ test.students_in_queue }} </td>
             <td>
               {% if test.finalized %}
                 <a href="../test_result/{{ test.id }}" > {{ test.students_test_results }} </a>

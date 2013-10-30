@@ -88,10 +88,10 @@
 	</a>
     </li>
     <li class="icon">
-	<a href="download_teacher_results">
-	  <img src="{% static "omr/download_answer.jpg" %}"/><br/>
-	  Teacher results (document)
-	</a>
+      <a href="#" class="switch" gumby-trigger="#teacher_results_modal"> 
+        <img src="{% static "omr/download_answer.jpg" %}"/><br/>
+        Teacher results (document)
+      </a>
     </li>
     <li class="icon">
       <a href="download_answer_sheets">
@@ -100,8 +100,25 @@
       </a>
     </li>
   </ul>
+
+
   <div class="row">
     <div id="chart1" style="height:500px; width:800px;"></div>
     Mouse over chart to see students
   </div>
+  <div class="modal" id="teacher_results_modal">
+    <div class="content">
+      <a class="close switch" gumby-trigger="|#teacher_results_modal"><i class="icon-cancel" /></i></a>
+      <div class="row">
+        <div class="ten columns centered text-center">
+          <h2> Select Cohorts (optional) <h2>
+            <form action="download_teacher_results/" method="post">
+              {{ cohort_form.as_p }}          
+              <div class="large primary btn"><input type="submit" value="Submit" /></div>
+            </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% endblock %}
