@@ -40,3 +40,8 @@ class QuestionBenchmarkForm(forms.ModelForm):
         fields = ['benchmarks',]
     benchmarks = AutoCompleteSelectMultipleField('benchmark', required=False)
         
+class CohortForm(forms.Form):
+    cohorts = forms.ModelMultipleChoiceField(
+        queryset=Cohort.objects.all(),
+        required=False,
+        widget=forms.widgets.SelectMultiple(attrs={'size':'12'}),)
