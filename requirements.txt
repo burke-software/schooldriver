@@ -10,6 +10,7 @@ django-mass-edit
 django-pagination>=1.0.7
 django-reversion>=1.6.3
 django-localflavor
+django-floppy-gumby
 requests>=0.13.3
 simplejson>=2.3.2
 httpagentparser>=1.0.2

@@ -1,4 +1,5 @@
 {% extends "admin_base.html" %}
+{% load floppyforms %}
 {% load i18n %}
 
 {% block breadcrumbs %}
@@ -8,40 +9,21 @@ Preferences
 
 {% block content %}
     <h2>User Preferences</h2>
+    
     <form action="" method="post">
-        {% for hidden in form.hidden_fields %}
-            {{ hidden }}
-        {% endfor %}
-        <table>
-            <tr>
-                <td> {{ form.prefered_file_format.label }} </td><td> {{ form.prefered_file_format }} {{ form.prefered_file_format.help_text }} {{ form.prefered_file_format.errors }}</td>
-            </tr>
-            <tr>
-                <td> {{ form.include_deleted_students.label }} </td><td> {{ form.include_deleted_students }} {{ form.include_deleted_students.help_text }} {{ form.include_deleted_students.errors }}</td>
-            </tr>
-            <tr>
-                <td> {{ form.additional_report_fields.label }} </td><td> {{ form.additional_report_fields }} {{ form.additional_report_fields.help_text }} {{ form.additional_report_fields.errors }}</td>
-            </tr>
-            <tr>
-                <td> {{ form.course_sort.label }} </td><td> {{ form.course_sort }} {{ form.course_sort.help_text }} {{ form.course_sort.errors }}</td>
-            </tr>
-            <tr>
-                <td> {{ form.gradebook_preference.label }}</td><td>{{ form.gradebook_preference }} {{ form.gradebook_preference.errors }}</td>
-            </tr>
-        </table>
+      {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+      {% endfor %}
+      {% form form using %}
+        {% formconfig row using "floppy_gumby_forms/rows/gumby.html" %}
+        {% formrow form.prefered_file_format %}
+        {% formrow form.include_deleted_students %}
+        {% formrow form.course_sort %}
+        {% formrow form.gradebook_preference %}
         {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
-            <h3> OMR </h3>
-            <table>
-                <tr>
-                    <td> {{ form.omr_default_point_value.label }} </td><td> {{ form.omr_default_point_value }} {{ form.omr_default_point_value.help_text }} {{ form.omr_default_point_value.errors }}</td>
-                </tr>
-                <tr>
-                    <td> {{ form.omr_default_save_question_to_bank.label }} </td><td> {{ form.omr_default_save_question_to_bank }} {{ form.omr_default_save_question_to_bank.help_text }} {{ form.omr_default_save_question_to_bank.errors }}</td>
-                </tr>
-                <tr>
-                    <td> {{ form.omr_default_number_answers.label }} </td><td> {{ form.omr_default_number_answers }} {{ form.omr_default_number_answers.help_text }} {{ form.omr_default_number_answers.errors }}</td>
-                </tr>
-            </table>
+          <h3> OMR </h3>
+          {% formrow form.omr_default_point_value %}
+          {% formrow form.omr_default_number_answers %}
         {% else %}
             <span style="visibility:hidden">
                 {{ form.omr_default_point_value }}
@@ -49,5 +31,6 @@ Preferences
             </span>
         {% endif %}
         <input type="submit"/>
+      {% endform %}
     </form>
 {% endblock %}

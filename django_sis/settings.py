@@ -447,10 +447,11 @@ INSTALLED_APPS += (
     'report_builder',
     'responsive_dashboard',
     'simple_import',
-    'floppyforms',
     'djangobower',
     'slide_report',
     'django_su',
+    'floppy_gumby_forms',
+    'floppyforms',
 )
 
 if 'test' in sys.argv:

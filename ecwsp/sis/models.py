@@ -83,7 +83,7 @@ class UserPreference(models.Model):
     file_format_choices = (
         ('o', 'Open Document Format (.odt, .ods)'),
         ('m', 'Microsoft Binary (.doc, .xls)'),
-        ('x', 'Microsoft Office Open XML (.docx, .xlsx) Not recommended, formatting may be lost!'),
+        ('x', 'Microsoft Office Open XML (.docx, .xlsx)'),
     )
     prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
     include_deleted_students = models.BooleanField(help_text="When searching for students, include deleted (previous) students.")

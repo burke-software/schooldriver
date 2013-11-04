@@ -84,6 +84,8 @@ if 'responsive_dashboard' in settings.INSTALLED_APPS:
     urlpatterns += url(r'^', include('responsive_dashboard.urls')),
 if 'sentry' in settings.INSTALLED_APPS:    
     urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)
+if 'social.apps.django_app.default' in settings.INSTALLED_APPS:    
+    urlpatterns += patterns('', url('', include('social.apps.django_app.urls', namespace='social')),)
 
 if settings.DEBUG:
     urlpatterns += patterns('',

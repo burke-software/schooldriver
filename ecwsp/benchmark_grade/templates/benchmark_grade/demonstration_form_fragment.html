@@ -8,7 +8,9 @@
     {% if form.name.value %}
         <a class="grp-button grp-delete-link" onclick="confirm_demonstration_delete({{ demonstration_id }});">Delete</a>
     {% endif %}
-    <input type="submit" value="Submit" />    
+    <div class="primary btn">
+      <input type="submit" value="Submit" />    
+    </div>
 </form>
 {% if lists %}
 <hr />
