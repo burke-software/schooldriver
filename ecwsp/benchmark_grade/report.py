@@ -317,11 +317,14 @@ def gradebook_export(request, course_id):
     demonstration_attributes = (
         'name',
     )
+    row_counter = 0
     # explain all the header rows in the first column
     for attribute in item_attributes:
         rows.append([Item._meta.get_field(attribute).verbose_name.title()])
+        row_counter += 1
     for attribute in demonstration_attributes:
         rows.append([u'Demonstration ' + Demonstration._meta.get_field(attribute).verbose_name.title()])
+        row_counter += 1
     # then list all the students in the first column
     for student in gradebook_data['students']:
         rows.append([student])
@@ -344,8 +347,15 @@ def gradebook_export(request, course_id):
             for attribute in demonstration_attributes:
                 rows[row_counter].append('---------')
                 row_counter += 1
+    # maybe attributes will be user-configurable in the future?
+    if not row_counter:
+        rows.append([])
+        row_counter = 1
     # add one-off label to the bottom header row of the last column
     rows[row_counter - 1].append('Course Average')
+    # save coordinates for formatting later
+    course_average_row = row_counter - 1
+    course_average_column = len(rows[row_counter - 1]) - 1
     # actually write out the students' grades
     for student in gradebook_data['students']:
         for mark in student.marks:
@@ -357,4 +367,5 @@ def gradebook_export(request, course_id):
     sheet = report.workbook.get_active_sheet()
     for row_number in range(0, len(item_attributes) + len(demonstration_attributes)):
         sheet.cell(row=row_number, column=0).style.font.bold = True
+    sheet.cell(row=course_average_row, column=course_average_column).style.font.bold = True
     return report.as_download()  
