@@ -1,5 +1,4 @@
 import floppyforms as forms
-import ecwsp.gumby_forms as forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.utils.safestring import mark_safe
 from localflavor.us.forms import *
