@@ -251,9 +251,12 @@ class Cohort(models.Model):
     long_name = models.CharField(max_length=500, blank=True, help_text="Optional verbose name")
     students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
     primary = models.BooleanField(blank=True, help_text="If set true - all students in this cohort will have it set as primary!")
+
+    class Meta:
+        ordering = ('name',)
     
     def __unicode__(self):
-        return unicode(self.name)
+        return self.name
     
 def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     if instance.primary:

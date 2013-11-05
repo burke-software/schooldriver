@@ -20,15 +20,11 @@ class TestForm(forms.ModelForm):
             'school_year': forms.Select,
             'department': forms.Select,
             'marking_period': forms.Select,
-            'course': forms.SelectMultiple,
-
+            'course': forms.SelectMultiple(attrs={'size': '10', 'style': 'height:100%;'}),
         }
+        
     teachers = AutoCompleteSelectMultipleField('faculty', required=True, help_text="")
-    students = forms.ModelMultipleChoiceField(
-        queryset = Student.objects.filter(is_active=True),
-        widget = forms.SelectMultiple(attrs={'class':'multiselect'}),
-        required = False
-        )
+    students = AutoCompleteSelectMultipleField('dstudent', required=False)
     quick_number_questions = forms.IntegerField(max_value=100, min_value=1, required=False,
                                                label="Number of Questions")
     quick_number_answers = forms.IntegerField(max_value=6, min_value=2, required=False,
@@ -37,6 +33,7 @@ class TestForm(forms.ModelForm):
     enroll_cohorts = forms.ModelMultipleChoiceField(
         queryset = Cohort.objects.all(),
         required = False,
+        widget = forms.SelectMultiple(attrs={'size': '10', 'style': 'height:100%;'})
     )
     
     def save(self, *args, **kwargs):
