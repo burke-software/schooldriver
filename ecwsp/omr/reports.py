@@ -146,7 +146,7 @@ class ReportManager(object):
             cohorts = Cohort.objects.all()
         
         # Stupid fucking hack
-        subquery = test.testinstance_set.filter(student__cohort__in=cohorts)
+        subquery = test.testinstance_set.filter(student__cohort__in=cohorts).distinct()
 
         report = TemplateReport()
         report.file_format = format
@@ -161,7 +161,7 @@ class ReportManager(object):
         test.report_average = test.get_average(cohorts=cohorts)
 
         for benchmark in test.benchmarks:
-            qb_subquery = test.question_set.filter(answerinstance__test_instance__student__cohort__in=cohorts)
+            qb_subquery = test.question_set.filter(answerinstance__test_instance__student__cohort__in=cohorts).distinct()
             question_benchmarks = test.question_set.filter(pk__in=qb_subquery).filter(benchmarks=benchmark).distinct()
             benchmark.points_possible = question_benchmarks.aggregate(Sum('point_value'))['point_value__sum']
             benchmark.total_points_possible = benchmark.points_possible * test_instances.count()
@@ -199,10 +199,21 @@ class ReportManager(object):
             for benchmark in question.benchmarks.all():
                 question.benchmark_text += '{}, '.format(benchmark.number)
             question.benchmark_text = question.benchmark_text[:-2]
-            question.num_correct = question.answerinstance_set.filter(test_instance__student__cohort__in=cohorts).filter(points_earned__gte=F('points_possible')).count()
-            question.num_total = question.answerinstance_set.filter(test_instance__student__cohort__in=cohorts).count()
+            # grab all the AnswerInstances that we care about for this question
+            answerinstances = question.answerinstance_set.filter(test_instance__student__cohort__in=cohorts).distinct()
+            # nasty! http://stackoverflow.com/questions/4093910/django-aggregates-sums-in-postgresql-dont-use-distinct-is-this-a-bug/4917507#4917507 
+            answerinstances = question.answerinstance_set.filter(pk__in=answerinstances)
+            # calculate the COUNT of correct student responses for this question
+            question.num_correct = answerinstances.filter(points_earned__gte=F('points_possible')).count()
+            # calculate the COUNT of all student responses for this question
+            question.num_total = answerinstances.count()
+            # http://www.merriam-webster.com/dictionary/percent: "cent" means 100, but I'll stick with the existing convention 
             question.percent_correct = float(question.num_correct) / question.num_total
-
+            # calculate the sum of all points earned and the sum of all points possible for this question
+            earned_possible = answerinstances.aggregate(Sum('points_earned'), Sum('points_possible'))
+            question.points_earned = earned_possible['points_earned__sum'] 
+            question.points_possible = earned_possible['points_possible__sum'] 
+            question.percent_points_earned = float(question.points_earned) / question.points_possible
             
         report.data['test'] = test
         report.data['tests'] = test_instances
