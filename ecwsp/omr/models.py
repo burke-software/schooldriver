@@ -11,7 +11,7 @@ from ckeditor.fields import RichTextField
 from django.conf import settings
 from localflavor.us.models import *
 
-from ecwsp.sis.models import SchoolYear, Student    
+from ecwsp.sis.models import SchoolYear, Student, Cohort
 
 from django.core.exceptions import ImproperlyConfigured
 from positions.fields import PositionField
@@ -65,7 +65,6 @@ class Test(models.Model):
         """ Calculate the average. Pretty fast so no caching is needed """
         test_instances = self.testinstance_set.all()
         if not cohorts:
-            from ecwsp.sis.models import Cohort
             cohorts = Cohorts.objects.all()
 
         # http://stackoverflow.com/questions/4093910/django-aggregates-sums-in-postgresql-dont-use-distinct-is-this-a-bug/4917507#4917507
