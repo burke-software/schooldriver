@@ -12,7 +12,7 @@ class StandardTest(models.Model):
     cherry_pick_categories = models.BooleanField(default=False, 
         help_text="Cherry pick results to generate total. Goes through each category and picks best score. Then calculates the total.",
     )
-    cherry_pick_final = models.BooleanField(default=False, "Cherry pick results to get total. Only use final scores.")
+    cherry_pick_final = models.BooleanField(default=False, help_text="Cherry pick results to get total. Only use final scores.")
     show_on_reports = models.BooleanField(default=True)
     
     def __unicode__(self):
