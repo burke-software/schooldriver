@@ -65,10 +65,10 @@ class Test(models.Model):
         """ Calculate the average. Pretty fast so no caching is needed """
         test_instances = self.testinstance_set.all()
         if not cohorts:
-            cohorts = Cohorts.objects.all()
+            cohorts = Cohort.objects.all()
 
         # http://stackoverflow.com/questions/4093910/django-aggregates-sums-in-postgresql-dont-use-distinct-is-this-a-bug/4917507#4917507
-        subquery = self.testinstance_set.filter(student__cohort__in=cohorts)
+        subquery = self.testinstance_set.filter(student__cohort__in=cohorts).distinct()
         test_instances = test_instances.filter(pk__in=subquery)
 
         total_test_earned = test_instances.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']

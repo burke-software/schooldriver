@@ -385,6 +385,15 @@ class Student(User, CustomFieldModel):
         ordering = ("last_name", "first_name")
 
     report_builder_exclude_fields = ('alert',)
+    report_builder_fieldsets = (
+        ('Names', {
+            'fields': ('first_name', 'last_name'),
+        }),
+        ('More', {
+            'fields': ('id', 'city'),
+            'classes': ('collapse',),
+        }),
+    )
 
     def __unicode__(self):
         return u"{0}, {1}".format(self.last_name, self.first_name)
