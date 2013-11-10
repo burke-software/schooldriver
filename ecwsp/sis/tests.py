@@ -26,9 +26,9 @@ class AttendanceTest(TestCase):
         self.mp3.save()
         self.teacher = Faculty(username="dburke", first_name="david", last_name="burke", teacher=True)
         self.teacher.save()
-        try:
+        if User.objects.filter(username="dburke").count() == 0:
             self.user = User.objects.create_user('dburke', 'ffdfsf@ffdsfsdf.com', 'aa')
-        except:
+        else:
             self.user = User.objects.get(username="dburke")
         self.user.is_staff = True
         self.user.save()

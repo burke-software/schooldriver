@@ -6,4 +6,4 @@ install:
   - pip install -r requirements.txt
   - pip install -q -e . --use-mirrors
 # command to run tests
-script: python manage.py test
+script: python manage.py test ecwsp.sis
