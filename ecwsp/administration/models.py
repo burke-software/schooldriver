@@ -124,10 +124,10 @@ Use 'demonstrations' to see counts of demonstrations for students and assignment
 class Template(models.Model):
     name = models.CharField(max_length=100, unique=True)
     file = models.FileField(upload_to="templates")
-    general_student = models.BooleanField(help_text="Can be used on student reports")
+    general_student = models.BooleanField(default=False, help_text="Can be used on student reports")
     report_card = models.BooleanField(help_text="Can be used on grade reports, gathers data for one year")
-    benchmark_report_card = models.BooleanField(help_text="A highly detailed, single-year report card for benchmark-based grading")
-    transcript = models.BooleanField(help_text="Can be used on grade reports, gathers data for all years")
+    benchmark_report_card = models.BooleanField(default=False, help_text="A highly detailed, single-year report card for benchmark-based grading")
+    transcript = models.BooleanField(default=False, help_text="Can be used on grade reports, gathers data for all years")
     
     def __unicode__(self):
         return self.name
