@@ -61,7 +61,7 @@ class Migration(SchemaMigration):
             ('relationship_to_student', self.gf('django.db.models.fields.CharField')(max_length=500, blank=True)),
             ('street', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('city', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, null=True, blank=True)),
-            ('state', self.gf('django.contrib.localflavor.us.models.USStateField')(max_length=2, null=True, blank=True)),
+            ('state', self.gf('localflavor.us.models.USStateField')(max_length=2, null=True, blank=True)),
             ('zip', self.gf('django.db.models.fields.CharField')(max_length=10, null=True, blank=True)),
             ('email', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True, blank=True)),
             ('primary_contact', self.gf('django.db.models.fields.BooleanField')(default=True)),
@@ -73,7 +73,7 @@ class Migration(SchemaMigration):
         # Adding model 'EmergencyContactNumber'
         db.create_table(u'sis_emergencycontactnumber', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('number', self.gf('django.contrib.localflavor.us.models.PhoneNumberField')(max_length=20)),
+            ('number', self.gf('localflavor.us.models.PhoneNumberField')(max_length=20)),
             ('ext', self.gf('django.db.models.fields.CharField')(max_length=10, null=True, blank=True)),
             ('type', self.gf('django.db.models.fields.CharField')(max_length=2, blank=True)),
             ('note', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
@@ -86,7 +86,7 @@ class Migration(SchemaMigration):
         db.create_table(u'sis_faculty', (
             (u'mdluser_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['sis.MdlUser'], unique=True, primary_key=True)),
             ('alt_email', self.gf('django.db.models.fields.EmailField')(max_length=75, blank=True)),
-            ('number', self.gf('django.contrib.localflavor.us.models.PhoneNumberField')(max_length=20, blank=True)),
+            ('number', self.gf('localflavor.us.models.PhoneNumberField')(max_length=20, blank=True)),
             ('ext', self.gf('django.db.models.fields.CharField')(max_length=10, null=True, blank=True)),
             ('teacher', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
@@ -156,7 +156,7 @@ class Migration(SchemaMigration):
             ('ssn', self.gf('django.db.models.fields.CharField')(max_length=11, null=True, blank=True)),
             ('parent_guardian', self.gf('django.db.models.fields.CharField')(max_length=150, blank=True)),
             ('street', self.gf('django.db.models.fields.CharField')(max_length=150, blank=True)),
-            ('state', self.gf('django.contrib.localflavor.us.models.USStateField')(max_length=2, null=True, blank=True)),
+            ('state', self.gf('localflavor.us.models.USStateField')(max_length=2, null=True, blank=True)),
             ('zip', self.gf('django.db.models.fields.CharField')(max_length=10, blank=True)),
             ('parent_email', self.gf('django.db.models.fields.EmailField')(max_length=75, blank=True)),
             ('family_preferred_language', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.LanguageChoice'], null=True, blank=True)),
@@ -222,7 +222,7 @@ class Migration(SchemaMigration):
         # Adding model 'StudentNumber'
         db.create_table(u'sis_studentnumber', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('number', self.gf('django.contrib.localflavor.us.models.PhoneNumberField')(max_length=20)),
+            ('number', self.gf('localflavor.us.models.PhoneNumberField')(max_length=20)),
             ('ext', self.gf('django.db.models.fields.CharField')(max_length=10, null=True, blank=True)),
             ('type', self.gf('django.db.models.fields.CharField')(max_length=2, blank=True)),
             ('note', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
@@ -523,7 +523,7 @@ class Migration(SchemaMigration):
             'mname': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'primary_contact': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'relationship_to_student': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
-            'state': ('django.contrib.localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
+            'state': ('localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'sync_schoolreach': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'zip': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'})
@@ -534,7 +534,7 @@ class Migration(SchemaMigration):
             'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'note': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'number': ('django.contrib.localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
+            'number': ('localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
             'primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'})
         },
@@ -543,7 +543,7 @@ class Migration(SchemaMigration):
             'alt_email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
             'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             u'mdluser_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['sis.MdlUser']", 'unique': 'True', 'primary_key': 'True'}),
-            'number': ('django.contrib.localflavor.us.models.PhoneNumberField', [], {'max_length': '20', 'blank': 'True'}),
+            'number': ('localflavor.us.models.PhoneNumberField', [], {'max_length': '20', 'blank': 'True'}),
             'teacher': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         },
         u'sis.gradelevel': {
@@ -635,7 +635,7 @@ class Migration(SchemaMigration):
             'sex': ('django.db.models.fields.CharField', [], {'max_length': '1', 'null': 'True', 'blank': 'True'}),
             'siblings': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.Student']", 'symmetrical': 'False', 'blank': 'True'}),
             'ssn': ('django.db.models.fields.CharField', [], {'max_length': '11', 'null': 'True', 'blank': 'True'}),
-            'state': ('django.contrib.localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
+            'state': ('localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '150', 'blank': 'True'}),
             'unique_id': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.GradeLevel']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
@@ -665,7 +665,7 @@ class Migration(SchemaMigration):
             'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'note': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'number': ('django.contrib.localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
+            'number': ('localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
             'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']", 'null': 'True', 'blank': 'True'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'})
         },
