@@ -11,7 +11,7 @@ from ckeditor.fields import RichTextField
 from django.conf import settings
 from localflavor.us.models import *
 
-from ecwsp.sis.models import SchoolYear, Student    
+from ecwsp.sis.models import SchoolYear, Student, Cohort
 
 from django.core.exceptions import ImproperlyConfigured
 from positions.fields import PositionField
@@ -33,7 +33,7 @@ class Test(models.Model):
     department = models.ForeignKey('benchmarks.Department', blank=True, null=True)
     courses = models.ManyToManyField('schedule.Course', blank=True, null=True, help_text="Enroll an entire course, students will not show until saving.")
     students = models.ManyToManyField('sis.Student', blank=True, null=True, through='TestInstance')
-    finalized = models.BooleanField(help_text="This test is finished and should no longer be edited!")
+    finalized = models.BooleanField(default=False, help_text="This test is finished and should no longer be edited!")
     answer_sheet_pdf = FileField(upload_to="student_tests", blank=True)
     queXF_pdf = FileField(upload_to="student_tests", blank=True)
     banding = FileField(upload_to="student_tests", blank=True)
@@ -158,7 +158,7 @@ class QuestionAbstract(models.Model):
     )
     type = models.CharField(max_length=25, choices=type_choices, default='Multiple Choice')
     point_value = models.IntegerField(default=1)
-    is_true = models.BooleanField(verbose_name="True or False")
+    is_true = models.BooleanField(default=False, verbose_name="True or False")
     
     class Meta:
         abstract = True
@@ -317,7 +317,7 @@ class TestInstance(models.Model):
     test = models.ForeignKey(Test)
     date = models.DateTimeField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True)
-    results_received = models.BooleanField()
+    results_received = models.BooleanField(default=False, )
     def __unicode__(self):
         return '%s %s' % (self.student, self.test)
     

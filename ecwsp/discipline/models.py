@@ -26,7 +26,7 @@ import datetime
 
 class DisciplineAction(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    major_offense = models.BooleanField(
+    major_offense = models.BooleanField(default=False, 
         help_text="This can be filtered by on Grade Analytics and other reports.")
     
     def __unicode__(self): 

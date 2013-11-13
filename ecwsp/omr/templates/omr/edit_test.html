@@ -31,7 +31,7 @@
     {% form test_form using %}
     <form enctype="multipart/form-data" action="" method="post" id="test_form">
         <div class="eight columns">
-          {% formconfig row using "gumby/forms/inline_field.html" %}
+          {% formconfig row using "floppy_gumby_forms/rows/gumby.html" %}
           {% formrow form.name %}
           {% formrow form.school_year %}
           {% formrow form.teachers %}
@@ -51,23 +51,9 @@
         <div class="four columns"> 
           <a href="javascript:void(0)" onclick='$("#quick_table").show(); $(this).hide()'>Start with Questions</a>
           <div id="quick_table" style="display: none">
-            <div class="row field">
-              Start test with pre made (blank) questions and answers
-              <div class="nine columns">
-                Number of questions to make
-              </div>
-              <div class="three columns">
-                {{ test_form.quick_number_questions }}
-              </div>
-            </div>
-            <div class="row field">
-              <div class="nine columns">
-                Number of answers per question
-              </div>
-              <div class="three columns">
-                {{ test_form.quick_number_answers }}{{ test_form.quick_number_answers.errors }}
-              </div>
-            </div>
+              {% formrow form.quick_number_questions %}
+              {% formrow form.quick_number_answers %}
+          </div>
         </div>
         {% endif %}
         {% endform %}

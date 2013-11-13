@@ -11,7 +11,7 @@ dajaxice_autodiscover()
 urlpatterns = patterns('',
     (r'^admin/', include("massadmin.urls")),
     (r'^admin_export/', include("admin_export.urls")),
-    (r'^ckeditor/', include('ckeditor.urls')),
+    (r'^ckeditor/', include('ecwsp.ckeditor_urls')),# 1.6 compat  include('ckeditor.urls')),
     (r'^grappelli/', include('grappelli.urls')),
     (r'^$', 'ecwsp.sis.views.index'),
 
@@ -27,7 +27,7 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls) ),
     
     (r'^ajax_select/', include('ajax_select.urls')),
-    url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
+    url(dajaxice_config.dajaxice_url, include('ecwsp.dajaxice_urls')),#include('dajaxice.urls')),
     (r'^slide_report/', include('slide_report.urls')),
     url(r"^su/", include("django_su.urls")),
 )
@@ -84,6 +84,8 @@ if 'responsive_dashboard' in settings.INSTALLED_APPS:
     urlpatterns += url(r'^', include('responsive_dashboard.urls')),
 if 'sentry' in settings.INSTALLED_APPS:    
     urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)
+if 'social.apps.django_app.default' in settings.INSTALLED_APPS:    
+    urlpatterns += patterns('', url('', include('social.apps.django_app.urls', namespace='social')),)
 
 if settings.DEBUG:
     urlpatterns += patterns('',

@@ -13,7 +13,7 @@ class Migration(SchemaMigration):
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('code', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('state', self.gf('django.contrib.localflavor.us.models.USStateField')(max_length=2, blank=True)),
+            ('state', self.gf('localflavor.us.models.USStateField')(max_length=2, blank=True)),
             ('type', self.gf('django.db.models.fields.CharField')(max_length=60, blank=True)),
         ))
         db.send_create_signal(u'alumni', ['College'])
@@ -102,7 +102,7 @@ class Migration(SchemaMigration):
         # Adding model 'AlumniPhoneNumber'
         db.create_table(u'alumni_alumniphonenumber', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('phone_number', self.gf('django.contrib.localflavor.us.models.PhoneNumberField')(max_length=20)),
+            ('phone_number', self.gf('localflavor.us.models.PhoneNumberField')(max_length=20)),
             ('type', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('alumni', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['alumni.Alumni'])),
         ))
@@ -208,7 +208,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'AlumniPhoneNumber'},
             'alumni': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['alumni.Alumni']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'phone_number': ('django.contrib.localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
+            'phone_number': ('localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
         },
         u'alumni.alumnistatus': {
@@ -221,7 +221,7 @@ class Migration(SchemaMigration):
             'code': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'state': ('django.contrib.localflavor.us.models.USStateField', [], {'max_length': '2', 'blank': 'True'}),
+            'state': ('localflavor.us.models.USStateField', [], {'max_length': '2', 'blank': 'True'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'})
         },
         u'alumni.collegeenrollment': {
@@ -310,7 +310,7 @@ class Migration(SchemaMigration):
             'mname': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'primary_contact': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'relationship_to_student': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
-            'state': ('django.contrib.localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
+            'state': ('localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'sync_schoolreach': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'zip': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'})
@@ -367,7 +367,7 @@ class Migration(SchemaMigration):
             'sex': ('django.db.models.fields.CharField', [], {'max_length': '1', 'null': 'True', 'blank': 'True'}),
             'siblings': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.Student']", 'symmetrical': 'False', 'blank': 'True'}),
             'ssn': ('django.db.models.fields.CharField', [], {'max_length': '11', 'null': 'True', 'blank': 'True'}),
-            'state': ('django.contrib.localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
+            'state': ('localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '150', 'blank': 'True'}),
             'unique_id': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.GradeLevel']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),

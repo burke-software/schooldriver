@@ -41,14 +41,14 @@ class SiteSupervisor(models.Model):
         return unicode(self.name)
 
 class VolunteerSite(models.Model):
-    inactive = models.BooleanField()
+    inactive = models.BooleanField(default=False, )
     volunteer = models.ForeignKey('Volunteer')
     site = models.ForeignKey(Site)
     supervisor = models.ForeignKey(SiteSupervisor,blank=True,null=True)
     site_approval = models.CharField(max_length=16, choices=(('Accepted','Accepted'),('Rejected', 'Rejected'),('Submitted', 'Submitted')), blank=True)
-    contract = models.BooleanField()
+    contract = models.BooleanField(default=False, )
     job_description = models.TextField(blank=True)
-    hours_confirmed = models.BooleanField()
+    hours_confirmed = models.BooleanField(default=False, )
     comment = models.TextField(blank=True)
     secret_key = models.CharField(max_length=20, blank=True, editable=False)
     
@@ -115,7 +115,7 @@ def get_hours_default():
 class Volunteer(models.Model):
     student = models.OneToOneField('sis.Student')
     sites = models.ManyToManyField(Site,blank=True,null=True,through='VolunteerSite')
-    attended_reflection = models.BooleanField(verbose_name = "Attended")
+    attended_reflection = models.BooleanField(default=False, verbose_name = "Attended")
     hours_required = models.IntegerField(default=get_hours_default, blank=True, null=True)
     notes = models.TextField(blank=True)
     last_updated = models.DateTimeField(default = datetime.now)

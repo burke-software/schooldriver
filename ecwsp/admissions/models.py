@@ -161,8 +161,6 @@ class Applicant(models.Model, CustomFieldModel):
     city = models.CharField(max_length=360, blank=True)
     state = USStateField(blank=True)
     zip = models.CharField(max_length=10, blank=True)
-    #single_parent = models.BooleanField()
-    #qualify_for_reduced_lunch = models.BooleanField()
     ssn = models.CharField(max_length=11, blank=True, verbose_name="SSN")
     parent_email = models.EmailField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
@@ -197,12 +195,12 @@ class Applicant(models.Model, CustomFieldModel):
     parent_guardian_last_name = models.CharField(max_length=150, blank=True)
     relationship_to_student = models.CharField(max_length=500, blank=True)
     heard_about_us = models.ForeignKey(HeardAboutUsOption, blank=True, null=True, on_delete=models.SET_NULL,)
-    from_online_inquiry = models.BooleanField()
+    from_online_inquiry = models.BooleanField(default=False, )
     first_contact = models.ForeignKey(FirstContactOption, blank=True, null=True, on_delete=models.SET_NULL,)
     borough = models.ForeignKey(BoroughOption, blank=True, null=True, on_delete=models.SET_NULL,)
     country_of_birth = models.ForeignKey(CountryOption, blank=True, null=True, default=get_default_country, on_delete=models.SET_NULL,)
     immigration_status = models.ForeignKey(ImmigrationOption, blank=True, null=True, on_delete=models.SET_NULL,)
-    ready_for_export = models.BooleanField()
+    ready_for_export = models.BooleanField(default=False, )
     sis_student = models.OneToOneField(
         'sis.Student',
         blank=True,
@@ -221,8 +219,8 @@ class Applicant(models.Model, CustomFieldModel):
     application_decision_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL,)
     withdrawn = models.ForeignKey(WithdrawnChoices, blank=True, null=True, on_delete=models.SET_NULL,)
     withdrawn_note = models.CharField(max_length=500, blank=True)
-    first_to_college = models.BooleanField(blank=True)
-    individual_education_plan = models.BooleanField(blank=True)
+    first_to_college = models.BooleanField(default=False, blank=True)
+    individual_education_plan = models.BooleanField(default=False, blank=True)
     lives_with = models.CharField(
         blank=True,
         max_length=50,
