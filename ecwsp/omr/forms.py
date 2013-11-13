@@ -24,7 +24,11 @@ class TestForm(forms.ModelForm):
         }
         
     teachers = AutoCompleteSelectMultipleField('faculty', required=True, help_text="")
-    students = AutoCompleteSelectMultipleField('dstudent', required=False)
+    students = forms.ModelMultipleChoiceField(
+        queryset = Student.objects.filter(is_active=True),
+        widget = forms.SelectMultiple(attrs={'class':'multiselect'}),
+        required = False
+        )
     quick_number_questions = forms.IntegerField(max_value=100, min_value=1, required=False,
                                                label="Number of Questions")
     quick_number_answers = forms.IntegerField(max_value=6, min_value=2, required=False,
