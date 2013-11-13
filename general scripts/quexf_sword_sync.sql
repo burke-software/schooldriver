@@ -45,6 +45,7 @@ begin
   );
   
   if @answer_bid is not null then
+
    -- OMR Answer.id as stored in boxes.value for the most filled formbox in our box group
    set @answer_id =(
     SELECT DISTINCT boxes.value from quexf_crny.boxes WHERE quexf_crny.boxes.bid = @answer_bid
@@ -66,6 +67,8 @@ begin
    values (@test_instance_id, @question_id, @answer_id, @points_earned, @points_possible)
    on duplicate key
    update answer_id = @answer_id, points_earned = @points_earned;
+
+  end if;
   
   FETCH bid_cursor INTO current_bid;
   UNTIL no_more_bids = 1
