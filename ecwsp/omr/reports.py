@@ -42,12 +42,19 @@ class ReportManager(object):
         data.append(["Points Possible:", test.points_possible])
         data.append(["Results collected: %s" % (test.students_test_results,)])
         data.append(['Test average: %s' % (test.points_average,)])
-        data.append([])
+        data.append([''])
         data.append(['Student', 'Points Earned', 'Percentage'])
-        i = 6
+        first_student_row = i = 7
         for ti in test.testinstance_set.annotate(earned=Sum('answerinstance__points_earned')):
             data.append([ti.student, ti.earned, "=B%s / $B$2" % i])
             i += 1
+        # Make it easier to compare this against download_teacher_results()
+        data.append([''])
+        i += 1
+        data.append(["Percent of Students over 70%", '',
+            # don't put the decimal inside the string to avoid localization problems
+            '=COUNTIF(C{0}:C{1},">="&0.7)/COUNT(C6:C{1})'.format(first_student_row, i - 2)])
+        i += 1
         
         report = XlReport(file_name="OMR Report")
         report.add_sheet(data, title="Summary", auto_width=True)
@@ -110,7 +117,7 @@ class ReportManager(object):
             row2.append('')
         data.append(row)
         data.append(row2)
-        i = 3 # 3 for third row on spreadsheet
+        first_student_row = i = 3 # 3 for third row on spreadsheet
         for test_instance in test.testinstance_set.all():
             row = [test_instance.student]
             a = 2 # the letter c or column c in spreadsheet
@@ -122,6 +129,18 @@ class ReportManager(object):
                 a += 2 # skip ahead 2 columns
             i += 1
             data.append(row)
+        # Make it easier to compare this against download_teacher_results()
+        data.append([''])
+        i += 1
+        row = ['Percent of Students over 70%']
+        col = 1
+        while col < a:
+            row.append('')
+            col += 2 # add two now since the formula has to reference its own column
+            row.append('=COUNTIF({0}{1}:{0}{2},">="&0.7)/COUNT({0}{1}:{0}{2})'.format(
+                get_column_letter(col), first_student_row, i - 2))
+        data.append(row)
+        i += 1
         report.add_sheet(data, title="Benchmark", auto_width=True)
         
         data = [['Benchmark', 'Name', 'Earned', 'Possible', 'Percent']]
