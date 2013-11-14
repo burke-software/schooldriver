@@ -121,11 +121,7 @@ class Test(models.Model):
         
     @property
     def points_average(self):
-        try:
-            total_points = self.question_set.aggregate(total_points=Sum('answerinstance__points_earned'))['total_points']
-            return float(total_points) / (float(self.points_possible) * float(self.students_test_results))
-        except:
-            return "N/A"
+        return self.get_average()
     
     def enroll_students(self, students):
         """ Enroll these students, delete those not in this list!! """
