@@ -34,6 +34,9 @@ class ReportManager(object):
     def download_results(self, test):
         """ Create basic xls report for OMR. Includes summary and details """
         
+        # from download_teacher_results()
+        total_test_takers = test.testinstance_set.filter(answerinstance__points_earned__gt=0).distinct().count()
+
         # Summary sheet
         data = [[test.name]]
         data.append(["Points Possible:", test.points_possible])
@@ -132,7 +135,14 @@ class ReportManager(object):
                     Sum('points_earned'),
                     Sum('points_possible'))
             row += [answer_data['points_earned__sum']]
-            row += [answer_data['points_possible__sum']]
+            # this causes a discrepancy with download_teacher_results() if
+            # a student leaves a question blank.
+            #row += [answer_data['points_possible__sum']]
+            # instead, get the points possible for all questions having this benchmark and
+            # multiply by the number of test takers
+            benchmark_points_possible = test.question_set.filter(benchmarks=benchmark).aggregate(
+                Sum('point_value'))['point_value__sum'] * total_test_takers
+            row.append(benchmark_points_possible)
             row += ['=C{0}/D{0}'.format(str(i))]
             data += [row]
             i += 1
