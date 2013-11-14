@@ -384,7 +384,7 @@ class Student(User, CustomFieldModel):
         )
         ordering = ("last_name", "first_name")
 
-    def __unicorde__(self):
+    def __unicode__(self):
         return u"{0}, {1}".format(self.last_name, self.first_name)
     
     def get_absolute_url():
