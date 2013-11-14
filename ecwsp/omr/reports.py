@@ -150,7 +150,7 @@ class ReportManager(object):
 
         report = TemplateReport()
         report.file_format = format
-        test_instances = test.testinstance_set.filter(pk__in=subquery).annotate(Sum('answerinstance__points_earned'))
+        test_instances = test.testinstance_set.filter(answerinstance__points_earned__gt=0).filter(pk__in=subquery).annotate(Sum('answerinstance__points_earned'))
         test.benchmarks = Benchmark.objects.filter(question__test=test).distinct()
         
         points_possible = test.points_possible
