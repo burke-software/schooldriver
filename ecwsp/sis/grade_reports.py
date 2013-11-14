@@ -13,7 +13,7 @@ def fail_report(request):
         marking_periods = form.cleaned_data['marking_period']
         students = Student.objects.filter(courseenrollment__course__marking_period__in=marking_periods).distinct()
         titles = ['']
-        departments = Department.objects.filter(course__courseenrollment__user__is_active=True.distinct()
+        departments = Department.objects.filter(course__courseenrollment__user__is_active=True).distinct()
         
         for department in departments:
             titles += [department]
