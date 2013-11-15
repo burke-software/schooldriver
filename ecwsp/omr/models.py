@@ -79,16 +79,6 @@ class Test(models.Model):
         else:
             return None
     
-    def get_percent_scoring_over(self, min_score=70):
-        """ Calculate the percent of test takers scoring over the min_score
-            Defaults to 70.
-        """
-        total_test_earned =  self.active_testinstance_set.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']
-        total_tests_taken = self.active_testinstance_set.annotate(earned=Sum('answerinstance__points_earned')).filter(earned__gt=0).count()
-        points_possible = self.active_testinstance_set.all()[0].points_possible
-        return float(total_test_earned) / (total_tests_taken * points_possible)
-    
-    
     def link_copy(self):
         from ecwsp.omr.views import test_copy
         return '<a href="%s">Copy</a>' % (reverse(test_copy, args=[self.id]),)
