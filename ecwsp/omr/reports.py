@@ -51,7 +51,7 @@ class ReportManager(object):
         # Make it easier to compare this against download_teacher_results()
         data.append([''])
         i += 1
-        data.append(["Percent of Students over 70%", '',
+        data.append(["Percent of students scoring at or above 70%", '',
             # don't put the decimal inside the string to avoid localization problems
             '=COUNTIF(C{0}:C{1},">="&0.7)/COUNT(C6:C{1})'.format(first_student_row, i - 2)])
         i += 1
@@ -132,7 +132,7 @@ class ReportManager(object):
         # Make it easier to compare this against download_teacher_results()
         data.append([''])
         i += 1
-        row = ['Percent of Students over 70%']
+        row = ['Percent of students scoring at or above 70%']
         col = 1
         while col < a:
             row.append('')
@@ -184,9 +184,9 @@ class ReportManager(object):
         
         points_possible = test.points_possible
         points_to_earn = 0.70 * test.points_possible
-        number_above_70 = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
+        number_gte_70 = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
         total_test_takers = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__gt=0).distinct().count()
-        test.percent_over_70 = float(number_above_70) / total_test_takers
+        test.percent_gte_70 = float(number_gte_70) / total_test_takers
         test.report_average = test.get_average(cohorts=cohorts)
 
         for benchmark in test.benchmarks:
@@ -204,8 +204,8 @@ class ReportManager(object):
 
             benchmark.average = float(benchmark.total_points_earned) / benchmark.total_points_possible 
            
-            # Percent students over 70%
-            test_instances_over_70 = 0
+            # Percent of students scoring at or above 70%
+            test_instances_gte_70 = 0
             for test_instance in test_instances:
                  answers = test_instance.answerinstance_set.filter(question__benchmarks=benchmark)
                  answers_points = answers.aggregate(Sum('points_earned'), Sum('points_possible'))
@@ -214,8 +214,8 @@ class ReportManager(object):
                  if instance_points_earned and instance_points_possible:
                      instance_average = float(instance_points_earned) / instance_points_possible
                      if instance_average >= 0.70:
-                         test_instances_over_70 += 1
-            benchmark.over_70 = float(test_instances_over_70) / test_instances.count()
+                         test_instances_gte_70 += 1
+            benchmark.gte_70 = float(test_instances_gte_70) / test_instances.count()
 
             benchmark.assessed_on = ""
             for question_benchmark in question_benchmarks:

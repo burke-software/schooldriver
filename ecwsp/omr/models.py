@@ -109,17 +109,11 @@ class Test(models.Model):
         
     @property
     def get_teachers(self):
-        text = ''
-        for teacher in self.teachers.all():
-            text += '{}, '.format(teacher)
-        return text[:-2]
+        return u'; '.join(map(u'{}'.format, self.teachers.all()))
     
     @property
     def get_courses(self):
-        text = ''
-        for course in self.courses.all():
-            text += '{}, '.format(course)
-        return text[:-2]
+        return u'; '.join(map(u'{}'.format, self.courses.all()))
         
     @property
     def points_average(self):
