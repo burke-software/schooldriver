@@ -56,14 +56,13 @@ class Test(models.Model):
         instance.teachers = self.teachers.all()
         instance.save()
     
-    def enroll_students(self, students):
-        """ Enroll student queryset to test """
-        for student in students:
-            self.__enroll_student(student)
+    @property
+    def active_testinstance_set(self):
+        return self.testinstance_set.filter(student__is_active=True)
 
     def get_average(self, cohorts=None):
         """ Calculate the average. Pretty fast so no caching is needed """
-        test_instances = self.testinstance_set.all()
+        test_instances = self.active_testinstance_set.all()
         if not cohorts:
             from ecwsp.sis.models import Cohort
             cohorts = Cohort.objects.all()
@@ -75,15 +74,18 @@ class Test(models.Model):
         total_test_earned = test_instances.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']
         total_tests_taken = test_instances.annotate(earned=Sum('answerinstance__points_earned')).filter(earned__gt=0).distinct().count()
         points_possible = test_instances.all()[0].points_possible
-        return float(total_test_earned) / (total_tests_taken * points_possible)
+        if total_test_earned is not None and total_tests_taken * points_possible:
+            return float(total_test_earned) / (total_tests_taken * points_possible)
+        else:
+            return None
     
     def get_percent_scoring_over(self, min_score=70):
         """ Calculate the percent of test takers scoring over the min_score
             Defaults to 70.
         """
-        total_test_earned =  self.testinstance_set.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']
-        total_tests_taken = self.testinstance_set.annotate(earned=Sum('answerinstance__points_earned')).filter(earned__gt=0).count()
-        points_possible = self.testinstance_set.all()[0].points_possible
+        total_test_earned =  self.active_testinstance_set.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']
+        total_tests_taken = self.active_testinstance_set.annotate(earned=Sum('answerinstance__points_earned')).filter(earned__gt=0).count()
+        points_possible = self.active_testinstance_set.all()[0].points_possible
         return float(total_test_earned) / (total_tests_taken * points_possible)
     
     
@@ -94,11 +96,11 @@ class Test(models.Model):
     
     @property
     def students_test_results(self):
-        return self.testinstance_set.filter(results_received=True).count()
+        return self.active_testinstance_set.filter(results_received=True).count()
     
     @property
     def students_in_queue(self):
-        return self.testinstance_set.filter(results_received=False).count()
+        return self.active_testinstance_set.filter(results_received=False).count()
     
     @property
     def points_possible(self):

@@ -35,7 +35,7 @@ class ReportManager(object):
         """ Create basic xls report for OMR. Includes summary and details """
         
         # from download_teacher_results()
-        total_test_takers = test.testinstance_set.filter(answerinstance__points_earned__gt=0).distinct().count()
+        total_test_takers = test.active_testinstance_set.filter(answerinstance__points_earned__gt=0).distinct().count()
 
         # Summary sheet
         data = [[test.name]]
@@ -45,7 +45,7 @@ class ReportManager(object):
         data.append([''])
         data.append(['Student', 'Points Earned', 'Percentage'])
         first_student_row = i = 7
-        for ti in test.testinstance_set.annotate(earned=Sum('answerinstance__points_earned')):
+        for ti in test.active_testinstance_set.annotate(earned=Sum('answerinstance__points_earned')):
             data.append([ti.student, ti.earned, "=B%s / $B$2" % i])
             i += 1
         # Make it easier to compare this against download_teacher_results()
@@ -73,7 +73,7 @@ class ReportManager(object):
         data_answers.append(row_answers)
         data_abc.append(row_abc)
         
-        for test_instance in test.testinstance_set.all():
+        for test_instance in test.active_testinstance_set.all():
             row_points = []
             row_answers = []
             row_abc = []
@@ -118,7 +118,7 @@ class ReportManager(object):
         data.append(row)
         data.append(row2)
         first_student_row = i = 3 # 3 for third row on spreadsheet
-        for test_instance in test.testinstance_set.all():
+        for test_instance in test.active_testinstance_set.all():
             row = [test_instance.student]
             a = 2 # the letter c or column c in spreadsheet
             for benchmark in Benchmark.objects.filter(question__test=test).distinct():
@@ -179,7 +179,7 @@ class ReportManager(object):
 
         report = TemplateReport()
         report.file_format = format
-        test_instances = test.testinstance_set.filter(answerinstance__points_earned__gt=0).filter(pk__in=subquery).annotate(Sum('answerinstance__points_earned'))
+        test_instances = test.active_testinstance_set.filter(answerinstance__points_earned__gt=0).filter(pk__in=subquery).annotate(Sum('answerinstance__points_earned'))
         test.benchmarks = Benchmark.objects.filter(question__test=test).distinct()
         
         points_possible = test.points_possible
@@ -254,7 +254,7 @@ class ReportManager(object):
         """ Make appy based report showing results for each student """
         report = TemplateReport()
         report.file_format = format
-        test_instances = test.testinstance_set.all()
+        test_instances = test.active_testinstance_set.all()
         benchmarks = Benchmark.objects.filter(question__test=test).distinct()
         
         for benchmark in benchmarks:
