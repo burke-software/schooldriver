@@ -51,7 +51,9 @@ class ReportManager(object):
         # Make it easier to compare this against download_teacher_results()
         data.append([''])
         i += 1
-        data.append(["Percent of students scoring at or above 70%", '',
+        data.append(["Students scoring at or above 70%",
+            # number of points possible is in cell B2
+            '=COUNTIF(B{0}:B{1},">="&0.7*B2)'.format(first_student_row, i - 2),
             # don't put the decimal inside the string to avoid localization problems
             '=COUNTIF(C{0}:C{1},">="&0.7)/COUNT(C6:C{1})'.format(first_student_row, i - 2)])
         i += 1
@@ -132,10 +134,11 @@ class ReportManager(object):
         # Make it easier to compare this against download_teacher_results()
         data.append([''])
         i += 1
-        row = ['Percent of students scoring at or above 70%']
+        row = ['Students scoring at or above 70%']
         col = 2
         while col < a:
-            row.append('')
+            row.append('=COUNTIF({0}{1}:{0}{2},">="&0.7*{0}{3})'.format(
+                get_column_letter(col), first_student_row, i - 2, first_student_row - 1))
             col += 1
             row.append('=COUNTIF({0}{1}:{0}{2},">="&0.7)/COUNT({0}{1}:{0}{2})'.format(
                 get_column_letter(col), first_student_row, i - 2))
@@ -150,7 +153,7 @@ class ReportManager(object):
             row = []
             row += [benchmark.number, benchmark.name]
             answer_data = AnswerInstance.objects.filter(
-                question__test=test,
+                test_instance__in=test.active_testinstance_set.all(),
                 question__benchmarks=benchmark).aggregate(
                     Sum('points_earned'),
                     Sum('points_possible'))
@@ -191,6 +194,7 @@ class ReportManager(object):
         test.report_average = test.get_average(cohorts=cohorts)
 
         for benchmark in test.benchmarks:
+            # TODO: eliminate this subquery? is the idea to eliminate any questions that all students left unanswered?
             qb_subquery = test.question_set.filter(answerinstance__test_instance__student__cohort__in=cohorts).distinct()
             question_benchmarks = test.question_set.filter(pk__in=qb_subquery).filter(benchmarks=benchmark).distinct()
             benchmark.points_possible = question_benchmarks.aggregate(Sum('point_value'))['point_value__sum']
@@ -199,7 +203,7 @@ class ReportManager(object):
             #benchmark.total_points_earned = question_benchmarks.aggregate(Sum('answerinstance__points_earned'))['answerinstance__points_earned__sum']
             earned_sum = 0
             for question_benchmark in question_benchmarks:
-                for answer in question_benchmark.answerinstance_set.filter(test_instance__student__cohort__in=cohorts).distinct():
+                for answer in question_benchmark.active_answerinstance_set.filter(test_instance__student__cohort__in=cohorts).distinct():
                     earned_sum += answer.points_earned
             benchmark.total_points_earned = earned_sum
 
@@ -232,7 +236,7 @@ class ReportManager(object):
             # grab all the AnswerInstances that we care about for this question
             answerinstances = question.answerinstance_set.filter(test_instance__student__cohort__in=cohorts).distinct()
             # nasty! http://stackoverflow.com/questions/4093910/django-aggregates-sums-in-postgresql-dont-use-distinct-is-this-a-bug/4917507#4917507 
-            answerinstances = question.answerinstance_set.filter(pk__in=answerinstances)
+            answerinstances = question.active_answerinstance_set.filter(pk__in=answerinstances)
             # calculate the COUNT of correct student responses for this question
             question.num_correct = answerinstances.filter(points_earned__gte=F('points_possible')).count()
             # calculate the COUNT of all student responses for this question

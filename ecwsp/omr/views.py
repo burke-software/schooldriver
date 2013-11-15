@@ -514,7 +514,7 @@ def manual_edit(request, test_id):
     tf_response  = None
     student_answer = None
     for question in test.test.question_set.all(): #each question
-        for answer in question.answerinstance_set.all(): #student's answer to question
+        for answer in question.active_answerinstance_set.all(): #student's answer to question
             student_answer = answer.answer
         count = 0
         ascii_letter = 45
