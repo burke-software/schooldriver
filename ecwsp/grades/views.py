@@ -12,7 +12,7 @@ from django.db.models import Q
 from ecwsp.administration.models import Configuration
 from ecwsp.schedule.models import Course, MarkingPeriod
 from ecwsp.schedule.forms import EngradeSyncForm
-from ecwsp.sis.models import Student, UserPreference, Faculty
+from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.uno_report import replace_spreadsheet
 from .models import GradeComment, Grade
