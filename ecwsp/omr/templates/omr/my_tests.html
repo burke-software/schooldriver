@@ -51,7 +51,7 @@
             <td><a href="{% url "ecwsp.omr.views.edit_test" test.id %}"> {{ test }} </a></td>
             <td> {{ test.marking_period }} </td>
             <td><a href="{% url "ecwsp.omr.views.edit_test_questions" test.id %}"> {{ test.question_set.count }} </a></td>
-            <td> {{ test.testinstance_set.count }} </td>
+            <td> {{ test.active_testinstance_set.count }} </td>
             <td> {{ test.students_in_queue }} </td>
             <td>
               {% if test.finalized %}

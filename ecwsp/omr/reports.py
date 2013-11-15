@@ -34,17 +34,27 @@ class ReportManager(object):
     def download_results(self, test):
         """ Create basic xls report for OMR. Includes summary and details """
         
+        # from download_teacher_results()
+        total_test_takers = test.active_testinstance_set.filter(answerinstance__points_earned__gt=0).distinct().count()
+
         # Summary sheet
         data = [[test.name]]
         data.append(["Points Possible:", test.points_possible])
         data.append(["Results collected: %s" % (test.students_test_results,)])
         data.append(['Test average: %s' % (test.points_average,)])
-        data.append([])
+        data.append([''])
         data.append(['Student', 'Points Earned', 'Percentage'])
-        i = 6
-        for ti in test.testinstance_set.annotate(earned=Sum('answerinstance__points_earned')):
+        first_student_row = i = 7
+        for ti in test.active_testinstance_set.annotate(earned=Sum('answerinstance__points_earned')):
             data.append([ti.student, ti.earned, "=B%s / $B$2" % i])
             i += 1
+        # Make it easier to compare this against download_teacher_results()
+        data.append([''])
+        i += 1
+        data.append(["Percent of students scoring at or above 70%", '',
+            # don't put the decimal inside the string to avoid localization problems
+            '=COUNTIF(C{0}:C{1},">="&0.7)/COUNT(C6:C{1})'.format(first_student_row, i - 2)])
+        i += 1
         
         report = XlReport(file_name="OMR Report")
         report.add_sheet(data, title="Summary", auto_width=True)
@@ -63,7 +73,7 @@ class ReportManager(object):
         data_answers.append(row_answers)
         data_abc.append(row_abc)
         
-        for test_instance in test.testinstance_set.all():
+        for test_instance in test.active_testinstance_set.all():
             row_points = []
             row_answers = []
             row_abc = []
@@ -107,10 +117,10 @@ class ReportManager(object):
             row2.append('')
         data.append(row)
         data.append(row2)
-        i = 3 # 3 for third row on spreadsheet
-        for test_instance in test.testinstance_set.all():
+        first_student_row = i = 3 # 3 for third row on spreadsheet
+        for test_instance in test.active_testinstance_set.all():
             row = [test_instance.student]
-            a = 2 # the letter c or column c in spreadsheet
+            a = 2 # the letter b or column b in spreadsheet
             for benchmark in Benchmark.objects.filter(question__test=test).distinct():
                 row.append(test_instance.answerinstance_set.filter(
                     question__benchmarks=benchmark).aggregate(
@@ -119,6 +129,19 @@ class ReportManager(object):
                 a += 2 # skip ahead 2 columns
             i += 1
             data.append(row)
+        # Make it easier to compare this against download_teacher_results()
+        data.append([''])
+        i += 1
+        row = ['Percent of students scoring at or above 70%']
+        col = 2
+        while col < a:
+            row.append('')
+            col += 1
+            row.append('=COUNTIF({0}{1}:{0}{2},">="&0.7)/COUNT({0}{1}:{0}{2})'.format(
+                get_column_letter(col), first_student_row, i - 2))
+            col += 1
+        data.append(row)
+        i += 1
         report.add_sheet(data, title="Benchmark", auto_width=True)
         
         data = [['Benchmark', 'Name', 'Earned', 'Possible', 'Percent']]
@@ -132,7 +155,14 @@ class ReportManager(object):
                     Sum('points_earned'),
                     Sum('points_possible'))
             row += [answer_data['points_earned__sum']]
-            row += [answer_data['points_possible__sum']]
+            # this causes a discrepancy with download_teacher_results() if
+            # a student leaves a question blank.
+            #row += [answer_data['points_possible__sum']]
+            # instead, get the points possible for all questions having this benchmark and
+            # multiply by the number of test takers
+            benchmark_points_possible = test.question_set.filter(benchmarks=benchmark).aggregate(
+                Sum('point_value'))['point_value__sum'] * total_test_takers
+            row.append(benchmark_points_possible)
             row += ['=C{0}/D{0}'.format(str(i))]
             data += [row]
             i += 1
@@ -150,14 +180,14 @@ class ReportManager(object):
 
         report = TemplateReport()
         report.file_format = format
-        test_instances = test.testinstance_set.filter(pk__in=subquery).annotate(Sum('answerinstance__points_earned'))
+        test_instances = test.active_testinstance_set.filter(answerinstance__points_earned__gt=0).filter(pk__in=subquery).annotate(Sum('answerinstance__points_earned'))
         test.benchmarks = Benchmark.objects.filter(question__test=test).distinct()
         
         points_possible = test.points_possible
         points_to_earn = 0.70 * test.points_possible
-        number_above_70 = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
+        number_gte_70 = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
         total_test_takers = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__gt=0).distinct().count()
-        test.percent_over_70 = float(number_above_70) / total_test_takers
+        test.percent_gte_70 = float(number_gte_70) / total_test_takers
         test.report_average = test.get_average(cohorts=cohorts)
 
         for benchmark in test.benchmarks:
@@ -175,8 +205,8 @@ class ReportManager(object):
 
             benchmark.average = float(benchmark.total_points_earned) / benchmark.total_points_possible 
            
-            # Percent students over 70%
-            test_instances_over_70 = 0
+            # Percent of students scoring at or above 70%
+            test_instances_gte_70 = 0
             for test_instance in test_instances:
                  answers = test_instance.answerinstance_set.filter(question__benchmarks=benchmark)
                  answers_points = answers.aggregate(Sum('points_earned'), Sum('points_possible'))
@@ -185,8 +215,8 @@ class ReportManager(object):
                  if instance_points_earned and instance_points_possible:
                      instance_average = float(instance_points_earned) / instance_points_possible
                      if instance_average >= 0.70:
-                         test_instances_over_70 += 1
-            benchmark.over_70 = float(test_instances_over_70) / test_instances.count()
+                         test_instances_gte_70 += 1
+            benchmark.gte_70 = float(test_instances_gte_70) / test_instances.count()
 
             benchmark.assessed_on = ""
             for question_benchmark in question_benchmarks:
@@ -225,7 +255,7 @@ class ReportManager(object):
         """ Make appy based report showing results for each student """
         report = TemplateReport()
         report.file_format = format
-        test_instances = test.testinstance_set.all()
+        test_instances = test.active_testinstance_set.all()
         benchmarks = Benchmark.objects.filter(question__test=test).distinct()
         
         for benchmark in benchmarks:

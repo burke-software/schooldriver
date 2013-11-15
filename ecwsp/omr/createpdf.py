@@ -190,7 +190,7 @@ def generate_xml(test_id):
     entire_testtag = entiredoc.createElement("test")
     
     entiredoc.appendChild(entire_testtag)
-    instances = TestInstance.objects.filter(test=test.id)
+    instances = TestInstance.objects.filter(test=test.id, student__is_active=True)
     
     for instance in instances:
         make_pdf(instance)
