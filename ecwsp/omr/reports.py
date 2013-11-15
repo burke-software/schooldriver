@@ -120,7 +120,7 @@ class ReportManager(object):
         first_student_row = i = 3 # 3 for third row on spreadsheet
         for test_instance in test.active_testinstance_set.all():
             row = [test_instance.student]
-            a = 2 # the letter c or column c in spreadsheet
+            a = 2 # the letter b or column b in spreadsheet
             for benchmark in Benchmark.objects.filter(question__test=test).distinct():
                 row.append(test_instance.answerinstance_set.filter(
                     question__benchmarks=benchmark).aggregate(
@@ -133,12 +133,13 @@ class ReportManager(object):
         data.append([''])
         i += 1
         row = ['Percent of students scoring at or above 70%']
-        col = 1
+        col = 2
         while col < a:
             row.append('')
-            col += 2 # add two now since the formula has to reference its own column
+            col += 1
             row.append('=COUNTIF({0}{1}:{0}{2},">="&0.7)/COUNT({0}{1}:{0}{2})'.format(
                 get_column_letter(col), first_student_row, i - 2))
+            col += 1
         data.append(row)
         i += 1
         report.add_sheet(data, title="Benchmark", auto_width=True)
