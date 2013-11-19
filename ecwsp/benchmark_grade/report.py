@@ -363,7 +363,7 @@ def gradebook_export(request, course_id):
         rows[row_counter].append(student.average)
         row_counter += 1
                     
-    report.add_sheet(rows, title=gradebook_data['course'].fullname)
+    report.add_sheet(rows, title=gradebook_data['course'].shortname)
     sheet = report.workbook.get_active_sheet()
     for row_number in range(0, len(item_attributes) + len(demonstration_attributes)):
         sheet.cell(row=row_number, column=0).style.font.bold = True
