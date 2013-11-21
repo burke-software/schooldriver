@@ -141,6 +141,10 @@ class QuestionAbstract(models.Model):
     type = models.CharField(max_length=25, choices=type_choices, default='Multiple Choice')
     point_value = models.IntegerField(default=1)
     is_true = models.BooleanField(default=False, verbose_name="True or False")
+
+    @property
+    def active_answerinstance_set(self):
+        return self.answerinstance_set.filter(test_instance__student__is_active=True)
     
     class Meta:
         abstract = True
