@@ -190,7 +190,10 @@ class ReportManager(object):
         points_to_earn = 0.70 * test.points_possible
         number_gte_70 = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
         total_test_takers = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__gt=0).distinct().count()
-        test.percent_gte_70 = float(number_gte_70) / total_test_takers
+        try:
+            test.percent_gte_70 = float(number_gte_70) / total_test_takers
+        except ZeroDivisionError:
+            test.percent_gte_70 = 0.0
         test.report_average = test.get_average(cohorts=cohorts)
 
         for benchmark in test.benchmarks:
