@@ -17,18 +17,18 @@ Django-SIS then stores all timecards in the main timecard dash. Users with acces
 
 Adding a Student Worker
 --------------------------
-Creating student workers involves creating a student first, then "promoting" them to a student worker as follows.
+To create a student worker, staff members are only required to add a student. All students in the software will immediately be made into student workers.
 
 1. Access the student dash by selecting **Student** at the navigation bar, then **EDIT**
 
 .. image:: /images/cwspnav1.png
 
-2. Here, either create your student, or if the student is already in the dash, make a check by that student/s name.
-3. Select the drop down action box located at the bottom left of the screen and select **Promote to Worker**
+2. At the list of students screen, select **Add Student** at the top right of your screen.
+3. The only **required** information when adding a student is the username. Everything else is optional.
+4. Select **Save** at the bottom right of the screen.
 
-.. image:: /images/cwsp2.png
+You may now access the list of student workers by clicking CWSP at the top menu bar, then clicking on **student workers** under the **EDIT WORK STUDY** dashlet. Your newly created student/worker will now be available to assign work placements, supervisors, etc.
 
-4. Once selected, the student/s will be made into a student worker- you can then view the new student worker in the student worker dash by clicking **CWSP**>**Edit Student Worker**
 
 Creating Supervisor Logins
 ---------------------------
