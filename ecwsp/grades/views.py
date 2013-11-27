@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect
 from django.template import RequestContext
 from django.db.models import Q
 
-from ecwsp.administration.models import Configuration
+from ecwsp.administration.models import Configuration, Template
 from ecwsp.schedule.models import Course, MarkingPeriod
 from ecwsp.schedule.forms import EngradeSyncForm
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
