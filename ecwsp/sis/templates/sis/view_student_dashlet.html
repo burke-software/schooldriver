@@ -3,13 +3,16 @@
 {% block dashlet_header %}
   <form id="form_view_student_dashlet" class="view_student" action="/sis/view_student/" method="post">
     {% if perms.sis.change_student %}
-       <a href="{% url 'admin:sis_student_changelist' %}">Student</a>
+       <a href="{% url 'admin:sis_student_changelist' %}">Student Flashcard</a>
     {% else %}
-      Student 
+      Student Flashcard
     {% endif %}
+<!-- Below this comment is the fancy auto-complete search function - Jeff -->
+    <!--br tag to separate search from student? see mockup-->
+    <br>
     {% csrf_token %}
     <span class="field">
-      <input class="input" type="text" placeholder="Search" name="view_student_dashlet_text" id="id_view_student_dashlet_text" style="margin-left: 2em; width:130px" value="" maxlength="255" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
+      <input class="input" type="text" placeholder="Search for student" name="view_student_dashlet_text" id="id_view_student_dashlet_text" style="width:15em" value="" maxlength="255" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
   </span>
     <input type="hidden" name="student" id="id_view_student_dashlet" value="">
     <div id="id_view_student_dashlet_on_deck" style="display: none;" class="results_on_deck"><div></div></div>
@@ -35,21 +38,26 @@
 {% endblock %}
 
 {% block dashlet_body %}
+  <!-- Something to try: span the entire width w/ "Search for a student..." then split into parts when student has been searched.
+      Make it look clean, like the mockup -->
+  <div>
+   {% if not object %}
+    <p>Search for a student to<br>get a photo and info</p>
+   {% endif %}
+  </div> 
   <div style="width: 55%; float:left;">
     <img style="width: 100%; max-width: 530px;" src="{{ student.pic.url_530x400 }}"/>
   </div>
   <div style="width:45%; float:left; text-align: left;">
-   {% if not object %}
-    <p>Search for a student to get a photo and info</p>
-   {% endif %}
-   <p style="padding-top: 2em;">
+   {% if object %}
+   <!-- added left side padding to name/year -->
+   <p style="padding-top: 1.75em; padding-left: .75em; padding-bottom: 1.75em;">
     Name: {{ object }}<br/>
     Year: {{ object.year }}
    </p>
-   {% if object %}
-   <p style="padding-top: 3em; text-align: center; text-transform:uppercase;">
+   <div class="primary btn">
     <a href="{% url "ecwsp.sis.views.view_student" object.id %}">View Info</a>
-   </p>
+   </div>
    {% endif %}
   </div>
 {% endblock %}

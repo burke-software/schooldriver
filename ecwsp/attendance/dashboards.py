@@ -4,7 +4,44 @@ from ecwsp.sis.dashboards import ReportBuilderDashlet
 from ecwsp.attendance.models import StudentAttendance
 from report_builder.models import Report
 
+# these are the imports needed to run AttendanceSubmissionPercentageDashlet
+from models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
+from ecwsp.schedule.models import Course
+from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
+
 import datetime
+    
+class AttendanceSubmissionPercentageDashlet(Dashlet):
+    template = 'attendance/teacher_submissions_percentage.html'
+    
+    # ripped directly from teacher_submissions in attendance/views.py. Better way to condense and DRY?
+    def submission_percentage(self):
+        logs = AttendanceLog.objects.filter(date=datetime.date.today())
+        homerooms = Course.objects.filter(homeroom=True)
+        homerooms = homerooms.filter(marking_period__school_year__active_year=True)
+        homerooms = homerooms.filter(coursemeet__day__contains=datetime.date.today().isoweekday()).distinct()
+        submissions = []
+        homeroomCount = 0
+        submissionCount = 0
+        for homeroom in homerooms:
+            homeroomCount += 1
+            log = AttendanceLog.objects.filter(date=datetime.date.today(), course=homeroom)
+            if log.count() > 0:
+                submissionCount += 1
+        if homeroomCount > 0:
+            sub_percent = int((submissionCount/homeroomCount)*100)
+        else:
+            sub_percent = 0
+        return sub_percent
+		
+    def _render(self, **kwargs):
+        submission_percentage = self.submission_percentage()
+        self.template_dict = dict(self.template_dict.items() + {
+            'submission_percentage': submission_percentage,
+        }.items())
+        return super(AttendanceSubmissionPercentageDashlet, self)._render(**kwargs)
+		
+				
 
 class AttendanceDashlet(ListDashlet):
     model = StudentAttendance
@@ -52,6 +89,7 @@ class AttendanceAdminListDashlet(AdminListDashlet):
 class AttendanceDashboard(Dashboard):
     app = 'attendance'
     dashlets = [
+        AttendanceSubmissionPercentageDashlet(title="Attendance Report"),
         AttendanceDashlet(title="Recent Attendance"),
         AttendanceLinksListDashlet(title="Links"),
         AttendanceReportBuilderDashlet(title="Reports",),
