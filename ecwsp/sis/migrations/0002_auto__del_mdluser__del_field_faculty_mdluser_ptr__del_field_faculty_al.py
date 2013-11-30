@@ -28,7 +28,7 @@ class Migration(SchemaMigration):
 
             # Adding field 'Faculty.user_ptr'
             db.add_column(u'sis_faculty', u'user_ptr',
-                          self.gf('django.db.models.fields.related.OneToOneField')(default='', to=orm['auth.User'], unique=True, primary_key=True),
+                          self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True),
                           keep_default=False)
 
             # Removing M2M table for field additional_report_fields on 'UserPreference'
@@ -39,7 +39,7 @@ class Migration(SchemaMigration):
 
             # Adding field 'Student.user_ptr'
             db.add_column(u'sis_student', u'user_ptr',
-                          self.gf('django.db.models.fields.related.OneToOneField')(default='', to=orm['auth.User'], unique=True, primary_key=True),
+                          self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True),
                           keep_default=False)
 
             # Adding field 'Student.city'
