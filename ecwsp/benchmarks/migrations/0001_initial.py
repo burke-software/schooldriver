@@ -17,9 +17,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'benchmarks', ['Benchmark'])
 
-        # Adding unique constraint on 'Benchmark', fields ['number', 'name']
-        db.create_unique(u'benchmarks_benchmark', ['number', 'name'])
-
         # Adding M2M table for field measurement_topics on 'Benchmark'
         db.create_table(u'benchmarks_benchmark_measurement_topics', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
