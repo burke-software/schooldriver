@@ -38,7 +38,7 @@ class Department(models.Model):
 
 
 class MeasurementTopic(models.Model):
-    name = models.CharField(max_length=700)
+    name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     department = models.ForeignKey(Department, blank=True, null=True)
     def __unicode__(self):

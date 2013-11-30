@@ -35,7 +35,7 @@ class Migration(SchemaMigration):
         # Adding model 'MeasurementTopic'
         db.create_table(u'benchmarks_measurementtopic', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=700)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=200)),
             ('description', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('department', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['benchmarks.Department'], null=True, blank=True)),
         ))
