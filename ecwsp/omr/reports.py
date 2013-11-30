@@ -86,7 +86,7 @@ class ReportManager(object):
                 try:
                     answer = test_instance.answerinstance_set.get(question=question)
                     row_points.append(answer.points_earned)
-                    row_answers.append(strip_tags(answer.answer).strip())
+                    row_answers.append(strip_tags(str(answer.answer)).strip())
                     i = None
                     if question.type == "True/False":
                         row_abc += [answer.answer]
