@@ -1,7 +1,7 @@
 from django.core.urlresolvers import reverse
 from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, LinksListDashlet
 from ecwsp.sis.dashboards import ReportBuilderDashlet
-from ecwsp.attendance.models import StudentAttendance
+from .models import StudentAttendance
 from report_builder.models import Report
 
 import datetime

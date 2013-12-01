@@ -25,27 +25,29 @@ class ReportBuilderDashlet(ListDashlet):
     fields = ('edit', 'name', 'download_xlsx')
     require_apps = ('report_builder',)
     require_permissions = ('report_builder.change_report',)
-    def _render(self, **kwargs):
+
+    def get_context_data(self, **kwargs):
         self.queryset = Report.objects.filter(root_model__app_label='admissions')
         # Show only starred when there are a lot of reports
         if self.queryset.count() > self.count:
             self.queryset = self.queryset.filter(starred=self.request.user)
-        return super(ReportBuilderDashlet, self)._render(**kwargs)
+        return super(ReportBuilderDashlet, self).get_context_data(**kwargs)
 
 
 class AdmissionsReportsDashlet(Dashlet):
-    template = "/admissions/reports_dashlet.html"
+    template_name = "/admissions/reports_dashlet.html"
     columns = 1
     require_permissions = ('admissions.change_applicant',)
     
-    def _render(self, **kwargs):   
+    def get_context_data(self, **kwargs):   
+        context = super(AdmissionsReportsDashlet, self).get_context_data(**kwargs)
         report_form = ReportForm()
         template_form = TemplateReportForm()
-        self.template_dict = dict(self.template_dict.items() + {
+        context = dict(context.items() + {
             'report_form': report_form,
             'template_form': template_form,
         }.items())
-        return super(AdmissionsReportsDashlet, self)._render(**kwargs)
+        return context
 
 
 class AdmissionsDashboard(Dashboard):
