@@ -27,7 +27,6 @@ class Benchmark(models.Model):
         return unicode('%s %s' % (self.number, self.name)) 
         
     class Meta:
-        unique_together = ('number','name')
         ordering = ('number', 'name',)
         
         
