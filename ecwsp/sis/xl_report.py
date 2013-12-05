@@ -35,7 +35,12 @@ class XlReport:
         sheet = self.workbook.create_sheet()
         if title:
             # Maximum 31 characters allowed in sheet title
-            sheet.title = unicode(title[:31])
+            clean_title = title[:31]
+            # From openpyxl's _set_title()
+            bad_title_char_re = re.compile(r'[\\*?:/\[\]]')
+            # Replace bad characters with underscores
+            clean_title = bad_title_char_re.sub('_', clean_title)
+            sheet.title = unicode(clean_title)
         if heading:
             sheet.append([unicode(heading)])
         if header_row:
