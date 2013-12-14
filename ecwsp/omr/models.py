@@ -11,7 +11,7 @@ from ckeditor.fields import RichTextField
 from django.conf import settings
 from localflavor.us.models import *
 
-from ecwsp.sis.models import SchoolYear, Student    
+from ecwsp.sis.models import SchoolYear, Student, Cohort
 
 from django.core.exceptions import ImproperlyConfigured
 from positions.fields import PositionField
@@ -33,7 +33,7 @@ class Test(models.Model):
     department = models.ForeignKey('benchmarks.Department', blank=True, null=True)
     courses = models.ManyToManyField('schedule.Course', blank=True, null=True, help_text="Enroll an entire course, students will not show until saving.")
     students = models.ManyToManyField('sis.Student', blank=True, null=True, through='TestInstance')
-    finalized = models.BooleanField(help_text="This test is finished and should no longer be edited!")
+    finalized = models.BooleanField(default=False, help_text="This test is finished and should no longer be edited!")
     answer_sheet_pdf = FileField(upload_to="student_tests", blank=True)
     queXF_pdf = FileField(upload_to="student_tests", blank=True)
     banding = FileField(upload_to="student_tests", blank=True)
@@ -56,36 +56,28 @@ class Test(models.Model):
         instance.teachers = self.teachers.all()
         instance.save()
     
-    def enroll_students(self, students):
-        """ Enroll student queryset to test """
-        for student in students:
-            self.__enroll_student(student)
+    @property
+    def active_testinstance_set(self):
+        return self.testinstance_set.filter(student__is_active=True)
 
     def get_average(self, cohorts=None):
         """ Calculate the average. Pretty fast so no caching is needed """
-        test_instances = self.testinstance_set.all()
+        test_instances = self.active_testinstance_set.all()
         if not cohorts:
             from ecwsp.sis.models import Cohort
-            cohorts = Cohorts.objects.all()
+            cohorts = Cohort.objects.all()
 
         # http://stackoverflow.com/questions/4093910/django-aggregates-sums-in-postgresql-dont-use-distinct-is-this-a-bug/4917507#4917507
-        subquery = self.testinstance_set.filter(student__cohort__in=cohorts)
+        subquery = self.testinstance_set.filter(student__cohort__in=cohorts).distinct()
         test_instances = test_instances.filter(pk__in=subquery)
 
         total_test_earned = test_instances.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']
         total_tests_taken = test_instances.annotate(earned=Sum('answerinstance__points_earned')).filter(earned__gt=0).distinct().count()
         points_possible = test_instances.all()[0].points_possible
-        return float(total_test_earned) / (total_tests_taken * points_possible)
-    
-    def get_percent_scoring_over(self, min_score=70):
-        """ Calculate the percent of test takers scoring over the min_score
-            Defaults to 70.
-        """
-        total_test_earned =  self.testinstance_set.aggregate(total_earned=Sum('answerinstance__points_earned'))['total_earned']
-        total_tests_taken = self.testinstance_set.annotate(earned=Sum('answerinstance__points_earned')).filter(earned__gt=0).count()
-        points_possible = self.testinstance_set.all()[0].points_possible
-        return float(total_test_earned) / (total_tests_taken * points_possible)
-    
+        if total_test_earned is not None and total_tests_taken * points_possible:
+            return float(total_test_earned) / (total_tests_taken * points_possible)
+        else:
+            return None
     
     def link_copy(self):
         from ecwsp.omr.views import test_copy
@@ -94,11 +86,11 @@ class Test(models.Model):
     
     @property
     def students_test_results(self):
-        return self.testinstance_set.filter(results_received=True).count()
+        return self.active_testinstance_set.filter(results_received=True).count()
     
     @property
     def students_in_queue(self):
-        return self.testinstance_set.filter(results_received=False).count()
+        return self.active_testinstance_set.filter(results_received=False).count()
     
     @property
     def points_possible(self):
@@ -107,25 +99,15 @@ class Test(models.Model):
         
     @property
     def get_teachers(self):
-        text = ''
-        for teacher in self.teachers.all():
-            text += '{}, '.format(teacher)
-        return text[:-2]
+        return u'; '.join(map(u'{}'.format, self.teachers.all()))
     
     @property
     def get_courses(self):
-        text = ''
-        for course in self.courses.all():
-            text += '{}, '.format(course)
-        return text[:-2]
+        return u'; '.join(map(u'{}'.format, self.courses.all()))
         
     @property
     def points_average(self):
-        try:
-            total_points = self.question_set.aggregate(total_points=Sum('answerinstance__points_earned'))['total_points']
-            return float(total_points) / (float(self.points_possible) * float(self.students_test_results))
-        except:
-            return "N/A"
+        return self.get_average()
     
     def enroll_students(self, students):
         """ Enroll these students, delete those not in this list!! """
@@ -158,7 +140,11 @@ class QuestionAbstract(models.Model):
     )
     type = models.CharField(max_length=25, choices=type_choices, default='Multiple Choice')
     point_value = models.IntegerField(default=1)
-    is_true = models.BooleanField(verbose_name="True or False")
+    is_true = models.BooleanField(default=False, verbose_name="True or False")
+
+    @property
+    def active_answerinstance_set(self):
+        return self.answerinstance_set.filter(test_instance__student__is_active=True)
     
     class Meta:
         abstract = True
@@ -317,7 +303,7 @@ class TestInstance(models.Model):
     test = models.ForeignKey(Test)
     date = models.DateTimeField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True)
-    results_received = models.BooleanField()
+    results_received = models.BooleanField(default=False, )
     def __unicode__(self):
         return '%s %s' % (self.student, self.test)
     

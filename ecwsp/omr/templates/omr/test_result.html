@@ -30,7 +30,7 @@
   <script type="text/javascript">
     $(document).ready(function() {
       var line1 = [
-        {% for ti in test.testinstance_set.all %}
+        {% for ti in test.active_testinstance_set.all %}
           [{{ ti.points_earned }}, "{{ ti.student }}"],
         {% endfor %}
       ];
@@ -72,7 +72,7 @@
   <h2>{{ test }} Results </h2>
   
   <div class="row">
-    {{ test.students_test_results }} of {{ test.testinstance_set.count }} scanned tests recieved.
+    {{ test.students_test_results }} of {{ test.active_testinstance_set.count }} scanned tests recieved.
   </div>
   <ul class="four_up tiles">
     <li class="icon"> 

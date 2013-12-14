@@ -34,7 +34,8 @@ class XlReport:
         """
         sheet = self.workbook.create_sheet()
         if title:
-            sheet.title = unicode(title)
+            # Maximum 31 characters allowed in sheet title
+            sheet.title = unicode(title[:31])
         if heading:
             sheet.append([unicode(heading)])
         if header_row:

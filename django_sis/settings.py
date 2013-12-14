@@ -447,11 +447,17 @@ INSTALLED_APPS += (
     'report_builder',
     'responsive_dashboard',
     'simple_import',
-    'floppyforms',
     'djangobower',
     'slide_report',
     'django_su',
+    'floppy_gumby_forms',
+    'floppyforms',
 )
 
+if 'social.apps.django_app.default' in INSTALLED_APPS:
+    TEMPLATE_CONTEXT_PROCESSORS += (
+        'social.apps.django_app.context_processors.backends',
+        'social.apps.django_app.context_processors.login_redirect',
+    )
 if 'test' in sys.argv:
     DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}

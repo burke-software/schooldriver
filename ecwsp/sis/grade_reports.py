@@ -13,7 +13,7 @@ def fail_report(request):
         marking_periods = form.cleaned_data['marking_period']
         students = Student.objects.filter(courseenrollment__course__marking_period__in=marking_periods).distinct()
         titles = ['']
-        departments = Department.objects.filter(course__courseenrollment__user__inactive=False).distinct()
+        departments = Department.objects.filter(course__courseenrollment__user__is_active=True).distinct()
         
         for department in departments:
             titles += [department]
@@ -92,7 +92,7 @@ def aggregate_grade_report(request):
             grades = Grade.objects.filter(
                 marking_period__in=mps,
                 course__teacher=teacher,
-                student__inactive=False,
+                student__is_active=True,
                 override_final=False,
             ).filter(
                 Q(grade__isnull=False) |
@@ -162,7 +162,7 @@ def aggregate_grade_report(request):
                 fails = Grade.objects.filter(
                     marking_period__in=mps,
                     course__department=dept,
-                    student__inactive=False,
+                    student__is_active=True,
                     student__year__in=[level],   # Shouldn't need __in. Makes no sense at all.
                     grade__lt=passing,
                     override_final=False,
@@ -170,7 +170,7 @@ def aggregate_grade_report(request):
                 total = Grade.objects.filter(
                     marking_period__in=mps,
                     course__department=dept,
-                    student__inactive=False,
+                    student__is_active=True,
                     student__year__in=[level],
                     override_final=False,
                 ).count()
@@ -195,7 +195,7 @@ def date_based_gpa_report(request):
         try:
             students = form.get_students(data)
         except:
-            students = Student.objects.filter(inactive = False).order_by('-year__id')
+            students = Student.objects.filter(is_active = True).order_by('-year__id')
         
         titles = ["Student", "9th", "10th", "11th","12th", "Current"]
         data = []

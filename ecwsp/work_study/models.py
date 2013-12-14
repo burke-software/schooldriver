@@ -56,8 +56,8 @@ from ecwsp.sis.template_report import TemplateReport
 
 class CraContact(models.Model):
     name = models.ForeignKey(User)
-    email = models.BooleanField(help_text="Recieve daily email listing all supervisor comments about student.")
-    email_all = models.BooleanField(help_text="Recieve comments about all students")
+    email = models.BooleanField(default=False, help_text="Recieve daily email listing all supervisor comments about student.")
+    email_all = models.BooleanField(default=False, help_text="Recieve comments about all students")
     def __unicode__(self):
         return unicode(self.name.first_name) + " " + unicode(self.name.last_name)
     class Meta:
@@ -152,7 +152,7 @@ class WorkTeamUser(User):
         self.groups.add(Group.objects.get_or_create(name='Company')[0])
 
 class WorkTeam(models.Model, CustomFieldModel):
-    inactive = models.BooleanField(help_text="Will unset student's placements.")
+    inactive = models.BooleanField(default=False, help_text="Will unset student's placements.")
     company = models.ForeignKey(Company, blank=True, null=True)
     team_name = models.CharField(max_length=255, unique=True)
     login = models.ManyToManyField(WorkTeamUser, blank=True, help_text="user from <a href=\"/admin/auth/user/\">here</a> that this company may login with, ensure user is in the \"company\" group so they have correct permissions")
@@ -171,7 +171,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     directions_to = models.TextField(blank=True)
     directions_pickup = models.TextField(blank=True)
     map = models.ImageField(upload_to="maps", blank=True)
-    use_google_maps = models.BooleanField()
+    use_google_maps = models.BooleanField(default=False, )
     contacts = models.ManyToManyField(Contact, blank=True, help_text="All contacts at this company. You must select them here in order to select the primary contact for a student.")
     company_description = models.TextField(blank=True)
     job_description = models.TextField(blank=True)
@@ -289,12 +289,12 @@ class CompContract(models.Model, CustomFieldModel):
     student_functional_responsibilities_other = models.TextField(blank=True)
     student_desired_skills = models.ManyToManyField(StudentDesiredSkill, blank=True, null=True)
     student_desired_skills_other = models.TextField(blank=True)
-    student_leave = models.BooleanField()
-    student_leave_lunch = models.BooleanField(verbose_name="Student leaves for lunch")
-    student_leave_errands = models.BooleanField(verbose_name="Student leaves for errands")
+    student_leave = models.BooleanField(default=False, )
+    student_leave_lunch = models.BooleanField(default=False, verbose_name="Student leaves for lunch")
+    student_leave_errands = models.BooleanField(default=False, verbose_name="Student leaves for errands")
     student_leave_other = models.TextField(blank=True)
     
-    signed = models.BooleanField()
+    signed = models.BooleanField(default=False, )
     contract_file = models.FileField(upload_to='contracts', blank=True)
     ip_address = models.IPAddressField(blank=True, null=True, help_text="IP address when signed")
     
@@ -547,7 +547,7 @@ class CompanyHistory(models.Model):
     student = models.ForeignKey(StudentWorker)
     placement = models.ForeignKey(WorkTeam)
     date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
-    fired = models.BooleanField()
+    fired = models.BooleanField(default=False, )
     
     def getStudent(self):
         if self.student != None:
@@ -677,8 +677,8 @@ class TimeSheetPerformanceChoice(models.Model):
     
 class TimeSheet(models.Model):
     student = models.ForeignKey(StudentWorker)
-    for_pay = models.BooleanField(help_text="Student is working over break and will be paid separately for this work.")
-    make_up = models.BooleanField(help_text="Student is making up a missed day.", verbose_name="makeup")
+    for_pay = models.BooleanField(default=False, help_text="Student is working over break and will be paid separately for this work.")
+    make_up = models.BooleanField(default=False, help_text="Student is making up a missed day.", verbose_name="makeup")
     company = models.ForeignKey(WorkTeam) # Because a student's company can change but this shouldn't.
     creation_date = models.DateTimeField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     date = models.DateField(validators=settings.DATE_VALIDATORS)
@@ -691,13 +691,13 @@ class TimeSheet(models.Model):
     student_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True, help_text="Per hour pay rate the student is actually recieving")
     school_net = models.DecimalField(blank=True, max_digits=6, decimal_places=2, null=True)
     student_net = models.DecimalField(blank=True, max_digits=6, decimal_places=2, null=True)
-    approved = models.BooleanField(verbose_name="approve")
+    approved = models.BooleanField(default=False, verbose_name="approve")
     student_accomplishment = models.TextField(blank=True)
     performance = models.ForeignKey(TimeSheetPerformanceChoice, blank=True,null=True)
     supervisor_comment = models.TextField(blank=True)
     show_student_comments = models.BooleanField(default=True)
     supervisor_key = models.CharField(max_length=20, blank=True)
-    cra_email_sent = models.BooleanField(help_text="This time sheet was sent to a cra via nightly email", editable=False)
+    cra_email_sent = models.BooleanField(default=False, help_text="This time sheet was sent to a cra via nightly email", editable=False)
     
     def student_Accomplishment_Brief(self):
         return unicode(self.student_accomplishment[:30])
@@ -807,10 +807,10 @@ class Attendance(models.Model):
     makeup_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     fee = models.ForeignKey(AttendanceFee, blank=True, null=True)
     paid = models.DecimalField(blank=True, null=True, max_digits=5, decimal_places=2, help_text="Dollar value student has paid school for a fee.")
-    billed = models.BooleanField(help_text="Has the student been billed for this day?")
+    billed = models.BooleanField(default=False, help_text="Has the student been billed for this day?")
     reason = models.ForeignKey(AttendanceReason, blank=True, null=True)
-    half_day = models.BooleanField(help_text="Missed only half day")
-    waive = models.BooleanField(help_text="Does not need to make up day at work.")
+    half_day = models.BooleanField(default=False, help_text="Missed only half day")
+    waive = models.BooleanField(default=False, help_text="Does not need to make up day at work.")
     notes = models.CharField(max_length=255, blank=True)
     if 'ecwsp.attendance' in settings.INSTALLED_APPS:
         sis_attendance = models.ForeignKey('attendance.StudentAttendance',blank=True,null=True,editable=False,on_delete=models.SET_NULL)
@@ -824,7 +824,7 @@ class Attendance(models.Model):
 
 
 class ClientVisit(models.Model):
-    dol = models.BooleanField()
+    dol = models.BooleanField(default=False, )
     date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     student_worker = models.ForeignKey('StudentWorker', blank=True, null=True)
     cra = models.ForeignKey(CraContact, blank=True, null=True)
@@ -855,7 +855,7 @@ class ClientVisit(models.Model):
         ('N', 'Not Compliant'),
     )
     work_environment = models.CharField(max_length=1, blank=True, choices=env_choices)
-    notify_mentors = models.BooleanField(help_text = "Email this report out too all mentors (those in the mentors group)")
+    notify_mentors = models.BooleanField(default=False, help_text = "Email this report out too all mentors (those in the mentors group)")
     notes = models.TextField(blank=True)
     
     def __unicode__(self):

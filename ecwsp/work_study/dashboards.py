@@ -26,38 +26,40 @@ class ReportBuilderDashlet(ListDashlet):
     fields = ('edit', 'name', 'download_xlsx')
     require_apps = ('report_builder',)
     require_permissions = ('report_builder.change_report')
-    def _render(self, **kwargs):
+
+    def get_context_data(self, **kwargs):
         self.queryset = Report.objects.filter(root_model__app_label='work_study')
         # Show only starred when there are a lot of reports
         if self.queryset.count() > self.count:
             self.queryset = self.queryset.filter(starred=self.request.user)
-        return super(ReportBuilderDashlet, self)._render(**kwargs)
+        return super(ReportBuilderDashlet, self).get_context_data(**kwargs)
 
 
 class WorkStudyAttendanceDashlet(Dashlet):
-    template = "/work_study/cwsp_attendance_dashlet.html"
+    template_name = "/work_study/cwsp_attendance_dashlet.html"
     require_permissions = ('work_study.change_attendance',)
 
 
 class WorkStudyReportsDashlet(Dashlet):
-    template = "/work_study/reports_dashlet.html"
+    template_name = "/work_study/reports_dashlet.html"
     columns = 2
     require_permissions = ('work_study.change_studentworker',)
     
-    def _render(self, **kwargs):
+    def get_context_data(self, **kwargs):
+        context = super(WorkStudyReportsDashlet, self).get_context_data(**kwargs)
         try:
             active_year = SchoolYear.objects.get(active_year=True)
         except SchoolYear.DoesNotExist:
             messages.warning(self.request, 'No Active Year Set, please create an active year!')
-            return None
+            return context
     
         form = ReportBuilderForm(initial={'custom_billing_begin':active_year.start_date,'custom_billing_end':active_year.end_date})
         template_form = ReportTemplateForm()
-        self.template_dict = dict(self.template_dict.items() + {
+        context = dict(context.items() + {
             'form': form,
             'template_form': template_form,
         }.items())
-        return super(WorkStudyReportsDashlet, self)._render(**kwargs)
+        return context
 
 
 class WorkStudyDashboard(Dashboard):

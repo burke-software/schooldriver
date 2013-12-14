@@ -17,9 +17,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'benchmarks', ['Benchmark'])
 
-        # Adding unique constraint on 'Benchmark', fields ['number', 'name']
-        db.create_unique(u'benchmarks_benchmark', ['number', 'name'])
-
         # Adding M2M table for field measurement_topics on 'Benchmark'
         db.create_table(u'benchmarks_benchmark_measurement_topics', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
@@ -38,7 +35,7 @@ class Migration(SchemaMigration):
         # Adding model 'MeasurementTopic'
         db.create_table(u'benchmarks_measurementtopic', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=700)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=200)),
             ('description', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('department', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['benchmarks.Department'], null=True, blank=True)),
         ))
