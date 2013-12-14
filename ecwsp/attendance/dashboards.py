@@ -38,12 +38,12 @@ class AttendanceSubmissionPercentageDashlet(Dashlet):
             sub_percent = 0
         return sub_percent
 		
-    def _render(self, **kwargs):
+    def get_context_data(self, **kwargs):
         submission_percentage = self.submission_percentage()
-        self.template_dict = dict(self.template_dict.items() + {
+        context = dict(self.context.items() + {
             'submission_percentage': submission_percentage,
         }.items())
-        return super(AttendanceSubmissionPercentageDashlet, self)._render(**kwargs)
+        return super(AttendanceSubmissionPercentageDashlet, self).get_context_data(**kwargs)
 		
 				
 
