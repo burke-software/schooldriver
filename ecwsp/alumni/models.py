@@ -42,7 +42,7 @@ class CollegeEnrollment(models.Model):
         ('D', 'Deceased'),
     )
     status = models.CharField(max_length=1, choices=status_choices, blank=True,null=True)
-    graduated = models.BooleanField()
+    graduated = models.BooleanField(default=False, )
     graduation_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     degree_title = models.CharField(max_length=255, blank=True, null=True)
     major = models.CharField(max_length=255, blank=True, null=True)
@@ -76,7 +76,7 @@ class Withdrawl(models.Model):
     alumni = models.ForeignKey('Alumni')
     date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     semesters = models.DecimalField(blank=True, null=True, max_digits=5, decimal_places=3, help_text="Number of semesters/trimesters at this college.")
-    from_enrollment = models.BooleanField()
+    from_enrollment = models.BooleanField(default=False, )
     
     def __unicode__(self):
         return "%s left %s on %s" % (self.alumni, self.college, self.date)
@@ -136,15 +136,15 @@ class AlumniPhoneNumber(models.Model):
 class Alumni(models.Model):
     student = models.OneToOneField(Student, unique=True)
     college = models.ForeignKey(College, blank=True, null=True, related_name="college_student")
-    graduated = models.BooleanField()
+    graduated = models.BooleanField(default=False, )
     graduation_date = models.DateField(blank=True, null=True, help_text="Expected or actual graduation date", validators=settings.DATE_VALIDATORS)
-    college_override = models.BooleanField(
+    college_override = models.BooleanField(default=False, 
         help_text="If checked, college enrollment data will not set college and graduated automatically.")  
     status = models.ForeignKey(AlumniStatus, blank=True, null=True)
     program_years = models.CharField(max_length=1, choices=program_years_choices, blank=True, null=True)
     semesters = models.CharField(max_length="5", blank=True, help_text="Number of semesters or trimesters.")
     withdrawls = models.ManyToManyField(College, through=Withdrawl)
-    on_track = models.BooleanField(help_text="On track to graduate")
+    on_track = models.BooleanField(default=False, help_text="On track to graduate")
     
     class Meta:
         verbose_name_plural = "Alumni"

@@ -38,7 +38,7 @@ class MarkingPeriod(models.Model):
     grades_due = models.DateField(validators=settings.DATE_VALIDATORS, blank=True, null=True,
 				  help_text="If filled out, teachers will be notified when grades are due.")
     school_year = models.ForeignKey('sis.SchoolYear')
-    active = models.BooleanField(help_text="Teachers may only enter grades for active marking periods. There may be more than one active marking period.")
+    active = models.BooleanField(default=False, help_text="Teachers may only enter grades for active marking periods. There may be more than one active marking period.")
     show_reports = models.BooleanField(default=True, help_text="If checked this marking period will show up on reports.")
     school_days = models.IntegerField(blank=True, null=True, help_text="If set, this will be the number of days school is in session. If unset, the value is calculated by the days off.")
     weight = models.DecimalField(max_digits=5, decimal_places=3, default=1, help_text="Weight for this marking period when calculating grades.")
@@ -47,8 +47,8 @@ class MarkingPeriod(models.Model):
     wednesday = models.BooleanField(default=True)
     thursday = models.BooleanField(default=True) 
     friday = models.BooleanField(default=True)
-    saturday = models.BooleanField()
-    sunday = models.BooleanField()
+    saturday = models.BooleanField(default=False, )
+    sunday = models.BooleanField(default=False, )
     
     class Meta:
         ordering = ('-start_date',)
@@ -216,7 +216,7 @@ class Course(models.Model):
     periods = models.ManyToManyField(Period, blank=True, through=CourseMeet)
     teacher = models.ForeignKey('sis.Faculty', blank=True, null=True, related_name="ateacher")
     secondary_teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True, related_name="secondary_teachers")
-    homeroom = models.BooleanField(help_text="Homerooms can be used for attendance")
+    homeroom = models.BooleanField(default=False, help_text="Homerooms can be used for attendance")
     graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
     enrollments = models.ManyToManyField('auth.User', through=CourseEnrollment, blank=True, null=True)
     description = models.TextField(blank=True)

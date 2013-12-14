@@ -31,11 +31,11 @@ import logging
 class AttendanceStatus(models.Model):
     name = models.CharField(max_length=255, unique=True, help_text='"Present" will not be saved but may show as a teacher option.')
     code = models.CharField(max_length=10, unique=True, help_text="Short code used on attendance reports. Ex: A might be the code for the name Absent")
-    teacher_selectable = models.BooleanField()
-    excused = models.BooleanField()
-    absent = models.BooleanField(help_text="Some statistics need to add various types of absent statuses, such as the number in parathesis in daily attendance")
-    tardy = models.BooleanField(help_text="Some statistics need to add various types of tardy statuses, such as the number in parathesis in daily attendance")
-    half = models.BooleanField(help_text="Half attendance when counting. DO NOT check off absent otherwise it will double count!")
+    teacher_selectable = models.BooleanField(default=False, )
+    excused = models.BooleanField(default=False, )
+    absent = models.BooleanField(default=False, help_text="Some statistics need to add various types of absent statuses, such as the number in parathesis in daily attendance")
+    tardy = models.BooleanField(default=False, help_text="Some statistics need to add various types of tardy statuses, such as the number in parathesis in daily attendance")
+    half = models.BooleanField(default=False, help_text="Half attendance when counting. DO NOT check off absent otherwise it will double count!")
     
     class Meta:
         verbose_name_plural = 'Attendance Statuses'
@@ -126,6 +126,6 @@ class AttendanceLog(models.Model):
     date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User)
     course = models.ForeignKey('schedule.Course')
-    asp = models.BooleanField(help_text="ASP attendance, if unchecked this is for a homeroom")
+    asp = models.BooleanField(default=False, help_text="ASP attendance, if unchecked this is for a homeroom")
     def __unicode__(self):
         return unicode(self.user) + " " + unicode(self.date)

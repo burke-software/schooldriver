@@ -29,9 +29,9 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
-from models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
-from forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
-from forms import StudentAttendanceForm, StudentMultpleAttendanceForm
+from .models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
+from .forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
+from .forms import StudentAttendanceForm, StudentMultpleAttendanceForm
 from ecwsp.schedule.models import Course
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
@@ -161,7 +161,6 @@ def teacher_attendance(request, course=None):
 
 @permission_required('attendance.change_studentattendance')
 def teacher_submissions(request):
-	#imports required: AttendanceLog, Course, Faculty  - Jeff
     logs = AttendanceLog.objects.filter(date=datetime.date.today())
     homerooms = Course.objects.filter(homeroom=True)
     homerooms = homerooms.filter(marking_period__school_year__active_year=True)

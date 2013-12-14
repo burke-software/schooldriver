@@ -11,15 +11,15 @@ dajaxice_autodiscover()
 urlpatterns = patterns('',
     (r'^admin/', include("massadmin.urls")),
     (r'^admin_export/', include("admin_export.urls")),
-    (r'^ckeditor/', include('ckeditor.urls')),
+    (r'^ckeditor/', include('ecwsp.ckeditor_urls')),# 1.6 compat  include('ckeditor.urls')),
     (r'^grappelli/', include('grappelli.urls')),
     (r'^$', 'ecwsp.sis.views.index'),
 
     (r'^sis/', include('ecwsp.sis.urls')),
     (r'^admin/jsi18n', 'django.views.i18n.javascript_catalog'),
     
-    (r'^accounts/password_change/$', 'django.contrib.auth.views.password_change'),
-    (r'^accounts/password_change_done/$', 'django.contrib.auth.views.password_change_done'),
+    url(r'^accounts/password_change/$', 'django.contrib.auth.views.password_change'),
+    url(r'^accounts/password_change_done/$', 'django.contrib.auth.views.password_change_done', name="password_change_done"),
     (r'^logout/$', logout_view),
   #  (r'^chart/$',chart_fte),
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
@@ -27,9 +27,9 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls) ),
     
     (r'^ajax_select/', include('ajax_select.urls')),
-    url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
+    url(dajaxice_config.dajaxice_url, include('ecwsp.dajaxice_urls')),#include('dajaxice.urls')),
     (r'^slide_report/', include('slide_report.urls')),
-    url(r"^su/", include("django_su.urls")),
+    url(r"^su/", include('ecwsp.django_su_urls')),# include("django_su.urls")),
 )
 
 if settings.GAPPS:
@@ -84,6 +84,8 @@ if 'responsive_dashboard' in settings.INSTALLED_APPS:
     urlpatterns += url(r'^', include('responsive_dashboard.urls')),
 if 'sentry' in settings.INSTALLED_APPS:    
     urlpatterns += patterns('', (r'^sentry/', include('sentry.web.urls')),)
+if 'social.apps.django_app.default' in settings.INSTALLED_APPS:    
+    urlpatterns += patterns('', url('', include('social.apps.django_app.urls', namespace='social')),)
 
 if settings.DEBUG:
     urlpatterns += patterns('',

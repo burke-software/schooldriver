@@ -37,12 +37,12 @@ class AlumniReportBuilderDashlet(ReportBuilderDashlet):
     """ django-report-builder starred reports """
     show_custom_link = '/admin/report_builder/report/?root_model__app_label=alumni'
     custom_link_text = "Reports"
-    def _render(self, **kwargs):
+    def get_context_data(self, **kwargs):
         self.queryset = Report.objects.filter(root_model__app_label='alumni')
         # Show only starred when there are a lot of reports
         if self.queryset.count() > self.count:
             self.queryset = self.queryset.filter(starred=self.request.user)
-        return super(ReportBuilderDashlet, self)._render(**kwargs)
+        return super(ReportBuilderDashlet, self).get_context_data(**kwargs)
 
 
 class AlumniDashboard(Dashboard):

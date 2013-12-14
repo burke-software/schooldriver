@@ -122,9 +122,10 @@ def my_tests(request):
 
 @permission_required('omr.teacher_test')
 def my_tests_show_queue(request):
+    # looks like a dead view after d7864ea1606c1a89f65471cf97360da9f3b0708c
     test = Test.objects.get(id=request.POST['id'])
     html = ""
-    for result in test.testinstance_set.filter(results_received=False):
+    for result in test.active_testinstance_set.filter(results_received=False):
         html += '%s <br/>' % (result.student,)
     return HttpResponse(html)
 
@@ -513,7 +514,7 @@ def manual_edit(request, test_id):
     tf_response  = None
     student_answer = None
     for question in test.test.question_set.all(): #each question
-        for answer in question.answerinstance_set.all(): #student's answer to question
+        for answer in question.active_answerinstance_set.all(): #student's answer to question
             student_answer = answer.answer
         count = 0
         ascii_letter = 45

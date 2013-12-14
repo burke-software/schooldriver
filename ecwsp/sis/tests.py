@@ -23,6 +23,7 @@ class AttendanceTest(TestCase):
         self.mp2.save()
         self.mp3 = MarkingPeriod(name="tri3 2010", start_date=date(2011,3,2), end_date=date(2050,5,1), school_year=self.year, monday=True, friday=True)
         self.mp3.save()
+<<<<<<< HEAD
         
         self.teacher1 = Faculty(username="dburke", first_name="david", last_name="burke", teacher=True)
         self.teacher1.save()
@@ -38,6 +39,16 @@ class AttendanceTest(TestCase):
         self.user2.is_staff = True
         self.user1.save()
         self.user2.save()
+=======
+        self.teacher = Faculty(username="dburke", first_name="david", last_name="burke", teacher=True)
+        self.teacher.save()
+        if User.objects.filter(username="dburke").count() == 0:
+            self.user = User.objects.create_user('dburke', 'ffdfsf@ffdsfsdf.com', 'aa')
+        else:
+            self.user = User.objects.get(username="dburke")
+        self.user.is_staff = True
+        self.user.save()
+>>>>>>> 749bf05af37d4708060828f4fd0441bc858bc338
         group = Group.objects.get_or_create(name="teacher")[0]
         group.save()
         self.user1.groups.add(group)

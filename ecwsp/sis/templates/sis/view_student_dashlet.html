@@ -53,7 +53,8 @@
    <!-- added left side padding to name/year -->
    <p style="padding-top: 1.75em; padding-left: .75em; padding-bottom: 1.75em;">
     Name: {{ object }}<br/>
-    Year: {{ object.year }}
+    Year: {{ object.year }}<br/>
+    Cohort: {{ object.primary_cohort }}<br/>
    </p>
    <div class="primary btn">
     <a href="{% url "ecwsp.sis.views.view_student" object.id %}">View Info</a>

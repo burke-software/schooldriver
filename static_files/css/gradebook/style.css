@@ -134,7 +134,7 @@ height: 35px;
     padding-top: 5px;
 }
 
-.filter_item select, .filter_item input[type="text"] {
+.filter_item select, .filter_item input[type="text"], .filter_item input[type="date"] {
 	background: transparent;
 	font-size: 14px;
 	width: 190px;

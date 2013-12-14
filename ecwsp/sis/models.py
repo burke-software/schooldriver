@@ -83,10 +83,10 @@ class UserPreference(models.Model):
     file_format_choices = (
         ('o', 'Open Document Format (.odt, .ods)'),
         ('m', 'Microsoft Binary (.doc, .xls)'),
-        ('x', 'Microsoft Office Open XML (.docx, .xlsx) Not recommended, formatting may be lost!'),
+        ('x', 'Microsoft Office Open XML (.docx, .xlsx)'),
     )
     prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
-    include_deleted_students = models.BooleanField(help_text="When searching for students, include deleted (previous) students.")
+    include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
     course_sort_choices = (
         ('department', 'Department order rank'),
         ('marking_period,department', 'Marking period, Department order rank'),
@@ -157,7 +157,7 @@ class EmergencyContact(models.Model):
     zip = models.CharField(max_length=10, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to. In the event of an emergency, this is the person that will be contacted first.")
-    emergency_only = models.BooleanField(help_text="Only contact in case of emergency")
+    emergency_only = models.BooleanField(default=False, help_text="Only contact in case of emergency")
     sync_schoolreach = models.BooleanField(help_text="Sync this contact with schoolreach",default=True)
     
     class Meta:
@@ -204,7 +204,7 @@ class EmergencyContact(models.Model):
 
 class EmergencyContactNumber(PhoneNumber):
     contact = models.ForeignKey(EmergencyContact)
-    primary = models.BooleanField()
+    primary = models.BooleanField(default=False, )
     
     class Meta:
         verbose_name = "Student Contact"
@@ -227,7 +227,7 @@ class EmergencyContactNumber(PhoneNumber):
 class Faculty(User):
     number = PhoneNumberField(blank=True)
     ext = models.CharField(max_length=10, blank=True, null=True)
-    teacher = models.BooleanField()
+    teacher = models.BooleanField(default=False, )
     
     class Meta:
         verbose_name_plural = "Faculty"
@@ -250,10 +250,13 @@ class Cohort(models.Model):
     name = models.CharField(max_length=255)
     long_name = models.CharField(max_length=500, blank=True, help_text="Optional verbose name")
     students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
-    primary = models.BooleanField(blank=True, help_text="If set true - all students in this cohort will have it set as primary!")
+    primary = models.BooleanField(default=False, help_text="If set true - all students in this cohort will have it set as primary!")
+
+    class Meta:
+        ordering = ('name',)
     
     def __unicode__(self):
-        return unicode(self.name)
+        return self.name
     
 def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     if instance.primary:
@@ -293,7 +296,7 @@ class GradeLevel(models.Model):
 class LanguageChoice(models.Model):
     name = models.CharField(unique=True, max_length=255)
     iso_code = models.CharField(blank=True, max_length=2, help_text="ISO 639-1 Language code http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes")
-    default = models.BooleanField()
+    default = models.BooleanField(default=False, )
     def __unicode__(self):
         return unicode(self.name)
     
@@ -369,7 +372,7 @@ class Student(User, CustomFieldModel):
     siblings = models.ManyToManyField('Student', blank=True)
     cohorts = models.ManyToManyField(Cohort, through='StudentCohort', blank=True)
     cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
-    individual_education_program = models.BooleanField()
+    individual_education_program = models.BooleanField(default=False)
     cache_gpa = models.DecimalField(editable=False, max_digits=5, decimal_places=2, blank=True, null=True)
     
     class Meta:
@@ -380,8 +383,6 @@ class Student(User, CustomFieldModel):
             ("reports", "View reports"),
         )
         ordering = ("last_name", "first_name")
-
-    report_builder_exclude_fields = ('alert',)
 
     def __unicode__(self):
         return u"{0}, {1}".format(self.last_name, self.first_name)
@@ -666,7 +667,7 @@ class ASPHistory(models.Model):
     student = models.ForeignKey(Student)
     asp = models.CharField(max_length=255)
     date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
-    enroll = models.BooleanField(help_text="Check if enrollment, uncheck if unenrollment")
+    enroll = models.BooleanField(default=False, help_text="Check if enrollment, uncheck if unenrollment")
     
     def __unicode__(self):
         if self.enroll:
@@ -677,7 +678,7 @@ class ASPHistory(models.Model):
 class StudentCohort(models.Model):
     student = models.ForeignKey(Student)
     cohort = models.ForeignKey(Cohort)
-    primary = models.BooleanField()
+    primary = models.BooleanField(default=False, )
     
     def save(self, *args, **kwargs):
         if self.primary:
@@ -742,7 +743,7 @@ class SchoolYear(models.Model):
     start_date = models.DateField(validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(validators=settings.DATE_VALIDATORS)
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
-    active_year = models.BooleanField(
+    active_year = models.BooleanField(default=False, 
         help_text="DANGER!! This is the current school year. There can only be one and setting this will remove it from other years. " \
                   "If you want to change the active year you almost certainly want to click Admin, Change School Year.")
     benchmark_grade = models.BooleanField(default=lambda: str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true",
@@ -779,7 +780,7 @@ class ImportLog(models.Model):
     import_file = models.FileField(upload_to="import_files")
     sql_backup = models.FileField(blank=True,null=True,upload_to="sql_dumps")
     user_note = models.CharField(max_length=1024,blank=True)
-    errors = models.BooleanField()
+    errors = models.BooleanField(default=False, )
     
     def delete(self, *args, **kwargs):
         """ These logs files would get huge if not deleted often """

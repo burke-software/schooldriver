@@ -27,12 +27,14 @@
         </div>
         <div class="pull_right">
           <ul>
+            {% if dashboard %}
             <li>
               <a href="javascript:void(0)" onclick="customize_dashboard(this);">
                 CUSTOMIZE
                 <img class="nav_icon" src="{% static "responsive_dashboard/img/gear.svg" %}"/>
               </a>
             </li>
+            {% endif %}
             <li>
               <a href="{% url 'admin:index' %}">
                 VIEW SITE ADMIN

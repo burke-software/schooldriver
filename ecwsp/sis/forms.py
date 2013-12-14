@@ -1,4 +1,4 @@
-from django import forms
+import floppyforms as forms
 from localflavor.us.forms import *
 from django.contrib.admin import widgets as adminwidgets
 from django.contrib import messages
@@ -26,6 +26,15 @@ class StudentForm(forms.ModelForm):
 class UserPreferenceForm(forms.ModelForm):
     class Meta:
         model = UserPreference
+        widgets = {
+            'prefered_file_format': forms.Select,
+            'include_deleted_students': forms.CheckboxInput,
+            'course_sort': forms.Select,
+            'omr_default_point_value': forms.NumberInput,
+            'omr_default_save_question_to_bank': forms.CheckboxInput,
+            'omr_default_number_answers': forms.NumberInput,
+            'gradebook_preference': forms.Select,
+        }
 
 
 class DeletedStudentLookupForm(forms.Form):

@@ -17,7 +17,7 @@ if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_
         """
         data = [['Student_ID','Class_Year','Last Name','First Name','Middle Name','Gender','Birthdate','GPA']]
     
-        for student in Student.objects.filter(inactive=False):
+        for student in Student.objects.filter(is_active=True):
             row = []
             if settings.NAVIANCE_SWORD_ID == "username":
                 row += [student.username]

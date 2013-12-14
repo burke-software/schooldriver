@@ -27,9 +27,14 @@ class Migration(SchemaMigration):
             db.delete_column(u'sis_faculty', 'alt_email')
 
             # Adding field 'Faculty.user_ptr'
-            db.add_column(u'sis_faculty', u'user_ptr',
-                          self.gf('django.db.models.fields.related.OneToOneField')(default='', to=orm['auth.User'], unique=True, primary_key=True),
-                          keep_default=False)
+            try:
+                db.add_column(u'sis_faculty', u'user_ptr',
+                              self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True),
+                              )
+            except: # Appease sqlite
+                db.add_column(u'sis_faculty', u'user_ptr',
+                              self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True, default=0),
+                              )
 
             # Removing M2M table for field additional_report_fields on 'UserPreference'
             db.delete_table(db.shorten_name(u'sis_userpreference_additional_report_fields'))
@@ -38,9 +43,14 @@ class Migration(SchemaMigration):
             db.delete_column(u'sis_student', u'mdluser_ptr_id')
 
             # Adding field 'Student.user_ptr'
-            db.add_column(u'sis_student', u'user_ptr',
-                          self.gf('django.db.models.fields.related.OneToOneField')(default='', to=orm['auth.User'], unique=True, primary_key=True),
-                          keep_default=False)
+            try:
+                db.add_column(u'sis_student', u'user_ptr',
+                              self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True),
+                              )
+            except:
+                db.add_column(u'sis_student', u'user_ptr',
+                              self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True, default=0),
+                              )
 
             # Adding field 'Student.city'
             db.add_column(u'sis_student', 'city',
@@ -87,11 +97,9 @@ class Migration(SchemaMigration):
         # Add columns
         db.add_column('sis_student', 'user_ptr_id', models.IntegerField(null=True))
         db.add_column('sis_faculty', 'user_ptr_id', models.IntegerField(null=True))
-        print 1
         db.add_column(u'sis_student', 'city',
                       self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True),
                       keep_default=False)
-        print 2
 
         # Migrate data if there's any to migrate
         if not new_db:
@@ -370,7 +378,7 @@ class Migration(SchemaMigration):
             'mname': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'primary_contact': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'relationship_to_student': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
-            'state': ('django.contrib.localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
+            'state': ('localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'sync_schoolreach': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'zip': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'})
@@ -381,14 +389,14 @@ class Migration(SchemaMigration):
             'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'note': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'number': ('django.contrib.localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
+            'number': ('localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
             'primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'})
         },
         u'sis.faculty': {
             'Meta': {'ordering': "('last_name', 'first_name')", 'object_name': 'Faculty', '_ormbases': [u'auth.User']},
             'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
-            'number': ('django.contrib.localflavor.us.models.PhoneNumberField', [], {'max_length': '20', 'blank': 'True'}),
+            'number': ('localflavor.us.models.PhoneNumberField', [], {'max_length': '20', 'blank': 'True'}),
             'teacher': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'user_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True', 'primary_key': 'True'})
         },
@@ -471,7 +479,7 @@ class Migration(SchemaMigration):
             'sex': ('django.db.models.fields.CharField', [], {'max_length': '1', 'null': 'True', 'blank': 'True'}),
             'siblings': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.Student']", 'symmetrical': 'False', 'blank': 'True'}),
             'ssn': ('django.db.models.fields.CharField', [], {'max_length': '11', 'null': 'True', 'blank': 'True'}),
-            'state': ('django.contrib.localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
+            'state': ('localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '150', 'blank': 'True'}),
             'unique_id': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'null': 'True', 'blank': 'True'}),
             u'user_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True', 'primary_key': 'True'}),
@@ -502,7 +510,7 @@ class Migration(SchemaMigration):
             'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'note': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'number': ('django.contrib.localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
+            'number': ('localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
             'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']", 'null': 'True', 'blank': 'True'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'})
         },
