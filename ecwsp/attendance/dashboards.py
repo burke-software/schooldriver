@@ -11,10 +11,10 @@ from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 import datetime
 
 class AttendanceIndividualDashlet(Dashlet):
-    template = 'attendance/individual_attendance_report.html'
+    template_name = 'attendance/individual_attendance_report.html'
     
 class AttendanceSubmissionPercentageDashlet(Dashlet):
-    template = 'attendance/teacher_submissions_percentage.html'
+    template_name = 'attendance/teacher_submissions_percentage.html'
     
     # ripped directly from teacher_submissions in attendance/views.py. Create function or class for common use cases in future...
     def submission_percentage(self):
@@ -27,23 +27,23 @@ class AttendanceSubmissionPercentageDashlet(Dashlet):
         submissions = []
         homeroom_count = 0
         submission_count = 0
+        sub_percent = 0
         for homeroom in homerooms:
             homeroom_count += 1
             log = AttendanceLog.objects.filter(date=datetime.date.today(), course=homeroom)
             if log.count() > 0:
                 submission_count += 1
-        if homeroom_count > 0:
+        if submission_count > 0:
             sub_percent = int((submission_count/homeroom_count)*100)
-        else:
-            sub_percent = 0
         return sub_percent
 		
     def get_context_data(self, **kwargs):
+        context = super(AttendanceSubmissionPercentageDashlet, self).get_context_data(**kwargs)
         submission_percentage = self.submission_percentage()
-        context = dict(self.context.items() + {
+        context = dict(context.items() + {
             'submission_percentage': submission_percentage,
         }.items())
-        return super(AttendanceSubmissionPercentageDashlet, self).get_context_data(**kwargs)
+        return context
 		
 				
 
@@ -78,12 +78,12 @@ class AttendanceLinksListDashlet(LinksListDashlet):
 class AttendanceReportBuilderDashlet(ReportBuilderDashlet):
     show_custom_link = '/admin/report_builder/report/?root_model__app_label=attendance'
     custom_link_text = "Reports"
-    def _render(self, **kwargs):
+    def get_context_data(self, **kwargs):
         self.queryset = Report.objects.filter(root_model__app_label='attendance')
         # Show only starred when there are a lot of reports
         if self.queryset.count() > self.count:
             self.queryset = self.queryset.filter(starred=self.request.user)
-        return super(ReportBuilderDashlet, self)._render(**kwargs)
+        return super(ReportBuilderDashlet, self).get_context_data(**kwargs)
 
 
 class AttendanceAdminListDashlet(AdminListDashlet):

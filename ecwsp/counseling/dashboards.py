@@ -13,26 +13,6 @@ class CounselingLinksListDashlet(LinksListDashlet):
             'link': reverse('admin:counseling_referralform_add'),
             'perm': ('counseling.add_referralform',),
         },
-        {
-            'text': 'NOT Discipline actions',
-            'link': reverse('ecwsp.attendance.views.teacher_attendance'),
-            'perm': ('attendance.take_studentattendance',),
-        },
-        {
-            'text': 'NOT Infractions',
-            'link': reverse('ecwsp.attendance.views.select_course_for_attendance'),
-            'perm': ('attendance.take_studentattendance',),
-        },
-        {
-            'text': 'NOT Student Discipline',
-            'link': reverse('ecwsp.attendance.views.attendance_report'),
-            'perm': ('sis.reports',),
-        },
-        {
-            'text': 'NOT Counseling',
-            'link': reverse('ecwsp.attendance.views.attendance_report'),
-            'perm': ('sis.reports',),
-        },
     ]
     
     

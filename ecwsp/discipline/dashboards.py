@@ -1,38 +1,11 @@
-<<<<<<< HEAD
 from django.core.urlresolvers import reverse
 from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, LinksListDashlet, AdminListDashlet
 from ecwsp.discipline.models import StudentDiscipline
-=======
 from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet
 from .models import StudentDiscipline
->>>>>>> 749bf05af37d4708060828f4fd0441bc858bc338
 from report_builder.models import Report
 
 import datetime
-
-class DisciplineLinksDashlet(LinksListDashlet):
-    links = [
-        {
-            'text': 'NOT Discipline actions',
-            'link': reverse('ecwsp.attendance.views.teacher_attendance'),
-            'perm': ('attendance.take_studentattendance',),
-        },
-        {
-            'text': 'NOT Infractions',
-            'link': reverse('ecwsp.attendance.views.select_course_for_attendance'),
-            'perm': ('attendance.take_studentattendance',),
-        },
-        {
-            'text': 'NOT Student Discipline',
-            'link': reverse('ecwsp.attendance.views.attendance_report'),
-            'perm': ('sis.reports',),
-        },
-        {
-            'text': 'NOT Counseling',
-            'link': reverse('ecwsp.attendance.views.attendance_report'),
-            'perm': ('sis.reports',),
-        },
-    ]
     
     
 class DisciplineDashlet(ListDashlet):
@@ -84,7 +57,6 @@ class AdmissionsReportsDashlet(Dashlet):
 class DisciplineDashboard(Dashboard):
     app = 'discipline'
     dashlets = [
-        DisciplineLinksDashlet(title="Links"),
         DisciplineDashlet(title="Latest Discipline"),
         ReportBuilderDashlet(title="Reports",),
         AdminListDashlet(title="Edit", app_label="discipline"),
