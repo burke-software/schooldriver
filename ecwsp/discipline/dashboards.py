@@ -1,9 +1,13 @@
+from django.core.urlresolvers import reverse
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, LinksListDashlet, AdminListDashlet
+from ecwsp.discipline.models import StudentDiscipline
 from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet
 from .models import StudentDiscipline
 from report_builder.models import Report
 
 import datetime
-
+    
+    
 class DisciplineDashlet(ListDashlet):
     model = StudentDiscipline
     first_column_is_link = True
@@ -33,6 +37,7 @@ class ReportBuilderDashlet(ListDashlet):
         return super(ReportBuilderDashlet, self).get_context_data(**kwargs)
 
 
+# this is not a dashlet shown on default
 class AdmissionsReportsDashlet(Dashlet):
     template_name = "/admissions/reports_dashlet.html"
     columns = 1

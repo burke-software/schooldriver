@@ -30,7 +30,7 @@ django-positions>=0.4.6
 django-bower
 django-ckeditor
 django-su
-file:../django-sis/install/hatchery/django-ldap-groups-0.1.3.tar.gz
+file:../install/hatchery/django-ldap-groups-0.1.3.tar.gz
 django-rosetta>=0.7.1
 -e git://github.com/zsiciarz/django-rosetta-grappelli.git#egg=django-rosetta-grappelli
 django-celery>=3.0.17

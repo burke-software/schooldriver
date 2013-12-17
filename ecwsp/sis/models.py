@@ -404,6 +404,7 @@ class Student(User, CustomFieldModel):
     
     @property
     def phone(self):
+        # TODO - Refactor
         try:
             parent = self.emergency_contacts.order_by('-primary_contact')[0]
             return parent.emergencycontactnumber_set.all()[0].number
@@ -447,6 +448,7 @@ class Student(User, CustomFieldModel):
         return self.alt_email
 
     def get_phone_number(self):
+        # TODO - Refactor
         if self.studentnumber_set.filter(type="C"):
             return self.studentnumber_set.filter(type="C")[0]
         elif self.studentnumber_set.all():

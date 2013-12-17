@@ -6,6 +6,16 @@ from report_builder.models import Report
 
 import datetime
 
+class CounselingLinksListDashlet(LinksListDashlet):
+    links = [
+        {
+            'text': 'Submit Referral Form',
+            'link': reverse('admin:counseling_referralform_add'),
+            'perm': ('counseling.add_referralform',),
+        },
+    ]
+    
+    
 class StudentMeetingDashlet(ListDashlet):
     model = StudentMeeting
     require_permissions = ('counseling.change_studentmeeting',)
@@ -22,15 +32,6 @@ class ReferralFormDashlet(ListDashlet):
     first_column_is_link = True
     count = 8
 
-
-class CounselingLinksListDashlet(LinksListDashlet):
-    links = [
-        {
-            'text': 'Submit Referral Form',
-            'link': reverse('admin:counseling_referralform_add'),
-            'perm': ('counseling.add_referralform',),
-        },
-    ]
 
 
 class CounselingAdminListDashlet(AdminListDashlet):

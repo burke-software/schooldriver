@@ -29,9 +29,9 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
-from models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
-from forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
-from forms import StudentAttendanceForm, StudentMultpleAttendanceForm
+from .models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
+from .forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
+from .forms import StudentAttendanceForm, StudentMultpleAttendanceForm
 from ecwsp.schedule.models import Course
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct

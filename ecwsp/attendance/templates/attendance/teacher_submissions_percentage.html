@@ -1,0 +1,12 @@
+{% extends "responsive_dashboard/dashlet.html" %}
+
+{% block dashlet_body %}
+    <div style="padding-bottom:2em;" class="row">
+        <a style = "font-size:200%" href="{% url "ecwsp.attendance.views.teacher_submissions" %}">
+            {{ submission_percentage }}%</a> 
+        of attendance reports<br>have been submitted today <br><br>
+    </div> 
+    <div class="primary btn">
+        <a href="{% url "ecwsp.attendance.views.teacher_submissions" %}">View Teacher Submissions</a>     
+    </div>
+{% endblock %}
