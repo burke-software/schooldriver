@@ -83,6 +83,12 @@ class AlumniAdmin(admin.ModelAdmin):
     
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
+        # save(commit=False) will soon stop deleting, so we have to do it manually
+        # https://code.djangoproject.com/ticket/10284
+        # see also (scroll down): https://docs.djangoproject.com/en/dev/topics/forms/formsets/#django.forms.formsets.BaseFormSet.can_delete
+        for obj in formset.deleted_objects:
+            if obj.pk is not None: # don't try to double delete
+                obj.delete()
         for instance in instances:
             if isinstance(instance, AlumniNote): #Check if it is the correct type of inline
                 if(not instance.user):
