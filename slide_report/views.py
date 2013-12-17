@@ -5,12 +5,12 @@ from django.views.generic import ListView
 from django.views.generic.edit import FormView
 from django.views.generic.edit import ProcessFormView
 from django.utils import simplejson
-from slide_report.report import *
+from .report import *
 
 class SlideReportMixin(object):
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.report = slide_reports[kwargs['name']]
+            self.report = slide_reports[kwargs['name']]()
         except KeyError:
             raise Http404
         self.model = self.report.model
@@ -28,6 +28,10 @@ class SlideReportView(SlideReportMixin, TemplateView):
     template_name = "slide_report/report.html"
 
 
+class FilterView(SlideReportMixin, FormView):
+    template_name = "slide_report/filter.html"
+
+
 class AjaxPreviewView(SlideReportMixin, TemplateView):
     """ Show a ajax preview table """
     template_name = "slide_report/table.html"
@@ -35,7 +39,9 @@ class AjaxPreviewView(SlideReportMixin, TemplateView):
     def post(self, request, **kwargs):
         context = self.get_context_data(**kwargs)
         if request.POST.get('data', None):
-            self.report._active_filters = simplejson.loads(request.POST['data'])
+            data = simplejson.loads(request.POST['data'])
+            self.report.handle_post_data(data)
+            context['filter_errors'] = self.report.filter_errors
         context['object_list'] = self.report.report_to_list(user=self.request.user, preview=True)
         return render(request, self.template_name, context)
 

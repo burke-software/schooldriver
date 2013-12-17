@@ -1,19 +1,19 @@
 {
   "name": "gumby",
-  "version": "2.5.15",
+  "version": "2.6.0",
   "main": [
     "./js/libs/gumby.min.js",
     "./css/gumby.css"
   ],
   "homepage": "https://github.com/GumbyFramework/Gumby",
-  "_release": "2.5.15",
+  "_release": "2.6.0",
   "_resolution": {
     "type": "version",
-    "tag": "2.5.15",
-    "commit": "92c13252b856440d6f107116a8efa22c3fb13efe"
+    "tag": "2.6.0",
+    "commit": "5a3dceddc0d8f636e8df09cba3c4f31915d877af"
   },
   "_source": "git://github.com/GumbyFramework/Gumby.git",
-  "_target": "~2.5.15",
+  "_target": "~2.6.0",
   "_originalSource": "gumby",
   "_direct": true
 }

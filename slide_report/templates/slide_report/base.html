@@ -5,3 +5,8 @@
   {{ block.super }}
   <script src="{% static 'slide_report/slide_report.js' %}"></script>  
 {% endblock %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" href="/static/slide_report/slide_report.css"/> 
+{% endblock %}

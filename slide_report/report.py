@@ -1,9 +1,12 @@
 from django.conf import settings
 from django.utils.importlib import import_module
-from abc import abstractmethod
+from django import forms
+from django.views.generic import FormView
 import imp
+import inspect
+import copy
 
-class SlideReport():
+class SlideReport(object):
     """ Base class for any actual slide reports
     A slide report is named after UI effects for moving 
     various filters and previews into the report
@@ -16,13 +19,18 @@ class SlideReport():
     preview_fields = [] 
     num_preview = 3
     filters = []
-    _active_filters = [] # end user selected filters from view
-    _possible_filters = [] # developer selected filters from subclass
+
+    def register(self):
+        slide_reports[self.name] = self.__class__
 
     def __init__(self):
-        slide_reports[self.name] = self
+        if not self.name in slide_reports:
+            self.register()
+        self._possible_filters = [] # developer selected filters from subclass
+        self._active_filters = [] # end user selected filters from view
+        self.filter_errors = []
         for possible_filter in self.filters:
-            self._possible_filters += [possible_filter()]
+            self._possible_filters += [possible_filter]
 
     @property
     def get_name(self):
@@ -30,15 +38,27 @@ class SlideReport():
             return self.name_verbose
         return self.name.replace('_', ' ')
     
+    def handle_post_data(self, data):
+        for filter_data in data:
+            for possible_filter in self._possible_filters:
+                if possible_filter.__class__.__name__ == filter_data['name']:
+                    filter_instance = copy.copy(possible_filter)
+                    filter_instance.build_form()
+                    filter_instance.raw_form_data = filter_data.get('form', None)
+                    self._active_filters += [filter_instance]
+
     def get_queryset(self):
         """ Return a queryset of the model
         filtering any active filters
         """
         queryset = self.model.objects.all()
         for active_filter in self._active_filters:
-            for report_filter in self._possible_filters:
-                if report_filter.__class__.__name__ == active_filter['name']:
-                    queryset = report_filter.queryset_filter(queryset)
+            queryset = active_filter.process_filter(queryset)
+            if active_filter.form.errors:
+                self.filter_errors += [{
+                    'filter': active_filter.form.data['filter_number'],
+                    'errors': active_filter.form.errors,
+                }]
         return queryset
 
 
@@ -75,29 +95,6 @@ class SlideReport():
             return preview_fields
         else:
             return [self.model._meta.verbose_name_plural.title()]
-
-class Filter(object):
-    """ A customized filter for querysets """
-    name = None
-    verbose_name = None
-    
-    @abstractmethod
-    def queryset_filter(self, queryset):
-        """ Allow custom handeling of queryset
-        Must return the queryset.
-        """
-        return queryset 
-
-    def get_verbose_name(self):
-        if self.verbose_name:
-            return self.verbose_name
-        return self.get_name()
-
-    def get_name(self):
-        """ return unique name of this filter """
-        if self.name:
-            return self.name
-        return self.__class__.__name__
 
 
 slide_reports = {}
