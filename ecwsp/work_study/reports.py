@@ -282,5 +282,5 @@ def am_route_attendance(request):
             data.append(row)
         if not report:
             report = XlReport(file_name=fileName)
-        report.add_sheet(data, header_row=titles, title=route, heading=route)
+        report.add_sheet(data, header_row=titles, title=route.name, heading=route)
     return report.as_download()
