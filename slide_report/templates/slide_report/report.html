@@ -6,9 +6,8 @@
 
     <div class="active_filters">
       <ul id="sortable_filters">
-        <li class="">Item 1</li>
       </ul>
-      <span id="drag_tit">Drag filters here from the right</span>
+      <span id="drag_it">Drag filters here from the right</span>
     </div>
 
     <div class="select_filters">
@@ -19,24 +18,17 @@
             data-name="{{ filter.get_name }}"
         >
             {{ filter.get_verbose_name }}
+            <form method="post" class="filter_form" style="display:none;">
+                {{ filter.form }}
+            </form>
         </li>
         {% endfor %}
       </ul>
     </div>
 
     <div style="clear:both"/>
+    <p onclick="load_preview();">Update</p>
     <div id="preview_area">
-      <table>
-        <tr>
-        <th>
-          Hey
-        </th>
-      </tr>
-      <tr>
-        <td>fdsafsdf</td>
-      </tr>
-        
-      </table>
     </div>
 
   </div>

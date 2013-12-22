@@ -11,9 +11,8 @@ from datetime import date, datetime
 
 class AttendanceTest(TestCase):
     def setup(self):
-        """
-        Prepares simple school data
-        """
+        """ Prepares simple school data. """
+        
         self.student = Student(first_name="Joe", last_name="Student", username="jstudent")
         self.student.save()
         self.year = SchoolYear(name="2010-2011", start_date=date(2010,7,1), end_date=date(2011,5,1), active_year=True)
@@ -24,6 +23,23 @@ class AttendanceTest(TestCase):
         self.mp2.save()
         self.mp3 = MarkingPeriod(name="tri3 2010", start_date=date(2011,3,2), end_date=date(2050,5,1), school_year=self.year, monday=True, friday=True)
         self.mp3.save()
+<<<<<<< HEAD
+        
+        self.teacher1 = Faculty(username="dburke", first_name="david", last_name="burke", teacher=True)
+        self.teacher1.save()
+        self.teacher2 = Faculty(username="jbayes", first_name="jeff", last_name="bayes", teacher=True)
+        self.teacher2.save()
+        try:
+            self.user1 = User.objects.create_user('dburke', 'ffdfsf1@ffdsfsdf.com', 'aa1')
+            self.user2 = User.objects.create_user('jbayes', 'ffdfsf2@ffdsfsdf.com', 'aa2')
+        except:
+            self.user1 = User.objects.get(username="dburke")
+            self.user2 = User.objects.get(username="jbayes")
+        self.user1.is_staff = True
+        self.user2.is_staff = True
+        self.user1.save()
+        self.user2.save()
+=======
         self.teacher = Faculty(username="dburke", first_name="david", last_name="burke", teacher=True)
         self.teacher.save()
         if User.objects.filter(username="dburke").count() == 0:
@@ -32,31 +48,41 @@ class AttendanceTest(TestCase):
             self.user = User.objects.get(username="dburke")
         self.user.is_staff = True
         self.user.save()
+>>>>>>> 749bf05af37d4708060828f4fd0441bc858bc338
         group = Group.objects.get_or_create(name="teacher")[0]
         group.save()
-        self.user.groups.add(group)
+        self.user1.groups.add(group)
+        self.user2.groups.add(group)
         group2 = Group.objects.get_or_create(name="faculty")[0]
         group2.save()
-        self.user.groups.add(group2)
-        self.user.save()
+        self.user1.groups.add(group2)
+        self.user2.groups.add(group2)
+        self.user1.save()
+        self.user2.save()
+        
+        self.course1 = Course(fullname="Homeroom FX 2011", shortname="FX1", teacher=self.teacher1, homeroom=True, credits=1)
+        self.course1.save()
+        self.course2 = Course(fullname="Homeroom FX 2012", shortname="FX2", teacher=self.teacher2, homeroom=True, credits=1)
+        self.course2.save()
         self.period = Period(name="Homeroom (M)", start_time=datetime.now(), end_time=datetime.now())
         self.period.save()
-        self.course = Course(fullname="Homeroom FX 2010", shortname="FX", teacher=self.teacher, homeroom=True, credits=1)
-        self.course.save()
-        self.course_meet = CourseMeet(course=self.course, period=self.period, day="1")
-        self.course_meet.save()
-        self.course.marking_period.add(self.mp)
-        self.course.marking_period.add(self.mp2)
-        self.course.marking_period.add(self.mp3)
-        self.course.save()
-        self.course2 = Course(fullname="Math 2010", shortname="Math", teacher=self.teacher, credits=1)
-        self.course2.save()
+        self.course_meet1 = CourseMeet(course=self.course1, period=self.period, day="1")
+        self.course_meet1.save()
+        self.course_meet2 = CourseMeet(course=self.course2, period=self.period, day="2")
+        self.course_meet2.save()
+        self.course1.marking_period.add(self.mp)
+        self.course1.marking_period.add(self.mp2)
+        self.course1.marking_period.add(self.mp3)
+        self.course1.save()
         self.course2.marking_period.add(self.mp)
         self.course2.marking_period.add(self.mp2)
         self.course2.marking_period.add(self.mp3)
         self.course2.save()
-        self.enroll = CourseEnrollment(course=self.course, user=self.teacher)
-        self.enroll.save()
+        
+        self.enroll1 = CourseEnrollment(course=self.course1, user=self.teacher1)
+        self.enroll1.save()
+        self.enroll2 = CourseEnrollment(course=self.course2, user=self.teacher2)
+        self.enroll2.save()
         self.present = AttendanceStatus(name="Present", code="P", teacher_selectable=True)
         self.present.save()
         self.absent = AttendanceStatus(name="Absent", code="A", teacher_selectable=True, absent=True)

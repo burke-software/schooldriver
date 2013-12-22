@@ -1,0 +1,8 @@
+#sortable_filters{
+  padding-top: 1em;
+  padding-bottom: 1em;
+  min-height: 50px;
+}
+#slide .filter_error {
+    border: solid red;
+}

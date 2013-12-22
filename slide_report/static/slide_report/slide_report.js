@@ -22,7 +22,8 @@ function load_preview() {
   $('#preview_area').fadeOut();
   $(filters).each(function(key, value) { 
     var filter_dict = {
-      'name': $(value).data('name')
+      'name': $(value).data('name'),
+      'form': $(value).children('form.filter_form').serialize()
     }
     filter_data.push(filter_dict)
   })
@@ -39,10 +40,24 @@ function load_preview() {
   ); 
 }
 
+var filter_i = 0;
+function add_filter(event, ui) {
+    prepare_filter(ui.item);
+    load_preview();
+}
+
+function prepare_filter(filter) {
+    var form = $(filter).children('form.filter_form')
+    form.show();
+    $(filter).attr('id', 'filter_' + filter_i);
+    form.children('input[name="filter_number"]').val(filter_i);
+    filter_i = filter_i + 1;
+}
+
 $(function() {
   $( "#sortable_filters" ).sortable({
     placeholder: "ui-state-highlight",
-    update: load_preview,
+    update: add_filter,
   });
   $( "#sortable_filters" ).disableSelection();
 
@@ -52,5 +67,19 @@ $(function() {
     revert: "invalid",
   });
   $(".draggable").disableSelection();
+  $(".select_filters li.draggable").dblclick(function(ev){
+    var new_filter = $(this).clone(add_filter).appendTo('#sortable_filters');
+    prepare_filter(new_filter);
+  });
   load_preview();
 });
+
+function process_errors(arr) {
+  /* Process ajax error infomation
+   * arr is an array generated in a django template */
+  $('#sortable_filters .report_filter').removeClass('filter_error');
+  arr.forEach(function(value) {
+    var filter_li = $('#sortable_filters li#filter_'+value);
+    filter_li.addClass('filter_error');
+  });
+}

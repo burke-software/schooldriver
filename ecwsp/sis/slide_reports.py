@@ -1,18 +1,14 @@
-from slide_report.report import SlideReport, Filter
+from slide_report.report import SlideReport
+from slide_report.filters import DecimalCompareFilter, IntCompareFilter
+from django import forms
 from ecwsp.sis.models import Student
-
-class GpaFilter(Filter):
-    verbose_name = "Filter by GPA"
-
-    def queryset_filter(self, queryset):
-        print "hello!!"
-        return queryset.filter(cache_gpa__gt=95)
-
-
 
 class SisReport(SlideReport):
     name = "student_report"
     model = Student
-    filters = (GpaFilter,)
+    filters = (
+        DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cache_gpa"),
+        IntCompareFilter(verbose_name="Tardies", compare_field_string="fuck"),
+    )
 
-SisReport()
+sis = SisReport()
