@@ -33,6 +33,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from ecwsp.administration.models import Configuration
 from custom_field.custom_field import CustomFieldModel
 import os
+import sys
 from ckeditor.fields import RichTextField
 
 logger = logging.getLogger(__name__)
@@ -249,7 +250,7 @@ class Faculty(User):
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
     long_name = models.CharField(max_length=500, blank=True, help_text="Optional verbose name")
-    students = models.ManyToManyField('Student', blank=True, null=True, db_table="sis_studentcohort")
+    students = models.ManyToManyField('Student', blank=True, through='StudentCohort', related_name="student_cohorts")
     primary = models.BooleanField(default=False, help_text="If set true - all students in this cohort will have it set as primary!")
 
     class Meta:
@@ -679,6 +680,10 @@ class StudentCohort(models.Model):
     student = models.ForeignKey(Student)
     cohort = models.ForeignKey(Cohort)
     primary = models.BooleanField(default=False, )
+
+    class Meta:
+        if not 'syncdb' in sys.argv:
+            auto_created = True 
     
     def save(self, *args, **kwargs):
         if self.primary:
