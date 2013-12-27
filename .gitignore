@@ -3,3 +3,7 @@
 settings_local.py
 *.sass-cache/
 npm-debug.log
+
+src/pip-delete-this-directory.txt
+
+sword

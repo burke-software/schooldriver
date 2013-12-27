@@ -1747,7 +1747,22 @@ table#gradebook_table img.cancel { margin-top: 2px; padding-right: 1px; }
 
 #content { /* Why does grappelli have this? */ margin-bottom: 0px; }
 
-.dashlet { border: 1px solid #bebdbd !important; border-radius: 2px; }
-.dashlet .dashlet_body .row { padding: 5px; }
+.navcontain .navbar > .colgrid > .row { margin-right: 0px; padding-right: 0px; }
+.navcontain .navbar > .colgrid > .row .view_student { margin-right: 10px; }
+.navcontain .navbar li > a { text-transform: uppercase; font-weight: 600; padding-left: 5px; padding-right: 5px; }
+.navcontain .navbar .breadcrumbs { background-color: #b7c0c9; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area { padding-right: 0px; margin-right: 0px; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area li > a { padding-left: 10px; padding-right: 10px; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area li > a .nav_icon, .navcontain .navbar .breadcrumbs #breadcrumbs_area li > a .dashboard_gear { margin-left: 10px; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown { margin: 0px; border-top: #bdbebd; box-shadow: none; right: 0; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown li { border-top: #bdbebd; background-color: #b7c0c9; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown li a { font-weight: 600; text-align: center; padding-left: 20px; padding-right: 20px; color: #555655; }
+
+#dashboard_container .dashlet { border: 1px solid #bebdbd !important; border-radius: 2px; }
+#dashboard_container .dashlet header { background-color: #f4f5f4; color: #78a2cd; }
+#dashboard_container .dashlet header:hover { background-color: #c4c4c4; color: #4e84bc; }
+#dashboard_container .dashlet .btn { border-radius: 3px; }
+#dashboard_container .dashlet .btn a { padding-top: 7px; padding-bottom: 7px; }
+#dashboard_container .dashlet .dashlet_body .row { padding: 5px; }
 
 .list_item { padding: 5px; }
