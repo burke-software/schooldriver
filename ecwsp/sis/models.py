@@ -682,7 +682,7 @@ class StudentCohort(models.Model):
     primary = models.BooleanField(default=False, )
 
     class Meta:
-        if not 'syncdb' in sys.argv:
+        if not 'syncdb' in sys.argv and not 'test' in sys.argv:
             auto_created = True 
     
     def save(self, *args, **kwargs):

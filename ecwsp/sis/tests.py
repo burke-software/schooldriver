@@ -8,10 +8,23 @@ from ecwsp.attendance.models import *
 from ecwsp.grades.models import *
 
 from datetime import date, datetime
+from django.db import connection
 
 class AttendanceTest(TestCase):
     def setup(self):
         """ Prepares simple school data. """
+        
+        # No clue why this is needed. Won't get created in test env
+        try:
+            sql = '''CREATE TABLE `sis_studentcohort` (
+                `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                `student_id` integer NOT NULL,
+                `cohort_id` integer NOT NULL,
+                `primary` bool NOT NULL);'''
+            cursor = connection.cursor()
+            cursor.execute(sql)
+        except:
+            pass
         
         self.student = Student(first_name="Joe", last_name="Student", username="jstudent")
         self.student.save()
@@ -24,10 +37,12 @@ class AttendanceTest(TestCase):
         self.mp3 = MarkingPeriod(name="tri3 2010", start_date=date(2011,3,2), end_date=date(2050,5,1), school_year=self.year, monday=True, friday=True)
         self.mp3.save()
         
+
         self.teacher1 = Faculty(username="dburke", first_name="david", last_name="burke", teacher=True)
         self.teacher1.save()
         self.teacher2 = Faculty(username="jbayes", first_name="jeff", last_name="bayes", teacher=True)
         self.teacher2.save()
+        """
         try:
             self.user1 = User.objects.create_user('dburke', 'ffdfsf1@ffdsfsdf.com', 'aa1')
             self.user2 = User.objects.create_user('jbayes', 'ffdfsf2@ffdsfsdf.com', 'aa2')
@@ -38,24 +53,27 @@ class AttendanceTest(TestCase):
         self.user2.is_staff = True
         self.user1.save()
         self.user2.save()
-        self.teacher = Faculty(username="dburke", first_name="david", last_name="burke", teacher=True)
+        """
+        self.teacher = Faculty(username="dburke2", first_name="david", last_name="burke", teacher=True)
         self.teacher.save()
+        """
         if User.objects.filter(username="dburke").count() == 0:
             self.user = User.objects.create_user('dburke', 'ffdfsf@ffdsfsdf.com', 'aa')
         else:
             self.user = User.objects.get(username="dburke")
         self.user.is_staff = True
         self.user.save()
+        """
         group = Group.objects.get_or_create(name="teacher")[0]
         group.save()
-        self.user1.groups.add(group)
-        self.user2.groups.add(group)
+        #self.user1.groups.add(group)
+        #self.user2.groups.add(group)
         group2 = Group.objects.get_or_create(name="faculty")[0]
         group2.save()
-        self.user1.groups.add(group2)
-        self.user2.groups.add(group2)
-        self.user1.save()
-        self.user2.save()
+        #self.user1.groups.add(group2)
+        #self.user2.groups.add(group2)
+        #self.user1.save()
+        #self.user2.save()
         
         self.course1 = Course(fullname="Homeroom FX 2011", shortname="FX1", teacher=self.teacher1, homeroom=True, credits=1)
         self.course1.save()
@@ -86,6 +104,7 @@ class AttendanceTest(TestCase):
         self.absent.save()
         self.excused = AttendanceStatus(name="Absent Excused", code="AX", absent=True, excused=True)
         self.excused.save()
+        
         
     def test_attendance(self):
         """
