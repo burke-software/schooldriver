@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime
+from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -7,6 +7,9 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    depends_on = (
+            ('sis','0001_initial'),
+    )
     def forwards(self, orm):
         # Adding model 'Benchmark'
         db.create_table(u'benchmarks_benchmark', (
@@ -18,12 +21,13 @@ class Migration(SchemaMigration):
         db.send_create_signal(u'benchmarks', ['Benchmark'])
 
         # Adding M2M table for field measurement_topics on 'Benchmark'
-        db.create_table(u'benchmarks_benchmark_measurement_topics', (
+        m2m_table_name = db.shorten_name(u'benchmarks_benchmark_measurement_topics')
+        db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('benchmark', models.ForeignKey(orm[u'benchmarks.benchmark'], null=False)),
             ('measurementtopic', models.ForeignKey(orm[u'benchmarks.measurementtopic'], null=False))
         ))
-        db.create_unique(u'benchmarks_benchmark_measurement_topics', ['benchmark_id', 'measurementtopic_id'])
+        db.create_unique(m2m_table_name, ['benchmark_id', 'measurementtopic_id'])
 
         # Adding model 'Department'
         db.create_table(u'benchmarks_department', (
@@ -49,14 +53,11 @@ class Migration(SchemaMigration):
         # Removing unique constraint on 'MeasurementTopic', fields ['name', 'department']
         db.delete_unique(u'benchmarks_measurementtopic', ['name', 'department_id'])
 
-        # Removing unique constraint on 'Benchmark', fields ['number', 'name']
-        db.delete_unique(u'benchmarks_benchmark', ['number', 'name'])
-
         # Deleting model 'Benchmark'
         db.delete_table(u'benchmarks_benchmark')
 
         # Removing M2M table for field measurement_topics on 'Benchmark'
-        db.delete_table('benchmarks_benchmark_measurement_topics')
+        db.delete_table(db.shorten_name(u'benchmarks_benchmark_measurement_topics'))
 
         # Deleting model 'Department'
         db.delete_table(u'benchmarks_department')
@@ -67,7 +68,7 @@ class Migration(SchemaMigration):
 
     models = {
         u'benchmarks.benchmark': {
-            'Meta': {'ordering': "('number', 'name')", 'unique_together': "(('number', 'name'),)", 'object_name': 'Benchmark'},
+            'Meta': {'ordering': "('number', 'name')", 'object_name': 'Benchmark'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'measurement_topics': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['benchmarks.MeasurementTopic']", 'symmetrical': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '700'}),
@@ -84,7 +85,7 @@ class Migration(SchemaMigration):
             'department': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['benchmarks.Department']", 'null': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '700'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
         u'sis.gradelevel': {
             'Meta': {'ordering': "('id',)", 'object_name': 'GradeLevel'},

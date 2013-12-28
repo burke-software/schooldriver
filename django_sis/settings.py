@@ -433,6 +433,7 @@ INSTALLED_APPS += (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'localflavor',
     'dajax',
     'dajaxice',
     'ecwsp.volunteer_track',

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime
+from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -61,12 +61,13 @@ class Migration(SchemaMigration):
         db.send_create_signal(u'admissions', ['ApplicationDecisionOption'])
 
         # Adding M2M table for field level on 'ApplicationDecisionOption'
-        db.create_table(u'admissions_applicationdecisionoption_level', (
+        m2m_table_name = db.shorten_name(u'admissions_applicationdecisionoption_level')
+        db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('applicationdecisionoption', models.ForeignKey(orm[u'admissions.applicationdecisionoption'], null=False)),
             ('admissionlevel', models.ForeignKey(orm[u'admissions.admissionlevel'], null=False))
         ))
-        db.create_unique(u'admissions_applicationdecisionoption_level', ['applicationdecisionoption_id', 'admissionlevel_id'])
+        db.create_unique(m2m_table_name, ['applicationdecisionoption_id', 'admissionlevel_id'])
 
         # Adding model 'BoroughOption'
         db.create_table(u'admissions_boroughoption', (
@@ -144,27 +145,27 @@ class Migration(SchemaMigration):
             ('parent_email', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True, blank=True)),
             ('email', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True, blank=True)),
             ('notes', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('family_preferred_language', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.LanguageChoice'], null=True, blank=True)),
-            ('year', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.GradeLevel'], null=True, blank=True)),
-            ('school_year', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['sis.SchoolYear'], null=True, blank=True)),
-            ('ethnicity', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.EthnicityChoice'], null=True, blank=True)),
+            ('family_preferred_language', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['sis.LanguageChoice'], null=True, on_delete=models.SET_NULL, blank=True)),
+            ('year', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['sis.GradeLevel'], null=True, on_delete=models.SET_NULL, blank=True)),
+            ('school_year', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['sis.SchoolYear'], null=True, on_delete=models.SET_NULL, blank=True)),
+            ('ethnicity', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.EthnicityChoice'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('hs_grad_yr', self.gf('django.db.models.fields.IntegerField')(max_length=4, null=True, blank=True)),
             ('elem_grad_yr', self.gf('django.db.models.fields.IntegerField')(max_length=4, null=True, blank=True)),
-            ('present_school', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.FeederSchool'], null=True, blank=True)),
+            ('present_school', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.FeederSchool'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('present_school_typed', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
             ('present_school_type_typed', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('religion', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.ReligionChoice'], null=True, blank=True)),
-            ('place_of_worship', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.PlaceOfWorship'], null=True, blank=True)),
+            ('religion', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.ReligionChoice'], null=True, on_delete=models.SET_NULL, blank=True)),
+            ('place_of_worship', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.PlaceOfWorship'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('follow_up_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
             ('parent_guardian_first_name', self.gf('django.db.models.fields.CharField')(max_length=150, blank=True)),
             ('parent_guardian_last_name', self.gf('django.db.models.fields.CharField')(max_length=150, blank=True)),
             ('relationship_to_student', self.gf('django.db.models.fields.CharField')(max_length=500, blank=True)),
-            ('heard_about_us', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.HeardAboutUsOption'], null=True, blank=True)),
+            ('heard_about_us', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.HeardAboutUsOption'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('from_online_inquiry', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('first_contact', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.FirstContactOption'], null=True, blank=True)),
-            ('borough', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.BoroughOption'], null=True, blank=True)),
-            ('country_of_birth', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.CountryOption'], null=True, blank=True)),
-            ('immigration_status', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.ImmigrationOption'], null=True, blank=True)),
+            ('first_contact', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.FirstContactOption'], null=True, on_delete=models.SET_NULL, blank=True)),
+            ('borough', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.BoroughOption'], null=True, on_delete=models.SET_NULL, blank=True)),
+            ('country_of_birth', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.CountryOption'], null=True, on_delete=models.SET_NULL, blank=True)),
+            ('immigration_status', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.ImmigrationOption'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('ready_for_export', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('sis_student', self.gf('django.db.models.fields.related.OneToOneField')(related_name='appl_student', null=True, on_delete=models.SET_NULL, to=orm['sis.Student'], blank=True, unique=True)),
             ('total_income', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=10, decimal_places=2, blank=True)),
@@ -172,9 +173,9 @@ class Migration(SchemaMigration):
             ('calculated_payment', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=10, decimal_places=2, blank=True)),
             ('date_added', self.gf('django.db.models.fields.DateField')(auto_now_add=True, null=True, blank=True)),
             ('level', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.AdmissionLevel'], null=True, on_delete=models.SET_NULL, blank=True)),
-            ('application_decision', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.ApplicationDecisionOption'], null=True, blank=True)),
-            ('application_decision_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True, blank=True)),
-            ('withdrawn', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.WithdrawnChoices'], null=True, blank=True)),
+            ('application_decision', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.ApplicationDecisionOption'], null=True, on_delete=models.SET_NULL, blank=True)),
+            ('application_decision_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True, on_delete=models.SET_NULL, blank=True)),
+            ('withdrawn', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.WithdrawnChoices'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('withdrawn_note', self.gf('django.db.models.fields.CharField')(max_length=500, blank=True)),
             ('first_to_college', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('individual_education_plan', self.gf('django.db.models.fields.BooleanField')(default=False)),
@@ -183,36 +184,48 @@ class Migration(SchemaMigration):
         db.send_create_signal(u'admissions', ['Applicant'])
 
         # Adding M2M table for field siblings on 'Applicant'
-        db.create_table(u'admissions_applicant_siblings', (
+        m2m_table_name = db.shorten_name(u'admissions_applicant_siblings')
+        db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('applicant', models.ForeignKey(orm[u'admissions.applicant'], null=False)),
             ('student', models.ForeignKey(orm[u'sis.student'], null=False))
         ))
-        db.create_unique(u'admissions_applicant_siblings', ['applicant_id', 'student_id'])
+        db.create_unique(m2m_table_name, ['applicant_id', 'student_id'])
 
         # Adding M2M table for field parent_guardians on 'Applicant'
-        db.create_table(u'admissions_applicant_parent_guardians', (
+        m2m_table_name = db.shorten_name(u'admissions_applicant_parent_guardians')
+        db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('applicant', models.ForeignKey(orm[u'admissions.applicant'], null=False)),
             ('emergencycontact', models.ForeignKey(orm[u'sis.emergencycontact'], null=False))
         ))
-        db.create_unique(u'admissions_applicant_parent_guardians', ['applicant_id', 'emergencycontact_id'])
+        db.create_unique(m2m_table_name, ['applicant_id', 'emergencycontact_id'])
 
         # Adding M2M table for field open_house_attended on 'Applicant'
-        db.create_table(u'admissions_applicant_open_house_attended', (
+        m2m_table_name = db.shorten_name(u'admissions_applicant_open_house_attended')
+        db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('applicant', models.ForeignKey(orm[u'admissions.applicant'], null=False)),
             ('openhouse', models.ForeignKey(orm[u'admissions.openhouse'], null=False))
         ))
-        db.create_unique(u'admissions_applicant_open_house_attended', ['applicant_id', 'openhouse_id'])
+        db.create_unique(m2m_table_name, ['applicant_id', 'openhouse_id'])
 
         # Adding M2M table for field checklist on 'Applicant'
-        db.create_table(u'admissions_applicant_checklist', (
+        m2m_table_name = db.shorten_name(u'admissions_applicant_checklist')
+        db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('applicant', models.ForeignKey(orm[u'admissions.applicant'], null=False)),
             ('admissioncheck', models.ForeignKey(orm[u'admissions.admissioncheck'], null=False))
         ))
-        db.create_unique(u'admissions_applicant_checklist', ['applicant_id', 'admissioncheck_id'])
+        db.create_unique(m2m_table_name, ['applicant_id', 'admissioncheck_id'])
+
+        # Adding model 'ApplicantFile'
+        db.create_table(u'admissions_applicantfile', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('applicant_file', self.gf('django.db.models.fields.files.FileField')(max_length=100)),
+            ('applicant', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.Applicant'])),
+        ))
+        db.send_create_signal(u'admissions', ['ApplicantFile'])
 
         # Adding model 'ContactLog'
         db.create_table(u'admissions_contactlog', (
@@ -227,7 +240,7 @@ class Migration(SchemaMigration):
         # Adding model 'ApplicantStandardTestResult'
         db.create_table(u'admissions_applicantstandardtestresult', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 5, 25, 0, 0))),
+            ('date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 12, 27, 0, 0))),
             ('applicant', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['admissions.Applicant'])),
             ('test', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['standard_test.StandardTest'])),
             ('show_on_reports', self.gf('django.db.models.fields.BooleanField')(default=True)),
@@ -273,7 +286,7 @@ class Migration(SchemaMigration):
         db.delete_table(u'admissions_applicationdecisionoption')
 
         # Removing M2M table for field level on 'ApplicationDecisionOption'
-        db.delete_table('admissions_applicationdecisionoption_level')
+        db.delete_table(db.shorten_name(u'admissions_applicationdecisionoption_level'))
 
         # Deleting model 'BoroughOption'
         db.delete_table(u'admissions_boroughoption')
@@ -303,16 +316,19 @@ class Migration(SchemaMigration):
         db.delete_table(u'admissions_applicant')
 
         # Removing M2M table for field siblings on 'Applicant'
-        db.delete_table('admissions_applicant_siblings')
+        db.delete_table(db.shorten_name(u'admissions_applicant_siblings'))
 
         # Removing M2M table for field parent_guardians on 'Applicant'
-        db.delete_table('admissions_applicant_parent_guardians')
+        db.delete_table(db.shorten_name(u'admissions_applicant_parent_guardians'))
 
         # Removing M2M table for field open_house_attended on 'Applicant'
-        db.delete_table('admissions_applicant_open_house_attended')
+        db.delete_table(db.shorten_name(u'admissions_applicant_open_house_attended'))
 
         # Removing M2M table for field checklist on 'Applicant'
-        db.delete_table('admissions_applicant_checklist')
+        db.delete_table(db.shorten_name(u'admissions_applicant_checklist'))
+
+        # Deleting model 'ApplicantFile'
+        db.delete_table(u'admissions_applicantfile')
 
         # Deleting model 'ContactLog'
         db.delete_table(u'admissions_contactlog')
@@ -341,28 +357,28 @@ class Migration(SchemaMigration):
         u'admissions.applicant': {
             'Meta': {'ordering': "('lname', 'fname')", 'object_name': 'Applicant'},
             'adjusted_available_income': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
-            'application_decision': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.ApplicationDecisionOption']", 'null': 'True', 'blank': 'True'}),
-            'application_decision_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'}),
+            'application_decision': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.ApplicationDecisionOption']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'application_decision_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'bday': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'borough': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.BoroughOption']", 'null': 'True', 'blank': 'True'}),
+            'borough': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.BoroughOption']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'calculated_payment': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
             'checklist': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['admissions.AdmissionCheck']", 'null': 'True', 'blank': 'True'}),
             'city': ('django.db.models.fields.CharField', [], {'max_length': '360', 'blank': 'True'}),
-            'country_of_birth': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.CountryOption']", 'null': 'True', 'blank': 'True'}),
+            'country_of_birth': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.CountryOption']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'date_added': ('django.db.models.fields.DateField', [], {'auto_now_add': 'True', 'null': 'True', 'blank': 'True'}),
             'elem_grad_yr': ('django.db.models.fields.IntegerField', [], {'max_length': '4', 'null': 'True', 'blank': 'True'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
-            'ethnicity': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.EthnicityChoice']", 'null': 'True', 'blank': 'True'}),
-            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
-            'first_contact': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.FirstContactOption']", 'null': 'True', 'blank': 'True'}),
+            'ethnicity': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.EthnicityChoice']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'first_contact': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.FirstContactOption']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'first_to_college': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'fname': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'follow_up_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'from_online_inquiry': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'heard_about_us': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.HeardAboutUsOption']", 'null': 'True', 'blank': 'True'}),
+            'heard_about_us': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.HeardAboutUsOption']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'hs_grad_yr': ('django.db.models.fields.IntegerField', [], {'max_length': '4', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'immigration_status': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.ImmigrationOption']", 'null': 'True', 'blank': 'True'}),
+            'immigration_status': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.ImmigrationOption']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'individual_education_plan': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'level': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.AdmissionLevel']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'lives_with': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'}),
@@ -375,26 +391,32 @@ class Migration(SchemaMigration):
             'parent_guardian_last_name': ('django.db.models.fields.CharField', [], {'max_length': '150', 'blank': 'True'}),
             'parent_guardians': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['sis.EmergencyContact']", 'null': 'True', 'blank': 'True'}),
             'pic': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'place_of_worship': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.PlaceOfWorship']", 'null': 'True', 'blank': 'True'}),
-            'present_school': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.FeederSchool']", 'null': 'True', 'blank': 'True'}),
+            'place_of_worship': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.PlaceOfWorship']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'present_school': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.FeederSchool']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'present_school_type_typed': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'present_school_typed': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'ready_for_export': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'relationship_to_student': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
-            'religion': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.ReligionChoice']", 'null': 'True', 'blank': 'True'}),
-            'school_year': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': u"orm['sis.SchoolYear']", 'null': 'True', 'blank': 'True'}),
+            'religion': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.ReligionChoice']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'school_year': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': u"orm['sis.SchoolYear']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'sex': ('django.db.models.fields.CharField', [], {'max_length': '1', 'blank': 'True'}),
-            'siblings': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.Student']", 'symmetrical': 'False', 'blank': 'True'}),
+            'siblings': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'+'", 'blank': 'True', 'to': u"orm['sis.Student']"}),
             'sis_student': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'appl_student'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['sis.Student']", 'blank': 'True', 'unique': 'True'}),
             'ssn': ('django.db.models.fields.CharField', [], {'max_length': '11', 'blank': 'True'}),
             'state': ('localflavor.us.models.USStateField', [], {'max_length': '2', 'blank': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '150', 'blank': 'True'}),
             'total_income': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
             'unique_id': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'withdrawn': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.WithdrawnChoices']", 'null': 'True', 'blank': 'True'}),
+            'withdrawn': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.WithdrawnChoices']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'withdrawn_note': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
-            'year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.GradeLevel']", 'null': 'True', 'blank': 'True'}),
+            'year': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': u"orm['sis.GradeLevel']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'zip': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'})
+        },
+        u'admissions.applicantfile': {
+            'Meta': {'object_name': 'ApplicantFile'},
+            'applicant': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.Applicant']"}),
+            'applicant_file': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'admissions.applicantstandardcategorygrade': {
             'Meta': {'object_name': 'ApplicantStandardCategoryGrade'},
@@ -406,7 +428,7 @@ class Migration(SchemaMigration):
         u'admissions.applicantstandardtestresult': {
             'Meta': {'unique_together': "(('date', 'applicant', 'test'),)", 'object_name': 'ApplicantStandardTestResult'},
             'applicant': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['admissions.Applicant']"}),
-            'date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 5, 25, 0, 0)'}),
+            'date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 12, 27, 0, 0)'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'show_on_reports': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'test': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['standard_test.StandardTest']"})
@@ -505,7 +527,7 @@ class Migration(SchemaMigration):
             'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
             'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Group']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -513,7 +535,7 @@ class Migration(SchemaMigration):
             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
+            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Permission']"}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         u'contenttypes.contenttype': {
@@ -530,12 +552,12 @@ class Migration(SchemaMigration):
             'year': ('ecwsp.sis.models.IntegerRangeField', [], {'unique': 'True'})
         },
         u'sis.cohort': {
-            'Meta': {'object_name': 'Cohort'},
+            'Meta': {'ordering': "('name',)", 'object_name': 'Cohort'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'long_name': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'students': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['sis.Student']", 'null': 'True', 'db_table': "'sis_studentcohort'", 'blank': 'True'})
+            'students': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'student_cohorts'", 'blank': 'True', 'to': u"orm['sis.Student']"})
         },
         u'sis.emergencycontact': {
             'Meta': {'ordering': "('primary_contact', 'lname')", 'object_name': 'EmergencyContact'},
@@ -565,16 +587,6 @@ class Migration(SchemaMigration):
             'iso_code': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
         },
-        u'sis.mdluser': {
-            'Meta': {'ordering': "('lname', 'fname')", 'object_name': 'MdlUser'},
-            'city': ('django.db.models.fields.CharField', [], {'max_length': '360', 'blank': 'True'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'fname': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'inactive': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'lname': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
-        },
         u'sis.reasonleft': {
             'Meta': {'object_name': 'ReasonLeft'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -591,21 +603,21 @@ class Migration(SchemaMigration):
             'start_date': ('django.db.models.fields.DateField', [], {})
         },
         u'sis.student': {
-            'Meta': {'ordering': "('lname', 'fname')", 'object_name': 'Student', '_ormbases': [u'sis.MdlUser']},
+            'Meta': {'ordering': "('last_name', 'first_name')", 'object_name': 'Student', '_ormbases': [u'auth.User']},
             'alert': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
             'alt_email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
             'bday': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'cache_cohort': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'cache_cohorts'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['sis.Cohort']"}),
             'cache_gpa': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '5', 'decimal_places': '2', 'blank': 'True'}),
+            'city': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'class_of_year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.ClassYear']", 'null': 'True', 'blank': 'True'}),
-            'cohorts': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.Cohort']", 'symmetrical': 'False', 'through': u"orm['sis.StudentCohort']", 'blank': 'True'}),
+            'cohorts': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.Cohort']", 'symmetrical': 'False', 'blank': 'True'}),
             'date_dismissed': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'emergency_contacts': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.EmergencyContact']", 'symmetrical': 'False', 'blank': 'True'}),
-            'family_access_users': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.User']", 'symmetrical': 'False', 'blank': 'True'}),
-            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
+            'family_access_users': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'+'", 'blank': 'True', 'to': u"orm['auth.User']"}),
+            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
             'grad_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'individual_education_program': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            u'mdluser_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['sis.MdlUser']", 'unique': 'True', 'primary_key': 'True'}),
             'mname': ('django.db.models.fields.CharField', [], {'max_length': '150', 'null': 'True', 'blank': 'True'}),
             'notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'parent_email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
@@ -618,15 +630,9 @@ class Migration(SchemaMigration):
             'state': ('localflavor.us.models.USStateField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '150', 'blank': 'True'}),
             'unique_id': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'null': 'True', 'blank': 'True'}),
+            u'user_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True', 'primary_key': 'True'}),
             'year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.GradeLevel']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'zip': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'})
-        },
-        u'sis.studentcohort': {
-            'Meta': {'object_name': 'StudentCohort'},
-            'cohort': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Cohort']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
         },
         u'standard_test.standardcategory': {
             'Meta': {'object_name': 'StandardCategory'},
