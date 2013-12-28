@@ -376,6 +376,25 @@ CANVAS_BASE_URL = ''
 REPORT_BUILDER_GLOBAL_EXPORT = True
 
 
+# Default apps, settings_local.py will override them.
+INSTALLED_APPS = (
+    'ecwsp.work_study',
+    'ecwsp.engrade_sync',
+    'ecwsp.benchmarks',
+    'ecwsp.omr',
+    'ecwsp.standard_test',
+    'ecwsp.benchmark_grade',
+    'ecwsp.naviance_sso',
+    #'django_extensions',
+    #'google_auth',
+    #'ldap_groups',
+    #'raven.contrib.django',
+    #'debug_toolbar',
+    #'ecwsp.integrations.schoolreach',
+    #'social.apps.django_app.default',
+)
+
+
 # this will load additional settings from the file settings_local.py
 # this is useful when managing multiple sites with different configurations
 try:
@@ -412,9 +431,10 @@ if 'djcelery' in INSTALLED_APPS:
     CELERY_ENABLE_UTC = False
 
 # These are required add ons that we always want to have
-INSTALLED_APPS += (
+INSTALLED_APPS = (
     'grappelli.dashboard',
     'grappelli',
+    'ecwsp.sis',
     'ecwsp.administration',
     'ecwsp.schedule',
     'ecwsp.admissions',
@@ -437,7 +457,6 @@ INSTALLED_APPS += (
     'dajax',
     'dajaxice',
     'ecwsp.volunteer_track',
-    'ecwsp.sis',
     'daterange_filter',
     'django_filters',
     'pagination',
@@ -453,7 +472,7 @@ INSTALLED_APPS += (
     'django_su',
     'floppy_gumby_forms',
     'floppyforms',
-)
+) + INSTALLED_APPS
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
     TEMPLATE_CONTEXT_PROCESSORS += (
