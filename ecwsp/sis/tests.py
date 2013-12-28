@@ -145,7 +145,7 @@ class AttendanceTest(TestCase):
         response = c.get('/admin/')
         self.assertEqual(response.status_code, 200)
         
-        course = Course.objects.get(fullname="Homeroom FX 2010")
+        course = Course.objects.get(fullname="Homeroom FX 2011")
         
         response = c.get('/attendance/teacher_attendance/' + str(course.id), follow=True)
         self.assertEqual(response.status_code, 200)
