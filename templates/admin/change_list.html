@@ -42,8 +42,27 @@
 {% block content %}
     {{ block.super }}
     <!-- Overlay -->
-    <div class="modal" id="export_xls_form"><button class="close"> Close </button></div>
-    <div class="modal" id="advanced_filter_box">
+    <style>
+    .non-gumby-modal {
+        z-index: 999999;
+        background-color:#fff;
+        display:none;
+        width:550px;
+        padding:15px;
+        text-align:center;
+        border:2px solid #333;
+
+        opacity:0.9;
+        border-radius:6px;
+        -moz-border-radius:6px;
+        -webkit-border-radius:6px;
+        box-shadow: 0 0 100px #ddd;
+        -moz-box-shadow: 0 0 100px #ddd;
+        -webkit-box-shadow: 0 0 100px #ddd;
+    }
+    </style>
+    <div class="non-gumby-modal" id="export_xls_form"><button class="close"> Close </button></div>
+    <div class="non-gumby-modal" id="advanced_filter_box">
         <div id="filter_content_box">
             <button class="close"> Close </button>
         </div>
