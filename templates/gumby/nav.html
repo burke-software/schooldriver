@@ -55,7 +55,7 @@
     </div>
   </li>
     {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
-      <li>
+    <li class="{% if app_name == "sis" %}active {% endif %}">
           <a href="/sis/dashboard/">Student</a>
           <div class="dropdown">
             <ul>
@@ -139,51 +139,3 @@
   </ul>
 </div>
 
-<div class="breadcrumbs">
-<div id="breadcrumbs_area" class="row">
-  <div class="sixteen columns">
-    <div class="pull_left" id="breadcrumbs"> 
-      {% block breadcrumbs %}
-          <a href="/"> Home </a> 
-      {% endblock %}
-    </div>
-    <div class="pull_right">
-      <ul>
-        {% if dashboard %}
-        <li>
-          <a href="javascript:void(0)" onclick="customize_dashboard(this);">
-            CUSTOMIZE
-            <img class="nav_icon" src="{% static "responsive_dashboard/img/gear.svg" %}"/>
-          </a>
-        </li>
-        {% endif %}
-        <li>
-          <a href="{% url 'admin:index' %}">
-            VIEW SITE ADMIN
-            <img class="nav_icon" src="{% static "images/adminview.svg" %}"/>
-          </a>
-        </li>
-        <li>
-          <a href="javascript:void(0);">
-            {{ user.first_name }} {{ user.last_name }}
-            <i style="margin: 0px;" class="icon-down-dir"></i>
-          </a>
-          <div class="dropdown name_dropdown">
-            <ul>
-              <li>
-                <a href="/sis/preferences">Preferences</a>
-              </li>
-              <li>
-                <a href="{% url 'admin:password_change' %}">Change Password</a>
-              </li>
-              <li>
-                <a href="{% url 'admin:logout' %}">Log Out</a>
-              </li>
-            </ul>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
-</div>
