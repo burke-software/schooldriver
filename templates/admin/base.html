@@ -107,6 +107,7 @@
         </li>
         <li>
           <a href="javascript:void(0);">
+            <img class="nav_icon" src="{% static "images/wrench_dark.svg" %}"/>
             {% if user.first_name or user.last_name %}
                 {{ user.first_name }} {{ user.last_name }}
             {% else %}

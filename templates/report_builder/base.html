@@ -1,4 +1,12 @@
-{% extends "admin_base.html" %}
+{% extends "sis_base.html" %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {% block report_header %}
+    {{ block.super }}
+    {% endblock %}
+{% endblock %}
+
 
 {% block breadcrumbs %}
 <div id="breadcrumbs"> 
@@ -13,3 +21,6 @@
 {% block content %}
 {% endblock %}
 </div>
+
+
+

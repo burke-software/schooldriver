@@ -59,7 +59,7 @@ class DisciplineDashboard(Dashboard):
     dashlets = [
         DisciplineDashlet(title="Latest Discipline"),
         ReportBuilderDashlet(title="Reports",),
-        AdminListDashlet(title="Edit", app_label="discipline"),
+        AdminListDashlet(title="Discipline", app_label="discipline"),
     ]
 
 

@@ -3,7 +3,6 @@ from ecwsp.discipline.dashboards import DisciplineDashlet
 from ecwsp.schedule.models import Course, MarkingPeriod
 from .models import SchoolYear
 from ecwsp.attendance.models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
-from ecwsp.attendance.models import StudentAttendance
 from report_builder.models import Report
 import datetime
 
@@ -17,18 +16,6 @@ from ecwsp.sis.models import Student, UserPreference, Faculty
 class ViewStudentDashlet(Dashlet):
     template_name = 'sis/view_student_dashlet.html'
     
-
-class SisDisciplineDashlet(DisciplineDashlet):
-    fields = ('show_students', 'infraction')
-    columns = 1
-    count = 5
-
-class CourseDashlet(ListDashlet):
-    model = Course
-    fields = ('__str__', 'number_of_students',)
-    order_by = ('-marking_period__start_date',)
-    require_apps = ('ecwsp.schedule',)
-
 
 class EventsDashlet(Dashlet):
     template_name = 'sis/events_dashlet.html'
@@ -74,22 +61,6 @@ class EventsDashlet(Dashlet):
         return context
 
 
-class GradesDashlet(Dashlet):
-    template_name = 'sis/grade_dashlet.html'
-    require_apps = ('ecwsp.grades',)
-    require_permissions_or = ('grades.check_own_grade', 'grades.change_grade',)
-
-    def get_context_data(self, **kwargs):
-        context = super(GradesDashlet, self).get_context_data(**kwargs)
-        today = datetime.date.today()
-        marking_periods = MarkingPeriod.objects.filter(end_date__gte=today).order_by('start_date')
-        if marking_periods:
-            marking_period = marking_periods[0]
-            due_in = (marking_period.end_date - today).days
-        else:
-            due_in = None
-        context['due_in'] = due_in
-        return context
 
 
 class ReportBuilderDashlet(ListDashlet):
@@ -192,17 +163,15 @@ class SisDashboard(Dashboard):
     app = 'sis'
     dashlets = [
         EventsDashlet(title="School Events"),
-        CourseDashlet(title="Courses For"),
-        SisDisciplineDashlet(title="Latest Discipline Reports",),
         ViewStudentDashlet(title="Student"),
-        GradesDashlet(title="Grades"),
         ReportBuilderDashlet(title="Starred Reports", model=Report),
         AnnouncementsDashlet(title="Announcements"),
         AttendanceSubmissionPercentageDashlet(title="Attendance Report"),
         AttendanceDashlet(title="Recent Attendance"),
         AttendanceLinksListDashlet(title="Links"),
-        AttendanceReportBuilderDashlet(title="Reports",),
-        AttendanceAdminListDashlet(title="Edit", app_label="attendance"),
+        AttendanceReportBuilderDashlet(title="Attendance Reports",),
+        AttendanceAdminListDashlet(title="Attendance", app_label="attendance"),
+        AdminListDashlet(title="School Information", app_label="sis"),
     ]
 
 
