@@ -1762,11 +1762,9 @@ table#gradebook_table img.cancel { margin-top: 2px; padding-right: 1px; }
 
 #content { /* Why does grappelli have this? */ margin-bottom: 0px; }
 
-.navcontain .navbar > .colgrid > .row { margin-right: 0px; padding-right: 0px; }
-.navcontain .navbar > .colgrid > .row .view_student { margin-right: 10px; }
 .navcontain .navbar li > a { text-transform: uppercase; font-weight: 600; padding-left: 5px; padding-right: 5px; }
 .navcontain .navbar .breadcrumbs { background-color: #b7c0c9; }
-.navcontain .navbar .breadcrumbs #breadcrumbs_area { padding-right: 0px; margin-right: 0px; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area { padding-right: 0px; }
 .navcontain .navbar .breadcrumbs #breadcrumbs_area li > a { padding-left: 10px; padding-right: 10px; }
 .navcontain .navbar .breadcrumbs #breadcrumbs_area li > a .nav_icon, .navcontain .navbar .breadcrumbs #breadcrumbs_area li > a .dashboard_gear { margin-left: 10px; }
 .navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown { margin: 0px; border-top: #bdbebd; box-shadow: none; right: 0; }

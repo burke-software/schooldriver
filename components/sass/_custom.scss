@@ -163,13 +163,6 @@ table#gradebook_table img.cancel {
 }
 
 .navcontain .navbar{
-	> .colgrid > .row{
-		margin-right: 0px;
-		padding-right: 0px;
-		.view_student{
-			margin-right: 10px;
-		}
-	}
 	li > a {
 		text-transform: uppercase;
 		font-weight: 600;
@@ -180,7 +173,6 @@ table#gradebook_table img.cancel {
 		background-color: #b7c0c9;
 		#breadcrumbs_area{
 			padding-right: 0px;
-			margin-right: 0px;
 			li > a{
 				padding-left: 10px;
 				padding-right: 10px;
