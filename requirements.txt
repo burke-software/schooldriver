@@ -22,7 +22,7 @@ xlwt>=0.7.2
 raven>=3.3.7
 reportlab
 django-floppyforms>=1.0
-django-report-builder
+django-report-builder>=1.15
 django-responsive-dashboard>=0.1
 django-apptemplates>=0.0.1
 django-filter>=0.5.4
