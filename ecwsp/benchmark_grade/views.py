@@ -80,6 +80,13 @@ def get_teacher_courses(username):
 @staff_member_required
 def gradebook(request, course_id, for_export=False):
     course = get_object_or_404(Course, pk=course_id)
+    # lots of stuff will fail unceremoniously if there are no MPs assigned
+    if not course.marking_period.count():
+        messages.add_message(request, messages.ERROR,
+            'The gradebook cannot be opened because there are no marking periods assigned to the course ' +
+            course.fullname + '.')
+        return HttpResponseRedirect(reverse('admin:index'))
+
     school_year = course.marking_period.all()[0].school_year
     calculation_rule = benchmark_find_calculation_rule(school_year)
     teacher_courses = get_teacher_courses(request.user.username)
@@ -91,18 +98,21 @@ def gradebook(request, course_id, for_export=False):
             'You do not have access to the gradebook for ' + course.fullname + '.')
         return HttpResponseRedirect(reverse('admin:index'))
 
-    # lots of stuff will fail unceremoniously if there are no MPs assigned
-    if not course.marking_period.count():
-        messages.add_message(request, messages.ERROR,
-            'The gradebook cannot be opened because there are no marking periods assigned to the course ' +
-            course.fullname + '.')
-        return HttpResponseRedirect(reverse('admin:index'))
-
     students = Student.objects.filter(is_active=True,course=course)
     #students = Student.objects.filter(course=course)
     items = Item.objects.filter(course=course)
     filtered = False
     temporary_aggregate = False
+    totals = {
+        'filtered_average': Decimal(0),
+        'filtered_average_count': Decimal(0),
+        'course_average': Decimal(0),
+        'course_average_count': Decimal(0),
+        'filtered_standards_passing': 0,
+        'filtered_standards_all': 0,
+        'standards_passing': 0,
+        'standards_all': 0
+    }
 
     if request.GET:
         filter_form = GradebookFilterForm(request.GET)
@@ -186,12 +196,19 @@ def gradebook(request, course_id, for_export=False):
         
         student.marks = student_marks
         student.average, student.average_pk = gradebook_get_average_and_pk(student, course, None, None, None)
+        if student.average is not None:
+            totals['course_average'] += Aggregate.objects.get(pk=student.average_pk).cached_value # can't use a substitution
+            totals['course_average_count'] += 1
         if filtered:
             cleaned_or_initial = getattr(filter_form, 'cleaned_data', filter_form.initial)
             filter_category = cleaned_or_initial.get('category', None)
             filter_marking_period = cleaned_or_initial.get('marking_period', None)
             filter_items = items if temporary_aggregate else None
-            student.filtered_average = gradebook_get_average(student, course, filter_category, filter_marking_period, filter_items)
+            student.filtered_average, student.filtered_average_pk = gradebook_get_average_and_pk(
+                student, course, filter_category, filter_marking_period, filter_items)
+            if student.filtered_average is not None:
+                totals['filtered_average'] += Aggregate.objects.get(pk=student.filtered_average_pk).cached_value # can't use a substitution
+                totals['filtered_average_count'] += 1
         if school_year.benchmark_grade and extra_info == 'demonstrations':
             # TC's column of counts
             # TODO: don't hardcode
@@ -200,14 +217,18 @@ def gradebook(request, course_id, for_export=False):
             standards_objects = Item.objects.filter(course=course, category=standards_category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
             standards_count_passing = standards_objects.filter(best_mark__gte=PASSING_GRADE).count()
             standards_count_total = standards_objects.count()
+            totals['standards_passing'] += standards_count_passing
+            totals['standards_all'] += standards_count_total
             if standards_count_total:
                 student.standards_counts = '{} / {} ({:.0f}%)'.format(standards_count_passing, standards_count_total, 100.0 * standards_count_passing / standards_count_total)
             else:
-                student.standards_counts_ = None
+                student.standards_counts = None
             if filtered:
                 standards_objects = items.filter(course=course, category=standards_category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
                 standards_count_passing = standards_objects.filter(best_mark__gte=PASSING_GRADE).count()
                 standards_count_total = standards_objects.count()
+                totals['filtered_standards_passing'] += standards_count_passing
+                totals['filtered_standards_all'] += standards_count_total
                 if standards_count_total:
                     student.filtered_standards_counts = '{} / {} ({:.0f}%)'.format(standards_count_passing, standards_count_total, 100.0 * standards_count_passing / standards_count_total)
                 else:
@@ -252,6 +273,26 @@ def gradebook(request, course_id, for_export=False):
         for substitution in substitutions:
             category_flag_criteria[category.pk].append(substitution.operator + ' ' + str(substitution.match_value))
 
+    # calculate course-wide averages and counts
+    if totals['course_average_count']:
+        totals['course_average'] = Decimal(totals['course_average'] / totals['course_average_count']).quantize(quantizer)
+    else:
+        totals['course_average'] = None
+    if totals['filtered_average_count']:
+        totals['filtered_average'] = Decimal(totals['filtered_average'] / totals['filtered_average_count']).quantize(quantizer)
+    else:
+        totals['filtered_average'] = None
+    if totals['standards_all']:
+        totals['standards_text'] = '{} / {} ({:.0f}%)'.format(totals['standards_passing'], totals['standards_all'],
+            100.0 * totals['standards_passing'] / totals['standards_all'])
+    else:
+        totals['standards_text'] = None
+    if totals['filtered_standards_all']:
+        totals['filtered_standards_text'] = '{} / {} ({:.0f}%)'.format(totals['filtered_standards_passing'], totals['filtered_standards_all'],
+            100.0 * totals['filtered_standards_passing'] / totals['filtered_standards_all'])
+    else:
+        totals['filtered_standards_text'] = None
+
     data_dictionary = {
         'items': items,
         'item_pks': ','.join(map(str,items.values_list('pk', flat=True))),
@@ -263,6 +304,7 @@ def gradebook(request, course_id, for_export=False):
         'filter_form': filter_form,
         'category_flag_criteria': category_flag_criteria,
         'extra_info': extra_info,
+        'totals': totals,
     }
     if for_export:
         return data_dictionary

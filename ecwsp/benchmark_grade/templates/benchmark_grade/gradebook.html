@@ -216,17 +216,17 @@
                         {% endfor %}
                         {% if filtered %}
                             <td><!-- filtered standards demonstrated -->
-                                N/A
+                                <div>{{ totals.filtered_standards_text }}</div> 
                             </td>
                             <td><!-- filtered course average -->
-                                N/A
+                                <div>{{ totals.filtered_average }}</div>
                             </td>
                         {% endif %}
                         <td><!-- standards demonstrated -->
-                            N/A
+                            <div>{{ totals.standards_text }}</div> 
                         </td>
                         <td><!-- course average -->
-                            N/A
+                            <div>{{ totals.course_average }}</div>
                         </td>
                     </tr>
                 {% endif %} 
@@ -246,11 +246,11 @@
                         {% endfor %}
                         {% if filtered %}
                             <td><!-- filtered course average -->
-                                N/A
+                                <div>{{ totals.filtered_average }}</div>
                             </td>
                         {% endif %}
                         <td><!-- course average -->
-                            N/A
+                            <div>{{ totals.course_average }}</div>
                         </td>
                     </tr>
                 {% endif %} 
