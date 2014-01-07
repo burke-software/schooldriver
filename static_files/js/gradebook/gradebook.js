@@ -63,6 +63,29 @@ $(document).ready(function() {
     }
 });
 
+// http://stackoverflow.com/questions/5489946/jquery-how-to-wait-for-the-end-or-resize-event-and-only-then-perform-an-ac
+var rtime = new Date(1, 1, 2000, 12,00,00);
+var timeout = false;
+var delta = 200;
+$(window).resize(function() {
+    rtime = new Date();
+    if (timeout === false) {
+        timeout = true;
+        setTimeout(resizeend, delta);
+    }
+});
+function resizeend() {
+    if (new Date() - rtime < delta) {
+        setTimeout(resizeend, delta);
+    } else {
+        timeout = false;
+        var copout = "It looks like you resized the window. Would you like to reload the page now to fix the layout?";
+        if(confirm(copout)) {
+            window.location.reload();
+        }
+    }
+}
+
 function highlight_cell(cell) {
     category_id = cell.data("category_id");
     value = $.trim(cell.text());

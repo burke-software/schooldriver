@@ -305,6 +305,7 @@ def gradebook(request, course_id, for_export=False):
         'category_flag_criteria': category_flag_criteria,
         'extra_info': extra_info,
         'totals': totals,
+        'item_form_exclude': ItemForm().get_user_excludes(),
     }
     if for_export:
         return data_dictionary
@@ -354,7 +355,10 @@ def ajax_get_item_form(request, course_id, item_id=None):
             form = ItemForm(request.POST, prefix="item")
             if not request.user.has_perm('grades.add_grade'): # registrars should have this, as opposed to change_own_grade
                 # restrict regular teachers to the active marking period
-                form.fields['marking_period'].validators.append(require_active_marking_period)
+                try:
+                    form.fields['marking_period'].validators.append(require_active_marking_period)
+                except KeyError:
+                    pass # field was disabled by user configuration
         if form.is_valid():
             with reversion.create_revision():
                 if item_id is None:
@@ -400,14 +404,17 @@ def ajax_get_item_form(request, course_id, item_id=None):
             else:
                 form = ItemForm(initial={'course': course}, prefix="item")
     
-    form.fields['marking_period'].queryset = course.marking_period.all()
-    form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
-    form.fields['benchmark'].queryset = Benchmark.objects.filter()
+    try:
+        form.fields['marking_period'].queryset = course.marking_period.all()
+        form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
+        form.fields['benchmark'].queryset = Benchmark.objects.filter()
 
-    form.fields['category'].widget.attrs = {
-        'onchange': "Dajaxice.ecwsp.benchmark_grade.check_fixed_points_possible(Dajax.process, {'category':this.value})"}
-    if item and item.category.fixed_points_possible:
-        form.fields['points_possible'].widget.attrs = {'disabled': 'true'}
+        form.fields['category'].widget.attrs = {
+            'onchange': "Dajaxice.ecwsp.benchmark_grade.check_fixed_points_possible(Dajax.process, {'category':this.value})"}
+        if item and item.category.fixed_points_possible:
+            form.fields['points_possible'].widget.attrs = {'disabled': 'true'}
+    except KeyError:
+        pass # field was disabled by user configuration
 
     return render_to_response('sis/gumby_modal_form.html', {
         'my_form': form,
@@ -434,6 +441,8 @@ def ajax_get_item_tooltip(request, course_id, item_id):
     }
     details = {}
     for a in attribute_names:
+        if a in ItemForm().get_user_excludes():
+            continue
         if a in verbose_name_overrides:
             verbose_name = verbose_name_overrides[a]
         else:

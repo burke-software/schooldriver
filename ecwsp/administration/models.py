@@ -101,6 +101,7 @@ class Configuration(models.Model):
         'Grade comment length limit': ('500', 'Maximum number of characters allowed in grade comments; values above 500 ignored'),
         'Gradebook extra information': ('averages', "Set to 'averages' to see the class average for each assignment. \
 Use 'demonstrations' to see counts of demonstrations for students and assignments."),
+        'Gradebook hide fields': ('', "Separate with commas. Options include: marking_period, assignment_type, benchmark, date, description"),
     }
     
     def __unicode__(self):

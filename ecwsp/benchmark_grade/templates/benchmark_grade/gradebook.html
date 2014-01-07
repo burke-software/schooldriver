@@ -84,36 +84,42 @@
                 {{ filter_form.cohort }}
             </div>
             
+            {% if 'marking_period' not in item_form_exclude %} 
             <div class="filter_item">
                 Session
                 <div class="blackbar"></div>
                 {{ filter_form.marking_period }}
             </div>
-            
+            {% endif %}
+            {% if 'benchmark' not in item_form_exclude %} 
             <div class="filter_item">
                 Standard
                 <div class="blackbar"></div>
                 {{ filter_form.benchmark }}
             </div>
-            
+            {% endif %}
+            {% if 'category' not in item_form_exclude %} 
             <div class="filter_item">
                 {{ filter_form.category.label }}
                 <div class="blackbar"></div>
                 {{ filter_form.category }}
             </div>
-            
+            {% endif %}
+            {% if 'assignment_type' not in item_form_exclude %} 
             <div class="filter_item">
                 Assignment Type
                 <div class="blackbar"></div>
                 {{ filter_form.assignment_type }}
             </div>
-            
+            {% endif %}
+            {% if 'name' not in item_form_exclude %} 
             <div class="filter_item">
                 {{ filter_form.name.label }}
                 <div class="blackbar"></div>
                 {{ filter_form.name }}
             </div>
-            
+            {% endif %}
+            {% if 'date' not in item_form_exclude %} 
             <div class="filter_item">
                 Dates
                 <div class="blackbar"></div>
@@ -121,6 +127,7 @@
                 {{ filter_form.date_end }}
                 <input type="submit" value="Filter"/>
             </div>
+            {% endif %}
         </form>
     </div><!-- .menu -->
     
@@ -136,9 +143,15 @@
                                 {% for dem in item.demonstration_set.all %}
                                     <th>
                                         <div class="assignment" item_id="{{ dem.item.id }}">
+                                            {% if 'category' not in item_form_exclude %} 
                                             <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.category }}</div>
+                                            {% endif %}
+                                            {% if 'name' not in item_form_exclude %} 
                                             <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.name}}</div>
+                                            {% endif %}
+                                            {% if 'benchmark' not in item_form_exclude %} 
                                             <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.benchmark.number }}{% if dem.item.description %}, {{ dem.item.description }}{% endif %}</div>
+                                            {% endif %}
                                             <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_demonstration_form(event)" data-demonstration_id="{{ dem.id }}"><em>{{ dem.name }}</em></div>
                                             <div class="forall switch active" title="Fill all" data-demonstration_id="{{ dem.id }}"  gumby-trigger="#modal_form" onclick="show_fill_all_form(event)">&forall;</div>
                                         </div>
@@ -147,9 +160,18 @@
                             {% else %}
                                 <th>
                                     <div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">
+                                        {% if 'category' not in item_form_exclude %} 
                                         <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.category }}</div>
+                                        {% endif %}
+                                        {% if 'name' not in item_form_exclude %} 
                                         <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.name }}</div>
-                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.benchmark.number }}{% if item.description %}, {{ item.description }}{% endif %}</div>
+                                        {% endif %}
+                                        {% if 'benchmark' not in item_form_exclude %} 
+                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.benchmark.number }}{% if item.description and 'description' not in item_form_exclude %}, {{ item.description }}{% endif %}</div>
+                                        {% endif %}
+                                        {% if 'benchmark' in item_form_exclude and item.description and 'description' not in item_form_exclude %}
+                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.description }}</div>
+                                        {% endif %}
                                         <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">---------</div>
                                         <div class="forall switch active" gumby-trigger="#modal_form" title="Fill all" onclick="show_fill_all_form(event)">&forall;</div>
                                     </div>
