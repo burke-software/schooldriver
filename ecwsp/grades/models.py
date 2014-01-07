@@ -1,7 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
-from ecwsp.schedule.models import *
+from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
+from django_cached_field import CachedCharField
 
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -20,6 +21,22 @@ def grade_comment_length_validator(value):
     max_length = int(Configuration.get_or_default('Grade comment length limit').value)
     validator = MaxLengthValidator(max_length)
     return validator(value)
+
+class StudentMarkingPeriodGrade(models.Model):
+    """ Stores marking period grades for students, only used for cache """
+    student = models.ForeignKey('sis.Student')
+    marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
+    grade = CachedCharField(max_length=10, null=True)
+    
+    def calculate_grade(self):
+        """ TODO consider credits """
+        raise Exception("Proof of concept, do not use")
+        qs = self.student.grade_set.filter(
+            marking_period=self.marking_period,
+            override_final=False,
+            letter_grade=None).aggregate(Avg('grade'))
+        self.grade = qs['grade__avg']
+    
 
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')

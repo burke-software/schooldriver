@@ -5,6 +5,7 @@ from django.views.generic import ListView
 from django.views.generic.edit import FormView
 from django.views.generic.edit import ProcessFormView
 from django.utils import simplejson
+from report_utils.utils import DataExportMixin
 from .report import *
 
 class SlideReportMixin(object):
@@ -28,24 +29,23 @@ class SlideReportView(SlideReportMixin, TemplateView):
     template_name = "slide_report/report.html"
 
 
-class FilterView(SlideReportMixin, FormView):
-    template_name = "slide_report/filter.html"
-
-
-class AjaxPreviewView(SlideReportMixin, TemplateView):
-    """ Show a ajax preview table """
+class DownloadReportView(DataExportMixin, SlideReportMixin, TemplateView):
+    """ Show the report in various ways """
     template_name = "slide_report/table.html"
     
     def post(self, request, **kwargs):
+        download_type = request.GET.get('type')
         context = self.get_context_data(**kwargs)
         if request.POST.get('data', None):
             data = simplejson.loads(request.POST['data'])
             self.report.handle_post_data(data)
             context['filter_errors'] = self.report.filter_errors
-        context['object_list'] = self.report.report_to_list(user=self.request.user, preview=True)
-        return render(request, self.template_name, context)
-
-    def get_context_data(self, **kwargs):
-        context = super(AjaxPreviewView, self).get_context_data(**kwargs)
-        context['headers'] = self.report.get_preview_fields()
-        return context
+        
+        if download_type == "preview":
+            context['object_list'] = self.report.report_to_list(
+                user=self.request.user, preview=True)
+            context['headers'] = self.report.get_preview_fields()
+            return render(request, self.template_name, context)
+        elif download_type == "xlsx":
+            data = self.report.report_to_list(self.request.user)
+            return self.list_to_xlsx_response(data)

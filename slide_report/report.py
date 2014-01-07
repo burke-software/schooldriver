@@ -16,7 +16,7 @@ class SlideReport(object):
     name = ""
     name_verbose = None
     model = None
-    preview_fields = [] 
+    preview_fields = ['last_name', 'first_name']
     num_preview = 3
     filters = []
 
@@ -28,7 +28,9 @@ class SlideReport(object):
             self.register()
         self._possible_filters = [] # developer selected filters from subclass
         self._active_filters = [] # end user selected filters from view
+        self.report_context = {}
         self.filter_errors = []
+        self.add_fields = []
         for possible_filter in self.filters:
             self._possible_filters += [possible_filter]
 
@@ -51,16 +53,19 @@ class SlideReport(object):
         """ Return a queryset of the model
         filtering any active filters
         """
+        report_context = {}
         queryset = self.model.objects.all()
         for active_filter in self._active_filters:
-            queryset = active_filter.process_filter(queryset)
+            queryset = active_filter.process_filter(queryset, report_context)
             if active_filter.form.errors:
                 self.filter_errors += [{
                     'filter': active_filter.form.data['filter_number'],
                     'errors': active_filter.form.errors,
                 }]
+            else:
+                report_context = active_filter.get_report_context(report_context)
+                self.add_fields += active_filter.add_fields
         return queryset
-
 
     def report_to_list(self, user, preview=False):
         """ Convert to python list """
@@ -81,17 +86,24 @@ class SlideReport(object):
                 if callable(cell):
                     cell = cell()
                 result_row += [cell]
+            for field in self.add_fields:
+                cell = getattr(obj, field)
+                if callable(cell):
+                    cell = cell()
+                result_row += [cell]
+                
             result_list += [result_row]
         return result_list
 
     def get_preview_fields(self):
         if self.preview_fields:
             preview_fields = []
-            for field in self.preview_fields:
+            all_preview_fields = self.preview_fields + self.add_fields
+            for field in all_preview_fields:
                 try:
                     preview_fields += [self.model._meta.get_field_by_name(field)[0].verbose_name.title()]
                 except:
-                    preview_fields += [field]
+                    preview_fields += [field.replace('_', ' ')]
             return preview_fields
         else:
             return [self.model._meta.verbose_name_plural.title()]

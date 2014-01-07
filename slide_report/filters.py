@@ -1,5 +1,7 @@
 from django import forms
 from django.core.exceptions import ImproperlyConfigured
+from django.template.loader import render_to_string
+from django.http import QueryDict
 from .fields import SimpleCompareField
 from abc import abstractmethod
 import inspect
@@ -9,10 +11,12 @@ class Filter(object):
     """ A customized filter for querysets """
     name = None
     verbose_name = None
+    template_name = None
     fields = None
     form_class = None
     form = None
     raw_form_data = None
+    add_fields = []
     
     def __init__(self, **kwargs):
         for key, value in six.iteritems(kwargs):
@@ -20,19 +24,37 @@ class Filter(object):
         self.build_form()
 
     @abstractmethod
-    def queryset_filter(self, queryset, form=None):
+    def queryset_filter(self, queryset, report_context=None, form=None):
         """ Allow custom handeling of queryset
         Must return the queryset.
         """
-        return queryset 
+        return queryset
     
-    def process_filter(self, queryset):
+    def render_form(self):
+        """ Render the form using a template
+        Only called if template_name is defined """
+        context = self.get_template_context()
+        return render_to_string(self.template_name, context)
+    
+    def process_filter(self, queryset, report_context=None):
         """ Run the actual filter based on client data """
         is_valid = self.get_form_data()
         if is_valid:
-            return self.queryset_filter(queryset)
+            return self.queryset_filter(queryset, report_context=report_context)
         else:
             return queryset
+    
+    def get_template_context(self):
+        """ Get the context to be shown when rendering a template just
+        for this filter """
+        context = {}
+        if self.form:
+            context['form'] = self.form
+        return context
+    
+    def get_report_context(self, report_context):
+        """ Process any data that needs set for an entire report """
+        return report_context
 
     def build_form(self):
         """ Construct form out of fields or form """
@@ -49,10 +71,8 @@ class Filter(object):
                 self.form.fields['field_' + str(i)].label = ''
 
     def get_form_data(self):
-        from urlparse import urlparse, parse_qs
-        form_dict = parse_qs(self.raw_form_data)
-        for key, item in form_dict.items():
-            form_dict[key] = item[0]
+        form_dict = QueryDict(self.raw_form_data)
+        # Manually bound the form instead of Form(data)
         self.form.data = form_dict
         self.form.is_bound = form_dict
         if self.form.is_valid():
@@ -79,17 +99,28 @@ class DecimalCompareFilter(Filter):
         SimpleCompareField, 
         forms.DecimalField(decimal_places=2, max_digits=6, min_value=0,),
     ]
+    compare_field_string = None
 
-    def __init__(self, **kwargs):
-        self.compare_field_string = None
-        super(DecimalCompareFilter, self).__init__(**kwargs)
-        if not self.compare_field_string:
-            raise ImproperlyConfigured('Requires compare_field_string')
-
-    def queryset_filter(self, queryset, **kwargs):
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
         compare = self.cleaned_data['field_0']
         value = self.cleaned_data['field_1']
         compare_kwarg = {self.compare_field_string + '__' + compare: value}
+        return queryset.filter(**compare_kwarg)
+
+
+class ModelMultipleChoiceFilter(Filter):
+    fields = [forms.ModelMultipleChoiceField,]
+    compare_field_string = None
+    queryset = None
+    
+    def build_form(self):
+        self.form = forms.Form()
+        self.form.fields['filter_number'] = forms.IntegerField(widget=forms.HiddenInput())
+        self.form.fields['field_0'] = forms.ModelMultipleChoiceField(self.queryset, label='')
+    
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        selected = self.cleaned_data['field_0']
+        compare_kwarg = {self.compare_field_string + '__in': selected}
         return queryset.filter(**compare_kwarg)
 
 

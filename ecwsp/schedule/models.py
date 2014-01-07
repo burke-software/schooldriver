@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib import messages
 from django.conf import settings
+from django_cached_field import CachedCharField
 
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
@@ -142,7 +143,7 @@ class CourseEnrollment(models.Model):
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     exclude_days = models.ManyToManyField('Day', blank=True, \
         help_text="Student does not need to attend on this day. Note courses already specify meeting days, this field is for students who have a special reason to be away")
-    cache_grade = models.CharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
+    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
     
     class Meta:
         unique_together = (("course", "user", "role"),)
@@ -151,6 +152,54 @@ class CourseEnrollment(models.Model):
         if not self.id and hasattr(self.user, 'student'):
             student = self.user.student
         super(CourseEnrollment, self).save(*args, **kwargs)
+    
+    def calculate_grade(self, date_report=None, ignore_letter=False):
+	""" Calculate the final grade for a course
+	ignore_letter can be useful when computing averages
+	when you don't care about letter grades """
+	course_grades = self.course.grade_set.filter(student=self.user)
+	if date_report:
+	    course_grades = course_grades.filter(marking_period__end_date__lte=date_report)
+	
+	final = course_grades.filter(override_final=True).first()
+	if final:
+	    return final.get_grade()
+	
+	final = 0.0
+	grades = course_grades.filter(letter_grade=None, grade__isnull=False).extra(select={
+	    'weighted_grade':
+		'grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id)'
+	})
+	if grades:
+	    for grade in grades:
+		final += float(grade.weighted_grade)
+	    final = final / grades.count()*1.0
+	    return Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
+	
+	# Letter Grade
+	if ignore_letter == False:
+	    grades = course_grades
+	    if grades:
+		total_weight = Decimal(0)
+		for grade in grades:
+		    get_grade =  grade.get_grade()
+		    if get_grade == "I":
+			return "I"
+		    elif get_grade in ["P","HP","LP"]:
+			final += float(100 * grade.marking_period.weight)
+			total_weight += grade.marking_period.weight
+		    elif get_grade in ['F', 'M']:
+			total_weight += grade.marking_period.weight
+		    elif get_grade:
+			final += get_grade
+		if total_weight:
+		    final /= float(total_weight)
+		    final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
+		    if final > int(Configuration.get_or_default('letter_grade_required_for_pass').value):
+			return "P"
+		    else:
+			return "F"
+	return ''
     
     def set_cache_grade(self):
         """ Calculate and cache the final course grade for a student """
@@ -312,70 +361,26 @@ class Course(models.Model):
     
     def get_final_grade(self, student, date_report=None):
         """ Get final grade for a course. Returns override value if available.
+	Uses cache is possible. Do not use in cache calculations!
         date_report: optional gets grade for time period"""
         if 'ecwsp.grades' in settings.INSTALLED_APPS:
-            from ecwsp.grades.models import Grade
-            
             if not date_report or date_report == date.today():
                 try:
                     enrollments = self.courseenrollment_set.get(user=student, role="student")
-                    return enrollments.cache_grade
+                    return enrollments.grade
                 except CourseEnrollment.DoesNotExist:
                     pass
             return self.calculate_final_grade(student=student, date_report=date_report)
-            
+
     
     def calculate_final_grade(self, student, date_report=None):
         """
         Calculates final grade.
         Note that this should match recalc_ytd_grade in gradesheet.js!
+	Does NOT use cache!
         """
-        if 'ecwsp.grades' in settings.INSTALLED_APPS:
-            from ecwsp.grades.models import Grade
-            
-            final = Grade.objects.filter(course=self, override_final=True, student=student)
-            if final:
-                if not date_report or final[0].course.marking_period.filter(end_date__lte=date_report).count():
-                    return final[0].get_grade()
-            final = Decimal(0)
-            number = 0
-            letter_grade = False
-            grades =  Grade.objects.filter(student=student, course=self, marking_period__course=self)
-            if date_report:
-                grades = grades.filter(marking_period__end_date__lte=date_report)
-            total_weight = Decimal(0)
-            for grade in grades:
-                try:
-                    final += Decimal(grade.get_grade()) * grade.marking_period.weight
-                    number += 1
-                    total_weight += grade.marking_period.weight
-                # otherwise it's a letter grade.
-                except:
-                    # I (Incomplete) results in the final grade being I
-                    if grade.get_grade() == "I":
-                        return "I"
-                    elif grade.get_grade() in ["P","HP","LP"]:
-                        final += 100 * grade.marking_period.weight
-                        number += 1
-                        letter_grade = True
-                        total_weight += grade.marking_period.weight
-                    elif grade.get_grade() in ['F', 'M']:
-                        number += 1
-                        letter_grade = True
-                        total_weight += grade.marking_period.weight
-            if final is not None and total_weight:
-                final /= total_weight
-                    
-            if number != 0:
-                final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
-                if letter_grade == True:
-                    if final > int(Configuration.get_or_default('letter_grade_required_for_pass', '60').value):
-                        return "P"
-                    else:
-                        return "F"
-            else:
-                final = None
-            return final
+	course_enrollment = self.courseenrollment_set.get(user=student, role="student")
+	return course_enrollment.calculate_grade(date_report=date_report)
     
     def copy_instance(self, request):
         changes = (("fullname", self.fullname + " copy"),)

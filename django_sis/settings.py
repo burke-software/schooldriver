@@ -472,6 +472,8 @@ INSTALLED_APPS = (
     'django_su',
     'floppy_gumby_forms',
     'floppyforms',
+    'widget_tweaks',
+    'django_cached_field',
 ) + INSTALLED_APPS
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:

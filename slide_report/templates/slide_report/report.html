@@ -19,7 +19,12 @@
         >
             {{ filter.get_verbose_name }}
             <form method="post" class="filter_form" style="display:none;">
+              {% if filter.template_name %}
+                {{ filter.render_form }}
+              {% else %}
                 {{ filter.form }}
+                {{ filter.post_form_text }}
+              {% endif %}
             </form>
         </li>
         {% endfor %}
@@ -27,7 +32,8 @@
     </div>
 
     <div style="clear:both"/>
-    <p onclick="load_preview();">Update</p>
+    <p onclick="view_results('preview');">Update</p>
+    <p onclick="view_results('xlsx');">Download as xlsx</a>
     <div id="preview_area">
     </div>
 
