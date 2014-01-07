@@ -89,7 +89,11 @@
                 {% endfor %}
                 <tr>
                     <td>{{ course.fullname }} {{ mp.name }} Grade</td>
-                    <td class="categoryAverage">{{ course.average }}</td>
+                    {% if not course.categories and not course.average %}
+                        <td class="categoryAverage">{{ course.legacy_grade }}</td>
+                    {% else %}
+                        <td class="categoryAverage">{{ course.average }}</td>
+                    {% endif %}
                 </tr>
                 {% if course.category_by_name.Standards and course.category_by_name.Standards.total %}
                     <tr>

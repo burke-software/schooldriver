@@ -760,6 +760,12 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
                         counts['percentage'] = (Decimal(counts['passing']) / counts['total'] * 100).quantize(Decimal('0'))
                     course.category_by_name[category.name] = counts
                 course.average = gradebook_get_average(student, course, None, mp, None)
+                try:
+                    course.legacy_grade = course.grade_set.get(student=student, marking_period=mp).get_grade()
+                    if course.legacy_grade == '':
+                        course.legacy_grade = None # be consistent
+                except Grade.DoesNotExist:
+                    course.legacy_grade = None
 
         return render_to_response('benchmark_grade/student_grade.html', {
             'student': student,
