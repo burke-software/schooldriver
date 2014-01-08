@@ -153,7 +153,8 @@ class CalculationRuleCategoryAsCourse(models.Model):
 
 class CalculationRuleSubstitution(models.Model):
     operator = models.CharField(max_length=2, choices=OPERATOR_CHOICES)
-    match_value = models.DecimalField(max_digits=8, decimal_places=2)
+    match_value = models.DecimalField(max_digits=8, decimal_places=2,
+        help_text="Use only (0..1) unless category has fixed points possible")
     display_as = models.CharField(max_length=16, blank=True, null=True)
     calculate_as = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     flag_visually = models.BooleanField(default=False)
