@@ -46,7 +46,6 @@ class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
         widgets = {
-            'course': forms.HiddenInput,
             'date': forms.DateInput,
             'name': forms.TextInput,
             'description': forms.TextInput,
@@ -54,6 +53,7 @@ class ItemForm(forms.ModelForm):
             'category': forms.Select,
             'points_possible': forms.NumberInput,
             'assignment_type': forms.Select,
+            'course': forms.Select, #HiddenInput,
         }
         exclude = ('multiplier',) # also exclude user-configured fields; see __init__ above
 

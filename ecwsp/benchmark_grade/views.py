@@ -344,11 +344,17 @@ def ajax_get_item_form(request, course_id, item_id=None):
         if item_id:
             # modifying an existing item
             item = get_object_or_404(Item, pk=item_id)
+            original_course_id = item.course_id
             form = ItemForm(request.POST, instance=item, prefix="item")
             if not request.user.has_perm('grades.change_grade') and not item.marking_period.active:
                 # you aren't a registrar, so you can't modify an item from an inactive marking period
                 form.fields['marking_period'].validators.append(
                     make_validationerror_raiser('This item belongs to the inactive marking period {}.'.format(item.marking_period))
+                )
+            if original_course_id != long(form.data['item-course']):
+                # don't support moving items between courses
+                form.fields['course'].validators.append(
+                    make_validationerror_raiser('Please click "Make a Copy" if you would like to add this item to another course.')
                 )
         else:
             # creating a new item
@@ -417,17 +423,25 @@ def ajax_get_item_form(request, course_id, item_id=None):
             else:
                 form = ItemForm(initial={'course': course}, prefix="item")
     
+    # some fields may have been disabled by user configuration
+    try: form.fields['marking_period'].queryset = course.marking_period.all()
+    except KeyError: pass
+    try: form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
+    except KeyError: pass
+    try: form.fields['benchmark'].queryset = Benchmark.objects.filter()
+    except KeyError: pass
+    available_courses = get_teacher_courses(request.user.username)
+    if not len(available_courses) and request.user.has_perm('grades.change_grade'):
+        available_courses = Course.objects.all()
+    try: form.fields['course'].queryset = available_courses
+    except KeyError: pass
     try:
-        form.fields['marking_period'].queryset = course.marking_period.all()
-        form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
-        form.fields['benchmark'].queryset = Benchmark.objects.filter()
-
         form.fields['category'].widget.attrs = {
             'onchange': "Dajaxice.ecwsp.benchmark_grade.check_fixed_points_possible(Dajax.process, {'category':this.value})"}
         if item and item.category.fixed_points_possible:
             form.fields['points_possible'].widget.attrs = {'disabled': 'true'}
     except KeyError:
-        pass # field was disabled by user configuration
+        pass
 
     return render_to_response('sis/gumby_modal_form.html', {
         'my_form': form,

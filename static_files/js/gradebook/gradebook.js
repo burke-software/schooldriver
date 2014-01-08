@@ -314,6 +314,13 @@ function handle_form_fragment_submit(form) {
     return false;
 }
 
+function prepare_to_copy(child_of_form) {
+    // remove the item's id so that we copy instead of update
+    form = $(child_of_form).parents("form");
+    form.attr("item_id", "None");
+    form.submit();
+}
+
 function handle_demonstration_form_fragment_submit(form) {
 
     // Handle submit for a demonstration with ajax
