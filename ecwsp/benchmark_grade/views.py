@@ -272,12 +272,19 @@ def gradebook(request, course_id, for_export=False):
                 pass
 
     # Gather visual flagging criteria
-    category_flag_criteria = {}
+    absolute_category_flag_criteria = {}
+    normalized_category_flag_criteria = {}
     for category in Category.objects.filter(item__in=items).distinct():
-        category_flag_criteria[category.pk] = []
+        if category.fixed_points_possible:
+            # assume the criterion is absolute if the category has fixed # of points possible
+            use_dict = absolute_category_flag_criteria
+        else:
+            # assume we need to divide the mark by points possible before comparing to criterion
+            use_dict = normalized_category_flag_criteria
+        use_dict[category.pk] = []
         substitutions = calculation_rule.substitution_set.filter(apply_to_departments=course.department, apply_to_categories=category, flag_visually=True)
         for substitution in substitutions:
-            category_flag_criteria[category.pk].append(substitution.operator + ' ' + str(substitution.match_value))
+            use_dict[category.pk].append(substitution.operator + ' ' + str(substitution.match_value))
 
     # calculate course-wide averages and counts
     if totals['course_average_count']:
@@ -308,7 +315,8 @@ def gradebook(request, course_id, for_export=False):
         'teacher_courses': teacher_courses,
         'filtered' : filtered,
         'filter_form': filter_form,
-        'category_flag_criteria': category_flag_criteria,
+        'absolute_category_flag_criteria': absolute_category_flag_criteria,
+        'normalized_category_flag_criteria': normalized_category_flag_criteria,
         'extra_info': extra_info,
         'totals': totals,
         'item_form_exclude': ItemForm().get_user_excludes(),

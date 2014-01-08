@@ -88,8 +88,9 @@ function resizeend() {
 
 function highlight_cell(cell) {
     category_id = cell.data("category_id");
+    points_possible = cell.data("points_possible");
     value = $.trim(cell.text());
-    if(gradebook_flag_check(category_id, value)) {
+    if(gradebook_flag_check(category_id, value, points_possible)) {
         cell.children("div").animate({
             backgroundColor: flagged_color
         }, 2000);

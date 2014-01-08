@@ -16,10 +16,14 @@
     <script>
         var item_pk_list = "{{ item_pks }}";
         var pending_aggregate_pks = {{ pending_aggregate_pks|safe }};
-        function gradebook_flag_check(category_id, value)
+        function gradebook_flag_check(category_id, value, points_possible)
         {
-            {% for id, comparisons in category_flag_criteria.items %}{% for comparison in comparisons %}
+            {% for id, comparisons in absolute_category_flag_criteria.items %}{% for comparison in comparisons %}
             if(category_id == {{ id }} && value {{ comparison|safe }})
+                return true;
+            {% endfor %}{% endfor %}
+            {% for id, comparisons in normalized_category_flag_criteria.items %}{% for comparison in comparisons %}
+            if(category_id == {{ id }} && value / points_possible {{ comparison|safe }})
                 return true;
             {% endfor %}{% endfor %}
             return false;
@@ -205,7 +209,7 @@
                     <tr>
                         <td><div id="student{{ student.id }}" onclick="show_student_overlay(event)">{{ student }}</div></td>
                         {% for mark in student.marks %}
-                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)" data-category_id="{{ mark.category_id }}">
+                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)" data-category_id="{{ mark.category_id }}" data-points_possible="{{ mark.item.points_possible }}">
                                 <div>{{ mark.get_grade }}</div>
                             </td>
                         {% endfor %}
