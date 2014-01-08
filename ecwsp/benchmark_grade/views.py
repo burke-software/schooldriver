@@ -393,10 +393,23 @@ def ajax_get_item_form(request, course_id, item_id=None):
             item = get_object_or_404(Item, pk=item_id)
             form = ItemForm(instance=item, prefix="item")
             # TODO: remove TC hard-coding
-            if item.category.name == 'Standards':
-                students_missing = Student.objects.filter(mark__item=item).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
-                if not students_missing: students_missing = ('None',)
-                lists = ({'heading':'Students Missing This Item', 'items':students_missing},)
+            try:
+                Category.objects.get(name='Standards') # are we in TC land?
+                if item.category.name == 'Standards':
+                    students_missing = Student.objects.filter(mark__item=item).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
+                    if not students_missing: students_missing = ('None',)
+                    lists = ({'heading':'Students Missing This Item', 'items':students_missing},)
+            except Category.DoesNotExist:
+                pass_letters = Configuration.get_or_default("Letter Passing Grade").value.split(',')
+                pass_number = float(Configuration.get_or_default("Passing Grade").value) / 100 # yay, assumptions
+                students_missing = Student.objects.filter(mark__item=item).annotate(best_mark=Max('mark__normalized_mark')).filter(best_mark__lt=pass_number)
+                text_missing = []
+                for student in students_missing:
+                    if item.mark_set.get(student=student).letter_grade in pass_letters:
+                        continue
+                    text_missing.append(u'{} / {} ({:.0f}%) {}'.format(
+                        student.best_mark * float(item.points_possible), item.points_possible, student.best_mark * 100, unicode(student)))
+                lists = ({'heading':'Students Missing This Item', 'items':text_missing},)
         else:
             active_mps = course.marking_period.filter(active=True)
             if active_mps:
@@ -561,9 +574,23 @@ def ajax_get_student_info(request, course_id, student_id):
     course = get_object_or_404(Course, pk=course_id)
 
     # TODO: remove TC hard-coding
-    standards_missing = Item.objects.filter(course=course, category__name='Standards', mark__student=student).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
-    if not standards_missing: standards_missing = ('None',)
-    lists = ({'heading':'Standards Missing for {}'.format(student), 'items':standards_missing},)
+    try:
+        Category.objects.get(name='Standards') # are we in TC land?
+        standards_missing = Item.objects.filter(course=course, category__name='Standards', mark__student=student).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
+        if not standards_missing: standards_missing = ('None',)
+        lists = ({'heading':'Standards Missing for {}'.format(student), 'items':standards_missing},)
+    except Category.DoesNotExist:
+        pass_letters = Configuration.get_or_default("Letter Passing Grade").value.split(',')
+        pass_number = float(Configuration.get_or_default("Passing Grade").value) / 100 # yay, assumptions
+        items_missing = Item.objects.filter(course=course, mark__student=student).annotate(best_mark=Max('mark__normalized_mark')).filter(
+            best_mark__lt=pass_number)
+        text_missing = []
+        for item in items_missing:
+            if item.mark_set.get(student=student).letter_grade in pass_letters:
+                continue
+            text_missing.append(u'{} / {} ({:.0f}%) {}'.format(
+                item.best_mark * float(item.points_possible), item.points_possible, item.best_mark * 100, unicode(item)))
+        lists = ({'heading':'Items Missing for {}'.format(student), 'items':text_missing},)
     afterword = '<a onclick="open_grade_detail({}, {})">Create report from current view of gradebook (in new tab)</a>'
     afterword = afterword.format(course_id, student_id)
 
