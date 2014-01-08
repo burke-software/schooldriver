@@ -27,10 +27,25 @@ from ecwsp.sis.models import Cohort
 from ecwsp.benchmarks.models import Benchmark
 
 class ItemForm(forms.ModelForm):
+    def get_user_excludes(self):
+        # get user-configured exclusions at runtime
+        allowed_exclude = set(['marking_period', 'assignment_type', 'benchmark', 'date', 'description'])
+        from ecwsp.administration.models import Configuration
+        exclude = [x.strip() for x in Configuration.get_or_default('Gradebook hide fields').value.lower().split(',')] 
+        exclude = set(exclude).intersection(allowed_exclude)
+        return list(exclude)
+
+    def __init__(self, *args, **kwargs):
+        super(ItemForm, self).__init__(*args, **kwargs)
+        for field_name in self.get_user_excludes():
+            try:
+                self.fields.pop(field_name)
+            except KeyError:
+                pass
+
     class Meta:
         model = Item
         widgets = {
-            'course': forms.HiddenInput,
             'date': forms.DateInput,
             'name': forms.TextInput,
             'description': forms.TextInput,
@@ -38,8 +53,9 @@ class ItemForm(forms.ModelForm):
             'category': forms.Select,
             'points_possible': forms.NumberInput,
             'assignment_type': forms.Select,
+            'course': forms.Select, #HiddenInput,
         }
-        exclude = ('scale','multiplier',)
+        exclude = ('multiplier',) # also exclude user-configured fields; see __init__ above
 
 class DemonstrationForm(forms.ModelForm):
     class Meta:

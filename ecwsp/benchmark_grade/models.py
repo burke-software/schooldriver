@@ -153,7 +153,8 @@ class CalculationRuleCategoryAsCourse(models.Model):
 
 class CalculationRuleSubstitution(models.Model):
     operator = models.CharField(max_length=2, choices=OPERATOR_CHOICES)
-    match_value = models.DecimalField(max_digits=8, decimal_places=2)
+    match_value = models.DecimalField(max_digits=8, decimal_places=2,
+        help_text="Use only (0..1) unless category has fixed points possible")
     display_as = models.CharField(max_length=16, blank=True, null=True)
     calculate_as = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     flag_visually = models.BooleanField(default=False)
@@ -226,7 +227,6 @@ class AssignmentType(models.Model):
 class Item(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, blank=True, null=True)
-    course = models.ForeignKey('schedule.Course')
     date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     category = models.ForeignKey('Category')
@@ -236,6 +236,7 @@ class Item(models.Model):
     @property
     def benchmark_description(self): return self.benchmark.name
     multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1) # not used yet
+    course = models.ForeignKey('schedule.Course')
     def clean(self):
         from django.core.exceptions import ValidationError
         # must use hasattr when checking if non-nullable field is null

@@ -40,7 +40,7 @@ def select_grade_method(request):
     if allow_spreadsheet == 'True':
         options += ['S']
     else:
-        allow_import = False
+        allow_spreadsheet = False
     if request.user.has_perm('grades.change_own_grade') or request.user.has_pem('grades.change_grade'):
         options += ['M']
         allow_manual = True

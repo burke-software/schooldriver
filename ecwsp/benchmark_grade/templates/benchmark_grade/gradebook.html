@@ -16,10 +16,14 @@
     <script>
         var item_pk_list = "{{ item_pks }}";
         var pending_aggregate_pks = {{ pending_aggregate_pks|safe }};
-        function gradebook_flag_check(category_id, value)
+        function gradebook_flag_check(category_id, value, points_possible)
         {
-            {% for id, comparisons in category_flag_criteria.items %}{% for comparison in comparisons %}
+            {% for id, comparisons in absolute_category_flag_criteria.items %}{% for comparison in comparisons %}
             if(category_id == {{ id }} && value {{ comparison|safe }})
+                return true;
+            {% endfor %}{% endfor %}
+            {% for id, comparisons in normalized_category_flag_criteria.items %}{% for comparison in comparisons %}
+            if(category_id == {{ id }} && value / points_possible {{ comparison|safe }})
                 return true;
             {% endfor %}{% endfor %}
             return false;
@@ -84,36 +88,42 @@
                 {{ filter_form.cohort }}
             </div>
             
+            {% if 'marking_period' not in item_form_exclude %} 
             <div class="filter_item">
                 Session
                 <div class="blackbar"></div>
                 {{ filter_form.marking_period }}
             </div>
-            
+            {% endif %}
+            {% if 'benchmark' not in item_form_exclude %} 
             <div class="filter_item">
                 Standard
                 <div class="blackbar"></div>
                 {{ filter_form.benchmark }}
             </div>
-            
+            {% endif %}
+            {% if 'category' not in item_form_exclude %} 
             <div class="filter_item">
                 {{ filter_form.category.label }}
                 <div class="blackbar"></div>
                 {{ filter_form.category }}
             </div>
-            
+            {% endif %}
+            {% if 'assignment_type' not in item_form_exclude %} 
             <div class="filter_item">
                 Assignment Type
                 <div class="blackbar"></div>
                 {{ filter_form.assignment_type }}
             </div>
-            
+            {% endif %}
+            {% if 'name' not in item_form_exclude %} 
             <div class="filter_item">
                 {{ filter_form.name.label }}
                 <div class="blackbar"></div>
                 {{ filter_form.name }}
             </div>
-            
+            {% endif %}
+            {% if 'date' not in item_form_exclude %} 
             <div class="filter_item">
                 Dates
                 <div class="blackbar"></div>
@@ -121,6 +131,7 @@
                 {{ filter_form.date_end }}
                 <input type="submit" value="Filter"/>
             </div>
+            {% endif %}
         </form>
     </div><!-- .menu -->
     
@@ -136,9 +147,15 @@
                                 {% for dem in item.demonstration_set.all %}
                                     <th>
                                         <div class="assignment" item_id="{{ dem.item.id }}">
+                                            {% if 'category' not in item_form_exclude %} 
                                             <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.category }}</div>
+                                            {% endif %}
+                                            {% if 'name' not in item_form_exclude %} 
                                             <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.name}}</div>
+                                            {% endif %}
+                                            {% if 'benchmark' not in item_form_exclude %} 
                                             <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ dem.item.id }}">{{ dem.item.benchmark.number }}{% if dem.item.description %}, {{ dem.item.description }}{% endif %}</div>
+                                            {% endif %}
                                             <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_demonstration_form(event)" data-demonstration_id="{{ dem.id }}"><em>{{ dem.name }}</em></div>
                                             <div class="forall switch active" title="Fill all" data-demonstration_id="{{ dem.id }}"  gumby-trigger="#modal_form" onclick="show_fill_all_form(event)">&forall;</div>
                                         </div>
@@ -147,9 +164,18 @@
                             {% else %}
                                 <th>
                                     <div class="assignment" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">
+                                        {% if 'category' not in item_form_exclude %} 
                                         <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.category }}</div>
+                                        {% endif %}
+                                        {% if 'name' not in item_form_exclude %} 
                                         <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.name }}</div>
-                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.benchmark.number }}{% if item.description %}, {{ item.description }}{% endif %}</div>
+                                        {% endif %}
+                                        {% if 'benchmark' not in item_form_exclude %} 
+                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.benchmark.number }}{% if item.description and 'description' not in item_form_exclude %}, {{ item.description }}{% endif %}</div>
+                                        {% endif %}
+                                        {% if 'benchmark' in item_form_exclude and item.description and 'description' not in item_form_exclude %}
+                                        <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">{{ item.description }}</div>
+                                        {% endif %}
                                         <div class="headerItem switch active" gumby-trigger="#modal_form" onclick="get_edit_assignment_form(event)" item_id="{{ item.id }}">---------</div>
                                         <div class="forall switch active" gumby-trigger="#modal_form" title="Fill all" onclick="show_fill_all_form(event)">&forall;</div>
                                     </div>
@@ -183,7 +209,7 @@
                     <tr>
                         <td><div id="student{{ student.id }}" onclick="show_student_overlay(event)">{{ student }}</div></td>
                         {% for mark in student.marks %}
-                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)" data-category_id="{{ mark.category_id }}">
+                            <td id="tdc{{ forloop.counter0 }}_r{{ row_counter }}_mark{{ mark.id }}" onclick="select_cell(event)" data-category_id="{{ mark.category_id }}" data-points_possible="{{ mark.item.points_possible }}">
                                 <div>{{ mark.get_grade }}</div>
                             </td>
                         {% endfor %}
@@ -216,17 +242,17 @@
                         {% endfor %}
                         {% if filtered %}
                             <td><!-- filtered standards demonstrated -->
-                                N/A
+                                <div>{{ totals.filtered_standards_text }}</div> 
                             </td>
                             <td><!-- filtered course average -->
-                                N/A
+                                <div>{{ totals.filtered_average }}</div>
                             </td>
                         {% endif %}
                         <td><!-- standards demonstrated -->
-                            N/A
+                            <div>{{ totals.standards_text }}</div> 
                         </td>
                         <td><!-- course average -->
-                            N/A
+                            <div>{{ totals.course_average }}</div>
                         </td>
                     </tr>
                 {% endif %} 
@@ -246,11 +272,11 @@
                         {% endfor %}
                         {% if filtered %}
                             <td><!-- filtered course average -->
-                                N/A
+                                <div>{{ totals.filtered_average }}</div>
                             </td>
                         {% endif %}
                         <td><!-- course average -->
-                            N/A
+                            <div>{{ totals.course_average }}</div>
                         </td>
                     </tr>
                 {% endif %} 
