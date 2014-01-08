@@ -88,7 +88,13 @@ def gradebook(request, course_id, for_export=False):
         return HttpResponseRedirect(reverse('admin:index'))
 
     school_year = course.marking_period.all()[0].school_year
-    calculation_rule = benchmark_find_calculation_rule(school_year)
+    try:
+        calculation_rule = benchmark_find_calculation_rule(school_year)
+    except Exception as e:
+        if "There is no suitable calculation rule for the school year" not in unicode(e):
+            raise
+        messages.add_message(request, messages.ERROR, e)
+        return HttpResponseRedirect(reverse('admin:index'))
     teacher_courses = get_teacher_courses(request.user.username)
     extra_info = Configuration.get_or_default('Gradebook extra information').value.lower().strip()
     quantizer = Decimal(10) ** (-1 * calculation_rule.decimal_places)
