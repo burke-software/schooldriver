@@ -7,21 +7,21 @@
   <form method="post" onsubmit="handle_form_fragment_submit(this); return false;" item_id="{{ item_id }}" id="form_fragment" enctype="multipart/form-data" action="">
     {% form my_form using "floppy_gumby_forms/layouts/gumby.html" %}
       {% if item_id %}
-	  <a class="grp-button grp-delete-link" onclick="confirm_assignment_delete({{ item_id }});">Delete</a>
+      <a class="grp-button grp-delete-link" onclick="confirm_assignment_delete({{ item_id }});">Delete</a>
       {% endif %}
-      <div class="medium primary btn"> 
-        <input  type="submit" value="Submit" />    
+      <div class="medium primary btn">
+        <input  type="submit" value="Submit" />
       </div>
   </form>
   {% if lists %}
   <hr />
       {% for list in lists %}
-	  <h2>{{ list.heading }}</h2>
-	  <ul>
-	  {% for item in list.items %}
-	      <li>{{ item }}</li>
-	  {% endfor %}
-	  </ul>
+      <h2>{{ list.heading }}</h2>
+      <ul>
+      {% for item in list.items %}
+          <li>{{ item }}</li>
+      {% endfor %}
+      </ul>
       {% endfor %}
   {% endif %}
 </div>
