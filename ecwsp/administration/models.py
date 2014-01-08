@@ -70,7 +70,7 @@ class Configuration(models.Model):
         'counseling_referral_notice_email_to': ('', ''),
         'Admissions to student also makes student worker': ('False', ''),
         'admissions_override_year_start': ('', 'Must be ISO date (ex 2012-10-25) or blank'),
-        'Pasing Grade': ('70', ''),
+        'Passing Grade': ('70', ''),
         'Letter Passing Grade': ('A,B,C,P', ''),
         'Only Active Classes in Schedule': ('', ''),
         'Hide Empty Periods in Schedule': ('False', ''),
