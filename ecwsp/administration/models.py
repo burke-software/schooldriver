@@ -70,7 +70,7 @@ class Configuration(models.Model):
         'counseling_referral_notice_email_to': ('', ''),
         'Admissions to student also makes student worker': ('False', ''),
         'admissions_override_year_start': ('', 'Must be ISO date (ex 2012-10-25) or blank'),
-        'Pasing Grade': ('70', ''),
+        'Passing Grade': ('70', ''),
         'Letter Passing Grade': ('A,B,C,P', ''),
         'Only Active Classes in Schedule': ('', ''),
         'Hide Empty Periods in Schedule': ('False', ''),
@@ -101,6 +101,7 @@ class Configuration(models.Model):
         'Grade comment length limit': ('500', 'Maximum number of characters allowed in grade comments; values above 500 ignored'),
         'Gradebook extra information': ('averages', "Set to 'averages' to see the class average for each assignment. \
 Use 'demonstrations' to see counts of demonstrations for students and assignments."),
+        'Gradebook hide fields': ('', "Separate with commas. Options include: marking_period, assignment_type, benchmark, date, description"),
     }
     
     def __unicode__(self):

@@ -339,8 +339,8 @@ class Course(models.Model):
         """ Is student passing course? """
         if cache_passing == None:
             pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
-	else:
-	    pass_score = cache_passing
+        else:
+            pass_score = cache_passing
         if cache_grade:
             grade = cache_grade
         else:

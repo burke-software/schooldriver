@@ -409,26 +409,26 @@ STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 #Celery
-if 'djcelery' in INSTALLED_APPS:
-    import djcelery
-    djcelery.setup_loader()
-    #BROKER_URL = 'amqp://guest:guest@localhost:5672/'
-    BROKER_HEARTBEAT = 30
-    CELERY_IMPORTS = ()
-    if "ecwsp.work_study" in INSTALLED_APPS:
-        CELERY_IMPORTS += ("ecwsp.work_study.tasks",)
-    if "ecwsp.volunteer_track" in INSTALLED_APPS:
-        CELERY_IMPORTS += ("ecwsp.volunteer_track.tasks",)
-    if "ecwsp.naviance_sso" in INSTALLED_APPS and NAVIANCE_IMPORT_KEY:
-        CELERY_IMPORTS += ("ecwsp.naviance_sso.tasks",)
-    if "ecwsp.benchmark_grade" in INSTALLED_APPS:
-        CELERY_IMPORTS += ("ecwsp.benchmark_grade.tasks",)
-    if "ecwsp.admissions" in INSTALLED_APPS:
-        CELERY_IMPORTS += ("ecwsp.admissions.tasks",)
-    if "ecwsp.integrations.schoolreach" in INSTALLED_APPS:
-        CELERY_IMPORTS += ("ecwsp.integrations.schoolreach.tasks",)
-    CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
-    CELERY_ENABLE_UTC = False
+# we include celery below in the "required add ons," so configure it always
+import djcelery
+djcelery.setup_loader()
+#BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+BROKER_HEARTBEAT = 30
+CELERY_IMPORTS = ()
+if "ecwsp.work_study" in INSTALLED_APPS:
+    CELERY_IMPORTS += ("ecwsp.work_study.tasks",)
+if "ecwsp.volunteer_track" in INSTALLED_APPS:
+    CELERY_IMPORTS += ("ecwsp.volunteer_track.tasks",)
+if "ecwsp.naviance_sso" in INSTALLED_APPS and NAVIANCE_IMPORT_KEY:
+    CELERY_IMPORTS += ("ecwsp.naviance_sso.tasks",)
+if "ecwsp.benchmark_grade" in INSTALLED_APPS:
+    CELERY_IMPORTS += ("ecwsp.benchmark_grade.tasks",)
+if "ecwsp.admissions" in INSTALLED_APPS:
+    CELERY_IMPORTS += ("ecwsp.admissions.tasks",)
+if "ecwsp.integrations.schoolreach" in INSTALLED_APPS:
+    CELERY_IMPORTS += ("ecwsp.integrations.schoolreach.tasks",)
+CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
+CELERY_ENABLE_UTC = False
 
 # These are required add ons that we always want to have
 INSTALLED_APPS = (
