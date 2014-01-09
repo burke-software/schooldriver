@@ -79,7 +79,7 @@
     
 
     {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %}
-    {% if perms.schedule.change_course or perms.schedule.change_own_grade %}
+    {% if perms.schedule.change_course or perms.grades.change_own_grade %}
       <li>
         <a href="/schedule/dashboard/"> {% trans 'Courses' %} </a>
         <div class="dropdown">
