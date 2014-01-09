@@ -74,12 +74,22 @@ class MpGradeFilter(Filter):
         forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "Every", 'style': 'width:41px'})),
     ]
     post_form_text = 'time(s)'
+    add_fields = ['courseenrollment__count']
     
     def queryset_filter(self, queryset, report_context=None, **kwargs):
+        date_begin = report_context['date_begin']
+        date_end = report_context['date_end']
         compare = self.cleaned_data['field_0']
         number = self.cleaned_data['field_1']
         times = self.cleaned_data['field_2']
-        
+        import ipdb; ipdb.set_trace()
+        grade_kwarg = {
+            'courseenrollment__cached_numeric_grade__' + compare: number,
+            'courseenrollment__course__marking_period__start_date__gte': date_begin,
+            'courseenrollment__course__marking_period__end_date__lte': date_end,
+        }
+        queryset = queryset.filter(**grade_kwarg).annotate(
+            Count('courseenrollment')).filter(courseenrollment__count__gt=times)
         return queryset
     
 

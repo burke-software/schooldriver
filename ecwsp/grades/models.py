@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
-from django_cached_field import CachedCharField
+from django_cached_field import CachedDecimalField
 
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -26,7 +26,10 @@ class StudentMarkingPeriodGrade(models.Model):
     """ Stores marking period grades for students, only used for cache """
     student = models.ForeignKey('sis.Student')
     marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
-    grade = CachedCharField(max_length=10, null=True)
+    grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="MP Average")
+    
+    class Meta:
+        unique_together = ('student', 'marking_period')
     
     def calculate_grade(self):
         """ TODO consider credits """

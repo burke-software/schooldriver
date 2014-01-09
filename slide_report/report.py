@@ -82,6 +82,8 @@ class SlideReport(object):
         for obj in queryset:
             result_row = []
             for field in preview_fields:
+                field = self.get_field_name(field)
+                print field
                 cell = getattr(obj, field)
                 if callable(cell):
                     cell = cell()
@@ -94,12 +96,24 @@ class SlideReport(object):
                 
             result_list += [result_row]
         return result_list
+    
+    def get_field_verbose(self, field):
+        if isinstance(field, tuple) and len(field) == 2:
+            field = field[1]
+        return field
+    
+    def get_field_name(self, field):
+        if isinstance(field, tuple) and len(field) == 2:
+            field = field[0]
+        return field
+        
 
     def get_preview_fields(self):
         if self.preview_fields:
             preview_fields = []
             all_preview_fields = self.preview_fields + self.add_fields
             for field in all_preview_fields:
+                field = self.get_field_verbose(field)
                 try:
                     preview_fields += [self.model._meta.get_field_by_name(field)[0].verbose_name.title()]
                 except:

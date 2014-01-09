@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib import messages
 from django.conf import settings
-from django_cached_field import CachedCharField
+from django_cached_field import CachedCharField, CachedDecimalField
 
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
@@ -143,20 +143,45 @@ class CourseEnrollment(models.Model):
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     exclude_days = models.ManyToManyField('Day', blank=True, \
         help_text="Student does not need to attend on this day. Note courses already specify meeting days, this field is for students who have a special reason to be away")
-    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
+    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade",
+			    editable=False)
+    numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     
     class Meta:
-        unique_together = (("course", "user", "role"),)
+	unique_together = (("course", "user", "role"),)
         
     def save(self, *args, **kwargs):
         if not self.id and hasattr(self.user, 'student'):
             student = self.user.student
         super(CourseEnrollment, self).save(*args, **kwargs)
     
-    def calculate_grade(self, date_report=None, ignore_letter=False):
+    def cache_grades(self):
+	""" Set cache on both grade and numeric_grade """
+	grade = self.calculate_grade_real()
+	self.grade = grade
+	if isinstance(grade, Decimal):
+	    self.numeric_grade = grade
+	else:
+	    self.numeric_grade = None
+	self.grade_recalculation_needed = False
+	self.numeric_grade_recalculation_needed = False
+	self.save()
+	return grade
+    
+    def calculate_grade(self):
+	return self.cache_grades()
+	
+    def calculate_numeric_grade(self):
+	grade = self.cache_grades()
+	if isinstance(grade, Decimal):
+	    return grade
+	return None
+    
+    def calculate_grade_real(self, date_report=None, ignore_letter=False):
 	""" Calculate the final grade for a course
 	ignore_letter can be useful when computing averages
-	when you don't care about letter grades """
+	when you don't care about letter grades
+	"""
 	course_grades = self.course.grade_set.filter(student=self.user)
 	if date_report:
 	    course_grades = course_grades.filter(marking_period__end_date__lte=date_report)
@@ -380,7 +405,7 @@ class Course(models.Model):
 	Does NOT use cache!
         """
 	course_enrollment = self.courseenrollment_set.get(user=student, role="student")
-	return course_enrollment.calculate_grade(date_report=date_report)
+	return course_enrollment.calculate_grade_real(date_report=date_report)
     
     def copy_instance(self, request):
         changes = (("fullname", self.fullname + " copy"),)
