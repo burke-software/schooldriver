@@ -70,7 +70,7 @@ class GradeTemplateReport(TemplateReport):
         for course in courses:
             grades = course.grade_set.filter(student=student).filter(
                 marking_period__isnull=False,
-                marking_period__show_reports=True)
+                marking_period__show_reports=True).order_by('marking_period__start_date')
             i = 1
             for grade in grades:
                 # course.grade1, course.grade2, etc
