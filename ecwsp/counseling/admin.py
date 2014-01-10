@@ -8,6 +8,7 @@ class StudentMeetingAdmin(admin.ModelAdmin):
     list_display = ['category','display_students','date','reported_by']
     fields = ['category','students','date','notes','file','follow_up_action','follow_up_notes','reported_by']
     form = make_ajax_form(StudentMeeting, dict(students='student'))
+    search_fields = ['students__username', 'students__last_name', 'students__first_name', 'category__name', 'reported_by__username']
     
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'reported_by':
