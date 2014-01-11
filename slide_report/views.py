@@ -1,5 +1,5 @@
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 from django.views.generic import ListView
 from django.views.generic.edit import FormView
@@ -49,3 +49,10 @@ class DownloadReportView(DataExportMixin, SlideReportMixin, TemplateView):
         elif download_type == "xlsx":
             data = self.report.report_to_list(self.request.user)
             return self.list_to_xlsx_response(data)
+        elif download_type == 'django_admin':
+            ids = self.report.get_queryset().values_list('id', flat=True)
+            ids = ",".join(str(x) for x in ids)
+            response = redirect('admin:{}_{}_changelist'.format(
+                self.model._meta.app_label, self.model._meta.model_name))
+            response['Location'] += '?id__in={}'.format(ids)
+            return response

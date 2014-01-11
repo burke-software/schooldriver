@@ -51,7 +51,7 @@ class TardyFilter(IntCompareFilter):
         queryset = queryset.filter(
             student_attn__date__range=(date_begin, date_end),
             student_attn__status__tardy=True,
-            ).annotate(tardy_count=Count('student_attn'))
+            ).annotate(tardy_count=Count('student_attn', distinct=True))
         queryset = super(TardyFilter, self).queryset_filter(queryset)
         return queryset
 
@@ -74,7 +74,7 @@ class MpGradeFilter(Filter):
         forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "Every", 'style': 'width:41px'})),
     ]
     post_form_text = 'time(s)'
-    add_fields = ['courseenrollment__count']
+    add_fields = ['grade_mp_count']
     
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
@@ -82,14 +82,13 @@ class MpGradeFilter(Filter):
         compare = self.cleaned_data['field_0']
         number = self.cleaned_data['field_1']
         times = self.cleaned_data['field_2']
-        import ipdb; ipdb.set_trace()
         grade_kwarg = {
             'courseenrollment__cached_numeric_grade__' + compare: number,
             'courseenrollment__course__marking_period__start_date__gte': date_begin,
             'courseenrollment__course__marking_period__end_date__lte': date_end,
         }
         queryset = queryset.filter(**grade_kwarg).annotate(
-            Count('courseenrollment')).filter(courseenrollment__count__gt=times)
+            grade_mp_count=Count('courseenrollment', distinct=True)).filter(grade_mp_count__gte=times)
         return queryset
     
 
@@ -98,7 +97,7 @@ class SisReport(SlideReport):
     name = "student_report"
     model = Student
     filters = (
-        DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cache_gpa"),
+        DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cache_gpa", add_fields=('gpa',)),
         TardyFilter(verbose_name="Tardies"),
         SchoolDateFilter(),
         StudentYearFilter(),
