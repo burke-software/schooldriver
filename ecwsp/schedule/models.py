@@ -150,11 +150,6 @@ class CourseEnrollment(models.Model):
     class Meta:
 	unique_together = (("course", "user", "role"),)
         
-    def save(self, *args, **kwargs):
-        if not self.id and hasattr(self.user, 'student'):
-            student = self.user.student
-        super(CourseEnrollment, self).save(*args, **kwargs)
-    
     def cache_grades(self):
 	""" Set cache on both grade and numeric_grade """
 	grade = self.calculate_grade_real()
@@ -233,12 +228,6 @@ class CourseEnrollment(models.Model):
             self.cache_grade = ""
         else:
             self.cache_grade = cache_grade
-        
-    def delete(self, *args, **kwargs):
-        if hasattr(self.user, 'student'):
-            student = self.user.student
-        super(CourseEnrollment, self).delete(*args, **kwargs)
-    
 
 class Day(models.Model):
     dayOfWeek = (
