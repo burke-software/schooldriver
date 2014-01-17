@@ -163,37 +163,55 @@ table#gradebook_table img.cancel {
 }
 
 .navcontain .navbar{
+	form.view_student{
+		padding-left: 15px;
+		padding-right: 15px;
+	}
 	li > a {
 		text-transform: uppercase;
 		font-weight: 600;
 		padding-left: 5px;
 		padding-right: 5px;
 	}
+	
+	li.active > a{
+		background-color: #d0dbe4;
+		color: #4a4d4f;
+		text-shadow: none;
+	}
 	.breadcrumbs{
-		background-color: #b7c0c9;
+		background-color: #d0dbe4;
 		#breadcrumbs_area{
 			padding-right: 0px;
 			li > a{
+				text-align: center;
 				padding-left: 10px;
 				padding-right: 10px;
 				.nav_icon, .dashboard_gear{
 					margin-left: 10px;
+					margin-right: 10px;
 				}
+			}
+			.pull_right > ul > li:last-child{
+				min-width: 200px;
 			}
 			.name_dropdown{
 				margin: 0px;
 				border-top: #bdbebd;
 				box-shadow: none;
-				right: 0;
-				li{
-					border-top: #bdbebd;
-					background-color: #b7c0c9;
-					a{
-						font-weight: 600;
-						text-align: center;
-						padding-left: 20px;
-						padding-right: 20px;
-						color: #555655;
+				ul{
+					width: 200px;
+				
+					li{
+						border-top: #bdbebd;
+						background-color: #d0dbe4;
+						a{
+							font-weight: 600;
+							text-align: center;
+							padding-left: 20px;
+							padding-right: 20px;
+							color: #555655;
+						}
 					}
 				}
 			}
@@ -227,8 +245,6 @@ table#gradebook_table img.cancel {
 		}
 	}
 }
-
-
 
 .list_item{
 	padding: 5px;
