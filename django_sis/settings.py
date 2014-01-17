@@ -427,8 +427,12 @@ if "ecwsp.admissions" in INSTALLED_APPS:
     CELERY_IMPORTS += ("ecwsp.admissions.tasks",)
 if "ecwsp.integrations.schoolreach" in INSTALLED_APPS:
     CELERY_IMPORTS += ("ecwsp.integrations.schoolreach.tasks",)
+if "ecwsp.grades" in INSTALLED_APPS:
+    CELERY_IMPORTS += ("ecwsp.grades.tasks",)
 CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 CELERY_ENABLE_UTC = False
+if DEBUG:
+    CELERY_ALWAYS_EAGER = True
 
 # These are required add ons that we always want to have
 INSTALLED_APPS = (
@@ -468,7 +472,7 @@ INSTALLED_APPS = (
     'responsive_dashboard',
     'simple_import',
     'djangobower',
-    'slide_report',
+    'scaffold_report',
     'django_su',
     'floppy_gumby_forms',
     'floppyforms',

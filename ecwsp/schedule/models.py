@@ -48,8 +48,8 @@ class MarkingPeriod(models.Model):
     wednesday = models.BooleanField(default=True)
     thursday = models.BooleanField(default=True) 
     friday = models.BooleanField(default=True)
-    saturday = models.BooleanField(default=False, )
-    sunday = models.BooleanField(default=False, )
+    saturday = models.BooleanField(default=False)
+    sunday = models.BooleanField(default=False)
     
     class Meta:
         ordering = ('-start_date',)
@@ -62,6 +62,13 @@ class MarkingPeriod(models.Model):
         # Don't allow draft entries to have a pub_date.
         if self.start_date > self.end_date:
             raise ValidationError('Cannot end before starting!')
+	
+    def save(self, **kwargs):
+	obj = super(MarkingPeriod, self).save(**kwargs)
+	if 'ecwsp.grades' in settings.INSTALLED_APPS:
+	    from ecwsp.grades.tasks import build_mp_grade_cache
+	    build_mp_grade_cache.apply_async()
+	return obj
         
     def get_number_days(self, date=date.today()):
         """ Get number of days in a marking period"""
@@ -181,26 +188,32 @@ class CourseEnrollment(models.Model):
 	""" Calculate the final grade for a course
 	ignore_letter can be useful when computing averages
 	when you don't care about letter grades
+	
+	Sample profile code
+	import cProfile; from ecwsp.schedule.models import CourseEnrollment
+	def calc():                                       
+	      for ce in CourseEnrollment.objects.filter(user__id=602):
+		    ce.calculate_grade_real()
+	cProfile.run('calc()')
 	"""
 	course_grades = self.course.grade_set.filter(student=self.user)
 	if date_report:
 	    course_grades = course_grades.filter(marking_period__end_date__lte=date_report)
 	
+	# about 0.5 s
 	final = course_grades.filter(override_final=True).first()
 	if final:
 	    return final.get_grade()
 	
 	final = 0.0
-	grades = course_grades.filter(letter_grade=None, grade__isnull=False).extra(select={
-	    'weighted_grade':
-		'grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id)'
-	})
-	if grades:
-	    for grade in grades:
-		final += float(grade.weighted_grade)
-	    final = final / grades.count()*1.0
-	    return Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
+	ave_grade = course_grades.filter(override_final=False, letter_grade=None, grade__isnull=False).extra(select={
+	    'ave_grade':
+		'AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))'
+	}).values('ave_grade')[0]['ave_grade']
+	if ave_grade:
+	    return Decimal(ave_grade).quantize(Decimal("0.01"), ROUND_HALF_UP)
 	
+	# about 0.5 s
 	# Letter Grade
 	if ignore_letter == False:
 	    grades = course_grades

@@ -1,7 +1,0 @@
-<script  type="text/javascript">
-var arr = [];
-{% for filter_error in filter_errors %}
-  arr.push("{{ filter_error.filter }}");
-{% endfor %}
-process_errors(arr);
-</script>

@@ -1,12 +1,25 @@
-from slide_report.report import SlideReport
-from slide_report.fields import SimpleCompareField
-from slide_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter
+from scaffold_report.report import ScaffoldReport
+from scaffold_report.fields import SimpleCompareField
+from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter
 from django import forms
 from django.conf import settings
 from django.db.models import Count
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel
 from ecwsp.schedule.models import MarkingPeriod
 import datetime
+
+def reverse_compare(compare):
+    """ Get the opposite comparison
+    greater than becomes less than equals """
+    if compare == "gt":
+        compare = "lte"
+    elif compare == "gte":
+        compare = "lt"
+    elif compare == "lt":
+        compare = "gte"
+    elif compare == "lte":
+        compare = "gt"
+    return compare
 
 def get_active_year():
     return SchoolYear.objects.get(active_year=True)
@@ -66,15 +79,42 @@ class StudentYearFilter(ModelMultipleChoiceFilter):
         return super(StudentYearFilter, self).__init__(**kwargs)
     
 
-class MpGradeFilter(Filter):
-    verbose_name = "Grades (Each MP)"
+class CourseGradeFilter(Filter):
+    verbose_name = "Grades (Course Final)"
     fields = [
         SimpleCompareField,
         forms.IntegerField(widget=forms.TextInput(attrs={'style': 'width:60px'})),
-        forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "Every", 'style': 'width:41px'})),
+        forms.IntegerField(required=False, widget=forms.TextInput(attrs={'placeholder': "Every", 'style': 'width:41px'})),
     ]
     post_form_text = 'time(s)'
-    add_fields = ['grade_mp_count']
+    add_fields = ['course_grade_count']
+    
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        date_begin = report_context['date_begin']
+        date_end = report_context['date_end']
+        compare = self.cleaned_data['field_0']
+        number = self.cleaned_data['field_1']
+        times = self.cleaned_data['field_2']
+        
+        if not times: # Have to exclude it, which reverses the comparison
+            compare = reverse_compare(compare)
+        grade_kwarg = {
+            'courseenrollment__cached_numeric_grade__' + compare: number,
+            'courseenrollment__course__marking_period__start_date__gte': date_begin,
+            'courseenrollment__course__marking_period__end_date__lte': date_end,
+        }
+        
+        if times:
+            queryset = queryset.filter(**grade_kwarg).annotate(
+                course_grade_count=Count('courseenrollment', distinct=True)).filter(course_grade_count__gte=times)
+        else: # Every time
+            # Produces invalid sql - django bug?
+            queryset = queryset.exclude(**grade_kwarg)
+        return queryset
+
+class MpGradeFilter(CourseGradeFilter):
+    verbose_name = "Grades (MP)"
+    add_fields = ['mp_grade_count']
     
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
@@ -83,17 +123,17 @@ class MpGradeFilter(Filter):
         number = self.cleaned_data['field_1']
         times = self.cleaned_data['field_2']
         grade_kwarg = {
-            'courseenrollment__cached_numeric_grade__' + compare: number,
-            'courseenrollment__course__marking_period__start_date__gte': date_begin,
-            'courseenrollment__course__marking_period__end_date__lte': date_end,
+            'studentmarkingperiodgrade__cached_grade__' + compare: number,
+            'studentmarkingperiodgrade__marking_period__start_date__gte': date_begin,
+            'studentmarkingperiodgrade__marking_period__end_date__lte': date_end,
         }
-        queryset = queryset.filter(**grade_kwarg).annotate(
-            grade_mp_count=Count('courseenrollment', distinct=True)).filter(grade_mp_count__gte=times)
+        if times:
+            queryset = queryset.filter(**grade_kwarg).annotate(
+                mp_grade_count=Count('studentmarkingperiodgrade', distinct=True)).filter(mp_grade_count__gte=times)
         return queryset
-    
 
 
-class SisReport(SlideReport):
+class SisReport(ScaffoldReport):
     name = "student_report"
     model = Student
     filters = (
@@ -102,6 +142,7 @@ class SisReport(SlideReport):
         SchoolDateFilter(),
         StudentYearFilter(),
         MpGradeFilter(),
+        CourseGradeFilter(),
     )
 
 sis = SisReport()

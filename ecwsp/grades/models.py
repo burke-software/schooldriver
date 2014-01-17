@@ -1,7 +1,9 @@
 from django.db import models
+from django.db.models import Avg, Count
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
+from ecwsp.sis.models import Student
 from django_cached_field import CachedDecimalField
 
 from decimal import Decimal, ROUND_HALF_UP
@@ -31,14 +33,21 @@ class StudentMarkingPeriodGrade(models.Model):
     class Meta:
         unique_together = ('student', 'marking_period')
     
+    @staticmethod
+    def build_all_cache():
+        """ Create object for each student * possible marking periods """
+        for student in Student.objects.all():
+            marking_periods = student.courseenrollment_set.values('course__marking_period').annotate(Count('course__marking_period'))
+            for marking_period in marking_periods:
+                StudentMarkingPeriodGrade.objects.get_or_create(
+                    student=student, marking_period_id=marking_period['course__marking_period'])
+    
     def calculate_grade(self):
-        """ TODO consider credits """
-        raise Exception("Proof of concept, do not use")
-        qs = self.student.grade_set.filter(
-            marking_period=self.marking_period,
-            override_final=False,
-            letter_grade=None).aggregate(Avg('grade'))
-        self.grade = qs['grade__avg']
+	return self.student.grade_set.filter(
+            letter_grade=None, grade__isnull=False, override_final=False, marking_period=self.marking_period).extra(select={
+            'ave_grade':
+            'AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))'
+	}).values('ave_grade')[0]['ave_grade']
     
 
 class Grade(models.Model):
