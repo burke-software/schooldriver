@@ -153,7 +153,7 @@ class Grade(models.Model):
         #cache course final grade
         try:
             enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
-            enrollment.set_cache_grade()
+            enrollment.cache_grades()
             enrollment.save()
         except CourseEnrollment.DoesNotExist:
             # sometimes students get grades in courses and are then unenrolled
@@ -171,8 +171,7 @@ class Grade(models.Model):
     def delete(self, *args, **kwargs):
         enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
         super(Grade, self).delete(*args, **kwargs)
-        enrollment.set_cache_grade()
-        enrollment.save()
+        enrollment.cache_grades()
 
 
     def __unicode__(self):
