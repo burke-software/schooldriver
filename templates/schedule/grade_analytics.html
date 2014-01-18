@@ -53,7 +53,7 @@
             padding-top: 3px;
             padding-bottom: 3px;
         }
-        
+        /* class "modal" conflicts with gumby and may cause problems if the enroll feature is re-enabled */ 
         .modal {
             background-color:#fff;
             display:none;
@@ -199,6 +199,7 @@
         </table>
     <input type="submit" style="min-width:90px;" value="Go"/>
     {% if students %}
+        <!-- class "modal" conflicts with gumby and may cause problems if this feature is re-enabled -->
         <div class="modal" id="enroll_form">
             <h4>Select course to enroll selected students in.</h4>
             {{ course_selection.as_p }}

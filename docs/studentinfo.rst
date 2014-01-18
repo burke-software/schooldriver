@@ -48,7 +48,26 @@ To get proper information out of the system, you need to enter the numbers in th
 
 **Student phone numbers-** are for numbers to contact the student, for example a student's cell phone.  If you use the home number in this spot, you should also put it into the contact area for the parent.
 
-**Student Contact phone numbers**- cell, home, and work phone numbers for parents or other emergency contact personnel.  
+**Student Contact phone numbers**- cell, home, and work phone numbers for parents or other emergency contact personnel.
+
+Student Contacts
+--------------------
+The student contacts facet of django-sis refers to the parent or guardians associated with a student.
+
+**Accessing the contacts**
+
+There are two ways to add contacts. The first and easiest method is located on the student page in its own section titled, "Student Contact" respectively. 
+
+To add contacts, simply select a student from the Student > Edit page, or create a new student and scroll down to the *Student Contact* section and select **add**. Fill out the information in the dialog box and save.
+
+The other method of accessing contacts works as follows:
+
+1. At the top right of your screen, select **View Site Admin**
+2. Select **Student Contacts** from the *School Information* heading
+3. Click **Add student Contact** at the top right, fill out available information, and save.
+
+
+**What you can enter about each contact:** first name, last name, middle name, relationship to student, email, primary contact (checkbox), emergency only (checkbox), address, phone numbers, and student.
 
 Family Access Users
 ---------------------

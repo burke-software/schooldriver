@@ -52,4 +52,40 @@ Using the example above, consider the use case of a user wanting to pull the stu
 
 .. image:: /images/reportfilterstab.png
 
+Troubleshooting/FAQ
+--------------------------
+
+This section is dedicated to helping you troubleshoot your issues with the report builder. Some of the most common user issues are highlighted in bold for your convenience.
+
+**My preview tab won't show results even though the display fields has fields in it.**
+
+The most common reason for this issue is users forgetting to click on save after they have moved the fields they want into the display tab. Keep in mind, the display tab won't show anything unless you have selected save after dragging in your fields.
+
+Example: If you drag in the fields First Name and Last Name then select save you will see those fields in the preview tab. If you go back, drag other fields but never save, when you go to preview, you will only see First Name and Last Name. Selecting save once more will fix the issue and show all your new fields.
+
+**I'm seeing a number of students who are no longer active. I only want active students to show.**
+
+To only see active students, find the *active* field and drag it into your display fields tab. Save. Next, drag the same *active* field into the **Report Filters** tab and set the Filter Type to Equals and the Value box next to it to True. Select Save.
+
+You will now only see a list of students marked as active in the database.
+
+**I can't find the field I'm looking for.**
+
+The first thing you want to check for is to ensure that you're using the correct *root model*. While we provide you with a myriad of root models to choose from, most often you may find what you're looking for by either using the: student, student worker, or applicant root models. From these root models, you can navigate through a number of fields and expanded fields the easiest.
+
+-There's a search box located on the Fields and Expand Related Fields tab- use this to help you locate fields easier.
+
+**The report isn't applying my filters.**
+
+For filters to work, you need to first check that the same field you want to filter is in the display tab. For example, you can't filter by grade level when grade level isn't in the display tab to start off with- in this case, you wouldn't see any change.
+
+You should also make sure that you are using the correct filter type. Typically, the "equals" or "contains" type is the easiest to use, granted whatever you type into the value field is exactly how it appears in the database.
+
+Ex. filter type "equals" set to Sarah will not show any names of Sara. Filter type "contains" will show both.
+
+
+**Can you utilize multiple values for the same filter?**
+
+Yes. For example, if you have a list of students with their grade levels and you only want to see Juniors and Seniors, then apply the filter type **in(comma separated)** and for value, type in "Junior,Senior" with no space after the comma. The preview will then show only Juniors and Seniors as was requested. 
+
 
