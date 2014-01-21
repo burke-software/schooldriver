@@ -472,7 +472,7 @@ INSTALLED_APPS = (
     'responsive_dashboard',
     'simple_import',
     'djangobower',
-    'scaffold_report',
+    #'scaffold_report',
     'django_su',
     'floppy_gumby_forms',
     'floppyforms',

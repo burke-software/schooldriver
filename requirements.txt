@@ -15,7 +15,7 @@ django-widget-tweaks
 requests>=0.13.3
 simplejson>=2.3.2
 httpagentparser>=1.0.2
-elementtree>=1.2.7-20070827-preview
+./install/hatchery/elementtree-1.2.7-20070827-preview.tar.gz
 poster>=0.8.1
 suds>=0.4
 south>=0.7.6
@@ -23,8 +23,8 @@ xlwt>=0.7.2
 raven>=3.3.7
 reportlab
 django-floppyforms>=1.0
-django-report-builder>=1.15
-django-report-scaffold
+django-report-builder>=1.14
+#django-report-scaffold
 django-responsive-dashboard>=0.1
 django-apptemplates>=0.0.1
 django-filter>=0.5.4
@@ -32,6 +32,7 @@ django-positions>=0.4.6
 django-bower
 django-ckeditor
 django-su
+django-cached-field>=1.2.6
 ./install/hatchery/django-ldap-groups-0.1.3.tar.gz
 django-rosetta>=0.7.1
 -e git://github.com/zsiciarz/django-rosetta-grappelli.git#egg=django-rosetta-grappelli
