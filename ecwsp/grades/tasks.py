@@ -7,6 +7,8 @@ def build_grade_cache():
     StudentMarkingPeriodGrade.build_all_cache()
     #StudentYearGrade.build_all_cache()
 
+import celery
+@celery.task
 def build_mp_grade_cache():
     #TODO: IMPLEMENT THIS!
     pass
