@@ -5,4 +5,4 @@ from .models import StudentMarkingPeriodGrade#, StudentYearGrade
 @periodic_task(run_every=crontab(hour=1, minute=21))
 def build_grade_cache():
     StudentMarkingPeriodGrade.build_all_cache()
-    #StudentYearGrade.build_all_cache()
+    StudentYearGrade.build_all_cache()

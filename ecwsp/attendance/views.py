@@ -88,7 +88,13 @@ def teacher_attendance(request, course=None):
                     "the course is not set to the current marking period.')
             return HttpResponseRedirect(reverse('admin:index'))
         course = courses[0]
-    students = course.get_attendance_students()
+    today, created = Day.objects.get_or_create(day=str(date.today().isoweekday()))
+    all = Student.objects.filter(courseenrollment__course=self, is_active=True)
+    exclude = Student.objects.filter(courseenrollment__course=course, is_active=True, courseenrollment__exclude_days=today)
+    ids = []
+    for id in exclude.values('id'):
+        ids.append(int(id['id']))
+    students = all.exclude(id__in=ids)
     
     readonly = False
     msg = ""

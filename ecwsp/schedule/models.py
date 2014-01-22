@@ -315,93 +315,10 @@ class Course(models.Model):
        return link
     grades_link.allow_tags = True
     
-    def get_grades(self):
-        for grade in self.grade_set.all():
-            setattr(grade, '_course_cache', self)
-            yield grade
-    
     def add_cohort(self, cohort):
         for student in cohort.student_set.all():
             enroll, created = CourseEnrollment.objects.get_or_create(user=student, course=self, role="student")
             if created: enroll.save()
-    
-    def get_enrolled_students(self, show_deleted=False):
-        if show_deleted:
-            return Student.objects.filter(courseenrollment__course=self)
-        else:
-            return Student.objects.filter(courseenrollment__course=self, is_active=True)
-    
-    def is_passing(self, student, date_report=None, cache_grade=None, cache_passing=None, cache_letter_passing=None):
-        """ Is student passing course? """
-        if cache_passing == None:
-            pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
-        else:
-            pass_score = cache_passing
-        if cache_grade:
-            grade = cache_grade
-        else:
-            grade = self.get_final_grade(student, date_report=date_report)
-        try:
-            if grade >= int(pass_score):
-                return True
-        except:
-            pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
-            if grade in pass_letters.split(','):
-                return True
-        return False
-    
-    def get_attendance_students(self):
-        """ Should be one line of code. Sorry this is so aweful
-        Couldn't figure out any other way """
-        today, created = Day.objects.get_or_create(day=str(date.today().isoweekday()))
-        all = Student.objects.filter(courseenrollment__course=self, is_active=True)
-        exclude = Student.objects.filter(courseenrollment__course=self, is_active=True, courseenrollment__exclude_days=today)
-        ids = []
-        for id in exclude.values('id'):
-            ids.append(int(id['id']))
-        return all.exclude(id__in=ids)
-    
-    def get_credits_earned(self, student=None, date_report=None, include_latest_mid=False):
-        """ Get credits earned based on current date.
-        include_latest_mid = include the latest mid marking period grade but count it as half weight"""
-        # If student is passed, check if they are even passing
-        if student and not self.is_passing(student, date_report):
-            return 0
-        if date_report == None:
-            mps = self.marking_period.all().order_by('start_date')
-        else:
-            mps = self.marking_period.filter(end_date__lt=date_report).order_by('start_date')
-        total_mps = self.marking_period.all().count()
-        if include_latest_mid:
-            credits = ((float(mps.count()) + 0.5) / float(total_mps)) * float(self.credits)
-        else:
-            credits = (float(mps.count()) / float(total_mps)) * float(self.credits)
-        if self.credits < credits:
-            credits = self.credits
-        return credits
-    
-    def get_final_grade(self, student, date_report=None):
-        """ Get final grade for a course. Returns override value if available.
-        Uses cache is possible. Do not use in cache calculations!
-        date_report: optional gets grade for time period"""
-        if 'ecwsp.grades' in settings.INSTALLED_APPS:
-            if not date_report or date_report == date.today():
-                try:
-                    enrollments = self.courseenrollment_set.get(user=student, role="student")
-                    return enrollments.grade
-                except CourseEnrollment.DoesNotExist:
-                    pass
-            return self.calculate_final_grade(student=student, date_report=date_report)
-
-    
-    def calculate_final_grade(self, student, date_report=None):
-        """
-        Calculates final grade.
-        Note that this should match recalc_ytd_grade in gradesheet.js!
-        Does NOT use cache!
-        """
-        course_enrollment = self.courseenrollment_set.get(user=student, role="student")
-        return course_enrollment.calculate_grade_real(date_report=date_report)
     
     def copy_instance(self, request):
         changes = (("fullname", self.fullname + " copy"),)

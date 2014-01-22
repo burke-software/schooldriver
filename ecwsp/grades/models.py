@@ -49,10 +49,10 @@ class StudentMarkingPeriodGrade(models.Model):
             'ave_grade':
             'AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))'
         }).values('ave_grade')[0]['ave_grade']
-    
 
-"""class StudentYearGrade(models.Model):
-    "" Stores the grade for an entire year, only used for cache ""
+    
+class StudentYearGrade(models.Model):
+    """ Stores the grade for an entire year, only used for cache """
     student = models.ForeignKey('sis.Student')
     year = models.ForeignKey('sis.SchoolYear')
     grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="Year Average")
@@ -62,7 +62,7 @@ class StudentMarkingPeriodGrade(models.Model):
         
     @staticmethod
     def build_all_cache():
-        "" Create object for each student * possible years ""
+        """ Create object for each student * possible years """
         for student in Student.objects.all():
             years = student.courseenrollment_set.values(
                 'course__marking_period__school_year').annotate(Count('course__marking_period__school_year'))
@@ -81,7 +81,6 @@ class StudentMarkingPeriodGrade(models.Model):
             grade = course_enrollment.calculate_real_grade(date_report=date_report, ignore_letter=True)
             if grade:
                 total += grade * course_enrollment.course.credits
-"""
     
 
 class Grade(models.Model):

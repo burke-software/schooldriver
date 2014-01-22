@@ -468,7 +468,10 @@ def view_student(request, id=None):
                         Grade.objects.get(student=student, course=course, marking_period=marking_period).get_grade(),)
                 except:
                     course.grade_html += '<td> </td>'
-            course.grade_html += '<td> %s </td>' % (unicode(course.get_final_grade(student)),)
+            try:
+                course.grade_html += '<td> %s </td>' % (unicode(course.courseenrollment_set.get(user=student, role="student").grade),)
+            except CourseEnrollment.DoesNotExist:
+                course.grade_html += '<td></td>'
         
         # Attendance
         if 'ecwsp.attendance' in settings.INSTALLED_APPS:
