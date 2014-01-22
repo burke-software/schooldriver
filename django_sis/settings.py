@@ -414,7 +414,9 @@ import djcelery
 djcelery.setup_loader()
 #BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 BROKER_HEARTBEAT = 30
-CELERY_IMPORTS = ()
+CELERY_IMPORTS = (
+    'django_cached_field.tasks',
+)
 if "ecwsp.work_study" in INSTALLED_APPS:
     CELERY_IMPORTS += ("ecwsp.work_study.tasks",)
 if "ecwsp.volunteer_track" in INSTALLED_APPS:
