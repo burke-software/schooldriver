@@ -6,3 +6,7 @@ from .models import StudentMarkingPeriodGrade#, StudentYearGrade
 def build_grade_cache():
     StudentMarkingPeriodGrade.build_all_cache()
     #StudentYearGrade.build_all_cache()
+
+def build_mp_grade_cache():
+    #TODO: IMPLEMENT THIS!
+    pass
