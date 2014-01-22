@@ -18,7 +18,6 @@ from django.utils.html import strip_tags
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F, Sum
 
-from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
 from ecwsp.sis.models import Cohort

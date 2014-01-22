@@ -1,21 +1,3 @@
-#   Copyright 2012 Burke Software and Consulting LLC
-#   Author David M Burke <david@burkesoftware.com>
-#   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 3 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
@@ -32,13 +14,42 @@ from django.template import RequestContext
 from .models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
 from .forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
 from .forms import StudentAttendanceForm, StudentMultpleAttendanceForm
-from ecwsp.schedule.models import Course
+from ecwsp.schedule.models import Course, MarkingPeriod
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
 from ecwsp.administration.models import Template
 
 import datetime
+
+def get_school_day_number(date):
+    mps = MarkingPeriod.objects.filter(school_year__active_year=True).order_by('start_date')
+    current_day = mps[0].start_date
+    day = 0
+    while current_day <= date:
+        is_day = False
+        for mp in mps:
+            if current_day >= mp.start_date and current_day <= mp.end_date:
+                days_off = []
+                for d in mp.daysoff_set.all().values_list('date'): days_off.append(d[0])
+                if not current_day in days_off:
+                    if mp.monday and current_day.isoweekday() == 1:
+                        is_day = True
+                    elif mp.tuesday and current_day.isoweekday() == 2:
+                        is_day = True
+                    elif mp.wednesday and current_day.isoweekday() == 3:
+                        is_day = True
+                    elif mp.thursday and current_day.isoweekday() == 4:
+                        is_day = True
+                    elif mp.friday and current_day.isoweekday() == 5:
+                        is_day = True
+                    elif mp.saturday and current_day.isoweekday() == 6:
+                        is_day = True
+                    elif mp.sunday and current_day.isoweekday() == 7:
+                        is_day = True
+        if is_day: day += 1
+        current_day += timedelta(days=1)
+    return day
 
 @user_passes_test(lambda u: u.has_perm('attendance.take_studentattendance') or
                   u.has_perm('attendance.change_studentattendance'))
@@ -192,7 +203,6 @@ def teacher_submissions(request):
 
 def daily_attendance_report(adate, private_notes=False, type="odt", request=None):
     from ecwsp.sis.models import GradeLevel
-    from ecwsp.sis.report import get_school_day_number
     template = Template.objects.get_or_create(name="Daily Attendance")[0]
     template = template.get_template_path(request)
     if not template:
