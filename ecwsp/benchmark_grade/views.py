@@ -927,7 +927,7 @@ def comments(request, course_id):
         marking_periods[0].current = True
 
     for marking_period in marking_periods:
-        marking_period.students = course.get_enrolled_students() # ugh, gross
+        marking_period.students = Student.objects.filter(courseenrollment__course=course)
         for student in marking_period.students:
             try:
                 grade = Grade.objects.get(student=student, course=course, marking_period=marking_period)

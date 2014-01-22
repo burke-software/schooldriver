@@ -24,7 +24,7 @@ class CourseAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
         try:
             txt = "<h5>Students enrolled:</h5>"
-            for student in context['original'].get_enrolled_students():
+            for student in Student.objects.filter(courseenrollment__course=context['original']):
                 txt += unicode(student) + '<br/>'
             txt = txt[:-5]
             context['adminform'].form.fields['teacher'].help_text += txt
