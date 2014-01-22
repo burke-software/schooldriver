@@ -167,7 +167,6 @@ class CourseEnrollment(models.Model):
         self.grade_recalculation_needed = False
         self.numeric_grade_recalculation_needed = False
         self.save()
-        print self.grade
         return grade
     
     def calculate_grade(self):
@@ -313,6 +312,11 @@ class Course(models.Model):
        link = '<a href="/grades/teacher_grade/upload/%s" class="historylink"> Grades </a>' % (self.id,)
        return link
     grades_link.allow_tags = True
+
+    def calculate_final_grade(self, student):
+        """ Shim code to calculate final grade WITHOUT cache """
+        enrollment = self.courseenrollment_set.get(user=student, role="student")
+        return enrollment.calculate_grade_real()
     
     def copy_instance(self, request):
         changes = (("fullname", self.fullname + " copy"),)

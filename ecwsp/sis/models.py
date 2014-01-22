@@ -15,6 +15,7 @@ from custom_field.custom_field import CustomFieldModel
 import sys
 from ckeditor.fields import RichTextField
 from django_cached_field import CachedDecimalField
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -373,10 +374,22 @@ class Student(User, CustomFieldModel):
     def get_absolute_url():
         pass
     
-    def calculate_gpa(self):
-        pass
-        # TODO
-    
+    def calculate_gpa(self, date_report=None):
+        """ Use StudentYearGrade calculation
+        No further weighting needed.
+        """
+        total = Decimal(0)
+        years_with_grade = 0
+        grade_years = self.studentyeargrade_set.filter(year__markingperiod__show_reports=True)
+        if date_report:
+            grade_years = grade_years.filter(year__start_date__lt=date_report)
+        for grade_year in grade_years.distinct():
+            grade = grade_year.calculate_grade(date_report=date_report)
+            if grade:
+                total += grade
+                years_with_grade += 1
+        return total / years_with_grade
+
     @property
     def primary_cohort(self):
         return self.cache_cohort
