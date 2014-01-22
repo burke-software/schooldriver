@@ -56,7 +56,9 @@ def schedule_enroll(request, id):
             # add cohort students second
             cohorts = form.cleaned_data['cohorts']
             for cohort in cohorts:
-                course.add_cohort(cohort)
+                for student in cohort.student_set.all():
+                    enroll, created = CourseEnrollment.objects.get_or_create(user=student, course=course, role="student")
+                
             if 'save' in request.POST:
                 return HttpResponseRedirect(reverse('admin:schedule_course_change', args=[id]))
     

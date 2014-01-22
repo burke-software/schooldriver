@@ -1,12 +1,12 @@
 from django.db import models
-from django.db.models import Avg, Count
+from django.db.models import Count
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
 from ecwsp.sis.models import Student
 from django_cached_field import CachedDecimalField
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 
 class GradeComment(models.Model):
     id = models.IntegerField(primary_key=True)

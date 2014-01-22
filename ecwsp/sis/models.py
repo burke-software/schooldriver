@@ -1,21 +1,3 @@
-#   Copyright 2010-2011 Burke Software and Consulting LLC
-#   Author David M Burke <david@burkesoftware.com>
-#   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import connection
@@ -25,23 +7,19 @@ from localflavor.us.models import USStateField, PhoneNumberField
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 
-#from ecwsp.schedule.models import CourseEnrollment
 import logging
 from thumbs import ImageWithThumbsField
 from datetime import date
-from decimal import Decimal, ROUND_HALF_UP
 from ecwsp.administration.models import Configuration
 from custom_field.custom_field import CustomFieldModel
-import os
 import sys
 from ckeditor.fields import RichTextField
 from django_cached_field import CachedDecimalField
 
 logger = logging.getLogger(__name__)
 
-if 'south' in settings.INSTALLED_APPS:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
 
 def create_faculty(instance, make_user_group=True):
     """ Create a sis.Faculty object that is linked to the given
@@ -62,7 +40,6 @@ def create_student(instance):
         student = Student(user_ptr_id=instance.id)
         student.__dict__.update(instance.__dict__)
         student.save()
-    
 
 def create_faculty_profile(sender, instance, created, **kwargs):
     if instance.groups.filter(name="teacher").count():
@@ -75,7 +52,6 @@ def create_faculty_profile_m2m(sender, instance, action, reverse, model, pk_set,
         create_faculty(instance, make_user_group=False)
     if action == 'post_add' and instance.groups.filter(name="students").count():
         create_student(instance)
-
 
 post_save.connect(create_faculty_profile, sender=User)
 m2m_changed.connect(create_faculty_profile_m2m, sender=User.groups.through)
@@ -211,7 +187,6 @@ class EmergencyContactNumber(PhoneNumber):
     class Meta:
         verbose_name = "Student Contact"
     
-    
     def save(self, *args, **kwargs):
         if self.primary:
             for contact in self.contact.emergencycontactnumber_set.exclude(id=self.id).filter(primary=True):
@@ -308,6 +283,7 @@ class LanguageChoice(models.Model):
                 language.default = False
                 language.save()
         super(LanguageChoice, self).save(*args, **kwargs)
+        
 
 class IntegerRangeField(models.IntegerField):
     def __init__(self, verbose_name=None, name=None, min_value=None, max_value=None, **kwargs):
@@ -326,6 +302,11 @@ class ClassYear(models.Model):
     """
     year = IntegerRangeField(unique=True, min_value=1900, max_value=2200, help_text="Example 2014")
     full_name = models.CharField(max_length=255, help_text="Example Class of 2014", blank=True)
+    
+    class Meta:
+        verbose_name = "Graduating Class"
+        verbose_name_plural = "Graduating Classes"
+    
     def __unicode__(self):
         return unicode(self.full_name)
     
@@ -351,8 +332,8 @@ class Student(User, CustomFieldModel):
         blank=True, 
         null=True, 
         on_delete=models.SET_NULL,
-        help_text="School year (ie freshman, senior, etc). Determined by class of.")
-    class_of_year = models.ForeignKey(ClassYear, blank=True, null=True)
+        verbose_name="Grade level")
+    class_of_year = models.ForeignKey(ClassYear, verbose_name="Graduating Class", blank=True, null=True)
     date_dismissed = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
     unique_id = models.IntegerField(blank=True, null=True, unique=True, help_text="For integration with outside databases")
@@ -584,19 +565,7 @@ def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs
         
 
 m2m_changed.connect(after_student_m2m, sender=Student.emergency_contacts.through)
-        
 
-class ASPHistory(models.Model):
-    student = models.ForeignKey(Student)
-    asp = models.CharField(max_length=255)
-    date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
-    enroll = models.BooleanField(default=False, help_text="Check if enrollment, uncheck if unenrollment")
-    
-    def __unicode__(self):
-        if self.enroll:
-            return '%s enrolled in %s on %s' % (unicode(self.student), unicode(self.asp), self.date)
-        else:
-            return '%s left %s on %s' % (unicode(self.student), unicode(self.asp), self.date)
 
 class StudentCohort(models.Model):
     student = models.ForeignKey(Student)
@@ -698,26 +667,6 @@ class SchoolYear(models.Model):
             all = SchoolYear.objects.exclude(id=self.id).update(active_year=False)
     
     
-class ImportLog(models.Model):
-    """ Keep a log of each time a user attempts to import a file, if successful store a database backup
-    Backup is a full database dump and should not be thought of as a easy way to revert changes.
-    """
-    user = models.ForeignKey(User, editable=False)
-    date = models.DateTimeField(auto_now_add=True)
-    import_file = models.FileField(upload_to="import_files")
-    sql_backup = models.FileField(blank=True,null=True,upload_to="sql_dumps")
-    user_note = models.CharField(max_length=1024,blank=True)
-    errors = models.BooleanField(default=False, )
-    
-    def delete(self, *args, **kwargs):
-        """ These logs files would get huge if not deleted often """
-        if self.sql_backup and os.path.exists(self.sql_backup.path):
-            os.remove(self.sql_backup.path)
-        if self.import_file and os.path.exists(self.import_file.path):
-            os.remove(self.import_file.path)
-        super(ImportLog, self).delete(*args, **kwargs)
-        
-        
 class MessageToStudent(models.Model):
     """ Stores a message to be shown to students for a specific amount of time
     """
@@ -726,6 +675,7 @@ class MessageToStudent(models.Model):
     end_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
     def __unicode__(self):
         return self.message
+    
 
 class FamilyAccessUser(User):
     """ A person who can log into the non-admin side and see the same view as a student,

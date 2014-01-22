@@ -3,10 +3,9 @@ from django.contrib import messages
 from django.conf import settings
 from django_cached_field import CachedCharField, CachedDecimalField
 
-from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 import copy
 
@@ -314,11 +313,6 @@ class Course(models.Model):
        link = '<a href="/grades/teacher_grade/upload/%s" class="historylink"> Grades </a>' % (self.id,)
        return link
     grades_link.allow_tags = True
-    
-    def add_cohort(self, cohort):
-        for student in cohort.student_set.all():
-            enroll, created = CourseEnrollment.objects.get_or_create(user=student, course=self, role="student")
-            if created: enroll.save()
     
     def copy_instance(self, request):
         changes = (("fullname", self.fullname + " copy"),)
