@@ -154,7 +154,7 @@ class CalculationRuleCategoryAsCourse(models.Model):
 class CalculationRuleSubstitution(models.Model):
     operator = models.CharField(max_length=2, choices=OPERATOR_CHOICES)
     match_value = models.DecimalField(max_digits=8, decimal_places=2,
-        help_text="Use only (0..1) unless category has fixed points possible")
+        help_text="Use only (0..1) unless category has fixed points possible.")
     display_as = models.CharField(max_length=16, blank=True, null=True)
     calculate_as = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     flag_visually = models.BooleanField(default=False)
@@ -299,7 +299,7 @@ class Mark(models.Model):
             self.letter_grade = grade.upper().strip()
             try:
                 if self.item.points_possible is None:
-                    raise Exception("Cannot assign a letter grade to a Mark whose Item does not have a points possible value")
+                    raise Exception("Cannot assign a letter grade to a Mark whose Item does not have a points possible value.")
                 self.mark = Grade.letter_grade_behavior[self.letter_grade][0]
                 if self.mark is not None:
                     # numerical equivalents for letter grade are given as normalized values
