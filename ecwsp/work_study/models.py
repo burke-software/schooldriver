@@ -790,7 +790,7 @@ class AttendanceFee(models.Model):
     def __unicode__(self):
         return str(self.name) + " $" + str(self.value) 
     class Meta:
-        verbose_name_plural = "Attendances: fees"
+        verbose_name_plural = "Attendances: Fees"
         
 class AttendanceReason(models.Model):
     name = models.CharField(max_length=255)
