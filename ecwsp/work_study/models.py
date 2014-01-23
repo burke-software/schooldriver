@@ -562,7 +562,7 @@ class CompanyHistory(models.Model):
             return "Company History Object"
     
     class Meta:
-        verbose_name_plural = "Companies: history"
+        verbose_name_plural = "Companies: History"
         ordering = ('-date',)
         unique_together = ('student', 'placement', 'date')
 
