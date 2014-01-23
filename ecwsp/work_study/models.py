@@ -266,7 +266,7 @@ class PaymentOption(models.Model):
 class StudentFunctionalResponsibility(models.Model):
     name = models.CharField(max_length=255)
     class Meta:
-        verbose_name_plural = "Student Functional Responsibilities"
+        verbose_name_plural = "Student functional responsibilities"
     def __unicode__(self):
         return unicode(self.name)
     
@@ -301,7 +301,7 @@ class CompContract(models.Model, CustomFieldModel):
     def __unicode__(self):
         return unicode(self.company)
     class Meta:
-        verbose_name = "Company Contract"
+        verbose_name = "Company contract"
     
     @property
     def get_payment_cost(self, strip=True):
