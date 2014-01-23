@@ -67,12 +67,13 @@ class StudentYearGrade(models.Model):
             years = student.courseenrollment_set.values(
                 'course__marking_period__school_year').annotate(Count('course__marking_period__school_year'))
             for year in years:
-                year_grade = StudentYearGrade.objects.get_or_create(
-                    student=student,
-                    year_id=year['course__marking_period__school_year']
-                )[0]
-                if year_grade.grade_recalculation_needed:
-                    year_grade.recalculate_grade()
+                if year['course__marking_period__school_year']:
+                    year_grade = StudentYearGrade.objects.get_or_create(
+                        student=student,
+                        year_id=year['course__marking_period__school_year']
+                    )[0]
+                    if year_grade.grade_recalculation_needed:
+                        year_grade.recalculate_grade()
         
     def calculate_grade(self, date_report=None):
         """ Calculate grade considering MP weights and course credits 
@@ -83,7 +84,8 @@ class StudentYearGrade(models.Model):
         credits = Decimal(0)
         for course_enrollment in self.student.courseenrollment_set.filter(
             course__marking_period__show_reports=True,
-            course__marking_period__school_year=self.year
+            course__marking_period__school_year=self.year,
+            course__credits__isnull=False,
             ).distinct():
             grade = course_enrollment.calculate_grade_real(date_report=date_report, ignore_letter=True)
             if grade:

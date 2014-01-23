@@ -150,7 +150,7 @@ class CourseEnrollment(models.Model):
     exclude_days = models.ManyToManyField('Day', blank=True, \
         help_text="Student does not need to attend on this day. Note courses already specify meeting days, this field is for students who have a special reason to be away")
     grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade",
-                            editable=False)
+                            editable=False, null=True)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     
     class Meta:
@@ -197,7 +197,10 @@ class CourseEnrollment(models.Model):
         # about 0.5 s
         final = course_grades.filter(override_final=True).first()
         if final:
-            return final.get_grade()
+            grade = final.get_grade()
+            if ignore_letter and not isinstance(grade, (int, Decimal, float)):
+                return None
+            return grade
         
         final = 0.0
         ave_grade = course_grades.filter(override_final=False, letter_grade=None, grade__isnull=False).extra(select={
@@ -231,7 +234,7 @@ class CourseEnrollment(models.Model):
                         return "P"
                     else:
                         return "F"
-        return ''
+        return None
     
 
 class Day(models.Model):

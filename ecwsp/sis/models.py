@@ -388,7 +388,8 @@ class Student(User, CustomFieldModel):
             if grade:
                 total += grade
                 years_with_grade += 1
-        return total / years_with_grade
+        if years_with_grade:
+            return total / years_with_grade
 
     @property
     def primary_cohort(self):
