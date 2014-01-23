@@ -272,7 +272,7 @@ class Mark(models.Model):
     student = models.ForeignKey('sis.Student')
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     normalized_mark = models.FloatField(blank=True, null=True)
-    letter_grade = models.CharField(max_length=3, blank=True, null=True, help_text="Overrides numerical Mark.")
+    letter_grade = models.CharField(max_length=3, blank=True, null=True, help_text="Overrides numerical mark.")
     class Meta:
         unique_together = ('item', 'demonstration', 'student',)
 
@@ -299,7 +299,7 @@ class Mark(models.Model):
             self.letter_grade = grade.upper().strip()
             try:
                 if self.item.points_possible is None:
-                    raise Exception("Cannot assign a letter grade to a Mark whose Item does not have a points possible value.")
+                    raise Exception("Cannot assign a letter grade to a mark whose item does not have a points possible value.")
                 self.mark = Grade.letter_grade_behavior[self.letter_grade][0]
                 if self.mark is not None:
                     # numerical equivalents for letter grade are given as normalized values
@@ -341,7 +341,7 @@ class Aggregate(models.Model):
 
     @property
     def mark_set(self):
-        ''' All the Marks needed to calculate this Aggregate '''
+        ''' All the marks needed to calculate this aggregate '''
         item_fields = ('course', 'category', 'marking_period')
         criteria = {'student_id': self.student.pk}
         for field in item_fields:
@@ -352,8 +352,8 @@ class Aggregate(models.Model):
         return Mark.objects.filter(**criteria).exclude(mark=None)
 
     def mark_values_list(self, normalize=False):
-        ''' A list of tuples of (mark, display_as, points_possible) for all the Marks
-        needed to calculate this Aggregate '''
+        ''' A list of tuples of (mark, display_as, points_possible) for all the marks
+        needed to calculate this aggregate '''
         rule = self.calculation_rule
         if self.category is not None and self.category.allow_multiple_demonstrations:
             if normalize:
