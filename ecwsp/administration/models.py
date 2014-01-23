@@ -92,16 +92,16 @@ class Configuration(models.Model):
         'Discipline Merit Level Two': ('1', ''),
         'Discipline Merit Level Three': ('3', ''),
         'Discipline Merit Level Four': ('5', ''),
-        'work_study message to student missing time sheet': ('You did not submit a timesheet today', ''),
+        'work_study message to student missing time sheet': ('You did not submit a timesheet today.', ''),
         'admissions_inquiry_form_css': ('', 'CSS for Inquiry Form'),
-        'admissions_notify_email': ('', 'Send admissions notifications to this email. Comma seperated are ok.'),
-        'admissions_hide_inquiry_grade': ('', 'IDs of grade (fresh, soph, etc) to exclude on inquiry form. Comma seperated are ok.'),
+        'admissions_notify_email': ('', 'Send admissions notifications to this email. Comma separated are ok.'),
+        'admissions_hide_inquiry_grade': ('', 'IDs of grade (fresh, soph, etc) to exclude on inquiry form. Comma separated are ok.'),
         'Google Analytics': ('', 'Google Analytics Code'),
         'grades_allow_spreadsheet_import': ('True', 'Allow users to import a spreadsheet to submit grades'),
         'Grade comment length limit': ('500', 'Maximum number of characters allowed in grade comments; values above 500 ignored'),
         'Gradebook extra information': ('averages', "Set to 'averages' to see the class average for each assignment. \
 Use 'demonstrations' to see counts of demonstrations for students and assignments."),
-        'Gradebook hide fields': ('', "Separate with commas. Options include: marking_period, assignment_type, benchmark, date, description"),
+        'Gradebook hide fields': ('', "Separate with commas. Options include: marking_period, assignment_type, benchmark, date, description."),
     }
     
     def __unicode__(self):
