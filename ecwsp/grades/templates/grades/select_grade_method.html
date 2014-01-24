@@ -19,7 +19,7 @@
     <form method="post" action="">
         {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
 	    <div>
-		<button style="width:auto" type="submit" name="choice" value="O" class="grp-button">Online Gradebook</button>    
+		<button style="width:auto" type="submit" name="choice" value="O" class="grp-button">Online gradebook</button>    
 	    </div>
 	{% endif %}
 	{% if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS %}
@@ -29,12 +29,12 @@
 	{% endif %}
 	{% if allow_spreadsheet %}
 	    <div>
-		<button style="width:auto" type="submit" name="choice" value="S" class="grp-button">Import Spreadsheet</button>
+		<button style="width:auto" type="submit" name="choice" value="S" class="grp-button">Import spreadsheet</button>
 	    </div>
 	{% endif %}
 	{% if allow_manual %}
 	    <div>
-		<button style="width:auto" type="submit" name="choice" value="M" class="grp-button">Manual Entry</button>
+		<button style="width:auto" type="submit" name="choice" value="M" class="grp-button">Manual entry</button>
 	    </div>
 	{% endif %}
     </form>
