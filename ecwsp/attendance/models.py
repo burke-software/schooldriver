@@ -33,8 +33,8 @@ class AttendanceStatus(models.Model):
     code = models.CharField(max_length=10, unique=True, help_text="Short code used on attendance reports. Ex: A might be the code for the name Absent")
     teacher_selectable = models.BooleanField(default=False, )
     excused = models.BooleanField(default=False, )
-    absent = models.BooleanField(default=False, help_text="Some statistics need to add various types of absent statuses, such as the number in parathesis in daily attendance")
-    tardy = models.BooleanField(default=False, help_text="Some statistics need to add various types of tardy statuses, such as the number in parathesis in daily attendance")
+    absent = models.BooleanField(default=False, help_text="Some statistics need to add various types of absent statuses, such as the number in parentheses in daily attendance.")
+    tardy = models.BooleanField(default=False, help_text="Some statistics need to add various types of tardy statuses, such as the number in parentheses in daily attendance.")
     half = models.BooleanField(default=False, help_text="Half attendance when counting. DO NOT check off absent otherwise it will double count!")
     
     class Meta:

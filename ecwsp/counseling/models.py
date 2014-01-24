@@ -99,7 +99,7 @@ class ReferralForm(models.Model):
                 if to_addr and to_addr != ['']:
                     send_mail(subject, msg, from_addr, to_addr)
             except:
-                logging.error('Couldn\'t email counseling referral form', exc_info=True)
+                logging.error('Couldn\'t email counseling referral form.', exc_info=True)
     
     def __unicode__(self):
         return 'Referral %s - %s - %s' % (self.date, self.classroom_teacher, self.student)

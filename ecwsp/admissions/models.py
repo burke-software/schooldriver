@@ -18,7 +18,7 @@ class AdmissionLevel(models.Model):
         max_length=255,
         unique=True,
         validators = [RegexValidator(r'^[a-zA-Z0-9- ]*$', message='Must be Alphanumeric')])
-    order = models.IntegerField(unique=True, help_text="Order in which level appears. 1 being first.")
+    order = models.IntegerField(unique=True, help_text="Order in which level appears, 1 being first.")
     def __unicode__(self):
         return unicode(self.name)
     def edit(self):
@@ -122,7 +122,7 @@ class WithdrawnChoices(models.Model):
         return unicode(self.name)
     class Meta:
         ordering = ['name']
-        verbose_name_plural = "Withdrawn Choices"
+        verbose_name_plural = "Withdrawn choices"
         
 class CountryOption(models.Model):
     name = models.CharField(max_length=500)
@@ -180,12 +180,12 @@ class Applicant(models.Model, CustomFieldModel):
         help_text="Applying for this grade level",
         default=get_year)
     school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True, on_delete=models.SET_NULL, default=get_school_year)
-    parent_guardians = models.ManyToManyField('sis.EmergencyContact', verbose_name="Student Contact", blank=True, null=True)
+    parent_guardians = models.ManyToManyField('sis.EmergencyContact', verbose_name="Student contact", blank=True, null=True)
     ethnicity = models.ForeignKey(EthnicityChoice, blank=True, null=True, on_delete=models.SET_NULL,)
     hs_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)
     elem_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)
     present_school = models.ForeignKey(FeederSchool, blank=True, null=True, on_delete=models.SET_NULL,)
-    present_school_typed = models.CharField(max_length=255, blank=True, help_text="This is intented for applicants apply for the school. Administrators should use the above.")
+    present_school_typed = models.CharField(max_length=255, blank=True, help_text="This is intended for applicants to apply for the school. Administrators should use the above.")
     present_school_type_typed = models.CharField(max_length=255, blank=True)
     religion = models.ForeignKey(ReligionChoice, blank=True, null=True, on_delete=models.SET_NULL,)
     place_of_worship = models.ForeignKey(PlaceOfWorship, blank=True, null=True, on_delete=models.SET_NULL,)
@@ -314,7 +314,7 @@ class ContactLog(models.Model):
     
 
 class ApplicantStandardTestResult(models.Model):
-    """ Standardized test instance. This is the results of a student taking a test """
+    """ Standardized test instance. This is the result of a student taking a test. """
     date = models.DateField(default=datetime.date.today(), validators=settings.DATE_VALIDATORS)
     applicant = models.ForeignKey(Applicant)
     test = models.ForeignKey('standard_test.StandardTest')
