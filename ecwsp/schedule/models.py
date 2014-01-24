@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib import messages
 from django.conf import settings
 from django_cached_field import CachedCharField, CachedDecimalField
+from django.db import connection
+import ecwsp
 
 from ecwsp.administration.models import Configuration
 
@@ -182,37 +184,24 @@ class CourseEnrollment(models.Model):
         """ Calculate the final grade for a course
         ignore_letter can be useful when computing averages
         when you don't care about letter grades
-        
-        Sample profile code
-        import cProfile; from ecwsp.schedule.models import CourseEnrollment
-        def calc():                                       
-              for ce in CourseEnrollment.objects.filter(user__id=602):
-                    ce.calculate_grade_real()
-        cProfile.run('calc()')
         """
-        course_grades = self.course.grade_set.filter(student=self.user)
-        if date_report:
-            course_grades = course_grades.filter(marking_period__end_date__lte=date_report)
-        
-        # about 0.5 s
-        final = course_grades.filter(override_final=True).first()
-        if final:
-            grade = final.get_grade()
+        cursor = connection.cursor()
+        cursor.execute("SELECT (AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s ) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id) )
+        (ave_grade, grade_id, override_final) = cursor.fetchone()
+        if override_final:
+            course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
+            grade = course_grades.get_grade()
             if ignore_letter and not isinstance(grade, (int, Decimal, float)):
                 return None
             return grade
-        
-        final = 0.0
-        ave_grade = course_grades.filter(override_final=False, letter_grade=None, grade__isnull=False).extra(select={
-            'ave_grade':
-                'AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))'
-        }).values('ave_grade')[0]['ave_grade']
+
         if ave_grade:
-            return Decimal(ave_grade).quantize(Decimal("0.01"), ROUND_HALF_UP)
+            return ave_grade
         
         # about 0.5 s
         # Letter Grade
         if ignore_letter == False:
+            course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
             grades = course_grades
             if grades:
                 total_weight = Decimal(0)
