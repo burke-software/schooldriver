@@ -7,10 +7,8 @@ from report_builder.models import Report
 import datetime
 
 from django.core.urlresolvers import reverse
-from responsive_dashboard.dashboard import AdminListDashlet, LinksListDashlet
+from responsive_dashboard.dashboard import AdminListDashlet, LinksListDashlet, dashboards
 from ecwsp.sis.models import Student, UserPreference, Faculty
-
-
 
 
 class ViewStudentDashlet(Dashlet):
@@ -175,4 +173,4 @@ class SisDashboard(Dashboard):
     ]
 
 
-dashboard = SisDashboard()
+dashboards.register('sis', SisDashboard)

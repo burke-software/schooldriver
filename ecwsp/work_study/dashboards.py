@@ -1,5 +1,5 @@
 from django.contrib import messages
-from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, dashboards
 from ecwsp.sis.models import SchoolYear
 from ecwsp.work_study.models import TimeSheet
 from ecwsp.work_study.forms import ReportBuilderForm, ReportTemplateForm
@@ -73,4 +73,4 @@ class WorkStudyDashboard(Dashboard):
     ]
 
 
-dashboard = WorkStudyDashboard()
+dashboards.register('work_study', WorkStudyDashboard)
