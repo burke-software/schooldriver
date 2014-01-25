@@ -166,10 +166,12 @@ class Grade(models.Model):
         
     def invalidate_cache(self):
         """ Invalidate any related caches """
+        print "INVALIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIID"
         try:
             enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
             enrollment.flag_grade_as_stale()
             enrollment.flag_numeric_grade_as_stale()
+            print enrollment.id
         except CourseEnrollment.DoesNotExist:
             pass
         self.student.cache_gpa = self.student.calculate_gpa()
@@ -211,8 +213,8 @@ class Grade(models.Model):
         self.invalidate_cache()
     
     def delete(self, *args, **kwargs):
-        self.invalidate_cache()
         super(Grade, self).delete(*args, **kwargs)
+        self.invalidate_cache()
 
     def __unicode__(self):
         return unicode(self.get_grade(self))

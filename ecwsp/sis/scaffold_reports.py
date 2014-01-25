@@ -1,4 +1,4 @@
-from scaffold_report.report import ScaffoldReport
+from scaffold_report.report import ScaffoldReport, scaffold_reports
 from scaffold_report.fields import SimpleCompareField
 from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter
 from django import forms
@@ -145,4 +145,4 @@ class SisReport(ScaffoldReport):
         CourseGradeFilter(),
     )
 
-sis = SisReport()
+scaffold_reports.register('student_report', SisReport)

@@ -161,11 +161,12 @@ class CourseEnrollment(models.Model):
     def cache_grades(self):
         """ Set cache on both grade and numeric_grade """
         grade = self.calculate_grade_real()
-        self.grade = grade
         if isinstance(grade, Decimal):
+            grade = grade.quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
             self.numeric_grade = grade
         else:
             self.numeric_grade = None
+        self.grade = grade
         self.grade_recalculation_needed = False
         self.numeric_grade_recalculation_needed = False
         self.save()
@@ -186,7 +187,10 @@ class CourseEnrollment(models.Model):
         when you don't care about letter grades
         """
         cursor = connection.cursor()
-        cursor.execute("SELECT (AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s ) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id) )
+        if date_report:
+            cursor.execute("SELECT (AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` join schedule_markingperiod on schedule_markingperiod.id=grades_grade.marking_period_id WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s AND schedule_markingperiod.end_date <= %s) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id, date_report) )
+        else:
+            cursor.execute("SELECT (AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s ) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id) )
         (ave_grade, grade_id, override_final) = cursor.fetchone()
         if override_final:
             course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
@@ -201,8 +205,10 @@ class CourseEnrollment(models.Model):
         # about 0.5 s
         # Letter Grade
         if ignore_letter == False:
-            course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
-            grades = course_grades
+            final = 0.0
+            grades = self.course.grade_set.filter(student=self.user)
+            if date_report:
+                grades = grades.filter(marking_period__end_date__lte=date_report)
             if grades:
                 total_weight = Decimal(0)
                 for grade in grades:

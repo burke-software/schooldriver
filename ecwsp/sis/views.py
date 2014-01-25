@@ -18,7 +18,7 @@ from ecwsp.sis.models import Student, UserPreference, GradeLevel, SchoolYear
 from ecwsp.sis.forms import UserPreferenceForm, UploadFileForm, StudentLookupForm, StudentReportWriterForm
 from ecwsp.sis.forms import StudentGradeReportWriterForm, MarkingPeriodForm, YearSelectForm
 from ecwsp.schedule.calendar import Calendar
-from ecwsp.schedule.models import MarkingPeriod, Course
+from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
 
 import sys
 import httpagentparser
