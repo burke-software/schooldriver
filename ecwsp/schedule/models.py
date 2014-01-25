@@ -67,8 +67,8 @@ class MarkingPeriod(models.Model):
     def save(self, **kwargs):
         obj = super(MarkingPeriod, self).save(**kwargs)
         if 'ecwsp.grades' in settings.INSTALLED_APPS:
-            from ecwsp.grades.tasks import build_mp_grade_cache
-            build_mp_grade_cache.apply_async()
+            from ecwsp.grades.tasks import build_grade_cache
+            build_grade_cache.apply_async()
         return obj
         
     def get_number_days(self, date=date.today()):
