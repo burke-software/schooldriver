@@ -1,7 +1,7 @@
 from django.core.urlresolvers import reverse
 from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, LinksListDashlet, AdminListDashlet
 from ecwsp.discipline.models import StudentDiscipline
-from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, dashboards
 from .models import StudentDiscipline
 from report_builder.models import Report
 
@@ -63,4 +63,4 @@ class DisciplineDashboard(Dashboard):
     ]
 
 
-dashboard = DisciplineDashboard()
+dashboards.register('discipline', DisciplineDashboard)

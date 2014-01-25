@@ -1,4 +1,4 @@
-from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, RssFeedDashlet, AdminListDashlet
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, RssFeedDashlet, AdminListDashlet, dashboards
 from .models import Course, MarkingPeriod
 import datetime
 
@@ -35,4 +35,5 @@ class CourseDashboard(Dashboard):
         AdminListDashlet(title="Schedule", app_label="schedule"),
         AdminListDashlet(title="GradesList", verbose_name="Grades", app_label="grades"),
     ]
-dashboard = CourseDashboard()
+
+dashboards.register('schedule', CourseDashboard)

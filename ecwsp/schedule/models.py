@@ -147,10 +147,10 @@ class CourseEnrollment(models.Model):
     course = models.ForeignKey('Course')
     user = models.ForeignKey('auth.User')
     role = models.CharField(max_length=255, default="Student", blank=True)
-    attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance")
+    attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     exclude_days = models.ManyToManyField('Day', blank=True, \
-        help_text="Student does not need to attend on this day. Note courses already specify meeting days, this field is for students who have a special reason to be away")
+        help_text="Student does not need to attend on this day. Note courses already specify meeting days; this field is for students who have a special reason to be away.")
     grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade",
                             editable=False, null=True)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
@@ -343,7 +343,7 @@ class OmitCourseGPA(models.Model):
 class OmitYearGPA(models.Model):
     """ Used to keep repeated or invalid years from affecting GPA and transcripts """
     student = models.ForeignKey('sis.Student')
-    year = models.ForeignKey('sis.SchoolYear', help_text="Omit this year from GPA calculations and transcripts")
+    year = models.ForeignKey('sis.SchoolYear', help_text="Omit this year from GPA calculations and transcripts.")
     def __unicode__(self):
         return "%s %s" % (self.student, self.year)
 
