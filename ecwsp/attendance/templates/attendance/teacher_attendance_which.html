@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-	<h2> Select Course for Attendance </h2>
+	<h2> Select course for attendance </h2>
     {% for course in courses %}
         <a href="/attendance/teacher_attendance/{{ course.id }}">{{ course }}</a><br/> 
     {% endfor %}

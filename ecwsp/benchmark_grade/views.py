@@ -445,7 +445,7 @@ def ajax_get_item_form(request, course_id, item_id=None):
     try: form.fields['benchmark'].queryset = Benchmark.objects.filter()
     except KeyError: pass
     available_courses = get_teacher_courses(request.user.username)
-    if not len(available_courses) and request.user.has_perm('grades.change_grade'):
+    if (not available_courses or not len(available_courses)) and request.user.has_perm('grades.change_grade'):
         available_courses = Course.objects.all()
     try: form.fields['course'].queryset = available_courses
     except KeyError: pass

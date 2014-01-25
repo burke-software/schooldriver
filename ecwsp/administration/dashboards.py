@@ -29,7 +29,7 @@ except:
 class AdministrationLinksListDashlet(LinksListDashlet):
     links = [
         {
-            'text': 'School import',
+            'text': 'School Import',
             'link': reverse('simple_import.views.start_import'),
             'desc': '',
             'perm': ('simple_import.change_importlog',),
