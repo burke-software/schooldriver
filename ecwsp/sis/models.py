@@ -86,15 +86,15 @@ class UserPreference(models.Model):
         ('m', 'Microsoft Binary (.doc, .xls)'),
         ('x', 'Microsoft Office Open XML (.docx, .xlsx)'),
     )
-    prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
-    include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
+    prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommended.") 
+    include_deleted_students = models.BooleanField(default=False, help_text="Include deleted (previous) students when searching.")
     course_sort_choices = (
         ('department', 'Department order rank'),
         ('marking_period,department', 'Marking period, Department order rank'),
         ('marking_period,fullname', 'Marking period, Course fullname'),
     )
-    course_sort = models.CharField(default='department', max_length=64, choices=course_sort_choices, help_text='Controls the order of courses on transcripts') # and other reports in the future?
-    omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
+    course_sort = models.CharField(default='department', max_length=64, choices=course_sort_choices, help_text='Defines the order of courses on transcripts.') # and other reports in the future?
+    omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="Defines the default point value of new questions.")
     omr_default_save_question_to_bank = models.BooleanField(default=False)
     omr_default_number_answers = models.IntegerField(default=2, blank=True, )
     gradebook_preference = models.CharField(max_length=10, blank=True, choices=(
@@ -152,14 +152,14 @@ class EmergencyContact(models.Model):
     mname = models.CharField(max_length=255, blank=True, null=True, verbose_name="Middle Name")
     lname = models.CharField(max_length=255, verbose_name="Last Name")
     relationship_to_student = models.CharField(max_length=500, blank=True)
-    street = models.CharField(max_length=255, blank=True, null=True, help_text="Include apt number")
+    street = models.CharField(max_length=255, blank=True, null=True, help_text="Include apartment number.")
     city = models.CharField(max_length=255, blank=True, null=True, default=get_city)
     state = USStateField(blank=True, null=True)
     zip = models.CharField(max_length=10, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to. In the event of an emergency, this is the person that will be contacted first.")
-    emergency_only = models.BooleanField(default=False, help_text="Only contact in case of emergency")
-    sync_schoolreach = models.BooleanField(help_text="Sync this contact with schoolreach",default=True)
+    primary_contact = models.BooleanField(default=True, help_text="Mail should be sent to this contact. In the event of an emergency, this person will be contacted first.")
+    emergency_only = models.BooleanField(default=False, help_text="Only contact in the event of an emergency.")
+    sync_schoolreach = models.BooleanField(help_text="Sync this contact with schoolreach.",default=True)
     
     class Meta:
         ordering = ('primary_contact', 'lname') 
@@ -251,7 +251,7 @@ class Cohort(models.Model):
     name = models.CharField(max_length=255)
     long_name = models.CharField(max_length=500, blank=True, help_text="Optional verbose name")
     students = models.ManyToManyField('Student', blank=True, through='StudentCohort') # someday, to fix syncdb : related_name="student_cohorts")
-    primary = models.BooleanField(default=False, help_text="If set true - all students in this cohort will have it set as primary!")
+    primary = models.BooleanField(default=False, help_text="If set true, all students in this cohort will have it set as primary!")
 
     class Meta:
         ordering = ('name',)
@@ -323,8 +323,8 @@ if 'south' in settings.INSTALLED_APPS:
 class ClassYear(models.Model):
     """ Class year such as class of 2010.
     """
-    year = IntegerRangeField(unique=True, min_value=1900, max_value=2200, help_text="Example 2014")
-    full_name = models.CharField(max_length=255, help_text="Example Class of 2014", blank=True)
+    year = IntegerRangeField(unique=True, min_value=1900, max_value=2200, help_text="ex. 2014")
+    full_name = models.CharField(max_length=255, help_text="ex. Class of 2014", blank=True)
     def __unicode__(self):
         return unicode(self.full_name)
     
@@ -342,7 +342,7 @@ class Student(User, CustomFieldModel):
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     pic = ImageWithThumbsField(upload_to="student_pics", blank=True, null=True, sizes=((70,65),(530, 400)))
-    alert = models.CharField(max_length=500, blank=True, help_text="Warn any user who accesses this record with this text")
+    alert = models.CharField(max_length=500, blank=True, help_text="Warn any user who accesses this record with this text.")
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date", validators=settings.DATE_VALIDATORS)
     year = models.ForeignKey(
@@ -350,7 +350,7 @@ class Student(User, CustomFieldModel):
         blank=True, 
         null=True, 
         on_delete=models.SET_NULL,
-        help_text="School year (ie freshman, senior, etc). Determined by class of.")
+        help_text="School year (e.g. freshman, senior, etc.). Determined by Class of.")
     class_of_year = models.ForeignKey(ClassYear, blank=True, null=True)
     date_dismissed = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
@@ -367,19 +367,19 @@ class Student(User, CustomFieldModel):
     
     family_preferred_language = models.ForeignKey(LanguageChoice, blank=True, null=True, default=get_default_language)
     family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True, related_name="+")
-    alt_email = models.EmailField(blank=True, help_text="Alternative student email that is not their school email.")
+    alt_email = models.EmailField(blank=True, help_text="Alternate non-school email")
     notes = models.TextField(blank=True)
     emergency_contacts = models.ManyToManyField(EmergencyContact, verbose_name="Student Contact", blank=True)
     siblings = models.ManyToManyField('Student', blank=True)
     cohorts = models.ManyToManyField(Cohort, through='StudentCohort', blank=True)
-    cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
+    cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort", related_name="cache_cohorts")
     individual_education_program = models.BooleanField(default=False)
     cache_gpa = models.DecimalField(editable=False, max_digits=5, decimal_places=2, blank=True, null=True)
     
     class Meta:
         permissions = (
             ("view_student", "View student"),
-            ("view_ssn_student", "View student ssn"),
+            ("view_ssn_student", "View student SSN"),
             ("view_mentor_student", "View mentoring information student"),
             ("reports", "View reports"),
         )
@@ -438,7 +438,7 @@ class Student(User, CustomFieldModel):
         email_method = Configuration.get_or_default(
             "How to obtain student email",
             default="append",
-            help_text="append, user, or student.").value
+            help_text="append, user, or student").value
         if email_method == "append":
             email_end = Configuration.get_or_default("email", default="@change.me").value
             return '%s%s' % (self.student.username, email_end)
@@ -626,7 +626,7 @@ class Student(User, CustomFieldModel):
     def clean(self, *args, **kwargs):
         """ Check if a Faculty exists, can't have someone be a Student and Faculty """
         if Faculty.objects.filter(id=self.id).count():
-            raise ValidationError('Cannot have someone be a student AND faculty!')
+            raise ValidationError('Cannot be both student AND faculty!')
         super(Student, self).clean(*args, **kwargs)
         
     def graduate_and_create_alumni(self):
@@ -668,7 +668,7 @@ class ASPHistory(models.Model):
     student = models.ForeignKey(Student)
     asp = models.CharField(max_length=255)
     date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
-    enroll = models.BooleanField(default=False, help_text="Check if enrollment, uncheck if unenrollment")
+    enroll = models.BooleanField(default=False, help_text="Check if enrolled, uncheck if unenrolled.")
     
     def __unicode__(self):
         if self.enroll:
@@ -749,10 +749,10 @@ class SchoolYear(models.Model):
     end_date = models.DateField(validators=settings.DATE_VALIDATORS)
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     active_year = models.BooleanField(default=False, 
-        help_text="DANGER!! This is the current school year. There can only be one and setting this will remove it from other years. " \
-                  "If you want to change the active year you almost certainly want to click Admin, Change School Year.")
+        help_text="DANGER!! This is the current school year. There can only be one, and setting this will remove it from other years. " \
+                  "If you would like to change the active year, you should probably click Admin > Change school year.")
     benchmark_grade = models.BooleanField(default=lambda: str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true",
-                                          help_text="Causes additional information to appear on transcripts. The configuration option \"Benchmark-based grading\" sets the default for this field.")
+                                          help_text="Displays additional information on transcripts. The configuration option \"Benchmark-based grading\" sets the default for this field.")
     
     class Meta:
         ordering = ('-start_date',)
@@ -799,7 +799,7 @@ class ImportLog(models.Model):
 class MessageToStudent(models.Model):
     """ Stores a message to be shown to students for a specific amount of time
     """
-    message = RichTextField(help_text="This message will be shown to students when they log in.")
+    message = RichTextField(help_text="This message will be shown to students at log in.")
     start_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
     def __unicode__(self):
