@@ -380,7 +380,7 @@ class Student(User, CustomFieldModel):
         permissions = (
             ("view_student", "View student"),
             ("view_ssn_student", "View student SSN"),
-            ("view_mentor_student", "View mentoring information student"),
+            ("view_mentor_student", "View mentoring information"),
             ("reports", "View reports"),
         )
         ordering = ("last_name", "first_name")
