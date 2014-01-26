@@ -71,7 +71,6 @@ class UserPreference(models.Model):
         ('marking_period,department', 'Marking period, Department order rank'),
         ('marking_period,fullname', 'Marking period, Course fullname'),
     )
-    course_sort = models.CharField(default='department', max_length=64, choices=course_sort_choices, help_text='Controls the order of courses on transcripts') # and other reports in the future?
     omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
     omr_default_save_question_to_bank = models.BooleanField(default=False)
     omr_default_number_answers = models.IntegerField(default=2, blank=True, )
@@ -98,16 +97,6 @@ class UserPreference(models.Model):
             elif self.prefered_file_format == "x":
                 return "xlsx"
             
-    def sort_courses(self, courses):
-        if self.course_sort == 'department':
-            return courses.order_by('department')
-        if self.course_sort == 'marking_period,department':
-            return courses.annotate(Count('marking_period'), Max('marking_period__end_date')).order_by('-marking_period__count', 'marking_period__end_date__max', 'department')
-        if self.course_sort == 'marking_period,fullname':
-            return courses.annotate(Count('marking_period'), Max('marking_period__end_date')).order_by('-marking_period__count', 'marking_period__end_date__max', 'fullname')
-        # wut?
-        return courses
-
 
 class PhoneNumber(models.Model):
     number = PhoneNumberField()

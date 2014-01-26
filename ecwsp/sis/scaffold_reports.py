@@ -5,7 +5,7 @@ from django import forms
 from django.conf import settings
 from django.db.models import Count
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel
-from ecwsp.schedule.models import MarkingPeriod
+from ecwsp.schedule.models import MarkingPeriod, Department
 import datetime
 
 def reverse_compare(compare):
@@ -42,9 +42,11 @@ class TimeBasedForm(forms.Form):
     
     
 class SchoolDateFilter(Filter):
-    template_name = "sis/school_date_filter.html"
+    template_name = "sis/scaffold/school_date_filter.html"
     verbose_name = "Change Timeframe"
     form_class = TimeBasedForm
+    default = True
+    can_add = False
     
     def get_report_context(self, report_context):
         return self.form.cleaned_data
@@ -133,6 +135,12 @@ class MpGradeFilter(CourseGradeFilter):
         return queryset
 
 
+def strip_trailing_zeros(x):
+    x = str(x).strip()
+    # http://stackoverflow.com/a/2440786
+    return x.rstrip('0').rstrip('.')
+
+
 class SisReport(ScaffoldReport):
     name = "student_report"
     model = Student
@@ -144,5 +152,140 @@ class SisReport(ScaffoldReport):
         MpGradeFilter(),
         CourseGradeFilter(),
     )
+
+    def get_student_transcript_data(self, student, omit_substitutions=False):
+        if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
+            from ecwsp.benchmark_grade.models import Aggregate
+            from ecwsp.benchmark_grade.utility import gradebook_get_average, benchmark_find_calculation_rule, gradebook_get_category_average
+        
+        self.for_date = self.report_context['date_begin']
+        student.years = SchoolYear.objects.filter(
+            markingperiod__show_reports=True,
+            start_date__lt=self.for_date,
+            markingperiod__course__courseenrollment__user=student,
+            ).exclude(omityeargpa__student=student).distinct().order_by('start_date')
+        for year in student.years:
+            year.credits = 0
+            year.possible_credits = 0
+            year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year, show_reports=True).distinct().order_by("start_date")
+            i = 1
+            for mp in year.mps:
+                setattr(year, "mp" + str(i), mp.shortname)
+                i += 1
+            while i <= 6:
+                setattr(year, "mp" + str(i), "")
+                i += 1
+            year.courses = student.course_set.filter(graded=True, marking_period__school_year=year, marking_period__show_reports=True).distinct()
+            year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_begin'])
+            # course grades
+            for course in year.courses:
+                # Grades
+                course_grades = year_grades.filter(course=course).distinct()
+                course_aggregates = None
+                if year.benchmark_grade:
+                    course_aggregates = Aggregate.objects.filter(course=course, student=student)
+                i = 1
+                for mp in year.mps:
+                    if mp not in course.marking_period.all():
+                        # Obey the registrar! Don't include grades from marking periods when the course didn't meet.
+                        setattr(course, "grade" + str(i), "")
+                        i += 1
+                        continue
+                    if year.benchmark_grade:
+                        setattr(course, "grade" + str(i), gradebook_get_average(student, course, None, mp, omit_substitutions = omit_substitutions))
+                    else:
+                        # We can't overwrite cells, so we have to get seperate variables for each mp grade.
+                        try:
+                            grade = course_grades.get(marking_period=mp).get_grade()
+                            grade = " " + str(grade) + " "
+                        except:
+                            grade = ""
+                        setattr(course, "grade" + str(i), grade)
+                    i += 1
+                while i <= 6:
+                    setattr(course, "grade" + str(i), "")
+                    i += 1
+                course.final = course.calculate_final_grade(student) # TODO don't calculate it
+                
+                if True: # TODO If passing grade
+                    year.credits += course.credits
+                if course.credits:
+                    year.possible_credits += course.credits
+
+            year.categories_as_courses = []
+            if year.benchmark_grade:
+                calculation_rule = benchmark_find_calculation_rule(year)
+                for category_as_course in calculation_rule.category_as_course_set.filter(include_departments=course.department):
+                    i = 1
+                    for mp in year.mps:
+                        setattr(category_as_course.category, 'grade{}'.format(i), gradebook_get_category_average(student, category_as_course.category, mp))
+                        i += 1
+                    year.categories_as_courses.append(category_as_course.category)
+            
+            # Averages per marking period
+            i = 1
+            for mp in year.mps:
+                if mp.end_date < self.report_context['date_begin']:
+                    mp_grade = student.studentmarkingperiodgrade_set.get(marking_period=mp)
+                    setattr(year, 'mp' + str(i) + 'ave', mp_grade.grade)
+                    i += 1
+            while i <= 6:
+                setattr(year, 'mp' + str(i) + 'ave', "")
+                i += 1
+            
+            year.ave = student.studentyeargrade_set.get(year=year).grade
+            
+            # Attendance for year
+            if not hasattr(self, 'year_days'):
+                self.year_days = {}
+            if not year.id in self.year_days:
+                self.year_days[year.id] = year.get_number_days()
+            year.total_days = self.year_days[year.id]
+            year.nonmemb = student.student_attn.filter(status__code="nonmemb", date__range=(year.start_date, year.end_date)).count()
+            year.absent = student.student_attn.filter(status__absent=True, date__range=(year.start_date, year.end_date)).count()
+            year.tardy = student.student_attn.filter(status__tardy=True, date__range=(year.start_date, year.end_date)).count()
+            year.dismissed = student.student_attn.filter(status__code="D", date__range=(year.start_date, year.end_date)).count()
+            # credits per dept
+            student.departments = Department.objects.filter(course__courseenrollment__user=student).distinct()
+            student.departments_text = ""
+            for dept in student.departments:
+                c = 0
+                for course in student.course_set.filter(
+                    department=dept,
+                    marking_period__school_year__end_date__lt=self.for_date,
+                    graded=True).distinct():
+                    if course.credits and True: # TODO is course passing
+                        c += course.credits
+                dept.credits = c
+                student.departments_text += "| %s: %s " % (dept, dept.credits)
+            student.departments_text += "|"
+            
+            # Standardized tests
+            if 'ecwsp.standard_test' in settings.INSTALLED_APPS:
+                from ecwsp.standard_test.models import StandardTest
+                student.tests = []
+                student.highest_tests = []
+                for test_result in student.standardtestresult_set.filter(
+                    test__show_on_reports=True,
+                    show_on_reports=True
+                    ).order_by('test'):
+                    test_result.categories = ""
+                    for cat in test_result.standardcategorygrade_set.filter(category__is_total=False):
+                        test_result.categories += '%s: %s | ' % (cat.category.name, strip_trailing_zeros(cat.grade))
+                    test_result.categories = test_result.categories [:-3]
+                    student.tests.append(test_result)
+                    
+                for test in StandardTest.objects.filter(standardtestresult__student=student, show_on_reports=True, standardtestresult__show_on_reports=True).distinct():
+                    test.total = strip_trailing_zeros(test.get_cherry_pick_total(student))
+                    student.highest_tests.append(test)
+
+    def get_appy_context(self):
+        context = super(SisReport, self).get_appy_context()
+        students = context['objects']
+        for student in students:
+            self.get_student_transcript_data(student)
+
+        context['students'] = students
+        return context
 
 scaffold_reports.register('student_report', SisReport)
