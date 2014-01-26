@@ -45,9 +45,9 @@ class EventsDashlet(Dashlet):
             date_delta = school_year.start_date - today
             date_delta = date_delta.days
             if date_delta <= 0 and date_delta > -30:
-                news_alerts += ["A new school year has started on {}".format(school_year.start_date)]
+                news_alerts += ["A new school year has started on {}.".format(school_year.start_date)]
             elif date_delta < 60:
-                news_alerts += ['A new school year will start on {}'.format(school_year.start_date)]
+                news_alerts += ['A new school year will start on {}.'.format(school_year.start_date)]
             
         
         context = dict(context.items() + {
@@ -126,12 +126,12 @@ class AttendanceDashlet(ListDashlet):
 class AttendanceLinksListDashlet(LinksListDashlet):
     links = [
         {
-            'text': 'Take Homeroom Attendance',
+            'text': 'Take homeroom attendance',
             'link': reverse('ecwsp.attendance.views.teacher_attendance'),
             'perm': ('attendance.take_studentattendance',),
         },
         {
-            'text': 'Take Course Attendance',
+            'text': 'Take course attendance',
             'link': reverse('ecwsp.attendance.views.select_course_for_attendance'),
             'perm': ('attendance.take_studentattendance',),
         },
