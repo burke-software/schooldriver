@@ -65,7 +65,7 @@
 		  </div>
 		  
 		  <div class="four columns align_right_until_break" id="transcript">   
-		    <a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Nonofficial transcript </a><br/>
+		    <a href="/sis/reports/transcript_nonofficial/{{ student.id }}"> Unofficial transcript </a><br/>
 		    Profile generated on {{ date }}
 		  </div>
         </div>
@@ -87,14 +87,14 @@
           <table class="section-table">
               <tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname|default_if_none:"" }} {{ student.lname }} </td></tr>
               <tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
-              <tr><td class="thing"> Birthdate </td><td> {{ student.bday }} </td></tr>
-              <tr><td class="thing"> Primary Cohort </td><td> {{ student.primary_cohort }} </td></tr>
+              <tr><td class="thing"> Birth date </td><td> {{ student.bday }} </td></tr>
+              <tr><td class="thing"> Primary cohort </td><td> {{ student.primary_cohort }} </td></tr>
               <tr><td class="thing"> Alert </td><td> {{ student.alert }} </td></tr>
               <tr><td class="thing"> Notes </td><td> {{ student.notes }} </td></tr>
               <tr><td class="thing"> Parent/Guardian </td><td> {{ student.parent_guardian }} </td></tr>
               <tr><td class="thing"> Address </td><td> {{ student.street }} <br /> {{ student.city }}, {{ student.state }} {{ student.zip }} </td></tr>
-              <tr><td class="thing"> Parent E-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
-              <tr><td class="thing"> Student Phone Number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
+              <tr><td class="thing"> Parent e-mail </td><td><a href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a>{% if student.alt_email %}<br /> {{ student.alt_email }} {% endif %}</td></tr>
+              <tr><td class="thing"> Student phone number </td><td>{% for number in numbers %} {{ number }}<br /> {% endfor %} </td></tr>
           </table>
         </div>
         <div class="five columns">
@@ -141,7 +141,7 @@
                             </div>
 			<div class="sv-main">
                             {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
-                                <a href="{% url "ecwsp.benchmark_grade.views.student_report" student.id %}">Benchmark Grade Details</a>
+                                <a href="{% url "ecwsp.benchmark_grade.views.student_report" student.id %}">Benchmark grade details</a>
                             {% endif %}
                             
                             {% if perms.grades.change_grade %} <a class="edit_link" href="/grades/student_gradesheet/{{ student.id }}/"> Edit </a><br /> {% endif %}
@@ -254,16 +254,16 @@
                                             <div class="sv-main">
                                     {% endif %}
                                                 <span class="spacer">
-                                                    Total Absent: {{ year.attendance_absense }}
+                                                    Total absent: {{ year.attendance_absense }}
                                                     {% if year.attendance_absense_with_half %}
                                                         ({{ year.attendance_absense_with_half }} with half days)
                                                     {% endif %}
                                                 </span>
                                                 <span class="spacer">
-                                                    Total Tardy: {{ year.attendance_tardy }}
+                                                    Total tardy: {{ year.attendance_tardy }}
                                                 </span>
                                                 <span class="spacer">
-                                                    Total Present and on time: {{ year.present }} (of {{ year.total }} school days)
+                                                    Total present and on time: {{ year.present }} (of {{ year.total }} school days)
                                                 </span>
                                                 <table class="section-table">
                                                     <tr>
@@ -325,7 +325,7 @@
 					{% endfor %}
 					{% for number in alumni.alumniphonenumber_set.all %}
 						<tr>
-							<td class="thing"> Phone Number {{ number.type }} </td>
+							<td class="thing"> Phone number {{ number.type }} </td>
 							<td>{{ number }}</td>
 						</tr>
 					{% endfor %}
@@ -405,14 +405,14 @@
 			<div class="sv-main">
                             {% if perms.admissions.change_applicant %} <a class="edit_link" href="{% url "admin:admissions_applicant_change" student.appl_student.id %}"> Edit </a><br /> {% endif %}
 				<table class="section-table">
-					<tr><td class="thing"> Feeder School </td><td> {{ appl.present_school }} </td></tr>
+					<tr><td class="thing"> Feeder school </td><td> {{ appl.present_school }} </td></tr>
 					<tr><td class="thing"> Ethnicity </td><td> {{ appl.ethnicity }} </td></tr>
 					<tr><td class="thing"> Religion </td><td> {{ appl.religion }} </td></tr>
-					<tr><td class="thing"> Elem Grad yr </td><td> {{ appl.elem_grad_yr }} </td></tr>
-					<tr><td class="thing"> HS Grad yr </td><td> {{ appl.hs_grad_yr }} </td></tr>
-					<tr><td class="thing"> Total Income </td><td> {{ appl.total_income }} </td></tr>
-					<tr><td class="thing"> Adjusted Available Income </td><td> {{ appl.adjusted_available_income }} </td></tr>
-					<tr><td class="thing"> Calculated Payment </td><td> {{ appl.calculated_payment }} </td></tr>
+					<tr><td class="thing"> Elementary graduation year </td><td> {{ appl.elem_grad_yr }} </td></tr>
+					<tr><td class="thing"> High school graduation year </td><td> {{ appl.hs_grad_yr }} </td></tr>
+					<tr><td class="thing"> Total income </td><td> {{ appl.total_income }} </td></tr>
+					<tr><td class="thing"> Adjusted available income </td><td> {{ appl.adjusted_available_income }} </td></tr>
+					<tr><td class="thing"> Calculated payment </td><td> {{ appl.calculated_payment }} </td></tr>
 				</table>
 			</div> <!-- .sv-main -->
 			</div> <!-- .sv-section -->
@@ -464,7 +464,7 @@
                             {% endif %}
 				<div class="section-div">
 					<div class="showoff">Current placement: {{ student.studentworker.placement }} </div>
-                                        <div class="showoff">Work Study Coordinator: {{ student.studentworker.cra }}</div>
+                                        <div class="showoff">Work study coordinator: {{ student.studentworker.cra }}</div>
 					<div class="sv-placement-subhead">Supervisor contact infomation</div>
 					{% if supervisors %}
                                             <ul>
@@ -498,7 +498,7 @@
 					</tr>
 					{% for visit in clientvisits %}
 						<tr><td>{{ visit.company }}</td><td>{{ visit.date }}</td><td style="max-width: 800px;">{{ visit.notes }}</td>
-						<td><a href="/admin/work_study/clientvisit/{{ visit.id }}">See More about this visit</tr>
+						<td><a href="/admin/work_study/clientvisit/{{ visit.id }}">See more about this visit</tr>
 						{% endfor %}
 				</table>
                                 
@@ -507,7 +507,7 @@
 			</div> <!-- .sv-section -->
                         
                     {% if timesheets %}
-                        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Timesheets</a>
+                        <div class="sv-section noprint"><a class="section-header noprint" href="javascript:void(0)">Time Sheets</a>
                         <div class="sv-main">
                         <div class="section-div">
                         <div id='chart_div' style='width: 800px; height: 200px;'></div>
@@ -531,7 +531,7 @@
                         </tr>
                         {% for test in tests %}
                             <tr><td>{{ test.test }}</td><td>{{ test.date }}</td><td>{{ test.total }}</td>
-                            <td><a href="{% url "admin:standard_test_standardtestresult_change" test.id %}">See More about these results</tr>
+                            <td><a href="{% url "admin:standard_test_standardtestresult_change" test.id %}">See more about these results</tr>
                         {% endfor %}
                     </table>
                     {% for test in tests %}
