@@ -16,7 +16,7 @@
         <h1>Service Hours Record Sheet</h1>
 	<br />
          <p class="instructions"><b><u>INSTRUCTIONS:</u></b> Please fill in all the hours you have completed.
-         Note the date and number of hours you completed on that date to the best of your ability.  You DO NOT need to print this form.</p>
+         Note the date and number of hours you completed to the best of your ability.  You DO NOT need to print this form.</p>
          <br/>
         <form action="" name = "volunteer form" onsubmit="" method="post">
             <table style="width:100%;">
@@ -26,7 +26,7 @@
                             <legend>{{ student }}</legend>
                             <p>Service site: {{ volunteer_site.site }}</p> 
                             <p>Supervisor: {{ volunteer_site.supervisor }} </p> 
-                            <p>Hours at Site: {{ volunteer_site.hours_at_site }}</p>
+                            <p>Hours at site: {{ volunteer_site.hours_at_site }}</p>
                             <p>Total hours completed: {{ student.hours_completed }} </p>
                             <p>Hours required: {{ student.hours_required }} </p> 
                         </fieldset>
@@ -38,7 +38,7 @@
                    </td>
                 </tr>
             </table>
-            <input class="button" type="submit" value="Click Here to Save Your Work"/>
+            <input class="button" type="submit" value="Click here to save your work"/>
             
         </form> 
 	</div> 
