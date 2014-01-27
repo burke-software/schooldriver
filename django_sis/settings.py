@@ -48,10 +48,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'sword',
-        'USER': 'sword',
-        'PASSWORD': '1234',
-        'HOST': 'localhost', 
+        'NAME': 'sample_db',
     },
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
