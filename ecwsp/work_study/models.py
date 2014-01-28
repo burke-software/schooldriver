@@ -777,7 +777,7 @@ class TimeSheet(models.Model):
             try:
                 sendTo = self.student.primary_contact.email
                 subject = "Time Sheet for " + str(self.student)
-                msg = "Hello " + unicode(self.student.primary_contact.fname) + ",\nPlease click on the link below to approve the time sheet\n" + \
+                msg = "Hello " + unicode(self.student.primary_contact.fname) + ",\nPlease click on the link below to approve the time sheet.\n" + \
                     settings.BASE_URL + "/work_study/approve?key=" + str(self.supervisor_key)
                 from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 send_mail(subject, msg, from_addr, [sendTo])
