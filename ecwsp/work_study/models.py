@@ -833,7 +833,7 @@ class ClientVisit(models.Model):
     supervisor = models.ManyToManyField(Contact, blank=True, null=True)
     choices = (
         ('4', "Above and beyond"),
-        ('3', "Represents level of proficiency"),
+        ('3', "Represents high level of proficiency"),
         ('2', "On the way with some help"),
         ('1', "Needs immediate intervention"),
     )
