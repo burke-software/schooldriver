@@ -384,14 +384,6 @@ class Personality(models.Model):
         verbose_name_plural = 'Personality types'
     
 
-class Handout33(models.Model):
-    category = models.CharField(max_length=100)
-    like = models.CharField(max_length=255)
-    def __unicode__(self):
-        return unicode(self.category) + ": " + unicode(self.like)
-    class Meta:
-        ordering = ('category', 'like',)
-
 class StudentWorkerRoute(models.Model):
     name = models.CharField(max_length=100, unique=True)
     def __unicode__(self):
@@ -419,7 +411,6 @@ class StudentWorker(Student):
     student_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
     primary_contact = models.ForeignKey(Contact, on_delete=models.SET_NULL, blank=True, null=True, help_text="This is the primary supervisor. Emails will be sent to this person. If the contact you want is not showing you may need to add them to the company. New contacts will never automatically be assigned to a company unless the supervisor adds them.")
     personality_type = models.ForeignKey(Personality, blank=True, null=True)
-    handout33 = models.ManyToManyField(Handout33, blank=True, null=True)
     adp_number = models.CharField(max_length=5, blank=True, verbose_name="ADP Number")
     
     am_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="am_student_set")
