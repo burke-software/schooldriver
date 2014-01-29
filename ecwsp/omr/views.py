@@ -1,20 +1,3 @@
-#   Copyright 2011-2013 David M Burke
-#   Author David M Burke <dburke@cristoreyny.org>
-#   Co-Author Callista Goss <calli@burkesoftware.com>
-#   
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
@@ -446,6 +429,9 @@ def ajax_finalize_test(request, test_id):
 def test_result(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     cohort_form = CohortForm()
+    students = test.students.all()
+    cohorts = Cohort.objects.filter(students=students).distinct()
+    cohort_form.fields['cohorts'].queryset = cohorts
     
     for test_instance in test.testinstance_set.filter(results_received=False):
         if test_instance.answerinstance_set.all().count():
@@ -465,11 +451,16 @@ def download_test_results(request, test_id):
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
 def download_student_results(request, test_id):
     test = get_object_or_404(Test, id=test_id)
+    cohorts = None
+    if request.POST:
+        cohort_form = CohortForm(request.POST)
+        if cohort_form.is_valid():
+            cohorts = cohort_form.cleaned_data['cohorts']
     format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
     template = Template.objects.get_or_create(name="OMR Student Test Result")[0].get_template(request)
     if not template:
         return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
-    return report.download_student_results(test, format, template)
+    return report.download_student_results(test, format, template, cohorts=cohorts)
 
 
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
