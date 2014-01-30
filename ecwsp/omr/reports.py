@@ -1,13 +1,13 @@
 from django.utils.html import strip_tags
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Count
 
 from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
 from ecwsp.sis.models import Cohort
 from ecwsp.administration.models import Template
-from ecwsp.omr.models import AnswerInstance
+from ecwsp.omr.models import AnswerInstance, Answer
 from ecwsp.benchmarks.models import Benchmark
 
 import xlwt
@@ -235,6 +235,11 @@ class ReportManager(object):
             question.points_earned = earned_possible['points_earned__sum'] 
             question.points_possible = earned_possible['points_possible__sum'] 
             question.percent_points_earned = float(question.points_earned) / question.points_possible
+            common_wrong_answer = question.answerinstance_set.filter(points_earned=0).values('answer_id').annotate(Count('id')).filter(id__count__gt=1).order_by('-id__count').first()
+            if common_wrong_answer:
+                question.frequent_wrong = Answer.objects.get(id=common_wrong_answer['answer_id']).letter
+            else:
+                question.frequent_wrong = None
             
         report.data['test'] = test
         report.data['tests'] = test_instances
