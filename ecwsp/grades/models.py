@@ -55,7 +55,7 @@ class StudentYearGrade(models.Model):
     """ Stores the grade for an entire year, only used for cache """
     student = models.ForeignKey('sis.Student')
     year = models.ForeignKey('sis.SchoolYear')
-    grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="Year Average")
+    grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="Year average")
     
     class Meta:
         unique_together = ('student', 'year')
@@ -206,7 +206,7 @@ class Grade(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         if self.grade and self.letter_grade != None:
-            raise ValidationError('Cannot have both numeric and letter grade')
+            raise ValidationError('Cannot have both numeric and letter grade.')
     
     def save(self, *args, **kwargs):
         super(Grade, self).save(*args, **kwargs)

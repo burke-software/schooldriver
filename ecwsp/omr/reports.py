@@ -1,19 +1,3 @@
-#   Copyright 2011 Burke Software and Consulting LLC
-#   Author David M Burke <david@burkesoftware.com>
-#   
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-
 from django.utils.html import strip_tags
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F, Sum
@@ -257,11 +241,14 @@ class ReportManager(object):
         report.filename = 'Teacher Results for ' + unicode(test)
         return report.pod_save(template)  
         
-    def download_student_results(self, test, format, template):
+    def download_student_results(self, test, format, template, cohorts=None):
         """ Make appy based report showing results for each student """
         report = TemplateReport()
         report.file_format = format
-        test_instances = test.active_testinstance_set.all()
+        if cohorts:
+            test_instances = test.active_testinstance_set.filter(student__cohort__in=cohorts).distinct()
+        else:
+            test_instances = test.active_testinstance_set.all()
         benchmarks = Benchmark.objects.filter(question__test=test).distinct()
         
         for benchmark in benchmarks:

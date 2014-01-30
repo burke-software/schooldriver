@@ -95,8 +95,8 @@ def teacher_attendance(request, course=None):
         elif courses.count() == 0:
             messages.info(
                 request,
-                'You are a teacher, but have no courses with attendance. This may also occur if " \
-                    "the course is not set to the current marking period.')
+                "You are a teacher, but have no courses with attendance. This may also occur if " \
+                    "the course is not set to the current marking period.")
             return HttpResponseRedirect(reverse('admin:index'))
         course = courses[0]
     today, created = Day.objects.get_or_create(day=str(date.today().isoweekday()))

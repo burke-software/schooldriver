@@ -4,7 +4,7 @@
 {% block object-tools-items %}
     <li><a href="history/">{% trans "History" %}</a></li>
     {% if object_id %}
-        <li><a href="{% url "admin:sis_student_change" object_id %}">Edit Student</a></li>
-        <li><a href="{% url "admin:auth_user_change" object_id %}">User Permissions and Password</a></li>
+        <li><a href="{% url "admin:sis_student_change" object_id %}">Edit student</a></li>
+        <li><a href="{% url "admin:auth_user_change" object_id %}">User permissions and password</a></li>
     {% endif %}
 {% endblock %}

@@ -66,11 +66,6 @@ class UserPreference(models.Model):
     )
     prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
     include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
-    course_sort_choices = (
-        ('department', 'Department order rank'),
-        ('marking_period,department', 'Marking period, Department order rank'),
-        ('marking_period,fullname', 'Marking period, Course fullname'),
-    )
     omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
     omr_default_save_question_to_bank = models.BooleanField(default=False)
     omr_default_number_answers = models.IntegerField(default=2, blank=True, )
@@ -97,7 +92,6 @@ class UserPreference(models.Model):
             elif self.prefered_file_format == "x":
                 return "xlsx"
             
-
 class PhoneNumber(models.Model):
     number = PhoneNumberField()
     ext = models.CharField(max_length=10, blank=True, null=True)
@@ -273,7 +267,6 @@ class LanguageChoice(models.Model):
                 language.default = False
                 language.save()
         super(LanguageChoice, self).save(*args, **kwargs)
-        
 
 class IntegerRangeField(models.IntegerField):
     def __init__(self, verbose_name=None, name=None, min_value=None, max_value=None, **kwargs):
