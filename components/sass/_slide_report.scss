@@ -1,3 +1,42 @@
+#scaffold_active_filters {
+  .filter {
+    border: 1px solid #bebdbd;
+    //border-bottom: 1px solid #E5E5E5;
+    border-radius: 2px;
+    padding: 5px;
+    margin: 5px;
+  }
+
+  .filter-title {
+    margin-left: 1.2%;
+  }
+}
+
+.picker-multiple select {
+  color: #555;
+  font-size: 14px;
+  border: 1px solid #E5E5E5;
+  border-radius: 4px;
+
+  option {
+    padding: 5px 15px;
+  }
+}
+
+.delete-filter {
+  float: right;
+  font-size: 2em;
+}
+
+.TardyFilter .xnarrow {
+  vertical-align: top;
+  margin-left: 15px;
+}
+
+
+
+
+
 #scaffold{
   .active_filters {
     background-color: #eee;
@@ -13,10 +52,7 @@
   }
 
   li {
-    border: 1px solid #bebdbd;
-    border-radius: 2px;
-    padding: 5px;
-    margin: 5px;
+    
   }
   
   .ui-state-highlight {
