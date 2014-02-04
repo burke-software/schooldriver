@@ -579,7 +579,7 @@ class StudentInteraction(models.Model):
     date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     type = models.CharField(max_length=1, choices=(('M', 'Mentoring'), ('D', 'Discipline'), ('P', 'Parent'), ('C', 'Company'), ('S', 'Supervisor'), ('O', 'Other')))
     comments = models.TextField(blank=True)
-    preset_comment = models.ManyToManyField(PresetComment, blank=True, help_text="Double-click on the comment on the left to add, or click the plus to add a new preset comment.")
+    preset_comment = models.ManyToManyField(PresetComment, blank=True, help_text="Double-click on the comment on the left to add or click (+) to add a new comment.")
     companies = models.ManyToManyField(WorkTeam,  blank=True)
     
     def save(self, *args, **kwargs):
