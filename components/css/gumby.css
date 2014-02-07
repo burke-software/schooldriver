@@ -1690,6 +1690,10 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 .delete-filter { float: right; font-size: 2em; }
 
+.handle { float: right; font-size: 2em; cursor: move; }
+
+.column-in-report { float: right; font-size: 2em; }
+
 .TardyFilter .xnarrow { vertical-align: top; margin-left: 15px; }
 
 #scaffold .active_filters { background-color: #eee; width: 66%; padding: 5px; float: left; }
