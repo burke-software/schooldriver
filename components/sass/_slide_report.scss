@@ -28,6 +28,17 @@
   font-size: 2em;
 }
 
+.handle {
+  float: right;
+  font-size: 2em;
+  cursor: move;
+}
+
+.column-in-report {
+  float: right;
+  font-size: 2em;
+}
+
 .TardyFilter .xnarrow {
   vertical-align: top;
   margin-left: 15px;
