@@ -111,7 +111,12 @@ class Template(models.Model):
     transcript = models.BooleanField(default=False, help_text="Can be used on grade reports, gathers data for all years")
     
     def __unicode__(self):
-        return self.name
+        text = self.name
+        if self.report_card:
+            text += ' (report card)'
+        if self.transcript:
+            text += ' (transcript)'
+        return text
     
     def get_template(self, request):
         """ Get template or return False with error message. """

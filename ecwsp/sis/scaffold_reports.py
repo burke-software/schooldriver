@@ -1,9 +1,10 @@
 from scaffold_report.report import ScaffoldReport, scaffold_reports
 from scaffold_report.fields import SimpleCompareField
-from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter
+from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter, ModelChoiceFilter
 from django import forms
 from django.conf import settings
 from django.db.models import Count
+from ecwsp.administration.models import Template
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel
 from ecwsp.schedule.models import MarkingPeriod, Department
 import datetime
@@ -75,10 +76,7 @@ class StudentYearFilter(ModelMultipleChoiceFilter):
     verbose_name="Student Year"
     compare_field_string="year"
     add_fields = ['year']
-    
-    def __init__(self, **kwargs):
-        self.queryset = GradeLevel.objects.all()
-        return super(StudentYearFilter, self).__init__(**kwargs)
+    model = GradeLevel
     
 
 class CourseGradeFilter(Filter):
@@ -135,6 +133,33 @@ class MpGradeFilter(CourseGradeFilter):
         return queryset
 
 
+class TemplateSelection(ModelChoiceFilter):
+    """ Select a template for an appy report
+    May affect what extra context is needed (for report cards and transcripts)
+    """
+    model = Template
+    default = True
+    can_add = False
+    
+    def get_report_context(self, report_context):
+        return {'template': self.form.cleaned_data['field_0']}
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        return queryset    
+
+
+class IncludeDeleted(Filter):
+    fields = [forms.BooleanField(initial=True, required=False)]
+    default = True
+    can_add = False
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        include_deleted = self.cleaned_data['field_0']
+        if not include_deleted:
+            queryset = queryset.filter(deleted=True)
+        return queryset
+
+
 def strip_trailing_zeros(x):
     x = str(x).strip()
     # http://stackoverflow.com/a/2440786
@@ -145,12 +170,14 @@ class SisReport(ScaffoldReport):
     name = "student_report"
     model = Student
     filters = (
-        DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cache_gpa", add_fields=('gpa',)),
+        DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cached_gpa", add_fields=('gpa',)),
         TardyFilter(verbose_name="Tardies"),
         SchoolDateFilter(),
         StudentYearFilter(),
         MpGradeFilter(),
         CourseGradeFilter(),
+        TemplateSelection(),
+        IncludeDeleted(),
     )
 
     def get_student_transcript_data(self, student, omit_substitutions=False):
@@ -279,11 +306,16 @@ class SisReport(ScaffoldReport):
                     test.total = strip_trailing_zeros(test.get_cherry_pick_total(student))
                     student.highest_tests.append(test)
 
+    def get_appy_template(self):
+        return self.report_context.get('template').file.path
+
     def get_appy_context(self):
         context = super(SisReport, self).get_appy_context()
         students = context['objects']
-        for student in students:
-            self.get_student_transcript_data(student)
+        template = self.report_context.get('template')
+        if template and template.transcript:
+            for student in students:
+                self.get_student_transcript_data(student)
 
         context['students'] = students
         return context
