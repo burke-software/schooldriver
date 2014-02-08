@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib import messages
 from django.conf import settings
 from django_cached_field import CachedCharField, CachedDecimalField
+from django.db import connection
 
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
@@ -188,9 +189,9 @@ class CourseEnrollment(models.Model):
         """
         cursor = connection.cursor()
         if date_report:
-            cursor.execute("SELECT (SUM(grade * weight) / sum(weight)) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` join schedule_markingperiod on schedule_markingperiod.id=grades_grade.marking_period_id WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s AND schedule_markingperiod.end_date <= %s) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id, date_report) )
+            cursor.execute("SELECT (SUM(grade * weight) / sum(weight)) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` join schedule_markingperiod on schedule_markingperiod.id=grades_grade.marking_period_id WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s AND schedule_markingperiod.end_date <= %s) and (grade is not null or letter_grade is not null ) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id, date_report) )
         else:
-            cursor.execute("SELECT (SUM(grade * weight) / sum(weight)) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` join schedule_markingperiod on schedule_markingperiod.id=marking_period_id WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s ) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id) )
+            cursor.execute("SELECT (SUM(grade * weight) / sum(weight)) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` join schedule_markingperiod on schedule_markingperiod.id=marking_period_id WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s ) and (grade is not null or letter_grade is not null ) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id) )
         (ave_grade, grade_id, override_final) = cursor.fetchone()
         if override_final:
             course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
