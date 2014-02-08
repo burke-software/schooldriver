@@ -6,6 +6,7 @@ from django.db import connection
 
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
+import ecwsp
 
 from datetime import date, datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
@@ -217,10 +218,12 @@ class CourseEnrollment(models.Model):
                     if get_grade in ["I", "IN"]:
                         return get_grade
                     elif get_grade in ["P","HP","LP"]:
-                        final += float(100 * grade.marking_period.weight)
-                        total_weight += grade.marking_period.weight
+                        if grade.marking_period:
+                            final += float(100 * grade.marking_period.weight)
+                            total_weight += grade.marking_period.weight
                     elif get_grade in ['F', 'M']:
-                        total_weight += grade.marking_period.weight
+                        if grade.marking_period:
+                            total_weight += grade.marking_period.weight
                     elif get_grade:
                         final += get_grade
                 if total_weight:
