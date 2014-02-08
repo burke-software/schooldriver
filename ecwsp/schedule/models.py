@@ -181,7 +181,7 @@ class CourseEnrollment(models.Model):
             return grade
         return None
     
-        def calculate_grade_real(self, date_report=None, ignore_letter=False):
+    def calculate_grade_real(self, date_report=None, ignore_letter=False):
         """ Calculate the final grade for a course
         ignore_letter can be useful when computing averages
         when you don't care about letter grades
