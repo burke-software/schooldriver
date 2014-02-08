@@ -181,16 +181,16 @@ class CourseEnrollment(models.Model):
             return grade
         return None
     
-    def calculate_grade_real(self, date_report=None, ignore_letter=False):
+        def calculate_grade_real(self, date_report=None, ignore_letter=False):
         """ Calculate the final grade for a course
         ignore_letter can be useful when computing averages
         when you don't care about letter grades
         """
         cursor = connection.cursor()
         if date_report:
-            cursor.execute("SELECT (AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` join schedule_markingperiod on schedule_markingperiod.id=grades_grade.marking_period_id WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s AND schedule_markingperiod.end_date <= %s) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id, date_report) )
+            cursor.execute("SELECT (SUM(grade * weight) / sum(weight)) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` join schedule_markingperiod on schedule_markingperiod.id=grades_grade.marking_period_id WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s AND schedule_markingperiod.end_date <= %s) and (grade is not null or letter_grade is not null ) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id, date_report) )
         else:
-            cursor.execute("SELECT (AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s ) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id) )
+            cursor.execute("SELECT (SUM(grade * weight) / sum(weight)) AS `ave_grade`, `grades_grade`.`id`, `grades_grade`.`override_final` FROM `grades_grade` join schedule_markingperiod on schedule_markingperiod.id=marking_period_id WHERE (`grades_grade`.`course_id` = %s  AND `grades_grade`.`student_id` = %s ) and (grade is not null or letter_grade is not null ) ORDER BY `grades_grade`.`override_final` DESC limit 1", (self.course_id, self.user_id) )
         (ave_grade, grade_id, override_final) = cursor.fetchone()
         if override_final:
             course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
@@ -213,13 +213,15 @@ class CourseEnrollment(models.Model):
                 total_weight = Decimal(0)
                 for grade in grades:
                     get_grade =  grade.get_grade()
-                    if get_grade == "I":
-                        return "I"
+                    if get_grade in ["I", "IN"]:
+                        return get_grade
                     elif get_grade in ["P","HP","LP"]:
-                        final += float(100 * grade.marking_period.weight)
-                        total_weight += grade.marking_period.weight
+                        if grade.marking_period:
+                            final += float(100 * grade.marking_period.weight)
+                            total_weight += grade.marking_period.weight
                     elif get_grade in ['F', 'M']:
-                        total_weight += grade.marking_period.weight
+                        if grade.marking_period:
+                            total_weight += grade.marking_period.weight
                     elif get_grade:
                         final += get_grade
                 if total_weight:
