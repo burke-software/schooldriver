@@ -1,4 +1,4 @@
-from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, LinksListDashlet
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, LinksListDashlet, dashboards
 from django.contrib.admin.models import LogEntry
 from django.core.urlresolvers import reverse
 from report_builder.models import Report
@@ -29,7 +29,7 @@ except:
 class AdministrationLinksListDashlet(LinksListDashlet):
     links = [
         {
-            'text': 'School import',
+            'text': 'School Import',
             'link': reverse('simple_import.views.start_import'),
             'desc': '',
             'perm': ('simple_import.change_importlog',),
@@ -79,4 +79,4 @@ class AdminDashboard(Dashboard):
     ]
 
 
-dashboard = AdminDashboard()
+dashboards.register('administration', AdminDashboard)

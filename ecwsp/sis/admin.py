@@ -317,11 +317,6 @@ class SchoolYearAdmin(admin.ModelAdmin):
     inlines = [MarkingPeriodInline]
 admin.site.register(SchoolYear, SchoolYearAdmin)
 
-class ImportLogAdmin(admin.ModelAdmin):
-    list_display = ['user','date','errors']
-    search_fields = ['username', 'first_name', 'last_name']
-admin.site.register(ImportLog, ImportLogAdmin)
-
 admin.site.register(MessageToStudent)
 
 from django.contrib.auth.admin import UserAdmin

@@ -1,7 +1,10 @@
 from django.db import models
+from django.db.models import Avg, Count
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
-from ecwsp.schedule.models import *
+from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
+from ecwsp.sis.models import Student
+from django_cached_field import CachedDecimalField
 
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -20,6 +23,66 @@ def grade_comment_length_validator(value):
     max_length = int(Configuration.get_or_default('Grade comment length limit').value)
     validator = MaxLengthValidator(max_length)
     return validator(value)
+
+class StudentMarkingPeriodGrade(models.Model):
+    """ Stores marking period grades for students, only used for cache """
+    student = models.ForeignKey('sis.Student')
+    marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
+    grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="MP Average")
+    
+    class Meta:
+        unique_together = ('student', 'marking_period')
+    
+    @staticmethod
+    def build_all_cache():
+        """ Create object for each student * possible marking periods """
+        for student in Student.objects.all():
+            marking_periods = student.courseenrollment_set.values('course__marking_period').annotate(Count('course__marking_period'))
+            for marking_period in marking_periods:
+                StudentMarkingPeriodGrade.objects.get_or_create(
+                    student=student, marking_period_id=marking_period['course__marking_period'])
+    
+    def calculate_grade(self):
+        # ignore overriding grades - WRONG!
+        return self.student.grade_set.filter(
+            letter_grade=None, grade__isnull=False, override_final=False, marking_period=self.marking_period).extra(select={
+            'ave_grade':
+            'AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))'
+        }).values('ave_grade')[0]['ave_grade']
+    
+
+"""class StudentYearGrade(models.Model):
+    "" Stores the grade for an entire year, only used for cache ""
+    student = models.ForeignKey('sis.Student')
+    year = models.ForeignKey('sis.SchoolYear')
+    grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="Year average")
+    
+    class Meta:
+        unique_together = ('student', 'year')
+        
+    @staticmethod
+    def build_all_cache():
+        "" Create object for each student * possible years ""
+        for student in Student.objects.all():
+            years = student.courseenrollment_set.values(
+                'course__marking_period__school_year').annotate(Count('course__marking_period__school_year'))
+            for year in years:
+                StudentYearGrade.objects.get_or_create(
+                    student=student,
+                    year_id=year['course__marking_period__school_year']
+                )
+        
+    def calculate_grade(self, date_report=None):
+        total = Decimal(0)
+        for course_enrollment in self.courseenrollment_set.filter(
+            course__marking_period__show_reports=True,
+            course__marking_period__school_year=self.year
+            ).distinct():
+            grade = course_enrollment.calculate_real_grade(date_report=date_report, ignore_letter=True)
+            if grade:
+                total += grade * course_enrollment.course.credits
+"""
+    
 
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
@@ -87,6 +150,18 @@ class Grade(models.Model):
                 self.letter_grade = None
                 return True
             return False
+        
+    def invalidate_cache(self):
+        """ Invalidate any related caches """
+        try:
+            enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
+            enrollment.flag_grade_as_stale()
+            enrollment.flag_numeric_grade_as_stale()
+        except CourseEnrollment.DoesNotExist:
+            pass
+        self.student.cache_gpa = self.student.calculate_gpa()
+        if self.student.cache_gpa != "N/A":
+            self.student.save()
     
     def get_grade(self, letter=False, display=False, rounding=None, minimum=None):
         """
@@ -116,35 +191,15 @@ class Grade(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         if self.grade and self.letter_grade != None:
-            raise ValidationError('Cannot have both numeric and letter grade')
+            raise ValidationError('Cannot have both numeric and letter grade.')
     
     def save(self, *args, **kwargs):
         super(Grade, self).save(*args, **kwargs)
-        
-        #cache course final grade
-        try:
-            enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
-            enrollment.set_cache_grade()
-            enrollment.save()
-        except CourseEnrollment.DoesNotExist:
-            # sometimes students get grades in courses and are then unenrolled
-            # we don't delete those grades in case they're re-enrolled later
-            # still, these grades don't affect the student's GPA
-            # so don't bother recalculating it
-            return
-
-        #cache student's GPA
-        if self.grade and self.student:
-            self.student.cache_gpa = self.student.calculate_gpa()
-            if self.student.cache_gpa != "N/A":
-                self.student.save()
+        self.invalidate_cache()
     
     def delete(self, *args, **kwargs):
-        enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
+        self.invalidate_cache()
         super(Grade, self).delete(*args, **kwargs)
-        enrollment.set_cache_grade()
-        enrollment.save()
-
 
     def __unicode__(self):
         return unicode(self.get_grade(self))

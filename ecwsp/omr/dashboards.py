@@ -1,4 +1,4 @@
-from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, LinksListDashlet
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, LinksListDashlet, dashboards
 from django.contrib.admin.models import LogEntry
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -50,4 +50,4 @@ class OmrDashboard(Dashboard):
     ]
 
 
-dashboard = OmrDashboard()
+dashboards.register('omr', OmrDashboard)

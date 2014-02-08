@@ -43,7 +43,7 @@
 {% endblock %}
 
 {% block content_title %}
-    <h1>Discipline Reports</h1>
+    <h1>Discipline reports</h1>
 {% endblock %}
 
 {% block content %}
@@ -65,7 +65,7 @@
                 </td></tr><tr><td>
                     {{ form.order_by.label }} {{ form.order_by }} {{ form.order_by.errors }}
                 </td></tr><tr><td>
-                    <span style="font-style: italic;"> Filter reports by students who have at least these many Actions or Infractions:</span>
+                    <span style="font-style: italic;"> Filter reports by students who have at least these many actions or infractions:</span>
                     <div>
                         {{ form.action.label }} {{ form.action }} {{ form.action.errors }}
                     </div>
@@ -90,7 +90,7 @@
             {{ merit_form.end_date.label }} {{ merit_form.end_date }} {{ merit_form.end_date.errors }}
             <table>
                 <tr>
-                    <th colspan="2">Merit levels - Number of Discipline issues for level </th>
+                    <th colspan="2">Merit levels - Number of discipline issues for level </th>
                 </tr>
                 <tr>
                     <td>{{ merit_form.level_one.label }}</td>

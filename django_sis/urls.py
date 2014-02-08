@@ -28,8 +28,8 @@ urlpatterns = patterns('',
     
     (r'^ajax_select/', include('ajax_select.urls')),
     url(dajaxice_config.dajaxice_url, include('ecwsp.dajaxice_urls')),#include('dajaxice.urls')),
-    (r'^slide_report/', include('slide_report.urls')),
-    url(r"^su/", include('ecwsp.django_su_urls')),# include("django_su.urls")),
+    #(r'^reports/', include('scaffold_report.urls')),
+    url(r"^su/", include("django_su.urls")),
 )
 
 if settings.GAPPS:

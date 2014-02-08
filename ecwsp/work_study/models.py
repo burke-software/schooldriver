@@ -56,8 +56,8 @@ from ecwsp.sis.template_report import TemplateReport
 
 class CraContact(models.Model):
     name = models.ForeignKey(User)
-    email = models.BooleanField(default=False, help_text="Recieve daily email listing all supervisor comments about student.")
-    email_all = models.BooleanField(default=False, help_text="Recieve comments about all students")
+    email = models.BooleanField(default=False, help_text="Receive daily e-mail listing all supervisor comments about student.")
+    email_all = models.BooleanField(default=False, help_text="Receive comments about all students.")
     def __unicode__(self):
         return unicode(self.name.first_name) + " " + unicode(self.name.last_name)
     class Meta:
@@ -67,7 +67,7 @@ class PickupLocation(models.Model):
     import re
     from django.core.validators import RegexValidator
     namespace_regex = re.compile(r'^[A-z\-_1234567890]+$')
-    location = models.CharField(max_length=20, unique=True, validators=[RegexValidator(regex=namespace_regex)], help_text="Must not contain spaces")
+    location = models.CharField(max_length=20, unique=True, validators=[RegexValidator(regex=namespace_regex)], help_text="Cannot contain spaces")
     long_name = models.CharField(max_length=255, blank=True)
     directions = models.TextField(blank=True)
     def __unicode__(self):
@@ -91,7 +91,7 @@ class Contact(models.Model):
         
     class Meta:
         ordering = ('lname',)
-        verbose_name = 'Contact Supervisor'
+        verbose_name = 'Contact supervisor'
         
     def save(self, sync_sugar=True, *args, **kwargs):
         super(Contact, self).save(*args, **kwargs)
@@ -160,10 +160,10 @@ class WorkTeam(models.Model, CustomFieldModel):
     funded_by = models.CharField(max_length=150, blank=True)
     cras = models.ManyToManyField(CraContact, blank=True, null=True)
     industry_type = models.CharField(max_length=100, blank=True)
-    travel_route = models.CharField(max_length=50,help_text="Train or Van route",blank=True,db_column="train_line")
+    travel_route = models.CharField(max_length=50,help_text="Train or van route",blank=True,db_column="train_line")
     stop_location = models.CharField(max_length=150, blank=True)
-    am_transport_group = models.ForeignKey(PickupLocation,db_column="dropoff_location_id",blank=True, null=True, related_name="workteamset_dropoff", help_text="Group for morning dropoff. Can be used for work study attendance")
-    pm_transport_group = models.ForeignKey(PickupLocation,blank=True,db_column="pickup_location_id",null=True, help_text="Group for evening pickup. Can be used for work study attendance. If same as dropoff, you can just not use this field.")
+    am_transport_group = models.ForeignKey(PickupLocation,db_column="dropoff_location_id",blank=True, null=True, related_name="workteamset_dropoff", help_text="Group for morning drop-off, can be used for work study attendance.")
+    pm_transport_group = models.ForeignKey(PickupLocation,blank=True,db_column="pickup_location_id",null=True, help_text="Group for evening pick-up, can be used for work study attendance. If same as dropoff, you may omit this field.")
     address = models.CharField(max_length=150, blank=True)
     city = models.CharField(max_length=150, blank=True)
     state = models.CharField(max_length=2, blank=True)
@@ -266,7 +266,7 @@ class PaymentOption(models.Model):
 class StudentFunctionalResponsibility(models.Model):
     name = models.CharField(max_length=255)
     class Meta:
-        verbose_name_plural = "Student Functional Responsibilities"
+        verbose_name_plural = "Student functional responsibilities"
     def __unicode__(self):
         return unicode(self.name)
     
@@ -290,8 +290,8 @@ class CompContract(models.Model, CustomFieldModel):
     student_desired_skills = models.ManyToManyField(StudentDesiredSkill, blank=True, null=True)
     student_desired_skills_other = models.TextField(blank=True)
     student_leave = models.BooleanField(default=False, )
-    student_leave_lunch = models.BooleanField(default=False, verbose_name="Student leaves for lunch")
-    student_leave_errands = models.BooleanField(default=False, verbose_name="Student leaves for errands")
+    student_leave_lunch = models.BooleanField(default=False, verbose_name="Student leaves for lunch.")
+    student_leave_errands = models.BooleanField(default=False, verbose_name="Student leaves for errands.")
     student_leave_other = models.TextField(blank=True)
     
     signed = models.BooleanField(default=False, )
@@ -301,7 +301,7 @@ class CompContract(models.Model, CustomFieldModel):
     def __unicode__(self):
         return unicode(self.company)
     class Meta:
-        verbose_name = "Company Contract"
+        verbose_name = "Company contract"
     
     @property
     def get_payment_cost(self, strip=True):
@@ -323,16 +323,16 @@ class CompContract(models.Model, CustomFieldModel):
     @property
     def student_leave_lunch_yesno(self):
         if self.student_leave_lunch:
-            return "Student will leave for lunch"
+            return "Student will leave for lunch."
         else:
-            return "Student will not leave for lunch"
+            return "Student will not leave for lunch."
         
     @property
     def student_leave_errands_yesno(self):
         if self.student_leave_errands:
-            return "Student will leave for errands"
+            return "Student will leave for errands."
         else:
-            return "Student will not leave for errands"
+            return "Student will not leave for errands."
         
     def generate_contract_file(self):
         report = TemplateReport()
@@ -407,7 +407,7 @@ class StudentWorker(Student):
         ['TH', 'Thursday'],
         ['F', 'Friday'],
     ]
-    day = models.CharField(max_length=2, choices=dayOfWeek, blank=True, null=True, verbose_name="Working Day")
+    day = models.CharField(max_length=2, choices=dayOfWeek, blank=True, null=True, verbose_name="Working day")
     transport_exception = models.CharField(
         max_length=2,
         blank=True,
@@ -417,7 +417,7 @@ class StudentWorker(Student):
     placement = models.ForeignKey(WorkTeam, blank=True, null=True, )
     school_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
     student_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
-    primary_contact = models.ForeignKey(Contact, on_delete=models.SET_NULL, blank=True, null=True, help_text="This is the primary supervisor. Emails will be sent to this person. If the contact you want is not showing you may need to add them to the company. New contacts will never automatically be assigned to a company unless the supervisor adds them.")
+    primary_contact = models.ForeignKey(Contact, on_delete=models.SET_NULL, blank=True, null=True, help_text="This is the primary supervisor to whom e-mails will be sent. If the desired contact is not showing, they may need to be added to the company. New contacts are not automatically assigned to a company unless the supervisor adds them.")
     personality_type = models.ForeignKey(Personality, blank=True, null=True)
     handout33 = models.ManyToManyField(Handout33, blank=True, null=True)
     adp_number = models.CharField(max_length=5, blank=True, verbose_name="ADP Number")
@@ -528,7 +528,7 @@ class StudentWorker(Student):
 
 
 class Survey(models.Model):
-    survey = models.CharField(max_length=255, help_text="Title of Survey ex: MP2 2010")
+    survey = models.CharField(max_length=255, help_text="Title of survey, ex. MP2 2010")
     student = models.ForeignKey(StudentWorker, limit_choices_to={'is_active': True})
     company = models.ForeignKey(WorkTeam, blank=True, null=True)
     question = models.CharField(max_length=255)
@@ -553,16 +553,16 @@ class CompanyHistory(models.Model):
         if self.student != None:
             return self.student
         else:
-            return "Error no student"
+            return "Error: no student"
     
     def __unicode__(self):
         try:
             return unicode(self.getStudent()) + " left " + unicode(self.placement) + " on " + unicode(self.date)
         except:
-            return "Company History Object"
+            return "Company history object"
     
     class Meta:
-        verbose_name_plural = "Companies: history"
+        verbose_name_plural = "Companies: History"
         ordering = ('-date',)
         unique_together = ('student', 'placement', 'date')
 
@@ -583,12 +583,12 @@ class StudentInteraction(models.Model):
         limit_choices_to={'is_active': True},
         blank=True,
         related_name="student_interaction_set",
-        help_text="A email will automatically be sent to the CRA of this student if type is mentoring")
+        help_text="An e-mail will automatically be sent to the CRA of this student if type is mentoring.")
     reported_by = models.ForeignKey(User, blank=True, null=True)
     date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     type = models.CharField(max_length=1, choices=(('M', 'Mentoring'), ('D', 'Discipline'), ('P', 'Parent'), ('C', 'Company'), ('S', 'Supervisor'), ('O', 'Other')))
     comments = models.TextField(blank=True)
-    preset_comment = models.ManyToManyField(PresetComment, blank=True, help_text="Double click on the comment on the left you to add. Or click the plus to add a new preset comment")
+    preset_comment = models.ManyToManyField(PresetComment, blank=True, help_text="Double-click on the comment on the left to add or click (+) to add a new comment.")
     companies = models.ManyToManyField(WorkTeam,  blank=True)
     
     def save(self, *args, **kwargs):
@@ -609,7 +609,7 @@ class StudentInteraction(models.Model):
                 from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 send_mail(subject, msg, from_addr, [unicode(stu.placement.cra.name.email)])
             except:
-                print >> sys.stderr, "warning: could not email CRA"
+                print >> sys.stderr, "warning: could not e-mail CRA"
     
     def students(self):
         if self.student.count() == 1:
@@ -687,8 +687,8 @@ class TimeSheet(models.Model):
     time_lunch_return = models.TimeField()
     time_out = models.TimeField()
     hours = models.DecimalField(blank=True, max_digits=4, decimal_places=2, null=True)
-    school_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True, help_text="Per hour pay rate the school is recieving from a company")
-    student_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True, help_text="Per hour pay rate the student is actually recieving")
+    school_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True, help_text="Per hour pay rate the school is receiving from a company.")
+    student_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True, help_text="Per hour pay rate the student is actually receiving.")
     school_net = models.DecimalField(blank=True, max_digits=6, decimal_places=2, null=True)
     student_net = models.DecimalField(blank=True, max_digits=6, decimal_places=2, null=True)
     approved = models.BooleanField(default=False, verbose_name="approve")
@@ -697,7 +697,7 @@ class TimeSheet(models.Model):
     supervisor_comment = models.TextField(blank=True)
     show_student_comments = models.BooleanField(default=True)
     supervisor_key = models.CharField(max_length=20, blank=True)
-    cra_email_sent = models.BooleanField(default=False, help_text="This time sheet was sent to a cra via nightly email", editable=False)
+    cra_email_sent = models.BooleanField(default=False, help_text="This time sheet was sent to a CRA via nightly e-mail.", editable=False)
     
     def student_Accomplishment_Brief(self):
         return unicode(self.student_accomplishment[:30])
@@ -721,7 +721,7 @@ class TimeSheet(models.Model):
     def emailStudent(self, show_comment=True):
         try:
             sendTo = self.student.get_email
-            subject = "Time Sheet approved for " + unicode(self.student)
+            subject = "Time sheet approved for " + unicode(self.student)
             if show_comment:
                 msg = "Hello " + unicode(self.student) + ",\nYour time card for " + self.date.strftime("%x") + " was approved. Your rating was " + unicode(self.performance) + " \nYour supervisor's comment was \"" \
                     + unicode(self.supervisor_comment) + "\""
@@ -730,7 +730,7 @@ class TimeSheet(models.Model):
             from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
             send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
-            logging.warning('Could not email student', exc_info=True, extra={
+            logging.warning('Could not e-mail student', exc_info=True, extra={
                 'exception': sys.exc_info()[0],
                 'exception2': sys.exc_info()[1],
             })
@@ -777,12 +777,12 @@ class TimeSheet(models.Model):
             try:
                 sendTo = self.student.primary_contact.email
                 subject = "Time Sheet for " + str(self.student)
-                msg = "Hello " + unicode(self.student.primary_contact.fname) + ",\nPlease click on the link below to approve the time sheet\n" + \
+                msg = "Hello " + unicode(self.student.primary_contact.fname) + ",\nPlease click on the link below to approve the time sheet.\n" + \
                     settings.BASE_URL + "/work_study/approve?key=" + str(self.supervisor_key)
                 from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 send_mail(subject, msg, from_addr, [sendTo])
             except:
-                print >> sys.stderr, "Unable to send email to supervisor! %s" % (self,)
+                print >> sys.stderr, "Unable to send e-mail to supervisor! %s" % (self,)
 
 class AttendanceFee(models.Model):
     name = models.CharField(max_length=255)
@@ -790,7 +790,7 @@ class AttendanceFee(models.Model):
     def __unicode__(self):
         return str(self.name) + " $" + str(self.value) 
     class Meta:
-        verbose_name_plural = "Attendances: fees"
+        verbose_name_plural = "Attendances: Fees"
         
 class AttendanceReason(models.Model):
     name = models.CharField(max_length=255)
@@ -800,7 +800,7 @@ class AttendanceReason(models.Model):
         verbose_name_plural = "Attendances: Reason"
         
 class Attendance(models.Model):
-    student = models.ForeignKey(StudentWorker, help_text="Student who is absent this day")
+    student = models.ForeignKey(StudentWorker, help_text="Student who was absent this day.")
     absence_date = models.DateField(default=datetime.datetime.now, verbose_name="date", validators=settings.DATE_VALIDATORS)
     tardy = models.CharField(verbose_name="Status", max_length=1, choices=(("P", "Present"),("A", "Absent/Half Day"),("T", "Tardy"),("N", "No Timesheet")),default="P")
     tardy_time_in = models.TimeField(blank=True,null=True)
@@ -809,7 +809,7 @@ class Attendance(models.Model):
     paid = models.DecimalField(blank=True, null=True, max_digits=5, decimal_places=2, help_text="Dollar value student has paid school for a fee.")
     billed = models.BooleanField(default=False, help_text="Has the student been billed for this day?")
     reason = models.ForeignKey(AttendanceReason, blank=True, null=True)
-    half_day = models.BooleanField(default=False, help_text="Missed only half day")
+    half_day = models.BooleanField(default=False, help_text="Missed only half day.")
     waive = models.BooleanField(default=False, help_text="Does not need to make up day at work.")
     notes = models.CharField(max_length=255, blank=True)
     if 'ecwsp.attendance' in settings.INSTALLED_APPS:
@@ -829,13 +829,13 @@ class ClientVisit(models.Model):
     student_worker = models.ForeignKey('StudentWorker', blank=True, null=True)
     cra = models.ForeignKey(CraContact, blank=True, null=True)
     company = models.ForeignKey(WorkTeam)
-    follow_up_of = models.ForeignKey('ClientVisit', blank=True, null=True, help_text="This report is a follow of up selected report")
+    follow_up_of = models.ForeignKey('ClientVisit', blank=True, null=True, help_text="This report is a follow-up of selected report.")
     supervisor = models.ManyToManyField(Contact, blank=True, null=True)
     choices = (
-        ('4', "Above and Beyond"),
-        ('3', "Represents Level of Proficiency"),
+        ('4', "Above and beyond"),
+        ('3', "Represents high level of proficiency"),
         ('2', "On the way with some help"),
-        ('1', "Need Immediate Intervention"),
+        ('1', "Needs immediate intervention"),
     )
     attendance_and_punctuality = models.CharField(max_length=1, choices=choices, blank=True)
     attitude_and_motivation = models.CharField(max_length=1, choices=choices, blank=True)
@@ -855,7 +855,7 @@ class ClientVisit(models.Model):
         ('N', 'Not Compliant'),
     )
     work_environment = models.CharField(max_length=1, blank=True, choices=env_choices)
-    notify_mentors = models.BooleanField(default=False, help_text = "Email this report out too all mentors (those in the mentors group)")
+    notify_mentors = models.BooleanField(default=False, help_text = "E-mail this report to all those in the mentors group.")
     notes = models.TextField(blank=True)
     
     def __unicode__(self):
@@ -884,13 +884,13 @@ class ClientVisit(models.Model):
                 from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 send_mail(subject, msg, from_addr, sendTo)
             except:
-                print >> sys.stderr, "warning: could not email mentors"
+                print >> sys.stderr, "warning: could not e-mail mentors"
 
 
 class MessageToSupervisor(models.Model):
     """ Stores a message to be shown to students for a specific amount of time
     """
-    message = RichTextField(help_text="This message will be shown to supervisors when they log in.")
+    message = RichTextField(help_text="This message will be shown to supervisors upon log in.")
     start_date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     def __unicode__(self):

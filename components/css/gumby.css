@@ -724,7 +724,7 @@ abbr { text-transform: none; }
   abbr[title]:after { content: " (" attr(title) ")"; }
   a[href^="javascript:"]:after, a[href^="#"]:after { content: ""; }
   /* Don't show links for images, or javascript/internal links */
-  pre, blockquote { border: 1px solid #999999; page-break-inside: avoid; }
+  pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
   thead { display: table-header-group; }
   /* css-discuss.incutio.com/wiki/Printing_Tables */
   tr, img { page-break-inside: avoid; }
@@ -1544,7 +1544,7 @@ label + .xnarrow:last-child, label + .narrow:last-child, label + .normal:last-ch
 .js .field .radio.success i, .js .field .checkbox.success i { color: #58c026; }
 .js .field .radio.success span, .js .field .checkbox.success span { border-color: #58c026; color: #58c026; background: #c0eeaa; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; -o-transition-duration: 0.2s; transition-duration: 0.2s; }
 .js .field .radio.checked i, .js .field .checkbox.checked i { position: absolute; top: -1px; left: -8px; line-height: 16px; }
-.js .field .radio span, .js .field .checkbox span { display: inline-block; width: 16px; height: 16px; position: relative; top: 2px; border: solid 1px #cccccc; background: #fefefe; }
+.js .field .radio span, .js .field .checkbox span { display: inline-block; width: 16px; height: 16px; position: relative; top: 2px; border: solid 1px #ccc; background: #fefefe; }
 .js .field .radio input[type="radio"], .js .field .radio input[type="checkbox"], .js .field .checkbox input[type="radio"], .js .field .checkbox input[type="checkbox"] { display: none; }
 .js .field .radio span { -webkit-border-radius: 8px; -moz-border-radius: 8px; -ms-border-radius: 8px; -o-border-radius: 8px; border-radius: 8px; }
 .js .field .checkbox span { -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; }
@@ -1628,7 +1628,7 @@ label + .xnarrow:last-child, label + .narrow:last-child, label + .normal:last-ch
 .image { line-height: 0; margin-bottom: 20px; }
 .image.circle { -webkit-border-radius: 50% !important; -moz-border-radius: 50% !important; -ms-border-radius: 50% !important; -o-border-radius: 50% !important; border-radius: 50% !important; overflow: hidden; width: auto; }
 .image.rounded { overflow: hidden; -webkit-border-radius: 4px 4px; -moz-border-radius: 4px 4px; -ms-border-radius: 4px 4px; -o-border-radius: 4px 4px; border-radius: 4px 4px; }
-.image.photo { border: 5px solid white; -webkit-box-shadow: 0 0 1px #555555; -moz-box-shadow: 0 0 1px #555555; box-shadow: 0 0 1px #555555; }
+.image.photo { border: 5px solid #fff; -webkit-box-shadow: 0 0 1px #555555; -moz-box-shadow: 0 0 1px #555555; box-shadow: 0 0 1px #555555; }
 .image.photo.polaroid { padding-bottom: 50px; background: #fff; }
 
 /* Video */
@@ -1676,7 +1676,7 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 /* SHAME */
 .ie8 .xxwide, .ie8 .xwide, .ie8 .wide, .ie8 .normal, .ie8 .narrow, .ie8 .xnarrow { display: inline; }
-.ie8 .xxwide + input, .ie8 .xwide + input, .ie8 .wide + input, .ie8 .normal + input, .ie8 .narrow + input, .ie8 .xnarrow + input { display: inline; margin: 0 0 0 -0.25em; }
+.ie8 .xxwide + input, .ie8 .xwide + input, .ie8 .wide + input, .ie8 .normal + input, .ie8 .narrow + input, .ie8 .xnarrow + input { display: inline; margin: 0 0 0 -.25em; }
 .ie8 .ttip:before, .ie8 .ttip:after { display: none; }
 .ie8 .ttip:hover:before, .ie8 .ttip:hover:after { display: block; }
 
@@ -1696,11 +1696,17 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 #grp-filters { width: 210px; }
 
+.navcontain .navbar .breadcrumbs #breadcrumbs ul li > a { background: url("../grappelli/images/icons-s0e29227ce9.png") no-repeat scroll 0% 0% transparent; display: block; padding-right: 18px; padding-left: 2px; background-position: 100% -760px; }
+
+.navcontain .navbar .breadcrumbs #breadcrumbs ul li { padding-left: 5px; padding-right: 5px; }
+
 table { width: inherit; }
 
 table tr td:first-child { font-weight: inherit; }
 
 .btn { margin: 2px; }
+
+#nav1 li.active { background-color: #b7c0c9; }
 
 .no_padding { padding: 0px; }
 
@@ -1756,16 +1762,18 @@ table#gradebook_table img.cancel { margin-top: 2px; padding-right: 1px; }
 
 #content { /* Why does grappelli have this? */ margin-bottom: 0px; }
 
-.navcontain .navbar > .colgrid > .row { margin-right: 0px; padding-right: 0px; }
-.navcontain .navbar > .colgrid > .row .view_student { margin-right: 10px; }
+.navcontain .navbar form.view_student { padding-left: 15px; padding-right: 15px; }
 .navcontain .navbar li > a { text-transform: uppercase; font-weight: 600; padding-left: 5px; padding-right: 5px; }
-.navcontain .navbar .breadcrumbs { background-color: #b7c0c9; }
-.navcontain .navbar .breadcrumbs #breadcrumbs_area { padding-right: 0px; margin-right: 0px; }
-.navcontain .navbar .breadcrumbs #breadcrumbs_area li > a { padding-left: 10px; padding-right: 10px; }
-.navcontain .navbar .breadcrumbs #breadcrumbs_area li > a .nav_icon, .navcontain .navbar .breadcrumbs #breadcrumbs_area li > a .dashboard_gear { margin-left: 10px; }
-.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown { margin: 0px; border-top: #bdbebd; box-shadow: none; right: 0; }
-.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown li { border-top: #bdbebd; background-color: #b7c0c9; }
-.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown li a { font-weight: 600; text-align: center; padding-left: 20px; padding-right: 20px; color: #555655; }
+.navcontain .navbar li.active > a { background-color: #d0dbe4; color: #4a4d4f; text-shadow: none; }
+.navcontain .navbar .breadcrumbs { background-color: #d0dbe4; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area { padding-right: 0px; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area li > a { text-align: center; padding-left: 10px; padding-right: 10px; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area li > a .nav_icon, .navcontain .navbar .breadcrumbs #breadcrumbs_area li > a .dashboard_gear { margin-left: 10px; margin-right: 10px; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area .pull_right > ul > li:last-child { min-width: 200px; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown { margin: 0px; border-top: #bdbebd; box-shadow: none; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown ul { width: 200px; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown ul li { border-top: #bdbebd; background-color: #d0dbe4; }
+.navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown ul li a { font-weight: 600; text-align: center; padding-left: 20px; padding-right: 20px; color: #555655; }
 
 #dashboard_container .dashlet { border: 1px solid #bebdbd !important; border-radius: 2px; }
 #dashboard_container .dashlet header { background-color: #f4f5f4; color: #78a2cd; }

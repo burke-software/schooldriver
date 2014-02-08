@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib import messages
 from django.conf import settings
+from django_cached_field import CachedCharField, CachedDecimalField
 
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
@@ -36,7 +37,7 @@ class MarkingPeriod(models.Model):
     start_date = models.DateField(validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(validators=settings.DATE_VALIDATORS)
     grades_due = models.DateField(validators=settings.DATE_VALIDATORS, blank=True, null=True,
-				  help_text="If filled out, teachers will be notified when grades are due.")
+                                  help_text="If filled out, teachers will be notified when grades are due.")
     school_year = models.ForeignKey('sis.SchoolYear')
     active = models.BooleanField(default=False, help_text="Teachers may only enter grades for active marking periods. There may be more than one active marking period.")
     show_reports = models.BooleanField(default=True, help_text="If checked this marking period will show up on reports.")
@@ -47,8 +48,8 @@ class MarkingPeriod(models.Model):
     wednesday = models.BooleanField(default=True)
     thursday = models.BooleanField(default=True) 
     friday = models.BooleanField(default=True)
-    saturday = models.BooleanField(default=False, )
-    sunday = models.BooleanField(default=False, )
+    saturday = models.BooleanField(default=False)
+    sunday = models.BooleanField(default=False)
     
     class Meta:
         ordering = ('-start_date',)
@@ -61,6 +62,13 @@ class MarkingPeriod(models.Model):
         # Don't allow draft entries to have a pub_date.
         if self.start_date > self.end_date:
             raise ValidationError('Cannot end before starting!')
+        
+    def save(self, **kwargs):
+        obj = super(MarkingPeriod, self).save(**kwargs)
+        if 'ecwsp.grades' in settings.INSTALLED_APPS:
+            from ecwsp.grades.tasks import build_mp_grade_cache
+            build_mp_grade_cache.apply_async()
+        return obj
         
     def get_number_days(self, date=date.today()):
         """ Get number of days in a marking period"""
@@ -138,32 +146,94 @@ class CourseEnrollment(models.Model):
     course = models.ForeignKey('Course')
     user = models.ForeignKey('auth.User')
     role = models.CharField(max_length=255, default="Student", blank=True)
-    attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance")
+    attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     exclude_days = models.ManyToManyField('Day', blank=True, \
-        help_text="Student does not need to attend on this day. Note courses already specify meeting days, this field is for students who have a special reason to be away")
-    cache_grade = models.CharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
+        help_text="Student does not need to attend on this day. Note courses already specify meeting days; this field is for students who have a special reason to be away.")
+    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade",
+                            editable=False)
+    numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     
     class Meta:
         unique_together = (("course", "user", "role"),)
         
-    def save(self, *args, **kwargs):
-        if not self.id and hasattr(self.user, 'student'):
-            student = self.user.student
-        super(CourseEnrollment, self).save(*args, **kwargs)
-    
-    def set_cache_grade(self):
-        """ Calculate and cache the final course grade for a student """
-        cache_grade = self.course.calculate_final_grade(self.user)
-        if cache_grade == None:
-            self.cache_grade = ""
+    def cache_grades(self):
+        """ Set cache on both grade and numeric_grade """
+        grade = self.calculate_grade_real()
+        self.grade = grade
+        if isinstance(grade, Decimal):
+            self.numeric_grade = grade
         else:
-            self.cache_grade = cache_grade
+            self.numeric_grade = None
+        self.grade_recalculation_needed = False
+        self.numeric_grade_recalculation_needed = False
+        self.save()
+        print self.grade
+        return grade
+    
+    def calculate_grade(self):
+        return self.cache_grades()
         
-    def delete(self, *args, **kwargs):
-        if hasattr(self.user, 'student'):
-            student = self.user.student
-        super(CourseEnrollment, self).delete(*args, **kwargs)
+    def calculate_numeric_grade(self):
+        grade = self.cache_grades()
+        if isinstance(grade, Decimal):
+            return grade
+        return None
+    
+    def calculate_grade_real(self, date_report=None, ignore_letter=False):
+        """ Calculate the final grade for a course
+        ignore_letter can be useful when computing averages
+        when you don't care about letter grades
+        
+        Sample profile code
+        import cProfile; from ecwsp.schedule.models import CourseEnrollment
+        def calc():                                       
+              for ce in CourseEnrollment.objects.filter(user__id=602):
+                    ce.calculate_grade_real()
+        cProfile.run('calc()')
+        """
+        course_grades = self.course.grade_set.filter(student=self.user)
+        if date_report:
+            course_grades = course_grades.filter(marking_period__end_date__lte=date_report)
+        
+        # about 0.5 s
+        final = course_grades.filter(override_final=True).first()
+        if final:
+            return final.get_grade()
+        
+        final = 0.0
+        ave_grade = course_grades.filter(override_final=False, letter_grade=None, grade__isnull=False).extra(select={
+            'ave_grade':
+                'AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))'
+        }).values('ave_grade')[0]['ave_grade']
+        if ave_grade:
+            return Decimal(ave_grade).quantize(Decimal("0.01"), ROUND_HALF_UP)
+        
+        # about 0.5 s
+        # Letter Grade
+        if ignore_letter == False:
+            grades = course_grades
+            if grades:
+                total_weight = Decimal(0)
+                for grade in grades:
+                    get_grade =  grade.get_grade()
+                    if get_grade == "I":
+                        return "I"
+                    elif get_grade in ["P","HP","LP"]:
+                        final += float(100 * grade.marking_period.weight)
+                        total_weight += grade.marking_period.weight
+                    elif get_grade in ['F', 'M']:
+                        total_weight += grade.marking_period.weight
+                    elif get_grade:
+                        final += get_grade
+                if total_weight:
+                    final /= float(total_weight)
+                    final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
+                    if final > int(Configuration.get_or_default('letter_grade_required_for_pass').value):
+                        return "P"
+                    else:
+                        return "F"
+        return ''
     
 
 class Day(models.Model):
@@ -265,8 +335,8 @@ class Course(models.Model):
         """ Is student passing course? """
         if cache_passing == None:
             pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
-	else:
-	    pass_score = cache_passing
+        else:
+            pass_score = cache_passing
         if cache_grade:
             grade = cache_grade
         else:
@@ -312,70 +382,26 @@ class Course(models.Model):
     
     def get_final_grade(self, student, date_report=None):
         """ Get final grade for a course. Returns override value if available.
+        Uses cache is possible. Do not use in cache calculations!
         date_report: optional gets grade for time period"""
         if 'ecwsp.grades' in settings.INSTALLED_APPS:
-            from ecwsp.grades.models import Grade
-            
             if not date_report or date_report == date.today():
                 try:
                     enrollments = self.courseenrollment_set.get(user=student, role="student")
-                    return enrollments.cache_grade
+                    return enrollments.grade
                 except CourseEnrollment.DoesNotExist:
                     pass
             return self.calculate_final_grade(student=student, date_report=date_report)
-            
+
     
     def calculate_final_grade(self, student, date_report=None):
         """
         Calculates final grade.
         Note that this should match recalc_ytd_grade in gradesheet.js!
+        Does NOT use cache!
         """
-        if 'ecwsp.grades' in settings.INSTALLED_APPS:
-            from ecwsp.grades.models import Grade
-            
-            final = Grade.objects.filter(course=self, override_final=True, student=student)
-            if final:
-                if not date_report or final[0].course.marking_period.filter(end_date__lte=date_report).count():
-                    return final[0].get_grade()
-            final = Decimal(0)
-            number = 0
-            letter_grade = False
-            grades =  Grade.objects.filter(student=student, course=self, marking_period__course=self)
-            if date_report:
-                grades = grades.filter(marking_period__end_date__lte=date_report)
-            total_weight = Decimal(0)
-            for grade in grades:
-                try:
-                    final += Decimal(grade.get_grade()) * grade.marking_period.weight
-                    number += 1
-                    total_weight += grade.marking_period.weight
-                # otherwise it's a letter grade.
-                except:
-                    # I (Incomplete) results in the final grade being I
-                    if grade.get_grade() == "I":
-                        return "I"
-                    elif grade.get_grade() in ["P","HP","LP"]:
-                        final += 100 * grade.marking_period.weight
-                        number += 1
-                        letter_grade = True
-                        total_weight += grade.marking_period.weight
-                    elif grade.get_grade() in ['F', 'M']:
-                        number += 1
-                        letter_grade = True
-                        total_weight += grade.marking_period.weight
-            if final is not None and total_weight:
-                final /= total_weight
-                    
-            if number != 0:
-                final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
-                if letter_grade == True:
-                    if final > int(Configuration.get_or_default('letter_grade_required_for_pass', '60').value):
-                        return "P"
-                    else:
-                        return "F"
-            else:
-                final = None
-            return final
+        course_enrollment = self.courseenrollment_set.get(user=student, role="student")
+        return course_enrollment.calculate_grade_real(date_report=date_report)
     
     def copy_instance(self, request):
         changes = (("fullname", self.fullname + " copy"),)
@@ -404,7 +430,7 @@ class OmitCourseGPA(models.Model):
 class OmitYearGPA(models.Model):
     """ Used to keep repeated or invalid years from affecting GPA and transcripts """
     student = models.ForeignKey('sis.Student')
-    year = models.ForeignKey('sis.SchoolYear', help_text="Omit this year from GPA calculations and transcripts")
+    year = models.ForeignKey('sis.SchoolYear', help_text="Omit this year from GPA calculations and transcripts.")
     def __unicode__(self):
         return "%s %s" % (self.student, self.year)
 

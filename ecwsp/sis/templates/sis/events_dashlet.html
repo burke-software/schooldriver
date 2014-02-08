@@ -15,9 +15,9 @@
                 {{ school_year }}
             {% endif %}
         {% else %}
-            No School Year is Active.
+            No School Year is active.
             {% if perms.sis.change_schoolyear %}
-                Perhaps you want to <a href="{% url 'admin:sis_schoolyear_changelist' %}">change</a> them?
+                Would you like to <a href="{% url 'admin:sis_schoolyear_changelist' %}">change</a> it?
             {%endif%}
         {% endif %}
     </div>
@@ -31,13 +31,13 @@
             {% endif %}
             which ends on {{ marking_period.end_date }}.
         {% else %}
-            It is currently not a marking period.
+            It is not currently a marking period.
             {% if next_marking_period %}
                 {{ next_marking_period }} starts on {{ next_marking_period.start_date }}
             {% else %}
-                There is no futuring marking period coming up.
+                There is no future marking period.
                 {% if perms.schedule.change_markingperiod %}
-                    Perhaps it's time to <a href="{% url 'admin:schedule_markingperiod_changelist' %}">make a new one</a>?
+                    Would you like to <a href="{% url 'admin:schedule_markingperiod_changelist' %}">schedule a new one</a>?
                 {% endif %}
             {% endif %}
         {% endif %}

@@ -69,7 +69,7 @@ class VolunteerSite(models.Model):
         if saved_by_volunteer:
             if not self.volunteer.email_queue:
                 self.volunteer.email_queue = ""
-            self.volunteer.email_queue += "Added Site %s. " % (unicode(self.site))
+            self.volunteer.email_queue += "Added site %s. " % (unicode(self.site))
             self.volunteer.save()
         if self.id:
             old_volunteer = VolunteerSite.objects.get(id=self.id)
@@ -119,7 +119,7 @@ class Volunteer(models.Model):
     hours_required = models.IntegerField(default=get_hours_default, blank=True, null=True)
     notes = models.TextField(blank=True)
     last_updated = models.DateTimeField(default = datetime.now)
-    email_queue = models.CharField(default="", max_length=1000, blank=True, editable=False, help_text="Used to store nightly notification emails")
+    email_queue = models.CharField(default="", max_length=1000, blank=True, editable=False, help_text="Used to store nightly notification emails.")
     def __unicode__(self):
         return unicode(self.student)
             

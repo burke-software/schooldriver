@@ -40,7 +40,7 @@ def select_grade_method(request):
     if allow_spreadsheet == 'True':
         options += ['S']
     else:
-        allow_import = False
+        allow_spreadsheet = False
     if request.user.has_perm('grades.change_own_grade') or request.user.has_pem('grades.change_grade'):
         options += ['M']
         allow_manual = True
@@ -250,36 +250,24 @@ def teacher_grade_download(request, id, type=None):
 def handle_grade_save(request, course=None):
     """ Customized code to process POST data from the gradesheets (both course and student) """
     for input, value in request.POST.items():
-        try:
-            input = input.split('_')
-            if input[0] == "grade":
-                grade = Grade.objects.get(id=input[1])
-                if grade.get_grade() != value:
-                    grade.set_grade(value)
-                    grade.save()
-                    LogEntry.objects.log_action(
-                        user_id         = request.user.pk, 
-                        content_type_id = ContentType.objects.get_for_model(grade).pk,
-                        object_id       = grade.pk,
-                        object_repr     = unicode(grade), 
-                        action_flag     = CHANGE
-                    )
-            elif input[0] == "comment":
-                grade = Grade.objects.get(id=input[1])
-                if grade.comment != value:
-                    grade.comment = value
-                    grade.save()
-        except:
-            try:
-                messages.info(request, 'Error in grade for ' + unicode(Student.objects.get(id=input[1])))
-            except:
-                try:
-                    messages.info(request, 'Error in grade for ' + unicode(Grade.objects.get(id=input[1]).student))
-                except:
-                    messages.info(request, 'Unknown error ' + unicode(input))
-                    logger.error('Unable to save grade', exc_info=True, extra={
-                        'request': request,
-                    })
+        input = input.split('_')
+        if input[0] == "grade":
+            grade = Grade.objects.get(id=input[1])
+            if grade.get_grade() != value:
+                grade.set_grade(value)
+                grade.save()
+                LogEntry.objects.log_action(
+                    user_id         = request.user.pk, 
+                    content_type_id = ContentType.objects.get_for_model(grade).pk,
+                    object_id       = grade.pk,
+                    object_repr     = unicode(grade), 
+                    action_flag     = CHANGE
+                )
+        elif input[0] == "comment":
+            grade = Grade.objects.get(id=input[1])
+            if grade.comment != value:
+                grade.comment = value
+                grade.save()
     handle_final_grade_save(request, course=course)
     
 
@@ -287,40 +275,53 @@ def handle_final_grade_save(request, course=None):
     for input, value in request.POST.items():
         input = input.split('_')
         if input[0] in ["gradefinalform","coursefinalform"]:
-            try:
-                if input[0] == "gradefinalform":
-                    student = Student.objects.get(id=input[1])
-                elif input[0] == "coursefinalform":
-                    course = Course.objects.get(id=input[1])
-                    student = Student.objects.get(id=input[2])
-                grade = value
-                
-                if Grade.objects.filter(course=course, override_final=True, student=student).count():
-                    grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
-                    if grade == "" or grade == None or grade == "None":
-                        grade_object.delete()
-                        LogEntry.objects.log_action(
-                            user_id         = request.user.pk, 
-                            content_type_id = ContentType.objects.get_for_model(grade_object).pk,
-                            object_id       = grade_object.pk,
-                            object_repr     = unicode(grade_object),
-                            action_flag     = DELETION
-                        )
-                    else:
+            if input[0] == "gradefinalform":
+                student = Student.objects.get(id=input[1])
+            elif input[0] == "coursefinalform":
+                course = Course.objects.get(id=input[1])
+                student = Student.objects.get(id=input[2])
+            grade = value
+            
+            if Grade.objects.filter(course=course, override_final=True, student=student).count():
+                grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
+                if grade == "" or grade == None or grade == "None":
+                    grade_object.delete()
+                    LogEntry.objects.log_action(
+                        user_id         = request.user.pk, 
+                        content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                        object_id       = grade_object.pk,
+                        object_repr     = unicode(grade_object),
+                        action_flag     = DELETION
+                    )
+                else:
+                    grade_object.set_grade(grade)
+                    grade_object.save()
+                    LogEntry.objects.log_action(
+                        user_id         = request.user.pk, 
+                        content_type_id = ContentType.objects.get_for_model(grade_object).pk,
+                        object_id       = grade_object.pk,
+                        object_repr     = unicode(grade_object),
+                        action_flag     = CHANGE
+                    ) 
+            else: # final grade doesn't already exists
+                try:
+                    Decimal(grade)
+                    final = course.calculate_final_grade(student)
+                    grade = Decimal(grade).quantize(Decimal("0.01"), ROUND_HALF_UP)
+                    if grade != final:
+                        grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
                         grade_object.set_grade(grade)
                         grade_object.save()
                         LogEntry.objects.log_action(
                             user_id         = request.user.pk, 
                             content_type_id = ContentType.objects.get_for_model(grade_object).pk,
                             object_id       = grade_object.pk,
-                            object_repr     = unicode(grade_object),
-                            action_flag     = CHANGE
-                        ) 
-                else: # final grade doesn't already exists
-                    try:
-                        Decimal(grade)
+                            object_repr     = unicode(grade_object), 
+                            action_flag     = ADDITION
+                        )
+                except: # not number
+                    if not grade == "" and not grade == None and not grade == "None":
                         final = course.calculate_final_grade(student)
-                        grade = Decimal(grade).quantize(Decimal("0.01"), ROUND_HALF_UP)
                         if grade != final:
                             grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
                             grade_object.set_grade(grade)
@@ -332,31 +333,6 @@ def handle_final_grade_save(request, course=None):
                                 object_repr     = unicode(grade_object), 
                                 action_flag     = ADDITION
                             )
-                    except: # not number
-                        if not grade == "" and not grade == None and not grade == "None":
-                            final = course.calculate_final_grade(student)
-                            if grade != final:
-                                grade_object, created = Grade.objects.get_or_create(course=course, override_final=True, student=student)
-                                grade_object.set_grade(grade)
-                                grade_object.save()
-                                LogEntry.objects.log_action(
-                                    user_id         = request.user.pk, 
-                                    content_type_id = ContentType.objects.get_for_model(grade_object).pk,
-                                    object_id       = grade_object.pk,
-                                    object_repr     = unicode(grade_object), 
-                                    action_flag     = ADDITION
-                                )
-            except:
-                try:
-                    messages.info(request, 'Error in grade for ' + unicode(Student.objects.get(id=input[1])))
-                except:
-                    try:
-                        messages.info(request, 'Error in grade for ' + unicode(Grade.objects.get(id=input[1]).student))
-                    except:
-                        messages.error(request, 'Unknown error ' + unicode(input))
-                        logging.error('Unable to save grade', exc_info=True, extra={
-                            'request': request,
-                        })
     
 @permission_required('grades.change_grade')
 def student_gradesheet(request, id, year_id=None):

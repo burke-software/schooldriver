@@ -18,16 +18,16 @@
 {% endblock %}
 
 {% block content %}
-<h2> Approve Volunteer Hours for {{ volunteer_site.volunteer }} </h2>
+<h2> Approve volunteer hours for {{ volunteer_site.volunteer }} </h2>
 
 <table>
     <tr>
         <td>
-            Work Site: {{ volunteer_site.site }} <br/>
+            Work site: {{ volunteer_site.site }} <br/>
             Supervisor: {{ volunteer_site.supervisor }} <br/>
-	    Hours Complete at Site: {{ volunteer_site.hours_at_site }} <br/>
-            Total Hours Complete: {{ volunteer_site.volunteer.hours_completed }} <br/>
-            Hours Required: {{ volunteer_site.volunteer.hours_required }} <br/>
+	    Hours completed at site: {{ volunteer_site.hours_at_site }} <br/>
+            Total hours completed: {{ volunteer_site.volunteer.hours_completed }} <br/>
+            Hours required: {{ volunteer_site.volunteer.hours_required }} <br/>
         </td>
         <td style="padding:30px;">
             <table class="border">
@@ -35,7 +35,7 @@
                     <th class="border">Date</th>
                     <th class="border">Site</th>
                     <th class="border">Hours</th>
-                    <th class="border">Submited</th>
+                    <th class="border">Submitted</th>
                 </tr>
                  {% for hour in volunteer_site.hours_set.all %}
                     <tr class="border">
@@ -51,7 +51,7 @@
 </table>
 
 <form method="post">
-    <input type="submit" name="approve" value="Click here approve"/> 
+    <input type="submit" name="approve" value="Click here to approve."/> 
 </form>
 If there is a problem please contact school staff.
 
