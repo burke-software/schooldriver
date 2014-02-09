@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
 from ecwsp.sis.models import Student
+from ecwsp.administration.models import Configuration
 from django_cached_field import CachedDecimalField
 
 from decimal import Decimal, ROUND_HALF_UP
