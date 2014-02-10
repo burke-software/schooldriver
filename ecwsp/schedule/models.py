@@ -202,7 +202,7 @@ class CourseEnrollment(models.Model):
             return grade
 
         if ave_grade:
-            return ave_grade
+            return ave_grade.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         
         # about 0.5 s
         # Letter Grade
