@@ -25,7 +25,7 @@ reportlab
 django-floppyforms>=1.0
 django-report-builder>=1.14
 #django-report-scaffold
-django-responsive-dashboard>=0.1
+django-responsive-dashboard>=1.0
 django-apptemplates>=0.0.1
 django-filter>=0.5.4
 django-positions>=0.4.6
