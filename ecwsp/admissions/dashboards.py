@@ -1,4 +1,4 @@
-from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, dashboards
 from ecwsp.admissions.models import Applicant
 from ecwsp.admissions.forms import ReportForm, TemplateReportForm
 from ecwsp.sis.models import SchoolYear
@@ -60,4 +60,4 @@ class AdmissionsDashboard(Dashboard):
     ]
 
 
-dashboard = AdmissionsDashboard()
+dashboards.register('admissions', AdmissionsDashboard())

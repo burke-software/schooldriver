@@ -395,6 +395,10 @@ INSTALLED_APPS = (
 # this will load additional settings from the file settings_local.py
 # this is useful when managing multiple sites with different configurations
 try:
+    from settings_server import *
+except ImportError:
+    print("Warning: Could not import settings_server.py")
+try:
     from settings_local import *
 except ImportError:
     print("Warning: Could not import settings_local.py")

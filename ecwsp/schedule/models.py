@@ -5,9 +5,11 @@ from django_cached_field import CachedCharField, CachedDecimalField
 from django.db import connection
 import ecwsp
 
+from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
+import ecwsp
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 import copy
 

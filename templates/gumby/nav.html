@@ -128,23 +128,22 @@
   {% endif %}{% endif %}
 
 
+
+  {% if perms.alumni.change_alumni and 'ecwsp.alumni' in settings.INSTALLED_APPS %}
+    <li>
+      <a href="/alumni/dashboard/"> Alumni </a>
+    </li>
+  {% endif %}
+  {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
+    <li>
+      <a href="/admissions/dashboard/"> Admissions </a>
+    </li>
+  {% endif %}
+
+
   {% if perms.alumni.change_alumni or perms.auth.change_user or perms.administration.change_configuration or perms.engrade_sync.change_coursesync %}
   <li>
     <a href="/administration/dashboard/"> Management </a>
-      <div class="dropdown">
-        <ul>
-          {% if perms.alumni.change_alumni and 'ecwsp.alumni' in settings.INSTALLED_APPS %}
-            <li>
-              <a href="/alumni/dashboard/"> Alumni </a>
-            </li>
-          {% endif %}
-          {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
-            <li>
-              <a href="/admissions/dashboard/"> Admissions </a>
-            </li>
-          {% endif %}
-        </ul>
-      </div>
   </li>
   {% endif %}
 

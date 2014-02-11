@@ -141,10 +141,12 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                 "work_study message to student missing time sheet",
                 default="You did not submit a time card today. Please remember to do so. This is an automated message, please do not reply.")
             msg += conf_msg.value
-            try:
-                send_mail(subject, msg, from_email, [unicode(student.get_email)])
-            except:
-                logging.warning('Could not email student about missing time card', exc_info=True, extra={
-                    'exception': sys.exc_info()[0],
-                    'exception2': sys.exc_info()[1],
-                })
+            email = student.get_email
+            if email and email[-9:] != "change.me":
+                try:
+                    send_mail(subject, msg, from_email, [unicode(email)])
+                except:
+                    logging.warning('Could not email student about missing time card', exc_info=True, extra={
+                        'exception': sys.exc_info()[0],
+                        'exception2': sys.exc_info()[1],
+                    })
