@@ -4,7 +4,7 @@ from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilt
 from django import forms
 from django.conf import settings
 from django.db.models import Count
-from ecwsp.administration.models import Template
+from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel
 from ecwsp.schedule.models import MarkingPeriod, Department
 import datetime
@@ -48,6 +48,7 @@ class SchoolDateFilter(Filter):
     form_class = TimeBasedForm
     default = True
     can_add = False
+    can_remove = False
     
     def get_report_context(self, report_context):
         return self.form.cleaned_data
@@ -140,6 +141,7 @@ class TemplateSelection(ModelChoiceFilter):
     model = Template
     default = True
     can_add = False
+    can_delete = False
     
     def get_report_context(self, report_context):
         return {'template': self.form.cleaned_data['field_0']}
@@ -152,12 +154,33 @@ class IncludeDeleted(Filter):
     fields = [forms.BooleanField(initial=True, required=False)]
     default = True
     can_add = False
+    can_remove = False
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         include_deleted = self.cleaned_data['field_0']
         if not include_deleted:
             queryset = queryset.filter(deleted=True)
         return queryset
+
+
+from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
+class SelectSpecificStudents(ModelMultipleChoiceFilter):
+    model = Student
+    compare_field_string = "pk"
+    default = True
+    can_add = False
+
+    def build_form(self):
+        queryset = self.get_queryset()
+        self.form = forms.Form()
+        self.form.fields['filter_number'] = forms.IntegerField(widget=forms.HiddenInput())
+        self.form.fields['field_0'] =  AutoCompleteSelectMultipleField('dstudent', required=False)
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        if self.cleaned_data['field_0']:
+            return super(SelectSpecificStudents, self).queryset_filter(queryset, report_context, **kwargs)
+        return queryset
+
 
 
 def strip_trailing_zeros(x):
@@ -174,11 +197,20 @@ class SisReport(ScaffoldReport):
         TardyFilter(verbose_name="Tardies"),
         SchoolDateFilter(),
         StudentYearFilter(),
+        SelectSpecificStudents(),
         MpGradeFilter(),
         CourseGradeFilter(),
         TemplateSelection(),
         IncludeDeleted(),
     )
+
+    def is_passing(self, grade):
+        """ Is a grade considered passing """
+        if isinstance(grade, (int, float)) and grade >= self.pass_score:
+            return True
+        if grade in self.pass_letters.split(','):
+            return True
+        return False
 
     def get_student_transcript_data(self, student, omit_substitutions=False):
         if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
@@ -206,6 +238,7 @@ class SisReport(ScaffoldReport):
             year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_begin'])
             # course grades
             for course in year.courses:
+                course_enrollment = course.courseenrollment_set.get(user=student)
                 # Grades
                 course_grades = year_grades.filter(course=course).distinct()
                 course_aggregates = None
@@ -232,9 +265,9 @@ class SisReport(ScaffoldReport):
                 while i <= 6:
                     setattr(course, "grade" + str(i), "")
                     i += 1
-                course.final = course.calculate_final_grade(student) # TODO don't calculate it
+                course.final = course_enrollment.grade
                 
-                if True: # TODO If passing grade
+                if self.is_passing(course.final):
                     year.credits += course.credits
                 if course.credits:
                     year.possible_credits += course.credits
@@ -281,7 +314,7 @@ class SisReport(ScaffoldReport):
                     department=dept,
                     marking_period__school_year__end_date__lt=self.for_date,
                     graded=True).distinct():
-                    if course.credits and True: # TODO is course passing
+                    if course.credits and self.is_passing(course.final):
                         c += course.credits
                 dept.credits = c
                 student.departments_text += "| %s: %s " % (dept, dept.credits)
@@ -314,6 +347,8 @@ class SisReport(ScaffoldReport):
         students = context['objects']
         template = self.report_context.get('template')
         if template and template.transcript:
+            self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
+            self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
             for student in students:
                 self.get_student_transcript_data(student)
 
