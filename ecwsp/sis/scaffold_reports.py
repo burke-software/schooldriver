@@ -8,6 +8,7 @@ from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel
 from ecwsp.schedule.models import MarkingPeriod, Department
 import datetime
+from decimal import Decimal
 
 def reverse_compare(compare):
     """ Get the opposite comparison
@@ -188,6 +189,9 @@ def strip_trailing_zeros(x):
     # http://stackoverflow.com/a/2440786
     return x.rstrip('0').rstrip('.')
 
+class struct(object):
+    def __unicode__(self):
+        return ""
 
 class SisReport(ScaffoldReport):
     name = "student_report"
@@ -206,18 +210,76 @@ class SisReport(ScaffoldReport):
 
     def is_passing(self, grade):
         """ Is a grade considered passing """
-        if isinstance(grade, (int, float)) and grade >= self.pass_score:
-            return True
+        try:
+            if float(grade) >= self.pass_score:
+                return True
+        except:
+            pass
         if grade in self.pass_letters.split(','):
             return True
         return False
+
+    def get_student_report_card_data(self, student):
+        courses = student.course_set.filter(
+            graded=True,
+            marking_period__in=self.marking_periods,
+        ).distinct().order_by('department')
+        for course in courses:
+            course_enrollment = course.courseenrollment_set.get(user=student)
+            grades = course.grade_set.filter(student=student).filter(
+                marking_period__isnull=False,
+                marking_period__show_reports=True).order_by('marking_period__start_date')
+            i = 1
+            for grade in grades:
+                # course.grade1, course.grade2, etc
+                setattr(course, "grade" + str(i), grade)
+                i += 1
+            while i <= 4:
+                setattr(course, "grade" + str(i), self.blank_grade)
+                i += 1
+            course.final = course_enrollment.grade
+        student.courses = courses
+        
+        #Attendance for marking period
+        i = 1
+        student.absent_total = 0
+        student.absent_unexcused_total = 0
+        student.tardy_total = 0
+        student.tardy_unexcused_total = 0
+        student.dismissed_total = 0
+        for mp in self.marking_periods.order_by('start_date'):
+            absent = student.student_attn.filter(status__absent=True, date__range=(mp.start_date, mp.end_date))
+            tardy = student.student_attn.filter(status__tardy=True, date__range=(mp.start_date, mp.end_date))
+            dismissed = student.student_attn.filter(status__code="D", date__range=(mp.start_date, mp.end_date)).count()
+            absent_unexcused = absent.exclude(status__excused=True).count()
+            tardy_unexcused = tardy.exclude(status__excused=True).count()
+            absent = absent.count()
+            tardy = tardy.count()
+            
+            student.absent_total += absent
+            student.tardy_total += tardy
+            student.absent_unexcused_total += absent_unexcused
+            student.tardy_unexcused_total += tardy_unexcused
+            student.dismissed_total += dismissed
+            setattr(student, "absent" + str(i), absent)
+            setattr(student, "tardy" + str(i), tardy)
+            setattr(student, "tardy_unexcused" + str(i), tardy_unexcused)
+            setattr(student, "absent_unexcused" + str(i), absent_unexcused)
+            setattr(student, "dismissed" + str(i), dismissed)
+            i += 1
+        while i <= 6:
+            setattr(student, "absent" + str(i), "")
+            setattr(student, "tardy" + str(i), "")
+            setattr(student, "tardy_unexcused" + str(i), "")
+            setattr(student, "absent_unexcused" + str(i), "")
+            setattr(student, "dismissed" + str(i), "")
+            i += 1
 
     def get_student_transcript_data(self, student, omit_substitutions=False):
         if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
             from ecwsp.benchmark_grade.models import Aggregate
             from ecwsp.benchmark_grade.utility import gradebook_get_average, benchmark_find_calculation_rule, gradebook_get_category_average
         
-        self.for_date = self.report_context['date_begin']
         student.years = SchoolYear.objects.filter(
             markingperiod__show_reports=True,
             start_date__lt=self.for_date,
@@ -314,7 +376,7 @@ class SisReport(ScaffoldReport):
                     department=dept,
                     marking_period__school_year__end_date__lt=self.for_date,
                     graded=True).distinct():
-                    if course.credits and self.is_passing(course.final):
+                    if course.credits and self.is_passing(course.courseenrollment_set.get(user=student).grade):
                         c += course.credits
                 dept.credits = c
                 student.departments_text += "| %s: %s " % (dept, dept.credits)
@@ -344,13 +406,27 @@ class SisReport(ScaffoldReport):
 
     def get_appy_context(self):
         context = super(SisReport, self).get_appy_context()
+        context['date'] = datetime.date.today()
         students = context['objects']
         template = self.report_context.get('template')
-        if template and template.transcript:
-            self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
-            self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
-            for student in students:
-                self.get_student_transcript_data(student)
+        if template:
+            self.for_date = self.report_context['date_begin']
+            if template.transcript:
+                self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
+                self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
+                for student in students:
+                    self.get_student_transcript_data(student)
+            if template.report_card:
+                self.blank_grade = struct()
+                self.blank_grade.comment = ""
+                school_year = SchoolYear.objects.filter(start_date__lt=self.for_date
+                        ).order_by('-start_date').first()
+                context['year'] = school_year
+                self.marking_periods = MarkingPeriod.objects.filter(
+                    school_year=school_year, show_reports=True)
+                context['marking_periods'] = self.marking_periods.order_by('start_date')
+                for student in students:
+                    self.get_student_report_card_data(student)
 
         context['students'] = students
         return context
