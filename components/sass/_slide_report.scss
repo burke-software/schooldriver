@@ -1,14 +1,21 @@
 #scaffold_active_filters {
   .filter {
-    border: 1px solid #bebdbd;
-    //border-bottom: 1px solid #E5E5E5;
-    border-radius: 2px;
-    padding: 5px;
-    margin: 5px;
+    &.removable {
+      border: 1px solid #bebdbd;
+      //border-bottom: 1px solid #E5E5E5;
+      border-radius: 2px;
+      padding: 5px;
+      margin: 5px;
+      
+      .filter-title {
+        margin-left: 1.2%;
+      }
+    }
   }
 
-  .filter-title {
-    margin-left: 1.2%;
+
+  label.inline {
+    vertical-align: text-top;
   }
 }
 
@@ -44,7 +51,15 @@
   margin-left: 15px;
 }
 
+.IncludeDeleted {
+  h3 {
+    display: inline; font-size: $med;
+  }
 
+  form {
+    display: inline;
+  }
+}
 
 
 

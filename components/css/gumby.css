@@ -1682,8 +1682,9 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 .ie9 .radio.checked i, .ie9 .checkbox.checked i { top: 0; }
 
-#scaffold_active_filters .filter { border: 1px solid #bebdbd; border-radius: 2px; padding: 5px; margin: 5px; }
-#scaffold_active_filters .filter-title { margin-left: 1.2%; }
+#scaffold_active_filters .filter.removable { border: 1px solid #bebdbd; border-radius: 2px; padding: 5px; margin: 5px; }
+#scaffold_active_filters .filter.removable .filter-title { margin-left: 1.2%; }
+#scaffold_active_filters label.inline { vertical-align: text-top; }
 
 .picker-multiple select { color: #555; font-size: 14px; border: 1px solid #E5E5E5; border-radius: 4px; }
 .picker-multiple select option { padding: 5px 15px; }
@@ -1695,6 +1696,9 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 .column-in-report { float: right; font-size: 2em; }
 
 .TardyFilter .xnarrow { vertical-align: top; margin-left: 15px; }
+
+.IncludeDeleted h3 { display: inline; font-size: 18px; }
+.IncludeDeleted form { display: inline; }
 
 #scaffold .active_filters { background-color: #eee; width: 66%; padding: 5px; float: left; }
 #scaffold .select_filters { background-color: #eee; width: 33%; padding: 5px; float: right; }
