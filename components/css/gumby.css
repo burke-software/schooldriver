@@ -1682,7 +1682,8 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 .ie9 .radio.checked i, .ie9 .checkbox.checked i { top: 0; }
 
-#scaffold_active_filters .filter.removable { border: 1px solid #bebdbd; border-radius: 2px; padding: 5px; margin: 5px; }
+#scaffold_active_filters .filter .filter-title { display: inline-block; font-size: 23px; }
+#scaffold_active_filters .filter.removable { border: 1px solid #bebdbd; border-radius: 2px; padding: 5px; margin: 5px 0; }
 #scaffold_active_filters .filter.removable .filter-title { margin-left: 1.2%; }
 #scaffold_active_filters label.inline { vertical-align: text-top; }
 
@@ -1697,8 +1698,10 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 .TardyFilter .xnarrow { vertical-align: top; margin-left: 15px; }
 
-.IncludeDeleted h3 { display: inline; font-size: 18px; }
+.IncludeDeleted h3.filter-title { display: inline-block; padding: 10px 0; font-size: 18px; }
 .IncludeDeleted form { display: inline; }
+
+#add-new-rule-block h3 { display: inline-block; padding: 10px 0; font-size: 18px; }
 
 #scaffold .active_filters { background-color: #eee; width: 66%; padding: 5px; float: left; }
 #scaffold .select_filters { background-color: #eee; width: 33%; padding: 5px; float: right; }
