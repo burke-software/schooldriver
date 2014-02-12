@@ -1,14 +1,17 @@
 #scaffold_active_filters {
   .filter {
+    position: relative;
+
     .filter-title {
       display: inline-block;
       font-size: $large;
     }
 
     &.removable {
-      border: 1px solid #bebdbd;
+      //border: 1px solid #bebdbd;
       //border-bottom: 1px solid #E5E5E5;
-      border-radius: 2px;
+      //border-radius: 2px;
+      background-color: #f2f2f2;
       padding: 5px;
       margin: 5px 0;
 
@@ -24,6 +27,10 @@
   }
 }
 
+.filter_form {
+  //display: inline-block;
+}
+
 .picker-multiple select {
   color: #555;
   font-size: 14px;
@@ -35,9 +42,17 @@
   }
 }
 
+.dsr-checkbox {
+  input {
+    width: auto;
+  }
+}
+
 .delete-filter {
-  float: right;
   font-size: 2em;
+  line-height: 2em;
+  position: absolute;
+  top: 0; right: 0;
 }
 
 .handle {
@@ -72,7 +87,7 @@
   h3 {
     display: inline-block;
     padding: 10px 0;
-    font-size: $med;
+    font-size: $large;
   }
 }
 
