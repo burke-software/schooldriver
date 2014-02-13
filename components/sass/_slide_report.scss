@@ -35,6 +35,15 @@
 
     .picker {
       margin-left: 0;
+      margin-bottom: -5px!important;
+    }
+
+    form {
+      margin: 0!important;
+    }
+
+    .field {
+      margin-bottom: 0!important;
     }
   }
 
@@ -66,10 +75,9 @@
 }
 
 .delete-filter {
-  font-size: 2em;
-  line-height: 2em;
+  font-size: 1.75em;
   position: absolute;
-  top: 0; right: 0;
+  top: 2px; right: 0;
 }
 
 .handle {

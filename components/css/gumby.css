@@ -1689,7 +1689,9 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 #scaffold_active_filters .filter.removable { background-color: #f2f2f2; padding: 5px; margin: 5px 0; }
 #scaffold_active_filters .filter.removable .filter-title { margin-left: 1.2%; }
 #scaffold_active_filters .filter input[type=text], #scaffold_active_filters .filter input[type=number], #scaffold_active_filters .filter .post-form-text { vertical-align: top; }
-#scaffold_active_filters .filter .picker { margin-left: 0; }
+#scaffold_active_filters .filter .picker { margin-left: 0; margin-bottom: -5px !important; }
+#scaffold_active_filters .filter form { margin: 0 !important; }
+#scaffold_active_filters .filter .field { margin-bottom: 0 !important; }
 #scaffold_active_filters label.inline { vertical-align: text-top; }
 
 .picker-multiple select { color: #555; font-size: 14px; border: 1px solid #E5E5E5; border-radius: 4px; }
@@ -1697,7 +1699,7 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 .dsr-checkbox input { width: auto; }
 
-.delete-filter { font-size: 2em; line-height: 2em; position: absolute; top: 0; right: 0; }
+.delete-filter { font-size: 1.75em; position: absolute; top: 2px; right: 0; }
 
 .handle { float: right; font-size: 2em; cursor: move; }
 
@@ -1740,6 +1742,12 @@ table tr td:first-child { font-weight: inherit; }
 .no_padding { padding: 0px; }
 
 .pad-top-10 { padding-top: 10px; }
+
+.pad-bottom-10 { padding-bottom: 10px; }
+
+.margin-top-10 { margin-top: 10px; }
+
+.margin-bottom-10 { margin-bottom: 10px; }
 
 @media screen and (min-width: 768px) { .align_right_until_break { text-align: right; } }
 [contenteditable="true"]:focus { outline: 1px solid teal; }
