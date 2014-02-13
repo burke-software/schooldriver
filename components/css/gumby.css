@@ -1718,6 +1718,8 @@ h3.filter-subheads { display: inline-block; padding: 0; font-size: 23px; font-we
 #scaffold .select_filters { background-color: #eee; width: 33%; padding: 5px; float: right; }
 #scaffold .ui-state-highlight { min-height: 2em; padding: 5px; margin: 5px; }
 
+#preview_area table { margin: 20px auto; }
+
 #grp-content { top: 120px !important; }
 
 #grp-header { font-family: "Open Sans"; }
