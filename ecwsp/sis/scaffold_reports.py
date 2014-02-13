@@ -7,6 +7,7 @@ from django.db.models import Count
 from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel
 from ecwsp.schedule.models import MarkingPeriod, Department
+from ecwsp.discipline.models import DisciplineAction
 import datetime
 from decimal import Decimal
 
@@ -74,12 +75,70 @@ class TardyFilter(IntCompareFilter):
         return queryset
 
 
+class AbsenceFilter(IntCompareFilter):
+    compare_field_string = "absence_count"
+    add_fields = ['absence_count']
+    
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        date_begin = report_context['date_begin']
+        date_end = report_context['date_end']
+        compare = self.cleaned_data['field_0']
+        value = self.cleaned_data['field_1']
+
+        compare_sql = '='
+        if compare == 'lt':
+            compare_sql = '<'
+        elif compare == 'lte':
+            compare_sql = '<='
+        elif compare == 'gt':
+            compare_sql = '>'
+        elif compare == 'gte':
+            compare_sql = '>='
+
+        sql = """select count(*) from attendance_studentattendance 
+                    left join attendance_attendancestatus
+                    on attendance_attendancestatus.id = attendance_studentattendance.status_id
+                    where attendance_attendancestatus.absent = True
+                    and attendance_studentattendance.student_id = sis_student.user_ptr_id
+                    and attendance_studentattendance.date between %s and %s"""
+        queryset = queryset.extra(
+                select = {'absence_count': sql }, 
+                select_params = (date_begin, date_end,),
+                where = ['(' + sql + ') ' + compare_sql + ' %s'],
+                params = (date_begin, date_end, value))
+        return queryset
+
+
 class StudentYearFilter(ModelMultipleChoiceFilter):
     verbose_name="Student Year"
     compare_field_string="year"
     add_fields = ['year']
     model = GradeLevel
     
+
+class DisciplineForm(forms.Form):
+    disc_action = forms.ModelChoiceField(queryset=DisciplineAction.objects.all())
+    compare = SimpleCompareField()
+    number = forms.IntegerField()
+
+
+class DisciplineFilter(Filter):
+    form_class = DisciplineForm
+    add_fields = ['disc_action_count']
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        date_begin = report_context['date_begin']
+        date_end = report_context['date_end']
+        disc_action = self.cleaned_data['disc_action']
+        compare = self.cleaned_data['compare']
+        number = self.cleaned_data['number']
+
+        queryset = queryset.filter(studentdiscipline__date__range=(date_begin, date_end))
+        queryset = queryset.filter(studentdiscipline__disciplineactioninstance__action=disc_action)
+        queryset = queryset.annotate(disc_action_count=Count('studentdiscipline__disciplineactioninstance', distinct=True))
+        queryset = queryset.filter(**{'disc_action_count__' + compare: number})
+        return queryset
+
 
 class CourseGradeFilter(Filter):
     verbose_name = "Grades (Course Final)"
@@ -183,7 +242,6 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
         return queryset
 
 
-
 def strip_trailing_zeros(x):
     x = str(x).strip()
     # http://stackoverflow.com/a/2440786
@@ -198,7 +256,9 @@ class SisReport(ScaffoldReport):
     model = Student
     filters = (
         DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cached_gpa", add_fields=('gpa',)),
+        AbsenceFilter(),
         TardyFilter(verbose_name="Tardies"),
+        DisciplineFilter(),
         SchoolDateFilter(),
         StudentYearFilter(),
         SelectSpecificStudents(),
