@@ -155,7 +155,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     inactive = models.BooleanField(default=False, help_text="Will unset student's placements.")
     company = models.ForeignKey(Company, blank=True, null=True)
     team_name = models.CharField(max_length=255, unique=True)
-    login = models.ManyToManyField(WorkTeamUser, blank=True, help_text="user from <a href=\"/admin/auth/user/\">here</a> that this company may login with, ensure user is in the \"company\" group so they have correct permissions")
+    login = models.ManyToManyField(WorkTeamUser, blank=True, help_text="Optional. This creates users with \"company\" permissions, allowing them to sign into the database to review/approve pending and past time sheets for the assigned workteam.")
     paying = models.CharField(max_length=1, choices=(('P', 'Paying'), ('N', 'Non-Paying'), ('F', 'Funded')), blank=True)
     funded_by = models.CharField(max_length=150, blank=True)
     cras = models.ManyToManyField(CraContact, blank=True, null=True)
