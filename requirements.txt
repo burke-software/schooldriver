@@ -24,7 +24,8 @@ raven>=3.3.7
 reportlab
 django-floppyforms>=1.0
 django-report-builder>=1.14
-#django-report-scaffold
+# django-report-scaffold isn't in pypi yet; install from github
+-e git://github.com/burke-software/django-report-scaffold.git#egg=django-report-scaffold
 django-responsive-dashboard>=1.0
 django-apptemplates>=0.0.1
 django-filter>=0.5.4
