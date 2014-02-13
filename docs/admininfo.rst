@@ -46,7 +46,9 @@ If you want to use simple import to mass update information (i.e: assigning exis
 
 **Before you Import**
 
-Prior to importing data, you will need an Excel spreadsheet with information pertinent to the model you are attempting to import. Set column headers accordingly. Django-SIS is able to import all information that is able to be entered manually in a field. Here's a reference list of some column headers you can use for importing the most common models:
+Prior to importing data, you will need an Excel spreadsheet with information pertinent to the model you are attempting to import. Set column headers accordingly. Django-SIS is able to import all information that is able to be entered manually in a field. 
+
+Keep in mind, the list below would be on a per import basis, and would be on a single Excel workbook. You cannot for example, import students and applicants in different workbooks. Save a new Excel file for each; the fields below will be the column headers on your Excel workbook, and the root models for import would be what's in italics. Here's a reference list of some column headers you can use for importing the most common models:
 
 *Students*
 
@@ -61,6 +63,64 @@ First Name, Last Name, middle name, Username, notes, ADP Number, alert, alt emai
 *Applicants*
 
 First name, Last name, middle name, birth date, present school, heard about us, first contact, withdrawn note, total income, adjusted available income, application decsion, application decision by, SSN, Sex, Ethnicity, Religion, Place of Worship, Year, School year, HS grad yr, Elem grad yr, email, notes, country of birth, family preferred language, lives with
+
+*Marking Period*
+
+Name, shorname, Start Date, End date, grades due, School year, weight (integer. ex. 1), active (=TRUE, or =FALSE), show reports (=TRUE, or =FALSE).
+
+NOTE: name, shortname, start-end date, school year and weight are required fields.
+
+*Courses*
+
+Fullname, shortname, Marking Period, description, teacher (their username), homeroom (=TRUE, or =FALSE), Graded (=TRUE, or =FALSE), credits (integer field, ex. 1.0), department, level (Freshman, Sophomore, Junior, Senior).
+
+NOTE: only fullname and shortname are required.
+
+*Location*
+
+Name
+
+NOTE: This generally refers to a classroom name or location. Ex. Room 343
+
+*Period*
+
+Name, Start time, End time
+
+*Family preferred Language*
+
+Name, iso code (optional)
+
+*Class Year*
+
+Year (number- ex. 2014), Full name (ex. Class of 2014)
+
+*Faculty*
+
+Importing faculty essentially creates a user and assigns them the "faculty" permission. Designating =TRUE to the 'teacher' field just adds the 'teacher' permissions.
+
+Username, First name, Last Name, email address, number, ext, Teacher (=TRUE or =FALSE)
+
+NOTE: only the username field is required.
+
+*Company*
+
+This is for schools utilizing the CWSP module.
+
+Name
+
+*Work Team*
+
+For schools setting up CWSP.
+
+Team name, job description, company description, login (username), paying (=TRUE or =FALSE), Address, City, State, Zip, Travel route, Directions to, Directions pickup
+
+The only required field is team name.
+
+*Volunteer Site Location*
+
+Only for schools planning to use the Volunteer module.
+
+Site name, Site address, Site city, Site state, Site zip
 
 
 NOTE: Django-SIS will guess matches based off your column headers, so if you enter First Name or fname, or FiRSt NaME as a header on your Excel doc, Django-SIS will determine which field that refers to.
