@@ -28,6 +28,8 @@ table tr td:first-child {
     padding: 0px;
 }
 
+.pad-top-10 { padding-top: 10px; }
+
 // Alight right until break
 @media screen and (min-width: $tablet-device-width){
   .align_right_until_break {

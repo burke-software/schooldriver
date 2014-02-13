@@ -1684,7 +1684,7 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 #scaffold_filters { border-top: 1px solid #777; border-bottom: 1px solid #777; padding: 7px 0; margin: 7px 0; }
 
-#scaffold_active_filters h3.filter-title { margin-left: 2.4%; font-size: 18px; font-weight: 400; }
+#scaffold_active_filters h3.filter-title { margin-left: 2.4%; font-size: 18px; font-weight: 400; padding-top: .2em; }
 #scaffold_active_filters .filter { position: relative; }
 #scaffold_active_filters .filter.removable { background-color: #f2f2f2; padding: 5px; margin: 5px 0; }
 #scaffold_active_filters .filter.removable .filter-title { margin-left: 1.2%; }
@@ -1705,6 +1705,8 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 .IncludeDeleted h3.filter-title { display: inline-block; padding: 10px 0; font-size: 18px; }
 .IncludeDeleted form { display: inline; }
+
+.SchoolDateFilter form label { margin-bottom: 0; margin-top: 0; }
 
 #add-new-rule-block { padding: 10px 0; border-bottom: 1px solid #777; margin-bottom: 20px; }
 
@@ -1736,6 +1738,8 @@ table tr td:first-child { font-weight: inherit; }
 #nav1 li.active { background-color: #b7c0c9; }
 
 .no_padding { padding: 0px; }
+
+.pad-top-10 { padding-top: 10px; }
 
 @media screen and (min-width: 768px) { .align_right_until_break { text-align: right; } }
 [contenteditable="true"]:focus { outline: 1px solid teal; }
