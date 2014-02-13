@@ -60,6 +60,22 @@ class SchoolDateFilter(Filter):
         context['year'] = SchoolYear.objects.get(active_year=True)
         return context
 
+
+
+def django_to_sql_compare(compare):
+    """ Convert django syntax (lte) to sql (<=) """
+    compare_sql = '='
+    if compare == 'lt':
+        compare_sql = '<'
+    elif compare == 'lte':
+        compare_sql = '<='
+    elif compare == 'gt':
+        compare_sql = '>'
+    elif compare == 'gte':
+        compare_sql = '>='
+    return compare_sql
+
+
 class TardyFilter(IntCompareFilter):
     compare_field_string = "tardy_count"
     add_fields = ['tardy_count']
@@ -67,13 +83,23 @@ class TardyFilter(IntCompareFilter):
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
         date_end = report_context['date_end']
-        queryset = queryset.filter(
-            student_attn__date__range=(date_begin, date_end),
-            student_attn__status__tardy=True,
-            ).annotate(tardy_count=Count('student_attn', distinct=True))
-        queryset = super(TardyFilter, self).queryset_filter(queryset)
-        return queryset
+        compare = self.cleaned_data['field_0']
+        value = self.cleaned_data['field_1']
 
+        compare_sql = django_to_sql_compare(compare)
+
+        sql = """select coalesce(count(*)) from attendance_studentattendance 
+                    left join attendance_attendancestatus
+                    on attendance_attendancestatus.id = attendance_studentattendance.status_id
+                    where attendance_attendancestatus.tardy = True
+                    and attendance_studentattendance.student_id = sis_student.user_ptr_id
+                    and attendance_studentattendance.date between %s and %s"""
+        queryset = queryset.extra(
+                select = {'tardy_count': sql }, 
+                select_params = (date_begin, date_end,),
+                where = ['(' + sql + ') ' + compare_sql + ' %s'],
+                params = (date_begin, date_end, value))
+        return queryset
 
 class AbsenceFilter(IntCompareFilter):
     compare_field_string = "absence_count"
@@ -85,17 +111,9 @@ class AbsenceFilter(IntCompareFilter):
         compare = self.cleaned_data['field_0']
         value = self.cleaned_data['field_1']
 
-        compare_sql = '='
-        if compare == 'lt':
-            compare_sql = '<'
-        elif compare == 'lte':
-            compare_sql = '<='
-        elif compare == 'gt':
-            compare_sql = '>'
-        elif compare == 'gte':
-            compare_sql = '>='
+        compare_sql = django_to_sql_compare(compare)
 
-        sql = """select count(*) from attendance_studentattendance 
+        sql = """select coalesce(count(*)) from attendance_studentattendance 
                     left join attendance_attendancestatus
                     on attendance_attendancestatus.id = attendance_studentattendance.status_id
                     where attendance_attendancestatus.absent = True
@@ -124,7 +142,12 @@ class DisciplineForm(forms.Form):
 
 class DisciplineFilter(Filter):
     form_class = DisciplineForm
-    add_fields = ['disc_action_count']
+    add_fields = ['discipline_count']
+
+    def get_add_fields(self):
+        disc_action = self.cleaned_data['disc_action']
+        return ['discipline_{}_count'.format(disc_action)]
+
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
@@ -133,10 +156,24 @@ class DisciplineFilter(Filter):
         compare = self.cleaned_data['compare']
         number = self.cleaned_data['number']
 
-        queryset = queryset.filter(studentdiscipline__date__range=(date_begin, date_end))
-        queryset = queryset.filter(studentdiscipline__disciplineactioninstance__action=disc_action)
-        queryset = queryset.annotate(disc_action_count=Count('studentdiscipline__disciplineactioninstance', distinct=True))
-        queryset = queryset.filter(**{'disc_action_count__' + compare: number})
+        add_field = self.get_add_fields()[0]
+        compare_sql = django_to_sql_compare(compare)
+
+        sql = """select COALESCE(sum(quantity), 0) from discipline_disciplineactioninstance 
+                    join discipline_disciplineaction 
+                    on discipline_disciplineaction.id = discipline_disciplineactioninstance.action_id
+                    join discipline_studentdiscipline
+                    on discipline_studentdiscipline.id = discipline_disciplineactioninstance.student_discipline_id
+                    join discipline_studentdiscipline_students 
+                    on discipline_studentdiscipline_students.studentdiscipline_id = discipline_studentdiscipline.id
+                    where discipline_disciplineaction.id = %s
+                    and discipline_studentdiscipline_students.student_id = sis_student.user_ptr_id
+                    and discipline_studentdiscipline.date between %s and %s"""
+        queryset = queryset.extra(
+                select = {add_field: sql }, 
+                select_params = (disc_action.id, date_begin, date_end,),
+                where = ['(' + sql + ') ' + compare_sql + ' %s'],
+                params = (disc_action.id, date_begin, date_end, number))
         return queryset
 
 
