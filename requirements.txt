@@ -28,7 +28,8 @@ django-report-builder>=1.14
 django-responsive-dashboard>=1.0
 django-apptemplates>=0.0.1
 django-filter>=0.5.4
-django-positions>=0.4.6
+# django-positions 0.5.1 may have a bug; messes up OMR question order
+django-positions==0.5.0
 django-bower
 django-ckeditor
 django-su
