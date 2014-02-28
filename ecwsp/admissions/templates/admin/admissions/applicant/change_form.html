@@ -127,11 +127,15 @@
          $('div.application_decision_by').appendTo($('div.checklist'));
          // Get age on bday selection
          $('#id_bday').change( age_at_school_start );
-         $('#id_bday').datepicker({
-              onSelect: function() {
-                $(this).change();
-              }
-            });
+         // jQuery datepicker needs its own event handler
+         // The datepicker from Grappelli's jQuery (grp.jQuery) will fight with
+         // the datepicker from dollar-sign jQuery if we try to use both.
+         // Grappelli's $(document).ready() may not have run yet, so
+         // initialize the pickers now
+         grappelli.initDateAndTimePicker();
+         // Now, use grp.jQuery (NOT $) to add an onSelect handler
+         grp.jQuery('#id_bday').datepicker("option", "onSelect", age_at_school_start);
+         // Do initial age calculation
          age_at_school_start();
       });
    </script>

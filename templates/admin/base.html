@@ -6,13 +6,20 @@
     <meta charset="utf-8" />
     {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
     
+    
+    
+    
     <! -- django-sis custom head files -->
     <!-- jQuery, jQuery-UI -->
     <script type="text/javascript" src='{% static 'jquery/jquery.js' %}'></script>
     <script src="{% static "grappelli/jquery/ui/js/jquery-ui-1.10.3.custom.min.js" %}" type="text/javascript"></script>
     <script src="{% static "js/ajax_select.js" %}" type="text/javascript"></script>
     {% include "gumby/head.html" %}
-
+    <script type="text/javascript" src="{% static "js/admin_django_sis.js" %}"></script>
+    
+    
+    
+    
     <!-- STYLESHEETS -->
     {% block stylesheets %}
         <link href="{% static "grappelli/jquery/ui/css/custom-theme/jquery-ui-1.10.3.custom.min.css" %}" rel="stylesheet" type="text/css" media="screen" />
@@ -26,9 +33,6 @@
     {% endblock %}
     <!-- EXTRASTYLES -->
     {% block extrastyle %}{% endblock %}
-<script type="text/javascript" src='{% static 'jquery/jquery.js' %}'></script>
-<script type="text/javascript" src="{% static 'jquery-ui/ui/minified/jquery-ui.min.js' %}"></script>
-<script type="text/javascript" src="{% static "js/admin_django_sis.js" %}"></script>
     <!-- JAVASCRIPTS -->
     {% block javascripts %}
         <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% static "grappelli/" %}{% endfilter %}";</script>
@@ -42,11 +46,9 @@
                 TIME_FORMAT = "{% get_time_format %}",
                 DATETIME_FORMAT = "{% get_datetime_format %}";
         </script>
-        <!-- jnm: brought this back to make select all work in change lists. -->
         <!-- jQuery, jQuery-UI -->
-        <script src="{% static "grappelli/jquery/jquery-1.7.2.min.js" %}" type="text/javascript"></script>
-        <script src="{% static "grappelli/jquery/ui/js/jquery-ui-1.8.18.custom.min.js" %}" type="text/javascript"></script>
-        <!-- end jnm -->
+        <script src="{% static "grappelli/jquery/jquery-1.9.1.min.js" %}" type="text/javascript"></script>
+        <script src="{% static "grappelli/jquery/ui/js/jquery-ui-1.10.3.custom.min.js" %}" type="text/javascript"></script>
         {% if debug %}
             <!-- Grappelli Main JS -->
             <script src="{% static "grappelli/js/grappelli.js" %}" type="text/javascript"></script>
@@ -73,9 +75,6 @@
             })(grp.jQuery);
         </script>
     {% endblock %}
-    <!-- jnm: throw this in again, since $ can get overwritten in the javascripts block -->
-    <script src="{% static "js/ajax_select.js" %}" type="text/javascript"></script>
-    <!-- end jnm -->
     <!-- EXTRAHEAD -->
     {% block extrahead %}{% endblock %}
 </head>
@@ -85,67 +84,89 @@
         <!-- HEADER -->
         <header id="grp-header" class="{% block header-class %}{% endblock %}">
             {% if not is_popup %}
-                <!-- NAVIGATION -->
-                <div class="navcontain">
-                    <nav class="navbar" id="nav1" gumby-fixed="top">
-                      <div class="sixteen colgrid">
-                        {% include "gumby/nav.html" %}
-<div class="breadcrumbs">
-<div id="breadcrumbs_area" class="row">
-  <div class="sixteen columns">
-    <div class="pull_left" id="breadcrumbs"> 
-      {% block breadcrumbs %}
-      {% endblock %}
-    </div>
-    <div class="pull_right">
-      <ul>
-        {% if dashboard %}
-        <li>
-          <a href="javascript:void(0)" onclick="customize_dashboard(this);">
-            CUSTOMIZE
-            <img class="nav_icon" src="{% static "responsive_dashboard/img/gear.svg" %}"/>
-          </a>
-        </li>
-        {% endif %}
-        <li>
-          <a href="{% url 'admin:index' %}">
-            VIEW SITE ADMIN
-            <img class="nav_icon" src="{% static "images/adminview.svg" %}"/>
-          </a>
-        </li>
-        <li>
-          <a href="javascript:void(0);">
-            <img class="nav_icon" src="{% static "images/wrench_dark.svg" %}"/>
-            {% if user.first_name or user.last_name %}
-                {{ user.first_name }} {{ user.last_name }}
-            {% else %}
-                {{ user }}
-            {% endif %}
-            <i style="margin: 0px;" class="icon-down-dir"></i>
-          </a>
-          <div class="dropdown name_dropdown">
-            <ul>
-              <li>
-                <a href="/sis/preferences">Preferences</a>
-              </li>
-              <li>
-                <a href="{% url 'admin:password_change' %}">Change Password</a>
-              </li>
-              <li>
-                <a href="{% url 'admin:logout' %}">Log Out</a>
-              </li>
-            </ul>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
-</div>
-                      </div>
-                    </nav>
-                </div>
 
+            
+            
+            
+            <!-- NAVIGATION -->
+            <div class="navcontain">
+                <nav class="navbar" id="nav1" gumby-fixed="top">
+                  <div class="sixteen colgrid">
+                    {% include "gumby/nav.html" %}
+                    <div class="breadcrumbs">
+                    <div id="breadcrumbs_area" class="row">
+                      <div class="sixteen columns">
+                        <div class="pull_left" id="breadcrumbs"> 
+                          {% block breadcrumbs %}
+                          {% endblock %}
+                        </div>
+                        <div class="pull_right">
+                          <ul>
+                            {% if dashboard %}
+                            <li>
+                              <a href="javascript:void(0)" onclick="customize_dashboard(this);">
+                                CUSTOMIZE
+                                <img class="nav_icon" src="{% static "responsive_dashboard/img/gear.svg" %}"/>
+                              </a>
+                            </li>
+                            {% endif %}
+                            <li>
+                              <a href="{% url 'admin:index' %}">
+                                VIEW SITE ADMIN
+                                <img class="nav_icon" src="{% static "images/adminview.svg" %}"/>
+                              </a>
+                            </li>
+                            <li>
+                              <a href="javascript:void(0);">
+                                <img class="nav_icon" src="{% static "images/wrench_dark.svg" %}"/>
+                                {% if user.first_name or user.last_name %}
+                                    {{ user.first_name }} {{ user.last_name }}
+                                {% else %}
+                                    {{ user }}
+                                {% endif %}
+                                <i style="margin: 0px;" class="icon-down-dir"></i>
+                              </a>
+                              <div class="dropdown name_dropdown">
+                                <ul>
+                                  <li>
+                                    <a href="/sis/preferences">Preferences</a>
+                                  </li>
+                                  <li>
+                                    <a href="{% url 'admin:password_change' %}">Change Password</a>
+                                  </li>
+                                  <li>
+                                    <a href="{% url 'admin:logout' %}">Log Out</a>
+                                  </li>
+                                </ul>
+                              </div>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                  </nav>
+              </div>
+            
+            <div class="modal" id="export_xls_form">
+                <div class="content">
+                  <a class="close switch" gumby-trigger="|#modal1"><i class="icon-cancel" /></i></a>
+                  <div class="row">
+                    <div class="ten columns centered text-center">
+                        <div id="admin_export_form">
+                        </div>
+                      <p class="btn primary medium">
+                        <a href="#" class="switch" gumby-trigger="|#export_xls_form">Close Modal</a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            
+                
+                
+                
             {% endif %}
         </header>
 
