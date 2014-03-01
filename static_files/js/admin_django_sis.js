@@ -16,20 +16,4 @@ $(document).ready(function() {
             $(this).parent().removeClass('grp-open');
         }
     });
-    
-    
-    
-    $("select[name=action]").change(function() {
-        if ( $("option[value=export_simple_selected_objects]:selected").length ) {
-            $.post(  
-                "",  
-                $("#grp-changelist-form").serialize(),  
-                function(data){  
-                    $("#admin_export_form").html(data);
-                }  
-            ); 
-            $("#export_xls_form").addClass('active');
-            return false;
-        }
-    });
 });
