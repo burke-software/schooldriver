@@ -174,10 +174,10 @@ class ReportManager(object):
         points_to_earn = 0.70 * test.points_possible
         number_gte_70 = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
         total_test_takers = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__gt=0).distinct().count()
-        try:
+        if total_test_takers:
             test.percent_gte_70 = float(number_gte_70) / total_test_takers
-        except ZeroDivisionError:
-            test.percent_gte_70 = 0.0
+        else:
+            test.percent_gte_70 = 0
         test.report_average = test.get_average(cohorts=cohorts)
 
         for benchmark in test.benchmarks:
@@ -194,7 +194,10 @@ class ReportManager(object):
                     earned_sum += answer.points_earned
             benchmark.total_points_earned = earned_sum
 
-            benchmark.average = float(benchmark.total_points_earned) / benchmark.total_points_possible 
+            if benchmark.total_points_possible:
+                benchmark.average = float(benchmark.total_points_earned) / benchmark.total_points_possible 
+            else:
+                benchmark.average = 0
            
             # Percent of students scoring at or above 70%
             test_instances_gte_70 = 0
@@ -207,7 +210,10 @@ class ReportManager(object):
                      instance_average = float(instance_points_earned) / instance_points_possible
                      if instance_average >= 0.70:
                          test_instances_gte_70 += 1
-            benchmark.gte_70 = float(test_instances_gte_70) / test_instances.count()
+            if test_instances.count():
+                benchmark.gte_70 = float(test_instances_gte_70) / test_instances.count()
+            else:
+                benchmark.gte_70 = 0
 
             benchmark.assessed_on = ""
             for question_benchmark in question_benchmarks:
@@ -229,12 +235,18 @@ class ReportManager(object):
             # calculate the COUNT of all student responses for this question
             question.num_total = answerinstances.count()
             # http://www.merriam-webster.com/dictionary/percent: "cent" means 100, but I'll stick with the existing convention 
-            question.percent_correct = float(question.num_correct) / question.num_total
+            if question.num_total:
+                question.percent_correct = float(question.num_correct) / question.num_total
+            else:
+                question.percent_correct = 0
             # calculate the sum of all points earned and the sum of all points possible for this question
             earned_possible = answerinstances.aggregate(Sum('points_earned'), Sum('points_possible'))
             question.points_earned = earned_possible['points_earned__sum'] 
             question.points_possible = earned_possible['points_possible__sum'] 
-            question.percent_points_earned = float(question.points_earned) / question.points_possible
+            if question.points_possible:
+                question.percent_points_earned = float(question.points_earned) / question.points_possible
+            else:
+                question.percent_points_earned = 0
             
         report.data['test'] = test
         report.data['tests'] = test_instances
