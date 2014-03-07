@@ -5,9 +5,6 @@
 {% block stylesheets %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css" media="screen" />
-  <!--[if lt IE 8]>
-    <link rel="stylesheet" type="text/css" href="{% static "css/styleie6.css" %}" />
-  <![endif]-->
   <style>
     .masthead { width: 550px; height: 70px; background: url('{{ header_image }}') no-repeat left; float: left; background-size:contain; }
     .school-color { background: {{ school_color|default_if_none:"#FCB034" }}; }
