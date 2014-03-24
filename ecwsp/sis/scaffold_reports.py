@@ -1,4 +1,4 @@
-from scaffold_report.report import ScaffoldReport, scaffold_reports
+from scaffold_report.report import ScaffoldReport, scaffold_reports, ReportButton
 from scaffold_report.fields import SimpleCompareField
 from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter, ModelChoiceFilter
 from django import forms
@@ -277,6 +277,14 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
         if self.cleaned_data['field_0']:
             return super(SelectSpecificStudents, self).queryset_filter(queryset, report_context, **kwargs)
         return queryset
+    
+
+class AspReportButton(ReportButton):
+    name = "asp_report"
+    name_verbose = "ASP Report"
+    
+    def get_report(self, context):
+        pass
 
 
 def strip_trailing_zeros(x):
@@ -303,6 +311,9 @@ class SisReport(ScaffoldReport):
         CourseGradeFilter(),
         TemplateSelection(),
         IncludeDeleted(),
+    )
+    report_buttons = (
+        AspReportButton(),
     )
 
     def is_passing(self, grade):
