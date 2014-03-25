@@ -40,3 +40,6 @@ django-rosetta>=0.7.1
 -e git://github.com/zsiciarz/django-rosetta-grappelli.git#egg=django-rosetta-grappelli
 django-celery>=3.0.17
 -e git://github.com/tzulberti/django-datefilterspec.git#egg=django-daterange-filter
+django-toolbelt
+django-storages
+boto
