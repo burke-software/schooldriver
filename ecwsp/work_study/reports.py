@@ -96,7 +96,6 @@ def student_company_day_report(industry_type=False, paying=False):
             data.append(row)
     return data
   
-# Generate attendance by day    
 def gen_attendance_report_day(day, is_pickup=False):
     """
     Generates a spreadsheet for a student worker based on their pickup or dropoff location.

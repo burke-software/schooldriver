@@ -1,22 +1,3 @@
-#       settings.py
-#       
-#       Copyright 2010-2011 Burke Software and Consulting LLC
-#       Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
 import os,sys, logging
 
 # PATHS
@@ -48,10 +29,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'sword',
-        'USER': 'sword',
-        'PASSWORD': '1234',
-        'HOST': 'localhost', 
+        'NAME': 'sample_db',
     },
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
@@ -94,23 +72,6 @@ TEMPLATE_LOADERS = (
 )
 ROOT_URLCONF = 'django_sis.urls'
 WSGI_APPLICATION = 'ecwsp.wsgi.application'
-
-""" Optional these you can copy into settings_local
-Required apps are towards the bottom of this file (which get added after local 
-settings) """
-INSTALLED_APPS = (
-    #'ecwsp.naviance_sso',
-    'ecwsp.work_study',
-    'ecwsp.engrade_sync',
-    'ecwsp.benchmarks',
-    #'ecwsp.omr',
-    'ecwsp.integrations.canvas_sync',
-    #'django_extensions',
-    #'google_auth',
-    #'ldap_groups',
-    'rosetta-grappelli',
-    'rosetta',
-)
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -160,33 +121,20 @@ GRAPPELLI_INDEX_DASHBOARD = 'ecwsp.dashboard.CustomIndexDashboard'
 GRAPPELLI_ADMIN_TITLE = '<img src="/static/images/logo.png"/ style="height: 30px; margin-left: -10px; margin-top: -8px; margin-bottom: -11px;">'
 
 
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
+
 #LDAP
 LDAP = False
 if LDAP:
-    LDAP_SERVER = 'crnyhs-dc.admin.cristoreyny.org'
+    LDAP_SERVER = 'admin.example.org'
     NT4_DOMAIN = 'ADMIN'
     LDAP_PORT = 389
     LDAP_URL = 'ldap://%s:%s' % (LDAP_SERVER, LDAP_PORT)
-    SEARCH_DN = 'DC=admin,DC=cristoreyny,DC=org'
+    SEARCH_DN = 'DC=admin,DC=example,DC=org'
     SEARCH_FIELDS = ['mail','givenName','sn','sAMAccountName','memberOf', 'cn']
     BIND_USER = 'ldap'
     BIND_PASSWORD = ''
-
-
-#CAS
-CAS = False
-if CAS:
-    CAS_SERVER_URL = ""
-    AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend','cas.backends.CASBackend',)
-    MIDDLEWARE_CLASSES += (
-        'cas.middleware.CASMiddleware',
-        'django.middleware.doc.XViewMiddleware',
-        )
-elif LDAP:
-    AUTHENTICATION_BACKENDS = ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend','django.contrib.auth.backends.ModelBackend',)
-else:
-    AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
-    
+    AUTHENTICATION_BACKENDS += ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend',)
     
 #Google Apps
 GAPPS = False
@@ -384,57 +332,42 @@ INSTALLED_APPS = (
     'ecwsp.standard_test',
     'ecwsp.benchmark_grade',
     'ecwsp.naviance_sso',
-    #'ecwsp.omr',
-    #'django_extensions',
-    #'google_auth',
+    # These can be enabled if desired but the default is off
     #'ldap_groups',
     #'raven.contrib.django',
     #'debug_toolbar',
     #'ecwsp.integrations.schoolreach',
     #'social.apps.django_app.default',
+    #'ecwsp.omr',
+    #'ecwsp.integrations.canvas_sync',
+    #'django_extensions',
+    #'google_auth',
+    #'ldap_groups',
+    #'rosetta-grappelli',
+    #'rosetta',
 )
+
+if False and DEBUG:
+    CELERY_ALWAYS_EAGER = True
+CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 
 
 # this will load additional settings from the file settings_local.py
-# this is useful when managing multiple sites with different configurations
+try:
+    from settings_server import *
+except ImportError:
+    print("Warning: Could not import settings_server.py")
 try:
     from settings_local import *
 except ImportError:
     print("Warning: Could not import settings_local.py")
+    
 # must do this after importing settings_local
 if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
 
 STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
-
-#Celery
-# we include celery below in the "required add ons," so configure it always
-import djcelery
-djcelery.setup_loader()
-#BROKER_URL = 'amqp://guest:guest@localhost:5672/'
-BROKER_HEARTBEAT = 30
-CELERY_IMPORTS = (
-    'django_cached_field.tasks',
-)
-if "ecwsp.work_study" in INSTALLED_APPS:
-    CELERY_IMPORTS += ("ecwsp.work_study.tasks",)
-if "ecwsp.volunteer_track" in INSTALLED_APPS:
-    CELERY_IMPORTS += ("ecwsp.volunteer_track.tasks",)
-if "ecwsp.naviance_sso" in INSTALLED_APPS and NAVIANCE_IMPORT_KEY:
-    CELERY_IMPORTS += ("ecwsp.naviance_sso.tasks",)
-if "ecwsp.benchmark_grade" in INSTALLED_APPS:
-    CELERY_IMPORTS += ("ecwsp.benchmark_grade.tasks",)
-if "ecwsp.admissions" in INSTALLED_APPS:
-    CELERY_IMPORTS += ("ecwsp.admissions.tasks",)
-if "ecwsp.integrations.schoolreach" in INSTALLED_APPS:
-    CELERY_IMPORTS += ("ecwsp.integrations.schoolreach.tasks",)
-if "ecwsp.grades" in INSTALLED_APPS:
-    CELERY_IMPORTS += ("ecwsp.grades.tasks",)
-CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
-CELERY_ENABLE_UTC = False
-if DEBUG:
-    CELERY_ALWAYS_EAGER = True
 
 # These are required add ons that we always want to have
 INSTALLED_APPS = (
@@ -474,7 +407,7 @@ INSTALLED_APPS = (
     'responsive_dashboard',
     'simple_import',
     'djangobower',
-    #'scaffold_report',
+    'scaffold_report',
     'django_su',
     'floppy_gumby_forms',
     'floppyforms',

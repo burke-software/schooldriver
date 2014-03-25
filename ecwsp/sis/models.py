@@ -1,21 +1,3 @@
-#   Copyright 2010-2011 Burke Software and Consulting LLC
-#   Author David M Burke <david@burkesoftware.com>
-#   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import connection
@@ -25,22 +7,20 @@ from localflavor.us.models import USStateField, PhoneNumberField
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 
-#from ecwsp.schedule.models import CourseEnrollment
 import logging
 from thumbs import ImageWithThumbsField
 from datetime import date
-from decimal import Decimal, ROUND_HALF_UP
 from ecwsp.administration.models import Configuration
 from custom_field.custom_field import CustomFieldModel
-import os
 import sys
 from ckeditor.fields import RichTextField
+from django_cached_field import CachedDecimalField
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
-if 'south' in settings.INSTALLED_APPS:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
 
 def create_faculty(instance, make_user_group=True):
     """ Create a sis.Faculty object that is linked to the given
@@ -61,7 +41,6 @@ def create_student(instance):
         student = Student(user_ptr_id=instance.id)
         student.__dict__.update(instance.__dict__)
         student.save()
-    
 
 def create_faculty_profile(sender, instance, created, **kwargs):
     if instance.groups.filter(name="teacher").count():
@@ -75,7 +54,6 @@ def create_faculty_profile_m2m(sender, instance, action, reverse, model, pk_set,
     if action == 'post_add' and instance.groups.filter(name="students").count():
         create_student(instance)
 
-
 post_save.connect(create_faculty_profile, sender=User)
 m2m_changed.connect(create_faculty_profile_m2m, sender=User.groups.through)
 
@@ -86,15 +64,9 @@ class UserPreference(models.Model):
         ('m', 'Microsoft Binary (.doc, .xls)'),
         ('x', 'Microsoft Office Open XML (.docx, .xlsx)'),
     )
-    prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommended.") 
-    include_deleted_students = models.BooleanField(default=False, help_text="Include deleted (previous) students when searching.")
-    course_sort_choices = (
-        ('department', 'Department order rank'),
-        ('marking_period,department', 'Marking period, Department order rank'),
-        ('marking_period,fullname', 'Marking period, Course fullname'),
-    )
-    course_sort = models.CharField(default='department', max_length=64, choices=course_sort_choices, help_text='Defines the order of courses on transcripts.') # and other reports in the future?
-    omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="Defines the default point value of new questions.")
+    prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
+    include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
+    omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
     omr_default_save_question_to_bank = models.BooleanField(default=False)
     omr_default_number_answers = models.IntegerField(default=2, blank=True, )
     gradebook_preference = models.CharField(max_length=10, blank=True, choices=(
@@ -120,17 +92,6 @@ class UserPreference(models.Model):
             elif self.prefered_file_format == "x":
                 return "xlsx"
             
-    def sort_courses(self, courses):
-        if self.course_sort == 'department':
-            return courses.order_by('department')
-        if self.course_sort == 'marking_period,department':
-            return courses.annotate(Count('marking_period'), Max('marking_period__end_date')).order_by('-marking_period__count', 'marking_period__end_date__max', 'department')
-        if self.course_sort == 'marking_period,fullname':
-            return courses.annotate(Count('marking_period'), Max('marking_period__end_date')).order_by('-marking_period__count', 'marking_period__end_date__max', 'fullname')
-        # wut?
-        return courses
-
-
 class PhoneNumber(models.Model):
     number = PhoneNumberField()
     ext = models.CharField(max_length=10, blank=True, null=True)
@@ -152,14 +113,14 @@ class EmergencyContact(models.Model):
     mname = models.CharField(max_length=255, blank=True, null=True, verbose_name="Middle Name")
     lname = models.CharField(max_length=255, verbose_name="Last Name")
     relationship_to_student = models.CharField(max_length=500, blank=True)
-    street = models.CharField(max_length=255, blank=True, null=True, help_text="Include apartment number.")
+    street = models.CharField(max_length=255, blank=True, null=True, help_text="Include apt number")
     city = models.CharField(max_length=255, blank=True, null=True, default=get_city)
     state = USStateField(blank=True, null=True)
     zip = models.CharField(max_length=10, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    primary_contact = models.BooleanField(default=True, help_text="Mail should be sent to this contact. In the event of an emergency, this person will be contacted first.")
-    emergency_only = models.BooleanField(default=False, help_text="Only contact in the event of an emergency.")
-    sync_schoolreach = models.BooleanField(help_text="Sync this contact with schoolreach.",default=True)
+    primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to. In the event of an emergency, this is the person that will be contacted first.")
+    emergency_only = models.BooleanField(default=False, help_text="Only contact in case of emergency")
+    sync_schoolreach = models.BooleanField(help_text="Sync this contact with schoolreach",default=True)
     
     class Meta:
         ordering = ('primary_contact', 'lname') 
@@ -210,7 +171,6 @@ class EmergencyContactNumber(PhoneNumber):
     class Meta:
         verbose_name = "Student Contact"
     
-    
     def save(self, *args, **kwargs):
         if self.primary:
             for contact in self.contact.emergencycontactnumber_set.exclude(id=self.id).filter(primary=True):
@@ -251,7 +211,7 @@ class Cohort(models.Model):
     name = models.CharField(max_length=255)
     long_name = models.CharField(max_length=500, blank=True, help_text="Optional verbose name")
     students = models.ManyToManyField('Student', blank=True, through='StudentCohort') # someday, to fix syncdb : related_name="student_cohorts")
-    primary = models.BooleanField(default=False, help_text="If set true, all students in this cohort will have it set as primary!")
+    primary = models.BooleanField(default=False, help_text="If set true - all students in this cohort will have it set as primary!")
 
     class Meta:
         ordering = ('name',)
@@ -323,8 +283,13 @@ if 'south' in settings.INSTALLED_APPS:
 class ClassYear(models.Model):
     """ Class year such as class of 2010.
     """
-    year = IntegerRangeField(unique=True, min_value=1900, max_value=2200, help_text="ex. 2014")
-    full_name = models.CharField(max_length=255, help_text="ex. Class of 2014", blank=True)
+    year = IntegerRangeField(unique=True, min_value=1900, max_value=2200, help_text="Example 2014")
+    full_name = models.CharField(max_length=255, help_text="Example Class of 2014", blank=True)
+    
+    class Meta:
+        verbose_name = "Graduating Class"
+        verbose_name_plural = "Graduating Classes"
+    
     def __unicode__(self):
         return unicode(self.full_name)
     
@@ -342,7 +307,7 @@ class Student(User, CustomFieldModel):
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     pic = ImageWithThumbsField(upload_to="student_pics", blank=True, null=True, sizes=((70,65),(530, 400)))
-    alert = models.CharField(max_length=500, blank=True, help_text="Warn any user who accesses this record with this text.")
+    alert = models.CharField(max_length=500, blank=True, help_text="Warn any user who accesses this record with this text")
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date", validators=settings.DATE_VALIDATORS)
     year = models.ForeignKey(
@@ -350,8 +315,8 @@ class Student(User, CustomFieldModel):
         blank=True, 
         null=True, 
         on_delete=models.SET_NULL,
-        help_text="School year (e.g. freshman, senior, etc.). Determined by Class of.")
-    class_of_year = models.ForeignKey(ClassYear, blank=True, null=True)
+        verbose_name="Grade level")
+    class_of_year = models.ForeignKey(ClassYear, verbose_name="Graduating Class", blank=True, null=True)
     date_dismissed = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
     unique_id = models.IntegerField(blank=True, null=True, unique=True, help_text="For integration with outside databases")
@@ -367,20 +332,20 @@ class Student(User, CustomFieldModel):
     
     family_preferred_language = models.ForeignKey(LanguageChoice, blank=True, null=True, default=get_default_language)
     family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True, related_name="+")
-    alt_email = models.EmailField(blank=True, help_text="Alternate non-school email")
+    alt_email = models.EmailField(blank=True, help_text="Alternative student email that is not their school email.")
     notes = models.TextField(blank=True)
     emergency_contacts = models.ManyToManyField(EmergencyContact, verbose_name="Student Contact", blank=True)
     siblings = models.ManyToManyField('Student', blank=True)
     cohorts = models.ManyToManyField(Cohort, through='StudentCohort', blank=True)
-    cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort", related_name="cache_cohorts")
+    cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
     individual_education_program = models.BooleanField(default=False)
-    cache_gpa = models.DecimalField(editable=False, max_digits=5, decimal_places=2, blank=True, null=True)
+    gpa = CachedDecimalField(editable=False, max_digits=5, decimal_places=2, blank=True, null=True)
     
     class Meta:
         permissions = (
             ("view_student", "View student"),
-            ("view_ssn_student", "View student SSN"),
-            ("view_mentor_student", "View mentoring information"),
+            ("view_ssn_student", "View student ssn"),
+            ("view_mentor_student", "View mentoring information student"),
             ("reports", "View reports"),
         )
         ordering = ("last_name", "first_name")
@@ -391,14 +356,23 @@ class Student(User, CustomFieldModel):
     def get_absolute_url():
         pass
     
-    # Legacy first and last name properties
-    @property
-    def fname(self, ):
-        return self.first_name
-    @property
-    def lname(self, ):
-        return self.last_name    
-    
+    def calculate_gpa(self, date_report=None):
+        """ Use StudentYearGrade calculation
+        No further weighting needed.
+        """
+        total = Decimal(0)
+        years_with_grade = 0
+        grade_years = self.studentyeargrade_set.filter(year__markingperiod__show_reports=True)
+        if date_report:
+            grade_years = grade_years.filter(year__start_date__lt=date_report)
+        for grade_year in grade_years.distinct():
+            grade = grade_year.calculate_grade(date_report=date_report)
+            if grade:
+                total += grade
+                years_with_grade += 1
+        if years_with_grade:
+            return total / years_with_grade
+
     @property
     def primary_cohort(self):
         return self.cache_cohort
@@ -438,7 +412,7 @@ class Student(User, CustomFieldModel):
         email_method = Configuration.get_or_default(
             "How to obtain student email",
             default="append",
-            help_text="append, user, or student").value
+            help_text="append, user, or student.").value
         if email_method == "append":
             email_end = Configuration.get_or_default("email", default="@change.me").value
             return '%s%s' % (self.student.username, email_end)
@@ -480,80 +454,6 @@ class Student(User, CustomFieldModel):
         else:
             return disc
     
-    # two underscores make it too private!
-    def _calculate_grade_for_single_course(self, course, marking_period, date_report):
-        #print '_c_g_f_s_c(',course, marking_period, date_report, ')'
-        """ Separate from __calculate_grade_for_courses() to avoid code duplication in
-        ecwsp.benchmark_grade.utility """
-        if marking_period:
-            grade = float(self.grade_set.get(course=course, override_final=False, marking_period=marking_period).get_grade())
-            credit = float(course.credits) / float(course.marking_period.count())
-        else:
-            grade = float(course.get_final_grade(self, date_report=date_report))
-            #grade = float(grade)
-            credit = float(course.get_credits_earned(date_report=date_report))
-        return grade, credit
-
-    def __calculate_grade_for_courses(self, courses, marking_period=None, date_report=None):
-        #print '__c_g_f_c(', courses, marking_period, date_report, ')'
-        if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
-            from ecwsp.benchmark_grade.utility import benchmark_calculate_grade_for_courses
-            return benchmark_calculate_grade_for_courses(self, courses, marking_period, date_report)
-
-        gpa = float(0)
-        credits = float(0)
-        for course in courses.distinct():
-            try:
-                grade, credit = self._calculate_grade_for_single_course(course, marking_period, date_report)
-                credits += credit
-                gpa += float(grade) * credit
-            except:
-                pass
-        #print 'credits: ', credits
-        if credits > 0:
-            gpa = Decimal(str(gpa/credits)).quantize(Decimal("0.01"), ROUND_HALF_UP)
-        else:
-            gpa = "N/A"
-        return gpa
-        
-    def calculate_gpa(self, date_report=None):
-        """ Calculate students gpa
-        date_report: Date for calculation (which effects credit value) defaults to today
-        Note: self is student object"""
-        if date_report == None:
-            date_report = date.today()
-        courses = self.course_set.filter(graded=True, marking_period__show_reports=True).exclude(omitcoursegpa__student=self).exclude(marking_period__school_year__omityeargpa__student=self).distinct()
-        return self.__calculate_grade_for_courses(courses, date_report=date_report)
-        
-    
-    def calculate_gpa_year(self, year=None, date_report=None):
-        """ Calculate students gpa for one year
-        year: Defaults to active year.
-        date_report: Date for calculation (which effects credit value) defaults to today """
-        if not date_report:
-            date_report = date.today()
-        courses = self.course_set.filter(graded=True, marking_period__school_year=year)
-        x = self.__calculate_grade_for_courses(courses, date_report=date_report)
-        return x
-    
-    def calculate_gpa_mp(self, marking_period):
-        """ Calculate students gpa for one marking periods
-        mp: Marking Periods to calculate for."""
-        courses = self.course_set.filter(graded=True, omitcoursegpa=None, marking_period=marking_period)
-        return self.__calculate_grade_for_courses(courses, marking_period=marking_period)
-        
-    @property
-    def gpa(self):
-        """ returns current GPA including absolute latest grades """
-        if not self.cache_gpa:
-            gpa = self.calculate_gpa()
-            if gpa == "N/A":
-                return gpa
-            else:
-                self.cache_gpa = gpa
-                self.save()
-        return self.cache_gpa
-        
     def gender_to_word(self, male_word, female_word):
         """ returns a string based on the sex of student """
         if self.sex == "M":
@@ -610,7 +510,6 @@ class Student(User, CustomFieldModel):
         super(Student, self).save(*args, **kwargs)
         
         # Create student worker if the app is installed.
-        # No other way to do it see:
         # https://code.djangoproject.com/ticket/7623
         if 'ecwsp.work_study' in settings.INSTALLED_APPS:
             if not creating_worker and not hasattr(self, 'studentworker'):
@@ -626,7 +525,7 @@ class Student(User, CustomFieldModel):
     def clean(self, *args, **kwargs):
         """ Check if a Faculty exists, can't have someone be a Student and Faculty """
         if Faculty.objects.filter(id=self.id).count():
-            raise ValidationError('Cannot be both student AND faculty!')
+            raise ValidationError('Cannot have someone be a student AND faculty!')
         super(Student, self).clean(*args, **kwargs)
         
     def graduate_and_create_alumni(self):
@@ -662,19 +561,7 @@ def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs
         
 
 m2m_changed.connect(after_student_m2m, sender=Student.emergency_contacts.through)
-        
 
-class ASPHistory(models.Model):
-    student = models.ForeignKey(Student)
-    asp = models.CharField(max_length=255)
-    date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
-    enroll = models.BooleanField(default=False, help_text="Check if enrolled, uncheck if unenrolled.")
-    
-    def __unicode__(self):
-        if self.enroll:
-            return '%s enrolled in %s on %s' % (unicode(self.student), unicode(self.asp), self.date)
-        else:
-            return '%s left %s on %s' % (unicode(self.student), unicode(self.asp), self.date)
 
 class StudentCohort(models.Model):
     student = models.ForeignKey(Student)
@@ -749,10 +636,10 @@ class SchoolYear(models.Model):
     end_date = models.DateField(validators=settings.DATE_VALIDATORS)
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     active_year = models.BooleanField(default=False, 
-        help_text="DANGER!! This is the current school year. There can only be one, and setting this will remove it from other years. " \
-                  "If you would like to change the active year, you should probably click Admin > Change school year.")
+        help_text="DANGER!! This is the current school year. There can only be one and setting this will remove it from other years. " \
+                  "If you want to change the active year you almost certainly want to click Admin, Change School Year.")
     benchmark_grade = models.BooleanField(default=lambda: str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true",
-                                          help_text="Displays additional information on transcripts. The configuration option \"Benchmark-based grading\" sets the default for this field.")
+                                          help_text="Causes additional information to appear on transcripts. The configuration option \"Benchmark-based grading\" sets the default for this field.")
     
     class Meta:
         ordering = ('-start_date',)
@@ -776,34 +663,15 @@ class SchoolYear(models.Model):
             all = SchoolYear.objects.exclude(id=self.id).update(active_year=False)
     
     
-class ImportLog(models.Model):
-    """ Keep a log of each time a user attempts to import a file, if successful store a database backup
-    Backup is a full database dump and should not be thought of as a easy way to revert changes.
-    """
-    user = models.ForeignKey(User, editable=False)
-    date = models.DateTimeField(auto_now_add=True)
-    import_file = models.FileField(upload_to="import_files")
-    sql_backup = models.FileField(blank=True,null=True,upload_to="sql_dumps")
-    user_note = models.CharField(max_length=1024,blank=True)
-    errors = models.BooleanField(default=False, )
-    
-    def delete(self, *args, **kwargs):
-        """ These logs files would get huge if not deleted often """
-        if self.sql_backup and os.path.exists(self.sql_backup.path):
-            os.remove(self.sql_backup.path)
-        if self.import_file and os.path.exists(self.import_file.path):
-            os.remove(self.import_file.path)
-        super(ImportLog, self).delete(*args, **kwargs)
-        
-        
 class MessageToStudent(models.Model):
     """ Stores a message to be shown to students for a specific amount of time
     """
-    message = RichTextField(help_text="This message will be shown to students at log in.")
+    message = RichTextField(help_text="This message will be shown to students when they log in.")
     start_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
     def __unicode__(self):
         return self.message
+    
 
 class FamilyAccessUser(User):
     """ A person who can log into the non-admin side and see the same view as a student,

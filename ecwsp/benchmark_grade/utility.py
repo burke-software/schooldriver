@@ -231,7 +231,7 @@ def gradebook_recalculate_on_item_change(item, students=None, old_item=None):
     calculation_rule = benchmark_find_calculation_rule(item.course.marking_period.all()[0].school_year)
     course = item.course
     if students is None:
-        students = item.course.get_enrolled_students()
+        students = Student.objects.filter(courseenrollment__course=item.course)
 
     if renormalization_required:
         # take care of re-normalization before returning

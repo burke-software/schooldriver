@@ -4,6 +4,9 @@ settings_local.py
 *.sass-cache/
 npm-debug.log
 
+sample_db
+
 src/pip-delete-this-directory.txt
+src/
 
 sword

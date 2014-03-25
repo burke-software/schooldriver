@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse
-from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, LinksListDashlet
+from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, AdminListDashlet, LinksListDashlet, dashboards
 from ecwsp.sis.dashboards import ReportBuilderDashlet
 from ecwsp.alumni.models import Alumni, AlumniNote
 from report_builder.models import Report
@@ -56,4 +56,4 @@ class AlumniDashboard(Dashboard):
     ]
 
 
-dashboard = AlumniDashboard()
+dashboards.register('alumni', AlumniDashboard())

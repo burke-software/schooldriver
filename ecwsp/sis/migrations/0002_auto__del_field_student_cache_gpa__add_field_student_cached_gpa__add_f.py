@@ -8,47 +8,31 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting field 'CourseEnrollment.cache_grade'
-        db.delete_column(u'schedule_courseenrollment', 'cache_grade')
+        # Deleting field 'Student.cache_gpa'
+        db.delete_column(u'sis_student', 'cache_gpa')
 
-        # Adding field 'CourseEnrollment.cached_grade'
-        db.add_column(u'schedule_courseenrollment', 'cached_grade',
-                      self.gf('django.db.models.fields.CharField')(max_length=8, null=True, blank=True),
-                      keep_default=False)
-
-        # Adding field 'CourseEnrollment.grade_recalculation_needed'
-        db.add_column(u'schedule_courseenrollment', 'grade_recalculation_needed',
-                      self.gf('django.db.models.fields.BooleanField')(default=True),
-                      keep_default=False)
-
-        # Adding field 'CourseEnrollment.cached_numeric_grade'
-        db.add_column(u'schedule_courseenrollment', 'cached_numeric_grade',
+        # Adding field 'Student.cached_gpa'
+        db.add_column(u'sis_student', 'cached_gpa',
                       self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=5, decimal_places=2, blank=True),
                       keep_default=False)
 
-        # Adding field 'CourseEnrollment.numeric_grade_recalculation_needed'
-        db.add_column(u'schedule_courseenrollment', 'numeric_grade_recalculation_needed',
+        # Adding field 'Student.gpa_recalculation_needed'
+        db.add_column(u'sis_student', 'gpa_recalculation_needed',
                       self.gf('django.db.models.fields.BooleanField')(default=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Adding field 'CourseEnrollment.cache_grade'
-        db.add_column(u'schedule_courseenrollment', 'cache_grade',
-                      self.gf('django.db.models.fields.CharField')(default='', max_length=8, blank=True),
+        # Adding field 'Student.cache_gpa'
+        db.add_column(u'sis_student', 'cache_gpa',
+                      self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=5, decimal_places=2, blank=True),
                       keep_default=False)
 
-        # Deleting field 'CourseEnrollment.cached_grade'
-        db.delete_column(u'schedule_courseenrollment', 'cached_grade')
+        # Deleting field 'Student.cached_gpa'
+        db.delete_column(u'sis_student', 'cached_gpa')
 
-        # Deleting field 'CourseEnrollment.grade_recalculation_needed'
-        db.delete_column(u'schedule_courseenrollment', 'grade_recalculation_needed')
-
-        # Deleting field 'CourseEnrollment.cached_numeric_grade'
-        db.delete_column(u'schedule_courseenrollment', 'cached_numeric_grade')
-
-        # Deleting field 'CourseEnrollment.numeric_grade_recalculation_needed'
-        db.delete_column(u'schedule_courseenrollment', 'numeric_grade_recalculation_needed')
+        # Deleting field 'Student.gpa_recalculation_needed'
+        db.delete_column(u'sis_student', 'gpa_recalculation_needed')
 
 
     models = {
@@ -88,18 +72,6 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'schedule.award': {
-            'Meta': {'object_name': 'Award'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
-        },
-        u'schedule.awardstudent': {
-            'Meta': {'object_name': 'AwardStudent'},
-            'award': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Award']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'marking_period': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.MarkingPeriod']", 'null': 'True', 'blank': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
-        },
         u'schedule.course': {
             'Meta': {'object_name': 'Course'},
             'active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
@@ -122,7 +94,7 @@ class Migration(SchemaMigration):
         u'schedule.courseenrollment': {
             'Meta': {'unique_together': "(('course', 'user', 'role'),)", 'object_name': 'CourseEnrollment'},
             'attendance_note': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'cached_grade': ('django.db.models.fields.CharField', [], {'max_length': '8', 'null': 'True', 'blank': 'True'}),
+            'cached_grade': ('django.db.models.fields.CharField', [], {'max_length': '8', 'blank': 'True'}),
             'cached_numeric_grade': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '5', 'decimal_places': '2', 'blank': 'True'}),
             'course': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Course']"}),
             'exclude_days': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['schedule.Day']", 'symmetrical': 'False', 'blank': 'True'}),
@@ -146,24 +118,11 @@ class Migration(SchemaMigration):
             'day': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
-        u'schedule.daysoff': {
-            'Meta': {'object_name': 'DaysOff'},
-            'date': ('django.db.models.fields.DateField', [], {}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'marking_period': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.MarkingPeriod']"})
-        },
         u'schedule.department': {
             'Meta': {'ordering': "('order_rank', 'name')", 'object_name': 'Department'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'order_rank': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
-        },
-        u'schedule.departmentgraduationcredits': {
-            'Meta': {'unique_together': "(('department', 'class_year'),)", 'object_name': 'DepartmentGraduationCredits'},
-            'class_year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.ClassYear']"}),
-            'credits': ('django.db.models.fields.DecimalField', [], {'max_digits': '5', 'decimal_places': '2'}),
-            'department': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Department']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'schedule.location': {
             'Meta': {'object_name': 'Location'},
@@ -191,24 +150,20 @@ class Migration(SchemaMigration):
             'wednesday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'weight': ('django.db.models.fields.DecimalField', [], {'default': '1', 'max_digits': '5', 'decimal_places': '3'})
         },
-        u'schedule.omitcoursegpa': {
-            'Meta': {'object_name': 'OmitCourseGPA'},
-            'course': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Course']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
-        },
-        u'schedule.omityeargpa': {
-            'Meta': {'object_name': 'OmitYearGPA'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"}),
-            'year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.SchoolYear']"})
-        },
         u'schedule.period': {
             'Meta': {'ordering': "('start_time',)", 'object_name': 'Period'},
             'end_time': ('django.db.models.fields.TimeField', [], {}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'start_time': ('django.db.models.fields.TimeField', [], {})
+        },
+        u'sis.asphistory': {
+            'Meta': {'object_name': 'ASPHistory'},
+            'asp': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'date': ('django.db.models.fields.DateField', [], {'default': 'datetime.date.today'}),
+            'enroll': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
         },
         u'sis.classyear': {
             'Meta': {'object_name': 'ClassYear'},
@@ -240,6 +195,16 @@ class Migration(SchemaMigration):
             'sync_schoolreach': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'zip': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'})
         },
+        u'sis.emergencycontactnumber': {
+            'Meta': {'object_name': 'EmergencyContactNumber'},
+            'contact': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.EmergencyContact']"}),
+            'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'note': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            'number': ('localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
+            'primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'type': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'})
+        },
         u'sis.faculty': {
             'Meta': {'ordering': "('last_name', 'first_name')", 'object_name': 'Faculty', '_ormbases': [u'auth.User']},
             'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
@@ -252,12 +217,34 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '150'})
         },
+        u'sis.importlog': {
+            'Meta': {'object_name': 'ImportLog'},
+            'date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'errors': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'import_file': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
+            'sql_backup': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
+            'user_note': ('django.db.models.fields.CharField', [], {'max_length': '1024', 'blank': 'True'})
+        },
         u'sis.languagechoice': {
             'Meta': {'object_name': 'LanguageChoice'},
             'default': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'iso_code': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
+        },
+        u'sis.messagetostudent': {
+            'Meta': {'object_name': 'MessageToStudent'},
+            'end_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.date.today'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'message': ('ckeditor.fields.RichTextField', [], {}),
+            'start_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.date.today'})
+        },
+        u'sis.percoursecohort': {
+            'Meta': {'ordering': "('name',)", 'object_name': 'PerCourseCohort', '_ormbases': [u'sis.Cohort']},
+            u'cohort_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['sis.Cohort']", 'unique': 'True', 'primary_key': 'True'}),
+            'course': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Course']"})
         },
         u'sis.reasonleft': {
             'Meta': {'object_name': 'ReasonLeft'},
@@ -306,7 +293,52 @@ class Migration(SchemaMigration):
             u'user_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True', 'primary_key': 'True'}),
             'year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.GradeLevel']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'zip': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'})
+        },
+        u'sis.studentfile': {
+            'Meta': {'object_name': 'StudentFile'},
+            'file': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
+        },
+        u'sis.studenthealthrecord': {
+            'Meta': {'object_name': 'StudentHealthRecord'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'record': ('django.db.models.fields.TextField', [], {}),
+            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
+        },
+        u'sis.studentnumber': {
+            'Meta': {'object_name': 'StudentNumber'},
+            'ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'note': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            'number': ('localflavor.us.models.PhoneNumberField', [], {'max_length': '20'}),
+            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']", 'null': 'True', 'blank': 'True'}),
+            'type': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'})
+        },
+        u'sis.transcriptnote': {
+            'Meta': {'object_name': 'TranscriptNote'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'note': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'predefined_note': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.TranscriptNoteChoices']", 'null': 'True', 'blank': 'True'}),
+            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
+        },
+        u'sis.transcriptnotechoices': {
+            'Meta': {'object_name': 'TranscriptNoteChoices'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'note': ('django.db.models.fields.TextField', [], {})
+        },
+        u'sis.userpreference': {
+            'Meta': {'object_name': 'UserPreference'},
+            'course_sort': ('django.db.models.fields.CharField', [], {'default': "'department'", 'max_length': '64'}),
+            'gradebook_preference': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'include_deleted_students': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'omr_default_number_answers': ('django.db.models.fields.IntegerField', [], {'default': '2', 'blank': 'True'}),
+            'omr_default_point_value': ('django.db.models.fields.IntegerField', [], {'default': '1', 'blank': 'True'}),
+            'omr_default_save_question_to_bank': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'prefered_file_format': ('django.db.models.fields.CharField', [], {'default': "'o'", 'max_length': "'1'"}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'unique': 'True'})
         }
     }
 
-    complete_apps = ['schedule']
+    complete_apps = ['sis']

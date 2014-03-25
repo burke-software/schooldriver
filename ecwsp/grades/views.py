@@ -144,7 +144,7 @@ def teacher_grade_upload(request, id):
     
     course = Course.objects.get(id=id)
     
-    students = course.get_enrolled_students(show_deleted=True)
+    students = Student.objects.filter(courseenrollment__course=course)
     grades = course.grade_set.all()
     
     if request.method == 'POST' and 'upload' in request.POST:
@@ -222,7 +222,7 @@ def teacher_grade_download(request, id, type=None):
     data['$students'] = []
     data['$username'] = []
     
-    for student in course.get_enrolled_students(show_deleted=True):
+    for student in Student.objects.filter(courseenrollment__course=course):
         data['$students'].append(unicode(student))
         data['$username'].append(unicode(student.username))
     

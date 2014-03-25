@@ -10,7 +10,6 @@ from ecwsp.sis.uno_report import uno_save
 from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
-from ecwsp.sis.report import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule, gradebook_get_average
 from ecwsp.benchmark_grade.views import gradebook

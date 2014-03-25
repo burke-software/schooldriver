@@ -155,7 +155,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     inactive = models.BooleanField(default=False, help_text="Will unset student's placements.")
     company = models.ForeignKey(Company, blank=True, null=True)
     team_name = models.CharField(max_length=255, unique=True)
-    login = models.ManyToManyField(WorkTeamUser, blank=True, help_text="user from <a href=\"/admin/auth/user/\">here</a> that this company may login with, ensure user is in the \"company\" group so they have correct permissions")
+    login = models.ManyToManyField(WorkTeamUser, blank=True, help_text="Optional. This creates users with \"company\" permissions, allowing them to sign into the database to review/approve pending and past time sheets for the assigned workteam.")
     paying = models.CharField(max_length=1, choices=(('P', 'Paying'), ('N', 'Non-Paying'), ('F', 'Funded')), blank=True)
     funded_by = models.CharField(max_length=150, blank=True)
     cras = models.ManyToManyField(CraContact, blank=True, null=True)
@@ -384,14 +384,6 @@ class Personality(models.Model):
         verbose_name_plural = 'Personality types'
     
 
-class Handout33(models.Model):
-    category = models.CharField(max_length=100)
-    like = models.CharField(max_length=255)
-    def __unicode__(self):
-        return unicode(self.category) + ": " + unicode(self.like)
-    class Meta:
-        ordering = ('category', 'like',)
-
 class StudentWorkerRoute(models.Model):
     name = models.CharField(max_length=100, unique=True)
     def __unicode__(self):
@@ -419,7 +411,6 @@ class StudentWorker(Student):
     student_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
     primary_contact = models.ForeignKey(Contact, on_delete=models.SET_NULL, blank=True, null=True, help_text="This is the primary supervisor to whom e-mails will be sent. If the desired contact is not showing, they may need to be added to the company. New contacts are not automatically assigned to a company unless the supervisor adds them.")
     personality_type = models.ForeignKey(Personality, blank=True, null=True)
-    handout33 = models.ManyToManyField(Handout33, blank=True, null=True)
     adp_number = models.CharField(max_length=5, blank=True, verbose_name="ADP Number")
     
     am_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="am_student_set")
@@ -588,7 +579,7 @@ class StudentInteraction(models.Model):
     date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     type = models.CharField(max_length=1, choices=(('M', 'Mentoring'), ('D', 'Discipline'), ('P', 'Parent'), ('C', 'Company'), ('S', 'Supervisor'), ('O', 'Other')))
     comments = models.TextField(blank=True)
-    preset_comment = models.ManyToManyField(PresetComment, blank=True, help_text="Double-click on the comment on the left to add, or click the plus to add a new preset comment.")
+    preset_comment = models.ManyToManyField(PresetComment, blank=True, help_text="Double-click on the comment on the left to add or click (+) to add a new comment.")
     companies = models.ManyToManyField(WorkTeam,  blank=True)
     
     def save(self, *args, **kwargs):
