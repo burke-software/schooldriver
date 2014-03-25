@@ -507,7 +507,7 @@ if 'ON_HEROKU' in os.environ:
     ):
         # Cower, all ye Stack Overflow pedants!
         globals()[environment_variable] = os.environ[environment_variable]
-   # Use Heroku's DB
-   import dj_database_url
-   # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
-   DATABASES['default'] = dj_database_url.config(default='postgres:///local_maroon')
+    # Use Heroku's DB
+    import dj_database_url
+    # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
+    DATABASES['default'] = dj_database_url.config(default='postgres:///local_maroon')
