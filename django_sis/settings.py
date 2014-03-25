@@ -507,6 +507,7 @@ if 'ON_HEROKU' in os.environ:
     ):
         # Cower, all ye Stack Overflow pedants!
         globals()[environment_variable] = os.environ[environment_variable]
+    STATIC_URL = '//{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
     # Use Heroku's DB
     import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
