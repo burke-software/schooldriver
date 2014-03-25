@@ -347,7 +347,7 @@ INSTALLED_APPS = (
     #'rosetta',
 )
 
-if False and DEBUG:
+if DEBUG:
     CELERY_ALWAYS_EAGER = True
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 

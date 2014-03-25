@@ -153,8 +153,7 @@ class CourseEnrollment(models.Model):
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     exclude_days = models.ManyToManyField('Day', blank=True, \
         help_text="Student does not need to attend on this day. Note courses already specify meeting days; this field is for students who have a special reason to be away.")
-    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade",
-                            editable=False, null=True)
+    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     
     class Meta:
@@ -168,6 +167,8 @@ class CourseEnrollment(models.Model):
             self.numeric_grade = grade
         else:
             self.numeric_grade = None
+        if grade == None:
+            grade = ''
         self.grade = grade
         self.grade_recalculation_needed = False
         self.numeric_grade_recalculation_needed = False
