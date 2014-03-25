@@ -1684,11 +1684,11 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 #scaffold_filters { border-top: 1px solid #777; border-bottom: 1px solid #777; padding: 7px 0; margin: 7px 0; }
 
-#scaffold_active_filters h3.filter-title { margin-left: 2.4%; font-size: 18px; font-weight: 400; padding-top: .2em; }
+#scaffold_active_filters h3.filter-title { margin-left: 2.4%; font-size: 18px; font-weight: 400; }
 #scaffold_active_filters .filter { position: relative; }
 #scaffold_active_filters .filter.removable { background-color: #f2f2f2; padding: 5px; margin: 5px 0; }
 #scaffold_active_filters .filter.removable .filter-title { margin-left: 1.2%; }
-#scaffold_active_filters .filter input[type=text], #scaffold_active_filters .filter input[type=number], #scaffold_active_filters .filter .post-form-text { vertical-align: top; }
+#scaffold_active_filters .filter input[type=text], #scaffold_active_filters .filter input[type=number], #scaffold_active_filters .filter .post-form-text { vertical-align: top; margin-top: 2px; }
 #scaffold_active_filters .filter .picker { margin-left: 0; margin-bottom: -5px !important; }
 #scaffold_active_filters .filter form { margin: 0 !important; }
 #scaffold_active_filters .filter .field { margin-bottom: 0 !important; }
@@ -1699,7 +1699,7 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 .dsr-checkbox input { width: auto; }
 
-.delete-filter { font-size: 1.75em; position: absolute; top: 2px; right: 0; }
+.delete-filter { font-size: 1.75em; position: absolute; top: 10px; right: 7px; }
 
 .handle { float: right; font-size: 2em; cursor: move; }
 
