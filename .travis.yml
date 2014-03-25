@@ -1,9 +1,14 @@
 language: python
 python:
-  - "2.7"
-# command to install dependencies
+- '2.7'
 install:
-  - pip install -r requirements.txt
-  - pip install -q -e . --use-mirrors
-# command to run tests
+- pip install -r requirements.txt
+- pip install -q -e . --use-mirrors
 script: python manage.py test ecwsp.sis
+deploy:
+  app:
+    master: django-sis-staging
+    develop: django-sis-dev
+  provider: heroku
+  api_key:
+    secure: YD9D6LCNYwr6F5uTKuMl5yZisokkJmCzLFh/84EZrVEtfkJMGX8KZu3bYKuO0b1lB4K57IqyJHk3gbIZt3PB/1mIbOdeiXJAMixTq9+bH2009UrHpkOFCRF3+f3FroZG1wf0rpjOdn0nnK6uDEIl8x3H8lKxICIdozH88xaiGR4=

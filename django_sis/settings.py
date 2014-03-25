@@ -422,3 +422,22 @@ if 'social.apps.django_app.default' in INSTALLED_APPS:
     )
 if 'test' in sys.argv:
     DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
+
+if 'ON_HEROKU' in os.environ:
+    ON_HEROKU = True
+    # Use S3
+    INSTALLED_APPS += ('storages',)
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    for environment_variable in (
+        'AWS_ACCESS_KEY_ID',
+        'AWS_SECRET_ACCESS_KEY',
+        'AWS_STORAGE_BUCKET_NAME',
+    ):
+        # Cower, all ye Stack Overflow pedants!
+        globals()[environment_variable] = os.environ[environment_variable]
+    STATIC_URL = '//{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
+    # Use Heroku's DB
+    import dj_database_url
+    # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
+    DATABASES['default'] = dj_database_url.config(default='postgres:///local_maroon')
