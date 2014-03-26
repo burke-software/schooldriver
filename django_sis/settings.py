@@ -420,8 +420,6 @@ if 'social.apps.django_app.default' in INSTALLED_APPS:
         'social.apps.django_app.context_processors.backends',
         'social.apps.django_app.context_processors.login_redirect',
     )
-if 'test' in sys.argv:
-    DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
 
 if 'ON_HEROKU' in os.environ:
     ON_HEROKU = True
@@ -441,3 +439,7 @@ if 'ON_HEROKU' in os.environ:
     import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
     DATABASES['default'] = dj_database_url.config(default='postgres:///local_maroon')
+
+# Keep this *LAST* to avoid overwriting production DBs with test data
+if 'test' in sys.argv:
+    DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
