@@ -181,5 +181,7 @@ class AttendanceTest(TestCase):
         grade.set_grade('89.09')
         grade.save()
         print CourseEnrollment.objects.get(id=courseneroll.id).cached_grade 
-        self.failUnlessEqual(self.student.gpa, Decimal('69.55'))
-
+        # ABSOULTELY NO IDEA IF THIS SHOULD BE NECESSARY
+        StudentYearGrade.build_all_cache()
+        gpa = self.student.gpa.quantize(Decimal('0.01'))
+        self.failUnlessEqual(gpa, Decimal('69.55'))

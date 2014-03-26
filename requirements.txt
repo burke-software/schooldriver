@@ -26,7 +26,8 @@ django-floppyforms>=1.0
 -e git://github.com/burke-software/django-report-builder.git@36e3a1b4de41001f891fd2c0b0a073af79099897#egg=report_builder
 # django-report-scaffold isn't in pypi yet; install from github
 -e git://github.com/burke-software/django-report-scaffold.git#egg=django-report-scaffold
-django-responsive-dashboard>=1.0
+#django-responsive-dashboard>=1.0
+-e git://github.com/burke-software/django-responsive-dashboard.git@1bcd3a8bc24cf956410d3f58617db34d21ab1138#egg=django_responsive_dashboard
 django-apptemplates>=0.0.1
 django-filter>=0.5.4
 # django-positions 0.5.1 may have a bug; messes up OMR question order
@@ -41,3 +42,6 @@ django-rosetta>=0.7.1
 -e git://github.com/zsiciarz/django-rosetta-grappelli.git#egg=django-rosetta-grappelli
 django-celery>=3.1.9
 -e git://github.com/tzulberti/django-datefilterspec.git#egg=django-daterange-filter
+django-toolbelt
+django-storages
+boto
