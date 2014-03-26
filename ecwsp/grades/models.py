@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, signals
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
@@ -60,21 +60,28 @@ class StudentYearGrade(models.Model):
     
     class Meta:
         unique_together = ('student', 'year')
+    
+    @staticmethod
+    def build_cache_student(student):
+        years = student.courseenrollment_set.values(
+            'course__marking_period__school_year').annotate(Count('course__marking_period__school_year'))
+        for year in years:
+            if year['course__marking_period__school_year']:
+                year_grade = StudentYearGrade.objects.get_or_create(
+                    student=student,
+                    year_id=year['course__marking_period__school_year']
+                )[0]
+                if year_grade.grade_recalculation_needed:
+                    year_grade.recalculate_grade()
         
     @staticmethod
-    def build_all_cache():
+    def build_all_cache(*args, **kwargs):
         """ Create object for each student * possible years """
-        for student in Student.objects.all():
-            years = student.courseenrollment_set.values(
-                'course__marking_period__school_year').annotate(Count('course__marking_period__school_year'))
-            for year in years:
-                if year['course__marking_period__school_year']:
-                    year_grade = StudentYearGrade.objects.get_or_create(
-                        student=student,
-                        year_id=year['course__marking_period__school_year']
-                    )[0]
-                    if year_grade.grade_recalculation_needed:
-                        year_grade.recalculate_grade()
+        if 'instance' in kwargs:
+            StudentYearGrade.build_cache_student(kwargs['instance'])
+        else:
+            for student in Student.objects.all():
+                StudentYearGrade.build_cache_student(student)
         
     def calculate_grade(self, date_report=None):
         """ Calculate grade considering MP weights and course credits 
@@ -96,6 +103,7 @@ class StudentYearGrade(models.Model):
             return total / credits
         return None
 
+signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
     
 
 class Grade(models.Model):
