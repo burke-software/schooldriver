@@ -167,7 +167,6 @@ class Grade(models.Model):
         
     def invalidate_cache(self):
         """ Invalidate any related caches """
-        print "INVALIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIID"
         try:
             enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
             enrollment.flag_grade_as_stale()

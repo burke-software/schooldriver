@@ -205,14 +205,13 @@ class CourseGradeFilter(Filter):
         if times:
             queryset = queryset.filter(**grade_kwarg).annotate(
                 course_grade_count=Count('courseenrollment', distinct=True)).filter(course_grade_count__gte=times)
-        else: # Every time
-            # Produces invalid sql - django bug?
+        else:
             queryset = queryset.exclude(**grade_kwarg)
         return queryset
 
-class MpGradeFilter(CourseGradeFilter):
-    verbose_name = "Grades (MP)"
-    add_fields = ['mp_grade_count']
+class MpAvgGradeFilter(CourseGradeFilter):
+    verbose_name = "Grades (Marking Period Average)"
+    add_fields = ['mp_avg_grade_count']
     
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
@@ -225,9 +224,35 @@ class MpGradeFilter(CourseGradeFilter):
             'studentmarkingperiodgrade__marking_period__start_date__gte': date_begin,
             'studentmarkingperiodgrade__marking_period__end_date__lte': date_end,
         }
+        queryset = queryset.filter(**grade_kwarg).annotate(
+            mp_avg_grade_count=Count('studentmarkingperiodgrade', distinct=True))
         if times:
-            queryset = queryset.filter(**grade_kwarg).annotate(
-                mp_grade_count=Count('studentmarkingperiodgrade', distinct=True)).filter(mp_grade_count__gte=times)
+            queryset = queryset.filter(mp_avg_grade_count__gte=times)
+        return queryset
+    
+    
+class MpGradeFilter(CourseGradeFilter):
+    verbose_name = "Grades (By Marking Period)"
+    add_fields = ['mp_grade_count',]
+    
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        date_begin = report_context['date_begin']
+        date_end = report_context['date_end']
+        compare = self.cleaned_data['field_0']
+        number = self.cleaned_data['field_1']
+        times = self.cleaned_data['field_2']
+        report_context['mp_grade_filter_compare'] = compare
+        report_context['mp_grade_filter_number'] = number
+        grade_kwarg = {
+            'grade__grade__' + compare: number,
+            'grade__marking_period__start_date__gte': date_begin,
+            'grade__marking_period__end_date__lte': date_end,
+            'grade__override_final': False,
+        }
+        queryset = queryset.filter(**grade_kwarg).annotate(
+            mp_grade_count=Count('grade', distinct=True))
+        if times:
+            queryset = queryset.filter(mp_grade_count__gte=times)
         return queryset
 
 
@@ -283,8 +308,25 @@ class AspReportButton(ReportButton):
     name = "asp_report"
     name_verbose = "ASP Report"
     
-    def get_report(self, context):
-        pass
+    def get_report(self, report_view, context):
+        data = report_view.report.report_to_list(report_view.request.user)
+        students = report_view.report.get_queryset()
+        date_begin = report_view.report.report_context['date_begin']
+        date_end = report_view.report.report_context['date_end']
+        compare = report_view.report.report_context['mp_grade_filter_compare']
+        number = report_view.report.report_context['mp_grade_filter_number']
+        
+        for i, student in enumerate(students):
+            grades = student.grade_set.filter(
+                override_final=False,
+                marking_period__start_date__gte=date_begin,
+                marking_period__end_date__lte=date_end,
+                )
+            grades = grades.filter(**{'grade__' + compare: number})
+            for grade in grades.order_by('course__department', 'marking_period'):
+                data[i].append(grade.grade)
+        
+        return report_view.list_to_xlsx_response(data)
 
 
 def strip_trailing_zeros(x):
@@ -299,6 +341,7 @@ class struct(object):
 class SisReport(ScaffoldReport):
     name = "student_report"
     model = Student
+    preview_fields = ['first_name', 'last_name']
     filters = (
         DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cached_gpa", add_fields=('gpa',)),
         AbsenceFilter(),
@@ -307,6 +350,7 @@ class SisReport(ScaffoldReport):
         SchoolDateFilter(),
         StudentYearFilter(),
         SelectSpecificStudents(),
+        MpAvgGradeFilter(),
         MpGradeFilter(),
         CourseGradeFilter(),
         TemplateSelection(),
