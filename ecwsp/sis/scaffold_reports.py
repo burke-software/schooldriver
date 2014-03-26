@@ -315,6 +315,7 @@ class AspReportButton(ReportButton):
         date_end = report_view.report.report_context['date_end']
         compare = report_view.report.report_context['mp_grade_filter_compare']
         number = report_view.report.report_context['mp_grade_filter_number']
+        header = context['headers']
         
         for i, student in enumerate(students):
             grades = student.grade_set.filter(
@@ -324,9 +325,10 @@ class AspReportButton(ReportButton):
                 )
             grades = grades.filter(**{'grade__' + compare: number})
             for grade in grades.order_by('course__department', 'marking_period'):
+                data[i].append('{} {}'.format(grade.marking_period.name, grade.course.shortname))
                 data[i].append(grade.grade)
         
-        return report_view.list_to_xlsx_response(data)
+        return report_view.list_to_xlsx_response(data, 'ASP_Report', header)
 
 
 def strip_trailing_zeros(x):
