@@ -203,7 +203,8 @@ class CourseEnrollment(models.Model):
             return grade
 
         if ave_grade:
-            return ave_grade
+            # database math always comes out as a float :(
+            return Decimal(ave_grade)
         
         # about 0.5 s
         # Letter Grade
