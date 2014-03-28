@@ -146,7 +146,7 @@ class Grade(models.Model):
                 self.letter_grade = grade
                 self.grade = None
                 return True
-            elif grade in ('', None, 'None'):
+            elif grade in ('', None, 'None', 'NONE'):
                 self.grade = None
                 self.letter_grade = None
                 return True
@@ -177,7 +177,7 @@ class Grade(models.Model):
                 return self.get_letter_grade_display()
             else:
                 return self.letter_grade
-        elif self.grade:
+        elif self.grade is not None:
             grade = self.grade
             if minimum:
                 if grade < minimum:
