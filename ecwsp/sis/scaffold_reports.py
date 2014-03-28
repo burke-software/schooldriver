@@ -286,6 +286,9 @@ class IncludeDeleted(Filter):
 
 
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
+class SelectSpecificStudentsForm(forms.Form):
+    select_students = AutoCompleteSelectMultipleField('dstudent', required=False)
+    
 class SelectSpecificStudents(ModelMultipleChoiceFilter):
     model = Student
     compare_field_string = "pk"
@@ -293,15 +296,12 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
     can_add = False
 
     def build_form(self):
-        queryset = self.get_queryset()
-        self.form = forms.Form()
+        self.form = SelectSpecificStudentsForm()
         self.form.fields['filter_number'] = forms.IntegerField(widget=forms.HiddenInput())
-        self.form.fields['field_0'] =  AutoCompleteSelectMultipleField('dstudent', required=False)
-
+    
     def queryset_filter(self, queryset, report_context=None, **kwargs):
-        if self.cleaned_data['field_0']:
-            return super(SelectSpecificStudents, self).queryset_filter(queryset, report_context, **kwargs)
-        return queryset
+        selected = self.cleaned_data['select_students']
+        return queryset.filter(pk__in=selected)
     
 
 class AspReportButton(ReportButton):
