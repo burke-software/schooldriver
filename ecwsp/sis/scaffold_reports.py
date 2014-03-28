@@ -6,7 +6,8 @@ from django.conf import settings
 from django.db.models import Count
 from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel
-from ecwsp.schedule.models import MarkingPeriod, Department
+from ecwsp.schedule.calendar import Calendar
+from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet
 from ecwsp.discipline.models import DisciplineAction
 import datetime
 from decimal import Decimal
@@ -302,6 +303,14 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         selected = self.cleaned_data['select_students']
         return queryset.filter(pk__in=selected)
+
+class ScheduleDaysFilter(Filter):
+    fields = [forms.MultipleChoiceField(required=False, choices=CourseMeet.day_choice,
+        help_text='''On applicable reports, only the selected days will be included.
+            Hold down "Control", or "Command" on a Mac, to select more than one.''')]
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['schedule_days'] = self.cleaned_data['field_0']
+        return queryset
     
 
 class AspReportButton(ReportButton):
@@ -357,6 +366,7 @@ class SisReport(ScaffoldReport):
         CourseGradeFilter(),
         TemplateSelection(),
         IncludeDeleted(),
+        ScheduleDaysFilter(),
     )
     report_buttons = (
         AspReportButton(),
@@ -581,6 +591,22 @@ class SisReport(ScaffoldReport):
                 context['marking_periods'] = self.marking_periods.order_by('start_date')
                 for student in students:
                     self.get_student_report_card_data(student)
+            if template.general_student:
+                cal = Calendar()
+                schedule_days = self.report_context.get('schedule_days', None)
+                marking_periods = MarkingPeriod.objects.filter(start_date__gte=self.report_context['date_end'],
+                    end_date__lte=self.report_context['date_end']).order_by('start_date')
+                if not marking_periods.count():
+                    marking_periods = MarkingPeriod.objects.filter(start_date__gte=self.report_context['date_begin']).order_by('start_date')
+                current_mp = marking_periods[0]
+                for student in students:
+                    if current_mp:
+                        student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
+                            schedule_days=schedule_days)
+                    #student.discipline_records = student.studentdiscipline_set.filter(date__gte=begin_end_dates[0],
+                    #    date__lte=begin_end_dates[1])
+                    #for d in student.discipline_records:
+                    #    d.date = d.date.strftime('%b %d, %Y')
 
         context['students'] = students
         return context
