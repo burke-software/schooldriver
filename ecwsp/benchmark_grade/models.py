@@ -329,6 +329,29 @@ class Aggregate(models.Model):
     class Meta:
         unique_together = ('student', 'course', 'category', 'marking_period')
 
+    def __getattribute__(self, name):
+        ''' Sometimes people use the gradebook for one marking period, but
+        something else for another. This is a fairly awful way to display the
+        correct course average in those circumstances. Eventually, we will stop
+        calculating course averages altogether and leave that work to
+        ecwsp.grades. '''
+        get_ = lambda x: super(Aggregate, self).__getattribute__(x)
+        if name == 'cached_value' and \
+            get_('cached_value') is None and \
+            get_('category_id') is None and \
+            get_('course_id') is not None and \
+            get_('marking_period_id') is not None and \
+            get_('student_id') is not None:
+            try:
+                grade = Grade.objects.get(
+                    marking_period_id=get_('marking_period_id'),
+                    course_id=get_('course_id'),
+                    student_id=get_('student_id'))
+                return grade.grade
+            except Grade.DoesNotExist:
+                pass
+        return super(Aggregate, self).__getattribute__(name)
+
     @property
     def calculation_rule(self):
         ''' Find the CalculationRule that applies to this Aggregate '''
