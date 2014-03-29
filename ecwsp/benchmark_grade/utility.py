@@ -407,7 +407,7 @@ def benchmark_calculate_grade_for_courses(student, courses, marking_period=None,
             student_numer += grade * credits
             student_denom += credits
         except:
-            logging.warning('Legacy course grade calculation failed for student {}, course {}, marking_period {}, date_report {}'.format(student, course, marking_period, date_report), exc_info=True)
+            pass#logging.warning('Legacy course grade calculation failed for student {}, course {}, marking_period {}, date_report {}'.format(student, course, marking_period, date_report), exc_info=True)
             
     if student_denom > 0:
         return Decimal(student_numer / student_denom).quantize(Decimal(10) ** (-1 * DECIMAL_PLACES), ROUND_HALF_UP)
