@@ -217,7 +217,7 @@ class CourseEnrollment(models.Model):
                 total_weight = Decimal(0)
                 for grade in grades:
                     get_grade =  grade.get_grade()
-                    if get_grade in ["I", "IN"]:
+                    if get_grade in ["I", "IN", "YT"]:
                         return get_grade
                     elif get_grade in ["P","HP","LP"]:
                         if grade.marking_period:
