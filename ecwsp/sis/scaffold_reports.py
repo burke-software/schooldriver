@@ -3,14 +3,16 @@ from scaffold_report.fields import SimpleCompareField
 from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter, ModelChoiceFilter
 from django import forms
 from django.conf import settings
-from django.db.models import Count
+from django.db.models import Count, Q
 from ecwsp.administration.models import Template, Configuration
-from ecwsp.sis.models import Student, SchoolYear, GradeLevel
+from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty
 from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet
+from ecwsp.grades.models import Grade
 from ecwsp.discipline.models import DisciplineAction
 import datetime
 from decimal import Decimal
+from openpyxl.cell import get_column_letter
 
 def reverse_compare(compare):
     """ Get the opposite comparison
@@ -324,6 +326,160 @@ class ScheduleDaysFilter(Filter):
         return queryset
     
 
+class FailReportButton(ReportButton):
+    name = "fail_report"
+    name_verbose = "Failing Students"
+
+    def get_report(self, report_view, context):
+        marking_periods = report_view.report.report_context['marking_periods']
+        students = Student.objects.filter(courseenrollment__course__marking_period__in=marking_periods).distinct()
+        titles = ['']
+        departments = Department.objects.filter(course__courseenrollment__user__is_active=True).distinct()
+        
+        for department in departments:
+            titles += [str(department)]
+        titles += ['Total', '', 'Username', 'Year','GPA', '', 'Failed courses']
+        
+        passing_grade = float(Configuration.get_or_default('Passing Grade','70').value)
+        
+        data = []
+        iy=3
+        for student in students:
+            row = [str(student)]
+            ix = 1 # letter A
+            student.failed_grades = Grade.objects.none()
+            for department in departments:
+                failed_grades = Grade.objects.filter(override_final=False,course__department=department,course__courseenrollment__user=student,grade__lte=passing_grade,marking_period__in=marking_periods)
+                row += [failed_grades.count()]
+                student.failed_grades = student.failed_grades | failed_grades
+                ix += 1
+            row += [
+                '=sum(b{0}:{1}{0})'.format(str(iy),get_column_letter(ix)),
+                '',
+                student.username,
+                str(student.year),
+                student.gpa,
+                '',
+                ]
+            for grade in student.failed_grades:
+                row += [str(grade.course), str(grade.marking_period), str(grade.grade)]
+            data += [row]
+            iy += 1
+        
+        return report_view.list_to_xlsx_response(data, 'fail_report', header=titles)
+
+
+class AggregateGradeButton(ReportButton):
+    name = "aggregate_grade_report"
+    name_verbose = "Aggregated teacher grades"
+
+    def get_report(self, report_view, context):
+        mps = report_view.report.report_context['marking_periods']
+        titles = ["Teacher", "Range", "No. Students", ""]
+        for level in GradeLevel.objects.all():
+            titles += [str(level), ""]
+        data = [titles]
+        ranges = [['100', '90'], ['89.99', '80'], ['79.99', '70'], ['69.99', '60'], ['59.99', '50'], ['49.99', '0']]
+        letter_ranges = ['P', 'F']
+        for teacher in Faculty.objects.filter(course__marking_period__in=mps, is_active=True).distinct():
+            data.append([str(teacher)])
+            grades = Grade.objects.filter(
+                marking_period__in=mps,
+                course__teacher=teacher,
+                student__is_active=True,
+                override_final=False,
+            ).filter(
+                Q(grade__isnull=False) |
+                Q(letter_grade__isnull=False)
+            )
+            teacher_students_no = grades.distinct().count()
+            if teacher_students_no:
+                for range in ranges:
+                    no_students = grades.filter(
+                            grade__range=(range[1],range[0]),
+                        ).distinct().count()
+                    percent = float(no_students) / float(teacher_students_no)
+                    percent = ('%.2f' % (percent * 100,)).rstrip('0').rstrip('.') + "%"
+                    row = ["", str(range[1]) + " to " + str(range[0]), no_students, percent]
+                    for level in GradeLevel.objects.all():
+                        no_students = grades.filter(
+                                grade__range=(range[1],range[0]),
+                                student__year__in=[level],
+                            ).distinct().count()
+                        level_students_no = grades.filter(
+                                student__year__in=[level],
+                            ).distinct().count()
+                        percent = ""
+                        if level_students_no:
+                            percent = float(no_students) / float(level_students_no)
+                            percent = ('%.2f' % (percent * 100,)).rstrip('0').rstrip('.') + "%"
+                        row += [no_students, percent]
+                    data.append(row)
+                for range in letter_ranges:
+                    no_students = grades.filter(
+                            letter_grade=range,
+                        ).distinct().count()
+                    if teacher_students_no:
+                        percent = float(no_students) / float(teacher_students_no)
+                        percent = ('%.2f' % (percent * 100,)).rstrip('0').rstrip('.') + "%"
+                    else:
+                        percent = ""
+                    row = ["", str(range), no_students, percent]
+                    for level in GradeLevel.objects.all():
+                        no_students = grades.filter(
+                                letter_grade=range,
+                                student__year__in=[level],
+                            ).distinct().count()
+                        level_students_no = grades.filter(
+                                student__year__in=[level],
+                            ).distinct().count()
+                        if level_students_no:
+                            percent = float(no_students) / float(level_students_no)
+                            percent = ('%.2f' % (percent * 100,)).rstrip('0').rstrip('.') + "%"
+                        else:
+                            percent = ""
+                        row += [no_students, percent]
+                    data.append(row)
+                    
+        report_data = {'teacher_aggregate': data}
+        
+        passing = 70
+        titles = ['Grade']
+        for dept in Department.objects.all():
+            titles.append(str(dept))
+            titles.append('')
+        dept_data = [titles]
+        for level in GradeLevel.objects.all():
+            row = [str(level)]
+            for dept in Department.objects.all():
+                fails = Grade.objects.filter(
+                    marking_period__in=mps,
+                    course__department=dept,
+                    student__is_active=True,
+                    student__year__in=[level],   # Shouldn't need __in. Makes no sense at all.
+                    grade__lt=passing,
+                    override_final=False,
+                ).count()
+                total = Grade.objects.filter(
+                    marking_period__in=mps,
+                    course__department=dept,
+                    student__is_active=True,
+                    student__year__in=[level],
+                    override_final=False,
+                ).count()
+                if total:
+                    percent = float(fails) / float(total)
+                else:
+                    percent = 0
+                percent = ('%.2f' % (percent * 100,)).rstrip('0').rstrip('.')
+                row.append(fails)
+                row.append(percent)
+            dept_data.append(row)
+
+        report_data['class_dept'] = dept_data
+        return report_view.list_to_xlsx_response(report_data, 'Aggregate_grade_report')
+    
+
 class AspReportButton(ReportButton):
     name = "asp_report"
     name_verbose = "ASP Report"
@@ -333,8 +489,8 @@ class AspReportButton(ReportButton):
         students = report_view.report.get_queryset()
         date_begin = report_view.report.report_context['date_begin']
         date_end = report_view.report.report_context['date_end']
-        compare = report_view.report.report_context['mp_grade_filter_compare']
-        number = report_view.report.report_context['mp_grade_filter_number']
+        compare = report_view.report.report_context.get('mp_grade_filter_compare', None)
+        number = report_view.report.report_context.get('mp_grade_filter_number', None)
         header = context['headers']
         
         for i, student in enumerate(students):
@@ -343,10 +499,11 @@ class AspReportButton(ReportButton):
                 marking_period__start_date__gte=date_begin,
                 marking_period__end_date__lte=date_end,
                 )
-            grades = grades.filter(**{'grade__' + compare: number})
-            for grade in grades.order_by('course__department', 'marking_period'):
-                data[i].append('{} {}'.format(grade.marking_period.name, grade.course.shortname))
-                data[i].append(grade.grade)
+            if compare:
+                grades = grades.filter(**{'grade__' + compare: number})
+                for grade in grades.order_by('course__department', 'marking_period'):
+                    data[i].append('{} {}'.format(grade.marking_period.name, grade.course.shortname))
+                    data[i].append(grade.grade)
         
         return report_view.list_to_xlsx_response(data, 'ASP_Report', header)
 
@@ -382,6 +539,8 @@ class SisReport(ScaffoldReport):
     )
     report_buttons = (
         AspReportButton(),
+        AggregateGradeButton(),
+        FailReportButton(),
     )
 
     def is_passing(self, grade):
