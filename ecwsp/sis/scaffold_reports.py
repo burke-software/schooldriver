@@ -326,6 +326,41 @@ class ScheduleDaysFilter(Filter):
         return queryset
     
 
+class GPAReportButton(ReportButton):
+    name = "gpa_report"
+    name_verbose = "GPA per year"
+
+    def get_report(self, report_view, context):
+        students = report_view.report.get_queryset()
+        titles = ["Student", "9th", "10th", "11th","12th", "Current"]
+        data = []
+        current_year = SchoolYear.objects.get(active_year = True)
+        two_years_ago = (current_year.end_date + datetime.timedelta(weeks=-(2*52))).year
+        three_years_ago = (current_year.end_date + datetime.timedelta(weeks=-(3*52))).year
+        four_years_ago = (current_year.end_date + datetime.timedelta(weeks=-(4*52))).year
+        for student in students:
+            row = [str(student)]
+            i = 0
+            for year_grade in student.studentyeargrade_set.order_by('year__start_date'):
+                if year_grade.year == current_year:
+                    row.append(year_grade.grade)
+                elif year_grade.year == two_years_ago:
+                    row.append(year_grade.grade)
+                elif year_grade.year == three_years_ago:
+                    row.append(year_grade.grade)
+                elif year_grade.year == four_years_ago:
+                    row.append(year_grade.grade)
+                else:
+                    row.append('')
+                i += 1
+            while i < 4:
+                row.append('')
+                i += 1
+            row.append(student.gpa)
+            data.append(row)
+        return report_view.list_to_xlsx_response(data, 'gpas_by_year', header=titles)
+
+
 class FailReportButton(ReportButton):
     name = "fail_report"
     name_verbose = "Failing Students"
@@ -541,6 +576,7 @@ class SisReport(ScaffoldReport):
         AspReportButton(),
         AggregateGradeButton(),
         FailReportButton(),
+        GPAReportButton(),
     )
 
     def is_passing(self, grade):
