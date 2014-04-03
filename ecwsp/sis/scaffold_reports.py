@@ -375,11 +375,8 @@ class SisReport(ScaffoldReport):
         CourseGradeFilter(),
         TemplateSelection(),
         IncludeDeleted(),
-<<<<<<< HEAD
-        BrendanFilter(),
-=======
         ScheduleDaysFilter(),
->>>>>>> FETCH_HEAD
+        BrendanFilter(),
     )
     report_buttons = (
         AspReportButton(),
