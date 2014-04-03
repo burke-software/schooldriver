@@ -20,7 +20,7 @@ def setup(request):
         if 'download' in request.POST:
             cs = CanvasSync()
             return cs.run_sync()
-    
+
     return render_to_response('canvas_sync/setup.html', {
         'msg':'',
     }, RequestContext(request, {}),)
@@ -29,7 +29,7 @@ class CanvasSync:
     token = settings.CANVAS_TOKEN
     account_id = settings.CANVAS_ACCOUNT_ID
     base_url = settings.CANVAS_BASE_URL
-    
+
     def run_sync(self):
         #buf = StringIO()
         response = HttpResponse(mimetype="application/zip")
@@ -43,31 +43,31 @@ class CanvasSync:
         zip_file.writestr('groups.csv', smart_str(self.gen_groups()))
         zip_file.writestr('groups_membership.csv', smart_str(self.gen_groups_membership()))
         zip_file.close()
-        
-        
-        
+
+
+
         return response
-        
-        
-        
-        
+
+
+
+
         temp_file = tempfile.TemporaryFile()
         temp_file.write(buf.getvalue())
-        
+
         if False:
             params = {'access_token':self.token, 'extention':'zip'}
             #files = {'attachment': ('import.zip', temp_file)}
             files = {'attachment': ('import.zip', open('foo.zip','rb'))}
             response = requests.post(url,params=params,files=files)
             temp_file.close()
-        
+
         return response
             #output = open('foo.zip', 'wb')
             #output.write(buf.getvalue())
             #output.close()
-        
+
         buf.close()
-    
+
     def gen_users(self):
         """ Create csv string for all users both students and faculty
         """
@@ -82,10 +82,10 @@ class CanvasSync:
                 student.lname,
                 student.get_email,
             )
-            if student.inactive:
-                line += u'"deleted"'
-            else:
+            if student.is_active:
                 line += u'"active"'
+            else:
+                line += u'"deleted"'
             users_str += line + u'\n'
         for faculty in Faculty.objects.all():
             if faculty.username:
@@ -103,7 +103,7 @@ class CanvasSync:
                     line += u'"active"'
                 users_str += line + u'\n'
         return users_str
-    
+
     def gen_accounts(self):
         """ Create csv string for all departments for Canvas accounts
         """
@@ -117,7 +117,7 @@ class CanvasSync:
             )
             result += line + u'\n'
         return result
-    
+
     def gen_terms(self, year_is_term=True):
         """ Create csv string for marking periods for Canvas terms
         year_is_term is true then a SWoRD year will be a Canvas term
@@ -144,7 +144,7 @@ class CanvasSync:
                 )
                 result += line + u'\n'
         return result
-        
+
     def gen_courses(self):
         """ Create csv string for courses
         """
@@ -166,7 +166,7 @@ class CanvasSync:
             )
             result += line + u'\n'
         return result
-    
+
     def gen_enrollments(self):
         """ Create csv string for enrollment
         """
@@ -200,7 +200,7 @@ class CanvasSync:
                 )
                 result += line + u'\n'
         return result
-        
+
     def gen_groups(self):
         """ Create a csv string for groups from cohorts
         """
@@ -214,7 +214,7 @@ class CanvasSync:
                 )
                 result += line + u'\n'
         return result
-    
+
     def gen_groups_membership(self):
         """ Create a csv string for group memberships
         """
@@ -228,4 +228,4 @@ class CanvasSync:
                 )
                 result += line + u'\n'
         return result
-        
+
