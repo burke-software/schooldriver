@@ -62,7 +62,6 @@ class SchoolDateFilter(Filter):
         return context
 
 
-
 def django_to_sql_compare(compare):
     """ Convert django syntax (lte) to sql (<=) """
     compare_sql = '='
@@ -295,6 +294,7 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
     compare_field_string = "pk"
     default = True
     can_add = False
+    can_remove = False
 
     def build_form(self):
         self.form = SelectSpecificStudentsForm()
@@ -302,7 +302,9 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
     
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         selected = self.cleaned_data['select_students']
-        return queryset.filter(pk__in=selected)
+        if selected:
+            return queryset.filter(pk__in=selected)
+        return queryset
 
 class ScheduleDaysFilter(Filter):
     fields = [forms.MultipleChoiceField(required=False, choices=CourseMeet.day_choice,
