@@ -13,25 +13,34 @@
     //padding-top: .2em;
   }
 
+  .removable {
+    background-color: #f2f2f2;
+    padding: 5px;
+    margin: 5px 0;
+
+    .filter-title {
+      margin-left: 1.2%;
+    }
+
+    option {
+      background-color: #fff;
+    }
+  }
+
   .filter {
     position: relative;
-
-    &.removable {
-      //border: 1px solid #bebdbd;
-      //border-bottom: 1px solid #E5E5E5;
-      //border-radius: 2px;
-      background-color: #f2f2f2;
-      padding: 5px;
-      margin: 5px 0;
-
-      .filter-title {
-        margin-left: 1.2%;
-      }
-    }
 
     input[type=text], input[type=number], .post-form-text {
       vertical-align: top;
       margin-top: 2px;
+
+      &.xnarrow:first-child {
+        margin-right: 0;
+      }
+    }
+
+    input[type=checkbox] {
+      -webkit-appearance: checkbox!important;
     }
 
     .picker {
@@ -150,4 +159,8 @@ h3.filter-subheads {
 
 #preview_area table {
   margin: 20px auto;
+}
+
+.premade h4 {
+  font-size: 1.25em;
 }

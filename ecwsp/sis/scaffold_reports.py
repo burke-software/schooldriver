@@ -132,7 +132,16 @@ class StudentYearFilter(ModelMultipleChoiceFilter):
     compare_field_string="year"
     add_fields = ['year']
     model = GradeLevel
-    
+ 
+class BrendanForm(forms.Form):
+    one   = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "one"}))
+    two   = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "two"}))
+    three = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "three"}))
+    four  = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "four "}),required=False)
+    five  = forms.ChoiceField(required=False)
+
+class BrendanFilter(Filter):
+    form_class = BrendanForm    
 
 class DisciplineForm(forms.Form):
     disc_action = forms.ModelChoiceField(queryset=DisciplineAction.objects.all())
@@ -355,6 +364,7 @@ class SisReport(ScaffoldReport):
         CourseGradeFilter(),
         TemplateSelection(),
         IncludeDeleted(),
+        BrendanFilter(),
     )
     report_buttons = (
         AspReportButton(),
