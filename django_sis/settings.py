@@ -413,7 +413,11 @@ INSTALLED_APPS = (
     'floppyforms',
     'widget_tweaks',
     'django_cached_field',
+    'django_faker',
 ) + INSTALLED_APPS
+
+FAKER_LOCALE = None     # settings.LANGUAGE_CODE is loaded
+FAKER_PROVIDERS = None  # faker.DEFAULT_PROVIDERS is loaded (all)
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
     TEMPLATE_CONTEXT_PROCESSORS += (
