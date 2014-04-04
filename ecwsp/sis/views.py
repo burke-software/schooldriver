@@ -14,9 +14,12 @@ from django.utils.decorators import method_decorator
 from django.views import generic
 from datetime import date
 
-from ecwsp.sis.models import Student, UserPreference, GradeLevel, SchoolYear
-from ecwsp.sis.forms import UserPreferenceForm, UploadFileForm, StudentLookupForm, StudentReportWriterForm
-from ecwsp.sis.forms import StudentGradeReportWriterForm, MarkingPeriodForm, YearSelectForm
+from .models import Student, UserPreference, GradeLevel, SchoolYear
+from .forms import UserPreferenceForm, UploadFileForm, StudentLookupForm, StudentReportWriterForm
+from .forms import StudentGradeReportWriterForm, MarkingPeriodForm, YearSelectForm
+from .pdf_reports import student_thumbnail
+from .template_report import TemplateReport
+from ecwsp.administration.models import Template
 from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
 
@@ -124,7 +127,27 @@ def photo_flash_card(request, year=None):
                                'student_img': student.pic.url_530x400,
                                'request': request}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')  
+def thumbnail(request, year):
+    return student_thumbnail(request, GradeLevel.objects.get(id=year))
+
+def paper_attendance(request, day):
+    format = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
+    template = Template.objects.get_or_create(name="Paper Attendance")[0].file
+    if not template:
+        result = False
+    else:
+        from ecwsp.schedule.models import CourseMeet
+        cm = CourseMeet.objects.filter(day=day)
+        courses = Course.objects.filter(coursemeet__in=cm, homeroom=True).distinct()
+        report = TemplateReport(request.user)
+        report.data['courses'] = courses
+        result = report.pod_save(template)
+    if result:
+        return result
+    else:
+        messages.error(request, 'Problem making paper attendance, does the template exist?')
+
+@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')
 def transcript_nonofficial(request, student_id):
     """ Build a transcripte based on template called "Transcript Nonoffical"
     """
@@ -172,7 +195,7 @@ def ajax_include_deleted(request):
     profile.save()
     return HttpResponse('SUCCESS')
 
-@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')   
+@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')
 def view_student(request, id=None):
     """ Lookup all student information
     """
@@ -196,14 +219,14 @@ def view_student(request, id=None):
                     return HttpResponseRedirect('/sis/view_student/' + str(student.id))
                 if student == current_student:
                     found = True
-                    
+
     if request.method == 'POST':
         form = StudentLookupForm(request.POST)
         if form.is_valid():
             return HttpResponseRedirect('/sis/view_student/' + str(form.cleaned_data['student'].id))
-            
+
     profile = UserPreference.objects.get_or_create(user=request.user)[0]
-    
+
     if id:
         student = get_object_or_404(Student, pk=id)
     else:
@@ -211,12 +234,12 @@ def view_student(request, id=None):
         return render_to_response('sis/view_student.html', {
             'include_inactive': profile.include_deleted_students,
         }, RequestContext(request, {}),)
-    
+
     today = date.today()
     emergency_contacts = student.emergency_contacts.all()
     siblings = student.siblings.all()
     numbers = student.studentnumber_set.all()
-    
+
     # Schedule
     cal = Calendar()
     try:
@@ -238,13 +261,13 @@ def view_student(request, id=None):
     else:
         schedule_days = None
         periods = None
-    
+
     # Discipline
     if 'ecwsp.discipline' in settings.INSTALLED_APPS:
         disciplines = student.studentdiscipline_set.all()
     else:
         disciplines = None
-    
+
     #### CWSP related
     try:
         clientvisits = student.studentworker.clientvisit_set.all()
@@ -270,7 +293,7 @@ def view_student(request, id=None):
     except:
         supervisors = None
     ########################################################################
-    
+
     #Grades
     years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct()
     from ecwsp.grades.models import Grade
@@ -290,7 +313,7 @@ def view_student(request, id=None):
                 course.grade_html += '<td> %s </td>' % (unicode(course.courseenrollment_set.get(user=student, role="student").grade),)
             except CourseEnrollment.DoesNotExist:
                 course.grade_html += '<td></td>'
-        
+
         # Attendance
         if 'ecwsp.attendance' in settings.INSTALLED_APPS:
             attendances = student.student_attn.filter(date__range=(year.start_date, year.end_date))
@@ -300,7 +323,7 @@ def view_student(request, id=None):
             year.attendance_absense_with_half = year.attendance_absense + float(attendances.filter(status__half=True).count()) / 2
             year.total = year.get_number_days()
             year.present = year.total - year.attendance_tardy - year.attendance_absense_with_half
-    
+
     #Standard Tests
     from ecwsp.administration.models import Configuration
     if 'ecwsp.standard_test' in settings.INSTALLED_APPS:
@@ -308,7 +331,7 @@ def view_student(request, id=None):
         standard_tests = StandardTestResult.objects.filter(student=student)
     else:
         standard_tests = None
-    
+
     return render_to_response('sis/view_student.html', {
         'date':today,
         'student':student,
@@ -330,7 +353,7 @@ def view_student(request, id=None):
         'tests': standard_tests
     }, RequestContext(request, {}),)
 
-@permission_required('sis.change_student') 
+@permission_required('sis.change_student')
 def increment_year(request):
     subtitle = "You can use this tool to change school years. It will change students year (fresh, soph, etc) and graudate as needed. "\
         "There will be confirmation screen before any changes are made."
@@ -347,11 +370,11 @@ def increment_year(request):
 class StudentViewDashletView(generic.DetailView):
     model = Student
     template_name = 'sis/view_student_dashlet.html'
-    
+
     @method_decorator(permission_required('sis.view_student'))
     def dispatch(self, *args, **kwargs):
         return super(StudentViewDashletView, self).dispatch(*args, **kwargs)
- 
+
 
 @transaction.commit_on_success
 def increment_year_confirm(request, year_id):
@@ -375,7 +398,7 @@ def increment_year_confirm(request, year_id):
                     student.save()
         messages.success(request, 'Successfully incremented student years!')
         return HttpResponseRedirect(reverse('admin:sis_student_changelist'))
-    
+
     old_active_year = SchoolYear.objects.get(active_year = True)
     item_list = ["Change active year from %s to %s" % (old_active_year, year)]
     for student in students:
@@ -393,5 +416,5 @@ def increment_year_confirm(request, year_id):
                     pass
         if row:
             item_list += [mark_safe(row)]
-    
+
     return render_to_response('sis/list_with_confirm.html', {'subtitle': subtitle, 'item_list':item_list, 'msg':msg}, RequestContext(request, {}),)

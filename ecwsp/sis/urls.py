@@ -1,5 +1,5 @@
 from django.conf.urls import patterns
-from .views import transcript_nonofficial, photo_flash_card
+from .views import transcript_nonofficial, photo_flash_card, thumbnail, paper_attendance
 from .views import user_preferences, view_student, ajax_include_deleted, import_naviance, increment_year, increment_year_confirm, StudentViewDashletView
 
 urlpatterns = patterns('',
@@ -14,4 +14,6 @@ urlpatterns = patterns('',
     (r'^student/naviance/$', import_naviance),
     (r'^increment_year/$', increment_year),
     (r'^increment_year_confirm/(?P<year_id>\d+)/$', increment_year_confirm),
+    (r'^thumbnail/(?P<year>\d+)/$', thumbnail),
+    (r'^paper_attendance/(?P<day>\d+)/$', paper_attendance),
 )

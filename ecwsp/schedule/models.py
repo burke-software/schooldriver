@@ -33,10 +33,10 @@ def duplicate(obj, changes=None):
                 destination.add(item)
             except: pass
     return duplicate
-    
+
 class MarkingPeriod(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    shortname = models.CharField(max_length=255) 
+    shortname = models.CharField(max_length=255)
     start_date = models.DateField(validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(validators=settings.DATE_VALIDATORS)
     grades_due = models.DateField(validators=settings.DATE_VALIDATORS, blank=True, null=True,
@@ -49,30 +49,30 @@ class MarkingPeriod(models.Model):
     monday = models.BooleanField(default=True)
     tuesday = models.BooleanField(default=True)
     wednesday = models.BooleanField(default=True)
-    thursday = models.BooleanField(default=True) 
+    thursday = models.BooleanField(default=True)
     friday = models.BooleanField(default=True)
     saturday = models.BooleanField(default=False)
     sunday = models.BooleanField(default=False)
-    
+
     class Meta:
         ordering = ('-start_date',)
-    
+
     def __unicode__(self):
         return unicode(self.name)
-        
+
     def clean(self):
         from django.core.exceptions import ValidationError
         # Don't allow draft entries to have a pub_date.
         if self.start_date > self.end_date:
             raise ValidationError('Cannot end before starting!')
-        
+
     def save(self, **kwargs):
         obj = super(MarkingPeriod, self).save(**kwargs)
         if 'ecwsp.grades' in settings.INSTALLED_APPS:
             from ecwsp.grades.tasks import build_grade_cache
             build_grade_cache.apply_async()
         return obj
-        
+
     def get_number_days(self, date=date.today()):
         """ Get number of days in a marking period"""
         if (self.school_days or self.school_days == 0) and date >= self.end_date:
@@ -102,11 +102,11 @@ class MarkingPeriod(models.Model):
             if is_day: day += 1
             current_day += timedelta(days=1)
         return day
-        
+
 class DaysOff(models.Model):
     date = models.DateField(validators=settings.DATE_VALIDATORS)
     marking_period = models.ForeignKey(MarkingPeriod)
-    
+
     def __unicode__(self):
         return unicode(self.date)
 
@@ -115,10 +115,10 @@ class Period(models.Model):
     name = models.CharField(max_length=255, unique=True)
     start_time = models.TimeField()
     end_time = models.TimeField()
-    
+
     class Meta:
         ordering = ('start_time',)
-    
+
     def __unicode__(self):
         return "%s %s-%s" % (self.name, self.start_time.strftime('%I:%M%p'), self.end_time.strftime('%I:%M%p'))
 
@@ -140,7 +140,7 @@ class CourseMeet(models.Model):
 
 class Location(models.Model):
     name = models.CharField(max_length=255)
-    
+
     def __unicode__(self):
         return self.name
 
@@ -155,10 +155,10 @@ class CourseEnrollment(models.Model):
         help_text="Student does not need to attend on this day. Note courses already specify meeting days; this field is for students who have a special reason to be away.")
     grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    
+
     class Meta:
         unique_together = (("course", "user", "role"),)
-        
+
     def cache_grades(self):
         """ Set cache on both grade and numeric_grade """
         grade = self.calculate_grade_real()
@@ -174,16 +174,16 @@ class CourseEnrollment(models.Model):
         self.numeric_grade_recalculation_needed = False
         self.save()
         return grade
-    
+
     def calculate_grade(self):
         return self.cache_grades()
-        
+
     def calculate_numeric_grade(self):
         grade = self.cache_grades()
         if isinstance(grade, Decimal):
             return grade
         return None
-    
+
     def calculate_grade_real(self, date_report=None, ignore_letter=False):
         """ Calculate the final grade for a course
         ignore_letter can be useful when computing averages
@@ -205,7 +205,7 @@ class CourseEnrollment(models.Model):
         if ave_grade:
             # database math always comes out as a float :(
             return Decimal(ave_grade)
-        
+
         # about 0.5 s
         # Letter Grade
         if ignore_letter == False:
@@ -236,7 +236,7 @@ class CourseEnrollment(models.Model):
                     else:
                         return "F"
         return None
-    
+
 
 class Day(models.Model):
     dayOfWeek = (
@@ -296,10 +296,10 @@ class Course(models.Model):
     department = models.ForeignKey(Department, blank=True, null=True)
     level = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
-    
+
     def __unicode__(self):
         return self.fullname
-    
+
     def save(self, *args, **kwargs):
         super(Course, self).save(*args, **kwargs)
         # assign teacher in as enrolled user
@@ -307,11 +307,11 @@ class Course(models.Model):
             if self.teacher:
                 enroll, created = CourseEnrollment.objects.get_or_create(course=self, user=self.teacher, role="teacher")
         except: pass
-    
+
     @staticmethod
     def autocomplete_search_fields():
         return ("shortname__icontains", "fullname__icontains",)
-    
+
     def grades_link(self):
        link = '<a href="/grades/teacher_grade/upload/%s" class="historylink"> Grades </a>' % (self.id,)
        return link
@@ -321,7 +321,10 @@ class Course(models.Model):
         """ Shim code to calculate final grade WITHOUT cache """
         enrollment = self.courseenrollment_set.get(user=student, role="student")
         return enrollment.calculate_grade_real()
-    
+
+    def get_enrolled_students(self):
+        return Student.objects.filter(courseenrollment__course=self)
+
     def copy_instance(self, request):
         changes = (("fullname", self.fullname + " copy"),)
         new = duplicate(self, changes)
@@ -337,15 +340,15 @@ class Course(models.Model):
 
     def number_of_students(self):
         return self.courseenrollment_set.filter(role="student").count()
-    number_of_students.short_description = "# of Students" 
-        
+    number_of_students.short_description = "# of Students"
+
 class OmitCourseGPA(models.Model):
     """ Used to keep repeated or invalid course from affecting GPA """
     student = models.ForeignKey('sis.Student')
     course = models.ForeignKey(Course)
     def __unicode__(self):
         return "%s %s" % (self.student, self.course)
-        
+
 class OmitYearGPA(models.Model):
     """ Used to keep repeated or invalid years from affecting GPA and transcripts """
     student = models.ForeignKey('sis.Student')
