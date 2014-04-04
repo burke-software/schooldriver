@@ -4,85 +4,38 @@
   <form action="" method="post">
 	{{ form.errors }}
 	<h3 class="filter-subheads">Premade Reports</h3>
-
-	<h4>FTE</h4>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="fteInd" value="FTE by Industry" /> 
-	</div>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="fteDay" value="FTE by Day" />
-	</div>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="ftePay" value="FTE by Paying status" />
-	</div>
-
-	<h4>Misc </h4>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="history" value="Company History" />
-	</div>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="master" value="Master contact list" />
-	</div>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="contracts" value="Contracts report" />
-	</div>
-
-	<h4>Attendance (Dropoff) </h4>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnMonday" value="Monday" />
-	</div>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnTuesday" value="Tuesday" />
-	</div>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnWednesday" value="Wednesday" />
-	</div>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnThursday" value="Thursday" />
-	</div>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnFriday" value="Friday" />
-	</div>
-
-	<h4>Attendance (Pickup)</h4>
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnPMonday" value="Monday" />
-	</div>	
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnPTuesday" value="Tuesday" />
-	</div>	
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnPWednesday" value="Wednesday" />
-	</div>	
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnPThursday" value="Thursday" />
-	</div>	
-	<div class="medium primary btn">
-		<input class="preport" type="submit" name="attnPFriday" value="Friday" />
-	</div>	
 		
-	<h3 class="filter-subheads">Date-Based Reports</h3>
+	<h4>Thumbnails</h4>
 
-		    <div>
-			From: {{ form.custom_billing_begin }} {{ form.custom_billing_begin.errors }}
-		    </div>
-		    <div>
-			Until: {{ form.custom_billing_end }} {{ form.custom_billing_end.errors }}
-		    </div>
 	<div class="medium primary btn">
-	    <input type="submit" name="attendance" value="Attendance and missed day report" />
+		<input class="preport" type="submit" name="thumbs_fresh" value="Freshman thumbnails" />
 	</div>
-	<div class="medium primary btn">		    
-	    <input type="submit" name="billing" value="Billing and timesheet report" />
+	<div class="medium primary btn">
+		<input class="preport" type="submit" name="thumbs_soph" value="Sophomore thumbnails" />
 	</div>
-	<div class="medium primary btn">		    
-	    <input type="submit" name="student_timesheet" value="Students who submitted timesheets" />
+	<div class="medium primary btn">
+		<input class="preport" type="submit" name="thumbs_jun" value="Junior thumbnails" />
 	</div>
-	<div class="medium primary btn">		    
-        <input class="preport" type="submit" name="all_timesheets" value="Time Sheet Data" />
-    </div>
-	<div class="medium primary btn">		    
-	    <input class="preport" type="submit" name="dols" value="DOL report" />
+	<div class="medium primary btn">
+		<input class="preport" type="submit" name="thumbs_sen" value="Senior thumbnails" />
+	</div>
+
+	<h4>Paper Attendance</h4>
+
+	<div class="medium primary btn">
+		<input class="preport" type="submit" name="p_attendance" value="Monday" />
+	</div>
+	<div class="medium primary btn">
+		<input class="preport" type="submit" name="p_attendance" value="Tuesday" />
+	</div>
+	<div class="medium primary btn">
+		<input class="preport" type="submit" name="p_attendance" value="Wednesday" />
+	</div>
+	<div class="medium primary btn">
+		<input class="preport" type="submit" name="p_attendance" value="Thursday" />
+	</div>
+	<div class="medium primary btn">
+		<input class="preport" type="submit" name="p_attendance" value="Friday" />
 	</div>
 
     </form>
