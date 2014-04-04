@@ -5,7 +5,7 @@ from django import forms
 from django.conf import settings
 from django.db.models import Count, Q
 from ecwsp.administration.models import Template, Configuration
-from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty
+from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty, Cohort
 from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet
 from ecwsp.grades.models import Grade
@@ -38,15 +38,15 @@ class TimeBasedForm(forms.Form):
         return get_active_year().end_date
     def get_active_marking_periods():
         return MarkingPeriod.objects.filter(active=True)
-    
+
     date_begin = forms.DateField(initial=get_default_start_date, validators=settings.DATE_VALIDATORS)
     date_end = forms.DateField(initial=get_default_end_date, validators=settings.DATE_VALIDATORS)
     school_year = forms.ModelChoiceField(initial=get_active_year, queryset=SchoolYear.objects.all())
     marking_periods = forms.ModelMultipleChoiceField(
         initial=get_active_marking_periods,
         queryset=MarkingPeriod.objects.all())
-    
-    
+
+
 class SchoolDateFilter(Filter):
     template_name = "sis/scaffold/school_date_filter.html"
     verbose_name = "Change Timeframe"
@@ -54,10 +54,10 @@ class SchoolDateFilter(Filter):
     default = True
     can_add = False
     can_remove = False
-    
+
     def get_report_context(self, report_context):
         return self.form.cleaned_data
-    
+
     def get_template_context(self):
         context = super(SchoolDateFilter, self).get_template_context()
         context['year'] = SchoolYear.objects.get(active_year=True)
@@ -81,7 +81,7 @@ def django_to_sql_compare(compare):
 class TardyFilter(IntCompareFilter):
     compare_field_string = "tardy_count"
     add_fields = ['tardy_count']
-    
+
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
         date_end = report_context['date_end']
@@ -90,14 +90,14 @@ class TardyFilter(IntCompareFilter):
 
         compare_sql = django_to_sql_compare(compare)
 
-        sql = """select coalesce(count(*)) from attendance_studentattendance 
+        sql = """select coalesce(count(*)) from attendance_studentattendance
                     left join attendance_attendancestatus
                     on attendance_attendancestatus.id = attendance_studentattendance.status_id
                     where attendance_attendancestatus.tardy = True
                     and attendance_studentattendance.student_id = sis_student.user_ptr_id
                     and attendance_studentattendance.date between %s and %s"""
         queryset = queryset.extra(
-                select = {'tardy_count': sql }, 
+                select = {'tardy_count': sql },
                 select_params = (date_begin, date_end,),
                 where = ['(' + sql + ') ' + compare_sql + ' %s'],
                 params = (date_begin, date_end, value))
@@ -106,7 +106,7 @@ class TardyFilter(IntCompareFilter):
 class AbsenceFilter(IntCompareFilter):
     compare_field_string = "absence_count"
     add_fields = ['absence_count']
-    
+
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
         date_end = report_context['date_end']
@@ -115,14 +115,14 @@ class AbsenceFilter(IntCompareFilter):
 
         compare_sql = django_to_sql_compare(compare)
 
-        sql = """select coalesce(count(*)) from attendance_studentattendance 
+        sql = """select coalesce(count(*)) from attendance_studentattendance
                     left join attendance_attendancestatus
                     on attendance_attendancestatus.id = attendance_studentattendance.status_id
                     where attendance_attendancestatus.absent = True
                     and attendance_studentattendance.student_id = sis_student.user_ptr_id
                     and attendance_studentattendance.date between %s and %s"""
         queryset = queryset.extra(
-                select = {'absence_count': sql }, 
+                select = {'absence_count': sql },
                 select_params = (date_begin, date_end,),
                 where = ['(' + sql + ') ' + compare_sql + ' %s'],
                 params = (date_begin, date_end, value))
@@ -134,7 +134,7 @@ class StudentYearFilter(ModelMultipleChoiceFilter):
     compare_field_string="year"
     add_fields = ['year']
     model = GradeLevel
- 
+
 class BrendanForm(forms.Form):
     one   = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "one"}))
     two   = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "two"}))
@@ -143,7 +143,7 @@ class BrendanForm(forms.Form):
     five  = forms.ChoiceField(required=False)
 
 class BrendanFilter(Filter):
-    form_class = BrendanForm    
+    form_class = BrendanForm
 
 class DisciplineForm(forms.Form):
     disc_action = forms.ModelChoiceField(queryset=DisciplineAction.objects.all())
@@ -159,7 +159,6 @@ class DisciplineFilter(Filter):
         disc_action = self.cleaned_data['disc_action']
         return ['discipline_{}_count'.format(disc_action)]
 
-
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
         date_end = report_context['date_end']
@@ -170,18 +169,18 @@ class DisciplineFilter(Filter):
         add_field = self.get_add_fields()[0]
         compare_sql = django_to_sql_compare(compare)
 
-        sql = """select COALESCE(sum(quantity), 0) from discipline_disciplineactioninstance 
-                    join discipline_disciplineaction 
+        sql = """select COALESCE(sum(quantity), 0) from discipline_disciplineactioninstance
+                    join discipline_disciplineaction
                     on discipline_disciplineaction.id = discipline_disciplineactioninstance.action_id
                     join discipline_studentdiscipline
                     on discipline_studentdiscipline.id = discipline_disciplineactioninstance.student_discipline_id
-                    join discipline_studentdiscipline_students 
+                    join discipline_studentdiscipline_students
                     on discipline_studentdiscipline_students.studentdiscipline_id = discipline_studentdiscipline.id
                     where discipline_disciplineaction.id = %s
                     and discipline_studentdiscipline_students.student_id = sis_student.user_ptr_id
                     and discipline_studentdiscipline.date between %s and %s"""
         queryset = queryset.extra(
-                select = {add_field: sql }, 
+                select = {add_field: sql },
                 select_params = (disc_action.id, date_begin, date_end,),
                 where = ['(' + sql + ') ' + compare_sql + ' %s'],
                 params = (disc_action.id, date_begin, date_end, number))
@@ -197,14 +196,14 @@ class CourseGradeFilter(Filter):
     ]
     post_form_text = 'time(s)'
     add_fields = ['course_grade_count']
-    
+
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
         date_end = report_context['date_end']
         compare = self.cleaned_data['field_0']
         number = self.cleaned_data['field_1']
         times = self.cleaned_data['field_2']
-        
+
         if not times: # Have to exclude it, which reverses the comparison
             compare = reverse_compare(compare)
         grade_kwarg = {
@@ -212,7 +211,7 @@ class CourseGradeFilter(Filter):
             'courseenrollment__course__marking_period__start_date__gte': date_begin,
             'courseenrollment__course__marking_period__end_date__lte': date_end,
         }
-        
+
         if times:
             queryset = queryset.filter(**grade_kwarg).annotate(
                 course_grade_count=Count('courseenrollment', distinct=True)).filter(course_grade_count__gte=times)
@@ -223,7 +222,7 @@ class CourseGradeFilter(Filter):
 class MpAvgGradeFilter(CourseGradeFilter):
     verbose_name = "Grades (Marking Period Average)"
     add_fields = ['mp_avg_grade_count']
-    
+
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
         date_end = report_context['date_end']
@@ -240,12 +239,12 @@ class MpAvgGradeFilter(CourseGradeFilter):
         if times:
             queryset = queryset.filter(mp_avg_grade_count__gte=times)
         return queryset
-    
-    
+
+
 class MpGradeFilter(CourseGradeFilter):
     verbose_name = "Grades (By Marking Period)"
     add_fields = ['mp_grade_count',]
-    
+
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         date_begin = report_context['date_begin']
         date_end = report_context['date_end']
@@ -279,12 +278,12 @@ class TemplateSelection(ModelChoiceFilter):
     def build_form(self):
         super(TemplateSelection, self).build_form()
         self.form.fields['field_0'].required = False
-    
+
     def get_report_context(self, report_context):
         return {'template': self.form.cleaned_data['field_0']}
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
-        return queryset    
+        return queryset
 
 
 class IncludeDeleted(Filter):
@@ -300,10 +299,15 @@ class IncludeDeleted(Filter):
         return queryset
 
 
+class CohortFilter(ModelMultipleChoiceFilter):
+    model = Cohort
+    compare_field_string = "cohorts__id"
+
+
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 class SelectSpecificStudentsForm(forms.Form):
     select_students = AutoCompleteSelectMultipleField('dstudent', required=False)
-    
+
 class SelectSpecificStudents(ModelMultipleChoiceFilter):
     model = Student
     compare_field_string = "pk"
@@ -314,7 +318,7 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
     def build_form(self):
         self.form = SelectSpecificStudentsForm()
         self.form.fields['filter_number'] = forms.IntegerField(widget=forms.HiddenInput())
-    
+
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         selected = self.cleaned_data['select_students']
         if selected:
@@ -328,7 +332,7 @@ class ScheduleDaysFilter(Filter):
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         report_context['schedule_days'] = self.cleaned_data['field_0']
         return queryset
-    
+
 
 class GPAReportButton(ReportButton):
     name = "gpa_report"
@@ -374,13 +378,13 @@ class FailReportButton(ReportButton):
         students = Student.objects.filter(courseenrollment__course__marking_period__in=marking_periods).distinct()
         titles = ['']
         departments = Department.objects.filter(course__courseenrollment__user__is_active=True).distinct()
-        
+
         for department in departments:
             titles += [str(department)]
         titles += ['Total', '', 'Username', 'Year','GPA', '', 'Failed courses']
-        
+
         passing_grade = float(Configuration.get_or_default('Passing Grade','70').value)
-        
+
         data = []
         iy=3
         for student in students:
@@ -404,7 +408,7 @@ class FailReportButton(ReportButton):
                 row += [str(grade.course), str(grade.marking_period), str(grade.grade)]
             data += [row]
             iy += 1
-        
+
         return report_view.list_to_xlsx_response(data, 'fail_report', header=titles)
 
 
@@ -479,9 +483,9 @@ class AggregateGradeButton(ReportButton):
                             percent = ""
                         row += [no_students, percent]
                     data.append(row)
-                    
+
         report_data = {'teacher_aggregate': data}
-        
+
         passing = 70
         titles = ['Grade']
         for dept in Department.objects.all():
@@ -517,12 +521,12 @@ class AggregateGradeButton(ReportButton):
 
         report_data['class_dept'] = dept_data
         return report_view.list_to_xlsx_response(report_data, 'Aggregate_grade_report')
-    
+
 
 class AspReportButton(ReportButton):
     name = "asp_report"
     name_verbose = "ASP Report"
-    
+
     def get_report(self, report_view, context):
         data = report_view.report.report_to_list(report_view.request.user)
         students = report_view.report.get_queryset()
@@ -531,7 +535,7 @@ class AspReportButton(ReportButton):
         compare = report_view.report.report_context.get('mp_grade_filter_compare', None)
         number = report_view.report.report_context.get('mp_grade_filter_number', None)
         header = context['headers']
-        
+
         for i, student in enumerate(students):
             grades = student.grade_set.filter(
                 override_final=False,
@@ -543,7 +547,7 @@ class AspReportButton(ReportButton):
                 for grade in grades.order_by('course__department', 'marking_period'):
                     data[i].append('{} {}'.format(grade.marking_period.name, grade.course.shortname))
                     data[i].append(grade.grade)
-        
+
         return report_view.list_to_xlsx_response(data, 'ASP_Report', header)
 
 
@@ -561,13 +565,14 @@ class SisReport(ScaffoldReport):
     model = Student
     preview_fields = ['first_name', 'last_name']
     filters = (
+        SchoolDateFilter(),
         DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cached_gpa", add_fields=('gpa',)),
         AbsenceFilter(),
         TardyFilter(verbose_name="Tardies"),
         DisciplineFilter(),
-        SchoolDateFilter(),
         StudentYearFilter(),
         SelectSpecificStudents(),
+        CohortFilter(),
         MpAvgGradeFilter(),
         MpGradeFilter(),
         CourseGradeFilter(),
@@ -614,7 +619,7 @@ class SisReport(ScaffoldReport):
                 i += 1
             course.final = course_enrollment.grade
         student.courses = courses
-        
+
         #Attendance for marking period
         i = 1
         student.absent_total = 0
@@ -630,7 +635,7 @@ class SisReport(ScaffoldReport):
             tardy_unexcused = tardy.exclude(status__excused=True).count()
             absent = absent.count()
             tardy = tardy.count()
-            
+
             student.absent_total += absent
             student.tardy_total += tardy
             student.absent_unexcused_total += absent_unexcused
@@ -654,7 +659,7 @@ class SisReport(ScaffoldReport):
         if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
             from ecwsp.benchmark_grade.models import Aggregate
             from ecwsp.benchmark_grade.utility import gradebook_get_average, benchmark_find_calculation_rule, gradebook_get_category_average
-        
+
         student.years = SchoolYear.objects.filter(
             markingperiod__show_reports=True,
             start_date__lt=self.for_date,
@@ -703,7 +708,7 @@ class SisReport(ScaffoldReport):
                     setattr(course, "grade" + str(i), "")
                     i += 1
                 course.final = course_enrollment.grade
-                
+
                 if self.is_passing(course.final):
                     year.credits += course.credits
                 if course.credits:
@@ -718,7 +723,7 @@ class SisReport(ScaffoldReport):
                         setattr(category_as_course.category, 'grade{}'.format(i), gradebook_get_category_average(student, category_as_course.category, mp))
                         i += 1
                     year.categories_as_courses.append(category_as_course.category)
-            
+
             # Averages per marking period
             i = 1
             for mp in year.mps:
@@ -729,9 +734,9 @@ class SisReport(ScaffoldReport):
             while i <= 6:
                 setattr(year, 'mp' + str(i) + 'ave', "")
                 i += 1
-            
+
             year.ave = student.studentyeargrade_set.get(year=year).grade
-            
+
             # Attendance for year
             if not hasattr(self, 'year_days'):
                 self.year_days = {}
@@ -756,7 +761,7 @@ class SisReport(ScaffoldReport):
                 dept.credits = c
                 student.departments_text += "| %s: %s " % (dept, dept.credits)
             student.departments_text += "|"
-            
+
             # Standardized tests
             if 'ecwsp.standard_test' in settings.INSTALLED_APPS:
                 from ecwsp.standard_test.models import StandardTest
@@ -771,7 +776,7 @@ class SisReport(ScaffoldReport):
                         test_result.categories += '%s: %s | ' % (cat.category.name, strip_trailing_zeros(cat.grade))
                     test_result.categories = test_result.categories [:-3]
                     student.tests.append(test_result)
-                    
+
                 for test in StandardTest.objects.filter(standardtestresult__student=student, show_on_reports=True, standardtestresult__show_on_reports=True).distinct():
                     test.total = strip_trailing_zeros(test.get_cherry_pick_total(student))
                     student.highest_tests.append(test)
