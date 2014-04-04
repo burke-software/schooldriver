@@ -275,6 +275,10 @@ class TemplateSelection(ModelChoiceFilter):
     default = True
     can_add = False
     can_delete = False
+
+    def build_form(self):
+        super(TemplateSelection, self).build_form()
+        self.form.fields['field_0'].required = False
     
     def get_report_context(self, report_context):
         return {'template': self.form.cleaned_data['field_0']}
