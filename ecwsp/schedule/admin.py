@@ -7,7 +7,7 @@ from ajax_select import make_ajax_form
 from ajax_select.fields import autoselect_fields_check_can_add
 from daterange_filter.filter import DateRangeFilter
 
-from ecwsp.sis.models import Faculty
+from ecwsp.sis.models import Faculty, Student
 from ecwsp.schedule.models import CourseMeet, Course, Department, CourseEnrollment, MarkingPeriod
 from ecwsp.schedule.models import Period, Location, OmitCourseGPA, OmitYearGPA, Award
 from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day
@@ -22,14 +22,11 @@ class CourseMeetInline(admin.TabularInline):
 
 class CourseAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
-        try:
-            txt = "<h5>Students enrolled:</h5>"
-            for student in Student.objects.filter(courseenrollment__course=context['original']):
-                txt += unicode(student) + '<br/>'
-            txt = txt[:-5]
-            context['adminform'].form.fields['teacher'].help_text += txt
-        except:
-            pass
+        txt = "<h5>Students enrolled:</h5>"
+        for student in Student.objects.filter(courseenrollment__course=context['original']):
+            txt += unicode(student) + '<br/>'
+        txt = txt[:-5]
+        context['adminform'].form.fields['teacher'].help_text += txt
         return super(CourseAdmin, self).render_change_form(request, context, args, kwargs)
     
     list_display = ['__unicode__', 'teacher', 'grades_link']
