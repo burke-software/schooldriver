@@ -23,9 +23,10 @@ class CourseMeetInline(admin.TabularInline):
 class CourseAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
         txt = "<h5>Students enrolled:</h5>"
-        for student in Student.objects.filter(courseenrollment__course=context['original']):
-            txt += unicode(student) + '<br/>'
-        txt = txt[:-5]
+        if 'original' in context:
+            for student in Student.objects.filter(courseenrollment__course=context['original']):
+                txt += unicode(student) + '<br/>'
+            txt = txt[:-5]
         context['adminform'].form.fields['teacher'].help_text += txt
         return super(CourseAdmin, self).render_change_form(request, context, args, kwargs)
     
