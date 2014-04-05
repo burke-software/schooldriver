@@ -12,7 +12,7 @@ Other environments might work but are not supported.
 
 On debian/ubuntu run install/install.sh
 
-If not on debian install everything in install/dependencies.txt using pip. Install reportlab from pip (requires gcc) or 
+If not on debian install everything in requirements.txt using pip. Install reportlab from pip (requires gcc) or 
 from a package manager. 
 
 **Configuration**
@@ -32,12 +32,12 @@ We do make use of celery for tasks. For a true production environment this shoul
 
 ## Upgrades
 
-Use south to upgrade the database. Install install/dependencies.txt in case any have updated. Collect static if on a 
+Use south to upgrade the database. Install requirements.txt in case any have updated. Collect static if on a 
 production environment. Restart your task scheduler. It should look something like
 
     ./manage.py migrate
     ./manage.py collectstatic
-    pip install --upgrade -r dependencies.txt
+    pip install --upgrade -r requirements.txt
 
 We don't currently release stable versions of django-sis. You can assume everything in git is as "stable" as possible. If you 
 require more stability consider paying for support.
