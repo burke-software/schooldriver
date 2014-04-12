@@ -21,9 +21,6 @@ class BackslashActiveDirectoryGroupMembershipSSLBackend(ActiveDirectoryGroupMemb
         else:
             # use predetermined domain
             binddn = "%s@%s" % (username,settings.NT4_DOMAIN)
-        print '***', binddn
-        import traceback
-        print ''.join(traceback.format_stack())
         l.simple_bind_s(binddn.encode('utf-8'),password.encode('utf-8'))
         return l
 
