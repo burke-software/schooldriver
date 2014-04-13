@@ -104,6 +104,15 @@ class StudentYearGrade(models.Model):
         return None
 
 signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
+
+
+class GradeLetterRule(models.Model):
+    min_grade = models.DecimalField(max_digits=5, decimal_places=2)
+    max_grade = models.DecimalField(max_digits=5, decimal_places=2)
+    letter_grade = models.CharField(max_length=50, unique=True)
+    
+    class Meta:
+        unique_together = ('min_grade', 'max_grade')
     
 
 class Grade(models.Model):
@@ -179,7 +188,6 @@ class Grade(models.Model):
             enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
             enrollment.flag_grade_as_stale()
             enrollment.flag_numeric_grade_as_stale()
-            print enrollment.id
         except CourseEnrollment.DoesNotExist:
             pass
         self.student.cache_gpa = self.student.calculate_gpa()
@@ -188,7 +196,7 @@ class Grade(models.Model):
     
     def get_grade(self, letter=False, display=False, rounding=None, minimum=None):
         """
-        letter: Does nothing?
+        letter: Converts to a letter based on GradeLetterRule
         display: For letter grade - Return display name instead of abbreviation.
         rounding: Numeric - round to this many decimal places.
         minimum: Numeric - Minimum allowed grade. Will not return lower than this.
@@ -207,6 +215,9 @@ class Grade(models.Model):
             if rounding != None:
                 string = '%.' + str(rounding) + 'f'
                 grade = string % float(str(grade))
+            if letter == True:
+                letter_grade = GradeLetterRule.objects.filter(max_grade__gte=grade, min_grade__lte=grade).first()
+                return letter_grade.letter_grade
             return grade
         else:
             return ""

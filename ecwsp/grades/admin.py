@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from models import *
+from .models import GradeComment, Grade, GradeLetterRule
 
 admin.site.register(GradeComment)
 
@@ -9,3 +9,9 @@ class GradeAdmin(admin.ModelAdmin):
     list_filter = ['date', 'override_final']
     search_fields = ['student__fname', 'student__lname', 'course__fullname', 'course__shortname']
 admin.site.register(Grade, GradeAdmin)
+
+class GradeLetterRuleAdmin(admin.ModelAdmin):
+    list_display = ['id', 'min_grade', 'max_grade', 'letter_grade']
+    list_editable = ['min_grade', 'max_grade', 'letter_grade']
+admin.site.register(GradeLetterRule, GradeLetterRuleAdmin)
+
