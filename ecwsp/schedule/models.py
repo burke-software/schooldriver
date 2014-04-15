@@ -192,7 +192,7 @@ class CourseEnrollment(models.Model):
         cursor = connection.cursor()
         if date_report:
             cursor.execute('''
-SELECT ( Sum(grade * weight) / Sum(weight) over () ) AS ave_grade,
+SELECT ( Sum(grade * weight) over () / Sum(weight) over () ) AS ave_grade,
        grades_grade.id,
        grades_grade.override_final
 FROM   grades_grade
@@ -207,7 +207,7 @@ ORDER  BY grades_grade.override_final DESC
 LIMIT  1''', (self.course_id, self.user_id, date_report) )
         else:
             cursor.execute('''
-SELECT ( Sum(grade * weight) / Sum(weight) ) AS ave_grade,
+SELECT ( Sum(grade * weight) over () / Sum(weight) over () ) AS ave_grade,
        grades_grade.id,
        grades_grade.override_final
 FROM   grades_grade
