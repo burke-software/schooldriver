@@ -190,35 +190,42 @@ class CourseEnrollment(models.Model):
         when you don't care about letter grades
         """
         cursor = connection.cursor()
-        if date_report:
-            cursor.execute('''
-SELECT ( Sum(grade * weight) over () / Sum(weight) over () ) AS ave_grade,
+        
+        # postgres requires a over () to run
+        # http://stackoverflow.com/questions/19271646/how-to-make-a-sum-without-group-by
+        sql_string = '''
+SELECT ( Sum(grade * weight) {over} / Sum(weight) {over} ) AS ave_grade,
        grades_grade.id,
        grades_grade.override_final
 FROM   grades_grade
        LEFT JOIN schedule_markingperiod
               ON schedule_markingperiod.id = grades_grade.marking_period_id
 WHERE  ( grades_grade.course_id = %s
-         AND grades_grade.student_id = %s
-         AND schedule_markingperiod.end_date <= %s )
+         AND grades_grade.student_id = %s {extra_where} )
        AND ( grade IS NOT NULL
               OR letter_grade IS NOT NULL )
-ORDER  BY grades_grade.override_final DESC
-LIMIT  1''', (self.course_id, self.user_id, date_report) )
+ORDER  BY grades_grade.override_final DESC limit 1'''
+        
+        if date_report:
+            if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+                cursor.execute(sql_string.format(
+                    over='over ()', extra_where='AND schedule_markingperiod.end_date <= %s'),
+                               (self.course_id, self.user_id, date_report))
+            else:
+                cursor.execute(sql_string.format(
+                    over='', extra_where='AND schedule_markingperiod.end_date <= %s'),
+                               (self.course_id, self.user_id, date_report))
+                 
         else:
-            cursor.execute('''
-SELECT ( Sum(grade * weight) over () / Sum(weight) over () ) AS ave_grade,
-       grades_grade.id,
-       grades_grade.override_final
-FROM   grades_grade
-       LEFT JOIN schedule_markingperiod
-              ON schedule_markingperiod.id = marking_period_id
-WHERE  ( grades_grade.course_id = %s
-         AND grades_grade.student_id = %s )
-       AND ( grade IS NOT NULL
-              OR letter_grade IS NOT NULL )
-ORDER  BY grades_grade.override_final DESC
-LIMIT  1''', (self.course_id, self.user_id) )
+            if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+                cursor.execute(sql_string.format(
+                    over='over ()', extra_where=''),
+                               (self.course_id, self.user_id))
+            else:
+                cursor.execute(sql_string.format(
+                    over='', extra_where=''),
+                               (self.course_id, self.user_id))
+            
         (ave_grade, grade_id, override_final) = cursor.fetchone()
         if override_final:
             course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
