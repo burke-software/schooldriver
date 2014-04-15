@@ -63,8 +63,6 @@ def index(request):
                 messages.warning(request,
                     mark_safe('Warning Internet Explorer is not supported on the admin site. If you ' \
                               'have any trouble, try using a standards compliant browser such as Firefox, Chrome, Opera, or Safari.'))
-            elif browser_name == "Firefox" and int(browser_version.split('.')[0]) < 6:
-                messages.warning(request, 'Warning, your version of Firefox is out of date. Please upgrade.')
         except:
             pass
         return HttpResponseRedirect('/sis/dashboard')

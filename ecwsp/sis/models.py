@@ -28,7 +28,7 @@ def create_faculty(instance, make_user_group=True):
     from Django admin. See 
     http://stackoverflow.com/questions/4064808/django-model-inheritance-create-sub-instance-of-existing-instance-downcast
     """
-    if not hasattr(instance, "faculty"):
+    if not hasattr(instance, "student") and not hasattr(instance, "faculty"):
         faculty = Faculty(user_ptr_id=instance.id)
         faculty.__dict__.update(instance.__dict__)
         faculty.save(make_user_group=make_user_group)
@@ -37,19 +37,19 @@ def create_student(instance):
     """ Create a sis.Student object that is linked to the given auth_user
     instance. See create_faculty for more details.  
     """
-    if not hasattr(instance, "student"):
+    if not hasattr(instance, "student") and not hasattr(instance, 'faculty'):
         student = Student(user_ptr_id=instance.id)
         student.__dict__.update(instance.__dict__)
         student.save()
 
 def create_faculty_profile(sender, instance, created, **kwargs):
-    if instance.groups.filter(name="teacher").count():
+    if instance.groups.filter(name="faculty").count():
         create_faculty(instance, make_user_group=False)
     if instance.groups.filter(name="students").count():
         create_student(instance)
 
 def create_faculty_profile_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
-    if action == 'post_add' and instance.groups.filter(name="teacher").count():
+    if action == 'post_add' and instance.groups.filter(name="faculty").count():
         create_faculty(instance, make_user_group=False)
     if action == 'post_add' and instance.groups.filter(name="students").count():
         create_student(instance)
