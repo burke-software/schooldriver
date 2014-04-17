@@ -733,10 +733,11 @@ class SisReport(ScaffoldReport):
                     i += 1
                 course.final = course_enrollment.get_grade(self.date_end)
 
-                if self.is_passing(course.final):
-                    year.credits += course.credits
-                if course.credits:
-                    year.possible_credits += course.credits
+                if course.award_credits:
+                    if self.is_passing(course.final):
+                        year.credits += course.credits
+                    if course.credits:
+                        year.possible_credits += course.credits
 
             year.categories_as_courses = []
             if year.benchmark_grade:
@@ -783,7 +784,9 @@ class SisReport(ScaffoldReport):
                     department=dept,
                     marking_period__school_year__end_date__lte=self.date_end,
                     graded=True).distinct():
-                    if course.credits and self.is_passing(course.courseenrollment_set.get(user=student).grade):
+                    if course.award_credits and course.credits and self.is_passing(
+                        course.courseenrollment_set.get(user=student).grade
+                    ):
                         c += course.credits
                 dept.credits = c
                 student.departments_text += "| %s: %s " % (dept, dept.credits)
