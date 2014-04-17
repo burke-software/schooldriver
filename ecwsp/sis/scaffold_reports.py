@@ -273,7 +273,7 @@ class TemplateSelection(ModelChoiceFilter):
     model = Template
     default = True
     can_add = False
-    can_delete = False
+    can_remove = False
 
     def build_form(self):
         super(TemplateSelection, self).build_form()

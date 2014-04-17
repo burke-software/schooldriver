@@ -1684,18 +1684,24 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 #scaffold_filters { border-top: 1px solid #777; border-bottom: 1px solid #777; padding: 7px 0; margin: 7px 0; }
 
-#scaffold_active_filters h3.filter-title { margin-left: 2.4%; font-size: 18px; font-weight: 400; }
-#scaffold_active_filters .removable { background-color: #f2f2f2; padding: 5px; margin: 5px 0; }
-#scaffold_active_filters .removable .filter-title { margin-left: 1.2%; }
-#scaffold_active_filters .removable option { background-color: #fff; }
-#scaffold_active_filters .filter { position: relative; }
-#scaffold_active_filters .filter input[type=text], #scaffold_active_filters .filter input[type=number], #scaffold_active_filters .filter .post-form-text { vertical-align: top; margin-top: 2px; }
-#scaffold_active_filters .filter input[type=text].xnarrow:first-child, #scaffold_active_filters .filter input[type=number].xnarrow:first-child, #scaffold_active_filters .filter .post-form-text.xnarrow:first-child { margin-right: 0; }
-#scaffold_active_filters .filter input[type=checkbox] { -webkit-appearance: checkbox !important; }
-#scaffold_active_filters .filter .picker { margin-left: 0; margin-bottom: -5px !important; }
-#scaffold_active_filters .filter form { margin: 0 !important; }
-#scaffold_active_filters .filter .field { margin-bottom: 0 !important; }
-#scaffold_active_filters label.inline { vertical-align: text-top; }
+#scaffold .tab-content { background-color: #f2f2f2; }
+
+.tab-nav > li { box-shadow: 0px 1px 0px #F2F2F2; }
+.tab-nav > li.active > a { background: none repeat scroll 0% 0% #F2F2F2; }
+.tab-nav > li > a { background: none repeat scroll 0% 0% #FFF; }
+
+#scaffold_filters h3.filter-title { margin-left: 2.4%; font-size: 18px; font-weight: 400; }
+#scaffold_filters .removable { background-color: #fff; padding: 5px; margin: 5px 0; }
+#scaffold_filters .removable .filter-title { margin-left: 1.2%; }
+#scaffold_filters .removable option { background-color: #fff; }
+#scaffold_filters .filter { position: relative; }
+#scaffold_filters .filter input[type=text], #scaffold_filters .filter input[type=number], #scaffold_filters .filter .post-form-text { vertical-align: top; margin-top: 2px; }
+#scaffold_filters .filter input[type=text].xnarrow:first-child, #scaffold_filters .filter input[type=number].xnarrow:first-child, #scaffold_filters .filter .post-form-text.xnarrow:first-child { margin-right: 0; }
+#scaffold_filters .filter input[type=checkbox] { -webkit-appearance: checkbox !important; }
+#scaffold_filters .filter .picker { margin-left: 0; margin-bottom: -5px !important; }
+#scaffold_filters .filter form { margin: 0 !important; }
+#scaffold_filters .filter .field { margin-bottom: 0 !important; }
+#scaffold_filters label.inline { vertical-align: text-top; }
 
 .picker-multiple select { color: #555; font-size: 14px; border: 1px solid #E5E5E5; border-radius: 4px; }
 .picker-multiple select option { padding: 5px 15px; }
@@ -1713,7 +1719,7 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 .SchoolDateFilter form label { margin-bottom: 0; margin-top: 0; }
 
-#add-new-rule-block { padding: 10px 0; border-bottom: 1px solid #777; margin-bottom: 20px; }
+#add-new-rule-block { padding: 10px 0; }
 
 h3.filter-subheads { display: inline-block; padding: 0; font-size: 23px; font-weight: 400; }
 
