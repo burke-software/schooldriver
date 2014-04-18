@@ -799,7 +799,7 @@ class SisReport(ScaffoldReport):
             if template.report_card:
                 self.blank_grade = struct()
                 self.blank_grade.comment = ""
-                school_year = SchoolYear.objects.filter(start_date__lt=self.for_date
+                school_year = SchoolYear.objects.filter(start_date__lte=self.for_date
                         ).order_by('-start_date').first()
                 context['year'] = school_year
                 self.marking_periods = MarkingPeriod.objects.filter(
