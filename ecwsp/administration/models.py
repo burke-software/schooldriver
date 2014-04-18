@@ -82,6 +82,7 @@ class Configuration(models.Model):
         'Gradebook extra information': ('averages', "Set to 'averages' to see the class average for each assignment. \
 Use 'demonstrations' to see counts of demonstrations for students and assignments."),
         'Gradebook hide fields': ('', "Separate with commas. Options include: marking_period, assignment_type, benchmark, date, description."),
+        'Default course credits': (1, "This number will appear in the 'Credits' field when creating new courses."),
     }
     
     def __unicode__(self):
