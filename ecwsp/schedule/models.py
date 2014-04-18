@@ -124,7 +124,7 @@ class Period(models.Model):
 
 class CourseMeet(models.Model):
     period = models.ForeignKey(Period)
-    course = models.ForeignKey('Course')
+    section = models.ForeignKey('CourseSection')
     day_choice = (   # ISOWEEKDAY
         ('1', 'Monday'),
         ('2', 'Tuesday'),
@@ -146,18 +146,16 @@ class Location(models.Model):
 
 
 class CourseEnrollment(models.Model):
-    course = models.ForeignKey('Course')
-    user = models.ForeignKey('auth.User')
-    role = models.CharField(max_length=255, default="Student", blank=True)
+    section = models.ForeignKey('CourseSection')
+    user = models.ForeignKey('sis.Student')
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
-    year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     exclude_days = models.ManyToManyField('Day', blank=True, \
         help_text="Student does not need to attend on this day. Note courses already specify meeting days; this field is for students who have a special reason to be away.")
     grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
     class Meta:
-        unique_together = (("course", "user", "role"),)
+        unique_together = (("section", "user"),)
 
     def cache_grades(self):
         """ Set cache on both grade and numeric_grade """
@@ -313,21 +311,15 @@ class DepartmentGraduationCredits(models.Model):
         unique_together = ('department', 'class_year')
 
 class Course(models.Model):
-    active = models.BooleanField(default=True, help_text="Sometimes used in third party integrations such as Moodle. Has no affect within django-sis.")
+    is_active = models.BooleanField(default=True)
     fullname = models.CharField(max_length=255, unique=True)
     shortname = models.CharField(max_length=255)
-    marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
-    periods = models.ManyToManyField(Period, blank=True, through=CourseMeet)
-    teacher = models.ForeignKey('sis.Faculty', blank=True, null=True, related_name="ateacher")
-    secondary_teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True, related_name="secondary_teachers")
     homeroom = models.BooleanField(default=False, help_text="Homerooms can be used for attendance")
     graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
-    enrollments = models.ManyToManyField('auth.User', through=CourseEnrollment, blank=True, null=True)
     description = models.TextField(blank=True)
     credits = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Credits effect gpa.")
     department = models.ForeignKey(Department, blank=True, null=True)
     level = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
-    last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
 
     def __unicode__(self):
         return self.fullname
@@ -373,6 +365,22 @@ class Course(models.Model):
     def number_of_students(self):
         return self.courseenrollment_set.filter(role="student").count()
     number_of_students.short_description = "# of Students"
+    
+
+class CourseSection(models.Model):
+    course = models.ForeignKey(Course)
+    is_active = models.BooleanField(default=True)
+    name = models.CharField(max_length=255)
+    marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
+    periods = models.ManyToManyField(Period, blank=True, through=CourseMeet)
+    teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True)
+    enrollments = models.ManyToManyField('sis.Student', through=CourseEnrollment, blank=True, null=True)
+    cohorts = models.ManyToManyField('sis.Cohort', blank=True, null=True)
+    last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
+    
+    def __unicode__(self):
+        return '{}: {}'.format(self.course, self.name)
+    
 
 class OmitCourseGPA(models.Model):
     """ Used to keep repeated or invalid course from affecting GPA """

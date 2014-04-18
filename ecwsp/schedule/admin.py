@@ -10,7 +10,7 @@ from daterange_filter.filter import DateRangeFilter
 from ecwsp.sis.models import Faculty, Student
 from ecwsp.schedule.models import CourseMeet, Course, Department, CourseEnrollment, MarkingPeriod
 from ecwsp.schedule.models import Period, Location, OmitCourseGPA, OmitYearGPA, Award
-from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day
+from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day, CourseSection
 
 def copy(modeladmin, request, queryset):
     for object in queryset:
@@ -19,22 +19,16 @@ def copy(modeladmin, request, queryset):
 class CourseMeetInline(admin.TabularInline):
     model = CourseMeet
     extra = 1
+    
+class CourseSectionInline(admin.StackedInline):
+    model = CourseSection
+    extra = 0
 
 class CourseAdmin(admin.ModelAdmin):
-    def render_change_form(self, request, context, *args, **kwargs):
-        txt = "<h5>Students enrolled:</h5>"
-        if 'original' in context:
-            for student in Student.objects.filter(courseenrollment__course=context['original']):
-                txt += unicode(student) + '<br/>'
-            txt = txt[:-5]
-        context['adminform'].form.fields['teacher'].help_text += txt
-        return super(CourseAdmin, self).render_change_form(request, context, args, kwargs)
-    
-    list_display = ['__unicode__', 'teacher', 'grades_link']
+    list_display = ['__unicode__', 'grades_link']
     search_fields = ['fullname', 'shortname', 'description', 'teacher__username']
-    list_filter = ['teacher', 'level', 'marking_period', 'marking_period__school_year', 'active', 'graded', 'homeroom']
-    inlines = [CourseMeetInline]
-    actions = [copy]
+    list_filter = ['level', 'is_active', 'graded', 'homeroom']
+    inlines = [CourseSectionInline]
     
     def save_model(self, request, obj, form, change):
         """Override save_model because django doesn't have a better way to access m2m fields"""
@@ -63,8 +57,8 @@ class DaysOffInline(admin.TabularInline):
 admin.site.register(Day)
     
 class CourseEnrollmentAdmin(admin.ModelAdmin):
-    search_fields = ['course__fullname', 'user__username', 'user__first_name', 'role']
-    list_display = ['course', 'user', 'role', 'attendance_note']
+    search_fields = ['user__username', 'user__first_name',]
+    list_display = ['user', 'attendance_note']
 admin.site.register(CourseEnrollment, CourseEnrollmentAdmin)
 
 class MarkingPeriodAdmin(admin.ModelAdmin):
