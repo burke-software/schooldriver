@@ -24,7 +24,7 @@ class Migration(SchemaMigration):
             data = [[93,100,'A'],[90,92.99,'A-'],[87,89.99,'B+'],[83,86.99,'B'],[80,82.99,'B-'],
                 [77,79.99,'C+'],[73,76.99,'C'],[70,72.9,'D'],[69.9,0,'F']]
             for row in data:
-                orm.GradeLetterRule.objects.get_or_create(
+                orm.GradeLetterRule.objects.create(
                         min_grade=row[0],
                         max_grade=row[1],
                         letter_grade=row[2])
