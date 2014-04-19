@@ -676,10 +676,6 @@ class SisReport(ScaffoldReport):
             i += 1
 
     def get_student_transcript_data(self, student, omit_substitutions=False):
-        if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
-            from ecwsp.benchmark_grade.models import Aggregate
-            from ecwsp.benchmark_grade.utility import gradebook_get_average, benchmark_find_calculation_rule, gradebook_get_category_average
-
         student.years = SchoolYear.objects.filter(
             markingperiod__show_reports=True,
             start_date__lt=self.date_end,
@@ -708,8 +704,6 @@ class SisReport(ScaffoldReport):
                 # Grades
                 course_grades = year_grades.filter(course=course).distinct()
                 course_aggregates = None
-                if year.benchmark_grade:
-                    course_aggregates = Aggregate.objects.filter(course=course, student=student)
                 i = 1
                 for mp in year.mps:
                     if mp not in course.marking_period.all():
@@ -717,16 +711,13 @@ class SisReport(ScaffoldReport):
                         setattr(course, "grade" + str(i), "")
                         i += 1
                         continue
-                    if year.benchmark_grade:
-                        setattr(course, "grade" + str(i), gradebook_get_average(student, course, None, mp, omit_substitutions = omit_substitutions))
-                    else:
-                        # We can't overwrite cells, so we have to get seperate variables for each mp grade.
-                        try:
-                            grade = course_grades.get(marking_period=mp).get_grade()
-                            grade = " " + str(grade) + " "
-                        except Grade.DoesNotExist:
-                            grade = ""
-                        setattr(course, "grade" + str(i), grade)
+                    # We can't overwrite cells, so we have to get seperate variables for each mp grade.
+                    try:
+                        grade = course_grades.get(marking_period=mp).get_grade(number=omit_substitutions)
+                        grade = " " + str(grade) + " "
+                    except:
+                        grade = ""
+                    setattr(course, "grade" + str(i), grade)
                     i += 1
                 while i <= 6:
                     setattr(course, "grade" + str(i), "")
@@ -738,16 +729,6 @@ class SisReport(ScaffoldReport):
                         year.credits += course.credits
                     if course.credits:
                         year.possible_credits += course.credits
-
-            year.categories_as_courses = []
-            if year.benchmark_grade:
-                calculation_rule = benchmark_find_calculation_rule(year)
-                for category_as_course in calculation_rule.category_as_course_set.filter(include_departments=course.department):
-                    i = 1
-                    for mp in year.mps:
-                        setattr(category_as_course.category, 'grade{}'.format(i), gradebook_get_category_average(student, category_as_course.category, mp))
-                        i += 1
-                    year.categories_as_courses.append(category_as_course.category)
 
             # Averages per marking period
             i = 1
