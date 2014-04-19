@@ -790,7 +790,9 @@ class SisReport(ScaffoldReport):
         students = context['objects']
         template = self.report_context.get('template')
         if template:
+            # TODO: Change to date_end?
             self.for_date = self.report_context['date_begin']
+            context['date_of_report'] = self.for_date # backwards compatibility
             if template.transcript:
                 self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
                 self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
