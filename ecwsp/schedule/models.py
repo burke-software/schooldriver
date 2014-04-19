@@ -317,7 +317,9 @@ class Course(models.Model):
     homeroom = models.BooleanField(default=False, help_text="Homerooms can be used for attendance")
     graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
     description = models.TextField(blank=True)
-    credits = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Credits effect gpa.")
+    credits = models.DecimalField(max_digits=5, decimal_places=2,
+        help_text="Credits affect GPA.",
+        default=lambda: Configuration.get_or_default(name='Default course credits').value)
     department = models.ForeignKey(Department, blank=True, null=True)
     level = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
 
