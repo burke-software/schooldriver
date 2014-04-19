@@ -25,19 +25,34 @@ class CourseSectionInline(admin.StackedInline):
     extra = 0
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ['__unicode__', 'grades_link']
-    search_fields = ['fullname', 'shortname', 'description', 'teacher__username']
-    list_filter = ['level', 'is_active', 'graded', 'homeroom']
+    list_display = ['fullname', 'grades_link', 'department', 'credits', 'graded', 'is_active']
+    search_fields = ['fullname', 'shortname', 'description', 'coursesection__teachers__username']
+    list_filter = ['level', 'is_active', 'graded', 'homeroom', 'department', 'coursesection__teachers']
     inlines = [CourseSectionInline]
     
     def save_model(self, request, obj, form, change):
         """Override save_model because django doesn't have a better way to access m2m fields"""
         obj.save()
         form.save_m2m()
-        obj.save()
-        
-    
+        obj.save()        
+
 admin.site.register(Course, CourseAdmin)
+
+
+class CourseEnrollmentInline(admin.TabularInline):
+    model = CourseEnrollment
+    fields = ['user', 'attendance_note', 'grade']
+    readonly_fields = ['user','grade']
+    def has_add_permission(self, request):
+        return False
+
+class CourseSectionAdmin(admin.ModelAdmin):
+    inlines = [CourseMeetInline, CourseEnrollmentInline]
+    list_display = ['name', 'course', 'is_active']
+    list_filter = ['course__level', 'course__department', 'teachers']
+    search_fields = ['name', 'course__fullname', 'teachers__username', 'enrollments__username']
+admin.site.register(CourseSection, CourseSectionAdmin)
+
 
 class DepartmentGraduationCreditsInline(admin.TabularInline):
     model = DepartmentGraduationCredits
