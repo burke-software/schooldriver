@@ -369,13 +369,21 @@ class Course(models.Model):
     number_of_students.short_description = "# of Students"
     
 
+class CourseSectionTeachers(models.Model):
+    teacher = models.ForeignKey('sis.Faculty')
+    coursesection = models.ForeignKey('CourseSection')
+    is_primary = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('teacher', 'coursesection')
+
 class CourseSection(models.Model):
     course = models.ForeignKey(Course)
     is_active = models.BooleanField(default=True)
     name = models.CharField(max_length=255)
     marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
     periods = models.ManyToManyField(Period, blank=True, through=CourseMeet)
-    teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True)
+    teachers = models.ManyToManyField('sis.Faculty', through=CourseSectionTeachers, blank=True)
     enrollments = models.ManyToManyField('sis.Student', through=CourseEnrollment, blank=True, null=True)
     cohorts = models.ManyToManyField('sis.Cohort', blank=True, null=True)
     last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
