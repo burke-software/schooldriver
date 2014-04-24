@@ -99,7 +99,7 @@ STATICFILES_FINDERS = (
     'djangobower.finders.BowerFinder',
 )
 #STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
-STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage' 
+STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage'
 
 DEBUG = True
 TEMPLATE_DEBUG = True
@@ -136,7 +136,7 @@ if LDAP:
     BIND_USER = 'ldap'
     BIND_PASSWORD = ''
     AUTHENTICATION_BACKENDS += ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend',)
-    
+
 #Google Apps
 GAPPS = False
 if GAPPS:
@@ -348,10 +348,6 @@ INSTALLED_APPS = (
     #'rosetta',
 )
 
-if DEBUG:
-    CELERY_ALWAYS_EAGER = True
-CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
-
 
 # this will load additional settings from the file settings_local.py
 try:
@@ -362,10 +358,14 @@ try:
     from settings_local import *
 except ImportError:
     print("Warning: Could not import settings_local.py")
-    
+
 # must do this after importing settings_local
 if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
+
+if DEBUG:
+    CELERY_ALWAYS_EAGER = True
+CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 
 STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
@@ -388,7 +388,7 @@ INSTALLED_APPS = (
     'reversion',
     'south',
     'djcelery',
-    'django.contrib.admin',    
+    'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.auth',
     'django.contrib.contenttypes',
