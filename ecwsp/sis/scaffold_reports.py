@@ -676,7 +676,11 @@ class SisReport(ScaffoldReport):
             while i <= 6:
                 setattr(year, "mp" + str(i), "")
                 i += 1
-            year.courses = student.course_set.filter(graded=True, marking_period__school_year=year, marking_period__show_reports=True).distinct()
+            year.courses = student.course_set.filter(
+                graded=True,
+                marking_period__school_year=year,
+                marking_period__show_reports=True
+            ).distinct().order_by('department')
             year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_begin'])
             # course grades
             for course in year.courses:
