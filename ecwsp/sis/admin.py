@@ -142,15 +142,10 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
         return super(StudentAdmin, self).render_change_form(request, context,  *args, **kwargs)
     
     def change_view(self, request, object_id, extra_context=None):
-        courses = Course.objects.filter(courseenrollment__user__id=object_id, courseenrollment__role__iexact="student", marking_period__school_year__active_year=True).distinct()
+        courses = CourseSection.objects.filter(enrollments=object_id, marking_period__school_year__active_year=True).distinct()
         for course in courses:
             course.enroll = course.courseenrollment_set.get(user__id=object_id, role__iexact="student").id
-        other_courses = Course.objects.filter(courseenrollment__user__id=object_id, marking_period__school_year__active_year=False).distinct()
-        for course in other_courses:
-            try:
-                course.enroll = course.courseenrollment_set.get(user__id=object_id, role__iexact="student").id
-            except CourseEnrollment.DoesNotExist:
-                course.enroll = None
+        other_courses = courses.filter(marking_period__school_year__active_year=False).distinct()
         my_context = {
             'courses': courses,
             'other_courses': other_courses,
@@ -302,6 +297,7 @@ admin.site.register(ReasonLeft)
 admin.site.register(TranscriptNoteChoices)
 
 class SchoolYearAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start_date', 'end_date', 'active_year')
     def get_form(self, request, obj=None, **kwargs):
         form = super(SchoolYearAdmin, self).get_form(request, obj, **kwargs)
         if not 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:

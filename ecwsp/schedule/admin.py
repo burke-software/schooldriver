@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core import urlresolvers
+from django.utils.safestring import mark_safe
 from django.http import HttpResponseRedirect
 
 from ajax_select import make_ajax_form
@@ -55,6 +57,12 @@ class CourseSectionAdmin(admin.ModelAdmin):
     list_display = ['name', 'course', 'is_active']
     list_filter = ['course__level', 'course__department', 'teachers']
     search_fields = ['name', 'course__fullname', 'teachers__username', 'enrollments__username']
+    readonly_fields = ['course_link']
+
+    def course_link(self, obj):
+        change_url = urlresolvers.reverse('admin:schedule_course_change', args=(obj.course.id,))
+        return mark_safe('<a href="%s">%s</a>' % (change_url, obj.course))
+    course_link.short_description = 'Course'
 admin.site.register(CourseSection, CourseSectionAdmin)
 
 

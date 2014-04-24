@@ -222,7 +222,7 @@ ORDER  BY grades_grade.override_final DESC limit 1'''
             else:
                 cursor.execute(sql_string.format(
                     over='', extra_where=''),
-                               (self.course_id, self.user_id))
+                               (self.section_id, self.user_id))
             
         (ave_grade, grade_id, override_final) = cursor.fetchone()
         if override_final:
@@ -240,7 +240,7 @@ ORDER  BY grades_grade.override_final DESC limit 1'''
         # Letter Grade
         if ignore_letter == False:
             final = 0.0
-            grades = self.course.grade_set.filter(student=self.user)
+            grades = self.section.grade_set.filter(student=self.user)
             if date_report:
                 grades = grades.filter(marking_period__end_date__lte=date_report)
             if grades:
@@ -343,11 +343,6 @@ class Course(models.Model):
        return link
     grades_link.allow_tags = True
 
-    def calculate_final_grade(self, student):
-        """ Shim code to calculate final grade WITHOUT cache """
-        enrollment = self.courseenrollment_set.get(user=student, role="student")
-        return enrollment.calculate_grade_real()
-
     def get_enrolled_students(self):
         return Student.objects.filter(courseenrollment__course=self)
 
@@ -364,10 +359,6 @@ class Course(models.Model):
         new.save()
         messages.success(request, 'Copy successful!')
 
-    def number_of_students(self):
-        return self.courseenrollment_set.filter(role="student").count()
-    number_of_students.short_description = "# of Students"
-    
 
 class CourseSectionTeachers(models.Model):
     teacher = models.ForeignKey('sis.Faculty')
@@ -390,6 +381,15 @@ class CourseSection(models.Model):
     
     def __unicode__(self):
         return '{}: {}'.format(self.course, self.name)
+
+    def number_of_students(self):
+        return self.enrollments.count()
+    number_of_students.short_description = "# of Students"
+
+    def calculate_final_grade(self, student):
+        """ Shim code to calculate final grade WITHOUT cache """
+        enrollment = self.courseenrollment_set.get(user=student)
+        return enrollment.calculate_grade_real()
     
 
 class OmitCourseGPA(models.Model):

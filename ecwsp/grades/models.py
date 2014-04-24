@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Count, signals
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
-from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
+from ecwsp.schedule.models import MarkingPeriod, Course, CourseSection, CourseEnrollment
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
 from django_cached_field import CachedDecimalField
@@ -64,12 +64,12 @@ class StudentYearGrade(models.Model):
     @staticmethod
     def build_cache_student(student):
         years = student.courseenrollment_set.values(
-            'course__marking_period__school_year').annotate(Count('course__marking_period__school_year'))
+            'section__marking_period__school_year').annotate(Count('section__marking_period__school_year'))
         for year in years:
-            if year['course__marking_period__school_year']:
+            if year['section__marking_period__school_year']:
                 year_grade = StudentYearGrade.objects.get_or_create(
                     student=student,
-                    year_id=year['course__marking_period__school_year']
+                    year_id=year['section__marking_period__school_year']
                 )[0]
                 if year_grade.grade_recalculation_needed:
                     year_grade.recalculate_grade()
@@ -91,9 +91,9 @@ class StudentYearGrade(models.Model):
         total = Decimal(0)
         credits = Decimal(0)
         for course_enrollment in self.student.courseenrollment_set.filter(
-            course__marking_period__show_reports=True,
-            course__marking_period__school_year=self.year,
-            course__credits__isnull=False,
+            section__marking_period__show_reports=True,
+            section__marking_period__school_year=self.year,
+            section__course__credits__isnull=False,
             ).distinct():
             grade = course_enrollment.calculate_grade_real(date_report=date_report, ignore_letter=True)
             if grade:
@@ -117,7 +117,7 @@ class GradeLetterRule(models.Model):
 
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
-    course = models.ForeignKey(Course)
+    course = models.ForeignKey(CourseSection)
     marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
     date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
@@ -185,7 +185,7 @@ class Grade(models.Model):
     def invalidate_cache(self):
         """ Invalidate any related caches """
         try:
-            enrollment = self.course.courseenrollment_set.get(user=self.student, role="student")
+            enrollment = self.course.courseenrollment_set.get(user=self.student)
             enrollment.flag_grade_as_stale()
             enrollment.flag_numeric_grade_as_stale()
         except CourseEnrollment.DoesNotExist:

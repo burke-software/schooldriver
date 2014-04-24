@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django.db.models import Q
 
 from ecwsp.administration.models import Configuration, Template
-from ecwsp.schedule.models import Course, MarkingPeriod
+from ecwsp.schedule.models import Course, CourseSection, MarkingPeriod
 from ecwsp.schedule.forms import EngradeSyncForm
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
@@ -67,10 +67,11 @@ def teacher_grade(request):
     else:
         messages.info(request, 'You do not have any courses.')
         return HttpResponseRedirect(reverse('admin:index'))
-    courses = Course.objects.filter(
-            graded=True,
+    print teacher
+    courses = CourseSection.objects.filter(
+            course__graded=True,
             marking_period__school_year__active_year=True,
-        ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+        ).filter(teachers=teacher).distinct()
     pref = UserPreference.objects.get_or_create(user=request.user)[0].gradebook_preference
     
     if "ecwsp.engrade_sync" in settings.INSTALLED_APPS:
@@ -142,9 +143,9 @@ def teacher_grade_upload(request, id):
     However it can also be done by manually overriding grades. This requires
     registrar level access. """
     
-    course = Course.objects.get(id=id)
+    course = CourseSection.objects.get(id=id)
     
-    students = Student.objects.filter(courseenrollment__course=course)
+    students = Student.objects.filter(coursesection__course=course)
     grades = course.grade_set.all()
     
     if request.method == 'POST' and 'upload' in request.POST:
@@ -160,7 +161,7 @@ def teacher_grade_upload(request, id):
                 course.save()
     else:
         import_form = GradeUpload()
-        import_form.fields['marking_period'].queryset = import_form.fields['marking_period'].queryset.filter(course=course)
+        import_form.fields['marking_period'].queryset = import_form.fields['marking_period'].queryset.filter(coursesection=course)
         
     if request.method == 'POST' and 'edit' in request.POST:
         handle_grade_save(request, course)
