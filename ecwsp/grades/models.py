@@ -46,9 +46,11 @@ class StudentMarkingPeriodGrade(models.Model):
     def calculate_grade(self):
         # ignore overriding grades - WRONG!
         return self.student.grade_set.filter(
+            course__courseenrollment__user=self.student, # make sure the student is still enrolled in the course!
             letter_grade=None, grade__isnull=False, override_final=False, marking_period=self.marking_period).extra(select={
             'ave_grade':
-            'AVG(grade * (select weight from schedule_markingperiod where schedule_markingperiod.id = marking_period_id))'
+            '''sum(grade * (select credits from schedule_course where schedule_course.id = grades_grade.course_id)) /
+            sum((select credits from schedule_course where schedule_course.id = grades_grade.course_id))'''
         }).values('ave_grade')[0]['ave_grade']
 
     
