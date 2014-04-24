@@ -28,13 +28,13 @@ class AccessLog(models.Model):
             return httpagentparser.simple_detect(self.ua)[1]
         except:
             return "Unknown"
-        
+
 class Configuration(models.Model):
     name = models.CharField(max_length=100, unique=True)
     value = models.TextField(blank=True)
     file = models.FileField(blank=True, null=True, upload_to="configuration", help_text="Some configuration options are for file uploads")
     help_text = models.TextField(blank=True)
-    
+
     default_configs = {
         'letter_grade_required_for_pass': ('60', 'Minimum grade required to be considered "passing"'),
         'school pay rate per hour': ('13.00', ''),
@@ -84,10 +84,10 @@ Use 'demonstrations' to see counts of demonstrations for students and assignment
         'Gradebook hide fields': ('', "Separate with commas. Options include: marking_period, assignment_type, benchmark, date, description."),
         'Default course credits': (1, "This number will appear in the 'Credits' field when creating new courses."),
     }
-    
+
     def __unicode__(self):
         return self.name
-    
+
     def get_or_default(name, default=None, help_text=None):
         """ Get the config object or create it with a default. Always use this when gettings configs
         Defaults are hard coded into this python file, you must add new values here for new configs!
@@ -101,16 +101,16 @@ Use 'demonstrations' to see counts of demonstrations for students and assignment
             object.save()
         return object
     get_or_default = Callable(get_or_default)
-    
-        
+
+
 class Template(models.Model):
     name = models.CharField(max_length=100, unique=True)
     file = models.FileField(upload_to="templates")
     general_student = models.BooleanField(default=False, help_text="Can be used on student reports")
-    report_card = models.BooleanField(help_text="Can be used on grade reports, gathers data for one year")
+    report_card = models.BooleanField(default=False, help_text="Can be used on grade reports, gathers data for one year")
     benchmark_report_card = models.BooleanField(default=False, help_text="A highly detailed, single-year report card for benchmark-based grading")
     transcript = models.BooleanField(default=False, help_text="Can be used on grade reports, gathers data for all years")
-    
+
     def __unicode__(self):
         text = self.name
         if self.report_card:
@@ -118,21 +118,21 @@ class Template(models.Model):
         if self.transcript:
             text += ' (transcript)'
         return text
-    
+
     def get_template(self, request):
         """ Get template or return False with error message. """
         if self.file:
             return self.file
         messages.error(request, 'Template %s not found!' % (self.name,))
         return False
-    
+
     def get_template_path(self, request):
         """ Get template file path, or return False with error message. """
         if self.file:
             return self.file.path
         messages.error(request, 'Template %s not found!' % (self.name,))
         return False
-    
+
     def get_or_make_blank(name):
         """ Get a template. If it doesn't exist create one that will be a blank document to prevent errors """
         template, created = Template.objects.get_or_create(name=name)
@@ -145,4 +145,4 @@ class Template(models.Model):
             template.save()
         return template
     get_or_make_blank = Callable(get_or_make_blank)
-        
+
