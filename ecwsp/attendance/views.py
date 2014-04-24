@@ -100,7 +100,7 @@ def teacher_attendance(request, course=None):
             return HttpResponseRedirect(reverse('admin:index'))
         course = courses[0]
     today, created = Day.objects.get_or_create(day=str(today.isoweekday()))
-    all = Student.objects.filter(courseenrollment__course=self, is_active=True)
+    all = Student.objects.filter(courseenrollment__course=course, is_active=True)
     exclude = Student.objects.filter(courseenrollment__course=course, is_active=True, courseenrollment__exclude_days=today)
     ids = []
     for id in exclude.values('id'):
