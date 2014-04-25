@@ -663,7 +663,7 @@ class SisReport(ScaffoldReport):
         student.years = SchoolYear.objects.filter(
             markingperiod__show_reports=True,
             start_date__lt=self.for_date,
-            markingperiod__course__courseenrollment__user=student,
+            markingperiod__coursesection__courseenrollment__user=student,
             ).exclude(omityeargpa__student=student).distinct().order_by('start_date')
         for year in student.years:
             year.credits = 0
@@ -676,7 +676,11 @@ class SisReport(ScaffoldReport):
             while i <= 6:
                 setattr(year, "mp" + str(i), "")
                 i += 1
-            year.courses = student.course_set.filter(graded=True, marking_period__school_year=year, marking_period__show_reports=True).distinct()
+            year.courses = student.course_set.filter(
+                graded=True,
+                marking_period__school_year=year,
+                marking_period__show_reports=True
+            ).distinct().order_by('department')
             year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_begin'])
             # course grades
             for course in year.courses:
@@ -790,7 +794,9 @@ class SisReport(ScaffoldReport):
         students = context['objects']
         template = self.report_context.get('template')
         if template:
+            # TODO: Change to date_end?
             self.for_date = self.report_context['date_begin']
+            context['date_of_report'] = self.for_date # backwards compatibility
             if template.transcript:
                 self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
                 self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value

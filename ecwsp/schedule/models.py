@@ -223,8 +223,13 @@ ORDER  BY grades_grade.override_final DESC limit 1'''
                 cursor.execute(sql_string.format(
                     over='', extra_where=''),
                                (self.section_id, self.user_id))
-            
-        (ave_grade, grade_id, override_final) = cursor.fetchone()
+
+        result = cursor.fetchone()
+        if result:
+            (ave_grade, grade_id, override_final) = result
+        else: # No grades at all. The average of no grades is None
+            return None
+
         if override_final:
             course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
             grade = course_grades.get_grade()

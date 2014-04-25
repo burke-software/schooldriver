@@ -223,7 +223,7 @@ def teacher_grade_download(request, id, type=None):
     data['$students'] = []
     data['$username'] = []
     
-    for student in Student.objects.filter(courseenrollment__course=course):
+    for student in Student.objects.filter(courseenrollment__section=course):
         data['$students'].append(unicode(student))
         data['$username'].append(unicode(student.username))
     

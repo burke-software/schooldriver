@@ -14,7 +14,7 @@ from django.template import RequestContext
 from .models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
 from .forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
 from .forms import StudentAttendanceForm, StudentMultpleAttendanceForm
-from ecwsp.schedule.models import Course, CourseSection, MarkingPeriod
+from ecwsp.schedule.models import Course, CourseSection, Day, MarkingPeriod
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
@@ -99,9 +99,9 @@ def teacher_attendance(request, course=None):
                     "the course is not set to the current marking period.")
             return HttpResponseRedirect(reverse('admin:index'))
         course = courses[0]
-    today, created = Day.objects.get_or_create(day=str(date.today().isoweekday()))
-    all = Student.objects.filter(courseenrollment__course=self, is_active=True)
-    exclude = Student.objects.filter(courseenrollment__course=course, is_active=True, courseenrollment__exclude_days=today)
+    today, created = Day.objects.get_or_create(day=str(today.isoweekday()))
+    all = Student.objects.filter(courseenrollment__section=course, is_active=True)
+    exclude = Student.objects.filter(courseenrollment__section=course, is_active=True, courseenrollment__exclude_days=today)
     ids = []
     for id in exclude.values('id'):
         ids.append(int(id['id']))
@@ -146,7 +146,7 @@ def teacher_attendance(request, course=None):
         else:
             student.marked = False
             initial.append({'student': student.id, 'status': None, 'notes': None, 'date': datetime.date.today() })
-            note = student.courseenrollment_set.filter(course=course)[0].attendance_note
+            note = student.courseenrollment_set.filter(section=course)[0].attendance_note
             if note: enroll_notes.append(unicode(note))
             else: enroll_notes.append("")
     formset = AttendanceFormset(initial=initial, queryset=StudentAttendance.objects.none())
