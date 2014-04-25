@@ -14,7 +14,7 @@ from django.template import RequestContext
 from .models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
 from .forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
 from .forms import StudentAttendanceForm, StudentMultpleAttendanceForm
-from ecwsp.schedule.models import Course, MarkingPeriod
+from ecwsp.schedule.models import Course, CourseSection, MarkingPeriod
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
@@ -58,8 +58,8 @@ def teacher_attendance(request, course=None):
     """
     today = datetime.date.today()
     if request.user.has_perm('attendance.change_studentattendance'):
-        courses = Course.objects.filter(
-            homeroom=True,
+        courses = CourseSection.objects.filter(
+            course__homeroom=True,
             marking_period__start_date__lte=today,
             marking_period__end_date__gte=today)
     elif Faculty.objects.filter(username=request.user.username).count() == 1:
