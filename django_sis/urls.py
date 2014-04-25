@@ -33,6 +33,7 @@ urlpatterns = patterns('',
     (r'^reports/', include('scaffold_report.urls')),
     url(r"^su/", include("django_su.urls")),
     url(r'^api/', include(api_router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 )
 
 if settings.GAPPS:
