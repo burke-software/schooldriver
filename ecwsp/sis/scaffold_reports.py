@@ -375,7 +375,7 @@ class FailReportButton(ReportButton):
 
     def get_report(self, report_view, context):
         marking_periods = report_view.report.report_context['marking_periods']
-        students = Student.objects.filter(courseenrollment__section__marking_period__in=marking_periods).distinct()
+        students = Student.objects.filter(courseenrollment__course__marking_period__in=marking_periods).distinct()
         titles = ['']
         departments = Department.objects.filter(course__courseenrollment__user__is_active=True).distinct()
 
@@ -600,7 +600,7 @@ class SisReport(ScaffoldReport):
         return False
 
     def get_student_report_card_data(self, student):
-        courses = student.coursesection_set.filter(
+        courses = student.course_set.filter(
             graded=True,
             marking_period__in=self.marking_periods,
         ).distinct().order_by('department')
@@ -704,7 +704,7 @@ class SisReport(ScaffoldReport):
                         try:
                             grade = course_grades.get(marking_period=mp).get_grade()
                             grade = " " + str(grade) + " "
-                        except:
+                        except Grade.DoesNotExist:
                             grade = ""
                         setattr(course, "grade" + str(i), grade)
                     i += 1
@@ -758,7 +758,7 @@ class SisReport(ScaffoldReport):
                 c = 0
                 for course in student.coursesection_set.filter(
                     course__department=dept,
-                    marking_period__school_year__end_date__lt=self.for_date,
+                    marking_period__school_year__end_date__lte=self.date_end,
                     course__graded=True).distinct():
                     if course.credits and self.is_passing(course.courseenrollment_set.get(user=student).grade):
                         c += course.credits
@@ -797,7 +797,7 @@ class SisReport(ScaffoldReport):
             # TODO: Change to date_end?
             self.for_date = self.report_context['date_begin']
             self.date_end = self.report_context['date_end']
-            context['date_of_report'] = self.for_date # backwards compatibility
+            context['date_of_report'] = self.date_end # backwards compatibility
             if template.transcript:
                 self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
                 self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
@@ -806,7 +806,7 @@ class SisReport(ScaffoldReport):
             if template.report_card:
                 self.blank_grade = struct()
                 self.blank_grade.comment = ""
-                school_year = SchoolYear.objects.filter(start_date__lte=self.for_date
+                school_year = SchoolYear.objects.filter(start_date__lte=self.report_context['date_end']
                         ).order_by('-start_date').first()
                 context['year'] = school_year
                 self.marking_periods = MarkingPeriod.objects.filter(
