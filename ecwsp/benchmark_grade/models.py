@@ -442,7 +442,7 @@ class Aggregate(models.Model):
             TC used this last year and counted it in GPAs as if it were a course. '''
             rule = self.calculation_rule
             departments = rule.category_as_course_set.get(category_id=self.category_id).include_departments.all()
-            courses = self.student.course_set.filter(marking_period=self.marking_period_id,
+            courses = self.student.coursesection_set.filter(marking_period=self.marking_period_id,
                 department__in=departments, graded=True)
             for course in courses:
                 weight = Decimal(course.credits) / course.marking_period.count()

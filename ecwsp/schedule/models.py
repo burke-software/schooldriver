@@ -349,7 +349,7 @@ class Course(models.Model):
     grades_link.allow_tags = True
 
     def get_enrolled_students(self):
-        return Student.objects.filter(courseenrollment__course=self)
+        return Student.objects.filter(courseenrollment__section=self)
 
     def copy_instance(self, request):
         changes = (("fullname", self.fullname + " copy"),)
@@ -386,6 +386,24 @@ class CourseSection(models.Model):
     
     def __unicode__(self):
         return '{}: {}'.format(self.course, self.name)
+
+    @property
+    def department(self):
+        return self.course.department
+
+    @property
+    def level(self):
+        """ Course grade level """
+        return self.course.level
+
+    @property
+    def credits(self):
+        return self.course.credits
+    
+    @property
+    def description(self):
+        """ Course description """
+        return self.course.description
 
     def number_of_students(self):
         return self.enrollments.count()

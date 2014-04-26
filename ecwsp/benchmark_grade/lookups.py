@@ -18,7 +18,7 @@ class ReferingCourseStudentLookup(StudentLookupSmall):
         if course is None:
             return super(ReferingCourseStudentLookup, self).get_query(q, request)
         else:
-            qs = Student.objects.filter(courseenrollment__course=course)
+            qs = Student.objects.filter(courseenrollment__section=course)
         for word in q.split():
             qs = qs.filter(Q(lname__icontains=word) | Q(fname__icontains=word))
         return qs.order_by('lname')

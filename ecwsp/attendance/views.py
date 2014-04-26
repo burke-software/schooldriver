@@ -316,7 +316,7 @@ def course_attendance(request, course_id, for_date=datetime.date.today):
     course = get_object_or_404(Course, pk=course_id)
     check_attendance_permission(course, request.user)
     
-    students = Student.objects.filter(courseenrollment__course=course)
+    students = Student.objects.filter(courseenrollment__section=course)
     daily_attendance = StudentAttendance.objects.filter(student__in=students,date=for_date).distinct()
     CourseAttendanceFormSet = formset_factory(CourseAttendanceForm, extra=0)
     

@@ -39,30 +39,3 @@ def schedule(request):
     
     return render_to_response('schedule/schedule.html', {'request': request, 'years': years, 'mps': mps, 'periods': periods, 'courses': courses})
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')   
-def schedule_enroll(request, id):
-    course = get_object_or_404(Course, pk=id)
-    if request.method == 'POST':
-        form = EnrollForm(request.POST)
-        if form.is_valid():
-            CourseEnrollment.objects.filter(course=course, role='student').delete() # start afresh; only students passed in from the form should be enrolled
-            # add manually select students first
-            selected = form.cleaned_data['students']
-            for student in selected:
-                # add
-                enroll, created = CourseEnrollment.objects.get_or_create(user=student, course=course, role="student")
-                # left get_or_create in case another schedule_enroll() is running simultaneously
-                if created: enroll.save()
-            # add cohort students second
-            cohorts = form.cleaned_data['cohorts']
-            for cohort in cohorts:
-                for student in cohort.student_set.all():
-                    enroll, created = CourseEnrollment.objects.get_or_create(user=student, course=course, role="student")
-                
-            if 'save' in request.POST:
-                return HttpResponseRedirect(reverse('admin:schedule_course_change', args=[id]))
-    
-    students = Student.objects.filter(courseenrollment__course=course)
-    form = EnrollForm(initial={'students': students})
-    return render(request, 'schedule/enroll.html', {'request': request, 'form': form, 'course': course})
-

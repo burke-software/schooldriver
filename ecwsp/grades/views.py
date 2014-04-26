@@ -340,7 +340,7 @@ def student_gradesheet(request, id, year_id=None):
     student = get_object_or_404(Student, id=id)
     if request.POST:
         handle_grade_save(request)
-    courses = student.course_set.filter(graded=True)
+    courses = student.coursesection_set.filter(graded=True)
     school_years = SchoolYear.objects.filter(markingperiod__course__enrollments__student=student).distinct()
     if year_id:
         school_year = SchoolYear.objects.get(id=year_id)

@@ -208,8 +208,8 @@ class CourseGradeFilter(Filter):
             compare = reverse_compare(compare)
         grade_kwarg = {
             'courseenrollment__cached_numeric_grade__' + compare: number,
-            'courseenrollment__course__marking_period__start_date__gte': date_begin,
-            'courseenrollment__course__marking_period__end_date__lte': date_end,
+            'courseenrollment__section__marking_period__start_date__gte': date_begin,
+            'courseenrollment__section__marking_period__end_date__lte': date_end,
         }
 
         if times:
@@ -375,7 +375,7 @@ class FailReportButton(ReportButton):
 
     def get_report(self, report_view, context):
         marking_periods = report_view.report.report_context['marking_periods']
-        students = Student.objects.filter(courseenrollment__course__marking_period__in=marking_periods).distinct()
+        students = Student.objects.filter(courseenrollment__section__marking_period__in=marking_periods).distinct()
         titles = ['']
         departments = Department.objects.filter(course__courseenrollment__user__is_active=True).distinct()
 
@@ -600,7 +600,7 @@ class SisReport(ScaffoldReport):
         return False
 
     def get_student_report_card_data(self, student):
-        courses = student.course_set.filter(
+        courses = student.coursesection_set.filter(
             graded=True,
             marking_period__in=self.marking_periods,
         ).distinct().order_by('department')
@@ -662,13 +662,13 @@ class SisReport(ScaffoldReport):
 
         student.years = SchoolYear.objects.filter(
             markingperiod__show_reports=True,
-            start_date__lt=self.for_date,
+            start_date__lt=self.date_end,
             markingperiod__coursesection__courseenrollment__user=student,
             ).exclude(omityeargpa__student=student).distinct().order_by('start_date')
         for year in student.years:
             year.credits = 0
             year.possible_credits = 0
-            year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year, show_reports=True).distinct().order_by("start_date")
+            year.mps = MarkingPeriod.objects.filter(coursesection__courseenrollment__user=student, school_year=year, show_reports=True).distinct().order_by("start_date")
             i = 1
             for mp in year.mps:
                 setattr(year, "mp" + str(i), mp.shortname)
@@ -676,11 +676,11 @@ class SisReport(ScaffoldReport):
             while i <= 6:
                 setattr(year, "mp" + str(i), "")
                 i += 1
-            year.courses = student.course_set.filter(
-                graded=True,
+            year.courses = student.coursesection_set.filter(
+                course__graded=True,
                 marking_period__school_year=year,
                 marking_period__show_reports=True
-            ).distinct().order_by('department')
+            ).distinct().order_by('course__department')
             year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_begin'])
             # course grades
             for course in year.courses:
@@ -715,8 +715,8 @@ class SisReport(ScaffoldReport):
 
                 if self.is_passing(course.final):
                     year.credits += course.credits
-                if course.credits:
-                    year.possible_credits += course.credits
+                if course.course.credits:
+                    year.possible_credits += course.course.credits
 
             year.categories_as_courses = []
             if year.benchmark_grade:
@@ -752,14 +752,14 @@ class SisReport(ScaffoldReport):
             year.tardy = student.student_attn.filter(status__tardy=True, date__range=(year.start_date, year.end_date)).count()
             year.dismissed = student.student_attn.filter(status__code="D", date__range=(year.start_date, year.end_date)).count()
             # credits per dept
-            student.departments = Department.objects.filter(course__courseenrollment__user=student).distinct()
+            student.departments = Department.objects.filter(course__coursesection__courseenrollment__user=student).distinct()
             student.departments_text = ""
             for dept in student.departments:
                 c = 0
-                for course in student.course_set.filter(
-                    department=dept,
+                for course in student.coursesection_set.filter(
+                    course__department=dept,
                     marking_period__school_year__end_date__lt=self.for_date,
-                    graded=True).distinct():
+                    course__graded=True).distinct():
                     if course.credits and self.is_passing(course.courseenrollment_set.get(user=student).grade):
                         c += course.credits
                 dept.credits = c
@@ -796,6 +796,7 @@ class SisReport(ScaffoldReport):
         if template:
             # TODO: Change to date_end?
             self.for_date = self.report_context['date_begin']
+            self.date_end = self.report_context['date_end']
             context['date_of_report'] = self.for_date # backwards compatibility
             if template.transcript:
                 self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)

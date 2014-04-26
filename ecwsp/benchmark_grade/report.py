@@ -252,7 +252,7 @@ def count_items_by_category_across_courses(year_category_names, current_marking_
         except StudentWorker.DoesNotExist:
             work_day = None
         matching_courses = []
-        for course in student.course_set.filter(marking_period__school_year=school_year).distinct():
+        for course in student.coursesection_set.filter(marking_period__school_year=school_year).distinct():
             items = Item.objects.filter(Q(category__in=current_marking_period_categories, marking_period=marking_period) | Q(category__in=year_categories),
                                         course=course, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
             total_item_count = items.count()

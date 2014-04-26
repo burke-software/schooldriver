@@ -95,7 +95,7 @@ class EngradeSync:
                 if mp == marking_period:
                     break
             students = ""
-            for student in Student.objects.filter(courseenrollment__course=course):
+            for student in Student.objects.filter(courseenrollment__section=course):
                 students += "%s %s %s\n" % (student.fname, student.lname, student.id)
             priteach = self.get_engrade_teacher(course.teacher)
             engrade_id = self.api.school_class_new(name, syr, gp, students, priteach)
