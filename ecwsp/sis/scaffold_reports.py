@@ -681,7 +681,7 @@ class SisReport(ScaffoldReport):
                 marking_period__school_year=year,
                 marking_period__show_reports=True
             ).distinct().order_by('department')
-            year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_begin'])
+            year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_end'])
             # course grades
             for course in year.courses:
                 course_enrollment = course.courseenrollment_set.get(user=student)
@@ -704,7 +704,10 @@ class SisReport(ScaffoldReport):
                         try:
                             grade = course_grades.get(marking_period=mp).get_grade()
                             grade = " " + str(grade) + " "
-                        except:
+                        except Grade.DoesNotExist:
+                            print "!!!!"
+                            print mp
+                            print course_grades
                             grade = ""
                         setattr(course, "grade" + str(i), grade)
                     i += 1
@@ -758,7 +761,7 @@ class SisReport(ScaffoldReport):
                 c = 0
                 for course in student.course_set.filter(
                     department=dept,
-                    marking_period__school_year__end_date__lt=self.for_date,
+                    marking_period__school_year__end_date__lte=self.date_end,
                     graded=True).distinct():
                     if course.credits and self.is_passing(course.courseenrollment_set.get(user=student).grade):
                         c += course.credits
@@ -794,7 +797,6 @@ class SisReport(ScaffoldReport):
         students = context['objects']
         template = self.report_context.get('template')
         if template:
-            # TODO: Change to date_end?
             self.for_date = self.report_context['date_begin']
             self.date_end = self.report_context['date_end']
             context['date_of_report'] = self.for_date # backwards compatibility
