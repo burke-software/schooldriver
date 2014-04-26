@@ -705,9 +705,6 @@ class SisReport(ScaffoldReport):
                             grade = course_grades.get(marking_period=mp).get_grade()
                             grade = " " + str(grade) + " "
                         except Grade.DoesNotExist:
-                            print "!!!!"
-                            print mp
-                            print course_grades
                             grade = ""
                         setattr(course, "grade" + str(i), grade)
                     i += 1
@@ -797,9 +794,8 @@ class SisReport(ScaffoldReport):
         students = context['objects']
         template = self.report_context.get('template')
         if template:
-            self.for_date = self.report_context['date_begin']
             self.date_end = self.report_context['date_end']
-            context['date_of_report'] = self.for_date # backwards compatibility
+            context['date_of_report'] = self.date_end # backwards compatibility for templates
             if template.transcript:
                 self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
                 self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
@@ -808,7 +804,7 @@ class SisReport(ScaffoldReport):
             if template.report_card:
                 self.blank_grade = struct()
                 self.blank_grade.comment = ""
-                school_year = SchoolYear.objects.filter(start_date__lte=self.for_date
+                school_year = SchoolYear.objects.filter(start_date__lte=self.report_context['date_end']
                         ).order_by('-start_date').first()
                 context['year'] = school_year
                 self.marking_periods = MarkingPeriod.objects.filter(
