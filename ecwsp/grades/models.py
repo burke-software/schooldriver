@@ -59,6 +59,7 @@ class StudentYearGrade(models.Model):
     student = models.ForeignKey('sis.Student')
     year = models.ForeignKey('sis.SchoolYear')
     grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="Year average")
+    credits = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     
     class Meta:
         unique_together = ('student', 'year')
@@ -73,6 +74,8 @@ class StudentYearGrade(models.Model):
                     student=student,
                     year_id=year['course__marking_period__school_year']
                 )[0]
+                if year_grade.credits_recalculation_needed:
+                    year_grade.recalculate_credits()
                 if year_grade.grade_recalculation_needed:
                     year_grade.recalculate_grade()
         
@@ -84,12 +87,14 @@ class StudentYearGrade(models.Model):
         else:
             for student in Student.objects.all():
                 StudentYearGrade.build_cache_student(student)
-        
-    def calculate_grade(self, date_report=None):
-        """ Calculate grade considering MP weights and course credits 
-        course_enrollment.calculate_real_grade returns a MP weighted result, 
-        so just have to consider credits
-        """
+
+    def calculate_credits(self):
+        """ The number of credits a student has earned in 1 year """
+        return self.calculate_grade_and_credits()[1]
+
+    def calculate_grade_and_credits(self, date_report=None):
+        """ Just recalculate them both at once
+        returns (grade, credits) """
         total = Decimal(0)
         credits = Decimal(0)
         for course_enrollment in self.student.courseenrollment_set.filter(
@@ -102,8 +107,23 @@ class StudentYearGrade(models.Model):
                 total += grade * course_enrollment.course.credits
                 credits += course_enrollment.course.credits
         if credits > 0:
-            return total / credits
-        return None
+            grade = total / credits
+        else:
+            grade = None
+        if date_report == None: # If set would indicate this is not for cache!
+            self.grade = grade
+            self.credits = credits
+            self.grade_recalculation_needed = False
+            self.credits_recalculation_needed = False
+            self.save()
+        return (grade, credits)
+        
+    def calculate_grade(self, date_report=None):
+        """ Calculate grade considering MP weights and course credits 
+        course_enrollment.calculate_real_grade returns a MP weighted result, 
+        so just have to consider credits
+        """
+        return self.calculate_grade_and_credits(date_report=date_report)[0]
 
 signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
 
