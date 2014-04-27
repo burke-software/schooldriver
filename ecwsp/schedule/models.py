@@ -209,11 +209,11 @@ ORDER  BY grades_grade.override_final DESC limit 1'''
         if date_report:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
-                    over='over ()', extra_where='AND schedule_markingperiod.end_date <= %s'),
+                    over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = 1)'),
                                (self.course_id, self.user_id, date_report))
             else:
                 cursor.execute(sql_string.format(
-                    over='', extra_where='AND schedule_markingperiod.end_date <= %s'),
+                    over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
                                (self.course_id, self.user_id, date_report))
 
         else:
