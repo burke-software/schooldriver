@@ -188,7 +188,7 @@ class CourseEnrollment(models.Model):
         when you don't care about letter grades
         """
         cursor = connection.cursor()
-        
+
         # postgres requires a over () to run
         # http://stackoverflow.com/questions/19271646/how-to-make-a-sum-without-group-by
         sql_string = '''
@@ -203,17 +203,17 @@ WHERE  ( grades_grade.course_id = %s
        AND ( grade IS NOT NULL
               OR letter_grade IS NOT NULL )
 ORDER  BY grades_grade.override_final DESC limit 1'''
-        
+
         if date_report:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
-                    over='over ()', extra_where='AND schedule_markingperiod.end_date <= %s'),
+                    over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = 1)'),
                                (self.course_id, self.user_id, date_report))
             else:
                 cursor.execute(sql_string.format(
-                    over='', extra_where='AND schedule_markingperiod.end_date <= %s'),
+                    over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
                                (self.section_id, self.user_id, date_report))
-                 
+
         else:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
