@@ -368,8 +368,19 @@ class Student(User, CustomFieldModel):
         for grade_year in grade_years.distinct():
             grade = grade_year.calculate_grade(date_report=date_report)
             if grade:
-                total += grade
-                years_with_grade += 1
+                # Is this an incomplete complete year?
+                if date_report and date_report < grade_year.year.end_date:
+                    # This year hasn't finished. What fraction is complete?
+                    all_mps = grade_year.year.markingperiod_set.count()
+                    complete_mps = grade_year.year.markingperiod_set.filter(
+                        end_date__lte=date_report).count()
+                    fraction = Decimal(complete_mps) / all_mps
+                    total += grade * grade_year.credits * fraction
+                    years_with_grade += grade_year.credits * fraction
+                else:
+                    total += grade * grade_year.credits
+                    years_with_grade += grade_year.credits
+
         if years_with_grade:
             return total / years_with_grade
 
