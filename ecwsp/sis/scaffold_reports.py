@@ -375,9 +375,9 @@ class FailReportButton(ReportButton):
 
     def get_report(self, report_view, context):
         marking_periods = report_view.report.report_context['marking_periods']
-        students = Student.objects.filter(courseenrollment__course__marking_period__in=marking_periods).distinct()
+        students = Student.objects.filter(courseenrollment__section__marking_period__in=marking_periods).distinct()
         titles = ['']
-        departments = Department.objects.filter(course__courseenrollment__user__is_active=True).distinct()
+        departments = Department.objects.filter(course__coursesection__courseenrollment__user__is_active=True).distinct()
 
         for department in departments:
             titles += [str(department)]
@@ -392,7 +392,7 @@ class FailReportButton(ReportButton):
             ix = 1 # letter A
             student.failed_grades = Grade.objects.none()
             for department in departments:
-                failed_grades = Grade.objects.filter(override_final=False,course__department=department,course__courseenrollment__user=student,grade__lte=passing_grade,marking_period__in=marking_periods)
+                failed_grades = Grade.objects.filter(override_final=False,course__course__department=department,course__courseenrollment__user=student,grade__lte=passing_grade,marking_period__in=marking_periods)
                 row += [failed_grades.count()]
                 student.failed_grades = student.failed_grades | failed_grades
                 ix += 1
@@ -424,11 +424,11 @@ class AggregateGradeButton(ReportButton):
         data = [titles]
         ranges = [['100', '90'], ['89.99', '80'], ['79.99', '70'], ['69.99', '60'], ['59.99', '50'], ['49.99', '0']]
         letter_ranges = ['P', 'F']
-        for teacher in Faculty.objects.filter(course__marking_period__in=mps, is_active=True).distinct():
+        for teacher in Faculty.objects.filter(coursesection__marking_period__in=mps, is_active=True).distinct():
             data.append([str(teacher)])
             grades = Grade.objects.filter(
                 marking_period__in=mps,
-                course__teacher=teacher,
+                course__teachers=teacher,
                 student__is_active=True,
                 override_final=False,
             ).filter(
@@ -600,10 +600,10 @@ class SisReport(ScaffoldReport):
         return False
 
     def get_student_report_card_data(self, student):
-        courses = student.course_set.filter(
-            graded=True,
+        courses = student.coursesection_set.filter(
+            course__graded=True,
             marking_period__in=self.marking_periods,
-        ).distinct().order_by('department')
+        ).distinct().order_by('course__department')
         for course in courses:
             course_enrollment = course.courseenrollment_set.get(user=student)
             grades = course.grade_set.filter(student=student).filter(
@@ -681,7 +681,7 @@ class SisReport(ScaffoldReport):
                 marking_period__school_year=year,
                 marking_period__show_reports=True
             ).distinct().order_by('course__department')
-            year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_begin'])
+            year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_end'])
             # course grades
             for course in year.courses:
                 course_enrollment = course.courseenrollment_set.get(user=student)

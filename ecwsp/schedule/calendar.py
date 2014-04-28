@@ -1,26 +1,3 @@
-#       calendar.py
-#       
-#       Copyright 2010 Cristo Rey New York High School
-#        Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
-# Handles all calendar operations to create ical files and sync
-# with Google calendar
-
 from ecwsp.schedule.models import *
 from ecwsp.sis.models import SchoolYear
 from ecwsp.administration.models import Configuration
@@ -59,8 +36,8 @@ class Calendar:
         """
         Returns days ['Monday', 'Tuesday'...] and periods
         """
-        periods = Period.objects.filter(course__courseenrollment__user=student, course__marking_period=marking_period).order_by('start_time').distinct()
-        course_meets = CourseMeet.objects.filter(course__courseenrollment__user=student, course__marking_period=marking_period).distinct()
+        periods = Period.objects.filter(coursesection__courseenrollment__user=student, coursesection__marking_period=marking_period).order_by('start_time').distinct()
+        course_meets = CourseMeet.objects.filter(section__courseenrollment__user=student, section__marking_period=marking_period).distinct()
         
         if schedule_days is None:
             day_list = CourseMeet.day_choice

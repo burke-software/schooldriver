@@ -11,7 +11,7 @@ from daterange_filter.filter import DateRangeFilter
 
 from ecwsp.sis.models import Faculty, Student
 from ecwsp.schedule.models import CourseMeet, Course, Department, CourseEnrollment, MarkingPeriod
-from ecwsp.schedule.models import Period, Location, OmitCourseGPA, OmitYearGPA, Award, CourseSectionTeachers
+from ecwsp.schedule.models import Period, Location, OmitCourseGPA, OmitYearGPA, Award, CourseSectionTeacher
 from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day, CourseSection
 
 def copy(modeladmin, request, queryset):
@@ -48,12 +48,12 @@ class CourseEnrollmentInline(admin.TabularInline):
     def has_add_permission(self, request):
         return False
 
-class CourseSectionTeachersInline(admin.TabularInline):
-    model = CourseSectionTeachers
+class CourseSectionTeacherInline(admin.TabularInline):
+    model = CourseSectionTeacher
     extra = 0
 
 class CourseSectionAdmin(admin.ModelAdmin):
-    inlines = [CourseMeetInline, CourseSectionTeachersInline, CourseEnrollmentInline]
+    inlines = [CourseMeetInline, CourseSectionTeacherInline, CourseEnrollmentInline]
     list_display = ['name', 'course', 'is_active']
     list_filter = ['course__level', 'course__department', 'teachers']
     search_fields = ['name', 'course__fullname', 'teachers__username', 'enrollments__username']

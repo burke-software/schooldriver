@@ -21,7 +21,7 @@ from .pdf_reports import student_thumbnail
 from .template_report import TemplateReport
 from ecwsp.administration.models import Template
 from ecwsp.schedule.calendar import Calendar
-from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
+from ecwsp.schedule.models import MarkingPeriod, Course, CourseSection, CourseEnrollment
 
 import sys
 import httpagentparser
@@ -136,7 +136,7 @@ def paper_attendance(request, day):
     else:
         from ecwsp.schedule.models import CourseMeet
         cm = CourseMeet.objects.filter(day=day)
-        courses = Course.objects.filter(coursemeet__in=cm, homeroom=True).distinct()
+        courses = CourseSection.objects.filter(coursemeet__in=cm, course__homeroom=True).distinct()
         report = TemplateReport(request.user)
         report.data['courses'] = courses
         result = report.pod_save(template)
@@ -144,6 +144,7 @@ def paper_attendance(request, day):
         return result
     else:
         messages.error(request, 'Problem making paper attendance, does the template exist?')
+        return HttpResponseRedirect('/')
 
 @user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')
 def transcript_nonofficial(request, student_id):
@@ -293,11 +294,11 @@ def view_student(request, id=None):
     ########################################################################
 
     #Grades
-    years = SchoolYear.objects.filter(markingperiod__course__courseenrollment__user=student).distinct()
+    years = SchoolYear.objects.filter(markingperiod__coursesection__courseenrollment__user=student).distinct()
     from ecwsp.grades.models import Grade
     for year in years:
-        year.mps = MarkingPeriod.objects.filter(course__courseenrollment__user=student, school_year=year).distinct().order_by("start_date")
-        year.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period__school_year=year).distinct()
+        year.mps = MarkingPeriod.objects.filter(coursesection__courseenrollment__user=student, school_year=year).distinct().order_by("start_date")
+        year.courses = CourseSection.objects.filter(courseenrollment__user=student, course__graded=True, marking_period__school_year=year).distinct()
         for course in year.courses:
             # Too much logic for the template here, so just generate html.
             course.grade_html = ""
@@ -308,7 +309,7 @@ def view_student(request, id=None):
                 except:
                     course.grade_html += '<td> </td>'
             try:
-                course.grade_html += '<td> %s </td>' % (unicode(course.courseenrollment_set.get(user=student, role="student").grade),)
+                course.grade_html += '<td> %s </td>' % (unicode(course.courseenrollment_set.get(user=student).grade),)
             except CourseEnrollment.DoesNotExist:
                 course.grade_html += '<td></td>'
 

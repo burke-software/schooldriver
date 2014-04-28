@@ -1,22 +1,5 @@
-#       Copyright 2011 David M Burke <david@davidmburke.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
-from ecwsp.engrade_sync.python_engrade import *
-from ecwsp.engrade_sync.models import *
+from .python_engrade import *
+from .models import *
 from ecwsp.schedule.models import *
 from ecwsp.grades.models import Grade
 
@@ -67,7 +50,7 @@ class EngradeSync:
         Genererate all courses in Engrade for a given marking period.
         Returns list of engrade course id's
         """
-        courses = Course.objects.filter(marking_period=marking_period)
+        courses = CourseSection.objects.filter(marking_period=marking_period)
         course_ids = ""
         for course in courses:
             try:
