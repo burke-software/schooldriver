@@ -9,7 +9,7 @@ from ecwsp.sis.helper_functions import round_as_decimal
 from ecwsp.administration.models import Configuration
 import ecwsp
 
-from datetime import date, datetime, timedelta
+import datetime
 from decimal import Decimal, ROUND_HALF_UP
 import copy
 
@@ -73,7 +73,7 @@ class MarkingPeriod(models.Model):
             build_grade_cache.apply_async()
         return obj
 
-    def get_number_days(self, date=date.today()):
+    def get_number_days(self, date=datetime.date.today()):
         """ Get number of days in a marking period"""
         if (self.school_days or self.school_days == 0) and date >= self.end_date:
             return self.school_days
@@ -100,7 +100,7 @@ class MarkingPeriod(models.Model):
                     elif self.sunday and current_day.isoweekday() == 7:
                         is_day = True
             if is_day: day += 1
-            current_day += timedelta(days=1)
+            current_day += datetime.timedelta(days=1)
         return day
 
 class DaysOff(models.Model):
@@ -178,7 +178,9 @@ class CourseEnrollment(models.Model):
     def get_grade(self, date_report=None, rounding=2):
         """ Get the grade, use cache when no date change present
         """
-        if date_report == None:
+        if date_report is None or date_report >= datetime.date.today():
+            # Cache will always have the latest grade, so it's fine for
+            # today's date and any future date
             grade = self.grade
         else:
             grade = self.calculate_grade_real(date_report=date_report)

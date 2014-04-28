@@ -739,10 +739,9 @@ class SisReport(ScaffoldReport):
                 setattr(year, 'mp' + str(i) + 'ave', "")
                 i += 1
 
-            if self.date_end > year.end_date:
+            if self.date_end >= year.end_date:
                 year.ave = student.studentyeargrade_set.get(year=year).grade
             else:
-                print "going to cal"
                 year.ave = student.studentyeargrade_set.get(year=year).get_grade(date_report=self.date_end)
 
             # Attendance for year
