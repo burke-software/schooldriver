@@ -2,7 +2,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import connection
 from django.db.models.signals import post_save, m2m_changed
-from django.db.models import Count, Max
 from localflavor.us.models import USStateField, PhoneNumberField
 from django.contrib.auth.models import User, Group
 from django.conf import settings
@@ -16,16 +15,18 @@ import sys
 from ckeditor.fields import RichTextField
 from django_cached_field import CachedDecimalField
 from decimal import Decimal
+from ecwsp.sis.helper_functions import round_as_decimal
 
 logger = logging.getLogger(__name__)
 
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
 
+
 def create_faculty(instance, make_user_group=True):
     """ Create a sis.Faculty object that is linked to the given
     auth_user instance. Important as there is no way to do this
-    from Django admin. See 
+    from Django admin. See
     http://stackoverflow.com/questions/4064808/django-model-inheritance-create-sub-instance-of-existing-instance-downcast
     """
     if not hasattr(instance, "student") and not hasattr(instance, "faculty"):
@@ -35,7 +36,7 @@ def create_faculty(instance, make_user_group=True):
 
 def create_student(instance):
     """ Create a sis.Student object that is linked to the given auth_user
-    instance. See create_faculty for more details.  
+    instance. See create_faculty for more details.
     """
     if not hasattr(instance, "student") and not hasattr(instance, 'faculty'):
         student = Student(user_ptr_id=instance.id)
@@ -64,7 +65,7 @@ class UserPreference(models.Model):
         ('m', 'Microsoft Binary (.doc, .xls)'),
         ('x', 'Microsoft Office Open XML (.docx, .xlsx)'),
     )
-    prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.") 
+    prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.")
     include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
     omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
     omr_default_save_question_to_bank = models.BooleanField(default=False)
@@ -73,9 +74,9 @@ class UserPreference(models.Model):
          ('O', 'Online Gradebook'), ('S','Spreadsheet'), ('E', 'Engrade'), ('M', 'Manual')))
     user = models.ForeignKey(User, unique=True, editable=False)
     first = True
-    
+
     def get_format(self, type="document"):
-        """ Return format extension. 
+        """ Return format extension.
         type: type of format (document or spreadsheet) """
         if type == "document":
             if self.prefered_file_format == "o":
@@ -91,7 +92,7 @@ class UserPreference(models.Model):
                 return "xls"
             elif self.prefered_file_format == "x":
                 return "xlsx"
-            
+
 class PhoneNumber(models.Model):
     number = PhoneNumberField()
     ext = models.CharField(max_length=10, blank=True, null=True)
@@ -104,8 +105,8 @@ class PhoneNumber(models.Model):
             return self.number + " x" + self.ext
         else:
             return self.number
-            
-    
+
+
 def get_city():
     return Configuration.get_or_default("Default City", "").value
 class EmergencyContact(models.Model):
@@ -121,21 +122,21 @@ class EmergencyContact(models.Model):
     primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to. In the event of an emergency, this is the person that will be contacted first.")
     emergency_only = models.BooleanField(default=False, help_text="Only contact in case of emergency")
     sync_schoolreach = models.BooleanField(help_text="Sync this contact with schoolreach",default=True)
-    
+
     class Meta:
-        ordering = ('primary_contact', 'lname') 
+        ordering = ('primary_contact', 'lname')
         verbose_name = "Student Contact"
-    
+
     def __unicode__(self):
         txt = self.fname + " " + self.lname
         for number in self.emergencycontactnumber_set.all():
             txt += " " + unicode(number)
         return txt
-    
+
     def save(self, *args, **kwargs):
         super(EmergencyContact, self).save(*args, **kwargs)
         self.cache_student_addresses()
-    
+
     def cache_student_addresses(self):
         """cache these for the student for primary contact only
         There is another check on Student in case all contacts where deleted"""
@@ -157,7 +158,7 @@ class EmergencyContact(models.Model):
             if hasattr(self, 'applicant_set'):
                 for applicant in self.applicant_set.all():
                     applicant.set_cache(self)
-    
+
     def show_student(self):
         students = ""
         for student in self.student_set.all():
@@ -167,17 +168,17 @@ class EmergencyContact(models.Model):
 class EmergencyContactNumber(PhoneNumber):
     contact = models.ForeignKey(EmergencyContact)
     primary = models.BooleanField(default=False, )
-    
+
     class Meta:
         verbose_name = "Student Contact"
-    
+
     def save(self, *args, **kwargs):
         if self.primary:
             for contact in self.contact.emergencycontactnumber_set.exclude(id=self.id).filter(primary=True):
                 contact.primary = False
                 contact.save()
         super(EmergencyContactNumber, self).save(*args, **kwargs)
-    
+
     def __unicode__(self):
         if self.ext:
             return self.get_type_display() + ":" + self.number + "x" + self.ext
@@ -189,11 +190,11 @@ class Faculty(User):
     number = PhoneNumberField(blank=True)
     ext = models.CharField(max_length=10, blank=True, null=True)
     teacher = models.BooleanField(default=False, )
-    
+
     class Meta:
         verbose_name_plural = "Faculty"
         ordering = ("last_name", "first_name")
-    
+
     def save(self, make_user_group=True, *args, **kwargs):
         self.is_staff = True
         super(Faculty, self).save(*args, **kwargs)
@@ -205,7 +206,7 @@ class Faculty(User):
         if self.last_name:
             return u"{0}, {1}".format(self.last_name, self.first_name)
         return self.username
-        
+
 
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
@@ -215,10 +216,10 @@ class Cohort(models.Model):
 
     class Meta:
         ordering = ('name',)
-    
+
     def __unicode__(self):
         return self.name
-    
+
 def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     if instance.primary:
         for student in instance.students.all():
@@ -231,11 +232,11 @@ m2m_changed.connect(after_cohort_m2m, sender=Cohort.students.through)
 
 class PerCourseCohort(Cohort):
     course = models.ForeignKey('schedule.Course')
-    
+
 
 class ReasonLeft(models.Model):
     reason = models.CharField(max_length=255, unique=True)
-    
+
     def __unicode__(self):
         return unicode(self.reason)
 
@@ -243,13 +244,13 @@ class ReasonLeft(models.Model):
 class GradeLevel(models.Model):
     id = models.IntegerField(unique=True, primary_key=True, verbose_name="Grade")
     name = models.CharField(max_length=150, unique=True)
-    
+
     class Meta:
         ordering = ('id',)
-    
+
     def __unicode__(self):
         return unicode(self.name)
-        
+
     @property
     def grade(self):
         return self.id
@@ -260,7 +261,7 @@ class LanguageChoice(models.Model):
     default = models.BooleanField(default=False, )
     def __unicode__(self):
         return unicode(self.name)
-    
+
     def save(self, *args, **kwargs):
         if self.default:
             for language in LanguageChoice.objects.filter(default=True):
@@ -279,20 +280,20 @@ class IntegerRangeField(models.IntegerField):
 if 'south' in settings.INSTALLED_APPS:
     from south.modelsinspector import add_introspection_rules
     add_introspection_rules([], ["^ecwsp\.sis\.models\.IntegerRangeField"])
-    
+
 class ClassYear(models.Model):
     """ Class year such as class of 2010.
     """
     year = IntegerRangeField(unique=True, min_value=1900, max_value=2200, help_text="Example 2014")
     full_name = models.CharField(max_length=255, help_text="Example Class of 2014", blank=True)
-    
+
     class Meta:
         verbose_name = "Graduating Class"
         verbose_name_plural = "Graduating Classes"
-    
+
     def __unicode__(self):
         return unicode(self.full_name)
-    
+
     def save(self, *args, **kwargs):
         if not self.full_name:
             self.full_name = "Class of %s" % (self.year,)
@@ -303,6 +304,7 @@ def get_default_language():
     if LanguageChoice.objects.filter(default=True).count():
         return LanguageChoice.objects.filter(default=True)[0]
 
+
 class Student(User, CustomFieldModel):
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
@@ -312,8 +314,8 @@ class Student(User, CustomFieldModel):
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date", validators=settings.DATE_VALIDATORS)
     year = models.ForeignKey(
         GradeLevel,
-        blank=True, 
-        null=True, 
+        blank=True,
+        null=True,
         on_delete=models.SET_NULL,
         verbose_name="Grade level")
     class_of_year = models.ForeignKey(ClassYear, verbose_name="Graduating Class", blank=True, null=True)
@@ -321,7 +323,7 @@ class Student(User, CustomFieldModel):
     reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
     unique_id = models.IntegerField(blank=True, null=True, unique=True, help_text="For integration with outside databases")
     ssn = models.CharField(max_length=11, blank=True, null=True)
-    
+
     # These fields are cached from emergency contacts
     parent_guardian = models.CharField(max_length=150, blank=True, editable=False)
     street = models.CharField(max_length=150, blank=True, editable=False)
@@ -329,7 +331,7 @@ class Student(User, CustomFieldModel):
     city = models.CharField(max_length=255, blank=True)
     zip = models.CharField(max_length=10, blank=True, editable=False)
     parent_email = models.EmailField(blank=True, editable=False)
-    
+
     family_preferred_language = models.ForeignKey(LanguageChoice, blank=True, null=True, default=get_default_language)
     family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True, related_name="+")
     alt_email = models.EmailField(blank=True, help_text="Alternative student email that is not their school email.")
@@ -340,7 +342,7 @@ class Student(User, CustomFieldModel):
     cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
     individual_education_program = models.BooleanField(default=False)
     gpa = CachedDecimalField(editable=False, max_digits=5, decimal_places=2, blank=True, null=True)
-    
+
     class Meta:
         permissions = (
             ("view_student", "View student"),
@@ -352,11 +354,11 @@ class Student(User, CustomFieldModel):
 
     def __unicode__(self):
         return u"{0}, {1}".format(self.last_name, self.first_name)
-    
+
     def get_absolute_url():
         pass
-    
-    def calculate_gpa(self, date_report=None):
+
+    def calculate_gpa(self, date_report=None, rounding=2):
         """ Use StudentYearGrade calculation
         No further weighting needed.
         """
@@ -382,12 +384,13 @@ class Student(User, CustomFieldModel):
                     years_with_grade += grade_year.credits
 
         if years_with_grade:
-            return total / years_with_grade
+            gpa = total / years_with_grade
+            return round_as_decimal(gpa, decimal_places=rounding)
 
     @property
     def primary_cohort(self):
         return self.cache_cohort
-    
+
     @property
     def phone(self):
         # TODO - Refactor
@@ -396,12 +399,12 @@ class Student(User, CustomFieldModel):
             return parent.emergencycontactnumber_set.all()[0].number
         except IndexError:
             return None
-    
+
     @property
     def he_she(self):
         """ returns "he" or "she" """
         return self.gender_to_word("he", "she")
-    
+
     @property
     def homeroom(self):
         """ Returns homeroom for student """
@@ -411,12 +414,12 @@ class Student(User, CustomFieldModel):
             homeroom = self.course_set.get( homeroom=True)
         except:
             return ""
-    
+
     @property
     def son_daughter(self):
         """ returns "son" or "daughter" """
         return self.gender_to_word("son", "daughter")
-    
+
     @property
     def get_email(self):
         """ Returns email address using various configurable methods """
@@ -439,7 +442,7 @@ class Student(User, CustomFieldModel):
             return self.studentnumber_set.filter(type="C")[0]
         elif self.studentnumber_set.all():
             return self.studentnumber_set.all()[0]
-    
+
     def get_primary_emergency_contact(self):
         if self.emergency_contacts.filter(primary_contact=True):
             return self.emergency_contacts.filter(primary_contact=True)[0]
@@ -464,7 +467,7 @@ class Student(User, CustomFieldModel):
             return disc.count()
         else:
             return disc
-    
+
     def gender_to_word(self, male_word, female_word):
         """ returns a string based on the sex of student """
         if self.sex == "M":
@@ -473,7 +476,7 @@ class Student(User, CustomFieldModel):
             return female_word
         else:
             return male_word + "/" + female_word
-    
+
     def cache_cohorts(self):
         cohorts = StudentCohort.objects.filter(student=self)
         if cohorts.filter(primary=True).count():
@@ -482,7 +485,7 @@ class Student(User, CustomFieldModel):
             self.cache_cohort = cohorts[0].cohort
         else:
             self.cache_cohort = None
-    
+
     def get_year(self, active_year):
         """ get the year (fresh, etc) from the class of XX year.
         """
@@ -491,12 +494,12 @@ class Student(User, CustomFieldModel):
                 this_year = active_year.end_date.year
                 school_last_year = GradeLevel.objects.order_by('-id')[0].id
                 class_of_year = self.class_of_year.year
-                
+
                 target_year = school_last_year - (class_of_year - this_year)
                 return GradeLevel.objects.get(id=target_year)
             except:
                 return None
-        
+
     def determine_year(self):
         """ Set the year (fresh, etc) from the class of XX year.
         """
@@ -506,7 +509,7 @@ class Student(User, CustomFieldModel):
                 self.year = self.get_year(active_year)
             except:
                 return None
-    
+
     def save(self, creating_worker=False, *args, **kwargs):
         self.cache_cohorts()
         if self.is_active == False and (Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "True" \
@@ -517,9 +520,9 @@ class Student(User, CustomFieldModel):
             except: pass
         # Check year
         self.determine_year()
-            
+
         super(Student, self).save(*args, **kwargs)
-        
+
         # Create student worker if the app is installed.
         # https://code.djangoproject.com/ticket/7623
         if 'ecwsp.work_study' in settings.INSTALLED_APPS:
@@ -528,17 +531,17 @@ class Student(User, CustomFieldModel):
                 worker = StudentWorker(user_ptr_id=self.user_ptr_id)
                 worker.__dict__.update(self.__dict__)
                 worker.save(creating_worker=True)
-        
+
         group, gcreated = Group.objects.get_or_create(name="students")
         self.user_ptr.groups.add(group)
-        
-        
+
+
     def clean(self, *args, **kwargs):
         """ Check if a Faculty exists, can't have someone be a Student and Faculty """
         if Faculty.objects.filter(id=self.id).count():
             raise ValidationError('Cannot have someone be a student AND faculty!')
         super(Student, self).clean(*args, **kwargs)
-        
+
     def graduate_and_create_alumni(self):
         self.inactive = True
         self.reason_left = ReasonLeft.objects.get_or_create(reason="Graduated")[0]
@@ -548,7 +551,7 @@ class Student(User, CustomFieldModel):
             from ecwsp.alumni.models import Alumni
             Alumni.objects.get_or_create(student=self)
         self.save()
-    
+
     def promote_to_worker(self):
         """ Promote student object to a student worker keeping all fields, does nothing on duplicate. """
         try:
@@ -559,7 +562,7 @@ class Student(User, CustomFieldModel):
 def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     if hasattr(instance, 'emergency_contacts'): # Apparently instance might be whatever the fuck it wants to be, not just student.
         if not instance.emergency_contacts.filter(primary_contact=True).count():
-            # No contacts, set cache to None 
+            # No contacts, set cache to None
             instance.parent_guardian = ""
             instance.city = ""
             instance.street = ""
@@ -569,7 +572,7 @@ def after_student_m2m(sender, instance, action, reverse, model, pk_set, **kwargs
             instance.save()
         for ec in instance.emergency_contacts.filter(primary_contact=True):
             ec.cache_student_addresses()
-        
+
 
 m2m_changed.connect(after_student_m2m, sender=Student.emergency_contacts.through)
 
@@ -581,16 +584,16 @@ class StudentCohort(models.Model):
 
     class Meta:
         if not 'syncdb' in sys.argv and not 'test' in sys.argv:
-            auto_created = True 
-    
+            auto_created = True
+
     def save(self, *args, **kwargs):
         if self.primary:
             for cohort in StudentCohort.objects.filter(student=self.student).exclude(id=self.id):
                 cohort.primary = False
                 cohort.save()
-                
+
         super(StudentCohort, self).save(*args, **kwargs)
-        
+
         if self.primary:
             self.student.cache_cohort = self.cohort
             self.student.save()
@@ -626,7 +629,7 @@ class TranscriptNote(models.Model):
 
 class StudentNumber(PhoneNumber):
     student = models.ForeignKey(Student, blank=True, null=True)
-    
+
     def __unicode__(self):
         return self.number
 
@@ -646,18 +649,18 @@ class SchoolYear(models.Model):
     start_date = models.DateField(validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(validators=settings.DATE_VALIDATORS)
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
-    active_year = models.BooleanField(default=False, 
+    active_year = models.BooleanField(default=False,
         help_text="DANGER!! This is the current school year. There can only be one and setting this will remove it from other years. " \
                   "If you want to change the active year you almost certainly want to click Admin, Change School Year.")
     benchmark_grade = models.BooleanField(default=lambda: str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true",
                                           help_text="Causes additional information to appear on transcripts. The configuration option \"Benchmark-based grading\" sets the default for this field.")
-    
+
     class Meta:
         ordering = ('-start_date',)
-    
+
     def __unicode__(self):
         return self.name
-    
+
     def get_number_days(self, date=date.today()):
         """ Returns number of active school days in this year, based on
         each marking period of the year.
@@ -667,13 +670,13 @@ class SchoolYear(models.Model):
         for mp in mps:
             day += mp.get_number_days(date)
         return day
-    
+
     def save(self, *args, **kwargs):
-        super(SchoolYear, self).save(*args, **kwargs) 
+        super(SchoolYear, self).save(*args, **kwargs)
         if self.active_year:
             all = SchoolYear.objects.exclude(id=self.id).update(active_year=False)
-    
-    
+
+
 class MessageToStudent(models.Model):
     """ Stores a message to be shown to students for a specific amount of time
     """
@@ -682,7 +685,7 @@ class MessageToStudent(models.Model):
     end_date = models.DateField(default=date.today, validators=settings.DATE_VALIDATORS)
     def __unicode__(self):
         return self.message
-    
+
 
 class FamilyAccessUser(User):
     """ A person who can log into the non-admin side and see the same view as a student,

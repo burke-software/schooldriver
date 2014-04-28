@@ -5,10 +5,23 @@ from django.contrib import admin
 from django.conf import settings
 from django.utils.encoding import smart_unicode
 import unicodedata
+from decimal import Decimal, ROUND_HALF_UP, getcontext
 
 class Callable:
     def __init__(self, anycallable):
         self.__call__ = anycallable
+
+def round_as_decimal(num, decimal_places=2):
+    """Round a number to a given precision and return as a Decimal
+
+    Arguments:
+    :param num: number
+    :type num: int, float, decimal, or str
+    :returns: Rounded Decimal
+    :rtype: decimal.Decimal
+    """
+    precision = '1.{places}'.format(places='0' * decimal_places)
+    return Decimal(str(num)).quantize(Decimal(precision), rounding=ROUND_HALF_UP)
 
 def strip_unicode_to_ascii(string):
     """ Returns a ascii string that doesn't contain utf8
@@ -42,10 +55,10 @@ def log_admin_entry(request, obj, state, message=""):
     from django.contrib.contenttypes.models import ContentType
     if request.user and hasattr(request.user,"pk") and request.user.pk:
         LogEntry.objects.log_action(
-            user_id         = request.user.pk, 
+            user_id         = request.user.pk,
             content_type_id = ContentType.objects.get_for_model(obj).pk,
             object_id       = obj.pk,
-            object_repr     = unicode(obj), 
+            object_repr     = unicode(obj),
             action_flag     = state,
             change_message  = message
         )
@@ -58,7 +71,7 @@ class CharNullField(models.CharField):
     description = "CharField that stores NULL but returns ''"
     def to_python(self, value):  #this is the value right out of the db, or an instance
        if isinstance(value, models.CharField): #if an instance, just return the instance
-              return value 
+              return value
        if value==None:   #if the db has a NULL (==None in Python)
               return ""  #convert it into the Django-friendly '' string
        else:
@@ -68,11 +81,11 @@ class CharNullField(models.CharField):
             return None
        else:
             return super(CharNullField, self).get_db_prep_value(value, *args, **kwargs)
-    
+
 if 'south' in settings.INSTALLED_APPS:
     from south.modelsinspector import add_introspection_rules
     add_introspection_rules([], ["^ecwsp\.sis\.helper_functions\.CharNullField"])
-    
+
 class ReadPermissionModelAdmin(admin.ModelAdmin):
     """ based on http://gremu.net/blog/2010/django-admin-read-only-permission/
     Admin model that allows users to read

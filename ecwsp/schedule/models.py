@@ -3,7 +3,6 @@ from django.contrib import messages
 from django.conf import settings
 from django_cached_field import CachedCharField, CachedDecimalField
 from django.db import connection
-import ecwsp
 
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
