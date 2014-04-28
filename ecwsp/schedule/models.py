@@ -5,6 +5,7 @@ from django_cached_field import CachedCharField, CachedDecimalField
 from django.db import connection
 
 from ecwsp.sis.models import Student
+from ecwsp.sis.helper_functions import round_as_decimal
 from ecwsp.administration.models import Configuration
 import ecwsp
 
@@ -172,6 +173,17 @@ class CourseEnrollment(models.Model):
         self.grade_recalculation_needed = False
         self.numeric_grade_recalculation_needed = False
         self.save()
+        return grade
+
+    def get_grade(self, date_report=None, rounding=2):
+        """ Get the grade, use cache when no date change present
+        """
+        if date_report == None:
+            grade = self.grade
+        else:
+            grade = self.calculate_grade_real(date_report=date_report)
+        if rounding and isinstance(grade, (int, long, float, complex, Decimal)):
+            return round_as_decimal(grade, rounding)
         return grade
 
     def calculate_grade(self):

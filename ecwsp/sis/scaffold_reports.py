@@ -711,7 +711,7 @@ class SisReport(ScaffoldReport):
                 while i <= 6:
                     setattr(course, "grade" + str(i), "")
                     i += 1
-                course.final = course_enrollment.grade
+                course.final = course_enrollment.get_grade(self.date_end)
 
                 if self.is_passing(course.final):
                     year.credits += course.credits
@@ -739,7 +739,11 @@ class SisReport(ScaffoldReport):
                 setattr(year, 'mp' + str(i) + 'ave', "")
                 i += 1
 
-            year.ave = student.studentyeargrade_set.get(year=year).grade
+            if self.date_end > year.end_date:
+                year.ave = student.studentyeargrade_set.get(year=year).grade
+            else:
+                print "going to cal"
+                year.ave = student.studentyeargrade_set.get(year=year).get_grade(date_report=self.date_end)
 
             # Attendance for year
             if not hasattr(self, 'year_days'):
