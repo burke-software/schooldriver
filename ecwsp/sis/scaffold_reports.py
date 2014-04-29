@@ -41,10 +41,10 @@ class TimeBasedForm(forms.Form):
 
     date_begin = forms.DateField(initial=get_default_start_date, validators=settings.DATE_VALIDATORS)
     date_end = forms.DateField(initial=get_default_end_date, validators=settings.DATE_VALIDATORS)
-    school_year = forms.ModelChoiceField(initial=get_active_year, queryset=SchoolYear.objects.all())
-    marking_periods = forms.ModelMultipleChoiceField(
-        initial=get_active_marking_periods,
-        queryset=MarkingPeriod.objects.all())
+    #school_year = forms.ModelChoiceField(initial=get_active_year, queryset=SchoolYear.objects.all())
+    #marking_periods = forms.ModelMultipleChoiceField(
+    #    initial=get_active_marking_periods,
+    #    queryset=MarkingPeriod.objects.all())
 
 
 class SchoolDateFilter(Filter):
