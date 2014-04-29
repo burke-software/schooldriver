@@ -48,7 +48,7 @@ def get_school_day_number(date):
                     elif mp.sunday and current_day.isoweekday() == 7:
                         is_day = True
         if is_day: day += 1
-        current_day += timedelta(days=1)
+        current_day += datetime.timedelta(days=1)
     return day
 
 @user_passes_test(lambda u: u.has_perm('attendance.take_studentattendance') or
@@ -201,6 +201,9 @@ def teacher_submissions(request):
         {'request': request, 'submissions': submissions})
 
 
+def daily_attendance_report_wrapper(request):
+    return daily_attendance_report(datetime.date.today())
+
 def daily_attendance_report(adate, private_notes=False, type="odt", request=None):
     from ecwsp.sis.models import GradeLevel
     template = Template.objects.get_or_create(name="Daily Attendance")[0]
@@ -224,6 +227,8 @@ def daily_attendance_report(adate, private_notes=False, type="odt", request=None
     for year in GradeLevel.objects.all():
         attns = attendance.filter(student__year__id=year.id)
         for attn in attns:
+            attn.student.fname = attn.student.first_name
+            attn.student.lname = attn.student.last_name
             if attn.status.absent:
                 attn.total = StudentAttendance.objects.filter(student=attn.student, status__absent=True, status__half=False, date__range=active_year_dates).count()
                 halfs = StudentAttendance.objects.filter(student=attn.student, status__absent=True, status__half=True,date__range=active_year_dates).count() / 2

@@ -68,6 +68,9 @@
                   <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Attendance' %} </a>
                   </li>
               {% endif %}
+                  <li>
+                  <a href="/attendance/daily_attendance_report/">Daily Attendance Report</a>
+                  </li>
               {% endif %}
               {% if perms.sis.reports %}
                   <li><a href="/reports/student_report/">{% trans 'Reports' %}</a></li>
