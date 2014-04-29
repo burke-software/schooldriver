@@ -19,6 +19,7 @@
 from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark, Category, AggregateTask, CalculationRulePerCourseCategory
 from ecwsp.benchmark_grade.models import benchmark_get_or_flush, benchmark_get_create_or_flush
 from ecwsp.schedule.models import MarkingPeriod, Department, Course
+from ecwsp.sis.models import Student
 from ecwsp.benchmark_grade.tasks import benchmark_aggregate_task
 from django.db.models import Avg, Sum, Min, Max
 import logging
