@@ -1,29 +1,18 @@
 #scaffold_filters {
-  //border-top: 1px solid #777;
-  //border-bottom: 1px solid #777;
   padding: 7px 0;
   margin: 7px 0;
 }
 
-#scaffold_active_filters {
-    //background-color: #000;//#f2f2f2;
+#scaffold_inert_filters {
+    .filter {
+      padding-bottom: 10px;
+    }
 }
-
-// #scaffold .tab-content {
-//   background-color: #f2f2f2;
-// }
 
 .tab-nav {
   > li {
-    // box-shadow: 0px 1px 0px #F2F2F2;
-    
-    // &.active > a {
-    //     background: none repeat scroll 0% 0% #F2F2F2;
-    // }
-
     > a {
       font-size: 1.25em;
-      //background: none repeat scroll 0% 0% #FFF;
     }
   }
 }
@@ -38,7 +27,7 @@
   }
 
   .removable {
-    background-color: #fff;
+    background-color: #f2f2f2;
     padding: 5px;
     margin: 5px 0;
 

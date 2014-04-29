@@ -9,6 +9,7 @@ from ecwsp.administration.models import Configuration
 from django_cached_field import CachedDecimalField
 
 from decimal import Decimal
+import datetime
 
 class GradeComment(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -128,7 +129,9 @@ class StudentYearGrade(models.Model):
         return self.calculate_grade_and_credits(date_report=date_report)[0]
 
     def get_grade(self, date_report=None, rounding=2):
-        if date_report == None:
+        if date_report is None or date_report >= datetime.date.today():
+            # Cache will always have the latest grade, so it's fine for
+            # today's date and any future date
             return self.grade
         grade = self.calculate_grade(date_report=date_report)
         if rounding:
