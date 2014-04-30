@@ -90,7 +90,7 @@ class TardyFilter(IntCompareFilter):
 
         compare_sql = django_to_sql_compare(compare)
 
-        sql = """select coalesce(count(*)) from attendance_studentattendance
+        sql = """select coalesce(count(*), 0) from attendance_studentattendance
                     left join attendance_attendancestatus
                     on attendance_attendancestatus.id = attendance_studentattendance.status_id
                     where attendance_attendancestatus.tardy = True
@@ -115,7 +115,7 @@ class AbsenceFilter(IntCompareFilter):
 
         compare_sql = django_to_sql_compare(compare)
 
-        sql = """select coalesce(count(*)) from attendance_studentattendance
+        sql = """select coalesce(count(*), 0) from attendance_studentattendance
                     left join attendance_attendancestatus
                     on attendance_attendancestatus.id = attendance_studentattendance.status_id
                     where attendance_attendancestatus.absent = True
