@@ -206,7 +206,8 @@ class CourseGradeFilter(Filter):
             queryset = queryset.filter(**grade_kwarg).annotate(
                 course_grade_count=Count('courseenrollment', distinct=True)).filter(course_grade_count__gte=times)
         else:
-            queryset = queryset.exclude(**grade_kwarg)
+            queryset = queryset.exclude(**grade_kwarg).annotate(
+                course_grade_count=Count('courseenrollment', distinct=True))
         return queryset
 
 class MpAvgGradeFilter(CourseGradeFilter):
