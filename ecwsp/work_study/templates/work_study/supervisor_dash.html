@@ -19,7 +19,7 @@ Approval Queue
 	</tr>
             {% for timesheet in timeSheets %}
                <tr class="submitted-row{% cycle '1' '2' %}">
-                   <td > {{ timesheet.student.lname }}, {{ timesheet.student.fname }} </td>
+                   <td > {{ timesheet.student }} </td>
                    <td> {{ timesheet.date }} </td>
                    <td> {{ timesheet.hours }} </td>
                    <td>
