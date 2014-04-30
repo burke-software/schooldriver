@@ -555,6 +555,7 @@ class SisReport(ScaffoldReport):
     name = "student_report"
     model = Student
     preview_fields = ['first_name', 'last_name']
+    permissions_required = ['sis_reports']
     filters = (
         SchoolDateFilter(),
         DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cached_gpa", add_fields=('gpa',)),
