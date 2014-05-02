@@ -350,11 +350,11 @@ def create_time_card(request, studentId):
                     sheet.emailStudent()
                 else:
                     sheet.emailStudent(show_comment=False)
-                return supervisor_dash(request, "Timesheet submitted for " + thisStudent.fname)
+                return supervisor_dash(request, "Timesheet submitted for " + thisStudent.first_name)
             else:
                 form.set_supers(compContacts)
                 if hasattr(thisStudent,"primary_contact") and thisStudent.primary_contact:
-                    supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
+                    supervisorName = thisStudent.primary_contact.first_name + " " + thisStudent.primary_contact.last_name
                 else:
                     supervisorName = comp.team_name
                 return render_to_response('work_study/student_timesheet.html', {'supervisor': True,'new': True, 'form': form, 'studentName':\
@@ -362,7 +362,7 @@ def create_time_card(request, studentId):
         else:
             # if student 
             if hasattr(thisStudent,"primary_contact") and thisStudent.primary_contact:
-                supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
+                supervisorName = thisStudent.primary_contact.first_name + " " + thisStudent.primary_contact.last_name
             else:
                 supervisorName = comp.team_name
             
