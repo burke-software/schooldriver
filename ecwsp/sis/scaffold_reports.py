@@ -293,7 +293,7 @@ class IncludeDeleted(Filter):
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         include_deleted = self.cleaned_data['field_0']
         if not include_deleted:
-            queryset = queryset.filter(deleted=True)
+            queryset = queryset.filter(is_active=True)
         return queryset
 
 
