@@ -1,0 +1,26 @@
+{% load staticfiles %}
+{% load compress %}
+
+<html>
+<head>
+
+{% compress js %}
+<script src="{% static "angular/angular.js" %}"></script>
+<script src="{% static "angular-resource/angular-resource.js" %}"></script>
+<script type="text/coffeescript" charset="utf-8" src="{% static "grades/app.coffee" %}"></script>
+{% endcompress %}
+
+</head>
+<body ng-app="grades.app.static">
+<div class="content" ng-controller="AppController">{% block content %}
+{% verbatim %}
+
+<div class="panel" ng-repeat="grade in grades">
+    {{ grade.grade }}
+    <h3 class="panel-title">{{ grade.comment }}</h3>
+</div>
+
+{% endverbatim %}
+{% endblock %}</div>
+</body>
+</html>
