@@ -97,9 +97,10 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'djangobower.finders.BowerFinder',
+    'compressor.finders.CompressorFinder',
 )
 #STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
-STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage'
+#STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage'
 
 DEBUG = True
 TEMPLATE_DEBUG = True
@@ -113,6 +114,8 @@ BOWER_INSTALLED_APPS = (
     'jquery-migrate',
     'blockui',
     'jquery-color',
+    'angular',
+    'angular-resource',
 )
 
 #GRAPPELLI
@@ -416,6 +419,7 @@ INSTALLED_APPS = (
     'django_cached_field',
     'rest_framework',
     'api',
+    'compressor',
 ) + INSTALLED_APPS
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
@@ -449,3 +453,7 @@ if 'test' in sys.argv:
         'ENGINE': 'django.db.backends.sqlite3',
         'ATOMIC_REQUESTS': True,
     }
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+}

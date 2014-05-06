@@ -47,3 +47,4 @@ django-storages
 boto
 Markdown==2.4
 djangorestframework==2.3.13
+django_compressor
