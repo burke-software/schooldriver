@@ -351,6 +351,9 @@ INSTALLED_APPS = (
     #'rosetta',
 )
 
+COMPRESS_PRECOMPILERS = (
+   ('text/coffeescript', 'coffee --compile --stdio'),
+)
 
 # this will load additional settings from the file settings_local.py
 try:
