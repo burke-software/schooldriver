@@ -17,10 +17,17 @@
 
 <div class="panel" ng-repeat="grade in grades">
     {{ grade.grade }}
+    <button type="button" ng-controller="AppController" ng-click="changeGrade(grade)">Mess it up</button>
     <h3 class="panel-title">{{ grade.comment }}</h3>
 </div>
 
 {% endverbatim %}
 {% endblock %}</div>
+<script>
+var app = angular.module('grades.app.static'); 
+app.config(['$httpProvider', function($httpProvider) {
+    $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+}]);
+</script>
 </body>
 </html>

@@ -1,19 +1,17 @@
-app = angular.module 'grades.app.static', []
+app = angular.module 'grades.app.static', ['ngResource']
 
 
-# Controllers
-app.controller 'AppController', ['$scope', '$http', ($scope, $http) ->
-    $scope.grades = []
-    $http.get('/api/grades').then (result) ->
-        angular.forEach result.data, (item) ->
-            $scope.grades.push item
+app.controller 'AppController', ['$scope', 'Grade', ($scope, Grade) ->
+    $scope.grades = Grade.query()
+    $scope.changeGrade = (grade) ->
+       grade.comment = "foo time"
+       grade.$update()
 ]
 
-
-# Services
-app = angular.module 'grades.api', ['ngResource']
 
 app.factory 'Grade', ['$resource', ($resource) ->
-    $resource '/api/grades/:id', id: '@id'
+    $resource '/api/grades/:id', id: '@id',
+    {
+        'update': { method:'PUT' }
+    }
 ]
-

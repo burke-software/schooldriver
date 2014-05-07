@@ -81,6 +81,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'pagination.middleware.PaginationMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
 TEMPLATE_CONTEXT_PROCESSORS = (
