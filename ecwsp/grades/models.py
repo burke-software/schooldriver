@@ -261,6 +261,9 @@ class Grade(models.Model):
         from django.core.exceptions import ValidationError
         if self.grade and self.letter_grade != None:
             raise ValidationError('Cannot have both numeric and letter grade.')
+        if Grade.objects.filter(student=self.student, course=self.course, marking_period=None
+                                ).exclude(id=self.id).exists():
+            raise ValidationError('Student, Course, MarkingPeriod must be unique')
 
     def save(self, *args, **kwargs):
         super(Grade, self).save(*args, **kwargs)
