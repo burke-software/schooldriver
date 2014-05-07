@@ -41,6 +41,7 @@ class TimeBasedForm(forms.Form):
 
     date_begin = forms.DateField(initial=get_default_start_date, validators=settings.DATE_VALIDATORS)
     date_end = forms.DateField(initial=get_default_end_date, validators=settings.DATE_VALIDATORS)
+    # TODO: remove initialization from SchoolDateFilter.get_report_context() once the date fields are reinstated
     #school_year = forms.ModelChoiceField(initial=get_active_year, queryset=SchoolYear.objects.all())
     #marking_periods = forms.ModelMultipleChoiceField(
     #    initial=get_active_marking_periods,
@@ -56,6 +57,12 @@ class SchoolDateFilter(Filter):
     can_remove = False
 
     def get_report_context(self, report_context):
+        # TODO: remove once TimeBasedForm date fields are restored
+        self.form.cleaned_data['school_year'] = get_active_year()
+        self.form.cleaned_data['marking_periods'] = MarkingPeriod.objects.filter(
+            active=True,
+            school_year=self.form.cleaned_data['school_year']
+        )
         return self.form.cleaned_data
 
     def get_template_context(self):
@@ -366,7 +373,10 @@ class FailReportButton(ReportButton):
 
     def get_report(self, report_view, context):
         marking_periods = report_view.report.report_context['marking_periods']
-        students = Student.objects.filter(courseenrollment__course__marking_period__in=marking_periods).distinct()
+        # anticipate str(student.year)
+        students = Student.objects.select_related('year__name').filter(
+            courseenrollment__course__marking_period__in=marking_periods
+        ).distinct()
         titles = ['']
         departments = Department.objects.filter(course__courseenrollment__user__is_active=True).distinct()
 
@@ -381,11 +391,31 @@ class FailReportButton(ReportButton):
         for student in students:
             row = [str(student)]
             ix = 1 # letter A
-            student.failed_grades = Grade.objects.none()
+            # query the database once per student, not once per student per department
+            # anticipate calling str() on grade.course and grade.marking_period
+            student.failed_grades = student.grade_set.select_related(
+                'course__department_id',
+                'course__fullname',
+                'marking_period__name',
+            ).filter(
+                override_final=False,
+                grade__lte=passing_grade,
+                marking_period__in=marking_periods
+            ).distinct()
+            department_counts = {}
+            end_of_row = []
+            for grade in student.failed_grades:
+                # every failing grade gets dumped out at the end of the row
+                end_of_row += [
+                    str(grade.course),
+                    str(grade.marking_period),
+                    str(grade.grade)
+                ]
+                # add one to the failed grade count for this department
+                department_counts[grade.course.department_id] = department_counts.get(
+                    grade.course.department_id, 0) + 1
             for department in departments:
-                failed_grades = Grade.objects.filter(override_final=False,course__department=department,course__courseenrollment__user=student,grade__lte=passing_grade,marking_period__in=marking_periods)
-                row += [failed_grades.count()]
-                student.failed_grades = student.failed_grades | failed_grades
+                row += [department_counts.get(department.pk, 0)]
                 ix += 1
             row += [
                 '=sum(b{0}:{1}{0})'.format(str(iy),get_column_letter(ix)),
@@ -395,8 +425,7 @@ class FailReportButton(ReportButton):
                 student.gpa,
                 '',
                 ]
-            for grade in student.failed_grades:
-                row += [str(grade.course), str(grade.marking_period), str(grade.grade)]
+            row += end_of_row
             data += [row]
             iy += 1
 

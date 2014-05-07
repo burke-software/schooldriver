@@ -350,7 +350,7 @@ def create_time_card(request, studentId):
                     sheet.emailStudent()
                 else:
                     sheet.emailStudent(show_comment=False)
-                return supervisor_dash(request, "Timesheet submitted for " + thisStudent.fname)
+                return supervisor_dash(request, "Timesheet submitted for " + thisStudent.first_name)
             else:
                 form.set_supers(compContacts)
                 if hasattr(thisStudent,"primary_contact") and thisStudent.primary_contact:
