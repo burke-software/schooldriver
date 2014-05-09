@@ -1,5 +1,5 @@
 from rest_framework import routers
 from api.grades.views import GradeViewSet
 
-router = routers.DefaultRouter(trailing_slash=False)
+router = routers.DefaultRouter()
 router.register(r'grades', GradeViewSet)

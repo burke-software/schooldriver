@@ -1,23 +1,36 @@
 {% load staticfiles %}
 {% load compress %}
 
+<!DOCTYPE html>
 <html>
 <head>
 
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.7/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.7/angular-resource.min.js"></script>
 {% compress js %}
-<script src="{% static "angular/angular.js" %}"></script>
-<script src="{% static "angular-resource/angular-resource.js" %}"></script>
+<script type="text/javascript" src='{% static 'jquery/dist/jquery.min.js' %}'></script>
 <script type="text/coffeescript" charset="utf-8" src="{% static "grades/app.coffee" %}"></script>
 {% endcompress %}
+<script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
+<link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
+
 
 </head>
 <body ng-app="grades.app.static">
 <div class="content" ng-controller="AppController">{% block content %}
 {% verbatim %}
 
+<div id="grade_table">
+<ui-handsontable id="whatev" minSpareRows="1" id="grades" height="calcHeight" datarows="grade in grades">
+    <datacolumn value="grade.student" title="'Student'" readOnly></datacolumn>
+    <datacolumn value="grade.grade" title="'Grade'"></datacolumn>
+    <datacolumn value="grade.comment" title="'Comment'"></datacolumn>
+</ui-handsontable>
+</div>
+    <br/><br/>
 <div class="panel" ng-repeat="grade in grades">
-    {{ grade.grade }}
-    <button type="button" ng-controller="AppController" ng-click="changeGrade(grade)">Mess it up</button>
+    <input type="text" class="form-control" ng-model="grade.grade">
+    <button type="button" ng-click="changeGrade(grade)">Mess it up</button>
     <h3 class="panel-title">{{ grade.comment }}</h3>
 </div>
 
@@ -27,6 +40,9 @@
 var app = angular.module('grades.app.static'); 
 app.config(['$httpProvider', function($httpProvider) {
     $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+}]);
+app.config(['$resourceProvider', function ($resourceProvider) {
+       $resourceProvider.defaults.stripTrailingSlashes = false;
 }]);
 </script>
 </body>

@@ -13,5 +13,5 @@ urlpatterns = patterns('',
     (r'^student_gradesheet/(?P<id>\d+)/(?P<year_id>\d+)$', student_gradesheet),
     (r'^view_comment_codes/$', view_comment_codes),
     (r'^select_grade_method/$', select_grade_method),
-    (r'^course_grades/*$', TemplateView.as_view(template_name='grades/course_grades.html')),
+    (r'^course_grades/\d+/$', TemplateView.as_view(template_name='grades/course_grades.html')),
 )

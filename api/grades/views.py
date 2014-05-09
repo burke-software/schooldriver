@@ -9,6 +9,6 @@ class GradeViewSet(viewsets.ModelViewSet):
     an API endpoint for the Grade model
     """
     permission_classes = (IsAdminUser,)
-    queryset = Grade.objects.filter(student=1403)
+    queryset = Grade.objects.all()
     serializer_class = GradeSerializer
     filter_fields = ('course',)

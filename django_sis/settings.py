@@ -117,6 +117,7 @@ BOWER_INSTALLED_APPS = (
     'jquery-color',
     'angular',
     'angular-resource',
+    'angular-ui-handsontable',
 )
 
 #GRAPPELLI
