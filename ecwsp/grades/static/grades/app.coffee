@@ -26,6 +26,7 @@ app.controller 'AppController', ['$scope', 'Grade', ($scope, Grade) ->
     
 
     grades = Grade.query course: course_id, () ->
+        # after loading the Grades, refresh the table
         $('#example1').handsontable('render')
 
     container = $('#example1')
