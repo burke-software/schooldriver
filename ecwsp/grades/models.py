@@ -106,6 +106,7 @@ class StudentYearGrade(models.Model):
             )
         for course_enrollment in enrollments.distinct():
             grade = course_enrollment.calculate_grade_real(date_report=date_report, ignore_letter=True)
+            #print ('{}\t' * 3).format(course_enrollment.course, course_enrollment.course.credits, grade)
             if grade:
                 total += grade * course_enrollment.course.credits
                 credits += course_enrollment.course.credits
@@ -228,16 +229,18 @@ class Grade(models.Model):
         self.student.cache_gpa = self.student.calculate_gpa()
         if self.student.cache_gpa != "N/A":
             self.student.save()
-
-    def get_grade(self, letter=False, display=False, rounding=None, minimum=None):
+    
+    def get_grade(self, letter=False, display=False, rounding=None,
+        minimum=None, number=False):
         """
         letter: Converts to a letter based on GradeLetterRule
         display: For letter grade - Return display name instead of abbreviation.
         rounding: Numeric - round to this many decimal places.
         minimum: Numeric - Minimum allowed grade. Will not return lower than this.
+        number: Consider stored numeric grade only
         Returns grade such as 90.03, P, or F
         """
-        if self.letter_grade:
+        if self.letter_grade and not number:
             if display:
                 return self.get_letter_grade_display()
             else:
@@ -259,8 +262,11 @@ class Grade(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        if self.grade and self.letter_grade != None:
-            raise ValidationError('Cannot have both numeric and letter grade.')
+        ''' We must allow simulataneous letter and number grades. Grading mechanisms
+        submit both; the number is used for calculations and the letter appears on
+        reports. '''
+        #if self.grade and self.letter_grade != None:
+        #    raise ValidationError('Cannot have both numeric and letter grade.')
         if Grade.objects.filter(student=self.student, course=self.course, marking_period=None
                                 ).exclude(id=self.id).exists():
             raise ValidationError('Student, Course, MarkingPeriod must be unique')
