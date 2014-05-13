@@ -7,6 +7,7 @@ class GradeSerializer(serializers.ModelSerializer):
     """
     id = serializers.Field()
     student = serializers.RelatedField()
+    marking_period = serializers.RelatedField()
     student_id = serializers.PrimaryKeyRelatedField(source='student')
 
     class Meta:
