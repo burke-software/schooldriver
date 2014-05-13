@@ -20,19 +20,23 @@
 <div class="content" ng-controller="AppController">{% block content %}
 {% verbatim %}
 
-<div id="grade_table">
+<!--<div id="grade_table">
 <ui-handsontable id="whatev" minSpareRows="1" id="grades" height="calcHeight" datarows="grade in grades">
     <datacolumn value="grade.student" title="'Student'" readOnly></datacolumn>
     <datacolumn value="grade.grade" title="'Grade'"></datacolumn>
     <datacolumn value="grade.comment" title="'Comment'"></datacolumn>
 </ui-handsontable>
 </div>
+
     <br/><br/>
+
 <div class="panel" ng-repeat="grade in grades">
     <input type="text" class="form-control" ng-model="grade.grade">
     <button type="button" ng-click="changeGrade(grade)">Mess it up</button>
     <h3 class="panel-title">{{ grade.comment }}</h3>
-</div>
+</div>-->
+
+<div class="handsontable" id="example1"></div>
 
 {% endverbatim %}
 {% endblock %}</div>
@@ -42,7 +46,7 @@ app.config(['$httpProvider', function($httpProvider) {
     $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
 }]);
 app.config(['$resourceProvider', function ($resourceProvider) {
-       $resourceProvider.defaults.stripTrailingSlashes = false;
+    $resourceProvider.defaults.stripTrailingSlashes = false;
 }]);
 </script>
 </body>
