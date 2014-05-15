@@ -47,13 +47,13 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
     
         grade_columns = []
         for marking_period in marking_periods
-            grade_key = 'grade' + marking_period.marking_period_id
-            $scope.columns.push({value: 'student.' + grade_key + '.grade', title: marking_period.marking_period})
+            marking_period.grade_key = 'grade' + marking_period.marking_period_id
+            $scope.columns.push({value: 'student.' + marking_period.grade_key + '.grade', title: marking_period.marking_period})
             for student in students
                 for grade in $scope.grades
                     if grade.student_id == student.student_id
                         if grade.marking_period_id == marking_period.marking_period_id
-                            student[grade_key] = grade
+                            student[marking_period.grade_key] = grade
                         else if grade.override_final == true
                             student.final = grade
         $scope.columns.push({value: 'student.final.grade', title: 'Final'})
@@ -78,6 +78,25 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
                     final += gradeFloat
                     num_of_mp += 1
         student.final.grade = (final / num_of_mp).toFixed(2)
+    
+    comment_ids = []
+    $scope.comment_button_text = "Don't click here"
+    $scope.showComments = () ->
+        if comment_ids.length == 0
+            $scope.comment_button_text = "I don't blame you"
+            for marking_period in marking_periods
+                for column, key in $scope.columns
+                    if column.value == 'student.' + marking_period.grade_key + '.grade'
+                        $scope.columns.splice(key+1, 0, ({width: 140, value: 'student.' + marking_period.grade_key + '.comment', title: marking_period.marking_period + ' Comments'}))
+                        comment_ids.push(key+1)
+                        break
+        else
+            deleted = 0
+            for comment_id in comment_ids
+                $scope.columns.splice(comment_id - deleted, 1)
+                deleted += 1
+            comment_ids = []
+            $scope.comment_button_text = "Show comments"
     
     $scope.changeGrade = (changes, source) ->
         if source != 'loadData'  # whitelist might be better source == 'edit' or source == 'autofill'

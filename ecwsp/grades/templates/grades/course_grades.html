@@ -21,6 +21,8 @@
 <div class="content" ng-controller="AppController">{% block content %}
 {% verbatim %}
 
+<button ng-click="showComments()">{{ comment_button_text }}</button>
+
 <div id="grade_table">
 <ui-handsontable id="handsontable" height="calcHeight" onchange="changeGrade" datarows="student in students" columns="columns">
 </ui-handsontable>

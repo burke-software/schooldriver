@@ -138,9 +138,7 @@ def view_comment_codes(request):
 
 @user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade'))
 def teacher_grade_upload(request, id):
-    """ This view is for inputing grades. It usually is done by uploading a spreadsheet.
-    However it can also be done by manually overriding grades. This requires
-    registrar level access. """
+    """ This view is for inputing grades. It supports manual entry or uploading a spreadsheet """
     
     course = Course.objects.get(id=id)
     
