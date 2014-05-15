@@ -10,6 +10,7 @@ class GradeSerializer(serializers.ModelSerializer):
     student_id = serializers.PrimaryKeyRelatedField(source='student')
     marking_period = serializers.RelatedField(read_only=True)
     marking_period_id = serializers.PrimaryKeyRelatedField(source='marking_period')
+    grade = serializers.WritableField(source='api_grade')
 
     class Meta:
         model = Grade

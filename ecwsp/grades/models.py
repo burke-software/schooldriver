@@ -260,6 +260,8 @@ class Grade(models.Model):
         else:
             return ""
 
+    api_grade = property(get_grade, set_grade)
+
     def clean(self):
         from django.core.exceptions import ValidationError
         ''' We must allow simulataneous letter and number grades. Grading mechanisms
