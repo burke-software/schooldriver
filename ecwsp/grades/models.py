@@ -280,11 +280,10 @@ class Grade(models.Model):
         ''' We must allow simulataneous letter and number grades. Grading mechanisms
         submit both; the number is used for calculations and the letter appears on
         reports. '''
-        #if self.grade and self.letter_grade != None:
-        #    raise ValidationError('Cannot have both numeric and letter grade.')
-        if Grade.objects.filter(student=self.student, course=self.course, marking_period=None
+        if self.marking_period_id == None:
+            if Grade.objects.filter(student=self.student, course=self.course, marking_period=None
                                 ).exclude(id=self.id).exists():
-            raise ValidationError('Student, Course, MarkingPeriod must be unique')
+                raise ValidationError('Student, Course, MarkingPeriod must be unique')
 
     def save(self, *args, **kwargs):
         super(Grade, self).save(*args, **kwargs)
