@@ -58,9 +58,23 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
         final = 0.0
         num_of_mp = 0
         for marking_period in marking_periods
-            grade = parseFloat(student['grade' + marking_period.marking_period_id].grade)
-            final += grade
-            student.final = final / num_of_mp
+            grade = student['grade' + marking_period.marking_period_id].grade
+            gradeFloat = parseFloat(grade)
+            if grade != null
+                if isNaN(gradeFloat)
+                    console.log("nooo")
+                    gradeLower = grade.toLowerCase()
+                    if gradeLower == "i"
+                        return "I"
+                    else if gradeLower in ["p", "lp", "hp"]
+                        final += 100
+                        num_of_mp += 1
+                    else if gradeLower in ["f", "m"]
+                        num_of_mp += 1
+                else
+                    final += gradeFloat
+                    num_of_mp += 1
+        student.final = (final / num_of_mp).toFixed(2)
     
     $scope.changeGrade = (changes, source) ->
         if source != 'loadData'  # whitelist might be better source == 'edit' or source == 'autofill'
