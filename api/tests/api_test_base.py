@@ -10,6 +10,9 @@ class APITestBase(TestCase):
     the base TestCase for our API
     """
 
+    # Instructions - run the API test with the following command:
+    # ./manage.py test api
+
     def setUp(self):
         """
         Everyone needs a test client, or so says the django doc!
