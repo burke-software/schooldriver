@@ -30,8 +30,8 @@ if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_
             else:
                 row += ['']
             row += [
-                strip_unicode_to_ascii(student.lname),
-                strip_unicode_to_ascii(student.fname),
+                strip_unicode_to_ascii(student.last_name),
+                strip_unicode_to_ascii(student.first_name),
                 strip_unicode_to_ascii(student.mname),
                 student.sex,
             ]

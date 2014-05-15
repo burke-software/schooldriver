@@ -21,7 +21,10 @@ def round_as_decimal(num, decimal_places=2):
     :rtype: decimal.Decimal
     """
     precision = '1.{places}'.format(places='0' * decimal_places)
-    return Decimal(str(num)).quantize(Decimal(precision), rounding=ROUND_HALF_UP)
+    try:
+        return Decimal(str(num)).quantize(Decimal(precision), rounding=ROUND_HALF_UP)
+    except:
+        return num
 
 def strip_unicode_to_ascii(string):
     """ Returns a ascii string that doesn't contain utf8

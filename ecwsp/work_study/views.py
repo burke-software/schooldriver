@@ -1,23 +1,3 @@
-#       views.py
-#       
-#       Copyright 2011 Burke Software and Consulting LLC
-#        Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test, permission_required
 from django.contrib import messages
@@ -41,7 +21,7 @@ from ecwsp.work_study.forms import ChangeSupervisorForm, TimeSheetForm, ReportTe
 from ecwsp.work_study.forms import  CompanyContactForm2, CompanyContactForm3, ReportBuilderForm, AddSupervisor, QuickAttendanceForm
 from ecwsp.sis.xl_report import XlReport
 from ecwsp.work_study.reports import fte_by_day, fte_by_ind, fte_by_pay, am_route_attendance, gen_attendance_report_day, route_attendance
-from ecwsp.work_study.reports import student_company_day_report, supervisor_xls
+from ecwsp.work_study.reports import student_company_day_report
 from ecwsp.sis.models import StudentNumber, SchoolYear
 from ecwsp.sis.helper_functions import log_admin_entry
 from ecwsp.sis.template_report import TemplateReport
@@ -56,6 +36,38 @@ import os
 
 days = (["Monday", "M"], ["Tuesday","T"], ["Wednesday","W"], ["Thursday","TH"], ["Friday", "F"])
 class struct(object): pass
+
+
+def supervisor_xls(request):
+    comp = WorkTeam.objects.filter(login=request.user)[0]
+    timesheets = TimeSheet.objects.filter(approved=True).filter(company=comp).order_by('student', 'date',)
+    data = []
+    titles = ["WorkTeam", "Student", "", "Date", "For Pay?", "Make up?", "Hours Worked", "Company Bill", "Performance", "Student Comment", "Supervisor Comment"]
+    fileName = "Billing_Report"
+    company_total = timesheets.aggregate(Sum('school_net'))
+    data.append([comp.team_name, "", "", "", "", "", "", company_total['school_net__sum']])
+    studenti = 0
+    for timesheet in timesheets:
+        data.append(["",
+                     timesheet.student.first_name,
+                     timesheet.student.last_name,
+                     timesheet.date,
+                     timesheet.for_pay,
+                     timesheet.make_up,
+                     timesheet.hours,
+                     timesheet.school_net,
+                     timesheet.performance,
+                     timesheet.student_accomplishment,
+                     timesheet.supervisor_comment,])
+        studenti += 1
+        if studenti == timesheets.filter(student__id__iexact=timesheet.student.id).count():
+            stu_total = timesheets.filter(student__id__iexact=timesheet.student.id).aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
+            data.append(["", "", "", "Total", "", "", stu_total['hours__sum'], stu_total['school_net__sum']])
+            studenti = 0
+            
+    report = XlReport(file_name="Company Billing")
+    report.add_sheet(data, header_row=titles, title="Company Billing", heading="Company Billing")
+    return report.as_download()
 
 
 @user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
@@ -338,7 +350,7 @@ def create_time_card(request, studentId):
                     sheet.emailStudent()
                 else:
                     sheet.emailStudent(show_comment=False)
-                return supervisor_dash(request, "Timesheet submitted for " + thisStudent.fname)
+                return supervisor_dash(request, "Timesheet submitted for " + thisStudent.first_name)
             else:
                 form.set_supers(compContacts)
                 if hasattr(thisStudent,"primary_contact") and thisStudent.primary_contact:

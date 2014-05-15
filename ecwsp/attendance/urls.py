@@ -11,4 +11,5 @@ urlpatterns = patterns('',
     (r'^teacher_attendance/(?P<course>\d+)/$', views.teacher_attendance),
     (r'^course_attendance/$', views.select_course_for_attendance),
     (r'^course_attendance/(?P<course_id>\d+)/$', views.course_attendance),
+    (r'^daily_attendance_report/$', views.daily_attendance_report_wrapper),
 )
