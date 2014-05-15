@@ -105,7 +105,8 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
                             }
                             grade_api.post(new_grade)
                 else
-                    recalculateGrades(student)
+                    if not student.final.id
+                        recalculateGrades(student)
                     instance = student[attribute.split('.')[0]]
                     instance.save()
             
