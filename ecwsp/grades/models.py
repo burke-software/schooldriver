@@ -49,10 +49,25 @@ class StudentMarkingPeriodGrade(models.Model):
         # ignore overriding grades - WRONG!
         return self.student.grade_set.filter(
             course__courseenrollment__user=self.student, # make sure the student is still enrolled in the course!
+            # each course's weight in the MP average is the course's number of
+            # credits DIVIDED BY the count of marking periods for the course
             letter_grade=None, grade__isnull=False, override_final=False, marking_period=self.marking_period).extra(select={
-            'ave_grade':
-            '''sum(grade * (select credits from schedule_course where schedule_course.id = grades_grade.course_id)) /
-            sum((select credits from schedule_course where schedule_course.id = grades_grade.course_id))'''
+            'ave_grade': '''
+                Sum(grade *
+                      (SELECT credits
+                       FROM schedule_course
+                       WHERE schedule_course.id = grades_grade.course_id) /
+                      (SELECT Count(schedule_course_marking_period.markingperiod_id)
+                       FROM schedule_course_marking_period
+                       WHERE schedule_course_marking_period.course_id = grades_grade.course_id)) /
+                Sum(
+                      (SELECT credits
+                       FROM schedule_course
+                       WHERE schedule_course.id = grades_grade.course_id) /
+                      (SELECT Count(schedule_course_marking_period.markingperiod_id)
+                       FROM schedule_course_marking_period
+                       WHERE schedule_course_marking_period.course_id = grades_grade.course_id))
+            '''
         }).values('ave_grade')[0]['ave_grade']
 
 
