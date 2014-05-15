@@ -35,13 +35,14 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
                 if student.student_id == grade.student_id
                     new_student = false
             if new_student
-                students.push({student: grade.student, student_id: grade.student_id, final: 0})
+                final = {grade: 0}
+                students.push({student: grade.student, student_id: grade.student_id, final: final})
                 
             new_marking_period = true
             for marking_period in marking_periods
                 if marking_period.marking_period_id == grade.marking_period_id
                     new_marking_period = false
-            if new_marking_period
+            if new_marking_period and grade.marking_period != null
                 marking_periods.push({marking_period: grade.marking_period, marking_period_id: grade.marking_period_id})
     
         grade_columns = []
@@ -50,9 +51,12 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
             $scope.columns.push({value: 'student.' + grade_key + '.grade', title: marking_period.marking_period})
             for student in students
                 for grade in $scope.grades
-                    if grade.marking_period_id == marking_period.marking_period_id and grade.student_id == student.student_id
-                        student[grade_key] = grade
-        $scope.columns.push({value: 'student.final', title: 'Final'})
+                    if grade.student_id == student.student_id
+                        if grade.marking_period_id == marking_period.marking_period_id
+                            student[grade_key] = grade
+                        else if grade.override_final == true
+                            student.final = grade
+        $scope.columns.push({value: 'student.final.grade', title: 'Final'})
 
     recalculateGrades = (student) ->
         final = 0.0
@@ -62,7 +66,6 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
             gradeFloat = parseFloat(grade)
             if grade != null
                 if isNaN(gradeFloat)
-                    console.log("nooo")
                     gradeLower = grade.toLowerCase()
                     if gradeLower == "i"
                         return "I"
@@ -74,16 +77,36 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
                 else
                     final += gradeFloat
                     num_of_mp += 1
-        student.final = (final / num_of_mp).toFixed(2)
+        student.final.grade = (final / num_of_mp).toFixed(2)
     
     $scope.changeGrade = (changes, source) ->
         if source != 'loadData'  # whitelist might be better source == 'edit' or source == 'autofill'
             for change in changes
                 id = change[0]
-                attribute = change[1]
                 student = $scope.students[id]
-                recalculateGrades(student)
-                instance = student[attribute.split('.')[0]]
-                instance.save()
+                attribute = change[1]
+                if attribute == "final.grade"
+                    if student.final.grade in ["", null, "None"]
+                        if student.final.id
+                            # This exists on the server. Kill it.
+                            student.final.remove()
+                            student['final'] = {grade: 0}
+                        recalculateGrades(student)
+                    else
+                        if student.final.id
+                            # Exists - update it
+                            student.final.save()
+                        else  # A new override
+                            new_grade = {
+                                student_id: student.student_id
+                                course: course_id
+                                grade: student.final.grade
+                                override_final: true
+                            }
+                            grade_api.post(new_grade)
+                else
+                    recalculateGrades(student)
+                    instance = student[attribute.split('.')[0]]
+                    instance.save()
             
 ]
