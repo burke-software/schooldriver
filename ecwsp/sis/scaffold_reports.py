@@ -331,6 +331,13 @@ class ScheduleDaysFilter(Filter):
         report_context['schedule_days'] = self.cleaned_data['field_0']
         return queryset
 
+class OmitSubstitutions(Filter):
+    fields = [forms.BooleanField(initial=False, required=False,
+        help_text='''On applicable reports, number grades will be shown instead
+        of letters or abbreviations.''')]
+    def queryset_filter(self, queryset, report_context, **kwargs):
+        report_context['omit_substitutions'] = self.cleaned_data['field_0']
+        return queryset
 
 class GPAReportButton(ReportButton):
     name = "gpa_report"
@@ -600,6 +607,7 @@ class SisReport(ScaffoldReport):
         TemplateSelection(),
         IncludeDeleted(),
         ScheduleDaysFilter(),
+        OmitSubstitutions(),
     )
     report_buttons = (
         AspReportButton(),
@@ -675,7 +683,7 @@ class SisReport(ScaffoldReport):
             setattr(student, "dismissed" + str(i), "")
             i += 1
 
-    def get_student_transcript_data(self, student, omit_substitutions=False):
+    def get_student_transcript_data(self, student):
         student.years = SchoolYear.objects.filter(
             markingperiod__show_reports=True,
             start_date__lt=self.date_end,
@@ -713,7 +721,8 @@ class SisReport(ScaffoldReport):
                         continue
                     # We can't overwrite cells, so we have to get seperate variables for each mp grade.
                     try:
-                        grade = course_grades.get(marking_period=mp).get_grade(number=omit_substitutions)
+                        grade = course_grades.get(marking_period=mp).get_grade(
+                            number=self.report_context.get('omit_substitutions'))
                         grade = " " + str(grade) + " "
                     except:
                         grade = ""
@@ -808,7 +817,11 @@ class SisReport(ScaffoldReport):
                 self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
                 for student in students:
                     self.get_student_transcript_data(student)
-            if template.report_card:
+            if template.benchmark_report_card and \
+                'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+                from ecwsp.benchmark_grade.report import get_benchmark_report_card_data
+                get_benchmark_report_card_data(self.report_context, context, students)
+            elif template.report_card:
                 self.blank_grade = struct()
                 self.blank_grade.comment = ""
                 school_year = SchoolYear.objects.filter(start_date__lte=self.report_context['date_end']
