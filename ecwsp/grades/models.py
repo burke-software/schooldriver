@@ -51,7 +51,7 @@ class StudentMarkingPeriodGrade(models.Model):
             course__courseenrollment__user=self.student, # make sure the student is still enrolled in the course!
             # each course's weight in the MP average is the course's number of
             # credits DIVIDED BY the count of marking periods for the course
-            letter_grade=None, grade__isnull=False, override_final=False, marking_period=self.marking_period).extra(select={
+            grade__isnull=False, override_final=False, marking_period=self.marking_period).extra(select={
             'ave_grade': '''
                 Sum(grade *
                       (SELECT credits
