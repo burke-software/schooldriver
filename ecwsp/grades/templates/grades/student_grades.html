@@ -1,0 +1,22 @@
+{% extends 'base_next.html' %}
+{% load staticfiles %}
+{% load compress %}
+
+{% block extra_head %}
+    {% compress js %}
+    <script type="text/coffeescript" charset="utf-8" src="{% static "grades/app.coffee" %}"></script>
+    {% endcompress %}
+    <script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
+    <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
+{% endblock %}
+
+{% block title %}
+    Grades - {{ object }}
+{% endblock %}
+
+{% block content %}
+    Select school year:
+    {% for year in school_years %}
+        {% if not forloop.first %} &nbsp;&nbsp; &middot; {% endif %} &nbsp;&nbsp; <a href="{{ year.id }}"> {{ year }} </a>
+    {% endfor %}
+{% endblock %}

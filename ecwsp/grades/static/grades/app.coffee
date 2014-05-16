@@ -1,6 +1,11 @@
 app = angular.module 'angular_sis', ['restangular', 'uiHandsontable']
 
+BaseGradeController = ($scope, Restangular) ->
+    $scope.foo = 'foo'
+
 app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) ->
+    BaseGradeController.apply(this, arguments)
+    
     border = 30
     winHeight = $(window).height()
     topOffset = $("#grade_table").offset().top

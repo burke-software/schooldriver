@@ -4,7 +4,7 @@
 {% block object-tools-items %}
     {% if has_add_permission %}
         {% if 'ecwsp.grades' in settings.INSTALLED_APPS %}
-            <li><a href="{% url "ecwsp.grades.views.student_gradesheet" object_id %}" class="historylink">{% trans "Gradesheet" %}</a></li>
+            <li><a href="{% url "student-grades" object_id %}" class="historylink">{% trans "Gradesheet" %}</a></li>
         {% endif %}
     {% endif %}
     <li><a href="history/">{% trans "History" %}</a></li>
