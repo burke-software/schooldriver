@@ -19,7 +19,7 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
     $scope.students = students
     marking_periods = []
     $scope.columns = [
-        { value: 'student.student', title: 'Student', readOnly: true}
+        { width: 160, value: 'student.student', title: 'Student', fixed: true, readOnly: true}
     ]
 
     grade_api = Restangular.all('grades')
@@ -48,7 +48,7 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
         grade_columns = []
         for marking_period in marking_periods
             marking_period.grade_key = 'grade' + marking_period.marking_period_id
-            $scope.columns.push({value: 'student.' + marking_period.grade_key + '.grade', title: marking_period.marking_period})
+            $scope.columns.push({width: 70, value: 'student.' + marking_period.grade_key + '.grade', title: marking_period.marking_period})
             for student in students
                 for grade in $scope.grades
                     if grade.student_id == student.student_id
@@ -56,7 +56,9 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
                             student[marking_period.grade_key] = grade
                         else if grade.override_final == true
                             student.final = grade
-        $scope.columns.push({value: 'student.final.grade', title: 'Final'})
+        $scope.columns.push({width: 70, value: 'student.final.grade', title: 'Final'})
+        for student in students
+            recalculateGrades(student)
 
     recalculateGrades = (student) ->
         final = 0.0
@@ -77,7 +79,11 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
                 else
                     final += gradeFloat
                     num_of_mp += 1
-        student.final.grade = (final / num_of_mp).toFixed(2)
+        final_grade = (final / num_of_mp).toFixed(2)
+        if isNaN(final_grade)
+            student.final.grade = ''
+        else
+            student.final.grade = final_grade
     
     comment_ids = []
     $scope.comment_button_text = "Don't click here"
@@ -87,7 +93,7 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
             for marking_period in marking_periods
                 for column, key in $scope.columns
                     if column.value == 'student.' + marking_period.grade_key + '.grade'
-                        $scope.columns.splice(key+1, 0, ({width: 140, value: 'student.' + marking_period.grade_key + '.comment', title: marking_period.marking_period + ' Comments'}))
+                        $scope.columns.splice(key+1, 0, ({width: 160, value: 'student.' + marking_period.grade_key + '.comment', title: marking_period.marking_period + ' Comments'}))
                         comment_ids.push(key+1)
                         break
         else
@@ -128,5 +134,5 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
                         recalculateGrades(student)
                     instance = student[attribute.split('.')[0]]
                     instance.save()
-            
+
 ]

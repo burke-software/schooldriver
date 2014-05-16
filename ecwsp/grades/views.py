@@ -8,6 +8,9 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.template import RequestContext
 from django.db.models import Q
+from django.views.generic import DetailView
+from django.views.generic.edit import FormMixin
+from django.utils.decorators import method_decorator
 
 from ecwsp.administration.models import Configuration, Template
 from ecwsp.schedule.models import Course, MarkingPeriod
@@ -136,73 +139,60 @@ def view_comment_codes(request):
     return render_to_response('sis/generic_msg.html', {'msg': msg,}, RequestContext(request, {}),)
 
 
-@user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade'))
-def teacher_grade_upload(request, id):
+class CourseGrades(FormMixin, DetailView):
     """ This view is for inputing grades. It supports manual entry or uploading a spreadsheet """
+    model = Course
+    template_name = "grades/course_grades.html"
+    form_class = GradeUpload
     
-    course = Course.objects.get(id=id)
+    def get_success_url(self):
+        return reverse('course-grades', kwargs={'pk': self.object.pk})
     
-    students = Student.objects.filter(courseenrollment__course=course)
-    grades = course.grade_set.all()
+    @method_decorator(user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade')))
+    def dispatch(self, *args, **kwargs):
+        return super(CourseGrades, self).dispatch(*args, **kwargs)
     
-    if request.method == 'POST' and 'upload' in request.POST:
-        import_form = GradeUpload(request.POST, request.FILES)
-        if import_form.is_valid():
-            from ecwsp.sis.importer import Importer
-            importer = Importer(request.FILES['file'], request.user)
-            error = importer.import_grades(course, import_form.cleaned_data['marking_period'])
-            if error:
-                messages.warning(request, error)
-            else:
-                course.last_grade_submission = datetime.datetime.now()
-                course.save()
-    else:
-        import_form = GradeUpload()
-        import_form.fields['marking_period'].queryset = import_form.fields['marking_period'].queryset.filter(course=course)
-        
-    if request.method == 'POST' and 'edit' in request.POST:
-        handle_grade_save(request, course)
+    def get_context_data(self, **kwargs):
+        context = super(CourseGrades, self).get_context_data(**kwargs)
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        form.fields['marking_period'].queryset = form.fields['marking_period'].queryset.filter(course=context['course'])
+        context['form'] = form
+        if self.request.user.is_superuser or \
+            self.request.user.has_perm('grades.change_own_final_grade') or \
+            self.request.user.has_perm('grades.change_grade'):
+            context['edit_final'] = True
+        else:
+            context['edit_final'] = False
+        if self.request.user.is_superuser or \
+            self.request.user.has_perm('grades.change_own_grade') or \
+            self.request.user.has_perm('grades.change_grade'):
+            context['edit'] = True
+        else:
+            context['edit'] = False
+        context['letter_grade_required_for_pass'] = Configuration.get_or_default('letter_grade_required_for_pass', '60').value
+        return context
     
-    marking_periods = course.marking_period.all().order_by('start_date')
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
     
-    # Ensure grades exists
-    for mp in marking_periods:
-        for student in students:
-            grade, created = Grade.objects.get_or_create(student=student, course=course, marking_period=mp)
-    
-    for student in students:
-        student.grades = student.grade_set.filter(course=course, override_final=False)
-        try:
-            student.final = student.grade_set.get(course=course, override_final=True).get_grade()
-            student.final_override = True
-        except Grade.DoesNotExist:
-            student.final = course.calculate_final_grade(student)
-    
-    if request.user.is_superuser or \
-        request.user.has_perm('grades.change_own_final_grade') or \
-        request.user.has_perm('grades.change_grade'):
-        edit_final = True
-    else:
-        edit_final = False
-    if request.user.is_superuser or \
-        request.user.has_perm('grades.change_own_grade') or \
-        request.user.has_perm('grades.change_grade'):
-        edit = True
-    else:
-        edit = False
-    
-    letter_grade_required_for_pass = Configuration.get_or_default('letter_grade_required_for_pass', '60').value
-    
-    return render_to_response('grades/teacher_grade_upload.html', {
-        'request': request, 
-        'course': course, 
-        'marking_periods': marking_periods, 
-        'students': students, 
-        'import_form': import_form,
-        'edit': edit,
-        'edit_final': edit_final,
-        'letter_grade_required_for_pass': letter_grade_required_for_pass
-    }, RequestContext(request, {}),)
+    def form_valid(self, form):
+        from ecwsp.sis.importer import Importer
+        course = self.object
+        importer = Importer(self.request.FILES['file'], self.request.user)
+        error = importer.import_grades(course, form.cleaned_data['marking_period'])
+        if error:
+            messages.warning(self.request, error)
+        else:
+            course.last_grade_submission = datetime.datetime.now()
+            course.save()
+        return super(CourseGrades, self).form_valid(form)
 
 
 @user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade'))   
