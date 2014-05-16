@@ -1682,13 +1682,9 @@ table.rounded thead th, table.rounded thead td, table.rounded caption + tbody tr
 
 .ie9 .radio.checked i, .ie9 .checkbox.checked i { top: 0; }
 
-#scaffold_filters { border-top: 1px solid #777; border-bottom: 1px solid #777; padding: 7px 0; margin: 7px 0; }
+#scaffold_filters { padding: 7px 0; margin: 7px 0; }
 
-#scaffold .tab-content { background-color: #f2f2f2; }
-
-.tab-nav > li { box-shadow: 0px 1px 0px #F2F2F2; }
-.tab-nav > li.active > a { background: none repeat scroll 0% 0% #F2F2F2; }
-.tab-nav > li > a { background: none repeat scroll 0% 0% #FFF; }
+.tab-nav > li > a { font-size: 1.25em; }
 
 #scaffold_filters h3.filter-title { margin-left: 2.4%; font-size: 18px; font-weight: 400; }
 #scaffold_filters .removable { background-color: #fff; padding: 5px; margin: 5px 0; }

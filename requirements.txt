@@ -23,7 +23,7 @@ xlwt>=0.7.2
 raven>=3.3.7
 reportlab
 django-floppyforms>=1.0
--e git://github.com/burke-software/django-report-builder.git@36e3a1b4de41001f891fd2c0b0a073af79099897#egg=report_builder
+-e git://github.com/burke-software/django-report-builder.git@ae4da2e5e28a92bbaf7114606d768e7547ffa789#egg=django_report_builder-master
 # django-report-scaffold isn't in pypi yet; install from github
 -e git://github.com/burke-software/django-report-scaffold.git#egg=django-report-scaffold
 #django-responsive-dashboard>=1.0
@@ -45,3 +45,7 @@ django-celery>=3.1.9
 django-toolbelt
 django-storages
 boto
+Markdown==2.4
+djangorestframework==2.3.13
+djangorestframework-bulk
+django_compressor

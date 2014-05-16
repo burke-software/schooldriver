@@ -50,12 +50,12 @@ import logging
 from celery.contrib.methods import task
 
 from ecwsp.administration.models import Configuration, Template
-from ecwsp.sis.models import Student, Faculty
+from ecwsp.sis.models import Student
 from ecwsp.sis.helper_functions import CharNullField
 from ecwsp.sis.template_report import TemplateReport
 
 class CraContact(models.Model):
-    name = models.ForeignKey(Faculty)
+    name = models.ForeignKey(User)
     email = models.BooleanField(default=False, help_text="Receive daily e-mail listing all supervisor comments about student.")
     email_all = models.BooleanField(default=False, help_text="Receive comments about all students.")
     def __unicode__(self):
@@ -510,7 +510,6 @@ class StudentWorker(Student):
         try: return self.placement.pickup_location
         except: return ""
     
-    @property
     def cra(self):
         try: return self.placement.cra
         except: return ""

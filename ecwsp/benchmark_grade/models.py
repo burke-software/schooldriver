@@ -150,6 +150,9 @@ class CalculationRuleCategoryAsCourse(models.Model):
     category = models.ForeignKey('Category')
     include_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
     calculation_rule = models.ForeignKey('CalculationRule', related_name='category_as_course_set')
+    special_course = models.ForeignKey('schedule.Course',
+        help_text=''' Grades for this course will be OVERWRITTEN by the
+        category averages! ''')
 
 class CalculationRuleSubstitution(models.Model):
     operator = models.CharField(max_length=2, choices=OPERATOR_CHOICES)
@@ -443,7 +446,7 @@ class Aggregate(models.Model):
             rule = self.calculation_rule
             departments = rule.category_as_course_set.get(category_id=self.category_id).include_departments.all()
             courses = self.student.coursesection_set.filter(marking_period=self.marking_period_id,
-                department__in=departments, graded=True)
+                department__in=departments, graded=True, award_credits=True)
             for course in courses:
                 weight = Decimal(course.credits) / course.marking_period.count()
                 aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
@@ -534,29 +537,52 @@ class Aggregate(models.Model):
     def _copy_to_grade(self):
         # temporary(?) integration with the rest of sword
         g, g_created = Grade.objects.get_or_create(student=self.student, course=self.course, marking_period=self.marking_period, override_final=False)
+        # set the letter grade if it exists
         if self.cached_substitution is not None:
             # FIDDLESTICKS... INC does not fit in the column
             letter_grade_max_length = Grade._meta.get_field_by_name('letter_grade')[0].max_length
             g.letter_grade = self.cached_substitution[:letter_grade_max_length]
-            g.grade = None
+        # always set the numeric grade
+        grade_max_value = Grade._meta.get_field_by_name('grade')[0]
+        # whee...
+        grade_max_value = 10 ** (grade_max_value.max_digits - grade_max_value.decimal_places) - 10 ** (-1 * grade_max_value.decimal_places)
+        if self.cached_value > grade_max_value:
+            # people abuse points_possible (set marks way above it),
+            # either to give out extra credit or because they are just screwing around.
+            # don't attempt to set a Grade larger than the maximum permissable value
+            g.grade = grade_max_value
         else:
-            grade_max_value = Grade._meta.get_field_by_name('grade')[0]
-            # whee...
-            grade_max_value = 10 ** (grade_max_value.max_digits - grade_max_value.decimal_places) - 10 ** (-1 * grade_max_value.decimal_places)
-            if self.cached_value > grade_max_value:
-                # people abuse points_possible (set marks way above it),
-                # either to give out extra credit or because they are just screwing around.
-                # don't attempt to set a Grade larger than the maximum permissable value
-                g.set_grade(grade_max_value)
-            else:
-                g.set_grade(self.cached_value)
+            g.grade = self.cached_value
+        g.save()
+        return g, g_created
+
+    def _copy_to_special_course(self):
+        special_course = self.calculation_rule.category_as_course_set.get(
+            category_id=self.category_id).special_course
+        # make sure our MarkingPeriod is assigned to the Course
+        self.marking_period.course_set.add(special_course)
+        # make sure our Student is enrolled in the Course
+        special_course.courseenrollment_set.get_or_create(user=self.student,
+            role='Student')
+        # copy our average to ecwsp.grades
+        g, g_created = Grade.objects.get_or_create(student=self.student,
+            course=special_course, marking_period=self.marking_period,
+            override_final=False)
+        g.set_grade(self.cached_value)
         g.save()
         return g, g_created
 
     def save(self, *args, **kwargs):
-        if self.student_id is not None and self.course_id is not None and \
-            self.marking_period_id is not None and self.category_id is None:
+        ours = [self.student_id, self.course_id,
+                self.category_id, self.marking_period_id]
+        ours = [x is not None for x in ours]
+        if ours == [True, True, False, True]:
+            ''' Course grade for one marking period. '''
             self._copy_to_grade()
+        if ours == [True, False, True, True]:
+            ''' Average of a category across all courses for one marking period.
+            TC used this last year and counted it in GPAs as if it were a course. '''
+            self._copy_to_special_course()
         super(Aggregate, self).save(*args, **kwargs)
 
     def __unicode__(self):

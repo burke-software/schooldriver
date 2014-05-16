@@ -2,24 +2,23 @@ from django.utils.html import strip_tags
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F, Sum
 
-from ecwsp.sis.report import *
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
 from ecwsp.sis.models import Cohort
-from ecwsp.administration.models import Template
 from ecwsp.omr.models import AnswerInstance
 from ecwsp.benchmarks.models import Benchmark
 
-import xlwt
 from ecwsp.sis.xl_report import XlReport
 from openpyxl.cell import get_column_letter
+
 
 class ReportManager(object):
     def download_results(self, test):
         """ Create basic xls report for OMR. Includes summary and details """
-        
+
         # from download_teacher_results()
-        total_test_takers = test.active_testinstance_set.filter(answerinstance__points_earned__gt=0).distinct().count()
+        total_test_takers = test.active_testinstance_set.filter(
+            answerinstance__points_earned__gt=0).distinct().count()
 
         # Summary sheet
         data = [[test.name]]
@@ -41,7 +40,7 @@ class ReportManager(object):
             # don't put the decimal inside the string to avoid localization problems
             '=COUNTIF(C{0}:C{1},">="&0.7)/COUNT(C6:C{1})'.format(first_student_row, i - 2)])
         i += 1
-        
+
         report = XlReport(file_name="OMR Report")
         report.add_sheet(data, title="Summary", auto_width=True)
         # Detail sheets
@@ -51,14 +50,14 @@ class ReportManager(object):
         row_points = ["Student"]
         row_answers = ["Student"]
         row_abc = ["Student"]
-        for i,question in enumerate(test.question_set.all()):
+        for i, question in enumerate(test.question_set.all()):
             row_points.append("%s %s" % (question.get_order_start_one, strip_tags(question.question).strip()))
             row_answers.append("%s %s" % (question.get_order_start_one, strip_tags(question.question).strip()))
             row_abc.append("Question {0}".format(i+1))
         data_points.append(row_points)
         data_answers.append(row_answers)
         data_abc.append(row_abc)
-        
+
         for test_instance in test.active_testinstance_set.all():
             row_points = []
             row_answers = []
@@ -75,10 +74,10 @@ class ReportManager(object):
                     if question.type == "True/False":
                         row_abc += [answer.answer]
                     else:
-                        for i,x in enumerate(question.answer_set.all()):
+                        for i, x in enumerate(question.answer_set.all()):
                             if x == answer.answer:
                                 break
-                        row_abc += [chr(65+i)]
+                        row_abc += [chr(65 + i)]
                 except ObjectDoesNotExist:
                     row_points += ['']
                     row_answers += ['']
@@ -86,11 +85,11 @@ class ReportManager(object):
             data_points.append(row_points)
             data_answers.append(row_answers)
             data_abc.append(row_abc)
-        
+
         report.add_sheet(data_points, title="Detail Points", auto_width=True)
         report.add_sheet(data_answers, title="Detail Answers", auto_width=True)
         report.add_sheet(data_abc, title="Answer Sheet", auto_width=True)
-        
+
         # Benchmark sheet
         data = []
         row = ['Benchmark']
@@ -109,10 +108,10 @@ class ReportManager(object):
             row2.append('')
         data.append(row)
         data.append(row2)
-        first_student_row = i = 3 # 3 for third row on spreadsheet
+        first_student_row = i = 3  # 3 for third row on spreadsheet
         for test_instance in test.active_testinstance_set.all():
             row = [test_instance.student]
-            a = 2 # the letter b or column b in spreadsheet
+            a = 2  # the letter b or column b in spreadsheet
             for benchmark in Benchmark.objects.filter(question__test=test).distinct():
                 benchmark_points_possible = test_instance.answerinstance_set.filter(
                     question__benchmarks=benchmark
@@ -122,7 +121,7 @@ class ReportManager(object):
                     benchmark_points_possible = 0
                 row.append(benchmark_points_possible)
                 row.append('={0}{1}/{0}$2'.format(get_column_letter(a), str(i)))
-                a += 2 # skip ahead 2 columns
+                a += 2  # skip ahead 2 columns
             i += 1
             data.append(row)
         # Make it easier to compare this against download_teacher_results()
@@ -140,7 +139,7 @@ class ReportManager(object):
         data.append(row)
         i += 1
         report.add_sheet(data, title="Benchmark", auto_width=True)
-        
+
         data = [['Benchmark', 'Name', 'Earned', 'Possible', 'Percent']]
         i = 2
         for benchmark in benchmarks:
@@ -173,14 +172,14 @@ class ReportManager(object):
             data += [row]
             i += 1
         report.add_sheet(data, title="Benchmarks for class", auto_width=True)
-        
+
         return report.as_download()
-        
+
     def download_teacher_results(self, test, format, template, cohorts=None):
         """ Make appy based report showing results for a whole class """
         if not cohorts:
             cohorts = Cohort.objects.all()
-        
+
         # Stupid fucking hack
         subquery = test.testinstance_set.filter(student__cohort__in=cohorts).distinct()
 
@@ -188,7 +187,7 @@ class ReportManager(object):
         report.file_format = format
         test_instances = test.active_testinstance_set.filter(answerinstance__points_earned__gt=0).filter(pk__in=subquery).annotate(Sum('answerinstance__points_earned'))
         test.benchmarks = Benchmark.objects.filter(question__test=test).distinct()
-        
+
         points_possible = test.points_possible
         points_to_earn = 0.70 * test.points_possible
         number_gte_70 = test_instances.filter(pk__in=subquery).filter(answerinstance__points_earned__sum__gte=points_to_earn).count()
@@ -217,26 +216,26 @@ class ReportManager(object):
             benchmark.total_points_earned = earned_sum
 
             if benchmark.total_points_possible:
-                benchmark.average = float(benchmark.total_points_earned) / benchmark.total_points_possible 
+                benchmark.average = float(benchmark.total_points_earned) / benchmark.total_points_possible
             else:
                 benchmark.average = 0
-           
+
             # Percent of students scoring at or above 70%
             test_instances_gte_70 = 0
             for test_instance in test_instances:
-                 answers = test_instance.answerinstance_set.filter(question__benchmarks=benchmark)
-                 answers_points = answers.aggregate(Sum('points_earned'), Sum('points_possible'))
-                 instance_points_earned = answers_points['points_earned__sum']
-                 instance_points_possible = answers_points['points_possible__sum']
-                 # aggregate() may return None, which will raise a TypeError upon attempting arithmetic
-                 if instance_points_earned is None:
+                answers = test_instance.answerinstance_set.filter(question__benchmarks=benchmark)
+                answers_points = answers.aggregate(Sum('points_earned'), Sum('points_possible'))
+                instance_points_earned = answers_points['points_earned__sum']
+                instance_points_possible = answers_points['points_possible__sum']
+                # aggregate() may return None, which will raise a TypeError upon attempting arithmetic
+                if instance_points_earned is None:
                     instance_points_earned = 0
-                 if instance_points_possible is None:
+                if instance_points_possible is None:
                     instance_points_possible = 0
-                 if instance_points_earned and instance_points_possible:
-                     instance_average = float(instance_points_earned) / instance_points_possible
-                     if instance_average >= 0.70:
-                         test_instances_gte_70 += 1
+                if instance_points_earned and instance_points_possible:
+                    instance_average = float(instance_points_earned) / instance_points_possible
+                    if instance_average >= 0.70:
+                        test_instances_gte_70 += 1
             if test_instances.count():
                 benchmark.gte_70 = float(test_instances_gte_70) / test_instances.count()
             else:
@@ -246,7 +245,7 @@ class ReportManager(object):
             for question_benchmark in question_benchmarks:
                 benchmark.assessed_on += "{}, ".format(question_benchmark.get_order_start_one)
             benchmark.assessed_on = benchmark.assessed_on[:-2]
-        
+
         test.questions = test.question_set.all()
         for question in test.questions:
             question.benchmark_text = ''
@@ -255,21 +254,21 @@ class ReportManager(object):
             question.benchmark_text = question.benchmark_text[:-2]
             # grab all the AnswerInstances that we care about for this question
             answerinstances = question.answerinstance_set.filter(test_instance__student__cohort__in=cohorts).distinct()
-            # nasty! http://stackoverflow.com/questions/4093910/django-aggregates-sums-in-postgresql-dont-use-distinct-is-this-a-bug/4917507#4917507 
+            # nasty! http://stackoverflow.com/questions/4093910/django-aggregates-sums-in-postgresql-dont-use-distinct-is-this-a-bug/4917507#4917507
             answerinstances = question.active_answerinstance_set.filter(pk__in=answerinstances)
             # calculate the COUNT of correct student responses for this question
             question.num_correct = answerinstances.filter(points_earned__gte=F('points_possible')).count()
             # calculate the COUNT of all student responses for this question
             question.num_total = answerinstances.count()
-            # http://www.merriam-webster.com/dictionary/percent: "cent" means 100, but I'll stick with the existing convention 
+            # http://www.merriam-webster.com/dictionary/percent: "cent" means 100, but I'll stick with the existing convention
             if question.num_total:
                 question.percent_correct = float(question.num_correct) / question.num_total
             else:
                 question.percent_correct = 0
             # calculate the sum of all points earned and the sum of all points possible for this question
             earned_possible = answerinstances.aggregate(Sum('points_earned'), Sum('points_possible'))
-            question.points_earned = earned_possible['points_earned__sum'] 
-            question.points_possible = earned_possible['points_possible__sum'] 
+            question.points_earned = earned_possible['points_earned__sum']
+            question.points_possible = earned_possible['points_possible__sum']
             # aggregate() may return None, which will raise a TypeError upon attempting arithmetic
             if question.points_earned is None:
                 question.points_earned = 0
@@ -279,13 +278,13 @@ class ReportManager(object):
                 question.percent_points_earned = float(question.points_earned) / question.points_possible
             else:
                 question.percent_points_earned = 0
-            
+
         report.data['test'] = test
         report.data['tests'] = test_instances
-        
+
         report.filename = 'Teacher Results for ' + unicode(test)
-        return report.pod_save(template)  
-        
+        return report.pod_save(template)
+
     def download_student_results(self, test, format, template, cohorts=None):
         """ Make appy based report showing results for each student """
         report = TemplateReport()
@@ -295,13 +294,13 @@ class ReportManager(object):
         else:
             test_instances = test.active_testinstance_set.all()
         benchmarks = Benchmark.objects.filter(question__test=test).distinct()
-        
+
         for benchmark in benchmarks:
             benchmark.points_possible = test.question_set.filter(benchmarks=benchmark).aggregate(Sum('point_value'))['point_value__sum']
             # aggregate() may return None, which will raise a TypeError upon attempting arithmetic
             if benchmark.points_possible is None:
                 benchmark.points_possible = 0
-        
+
         for test_instance in test_instances:
             benchmark_instances = []
             for benchmark in benchmarks:
@@ -319,23 +318,23 @@ class ReportManager(object):
                 benchmark_instance.questions = benchmark_instance.questions[:-2]
                 benchmark_instances.append(benchmark_instance)
             test_instance.benchmarks = benchmark_instances
-        
+
             test_instance.incorrects = test_instance.answerinstance_set.filter(points_earned__lt=F('points_possible'))
             for incorrect in test_instance.incorrects:
                 incorrect.benchmarks = ''
                 for benchmark in incorrect.question.benchmarks.all():
                     incorrect.benchmarks += '{}, '.format(benchmark.number)
                 incorrect.benchmarks = incorrect.benchmarks[:-2]
-                
+
                 try:
                     incorrect.right_answer = incorrect.question.answer_set.order_by('point_value').reverse()[0]
                 except:
                     incorrect.right_answer = "No correct answer"
-            
+
         report.data['test'] = test
         report.data['tests'] = test_instances
-        
+
         report.filename = 'Student Results for ' + unicode(test)
-        return report.pod_save(template)  
+        return report.pod_save(template)
 
 report = ReportManager()

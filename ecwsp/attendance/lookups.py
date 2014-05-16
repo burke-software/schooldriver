@@ -8,7 +8,7 @@ import datetime
 class AttendanceStudentLookup(StudentLookup):
     def format_item_display(self,student):
         output = "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=%s></td><td>%s %s</td></tr></table>" \
-            % (student.pic.url_70x65, student.fname, student.lname)
+            % (student.pic.url_70x65, student.first_name, student.last_name)
         
         output += "<table style=\"width: 100%;\"><tr>"
         school_start = SchoolYear.objects.get(active_year=True).start_date
@@ -26,7 +26,7 @@ class AttendanceStudentLookup(StudentLookup):
 class AttendanceAddStudentLookup(StudentLookup):
     def format_item_display(self,student):
         output = "<table style=\"border-collapse: collapse;\"><tr><td><img style=\"height:30px;\" src=%s></td><td>%s %s</td></tr></table>" \
-            % (student.pic.url_70x65, student.fname, student.lname)
+            % (student.pic.url_70x65, student.first_name, student.last_name)
         
         output += "<table style=\"width: 100%;\">"
         attendances = StudentAttendance.objects.filter(student=student, date=datetime.datetime.now())

@@ -1,0 +1,18 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.4.0/restangular.min.js"></script>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    <h1>{% block title %}{% endblock %}</h1>
+    {% block content %}{% endblock %}
+</body>
+</html>

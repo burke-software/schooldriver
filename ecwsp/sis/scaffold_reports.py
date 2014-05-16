@@ -41,10 +41,11 @@ class TimeBasedForm(forms.Form):
 
     date_begin = forms.DateField(initial=get_default_start_date, validators=settings.DATE_VALIDATORS)
     date_end = forms.DateField(initial=get_default_end_date, validators=settings.DATE_VALIDATORS)
-    school_year = forms.ModelChoiceField(initial=get_active_year, queryset=SchoolYear.objects.all())
-    marking_periods = forms.ModelMultipleChoiceField(
-        initial=get_active_marking_periods,
-        queryset=MarkingPeriod.objects.all())
+    # TODO: remove initialization from SchoolDateFilter.get_report_context() once the date fields are reinstated
+    #school_year = forms.ModelChoiceField(initial=get_active_year, queryset=SchoolYear.objects.all())
+    #marking_periods = forms.ModelMultipleChoiceField(
+    #    initial=get_active_marking_periods,
+    #    queryset=MarkingPeriod.objects.all())
 
 
 class SchoolDateFilter(Filter):
@@ -56,6 +57,12 @@ class SchoolDateFilter(Filter):
     can_remove = False
 
     def get_report_context(self, report_context):
+        # TODO: remove once TimeBasedForm date fields are restored
+        self.form.cleaned_data['school_year'] = get_active_year()
+        self.form.cleaned_data['marking_periods'] = MarkingPeriod.objects.filter(
+            active=True,
+            school_year=self.form.cleaned_data['school_year']
+        )
         return self.form.cleaned_data
 
     def get_template_context(self):
@@ -90,7 +97,7 @@ class TardyFilter(IntCompareFilter):
 
         compare_sql = django_to_sql_compare(compare)
 
-        sql = """select coalesce(count(*)) from attendance_studentattendance
+        sql = """select coalesce(count(*), 0) from attendance_studentattendance
                     left join attendance_attendancestatus
                     on attendance_attendancestatus.id = attendance_studentattendance.status_id
                     where attendance_attendancestatus.tardy = True
@@ -115,7 +122,7 @@ class AbsenceFilter(IntCompareFilter):
 
         compare_sql = django_to_sql_compare(compare)
 
-        sql = """select coalesce(count(*)) from attendance_studentattendance
+        sql = """select coalesce(count(*), 0) from attendance_studentattendance
                     left join attendance_attendancestatus
                     on attendance_attendancestatus.id = attendance_studentattendance.status_id
                     where attendance_attendancestatus.absent = True
@@ -134,16 +141,6 @@ class StudentYearFilter(ModelMultipleChoiceFilter):
     compare_field_string="year"
     add_fields = ['year']
     model = GradeLevel
-
-class BrendanForm(forms.Form):
-    one   = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "one"}))
-    two   = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "two"}))
-    three = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "three"}))
-    four  = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': "four "}),required=False)
-    five  = forms.ChoiceField(required=False)
-
-class BrendanFilter(Filter):
-    form_class = BrendanForm
 
 class DisciplineForm(forms.Form):
     disc_action = forms.ModelChoiceField(queryset=DisciplineAction.objects.all())
@@ -208,15 +205,16 @@ class CourseGradeFilter(Filter):
             compare = reverse_compare(compare)
         grade_kwarg = {
             'courseenrollment__cached_numeric_grade__' + compare: number,
-            'courseenrollment__section__marking_period__start_date__gte': date_begin,
-            'courseenrollment__section__marking_period__end_date__lte': date_end,
+            'courseenrollment__course__marking_period__start_date__gte': date_begin,
+            'courseenrollment__course__marking_period__end_date__lte': date_end,
         }
 
         if times:
             queryset = queryset.filter(**grade_kwarg).annotate(
                 course_grade_count=Count('courseenrollment', distinct=True)).filter(course_grade_count__gte=times)
         else:
-            queryset = queryset.exclude(**grade_kwarg)
+            queryset = queryset.exclude(**grade_kwarg).annotate(
+                course_grade_count=Count('courseenrollment', distinct=True))
         return queryset
 
 class MpAvgGradeFilter(CourseGradeFilter):
@@ -295,7 +293,7 @@ class IncludeDeleted(Filter):
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         include_deleted = self.cleaned_data['field_0']
         if not include_deleted:
-            queryset = queryset.filter(deleted=True)
+            queryset = queryset.filter(is_active=True)
         return queryset
 
 
@@ -333,6 +331,13 @@ class ScheduleDaysFilter(Filter):
         report_context['schedule_days'] = self.cleaned_data['field_0']
         return queryset
 
+class OmitSubstitutions(Filter):
+    fields = [forms.BooleanField(initial=False, required=False,
+        help_text='''On applicable reports, number grades will be shown instead
+        of letters or abbreviations.''')]
+    def queryset_filter(self, queryset, report_context, **kwargs):
+        report_context['omit_substitutions'] = self.cleaned_data['field_0']
+        return queryset
 
 class GPAReportButton(ReportButton):
     name = "gpa_report"
@@ -375,9 +380,12 @@ class FailReportButton(ReportButton):
 
     def get_report(self, report_view, context):
         marking_periods = report_view.report.report_context['marking_periods']
-        students = Student.objects.filter(courseenrollment__section__marking_period__in=marking_periods).distinct()
+        # anticipate str(student.year)
+        students = Student.objects.select_related('year__name').filter(
+            courseenrollment__course__marking_period__in=marking_periods
+        ).distinct()
         titles = ['']
-        departments = Department.objects.filter(course__coursesection__courseenrollment__user__is_active=True).distinct()
+        departments = Department.objects.filter(course__courseenrollment__user__is_active=True).distinct()
 
         for department in departments:
             titles += [str(department)]
@@ -390,11 +398,31 @@ class FailReportButton(ReportButton):
         for student in students:
             row = [str(student)]
             ix = 1 # letter A
-            student.failed_grades = Grade.objects.none()
+            # query the database once per student, not once per student per department
+            # anticipate calling str() on grade.course and grade.marking_period
+            student.failed_grades = student.grade_set.select_related(
+                'course__department_id',
+                'course__fullname',
+                'marking_period__name',
+            ).filter(
+                override_final=False,
+                grade__lte=passing_grade,
+                marking_period__in=marking_periods
+            ).distinct()
+            department_counts = {}
+            end_of_row = []
+            for grade in student.failed_grades:
+                # every failing grade gets dumped out at the end of the row
+                end_of_row += [
+                    str(grade.course),
+                    str(grade.marking_period),
+                    str(grade.grade)
+                ]
+                # add one to the failed grade count for this department
+                department_counts[grade.course.department_id] = department_counts.get(
+                    grade.course.department_id, 0) + 1
             for department in departments:
-                failed_grades = Grade.objects.filter(override_final=False,course__course__department=department,course__courseenrollment__user=student,grade__lte=passing_grade,marking_period__in=marking_periods)
-                row += [failed_grades.count()]
-                student.failed_grades = student.failed_grades | failed_grades
+                row += [department_counts.get(department.pk, 0)]
                 ix += 1
             row += [
                 '=sum(b{0}:{1}{0})'.format(str(iy),get_column_letter(ix)),
@@ -404,8 +432,7 @@ class FailReportButton(ReportButton):
                 student.gpa,
                 '',
                 ]
-            for grade in student.failed_grades:
-                row += [str(grade.course), str(grade.marking_period), str(grade.grade)]
+            row += end_of_row
             data += [row]
             iy += 1
 
@@ -424,11 +451,11 @@ class AggregateGradeButton(ReportButton):
         data = [titles]
         ranges = [['100', '90'], ['89.99', '80'], ['79.99', '70'], ['69.99', '60'], ['59.99', '50'], ['49.99', '0']]
         letter_ranges = ['P', 'F']
-        for teacher in Faculty.objects.filter(coursesection__marking_period__in=mps, is_active=True).distinct():
+        for teacher in Faculty.objects.filter(course__marking_period__in=mps, is_active=True).distinct():
             data.append([str(teacher)])
             grades = Grade.objects.filter(
                 marking_period__in=mps,
-                course__teachers=teacher,
+                course__teacher=teacher,
                 student__is_active=True,
                 override_final=False,
             ).filter(
@@ -564,6 +591,7 @@ class SisReport(ScaffoldReport):
     name = "student_report"
     model = Student
     preview_fields = ['first_name', 'last_name']
+    permissions_required = ['sis_reports']
     filters = (
         SchoolDateFilter(),
         DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cached_gpa", add_fields=('gpa',)),
@@ -579,7 +607,7 @@ class SisReport(ScaffoldReport):
         TemplateSelection(),
         IncludeDeleted(),
         ScheduleDaysFilter(),
-        BrendanFilter(),
+        OmitSubstitutions(),
     )
     report_buttons = (
         AspReportButton(),
@@ -655,11 +683,7 @@ class SisReport(ScaffoldReport):
             setattr(student, "dismissed" + str(i), "")
             i += 1
 
-    def get_student_transcript_data(self, student, omit_substitutions=False):
-        if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS:
-            from ecwsp.benchmark_grade.models import Aggregate
-            from ecwsp.benchmark_grade.utility import gradebook_get_average, benchmark_find_calculation_rule, gradebook_get_category_average
-
+    def get_student_transcript_data(self, student):
         student.years = SchoolYear.objects.filter(
             markingperiod__show_reports=True,
             start_date__lt=self.date_end,
@@ -688,8 +712,6 @@ class SisReport(ScaffoldReport):
                 # Grades
                 course_grades = year_grades.filter(course=course).distinct()
                 course_aggregates = None
-                if year.benchmark_grade:
-                    course_aggregates = Aggregate.objects.filter(course=course, student=student)
                 i = 1
                 for mp in year.mps:
                     if mp not in course.marking_period.all():
@@ -697,36 +719,25 @@ class SisReport(ScaffoldReport):
                         setattr(course, "grade" + str(i), "")
                         i += 1
                         continue
-                    if year.benchmark_grade:
-                        setattr(course, "grade" + str(i), gradebook_get_average(student, course, None, mp, omit_substitutions = omit_substitutions))
-                    else:
-                        # We can't overwrite cells, so we have to get seperate variables for each mp grade.
-                        try:
-                            grade = course_grades.get(marking_period=mp).get_grade()
-                            grade = " " + str(grade) + " "
-                        except Grade.DoesNotExist:
-                            grade = ""
-                        setattr(course, "grade" + str(i), grade)
+                    # We can't overwrite cells, so we have to get seperate variables for each mp grade.
+                    try:
+                        grade = course_grades.get(marking_period=mp).get_grade(
+                            number=self.report_context.get('omit_substitutions'))
+                        grade = " " + str(grade) + " "
+                    except:
+                        grade = ""
+                    setattr(course, "grade" + str(i), grade)
                     i += 1
                 while i <= 6:
                     setattr(course, "grade" + str(i), "")
                     i += 1
-                course.final = course_enrollment.grade
+                course.final = course_enrollment.get_grade(self.date_end)
 
-                if self.is_passing(course.final):
-                    year.credits += course.credits
-                if course.course.credits:
-                    year.possible_credits += course.course.credits
-
-            year.categories_as_courses = []
-            if year.benchmark_grade:
-                calculation_rule = benchmark_find_calculation_rule(year)
-                for category_as_course in calculation_rule.category_as_course_set.filter(include_departments=course.department):
-                    i = 1
-                    for mp in year.mps:
-                        setattr(category_as_course.category, 'grade{}'.format(i), gradebook_get_category_average(student, category_as_course.category, mp))
-                        i += 1
-                    year.categories_as_courses.append(category_as_course.category)
+                if course.award_credits:
+                    if self.is_passing(course.final):
+                        year.credits += course.credits
+                    if course.credits:
+                        year.possible_credits += course.credits
 
             # Averages per marking period
             i = 1
@@ -739,7 +750,10 @@ class SisReport(ScaffoldReport):
                 setattr(year, 'mp' + str(i) + 'ave', "")
                 i += 1
 
-            year.ave = student.studentyeargrade_set.get(year=year).grade
+            if self.date_end >= year.end_date:
+                year.ave = student.studentyeargrade_set.get(year=year).grade
+            else:
+                year.ave = student.studentyeargrade_set.get(year=year).get_grade(date_report=self.date_end)
 
             # Attendance for year
             if not hasattr(self, 'year_days'):
@@ -759,8 +773,10 @@ class SisReport(ScaffoldReport):
                 for course in student.coursesection_set.filter(
                     course__department=dept,
                     marking_period__school_year__end_date__lte=self.date_end,
-                    course__graded=True).distinct():
-                    if course.credits and self.is_passing(course.courseenrollment_set.get(user=student).grade):
+                    graded=True).distinct():
+                    if course.award_credits and course.credits and self.is_passing(
+                        course.courseenrollment_set.get(user=student).grade
+                    ):
                         c += course.credits
                 dept.credits = c
                 student.departments_text += "| %s: %s " % (dept, dept.credits)
@@ -803,7 +819,11 @@ class SisReport(ScaffoldReport):
                 self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
                 for student in students:
                     self.get_student_transcript_data(student)
-            if template.report_card:
+            if template.benchmark_report_card and \
+                'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+                from ecwsp.benchmark_grade.report import get_benchmark_report_card_data
+                get_benchmark_report_card_data(self.report_context, context, students)
+            elif template.report_card:
                 self.blank_grade = struct()
                 self.blank_grade.comment = ""
                 school_year = SchoolYear.objects.filter(start_date__lte=self.report_context['date_end']

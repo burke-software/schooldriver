@@ -19,6 +19,7 @@
 from ecwsp.benchmark_grade.models import CalculationRule, Aggregate, Item, Mark, Category, AggregateTask, CalculationRulePerCourseCategory
 from ecwsp.benchmark_grade.models import benchmark_get_or_flush, benchmark_get_create_or_flush
 from ecwsp.schedule.models import MarkingPeriod, Department, Course
+from ecwsp.sis.models import Student
 from ecwsp.benchmark_grade.tasks import benchmark_aggregate_task
 from django.db.models import Avg, Sum, Min, Max
 import logging
@@ -56,7 +57,7 @@ def benchmark_calculate_category_as_course_aggregate(student, category, marking_
     calculation_rule = benchmark_find_calculation_rule(marking_period.school_year)
     category_as_course = calculation_rule.category_as_course_set.get(category=category)
     category_numer = category_denom = Decimal(0)
-    for course in Course.objects.filter(courseenrollment__user__username=student.username, marking_period=marking_period, department__in=category_as_course.include_departments.all()).distinct():
+    for course in Course.objects.filter(award_credits=True, courseenrollment__user__username=student.username, marking_period=marking_period, department__in=category_as_course.include_departments.all()).distinct():
         credits = Decimal(course.credits) / course.marking_period.count()
         try:
             category_aggregate = benchmark_get_or_flush(Aggregate, student=student, marking_period=marking_period, category=category, course=course)
@@ -331,85 +332,3 @@ def gradebook_get_category_average(student, category, marking_period):
         return pretty
     else:
         return None
-
-
-''' ye olde belowe '''
-# TODO: This is still used for reports!!! Can we trash it?
-
-def benchmark_calculate_grade_for_courses(student, courses, marking_period=None, date_report=None):
-    # TODO: Decimal places configuration value
-    DECIMAL_PLACES = 2
-    # student: a single student
-    # courses: all courses involved in the GPA calculation
-    # marking_period: restricts GPA calculation to a _single_ marking period
-    # date_report: restricts GPA calculation to marking periods _ending_ on or before a date
-
-    mps = None
-    if marking_period is not None:
-        mps = MarkingPeriod.objects.filter(id=(marking_period.id))
-    else:
-        mps = MarkingPeriod.objects.filter(id__in=courses.values('marking_period').distinct())
-        if date_report is not None:
-            mps = mps.filter(end_date__lte=date_report)
-        else:
-            mps = course.marking_period.all()
-
-    student_numer = student_denom = float(0)
-    for mp in mps.filter(school_year__benchmark_grade=True):
-        mp_numer = mp_denom = float(0)
-        rule = benchmark_find_calculation_rule(mp.school_year)
-        for course in courses.filter(marking_period=mp).exclude(credits=None).distinct(): # IMO, Course.credits should be required, and we should not treat None as 0.
-            # Handle per-course categories according to the calculation rule
-            course_numer = course_denom = float(0)
-            for category in rule.per_course_category_set.filter(apply_to_departments=course.department):
-                try: category_aggregate = benchmark_get_or_flush(Aggregate, student=student, marking_period=mp, course=course, category=category.category)
-                except Aggregate.DoesNotExist: category_aggregate = None
-                if category_aggregate is not None and category_aggregate.cached_value is not None:
-                    # simplified normalization; assumes minimum is 0
-                    normalized_value = category_aggregate.cached_value / rule.points_possible
-                    course_numer += float(category.weight) * float(normalized_value)
-                    course_denom += float(category.weight)
-            if course_denom > 0:
-                credits = float(course.credits) / course.marking_period.count()
-                mp_numer += credits * course_numer / course_denom
-                mp_denom += credits
-
-        # Handle aggregates of categories that are counted as courses
-        # TODO: Change CalculationRule model to have a field for the weight of each category. For now, assume 1.
-        # Categories as courses shouldn't increase the weight of a marking period!
-        mp_denom_before_categories = mp_denom
-        for category in rule.category_as_course_set.all():
-            category_numer = category_denom = float(0)
-            for course in courses.filter(marking_period=mp, department__in=category.include_departments.all()).distinct():
-                credits = float(course.credits) / course.marking_period.count()
-                try: category_aggregate = benchmark_get_or_flush(Aggregate, student=student, marking_period=mp, category=category.category, course=course)
-                except Aggregate.DoesNotExist: category_aggregate = None
-                if category_aggregate is not None and category_aggregate.cached_value is not None:
-                    # simplified normalization; assumes minimum is 0
-                    normalized_value  = category_aggregate.cached_value / rule.points_possible
-                    category_numer += credits * float(normalized_value)
-                    category_denom += credits
-            if category_denom > 0:
-                mp_numer += category_numer / category_denom
-                mp_denom += 1
-
-        if mp_denom > 0:
-            mp_numer *= float(rule.points_possible)
-            student_numer += mp_numer / mp_denom * mp_denom_before_categories 
-            student_denom += mp_denom_before_categories
-            mp_denom = mp_denom_before_categories # in this version, mp_denom isn't used again, but this may save someone pain in the future.
-
-    # Handle non-benchmark-grade years. Calculation rules don't apply.
-    legacy_courses = courses.filter(marking_period__in=mps.filter(school_year__benchmark_grade=False))
-    for course in legacy_courses.exclude(credits=None).distinct(): # IMO, Course.credits should be required, and we should not treat None as 0.
-        try:
-            grade, credits = student._calculate_grade_for_single_course(course, marking_period, date_report)
-            student_numer += grade * credits
-            student_denom += credits
-        except:
-            pass#logging.warning('Legacy course grade calculation failed for student {}, course {}, marking_period {}, date_report {}'.format(student, course, marking_period, date_report), exc_info=True)
-            
-    if student_denom > 0:
-        return Decimal(student_numer / student_denom).quantize(Decimal(10) ** (-1 * DECIMAL_PLACES), ROUND_HALF_UP)
-    else:
-        return 'N/A'

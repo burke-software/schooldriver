@@ -3,13 +3,13 @@ from django.contrib import messages
 from django.conf import settings
 from django_cached_field import CachedCharField, CachedDecimalField
 from django.db import connection
-import ecwsp
 
 from ecwsp.sis.models import Student
+from ecwsp.sis.helper_functions import round_as_decimal
 from ecwsp.administration.models import Configuration
 import ecwsp
 
-from datetime import date, datetime, timedelta
+import datetime
 from decimal import Decimal, ROUND_HALF_UP
 import copy
 
@@ -73,7 +73,7 @@ class MarkingPeriod(models.Model):
             build_grade_cache.apply_async()
         return obj
 
-    def get_number_days(self, date=date.today()):
+    def get_number_days(self, date=datetime.date.today()):
         """ Get number of days in a marking period"""
         if (self.school_days or self.school_days == 0) and date >= self.end_date:
             return self.school_days
@@ -100,7 +100,7 @@ class MarkingPeriod(models.Model):
                     elif self.sunday and current_day.isoweekday() == 7:
                         is_day = True
             if is_day: day += 1
-            current_day += timedelta(days=1)
+            current_day += datetime.timedelta(days=1)
         return day
 
 class DaysOff(models.Model):
@@ -171,6 +171,19 @@ class CourseEnrollment(models.Model):
         self.grade_recalculation_needed = False
         self.numeric_grade_recalculation_needed = False
         self.save()
+        return grade
+
+    def get_grade(self, date_report=None, rounding=2):
+        """ Get the grade, use cache when no date change present
+        """
+        if date_report is None or date_report >= datetime.date.today():
+            # Cache will always have the latest grade, so it's fine for
+            # today's date and any future date
+            grade = self.grade
+        else:
+            grade = self.calculate_grade_real(date_report=date_report)
+        if rounding and isinstance(grade, (int, long, float, complex, Decimal)):
+            return round_as_decimal(grade, rounding)
         return grade
 
     def calculate_grade(self):
@@ -325,6 +338,10 @@ class Course(models.Model):
     credits = models.DecimalField(max_digits=5, decimal_places=2,
         help_text="Credits affect GPA.",
         default=lambda: Configuration.get_or_default(name='Default course credits').value)
+    award_credits = models.BooleanField(default=True,
+        help_text='''When disabled, course will not be included in any student's
+        credit totals. However, the number of credits will still be used as a
+        weight in GPA calculations.''')
     department = models.ForeignKey(Department, blank=True, null=True)
     level = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
 
@@ -344,11 +361,30 @@ class Course(models.Model):
 
     def save(self, *args, **kwargs):
         super(Course, self).save(*args, **kwargs)
-        # assign teacher in as enrolled user
+
+        # see self.populate_all_grades() for documentation
+        self.populate_all_grades()
+
+        # assign teacher in as enrolled user 
         try:
             if self.teacher:
                 enroll, created = CourseEnrollment.objects.get_or_create(course=self, user=self.teacher, role="teacher")
         except: pass
+
+    def populate_all_grades(self):
+        """
+        calling this method calls Grade.populate_grade on each combination
+        of enrolled_student + marking_period associated with this Course
+        """
+        # still a work in progess, duh!
+        return
+        for marking_period in self.marking_period.all():
+            for student in self.get_enrolled_students():
+                ecwsp.grades.models.Grade.populate_grade(
+                    student = student, 
+                    marking_period = marking_period, 
+                    course = self
+                    )
 
     @staticmethod
     def autocomplete_search_fields():

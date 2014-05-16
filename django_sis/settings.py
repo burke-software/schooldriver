@@ -81,6 +81,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'pagination.middleware.PaginationMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -97,9 +98,10 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'djangobower.finders.BowerFinder',
+    'compressor.finders.CompressorFinder',
 )
 #STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
-STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage'
+#STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage'
 
 DEBUG = True
 TEMPLATE_DEBUG = True
@@ -113,6 +115,8 @@ BOWER_INSTALLED_APPS = (
     'jquery-migrate',
     'blockui',
     'jquery-color',
+    'angular-ui-handsontable',
+    'bootstrap-sass-official',
 )
 
 #GRAPPELLI
@@ -348,6 +352,9 @@ INSTALLED_APPS = (
     #'rosetta',
 )
 
+COMPRESS_PRECOMPILERS = (
+   ('text/coffeescript', 'coffee --compile --stdio'),
+)
 
 # this will load additional settings from the file settings_local.py
 try:
@@ -414,6 +421,9 @@ INSTALLED_APPS = (
     'floppyforms',
     'widget_tweaks',
     'django_cached_field',
+    'rest_framework',
+    'api',
+    'compressor',
 ) + INSTALLED_APPS
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
@@ -447,3 +457,7 @@ if 'test' in sys.argv:
         'ENGINE': 'django.db.backends.sqlite3',
         'ATOMIC_REQUESTS': True,
     }
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+}

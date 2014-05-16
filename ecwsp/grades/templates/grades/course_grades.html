@@ -1,0 +1,49 @@
+{% extends 'base_next.html' %}
+{% load staticfiles %}
+{% load compress %}
+
+{% block extra_head %}
+    {% compress js %}
+    <script type="text/coffeescript" charset="utf-8" src="{% static "grades/app.coffee" %}"></script>
+    {% endcompress %}
+    <script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
+    <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
+{% endblock %}
+
+{% block title %}
+    Grades - {{ course }}
+{% endblock %}
+
+{% block content %}
+<form action="" method="post" enctype="multipart/form-data" class="noprint">
+    {{ form }}
+    {% csrf_token %}
+    <input type="submit" value="Upload Grades" name="upload"/>
+    {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
+        <br/><p><a href="ecwsp.benchmark_grade.views.gradebookcourse_id=course.id">Click here for Online Gradebook</a></p><br/>
+    {% endif %}
+</form>
+
+<a href="{% url "ecwsp.grades.views.view_comment_codes" %}" target="_blank">View comment codes</a>
+
+<div ng-app="angular_sis" class="content" ng-controller="AppController">
+{% verbatim %}
+<button ng-click="showComments()">{{ comment_button_text }}</button>
+
+<div id="grade_table">
+<ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="student in students" columns="columns">
+</ui-handsontable>
+</div>
+
+{% endverbatim %}
+<script>
+var app = angular.module('angular_sis'); 
+app.config(['$httpProvider', function($httpProvider) {
+    $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+}]);
+app.config(function(RestangularProvider) {
+    RestangularProvider.setBaseUrl('/api');
+    RestangularProvider.setRequestSuffix('/');
+});
+</script>
+{% endblock %}

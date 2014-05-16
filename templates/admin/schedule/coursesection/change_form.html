@@ -7,7 +7,7 @@
         {% if object_id %}
             {% if 'ecwsp.grades' in settings.INSTALLED_APPS %}
                 <li><a href="{% url 'ecwsp.grades.views.teacher_grade_download' object_id %}" class="historylink"> Gradesheet Template </a></li>
-                <li><a href="{% url 'ecwsp.grades.views.teacher_grade_upload' object_id %}" class="historylink"> Grades </a></li>
+                <li><a href="{% url 'course-grades' object_id %}" class="historylink"> Grades </a></li>
             {% endif %}
             <li><a href="" class="historylink">Enroll Students (TODO)</a></li>
         {% endif %}
