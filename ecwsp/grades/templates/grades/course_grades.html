@@ -10,7 +10,11 @@
     <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
 {% endblock %}
 
-<h2> Grades - {{ course }} </h2>
+{% block title %}
+    Grades - {{ course }}
+{% endblock %}
+
+{% block content %}
 <form action="" method="post" enctype="multipart/form-data" class="noprint">
     {{ form }}
     {% csrf_token %}
@@ -22,7 +26,7 @@
 
 <a href="{% url "ecwsp.grades.views.view_comment_codes" %}" target="_blank">View comment codes</a>
 
-<div ng-app="grades.app.static" class="content" ng-controller="AppController">{% block content %}
+<div ng-app="grades.app.static" class="content" ng-controller="AppController">
 {% verbatim %}
 <button ng-click="showComments()">{{ comment_button_text }}</button>
 
@@ -32,7 +36,6 @@
 </div>
 
 {% endverbatim %}
-{% endblock %}</div>
 <script>
 var app = angular.module('grades.app.static'); 
 app.config(['$httpProvider', function($httpProvider) {
@@ -43,3 +46,4 @@ app.config(function(RestangularProvider) {
     RestangularProvider.setRequestSuffix('/');
 });
 </script>
+{% endblock %}
