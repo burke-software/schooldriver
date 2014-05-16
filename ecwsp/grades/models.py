@@ -297,3 +297,28 @@ class Grade(models.Model):
 
     def __unicode__(self):
         return unicode(self.get_grade(self))
+
+
+    @staticmethod
+    def populate_grade(student, marking_period, course):
+        """
+        make sure that each combination of Student/MarkingPeriod/Course
+        has a grade entity associated with it. If none exists, create one and 
+        set the course grade to "None". This method should be called on 
+        enrolling students to an exsiting course or creating a new course, 
+        or creating a new marking period, or creating a new cource section
+        """
+        grade_instance = Grade.objects.filter(
+            student=student, 
+            course = course,
+            marking_period = marking_period,
+        )
+        if not grade_instance:
+            new_grade = Grade(
+                student = student,
+                course = course, 
+                marking_period = marking_period,
+                grade = None,
+            )
+            new_grade.save()
+
