@@ -26,7 +26,7 @@
 
 <a href="{% url "ecwsp.grades.views.view_comment_codes" %}" target="_blank">View comment codes</a>
 
-<div ng-app="grades.app.static" class="content" ng-controller="AppController">
+<div ng-app="angular_sis" class="content" ng-controller="AppController">
 {% verbatim %}
 <button ng-click="showComments()">{{ comment_button_text }}</button>
 
@@ -37,7 +37,7 @@
 
 {% endverbatim %}
 <script>
-var app = angular.module('grades.app.static'); 
+var app = angular.module('angular_sis'); 
 app.config(['$httpProvider', function($httpProvider) {
     $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
 }]);

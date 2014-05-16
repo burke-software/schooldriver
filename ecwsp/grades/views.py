@@ -139,6 +139,24 @@ def view_comment_codes(request):
     return render_to_response('sis/generic_msg.html', {'msg': msg,}, RequestContext(request, {}),)
 
 
+class StudentGradesheet(DetailView):
+    model = Student
+    template_name = "grades/student_grades.html"
+    
+    @method_decorator(permission_required('grades.change_grade'))
+    def dispatch(self, *args, **kwargs):
+        return super(StudentGradesheet, self).dispatch(*args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(StudentGradesheet, self).get_context_data(**kwargs)
+        context['letter_grade_required_for_pass'] = Configuration.get_or_default('letter_grade_required_for_pass', '60').value
+        context['marking_periods'] = MarkingPeriod.objects.filter(course__in=courses).distinct().order_by('start_date')
+        return context
+        
+    
+    
+    
+
 class CourseGrades(FormMixin, DetailView):
     """ This view is for inputing grades. It supports manual entry or uploading a spreadsheet """
     model = Course
@@ -322,7 +340,8 @@ def handle_final_grade_save(request, course=None):
                                 action_flag     = ADDITION
                             )
     
-@permission_required('grades.change_grade')
+
+
 def student_gradesheet(request, id, year_id=None):
     student = get_object_or_404(Student, id=id)
     if request.POST:

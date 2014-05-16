@@ -1,4 +1,4 @@
-app = angular.module 'grades.app.static', ['restangular', 'uiHandsontable']
+app = angular.module 'angular_sis', ['restangular', 'uiHandsontable']
 
 app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) ->
     border = 30
