@@ -19,4 +19,14 @@
     {% for year in school_years %}
         {% if not forloop.first %} &nbsp;&nbsp; &middot; {% endif %} &nbsp;&nbsp; <a href="{{ year.id }}"> {{ year }} </a>
     {% endfor %}
+
+
+    <div ng-app="angular_sis" class="content" ng-controller="StudentGradesController">
+    {% verbatim %}
+    <button ng-click="showComments()">{{ comment_button_text }}</button>
+
+    <ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="course in courses" columns="columns">
+    </ui-handsontable>
+
+    {% endverbatim %}
 {% endblock %}
