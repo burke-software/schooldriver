@@ -1,25 +1,12 @@
-app = angular.module 'angular_sis', ['restangular', 'uiHandsontable']
+app = angular.module 'angular_sis', ['restangular', 'uiHandsontable', 'ngRoute']
 
-BaseGradeController = ($scope, Restangular) ->
-    $scope.foo = 'foo'
+app.controller 'StudentGradesController', ['$scope', 'GradebookService', ($scope, GradebookService) ->
+    courses = []
+    $scope.courses = courses
+    marking_periods = []
+]
 
-app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) ->
-    BaseGradeController.apply(this, arguments)
-    
-    border = 30
-    winHeight = $(window).height()
-    topOffset = $("#grade_table").offset().top
-    $scope.calcHeight = () ->
-        height = winHeight - topOffset - 2 * border
-        if height < 50
-           return 50
-        return height
-        
-    # Get the course_id - using a router might be nicer
-    url = $(location).attr('href').split('/')
-    url.pop()
-    course_id = url.pop()
-    
+app.controller 'CourseGradesController', ['$scope', '$routeParams', '$route', 'GradebookService', ($scope, $routeParams, $route, GradebookService) ->
     students = []
     $scope.students = students
     marking_periods = []
@@ -27,43 +14,47 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
         { width: 160, value: 'student.student', title: 'Student', fixed: true, readOnly: true}
     ]
 
-    grade_api = Restangular.all('grades')
-    grade_api.getList({course: course_id}).then (grades) ->
-        $scope.grades = grades
+    grade_api = GradebookService
+
+    $scope.$on '$routeChangeSuccess', ->
+        course_id = $routeParams.course_id
+
+        grade_api.getList({course: course_id}).then (grades) ->
+            $scope.grades = grades
+            
+            # Need to rearrange the array to look like
+            # Student | Grade1 | Grade etc | Final
+            angular.forEach grades, (grade) ->
+                new_student = true
+                this_student = null
+                for student in students
+                    if student.student_id == grade.student_id
+                        new_student = false
+                if new_student
+                    final = {grade: 0}
+                    students.push({student: grade.student, student_id: grade.student_id, final: final})
+                    
+                new_marking_period = true
+                for marking_period in marking_periods
+                    if marking_period.marking_period_id == grade.marking_period_id
+                        new_marking_period = false
+                if new_marking_period and grade.marking_period != null
+                    marking_periods.push({marking_period: grade.marking_period, marking_period_id: grade.marking_period_id})
         
-        # Need to rearrange the array to look like
-        # Student | Grade1 | Grade etc | Final
-        angular.forEach grades, (grade) ->
-            new_student = true
-            this_student = null
-            for student in students
-                if student.student_id == grade.student_id
-                    new_student = false
-            if new_student
-                final = {grade: 0}
-                students.push({student: grade.student, student_id: grade.student_id, final: final})
-                
-            new_marking_period = true
+            grade_columns = []
             for marking_period in marking_periods
-                if marking_period.marking_period_id == grade.marking_period_id
-                    new_marking_period = false
-            if new_marking_period and grade.marking_period != null
-                marking_periods.push({marking_period: grade.marking_period, marking_period_id: grade.marking_period_id})
-    
-        grade_columns = []
-        for marking_period in marking_periods
-            marking_period.grade_key = 'grade' + marking_period.marking_period_id
-            $scope.columns.push({width: 70, value: 'student.' + marking_period.grade_key + '.grade', title: marking_period.marking_period})
+                marking_period.grade_key = 'grade' + marking_period.marking_period_id
+                $scope.columns.push({width: 70, value: 'student.' + marking_period.grade_key + '.grade', title: marking_period.marking_period})
+                for student in students
+                    for grade in $scope.grades
+                        if grade.student_id == student.student_id
+                            if grade.marking_period_id == marking_period.marking_period_id
+                                student[marking_period.grade_key] = grade
+                            else if grade.override_final == true
+                                student.final = grade
+            $scope.columns.push({width: 70, value: 'student.final.grade', title: 'Final'})
             for student in students
-                for grade in $scope.grades
-                    if grade.student_id == student.student_id
-                        if grade.marking_period_id == marking_period.marking_period_id
-                            student[marking_period.grade_key] = grade
-                        else if grade.override_final == true
-                            student.final = grade
-        $scope.columns.push({width: 70, value: 'student.final.grade', title: 'Final'})
-        for student in students
-            recalculateGrades(student)
+                recalculateGrades(student)
 
     recalculateGrades = (student) ->
         final = 0.0
@@ -139,5 +130,9 @@ app.controller 'AppController', ['$scope', 'Restangular', ($scope, Restangular) 
                         recalculateGrades(student)
                     instance = student[attribute.split('.')[0]]
                     instance.save()
+]
 
+
+app.factory 'GradebookService', ['Restangular', (Restangular) ->
+    return grade_api = Restangular.all('grades')
 ]
