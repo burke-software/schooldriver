@@ -362,29 +362,12 @@ class Course(models.Model):
     def save(self, *args, **kwargs):
         super(Course, self).save(*args, **kwargs)
 
-        # see self.populate_all_grades() for documentation
-        self.populate_all_grades()
-
         # assign teacher in as enrolled user 
         try:
             if self.teacher:
                 enroll, created = CourseEnrollment.objects.get_or_create(course=self, user=self.teacher, role="teacher")
         except: pass
 
-    def populate_all_grades(self):
-        """
-        calling this method calls Grade.populate_grade on each combination
-        of enrolled_student + marking_period associated with this Course
-        """
-        # still a work in progess, duh!
-        return
-        for marking_period in self.marking_period.all():
-            for student in self.get_enrolled_students():
-                ecwsp.grades.models.Grade.populate_grade(
-                    student = student, 
-                    marking_period = marking_period, 
-                    course = self
-                    )
 
     @staticmethod
     def autocomplete_search_fields():
@@ -477,6 +460,19 @@ class CourseSection(models.Model):
         """ Shim code to calculate final grade WITHOUT cache """
         enrollment = self.courseenrollment_set.get(user=student)
         return enrollment.calculate_grade_real()
+
+    def populate_all_grades(self):
+        """
+        calling this method calls Grade.populate_grade on each combination
+        of enrolled_student + marking_period + course_section
+        """
+        for student in self.enrollments.all():
+            for marking_period in self.marking_period.all():
+                ecwsp.grades.models.Grade.populate_grade(
+                    student = student, 
+                    marking_period = marking_period,
+                    course_section = self
+                    )
     
 
 class OmitCourseGPA(models.Model):

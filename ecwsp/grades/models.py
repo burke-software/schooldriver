@@ -299,23 +299,23 @@ class Grade(models.Model):
 
 
     @staticmethod
-    def populate_grade(student, marking_period, course):
+    def populate_grade(student, marking_period, course_section):
         """
-        make sure that each combination of Student/MarkingPeriod/Course
+        make sure that each combination of Student/MarkingPeriod/CourseSection
         has a grade entity associated with it. If none exists, create one and 
         set the course grade to "None". This method should be called on 
         enrolling students to an exsiting course or creating a new course, 
         or creating a new marking period, or creating a new cource section
         """
         grade_instance = Grade.objects.filter(
-            student=student, 
-            course = course,
-            marking_period = marking_period,
+            student = student,
+            course = course_section,
+            marking_period = marking_period
         )
         if not grade_instance:
             new_grade = Grade(
                 student = student,
-                course = course, 
+                course = course_section, 
                 marking_period = marking_period,
                 grade = None,
             )
