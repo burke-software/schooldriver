@@ -28,38 +28,6 @@ def fte_by_ind(request):
     return report.as_download()
 
 
-def supervisor_xls(request):
-    comp = WorkTeam.objects.filter(login=request.user)[0]
-    timesheets = TimeSheet.objects.filter(approved=True).filter(company=comp).order_by('student', 'date',)
-    data = []
-    titles = ["WorkTeam", "Student", "", "Date", "For Pay?", "Make up?", "Hours Worked", "Company Bill", "Performance", "Student Comment", "Supervisor Comment"]
-    fileName = "Billing_Report"
-    company_total = timesheets.aggregate(Sum('school_net'))
-    data.append([comp.team_name, "", "", "", "", "", "", company_total['school_net__sum']])
-    studenti = 0
-    for timesheet in timesheets:
-        data.append(["",
-                     timesheet.student.first_name,
-                     timesheet.student.last_name,
-                     timesheet.date,
-                     timesheet.for_pay,
-                     timesheet.make_up,
-                     timesheet.hours,
-                     timesheet.school_net,
-                     timesheet.performance,
-                     timesheet.student_accomplishment,
-                     timesheet.supervisor_comment,])
-        studenti += 1
-        if studenti == timesheets.filter(student__id__iexact=timesheet.student.id).count():
-            stu_total = timesheets.filter(student__id__iexact=timesheet.student.id).aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
-            data.append(["", "", "", "Total", "", "", stu_total['hours__sum'], stu_total['school_net__sum']])
-            studenti = 0
-            
-    report = XlReport(file_name="Company Billing")
-    report.add_sheet(data, header_row=titles, title="Company Billing", heading="Company Billing")
-    return report.as_download()
-
-
 def fte_by_day(request):
     cursor = connection.cursor()
     fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)

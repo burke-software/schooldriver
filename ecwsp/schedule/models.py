@@ -345,6 +345,10 @@ class Course(models.Model):
     credits = models.DecimalField(max_digits=5, decimal_places=2,
         help_text="Credits affect GPA.",
         default=lambda: Configuration.get_or_default(name='Default course credits').value)
+    award_credits = models.BooleanField(default=True,
+        help_text='''When disabled, course will not be included in any student's
+        credit totals. However, the number of credits will still be used as a
+        weight in GPA calculations.''')
     department = models.ForeignKey(Department, blank=True, null=True)
     level = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
     last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
