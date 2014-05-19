@@ -241,7 +241,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
         ('Parent and address', {'fields': ['parent_guardian', 'emergency_contacts', 'street',
                                            'city', 'state', 'zip', 'parent_email', 'alt_email'],
             'classes': ['collapse']}),
-        ('Personality', {'fields': ['personality_type', 'handout33'], 'classes': ['collapse']}),
+        ('Personality', {'fields': ['personality_type',], 'classes': ['collapse']}),
     ]
     
     def get_readonly_fields(self, request, obj=None):
@@ -253,7 +253,6 @@ class StudentAdmin(ReadPermissionModelAdmin):
     inlines = [StudentNumberInline, StudentFileInline, CompanyHistoryInline]
     list_filter = ['day', 'year', 'is_active','placement__cras']
     list_display = ('first_name', 'last_name', 'day', 'company', 'pickUp', 'cra', 'contact')
-    filter_horizontal = ('handout33',)
     search_fields = ['first_name', 'last_name', 'unique_id', 'placement__team_name', 'username', 'id']
     readonly_fields = ['is_active', 'first_name', 'last_name', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']    
 admin.site.register(StudentWorker, StudentAdmin)
@@ -361,7 +360,6 @@ admin.site.register(Attendance, AttendanceAdmin)
 admin.site.register(AttendanceFee)
 admin.site.register(AttendanceReason)
 admin.site.register(Personality)
-admin.site.register(Handout33)
 
 class ClientVisitAdmin(admin.ModelAdmin):
     form = make_ajax_form(ClientVisit, dict(student_worker='studentworker', supervisor='company_contact', company='company'))

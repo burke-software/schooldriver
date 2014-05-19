@@ -1,4 +1,160 @@
-#slide{
+#scaffold_filters {
+  //border-top: 1px solid #777;
+  //border-bottom: 1px solid #777;
+  padding: 7px 0;
+  margin: 7px 0;
+}
+
+#scaffold_active_filters {
+    //background-color: #000;//#f2f2f2;
+}
+
+// #scaffold .tab-content {
+//   background-color: #f2f2f2;
+// }
+
+.tab-nav {
+  > li {
+    // box-shadow: 0px 1px 0px #F2F2F2;
+    
+    // &.active > a {
+    //     background: none repeat scroll 0% 0% #F2F2F2;
+    // }
+
+    > a {
+      font-size: 1.25em;
+      //background: none repeat scroll 0% 0% #FFF;
+    }
+  }
+}
+
+
+#scaffold_filters {
+  h3.filter-title {
+    margin-left: 2.4%;
+    font-size: $med;
+    font-weight: 400;
+    //padding-top: .2em;
+  }
+
+  .removable {
+    background-color: #fff;
+    padding: 5px;
+    margin: 5px 0;
+
+    .filter-title {
+      margin-left: 1.2%;
+    }
+
+    option {
+      background-color: #fff;
+    }
+  }
+
+  .filter {
+    position: relative;
+
+    input[type=text], input[type=number], .post-form-text {
+      vertical-align: top;
+      margin-top: 2px;
+
+      &.xnarrow:first-child {
+        margin-right: 0;
+      }
+    }
+
+    input[type=checkbox] {
+      -webkit-appearance: checkbox!important;
+    }
+
+    .picker {
+      margin-left: 0;
+      margin-bottom: -5px!important;
+    }
+
+    form {
+      margin: 0!important;
+    }
+
+    .field {
+      margin-bottom: 0!important;
+    }
+  }
+
+
+  label.inline {
+    vertical-align: text-top;
+  }
+}
+
+.filter_form {
+  //display: inline-block;
+}
+
+.picker-multiple select {
+  color: #555;
+  font-size: 14px;
+  border: 1px solid #E5E5E5;
+  border-radius: 4px;
+
+  option {
+    padding: 5px 15px;
+  }
+}
+
+.dsr-checkbox {
+  input {
+    width: auto;
+  }
+}
+
+.delete-filter {
+  font-size: 1.75em;
+  position: absolute;
+  top: 10px;
+  right: 7px;
+}
+
+.handle {
+  float: right;
+  font-size: 2em;
+  cursor: move;
+}
+
+.column-in-report {
+  float: right;
+  font-size: 2em;
+}
+
+.IncludeDeleted {
+  h3.filter-title {
+    display: inline-block;
+    padding: 10px 0;
+    font-size: $med;
+  }
+
+  form {
+    display: inline;
+  }
+}
+
+.SchoolDateFilter form label {
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+#add-new-rule-block {
+  padding: 10px 0;
+}
+
+h3.filter-subheads {
+  display: inline-block;
+  padding: 0;
+  font-size: $large;
+  font-weight: 400;
+}
+
+#scaffold{
   .active_filters {
     background-color: #eee;
     width: 66%;
@@ -13,10 +169,7 @@
   }
 
   li {
-    border: 1px solid #bebdbd;
-    border-radius: 2px;
-    padding: 5px;
-    margin: 5px;
+    
   }
   
   .ui-state-highlight {
@@ -24,4 +177,12 @@
     padding: 5px;
     margin: 5px;
   }
+}
+
+#preview_area table {
+  margin: 20px auto;
+}
+
+.premade h4 {
+  font-size: 1.25em;
 }

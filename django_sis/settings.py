@@ -30,6 +30,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'sample_db',
+        'ATOMIC_REQUESTS': True,
     },
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
@@ -407,7 +408,7 @@ INSTALLED_APPS = (
     'responsive_dashboard',
     'simple_import',
     'djangobower',
-    #'scaffold_report',
+    'scaffold_report',
     'django_su',
     'floppy_gumby_forms',
     'floppyforms',
@@ -442,4 +443,7 @@ if 'ON_HEROKU' in os.environ:
 
 # Keep this *LAST* to avoid overwriting production DBs with test data
 if 'test' in sys.argv:
-    DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'ATOMIC_REQUESTS': True,
+    }

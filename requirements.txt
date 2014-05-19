@@ -23,10 +23,11 @@ xlwt>=0.7.2
 raven>=3.3.7
 reportlab
 django-floppyforms>=1.0
-django-report-builder>=1.14
-#django-report-scaffold
+-e git://github.com/burke-software/django-report-builder.git@ae4da2e5e28a92bbaf7114606d768e7547ffa789#egg=django_report_builder-master
+# django-report-scaffold isn't in pypi yet; install from github
+-e git://github.com/burke-software/django-report-scaffold.git#egg=django-report-scaffold
 #django-responsive-dashboard>=1.0
--e git://github.com/burke-software/django-responsive-dashboard.git@1bcd3a8bc24cf956410d3f58617db34d21ab1138#egg=django_responsive_dashboard
+-e git://github.com/burke-software/django-responsive-dashboard.git@5ccc205f1a3b7fd1913c26c8cc30c54eaac4312e#egg=django_responsive_dashboard-master
 django-apptemplates>=0.0.1
 django-filter>=0.5.4
 # django-positions 0.5.1 may have a bug; messes up OMR question order
@@ -39,7 +40,7 @@ feedparser>=5.1.2
 ./install/hatchery/django-ldap-groups-0.1.3.tar.gz
 django-rosetta>=0.7.1
 -e git://github.com/zsiciarz/django-rosetta-grappelli.git#egg=django-rosetta-grappelli
-django-celery>=3.0.17
+django-celery>=3.1.9
 -e git://github.com/tzulberti/django-datefilterspec.git#egg=django-daterange-filter
 django-toolbelt
 django-storages

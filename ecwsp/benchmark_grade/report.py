@@ -10,7 +10,6 @@ from ecwsp.sis.uno_report import uno_save
 from ecwsp.administration.models import *
 from ecwsp.schedule.models import *
 from ecwsp.schedule.calendar import *
-from ecwsp.sis.report import *
 from ecwsp.benchmark_grade.models import *
 from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule, gradebook_get_average
 from ecwsp.benchmark_grade.views import gradebook
@@ -38,11 +37,11 @@ def draw_gauge(percentage, width=10, filled_char=u'█', empty_char=u'░'):
     return output
 
 
-def benchmark_report_card(grade_template_report, template, options, students, format="odt"):
+def get_benchmark_report_card_data(report_context, appy_context, students):
     PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
-    data = grade_template_report.data
-    for_date = grade_template_report.for_date
-    try: omit_substitutions = options['omit_substitutions']
+    data = appy_context
+    for_date = report_context['date_end']
+    try: omit_substitutions = report_context['omit_substitutions']
     except KeyError: omit_substitutions = False
     school_year = SchoolYear.objects.filter(start_date__lt=for_date).order_by('-start_date')[0]
     calculation_rule = benchmark_find_calculation_rule(school_year)
@@ -51,6 +50,10 @@ def benchmark_report_card(grade_template_report, template, options, students, fo
                                                   show_reports=True)
     marking_period = attendance_marking_periods.order_by('-start_date')[0]
     for student in students:
+        # Backwards compatibility for existing templates
+        student.fname = student.first_name
+        student.lname = student.last_name
+
         student.year_courses = Course.objects.filter(
             courseenrollment__user=student,
             graded=True,
@@ -127,8 +130,12 @@ def benchmark_report_card(grade_template_report, template, options, students, fo
                 student.count_percentage_by_category_name[category_name] = (Decimal(student.count_passing_by_category_name[category_name]) / value * 100).quantize(Decimal('0', ROUND_HALF_UP))
 
         # make categories available 
-            
-        student.session_gpa = student.calculate_gpa_mp(marking_period)
+        
+        try:
+            student.session_gpa = student.studentmarkingperiodgrade_set.get(
+                marking_period=marking_period).grade
+        except StudentMarkingPeriodGrade.DoesNotExist:
+            student.session_gpa = None
         # Cannot just rely on student.gpa for the cumulative GPA; it does not reflect report's date
         student.current_report_cumulative_gpa = student.calculate_gpa(for_date)
 
@@ -158,7 +165,6 @@ def benchmark_report_card(grade_template_report, template, options, students, fo
     data['school_year'] = school_year
     data['marking_period'] = marking_period.name # just passing object makes appy think it's undefined
     data['draw_gauge'] = draw_gauge
-    return grade_template_report.pod_save(template)
 
 @staff_member_required
 def student_incomplete_courses(request):

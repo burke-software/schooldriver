@@ -1,0 +1,32 @@
+{% load widget_tweaks %}
+
+{% for hidden in form.hidden_fields %}
+  {{ hidden }}
+{% endfor %}
+
+<div class="row pad-bottom-10">
+  <div class="four columns">
+    <div class="field">
+      <label for="{{ form.date_begin.id_for_label }}">Start&nbsp;Date:</label>
+      {{ form.date_begin|add_class:"text input" }}
+      <label for="{{ form.date_end.id_for_label }}" class="pad-top-10">End&nbsp;Date:</label>
+      {{ form.date_end|add_class:"text input" }}
+    </div>
+  </div>
+  <div class="four columns">
+    <div class="field">
+      <label for="{{ form.school_year.id_for_label }}">{{ form.school_year.label }}</label>
+      <div class="picker">
+        {{ form.school_year }}
+      </div>
+    </div>
+  </div>
+  <div class="four columns">
+    <div class="field">
+      <label for="{{ form.marking_periods.id_for_label }}">{{ form.marking_periods.label }}</label>
+      <div class="picker-multiple">
+        {{ form.marking_periods }}
+      </div>
+    </div>
+  </div>
+</div>

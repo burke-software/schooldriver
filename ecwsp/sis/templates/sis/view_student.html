@@ -85,7 +85,7 @@
       <div class="row">
         <div class="seven columns">
           <table class="section-table">
-              <tr><td class="thing"> Full name </td><td> {{ student.fname }} {{ student.mname|default_if_none:"" }} {{ student.lname }} </td></tr>
+              <tr><td class="thing"> Full name </td><td> {{ student.first_name }} {{ student.mname|default_if_none:"" }} {{ student.last_name }} </td></tr>
               <tr><td class="thing"> Sex </td><td> {{ student.sex }} </td></tr>
               <tr><td class="thing"> Birth date </td><td> {{ student.bday }} </td></tr>
               <tr><td class="thing"> Primary cohort </td><td> {{ student.primary_cohort }} </td></tr>

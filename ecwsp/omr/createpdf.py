@@ -1,19 +1,3 @@
-#   Copyright 2011-2012 Burke Software and Consulting LLC
-#   Author Callista Goss <calli@burkesoftware.com>
-#   
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-
 #settings required in settings_local.py: QUEXF_DB_USER, QUEXF_DB_PASS, QUEXF_DB_NAME, QUEXF_URL
 
 from reportlab.pdfgen import canvas
@@ -75,7 +59,7 @@ def generate_xml(test_id):
         studentsection.appendChild(studentnametag)
         if instance:
             studentsection.setAttribute("studentid",str(instance.id))
-            studentname = doc.createTextNode(strip_unicode_to_ascii(instance.student.fname + " " + instance.student.lname))
+            studentname = doc.createTextNode(strip_unicode_to_ascii(instance.student.first_name + " " + instance.student.last_name))
             studentnametag.appendChild(studentname)
         else:
             studentsection.setAttribute("studentid","0")

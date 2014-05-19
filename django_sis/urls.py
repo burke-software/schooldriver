@@ -16,19 +16,19 @@ urlpatterns = patterns('',
     (r'^$', 'ecwsp.sis.views.index'),
     (r'^sis/', include('ecwsp.sis.urls')),
     (r'^admin/jsi18n', 'django.views.i18n.javascript_catalog'),
-    
+
     (r'^report_builder/', include('report_builder.urls')),
     (r'^simple_import/', include('simple_import.urls')),
     url(r'^accounts/password_change/$', 'django.contrib.auth.views.password_change'),
     url(r'^accounts/password_change_done/$', 'django.contrib.auth.views.password_change_done', name="password_change_done"),
-    
+
     (r'^logout/$', sis_views.logout_view),
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     (r'^admin/jsi18n/$', 'django.views.i18n.javascript_catalog'),
     (r'^admin/', include(admin.site.urls) ),
     (r'^ajax_select/', include('ajax_select.urls')),
     url(dajaxice_config.dajaxice_url, include('ecwsp.dajaxice_urls')),
-    #(r'^reports/', include('scaffold_report.urls')),
+    (r'^reports/', include('scaffold_report.urls')),
     url(r"^su/", include("django_su.urls")),
 )
 
@@ -73,7 +73,7 @@ if 'rosetta' in settings.INSTALLED_APPS:
     urlpatterns += patterns('',
         url(r'^rosetta/', include('rosetta.urls')),
     )
-if 'social.apps.django_app.default' in settings.INSTALLED_APPS:    
+if 'social.apps.django_app.default' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', url('', include('social.apps.django_app.urls', namespace='social')),)
 
 urlpatterns += patterns('', (r'^', include('responsive_dashboard.urls')), )
