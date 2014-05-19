@@ -30,25 +30,8 @@
 {% verbatim %}
 <button ng-click="showComments()">{{ comment_button_text }}</button>
 
-<ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="student in students" columns="columns">
+<ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="row in rows" columns="columns">
 </ui-handsontable>
 
 {% endverbatim %}
-<script>
-var app = angular.module('angular_sis'); 
-app.config(['$httpProvider', function($httpProvider) {
-    $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
-}]);
-app.config(function(RestangularProvider) {
-    RestangularProvider.setBaseUrl('/api');
-    RestangularProvider.setRequestSuffix('/');
-});
-app.config(function($routeProvider, $locationProvider) {
-    $routeProvider
-    .when('/grades/course_grades/:course_id/', {
-        controller: 'CourseGradesController'
-    });
-    $locationProvider.html5Mode(true);
-});
-</script>
 {% endblock %}

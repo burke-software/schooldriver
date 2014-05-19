@@ -25,7 +25,7 @@
     {% verbatim %}
     <button ng-click="showComments()">{{ comment_button_text }}</button>
 
-    <ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="course in courses" columns="columns">
+    <ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="row in rows" columns="columns">
     </ui-handsontable>
 
     {% endverbatim %}

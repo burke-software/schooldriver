@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load compress %}
 
 <!DOCTYPE html>
 <html>
@@ -8,8 +9,15 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.4.0/restangular.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-route.min.js"></script>
+    <script type="text/javascript">
+        var csrf_token = '{{ csrf_token|escapejs }}'
+    </script>
     
     {% block extra_head %}{% endblock %}
+    
+    {% compress js %}
+    <script type="text/coffeescript" charset="utf-8" src="{% static "sis/angular_sis.coffee" %}"></script>
+    {% endcompress %}
 </head>
 
 <body>
