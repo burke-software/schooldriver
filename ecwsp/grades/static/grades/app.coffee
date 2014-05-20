@@ -1,5 +1,6 @@
 app = angular.module 'angular_sis', ['restangular', 'uiHandsontable', 'ngRoute']
 
+
 app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$routeParams', '$route', ($scope, GradebookService, $routeParams, $route) ->
     $scope.columns = [
         { width: 160, value: 'row.course', title: 'Course', fixed: true, readOnly: true}
@@ -30,9 +31,10 @@ app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$route
        $scope.comment_button_text = grades_api.toggleComments($scope.columns)
 ]
 
+
 app.controller 'CourseGradesController', ['$scope', '$routeParams', '$route', 'GradebookService', ($scope, $routeParams, $route, GradebookService) ->
     $scope.columns = [
-        { width: 160, value: 'row.student', title: 'Student', fixed: true, readOnly: true}
+        {width: 160, value: 'row.student', title: 'Student', fixed: true, readOnly: true}
     ]
 
     grades_api = GradebookService
@@ -105,7 +107,10 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
         grade_columns = []
         for marking_period in grades_api.marking_periods
             marking_period.grade_key = 'grade' + marking_period.marking_period_id
-            columns.push({width: 70, value: 'row.' + marking_period.grade_key + '.grade', title: marking_period.marking_period})
+            new_column = {width: 70, value: 'row.' + marking_period.grade_key + '.grade', title: marking_period.marking_period}
+            if edit == 'False'
+                new_column.readOnly = true
+            columns.push(new_column)
             for row in rows
                 for grade in grades
                     if grade[field] == row[field]
@@ -113,7 +118,10 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
                             row[marking_period.grade_key] = grade
                         else if grade.override_final == true
                             row.final = grade
-        columns.push({width: 70, value: 'row.final.grade', title: 'Final'})
+        new_column = {width: 70, value: 'row.final.grade', title: 'Final'}
+        if edit_final == 'False'
+            new_column.readOnly = true
+        columns.push(new_column)
         for row in rows
             if not row.final.id
                 grades_api.recalculateGrades(row)

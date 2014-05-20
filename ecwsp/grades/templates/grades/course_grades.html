@@ -8,6 +8,10 @@
     {% endcompress %}
     <script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
     <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
+    <script type="text/javascript">
+        var edit = '{{ edit }}'
+        var edit_final = '{{ edit_final }}'
+    </script>
 {% endblock %}
 
 {% block title %}
