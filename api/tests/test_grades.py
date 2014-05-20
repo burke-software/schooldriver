@@ -1,103 +1,53 @@
-from api.tests.api_test_base import APITestBase
+from api.tests.api_test_base import APITest
 from ecwsp.grades.models import Grade
 import json
 
-class GradeAPITest(APITestBase):
+class GradeAPITest(APITest):
     """
     test the implementation of our grades api
     """
 
-    def test_admin_user_access(self):
+    def test_simple_get_request(self):
         """
-        only an admin user should be able to access the grade api
+        test a simple get request with both auth'd and non-auth'd users
         """
-        # try with a non-authenticated user
+
+        # try it with a no authentication
         response = self.client.get('/api/grades/')
         self.assertEqual(response.status_code, 403)
 
-        # try with a non-admin user
-        self.login_normal_user()
+        # try it with a normal user (authenticated but wrong permissions)
+        self.client.force_authenticate(user=self.user)
         response = self.client.get('/api/grades/')
         self.assertEqual(response.status_code, 403)
 
-        # now try with a legit admin user!
-        self.login_admin_user()
+        # sign out...
+        self.client.force_authenticate(user=None)
+
+        # try it with an admin user (authenticated)
+        self.client.force_authenticate(user=self.admin_user)
         response = self.client.get('/api/grades/')
         self.assertEqual(response.status_code, 200)
 
-    def test_post_request(self):
+    def test_simple_post_request(self):
         """
         test a post request for a student's grade using the api
         """
-        # login as admin user
-        self.login_admin_user()
-
         # make sure no grades currently exist!
+        self.client.force_authenticate(user=self.admin_user)
         response = self.client.get('/api/grades/')
         number_of_grades = len(json.loads(response.content))
         self.assertEqual(number_of_grades, 0)
 
-        # add a new grade
-        course = self.create_test_course()
-        marking_period = self.create_test_marking_period()
-        student = self.create_test_student()
+        # create a new grade
+        enrollment = self.enroll_student_in_test_section()
         data = {
-            'student_id': student.id,
-            'course' : course.id,
-            'marking_period' : marking_period.id,
+            'student_id': enrollment.user.id,
+            'course' : enrollment.section.id,
+            'marking_period' : enrollment.section.marking_period.id,
             'grade' : 95,
             'override_final' : False,
             'comment' : 'a job well done',
         }
-
-        # test the post response
         response = self.client.post('/api/grades/', data)
-        json_response = json.loads(response.content)
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(json_response['comment'], 'a job well done')
-
-        # make sure a new grade was added!
-        response = self.client.get('/api/grades/')
-        number_of_grades = len(json.loads(response.content))
-        self.assertEqual(number_of_grades, 1)
-
-    def test_put_request(self):
-        """
-        use the api to modify an existing grade
-        """
-        # let's first post a grade
-        self.login_admin_user()
-        course = self.create_test_course()
-        marking_period = self.create_test_marking_period()
-        student = self.create_test_student()
-        data = {
-            'student_id': student.id,
-            'course' : course.id,
-            'marking_period' : marking_period.id,
-            'grade' : 70,
-            'override_final' : False,
-            'comment' : 'a decent job, needs some work',
-        }
-        response = self.client.post('/api/grades/', data)
-        grade_data = json.loads(response.content)
-
-        # change the grade and a comment
-        grade_data['grade'] = 100
-        grade_data['comment'] = "much better dude!"
-
-        # put the change
-        response = self.client.put(
-            '/api/grades/%s/' % grade_data['id'],
-             json.dumps(grade_data),
-             content_type='application/json',
-        )
         self.assertEqual(response.status_code, 200)
-        new_grade = json.loads(response.content)
-
-        # check if it updated in the response!
-        self.assertEqual(new_grade['grade'], '100')
-
-
-
-
-

@@ -1,24 +1,20 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
-from ecwsp.schedule.models import MarkingPeriod, Course
+from ecwsp.schedule.models import MarkingPeriod, Course, CourseSection, CourseEnrollment
 from ecwsp.sis.models import SchoolYear, Student, Cohort
 from datetime import datetime
 from django.db import connection
+from rest_framework.test import APITestCase
 
-class APITestBase(TestCase):
-    """
-    the base TestCase for our API
-    """
 
-    # Instructions - run the API test with the following command:
-    # ./manage.py test api
+class APITest(APITestCase):
+    """
+    test the implementation of our API
+
+    using Django Rest Framework's testing base (which extends Django's)
+    """
 
     def setUp(self):
-        """
-        Everyone needs a test client, or so says the django doc!
-        """
-        self.client = Client()
-
         # create a normal user
         self.user = User.objects.create(
             username='normaluser',
@@ -32,18 +28,6 @@ class APITestBase(TestCase):
             email='user2@email.com',
             password='bar'
         )
-
-    def login_normal_user(self):
-        """
-        log in a non-admin user for the current client test session
-        """
-        self.client.login(username='normaluser', password='foo')
-
-    def login_admin_user(self):
-        """
-        log in an admin user for the current client test session
-        """
-        self.client.login(username='adminuser', password='bar')
 
     def create_test_marking_period(self):
         """
@@ -79,18 +63,31 @@ class APITestBase(TestCase):
         new_course.save()
         return new_course
 
-    def create_test_cohort(self):
+    def create_test_course_section(self):
         """
-        create a sample cohort for testing purposes
+        create a course_section for testing purposes
         """
-        new_cohort = Cohort(name="PROLES", primary=True)
-        new_cohort.save()
-        return new_cohort
+        new_section = CourseSection(
+            course = self.create_test_course(),
+            name = "Section 1A",
+            #marking_period = self.create_test_marking_period(),
+            )
+        new_section.save()
+        return new_section
+
+    def enroll_student_in_test_section(self):
+        enrollement = CourseEnrollment(
+            section = self.create_test_course_section(),
+            user = create_test_student(),
+            )
+        enrollement.save()
+        return enrollement()
 
     def create_test_student(self):
         """
         create a sample student for testing purposes
         """
+        
         # student cohort table is not created in the test env
         # why? I have no idea, but I did find a past example of testing
         # in the Attendance app where this was needed
@@ -108,8 +105,3 @@ class APITestBase(TestCase):
         new_student = Student(first_name="Joe", last_name="Schmo")
         new_student.save()
         return new_student
-
-
-
-
-
