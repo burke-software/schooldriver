@@ -38,7 +38,7 @@ class GradeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
-    filter_fields = ('course',)
+    filter_fields = ('course', 'marking_period__school_year')
 
     def initial(self, request, *args, **kwargs):
         super(GradeViewSet, self).initial(request, *args, **kwargs)
