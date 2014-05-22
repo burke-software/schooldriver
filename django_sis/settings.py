@@ -1,31 +1,22 @@
-import os,sys, logging
+import os, sys, logging
 
-# PATHS
-from os.path import join, abspath, dirname
-here = lambda *x: join(abspath(dirname(__file__)), *x)
-PROJECT_ROOT = here("..",)
-root = lambda *x: join(abspath(PROJECT_ROOT), *x)
-
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = (
-    root('templates/'),
+    os.path.join(BASE_DIR, 'templates/'),
 )
 STATICFILES_DIRS = (
-    root('static_files/'),
-    ('gumby_css', root('components/css/')),
+    os.path.join(BASE_DIR, 'static_files/'),
+    ('gumby_css', os.path.join(BASE_DIR, 'components/css/')),
 )
-STATIC_ROOT = root('static/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = root('media/')
-CKEDITOR_UPLOAD_PATH = root('media/uploads')
-BOWER_COMPONENTS_ROOT = root('components/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+CKEDITOR_UPLOAD_PATH = os.path.join(BASE_DIR, 'media/uploads')
+BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components/')
 
 # Django stuff
 LOGIN_REDIRECT_URL = "/"
-ADMINS = (
-    ('Admin', 'someone@example.com'),
-)
-MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -80,6 +71,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pagination.middleware.PaginationMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
@@ -330,7 +322,6 @@ INSTALLED_APPS = (
     'ecwsp.work_study',
     'ecwsp.engrade_sync',
     'ecwsp.benchmarks',
-    'ecwsp.standard_test',
     'ecwsp.benchmark_grade',
     'ecwsp.naviance_sso',
     # These can be enabled if desired but the default is off
