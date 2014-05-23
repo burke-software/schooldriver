@@ -1,7 +1,7 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
-from django.utils import simplejson
+import simplejson
 from django.db import transaction
 from django.db.models import Q
 from django.forms.models import modelformset_factory
