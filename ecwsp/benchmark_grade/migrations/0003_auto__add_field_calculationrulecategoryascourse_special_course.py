@@ -10,9 +10,9 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'CalculationRuleCategoryAsCourse.special_course'
         db.add_column(u'benchmark_grade_calculationrulecategoryascourse', 'special_course',
-                      # There's not really a sane default value for this. MySQL accepted default=None,
-                      # but SQLite does not.
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['schedule.Course']),
+                      # Don't want to allow nulls or blanks, but there's no sane default value;
+                      # Gradebook will just 500 if CalculationRule isn't set up properly
+                      self.gf('django.db.models.fields.related.ForeignKey')(null=True, blank=True, to=orm['schedule.Course']),
                       keep_default=False)
 
 
