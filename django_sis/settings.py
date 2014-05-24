@@ -354,6 +354,7 @@ INSTALLED_APPS = (
 
 COMPRESS_PRECOMPILERS = (
    ('text/coffeescript', 'coffee --compile --stdio'),
+   ('text/x-scss', 'sass --scss {infile} {outfile}'),
 )
 
 # this will load additional settings from the file settings_local.py
