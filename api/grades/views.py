@@ -38,22 +38,6 @@ class GradeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
-    filter_fields = ('course',)
-
-    def initial(self, request, *args, **kwargs):
-        super(GradeViewSet, self).initial(request, *args, **kwargs)
-        if 'course' in request.QUERY_PARAMS:
-            """
-            if 'course' is passed in the query params, make sure that
-            every student has a grade for that course, even if it is null
-            """
-            try:
-                section_id = request.QUERY_PARAMS['course']
-                course_section = CourseSection.objects.get(id=section_id)
-                if course_section:
-                    course_section.populate_all_grades()
-            except:
-                pass
-
+    filter_fields = ('course', 'marking_period__school_year')
 
             

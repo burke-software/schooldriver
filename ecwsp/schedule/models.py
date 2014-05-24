@@ -157,6 +157,10 @@ class CourseEnrollment(models.Model):
     class Meta:
         unique_together = (("section", "user"),)
 
+    def save(self, *args, **kwargs):
+        super(CourseEnrollment, self).save(*args, **kwargs)
+        self.section.populate_all_grades()
+
     def cache_grades(self):
         """ Set cache on both grade and numeric_grade """
         grade = self.calculate_grade_real()
@@ -473,6 +477,10 @@ class CourseSection(models.Model):
                     marking_period = marking_period,
                     course_section = self
                     )
+
+    def save(self, *args, **kwargs):
+        super(CourseSection, self).save(*args, **kwargs)
+        self.populate_all_grades()
     
 
 class OmitCourseGPA(models.Model):

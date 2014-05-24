@@ -8,6 +8,10 @@
     {% endcompress %}
     <script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
     <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
+    <script type="text/javascript">
+        var edit = '{{ edit }}'
+        var edit_final = '{{ edit_final }}'
+    </script>
 {% endblock %}
 
 {% block title %}
@@ -30,25 +34,8 @@
 {% verbatim %}
 <button ng-click="showComments()" class="btn btn-primary">{{ comment_button_text }}</button>
 
-<ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="student in students" columns="columns">
+<ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="row in rows" columns="columns">
 </ui-handsontable>
 
 {% endverbatim %}
-<script>
-var app = angular.module('angular_sis'); 
-app.config(['$httpProvider', function($httpProvider) {
-    $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
-}]);
-app.config(function(RestangularProvider) {
-    RestangularProvider.setBaseUrl('/api');
-    RestangularProvider.setRequestSuffix('/');
-});
-app.config(function($routeProvider, $locationProvider) {
-    $routeProvider
-    .when('/grades/course_grades/:course_id/', {
-        controller: 'CourseGradesController'
-    });
-    $locationProvider.html5Mode(true);
-});
-</script>
 {% endblock %}

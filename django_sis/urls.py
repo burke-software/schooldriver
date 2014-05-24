@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import admin
 from dajaxice.core import dajaxice_autodiscover, dajaxice_config
-from api.routers import router as api_router
+from api.routers import api_urls
 
 
 admin.autodiscover()
@@ -32,7 +32,7 @@ urlpatterns = patterns('',
     url(dajaxice_config.dajaxice_url, include('ecwsp.dajaxice_urls')),
     (r'^reports/', include('scaffold_report.urls')),
     url(r"^su/", include("django_su.urls")),
-    url(r'^api/', include(api_router.urls)),
+    url(r'^api/', include(api_urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 )
 
