@@ -408,7 +408,7 @@ class CourseSectionTeacher(models.Model):
         unique_together = ('teacher', 'coursesection')
 
 class CourseSection(models.Model):
-    course = models.ForeignKey(Course)
+    course = models.ForeignKey(Course, related_name='sections')
     is_active = models.BooleanField(default=True)
     name = models.CharField(max_length=255)
     marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
