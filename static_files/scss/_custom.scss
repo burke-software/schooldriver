@@ -1,0 +1,27 @@
+//@import url(//fonts.googleapis.com/css?family=PT+Sans:400,700,700italic,400italic|PT+Sans+Narrow:400,700);
+@import url(//fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic);
+
+html, body {
+	@extend .full-height;
+}
+
+body {
+	padding-top: 50px;
+}
+
+.full-height {
+	height: 100%;
+}
+
+.sidebar {
+	@extend .full-height;
+	background-color: $gray-lighter;
+	padding-left: 0;
+	padding-right: 0;
+
+	ul {
+		ul {
+			background-color: #ddd;
+		}
+	}
+}
