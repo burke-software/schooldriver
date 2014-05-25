@@ -29,7 +29,7 @@ class CourseSectionInline(admin.StackedInline):
 class CourseAdmin(admin.ModelAdmin):
     list_display = ['fullname', 'grades_link', 'department', 'credits', 'graded', 'is_active']
     search_fields = ['fullname', 'shortname', 'description', 'coursesection__teachers__username']
-    list_filter = ['level', 'is_active', 'graded', 'homeroom', 'department', 'coursesection__teachers']
+    list_filter = ['level', 'is_active', 'graded', 'homeroom', 'department']
     inlines = [CourseSectionInline]
     
     def save_model(self, request, obj, form, change):
