@@ -1,8 +1,10 @@
 from django.conf.urls import patterns
 from .views import transcript_nonofficial, photo_flash_card, thumbnail, paper_attendance
 from .views import user_preferences, view_student, ajax_include_deleted, import_naviance, increment_year, increment_year_confirm, StudentViewDashletView
+from responsive_dashboard.views import generate_dashboard
 
 urlpatterns = patterns('',
+    (r'^$', generate_dashboard, {'app_name': 'sis'}),
     (r'^reports/transcript_nonofficial/(?P<student_id>\d+)/$', transcript_nonofficial),
     (r'^flashcard/$', photo_flash_card),
     (r'^flashcard/(?P<year>\d+)/$', photo_flash_card),

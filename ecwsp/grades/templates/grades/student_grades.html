@@ -2,6 +2,11 @@
 {% load staticfiles %}
 {% load compress %}
 
+{% block breadcrumbs %}
+  <li><a href="../">Grades Dashboard</a></li>
+  <li>{{ object }} Grades</li>
+{% endblock %}
+
 {% block extra_head %}
     {% compress js %}
     <script type="text/coffeescript" charset="utf-8" src="{% static "grades/app.coffee" %}"></script>
