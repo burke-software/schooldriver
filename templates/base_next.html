@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
+    <!-- <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/css/bootstrap.min.css" /> -->
 	{% compress css %}
 	<link type="text/x-scss" href="{% static 'styles.scss' %}" rel="stylesheet" charset="utf-8" />
 	{% endcompress %}
@@ -16,6 +16,7 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.4.0/restangular.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-route.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{% static "js/ajax_select.js" %}"></script>
     <script type="text/javascript">
         var csrf_token = '{{ csrf_token|escapejs }}'
     </script>
@@ -28,7 +29,7 @@
 </head>
 
 <body>
-    <div class="navcontain">
+    <!-- <div class="navcontain">
 <nav class="navbar" id="nav1" gumby-fixed="top">
   <div class="sixteen colgrid">
     {% include "gumby/nav.html" %}
@@ -92,8 +93,8 @@
 </div>
   </div>
 </nav>
-</div>
-<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+</div> -->
+<div class="navbar navbar-default" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -102,122 +103,132 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">django-sis</a>
+            <a class="navbar-brand" href="#">Schooldriver</a>
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Dashboard</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href="#">Profile</a></li>
-                <li><a href="#">Help</a></li>
-            </ul>
-            <form class="navbar-form navbar-right">
-                <input type="text" class="form-control" placeholder="Look up student">
-            </form>
+          {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
+          <li class="{% if app_name == "sis" %}active {% endif %}">
+                <a href="javascript:void(0);" data-toggle="collapse" data-target="#student-dropdown">Student</a>
+                <div class="collapse" id="student-dropdown">
+                  <ul class="nav nav-pills nav-stacked">
+                      <li><a href="/sis/dashboard/">{% trans 'Dashboard' %}</a></li>
+                    {% if perms.sis.change_student or perms.sis.view_student %}
+                      <li><a href="{% url "admin:sis_student_changelist" %}">{% trans 'Edit Students' %}</a></li>
+                    {% endif %}
+                    {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
+                    {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
+                        <li>
+                        <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Attendance' %} </a>
+                        </li>
+                    {% endif %}
+                        <li>
+                        <a href="/attendance/daily_attendance_report/">Daily Attendance Report</a>
+                        </li>
+                    {% endif %}
+                    {% if perms.sis.reports %}
+                        <li><a href="/reports/student_report/">{% trans 'Reports' %}</a></li>
+                    {% endif %}
+                  </ul>
+                </div>
+            </li>
+          {% endif %}
+
+          {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %}
+          {% if perms.schedule.change_course or perms.grades.change_own_grade %}
+            <li>
+              <a href="javascript:void(0);" data-toggle="collapse" data-target="#courses-dropdown"> {% trans 'Courses' %} </a>
+              <div class="collapse" id="courses-dropdown">
+                <ul class="nav nav-pills nav-stacked">
+                      <li>
+                          <a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a>
+                      </li>
+                    {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
+                      <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
+                    {% endif %}
+                    {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
+                    {% if perms.omr.change_test or perms.omr.teacher_test %}
+                      <li>
+                        <a href="/omr/dashboard"> OMR </a>
+                      </li>
+                    {% endif %}
+                    {% endif %}
+                </ul>
+              </div>
+            </li>
+          {% endif %}
+          {% endif %}
+
+          {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
+          {% if perms.discipline.change_studentdiscipline %}
+          <li>
+              <a href="/discipline/dashboard/"> {% trans 'Discipline' %} </a>
+          </li>
+          {% endif %}
+          {% endif %}
+
+          {% if perms.counseling.add_referralform and 'ecwsp.counseling' in settings.INSTALLED_APPS %}
+          <li>
+              <a href="/counseling/dashboard"> Counseling </a>
+          </li>
+          {% endif %}
+
+          {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
+          <li>
+              <a href="/work_study/dashboard/"> CWSP </a>
+          </li>
+          {% endif %}{% endif %}
+
+
+          {% if perms.alumni.change_alumni and 'ecwsp.alumni' in settings.INSTALLED_APPS %}
+          <li>
+              <a href="/alumni/dashboard/"> Alumni </a>
+          </li>
+          {% endif %}
+
+          {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
+          <li>
+              <a href="/admissions/dashboard/"> Admissions </a>
+          </li>
+          {% endif %}
+
+          {% if perms.alumni.change_alumni or perms.auth.change_user or perms.administration.change_configuration or perms.engrade_sync.change_coursesync %}
+          <li>
+              <a href="/administration/dashboard/"> Management </a>
+          </li>
+          {% endif %}
+      </ul>
+<div class="admin-title view_student">
+  <form id="form_view_student" class="view_student" action="/sis/view_student/" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" />
+    <input type="search" placeholder="Lookup Student" name="view_student_text" id="id_view_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student search input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
+    <input type="hidden" name="student" id="id_view_student" value="">
+    <div id="id_view_student_on_deck" class="results_on_deck"><div></div></div>
+    <script type="text/javascript">//<![CDATA[
+      jQuery(document).ready(function($){
+        addAutoComplete("id_view_student", function(html_id) {
+          $("#"+html_id).autocompleteselect({
+            minLength: 1,
+            source: '/ajax_select/ajax_lookup/dstudent',
+          });
+        });
+        $("#id_view_student_on_deck").bind('added',function() {
+          $('#form_view_student').submit()
+        });
+      });//]]>
+    </script>
+  </form>
+</div>
         </div>
     </div>
 </div>
 <div class="container-fluid full-height">
-    <div class="row full-height">
-        <div class="col-sm-3 col-md-2 sidebar">
-            <ul class="nav nav-pills nav-stacked">
-                {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
-                <li class="{% if app_name == "sis" %}active {% endif %}">
-                      <a href="javascript:void(0);" data-toggle="collapse" data-target="#student-dropdown">Student</a>
-                      <div class="collapse" id="student-dropdown">
-                        <ul class="nav nav-pills nav-stacked">
-                            <li><a href="/sis/dashboard/">{% trans 'Dashboard' %}</a></li>
-                          {% if perms.sis.change_student or perms.sis.view_student %}
-                            <li><a href="{% url "admin:sis_student_changelist" %}">{% trans 'Edit Students' %}</a></li>
-                          {% endif %}
-                          {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
-                          {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
-                              <li>
-                              <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Attendance' %} </a>
-                              </li>
-                          {% endif %}
-                              <li>
-                              <a href="/attendance/daily_attendance_report/">Daily Attendance Report</a>
-                              </li>
-                          {% endif %}
-                          {% if perms.sis.reports %}
-                              <li><a href="/reports/student_report/">{% trans 'Reports' %}</a></li>
-                          {% endif %}
-                        </ul>
-                      </div>
-                  </li>
-                {% endif %}
-
-                {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %}
-                {% if perms.schedule.change_course or perms.grades.change_own_grade %}
-                  <li>
-                    <a href="javascript:void(0);" data-toggle="collapse" data-target="#courses-dropdown"> {% trans 'Courses' %} </a>
-                    <div class="collapse" id="courses-dropdown">
-                      <ul class="nav nav-pills nav-stacked">
-                            <li>
-                                <a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a>
-                            </li>
-                          {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
-                            <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
-                          {% endif %}
-                          {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
-                          {% if perms.omr.change_test or perms.omr.teacher_test %}
-                            <li>
-                              <a href="/omr/dashboard"> OMR </a>
-                            </li>
-                          {% endif %}
-                          {% endif %}
-                      </ul>
-                    </div>
-                  </li>
-                {% endif %}
-                {% endif %}
-
-                {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
-                {% if perms.discipline.change_studentdiscipline %}
-                <li>
-                    <a href="/discipline/dashboard/"> {% trans 'Discipline' %} </a>
-                </li>
-                {% endif %}
-                {% endif %}
-
-                {% if perms.counseling.add_referralform and 'ecwsp.counseling' in settings.INSTALLED_APPS %}
-                <li>
-                    <a href="/counseling/dashboard"> Counseling </a>
-                </li>
-                {% endif %}
-
-                {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
-                <li>
-                    <a href="/work_study/dashboard/"> CWSP </a>
-                </li>
-                {% endif %}{% endif %}
-
-
-                {% if perms.alumni.change_alumni and 'ecwsp.alumni' in settings.INSTALLED_APPS %}
-                <li>
-                    <a href="/alumni/dashboard/"> Alumni </a>
-                </li>
-                {% endif %}
-
-                {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
-                <li>
-                    <a href="/admissions/dashboard/"> Admissions </a>
-                </li>
-                {% endif %}
-
-                {% if perms.alumni.change_alumni or perms.auth.change_user or perms.administration.change_configuration or perms.engrade_sync.change_coursesync %}
-                <li>
-                    <a href="/administration/dashboard/"> Management </a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-        <div class="col-sm-9 col-md-10 main">
-            <h1>{% block title %}{% endblock %}</h1>
-            {% block content %}{% endblock %}
-        </div>
+  <div class="row">
+    <div class="col-xs-12 main">
+      <h1>{% block title %}{% endblock %}</h1>
+      {% block content %}{% endblock %}
     </div>
+  </div>
 </div>
 </body>
 </html>

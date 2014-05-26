@@ -1,0 +1,53 @@
+/* Fonts */
+
+// Import Google Web Fonts
+//@import url('//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700');
+
+
+// Set local icon font
+// @font-face {
+//   font-family: '#{$icons}';
+//   font-style: normal;
+//   font-weight: 400;
+//   src: url(../fonts/icons/#{$icons}.eot);
+//   src: url('../fonts/icons/#{$icons}.eot?#iefix') format('ie9-skip-eot'),
+//        url('../fonts/icons/#{$icons}.woff') format('woff'),
+//        url('../fonts/icons/#{$icons}.ttf')  format('truetype');
+// }
+
+@font-face {
+ font-family: $default-font;
+ font-style: normal;
+ font-weight: 400;
+ src: url(/static/fonts/fira-sans-eot/FiraSans-Regular.eot);
+ src: url('/static/fonts/fira-sans-eot/FiraSans-Regular.eot?#iefix') format('ie9-skip-eot'),
+      url('/static/fonts/fira-sans-woff/FiraSans-Regular.woff') format('woff');
+}
+
+@font-face {
+ font-family: $default-font-italic;
+ font-style: italic;
+ font-weight: 400;
+ src: url(/static/fonts/fira-sans-eot/FiraSans-RegularItalic.eot);
+ src: url('/static/fonts/fira-sans-eot/FiraSans-RegularItalic.eot?#iefix') format('ie9-skip-eot'),
+      url('/static/fonts/fira-sans-woff/FiraSans-RegularItalic.woff') format('woff');
+}
+
+@font-face {
+ font-family: $default-font-bold;
+ font-style: normal;
+ font-weight: 700;
+ src: url(/static/fonts/fira-sans-eot/FiraSans-Bold.eot);
+ src: url('/static/fonts/fira-sans-eot/FiraSans-Bold.eot?#iefix') format('ie9-skip-eot'),
+      url('/static/fonts/fira-sans-woff/FiraSans-Bold.woff') format('woff');
+}
+
+@font-face {
+ font-family: $default-font-bold-italic;
+ font-style: normal;
+ font-weight: 700;
+ src: url(/static/fonts/fira-sans-eot/FiraSans-BoldItalic.eot);
+ src: url('/static/fonts/fira-sans-eot/FiraSans-BoldItalic.eot?#iefix') format('ie9-skip-eot'),
+      url('/static/fonts/fira-sans-woff/FiraSans-BoldItalic.woff') format('woff');
+}
+      //url('/static/fonts/fira-sans-woff/FiraSans-Regular.ttf')  format('truetype');
