@@ -22,11 +22,8 @@ blink {
   30% { opacity: 0 }
   50% { 
   	opacity: 100;
-  	font-size: 150%;
-  	font-weight: 700;
   	color: #fff;
-  	top: -5px;
-  	text-shadow: 0px 8px 5px rgba(0,0,0, 1);
+  	text-shadow: 0px 10px 5px rgba(0,0,0, 1);
   }
   70% { opacity: 0; }
 }
@@ -41,11 +38,8 @@ blink {
   30% { opacity: 0 }
   50% { 
   	opacity: 100;
-  	font-size: 150%;
-  	font-weight: 700;
   	color: #fff; 
-  	top: -5px;
-  	text-shadow: 0px 8px 5px rgba(0,0,0, 1);
+  	text-shadow: 0px 10px 5px rgba(0,0,0, 1);
   }
   70% { opacity: 0; }
 }
@@ -61,10 +55,10 @@ blink {
 	font-weight: 600;
 }
 
-#form_view_student {
+#lookup-student-form {
 	margin-right: 5px;
 
-	#id_view_student_text {
+	#lookup-student {
 		border-radius: 25px;
 		color: #f2f2f2;
 		background-color: #191A1B;
@@ -75,6 +69,8 @@ blink {
 }
 
 #secondary-nav {
+	font-weight: 600;
+
 	&.navbar {
 		min-height: 40px;
 	}
@@ -83,6 +79,10 @@ blink {
 		padding-top: 10px;
 		padding-bottom: 10px;
 	}
+}
+
+.dropdown-toggle:hover .dropdown-menu {
+    display: block;    
 }
 
 // End nav

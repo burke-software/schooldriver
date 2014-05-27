@@ -10,25 +10,17 @@
   <ul class="fourteen columns" style="float: right;">
     {% if perms.sis.change_student or perms.sis.view_student %}
     <li class="field">
-        <div class="admin-title view_student" style="heig;">
-            <form id="form_view_student" style="margin-bottom: 0px;" class="view_student" action="/sis/view_student/" method="post">
-                <input type='hidden' name='csrfmiddlewaretoken' value='RgVLrCUEmKq7vd7puOH2tlouKv7U5GSv' />
-                <input type="search" style="width:100%;" placeholder="Lookup Student" name="view_student_text" id="id_view_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student search input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
-                <input type="hidden" name="student" id="id_view_student" value="">
-                <div id="id_view_student_on_deck" style="display: none;" class="results_on_deck"><div></div></div>
-                <script type="text/javascript">//<![CDATA[
-                jQuery(document).ready(function($){
-                        addAutoComplete("id_view_student", function(html_id) {
-                                $("#"+html_id).autocompleteselect({
-                                        minLength: 1,
-                                        source: '/ajax_select/ajax_lookup/dstudent',
-                                });
-                        });
-                $("#id_view_student_on_deck").bind('added',function() {
-                    $('#form_view_student').submit()
-                });
-                });//]]>
-                </script>
+        <div class="admin-title view_student">
+            <form id="form_view_student" style="margin-bottom: 0px;" class="view_student">
+              <input id="id_view_student_text" class="ui-autocomplete-input view_student search input" type="search" placeholder="Lookup Student" autocomplete="off" aria-autocomplete="list" aria-haspopup="true" style="width:100%;" role="textbox" name="view_student_text" />
+              <script>
+                  $('#id_view_student_text').yourlabsAutocomplete({
+                      url: '/autocomplete/StudentLookupStudentAutocomplete/',
+                      choiceSelector: 'a',
+                  }).input.bind('selectChoice', function(e, choice, autocomplete) {
+                      window.location.href = choice.attr('href');
+                  });
+              </script>
             </form>
         </div>
 

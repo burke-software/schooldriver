@@ -18,6 +18,7 @@
   <script type="text/javascript" src="{% static "ajax_select/js/ajax_select.js" %}"></script>
   <script type="text/javascript" src="{% static "js/jquery.multiselect.js" %}"></script>
   <script type="text/javascript" src="{% static "js/jquery.multiselect.filter.js" %}"></script>
+  {% include 'autocomplete_light/static.html' %}
   <script>
     $.fn.simple_multiselect = $.fn.multiselect;
     delete $.fn.multiselect;

@@ -109,6 +109,7 @@ BOWER_INSTALLED_APPS = (
     'jquery-color',
     'angular-ui-handsontable',
     'bootstrap-sass-official',
+    'bootstrap-hover-dropdown',
 )
 
 #GRAPPELLI

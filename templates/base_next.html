@@ -19,6 +19,7 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.4.0/restangular.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-route.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{% static 'bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js' %}"></script>
     {% include 'autocomplete_light/static.html' %}
     <script type="text/javascript">
         var csrf_token = '{{ csrf_token|escapejs }}'
@@ -46,53 +47,45 @@
             <ul class="nav navbar-nav navbar-right">
           {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
           <li class="{% if app_name == "sis" %}active {% endif %}">
-                <a href="javascript:void(0);" data-toggle="collapse" data-target="#student-dropdown">Student</a>
-                <div class="collapse" id="student-dropdown">
-                  <ul class="nav nav-pills nav-stacked">
-                      <li><a href="/sis/dashboard/">{% trans 'Dashboard' %}</a></li>
-                    {% if perms.sis.change_student or perms.sis.view_student %}
-                      <li><a href="{% url "admin:sis_student_changelist" %}">{% trans 'Edit Students' %}</a></li>
-                    {% endif %}
-                    {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
-                    {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
-                        <li>
-                        <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Attendance' %} </a>
-                        </li>
-                    {% endif %}
-                        <li>
-                        <a href="/attendance/daily_attendance_report/">Daily Attendance Report</a>
-                        </li>
-                    {% endif %}
-                    {% if perms.sis.reports %}
-                        <li><a href="/reports/student_report/">{% trans 'Reports' %}</a></li>
-                    {% endif %}
-                  </ul>
-                </div>
-            </li>
+            <a href="javascript:void(0);" class="dropdown-toggle" data-hover="dropdown">Student</a>
+            <ul class="dropdown-menu">
+                <li><a href="/sis/dashboard/">{% trans 'Dashboard' %}</a></li>
+              {% if perms.sis.change_student or perms.sis.view_student %}
+                <li><a href="{% url "admin:sis_student_changelist" %}">{% trans 'Edit Students' %}</a></li>
+              {% endif %}
+              {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
+              {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
+                  <li>
+                  <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Attendance' %} </a>
+                  </li>
+              {% endif %}
+                  <li>
+                  <a href="/attendance/daily_attendance_report/">Daily Attendance Report</a>
+                  </li>
+              {% endif %}
+              {% if perms.sis.reports %}
+                  <li><a href="/reports/student_report/">{% trans 'Reports' %}</a></li>
+              {% endif %}
+            </ul>
+          </li>
           {% endif %}
 
           {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %}
           {% if perms.schedule.change_course or perms.grades.change_own_grade %}
-            <li>
-              <a href="javascript:void(0);" data-toggle="collapse" data-target="#courses-dropdown"> {% trans 'Courses' %} </a>
-              <div class="collapse" id="courses-dropdown">
-                <ul class="nav nav-pills nav-stacked">
-                      <li>
-                          <a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a>
-                      </li>
-                    {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
-                      <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
-                    {% endif %}
-                    {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
-                    {% if perms.omr.change_test or perms.omr.teacher_test %}
-                      <li>
-                        <a href="/omr/dashboard"> OMR </a>
-                      </li>
-                    {% endif %}
-                    {% endif %}
-                </ul>
-              </div>
-            </li>
+          <li>
+            <a href="javascript:void(0);" class="dropdown-toggle" data-hover="dropdown"> {% trans 'Courses' %} </a>
+            <ul class="dropdown-menu">
+              <li><a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a></li>
+            {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
+              <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
+            {% endif %}
+            {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
+            {% if perms.omr.change_test or perms.omr.teacher_test %}
+              <li><a href="/omr/dashboard"> OMR </a></li>
+            {% endif %}
+            {% endif %}
+            </ul>
+          </li>
           {% endif %}
           {% endif %}
 
@@ -136,20 +129,20 @@
           {% endif %}
       </ul>
       <div class="form-group">
-<div class="admin-title view_student">
-    <input id="lookup_student" type="text"/>
-    <script>
-        $('#lookup_student').yourlabsAutocomplete({
-            url: '/autocomplete/StudentLookupStudentAutocomplete/',
-            choiceSelector: 'a',
-        }).input.bind('selectChoice', function(e, choice, autocomplete) {
-            window.location.href = choice.attr('href');
-        });
-    </script>
-</div>
-          </div>
+        <form id="lookup-student-form" class="navbar-form navbar-right">
+            <input id="lookup-student" class="form-control" type="text" placeholder="Lookup Student" />
+            <script>
+                $('#lookup-student').yourlabsAutocomplete({
+                    url: '/autocomplete/StudentLookupStudentAutocomplete/',
+                    choiceSelector: 'a',
+                }).input.bind('selectChoice', function(e, choice, autocomplete) {
+                    window.location.href = choice.attr('href');
+                });
+            </script>
         </div>
+      </div>
     </div>
+</div>
 </div>
 <div id="secondary-nav" class="navbar navbar-inverse" role="navigation">
   <div class="container-fluid">
@@ -175,7 +168,7 @@
         </a>
       </li>
       <li class="dropdown">
-        <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown">
+        <a href="#" onClick="return false;" class="dropdown-toggle" data-hover="dropdown">
           <i class="fa fa-cogs"></i> 
           {% if user.first_name or user.last_name %}
               {{ user.first_name }} {{ user.last_name }}
