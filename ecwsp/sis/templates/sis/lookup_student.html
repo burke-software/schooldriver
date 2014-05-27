@@ -1,0 +1,3 @@
+{% for choice in choices %}
+<a class="block choice" href="{% url 'view-student' choice.id %}">{{ choice }}</a>
+{% endfor %}

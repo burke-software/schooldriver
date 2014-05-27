@@ -76,7 +76,9 @@
         </script>
     {% endblock %}
     <!-- EXTRAHEAD -->
-    {% block extrahead %}{% endblock %}
+    {% block extrahead %}
+        {% include 'autocomplete_light/static.html' %}
+    {% endblock %}
 </head>
 <body class="{% if is_popup %}grp-popup {% endif %}{% block bodyclass %}{% endblock %}{% if LANGUAGE_BIDI %} rtl{% endif %}">
     <div id="grp-container">

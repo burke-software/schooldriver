@@ -1,7 +1,8 @@
 # sis/context_processors.py
 from django.conf import settings
 import datetime
-from ecwsp.sis.models import MessageToStudent
+from .models import MessageToStudent
+from .forms import StudentLookupForm
 from ecwsp.administration.models import Configuration
 
 def global_stuff(request):
@@ -12,6 +13,7 @@ def global_stuff(request):
     school_name = Configuration.get_or_default('School Name', default="Unnamed School")
     school_color = Configuration.get_or_default('School Color', default="").value
     google_analytics_code = Configuration.get_or_default('Google Analytics').value
+    lookup_student_form = StudentLookupForm()
     
     # Only show messages if user just logged in
     user_messages = None
@@ -27,6 +29,7 @@ def global_stuff(request):
     return {
         "header_image": header_image,
         "school_name": school_name,
+        'lookup_student_form': lookup_student_form,
         "settings": settings,
         "school_color": school_color,
         'user_messages':user_messages,
