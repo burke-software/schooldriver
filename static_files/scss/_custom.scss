@@ -1,19 +1,88 @@
-@import url(//fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic);
-
-html, body {
-	@extend .full-height;
-}
+//@import url(//fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic);
 
 body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
 
-.full-height {
-	height: 100%;
+// Nav
+
+blink {
+  -webkit-animation: blink 3s step-end infinite;
+  animation: blink 3s step-end infinite
+}
+ 
+@-webkit-keyframes blink {
+  0% { color: #f00; }
+  5% { color: #ffa500; }
+  10% { color: #ff0; }
+  15% { color: #0f0; }
+  20% { color: #00f; }
+  25% { color: #f0f; }
+  30% { opacity: 0 }
+  50% { 
+  	opacity: 100;
+  	font-size: 150%;
+  	font-weight: 700;
+  	color: #fff;
+  	top: -5px;
+  	text-shadow: 0px 8px 5px rgba(0,0,0, 1);
+  }
+  70% { opacity: 0; }
+}
+ 
+@keyframes blink {
+  0% { color: #f00; }
+  5% { color: #ffa500; }
+  10% { color: #ff0; }
+  15% { color: #0f0; }
+  20% { color: #00f; }
+  25% { color: #f0f; }
+  30% { opacity: 0 }
+  50% { 
+  	opacity: 100;
+  	font-size: 150%;
+  	font-weight: 700;
+  	color: #fff; 
+  	top: -5px;
+  	text-shadow: 0px 8px 5px rgba(0,0,0, 1);
+  }
+  70% { opacity: 0; }
+}
+
+
+#main-nav {
+	margin-bottom: 0;
 }
 
 .navbar-default .navbar-nav > li > a {
 	text-shadow: 0 1px 2px #191a1b, 0 1px 0 #191a1b;
 	text-transform: uppercase;
+	font-weight: 600;
 }
+
+#form_view_student {
+	margin-right: 5px;
+
+	#id_view_student_text {
+		border-radius: 25px;
+		color: #f2f2f2;
+		background-color: #191A1B;
+		border: 1px solid #000;
+		outline: none;
+		box-shadow: none;
+	}
+}
+
+#secondary-nav {
+	&.navbar {
+		min-height: 40px;
+	}
+
+	&.navbar-inverse .navbar-nav > li > a {
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+}
+
+// End nav
