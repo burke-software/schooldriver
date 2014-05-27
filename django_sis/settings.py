@@ -144,31 +144,6 @@ if GAPPS:
 
 AUTHENTICATION_BACKENDS += ('django_su.backends.SuBackend',)
 
-#Django AJAX selects
-AJAX_LOOKUP_CHANNELS = {
-    # the simplest case, pass a DICT with the model and field to search against :
-    'student' : ('ecwsp.sis.lookups', 'StudentLookup'),
-    'all_student' : ('ecwsp.sis.lookups', 'AllStudentLookup'),
-    'dstudent' : ('ecwsp.sis.lookups', 'StudentLookupSmall'),
-    'faculty' : ('ecwsp.sis.lookups', 'FacultyLookup'),
-    'faculty_user' : ('ecwsp.sis.lookups', 'FacultyUserLookup'),
-    'attendance_quick_view_student': ('ecwsp.attendance.lookups', 'AttendanceAddStudentLookup'),
-    'emergency_contact' : ('ecwsp.sis.lookups', 'EmergencyContactLookup'),
-    'attendance_view_student': ('ecwsp.attendance.lookups', 'AttendanceStudentLookup'),
-    'discstudent' : ('ecwsp.discipline.lookups', 'StudentWithDisciplineLookup'),
-    'discipline_view_student': ('ecwsp.discipline.lookups', 'DisciplineViewStudentLookup'),
-    'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
-    'site': ('ecwsp.volunteer_track.lookups', 'SiteLookup'),
-    'site_supervisor': ('ecwsp.volunteer_track.lookups', 'SiteSupervisorLookup'),
-    'theme': ('ecwsp.omr.lookups', 'ThemeLookup'),
-    'studentworker' : ('ecwsp.work_study.lookups', 'StudentLookup'),
-    'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
-    'course': {'model':'schedule.course', 'search_field':'fullname'},
-    'day': ('ecwsp.schedule.lookups','DayLookup'),
-    'company'  : {'model':'work_study.workteam', 'search_field':'team_name'},
-    'benchmark' : ('ecwsp.omr.lookups', 'BenchmarkLookup'),
-}
-
 #CKEDITOR
 CKEDITOR_MEDIA_PREFIX = "/static/ckeditor/"
 CKEDITOR_UPLOAD_PATH = MEDIA_ROOT + "uploads"
@@ -364,10 +339,6 @@ try:  # prefix cache based on school name to avoid collisions.
 except NameError:
     pass # Not using cache
 
-# must do this after importing settings_local
-if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
-    AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
-
 if DEBUG:
     CELERY_ALWAYS_EAGER = True
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
@@ -422,6 +393,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'api',
     'compressor',
+    'autocomplete_light',
 ) + INSTALLED_APPS
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:

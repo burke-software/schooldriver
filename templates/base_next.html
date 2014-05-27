@@ -19,7 +19,7 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.4.0/restangular.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-route.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="{% static "js/ajax_select.js" %}"></script>
+    {% include 'autocomplete_light/static.html' %}
     <script type="text/javascript">
         var csrf_token = '{{ csrf_token|escapejs }}'
     </script>
@@ -137,25 +137,15 @@
       </ul>
       <div class="form-group">
 <div class="admin-title view_student">
-  <form id="form_view_student" class="view_student navbar-form navbar-right" action="/sis/view_student/" method="post">
-    <input type="hidden" name="csrfmiddlewaretoken" />
-    <input type="search" placeholder="Lookup Student" name="view_student_text" id="id_view_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student search input form-control" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
-    <input type="hidden" name="student" id="id_view_student" value="">
-    <div id="id_view_student_on_deck" class="results_on_deck"><div></div></div>
-    <script type="text/javascript">//<![CDATA[
-      jQuery(document).ready(function($){
-        addAutoComplete("id_view_student", function(html_id) {
-          $("#"+html_id).autocompleteselect({
-            minLength: 1,
-            source: '/ajax_select/ajax_lookup/dstudent',
-          });
+    <input id="lookup_student" type="text"/>
+    <script>
+        $('#lookup_student').yourlabsAutocomplete({
+            url: '/autocomplete/StudentLookupStudentAutocomplete/',
+            choiceSelector: 'a',
+        }).input.bind('selectChoice', function(e, choice, autocomplete) {
+            window.location.href = choice.attr('href');
         });
-        $("#id_view_student_on_deck").bind('added',function() {
-          $('#form_view_student').submit()
-        });
-      });//]]>
     </script>
-  </form>
 </div>
           </div>
         </div>

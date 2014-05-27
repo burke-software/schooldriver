@@ -1,4 +1,4 @@
-from django.conf.urls import patterns
+from django.conf.urls import patterns, url
 from .views import transcript_nonofficial, photo_flash_card, thumbnail, paper_attendance
 from .views import user_preferences, view_student, ajax_include_deleted, import_naviance, increment_year, increment_year_confirm, StudentViewDashletView
 from responsive_dashboard.views import generate_dashboard
@@ -10,7 +10,7 @@ urlpatterns = patterns('',
     (r'^flashcard/(?P<year>\d+)/$', photo_flash_card),
     (r'^preferences/$', user_preferences),
     (r'^view_student/$', view_student),
-    (r'^view_student/(?P<id>\d+)/$', view_student),
+    url(r'^view_student/(?P<id>\d+)/$', view_student, name="view-student"),
     (r'^ajax_view_student_dashlet/(?P<pk>\d+)/$', StudentViewDashletView.as_view()),
     (r'^ajax_include_deleted/$', ajax_include_deleted),
     (r'^student/naviance/$', import_naviance),

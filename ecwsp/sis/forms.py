@@ -10,7 +10,9 @@ from tempfile import mkstemp
 
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
-from ecwsp.administration.models import * 
+from ecwsp.administration.models import *
+import autocomplete_light
+autocomplete_light.autodiscover()
 
 class StudentForm(forms.ModelForm):
     class Meta:
@@ -42,7 +44,8 @@ class DeletedStudentLookupForm(forms.Form):
 
 
 class StudentLookupForm(forms.Form):
-    student = AutoCompleteSelectField('dstudent')
+    student = autocomplete_light.ChoiceField('StudentAutocomplete')
+    
 
 class UploadFileForm(forms.Form):
     file  = forms.FileField()
