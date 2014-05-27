@@ -10,6 +10,7 @@ from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet
 from ecwsp.grades.models import Grade
 from ecwsp.discipline.models import DisciplineAction
+import autocomplete_light
 import datetime
 from decimal import Decimal
 from openpyxl.cell import get_column_letter
@@ -302,9 +303,8 @@ class CohortFilter(ModelMultipleChoiceFilter):
     compare_field_string = "cohorts__id"
 
 
-from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 class SelectSpecificStudentsForm(forms.Form):
-    select_students = AutoCompleteSelectMultipleField('dstudent', required=False)
+    select_students = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
 
 class SelectSpecificStudents(ModelMultipleChoiceFilter):
     model = Student

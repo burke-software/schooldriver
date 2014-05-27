@@ -1,21 +1,3 @@
-#       Copyright 2012 Burke Software and Consulting LLC
-#       Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
 from django import forms
 from django.contrib.admin import widgets as adminwidgets
 from django.conf import settings
@@ -23,8 +5,8 @@ from django.conf import settings
 from models import StudentAttendance, AttendanceStatus
 from ecwsp.sis.models import Student
 from ecwsp.sis.forms import TimeBasedForm
-from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 import datetime
+import autocomplete_light
 
 
 class StudentAttendanceForm(forms.ModelForm):
@@ -38,7 +20,7 @@ class StudentAttendanceForm(forms.ModelForm):
     status = forms.ModelChoiceField(widget=forms.Select(attrs={'class':'status',}), queryset=AttendanceStatus.objects.filter(teacher_selectable=True))
     
     
-class StudentMultpleAttendanceForm(forms.ModelForm):
+class StudentMultpleAttendanceForm(autocomplete_light.ModelForm):
     """ Form accepts multiple students """
     class Meta:
         model = StudentAttendance
@@ -47,7 +29,6 @@ class StudentMultpleAttendanceForm(forms.ModelForm):
             'time': adminwidgets.AdminTimeWidget(),
         }
         fields = ('date', 'status', 'time', 'notes', 'private_notes')
-    student = AutoCompleteSelectMultipleField('student')
     
     
 class CourseAttendanceForm(forms.Form):
@@ -71,7 +52,7 @@ class AttendanceViewForm(forms.Form):
     all_years = forms.BooleanField(required=False, help_text="If check report will contain all student records. Otherwise it will only show current year.")
     order_by = forms.ChoiceField(initial=0, choices=(('Date','Date'),('Status','Status'),))
     include_private_notes = forms.BooleanField(required=False)
-    student = AutoCompleteSelectField('attendance_view_student')
+    student = autocomplete_light.ChoiceField('StudentUserAutocomplete')
 
 
 class AttendanceDailyForm(forms.Form):

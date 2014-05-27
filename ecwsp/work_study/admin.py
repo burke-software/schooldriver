@@ -16,8 +16,8 @@ from ecwsp.work_study.forms import StudentForm, WorkTeamForm
 from ecwsp.administration.models import Configuration
 from django.contrib.auth.models import User
 from django.db.models import Q
-from ajax_select import make_ajax_form
 from custom_field.custom_field import CustomFieldAdmin
+import autocomplete_light
 
 import logging
     
@@ -241,7 +241,7 @@ admin.site.register(StudentWorkerRoute)
 admin.site.register(PresetComment)
 
 class StudentInteractionAdmin(admin.ModelAdmin):
-    form = make_ajax_form(StudentInteraction, dict(student='studentworker'))
+    form = autocomplete_light.modelform_factory(StudentInteraction)
     
     list_display = ('students', 'date', 'type', 'cra', 'comment_Brief', 'reported_by')
     list_filter = ['type', 'date', 'student','student__is_active']
@@ -321,7 +321,7 @@ admin.site.register(TimeSheet, TimeSheetAdmin)
 admin.site.register(CompanyHistory)
 
 class AttendanceAdmin(admin.ModelAdmin):
-    form = make_ajax_form(Attendance, dict(student='studentworker'))
+    form = autocomplete_light.modelform_factory(Attendance)
     search_fields = ['student__first_name', 'student__last_name', 'absence_date']
     list_editable = ('makeup_date','reason', 'fee', 'billed')
     list_filter = [('absence_date', DateRangeFilter), 'makeup_date', 'reason', 'fee', 'student','tardy']
@@ -343,7 +343,7 @@ admin.site.register(AttendanceReason)
 admin.site.register(Personality)
 
 class ClientVisitAdmin(admin.ModelAdmin):
-    form = make_ajax_form(ClientVisit, dict(student_worker='studentworker', supervisor='company_contact', company='company'))
+    form = autocomplete_light.modelform_factory(ClientVisit)
     fieldsets = [
         (None, {'fields': ['date', 'company', 'notify_mentors', 'notes',]}),
         ("DOL", {'fields': ['dol', 'follow_up_of', 'cra', 'student_worker', 'supervisor',

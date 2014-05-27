@@ -5,8 +5,6 @@ from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 from django.http import HttpResponseRedirect
 
-from ajax_select import make_ajax_form
-from ajax_select.fields import autoselect_fields_check_can_add
 from daterange_filter.filter import DateRangeFilter
 
 from ecwsp.sis.models import Faculty, Student

@@ -3,8 +3,6 @@ from django.contrib import admin
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
-from ajax_select import make_ajax_form
-from ajax_select.fields import autoselect_fields_check_can_add
 from django.db import IntegrityError
 
 from custom_field.custom_field import CustomFieldAdmin
@@ -92,11 +90,6 @@ class ApplicantAdmin(CustomFieldAdmin):
             'classes': ['collapse']}
         ),
     ]
-    
-    def get_form(self, request, obj=None, **kwargs):
-        form = super(ApplicantAdmin,self).get_form(request,obj,**kwargs)
-        autoselect_fields_check_can_add(form,self.model,request.user)
-        return form
     
     def add_view(self, request, form_url='', extra_context=None):
         levels = []

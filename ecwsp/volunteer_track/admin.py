@@ -1,28 +1,8 @@
-#   Copyright 2011-2012 David M Burke
-#   Author Callista Goss <calli@burkesoftware.com>
-#   Author David Burke <david@burkesoftware.com>
-#   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
-
 from ecwsp.volunteer_track.models import *
 from django.contrib import admin
-from ajax_select import make_ajax_form
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
+import autocomplete_light
 
 import datetime
 
@@ -77,14 +57,14 @@ class VolunteerSiteInline(admin.StackedInline):
     extra = 1
 
 class VolunteerSiteAdmin(admin.ModelAdmin):
-    form = make_ajax_form(VolunteerSite, dict(supervisor='site_supervisor'))
+    form = autocomplete_light.modelform_factory(VolunteerSite)
     list_display = ('volunteer','supervisor','site_approval','contract','hours_confirmed','inactive')
     actions = [approve_site,reject_site,time_fulfilled]
     inlines = [HoursInline]
 admin.site.register(VolunteerSite,VolunteerSiteAdmin)
 
 class VolunteerAdmin(admin.ModelAdmin):
-    form = make_ajax_form(Volunteer, dict(student='student'))
+    form = autocomplete_light.modelform_factory(Volunteer)
     list_display = ('student','hours_required','hours_completed')
     list_filter = ['sites', 'student',]
     search_fields = ['student__fname', 'student__lname',]

@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import m2m_changed
 from custom_field.custom_field import CustomFieldModel
-from ecwsp.sis.models import get_default_language, GradeLevel, SchoolYear
+from ecwsp.sis.models import get_default_language, GradeLevel, SchoolYear, Faculty
 
 import datetime
 
@@ -216,7 +216,7 @@ class Applicant(models.Model, CustomFieldModel):
     level = models.ForeignKey(AdmissionLevel, blank=True, null=True, on_delete=models.SET_NULL)
     checklist = models.ManyToManyField(AdmissionCheck, blank=True, null=True)
     application_decision = models.ForeignKey(ApplicationDecisionOption, blank=True, null=True, on_delete=models.SET_NULL,)
-    application_decision_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL,)
+    application_decision_by = models.ForeignKey(Faculty, blank=True, null=True, on_delete=models.SET_NULL,)
     withdrawn = models.ForeignKey(WithdrawnChoices, blank=True, null=True, on_delete=models.SET_NULL,)
     withdrawn_note = models.CharField(max_length=500, blank=True)
     first_to_college = models.BooleanField(default=False, blank=True)
