@@ -11,19 +11,18 @@ from django.utils.html import conditional_escape
 
 from django.conf import settings
 
+import autocomplete_light
 from decimal import Decimal
 from datetime import datetime, date
-from ajax_select.fields import AutoCompleteSelectMultipleField
 from itertools import chain
 
-class StudentForm(forms.ModelForm):
+class StudentForm(autocomplete_light.ModelForm):
     class Meta:
         model = StudentWorker
     
     ssn = USSocialSecurityNumberField(required=False)
     state = USStateField(required=False)
     zip = USZipCodeField(required=False)
-    emergency_contacts = AutoCompleteSelectMultipleField('emergency_contact', required=False)
 
 
 class CustomCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
@@ -180,7 +179,7 @@ class ReportBuilderForm(forms.Form):
 class ReportTemplateForm(StudentReportWriterForm):
     date_begin = None
     date_end = None
-    student = AutoCompleteSelectMultipleField('studentworker', required=False)
+    student = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
     
     def clean(self):
         data = self.cleaned_data

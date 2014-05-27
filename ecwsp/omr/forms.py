@@ -6,12 +6,11 @@ from django import template
 from django.template import Context
 from django.forms.widgets import RadioSelect
 
-from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
-
+import autocomplete_light
 from ecwsp.omr.models import *
 from ecwsp.sis.models import Student, Cohort
 
-class TestForm(forms.ModelForm):
+class TestForm(autocomplete_light.ModelForm):
     class Meta:
         model = Test
         fields = ('name', 'school_year', 'teachers', 'department', 'marking_period', 'courses')
@@ -23,7 +22,7 @@ class TestForm(forms.ModelForm):
             'course': forms.SelectMultiple(attrs={'size': '10', 'style': 'height:100%;'}),
         }
         
-    teachers = AutoCompleteSelectMultipleField('faculty', required=True, help_text="")
+    #teachers = AutoCompleteSelectMultipleField('faculty', required=True, help_text="")
     students = forms.ModelMultipleChoiceField(
         queryset = Student.objects.filter(is_active=True),
         widget = forms.SelectMultiple(attrs={'class':'multiselect'}),
@@ -45,11 +44,10 @@ class TestForm(forms.ModelForm):
         instance.enroll_students(self.cleaned_data['students'])
         return instance
 
-class QuestionBenchmarkForm(forms.ModelForm):
+class QuestionBenchmarkForm(autocomplete_light.ModelForm):
     class Meta:
         model = Question
         fields = ['benchmarks',]
-    benchmarks = AutoCompleteSelectMultipleField('benchmark', required=False)
         
 class CohortForm(forms.Form):
     cohorts = forms.ModelMultipleChoiceField(

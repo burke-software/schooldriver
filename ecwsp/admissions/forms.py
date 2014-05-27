@@ -1,13 +1,11 @@
 from django import forms
 from django.forms.widgets import CheckboxSelectMultiple, TextInput
-from django.contrib.auth.models import User
 from localflavor.us.forms import *
 from localflavor.us.us_states import STATE_CHOICES
 from django.core.validators import RegexValidator
 import re
+import autocomplete_light
 from localflavor.us import forms as us_forms
-
-from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
 
 from ecwsp.administration.models import Template
 from ecwsp.admissions.models import AdmissionLevel, Applicant
@@ -54,7 +52,7 @@ class InquiryForm(forms.ModelForm):
         
 
 
-class ApplicantForm(forms.ModelForm):
+class ApplicantForm(autocomplete_light.ModelForm):
     class Meta:
         model = Applicant
         widgets = {
@@ -64,9 +62,6 @@ class ApplicantForm(forms.ModelForm):
         }
     
     ssn = USSocialSecurityNumberField(required=False, label="SSN")
-    siblings = AutoCompleteSelectMultipleField('all_student', required=False)
-    parent_guardians = AutoCompleteSelectMultipleField('emergency_contact', required=False)
-    application_decision_by = AutoCompleteSelectField('faculty_user',required=False)
     
         
 class ReportForm(forms.Form):

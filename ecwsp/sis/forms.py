@@ -19,8 +19,6 @@ class StudentForm(autocomplete_light.ModelForm):
     ssn = USSocialSecurityNumberField(required=False)
     state = USStateField()
     zip = USZipCodeField(required=False)
-    #siblings  = make_ajax_field(Student,'siblings','all_student',help_text=None)
-    #emergency_contacts  = make_ajax_field(Student,'emergency_contacts','emergency_contact',help_text=None)
 
 
 class UserPreferenceForm(forms.ModelForm):
@@ -38,11 +36,11 @@ class UserPreferenceForm(forms.ModelForm):
 
 
 class DeletedStudentLookupForm(forms.Form):
-    student = autocomplete_light.ChoiceField('StudentAutocomplete')
+    student = autocomplete_light.ChoiceField('StudentUserAutocomplete')
 
 
 class StudentLookupForm(forms.Form):
-    student = autocomplete_light.ChoiceField('StudentAutocomplete')
+    student = autocomplete_light.ChoiceField('StudentActiveUserAutocomplete')
     
 
 class UploadFileForm(forms.Form):
@@ -100,7 +98,7 @@ class YearSelectForm(forms.Form):
 class StudentSelectForm(TimeBasedForm):
     """ Generic student selection form."""
     all_students = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':''}))
-    student = autocomplete_light.ChoiceField('StudentAutocomplete') # TODO many
+    student = autocomplete_light.ChoiceField('StudentActiveUserAutocomplete')
     sort_by = forms.ChoiceField(choices=(('last_name', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
     filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
     filter_cohort = forms.ModelMultipleChoiceField(required=False, queryset=Cohort.objects.all())
