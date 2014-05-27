@@ -10,9 +10,9 @@
   <ul class="fourteen columns" style="float: right;">
     {% if perms.sis.change_student or perms.sis.view_student %}
     <li class="field">
-        <div class="admin-title view_student">
+        <div class="admin-title view_student" style="position: relative;">
             <form id="form_view_student" style="margin-bottom: 0px;" class="view_student">
-              <input id="id_view_student_text" class="ui-autocomplete-input view_student search input" type="search" placeholder="Lookup Student" autocomplete="off" aria-autocomplete="list" aria-haspopup="true" style="width:100%;" role="textbox" name="view_student_text" />
+              <input id="id_view_student_text" class="ui-autocomplete-input view_student search input" type="text" placeholder="Lookup Student" autocomplete="off" aria-autocomplete="list" aria-haspopup="true" style="width:100%;" role="textbox" name="view_student_text" />
               <script>
                   $('#id_view_student_text').yourlabsAutocomplete({
                       url: '/autocomplete/StudentLookupStudentAutocomplete/',
