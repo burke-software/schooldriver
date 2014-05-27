@@ -9,9 +9,6 @@ class BelongsToStudent(permissions.BasePermission):
         """
         for generic requests (e.g. /api/grades/ and NOT /api/grades/:id)
         admin users can see/do anything, other users can only do SAFE_METHODS
-
-        keep in mind that other user's may get filtered results so that
-        they don't see private information
         """
         status = False
 
