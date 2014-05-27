@@ -1,5 +1,4 @@
 from rest_framework import permissions
-import re
 
 class BelongsToStudent(permissions.BasePermission):
     """
@@ -8,20 +7,15 @@ class BelongsToStudent(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """
-        for requests with a specific object ID, defer to the object 
-        permissions by returning "True"; otherwise restrict 
-        methods is user is not admin
+        for generic requests (e.g. /api/grades/ and NOT /api/grades/:id)
+        admin users can see/do anything, other users can only do SAFE_METHODS
         """
         status = False
+
         if request.user.is_staff:
             # admin can do anything!
             status = True
-        elif re.search(r'/api/\w+/\d+/', request.path):
-            # For requests in the form /api/somestring/<ID>/ pass "True"
-            # and defer SAFE permissions to the has_object_permissions handler
-            if request.method in permissions.SAFE_METHODS:
-                status = True
-                
+
         elif request.method in permissions.SAFE_METHODS:
             # other users can only access GET, OPTIONS, and HEAD methods
             status = True

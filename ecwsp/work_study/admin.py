@@ -1,21 +1,3 @@
-#       Copyright 2010-2012 Burke Software and Consulting LLC
-#        Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
 from ecwsp.work_study.models import *
 from ecwsp.sis.models import *
 from ecwsp.sis.admin import StudentFileInline
@@ -31,7 +13,6 @@ from daterange_filter.filter import DateRangeFilter
 
 from django import forms
 from ecwsp.work_study.forms import StudentForm, WorkTeamForm
-from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
 from ecwsp.administration.models import Configuration
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -169,7 +150,7 @@ class WorkStudyUserAdmin(UserAdmin,admin.ModelAdmin):
     
 admin.site.register(WorkTeamUser,WorkStudyUserAdmin)
 
-class StudentAdmin(ReadPermissionModelAdmin):
+class StudentAdmin(admin.ModelAdmin):
     form = StudentForm
     
     def changelist_view(self, request, extra_context=None):
