@@ -18,8 +18,10 @@ class BelongsToStudent(permissions.BasePermission):
             status = True
         elif re.search(r'/api/\w+/\d+/', request.path):
             # For requests in the form /api/somestring/<ID>/ pass "True"
-            # and defer permissions to the has_object_permissions handler
-            status = True
+            # and defer SAFE permissions to the has_object_permissions handler
+            if request.method in permissions.SAFE_METHODS:
+                status = True
+                
         elif request.method in permissions.SAFE_METHODS:
             # other users can only access GET, OPTIONS, and HEAD methods
             status = True
