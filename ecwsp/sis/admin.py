@@ -7,14 +7,11 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, CHANGE
 
-from ajax_select import make_ajax_form
-from ajax_select.fields import autoselect_fields_check_can_add
 import sys
 from reversion.admin import VersionAdmin
 
 from ecwsp.sis.models import *
 from ecwsp.sis.forms import *
-from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
 from custom_field.custom_field import CustomFieldAdmin
 
 
@@ -107,7 +104,7 @@ admin.site.register(GradeLevel)
         
 
 
-class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
+class StudentAdmin(VersionAdmin, CustomFieldAdmin):
     def changelist_view(self, request, extra_context=None):
         """override to hide inactive students by default"""
         try:
@@ -170,9 +167,7 @@ class StudentAdmin(VersionAdmin, ReadPermissionModelAdmin, CustomFieldAdmin):
             exclude.append('family_access_users')
         if len(exclude):
             kwargs['exclude'] = exclude
-        form = super(StudentAdmin,self).get_form(request,obj,**kwargs)
-        autoselect_fields_check_can_add(StudentForm, self.model ,request.user)
-        return form
+        return super(StudentAdmin,self).get_form(request,obj,**kwargs)
     
     fieldsets = [
         (None, {'fields': [('last_name', 'first_name'), ('mname', 'is_active'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), ('class_of_year', 'year'),('unique_id','ssn'),

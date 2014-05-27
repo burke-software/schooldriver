@@ -4,8 +4,6 @@ from django.contrib.admin import widgets as adminwidgets
 from django.contrib import messages
 from django.conf import settings
 
-from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
-from ajax_select import make_ajax_field
 from tempfile import mkstemp
 
 from ecwsp.sis.models import *
@@ -14,15 +12,15 @@ from ecwsp.administration.models import *
 import autocomplete_light
 autocomplete_light.autodiscover()
 
-class StudentForm(forms.ModelForm):
+class StudentForm(autocomplete_light.ModelForm):
     class Meta:
         model = Student
     
     ssn = USSocialSecurityNumberField(required=False)
     state = USStateField()
     zip = USZipCodeField(required=False)
-    siblings  = make_ajax_field(Student,'siblings','all_student',help_text=None)
-    emergency_contacts  = make_ajax_field(Student,'emergency_contacts','emergency_contact',help_text=None)
+    #siblings  = make_ajax_field(Student,'siblings','all_student',help_text=None)
+    #emergency_contacts  = make_ajax_field(Student,'emergency_contacts','emergency_contact',help_text=None)
 
 
 class UserPreferenceForm(forms.ModelForm):
@@ -40,7 +38,7 @@ class UserPreferenceForm(forms.ModelForm):
 
 
 class DeletedStudentLookupForm(forms.Form):
-    student = AutoCompleteSelectField('deleted_student')
+    student = autocomplete_light.ChoiceField('StudentAutocomplete')
 
 
 class StudentLookupForm(forms.Form):
@@ -102,7 +100,7 @@ class YearSelectForm(forms.Form):
 class StudentSelectForm(TimeBasedForm):
     """ Generic student selection form."""
     all_students = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':''}))
-    student = AutoCompleteSelectMultipleField('student', required=False)
+    student = autocomplete_light.ChoiceField('StudentAutocomplete') # TODO many
     sort_by = forms.ChoiceField(choices=(('last_name', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
     filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
     filter_cohort = forms.ModelMultipleChoiceField(required=False, queryset=Cohort.objects.all())
@@ -178,55 +176,3 @@ class StudentReportWriterForm(StudentSelectForm):
         if not data.get('template') and not data.get('upload_template'):
             raise forms.ValidationError("You must either select a template or upload one.")
         return data
-
-class StudentGradeReportWriterForm(forms.Form):
-    date = forms.DateField(widget=adminwidgets.AdminDateWidget(), initial=date.today, validators=settings.DATE_VALIDATORS)
-    template = forms.ModelChoiceField(required=False, queryset=Template.objects.all())
-    upload_template = forms.FileField(required=False, help_text="You may choose a template or upload one here")
-    include_deleted = forms.BooleanField(required=False)
-    all_students = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':''}))
-    student = AutoCompleteSelectMultipleField('student', required=False)
-    sort_by = forms.ChoiceField(choices=(('last_name', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
-    filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
-    filter_cohort = forms.ModelMultipleChoiceField(required=False, queryset=Cohort.objects.all())
-    omit_substitutions = forms.BooleanField(required=False) # benchmark_grade only; displayed conditionally in template
-
-    def clean(self):
-        data = super(StudentGradeReportWriterForm, self).clean()
-        if not data.get('student') and not data.get('all_students'):
-            raise forms.ValidationError("You must either check \"all students\" or select a student")
-        if not data.get('template') and not data.get('upload_template'):
-            raise forms.ValidationError("You must either select a template or upload one.")
-        return data
-    
-    def get_students(self, options, worker=False):
-        """ Returns all students based on criteria. data should be form.cleaned_data """
-        if worker:
-            from ecwsp.work_study.models import StudentWorker
-            students = StudentWorker.objects.all()
-        else:
-            students = Student.objects.all()
-        
-        # if selecting individual students, don't filter out deleted
-        # why? Because it's unintuitive to pick one student, forgot about "include
-        # deleted" and hit go to recieve a blank sheet.
-        if not options['all_students']:
-            students = students.filter(id__in=options['student'])
-        elif not options['include_deleted']:
-            students = students.filter(is_active=True)
-        
-        if options['student'].count == 1:
-            data['student'] = options['student'][0]
-            
-        if options['sort_by'] == "year":
-            students = students.order_by('year', 'last_name', 'first_name')
-        elif options['sort_by'] == "hoomroom":  
-            pass
-        
-        if options['filter_year']:
-            students = students.filter(year__in=options['filter_year'])
-        
-        if options['filter_cohort']:
-            students = students.filter(cohorts__in=options['filter_cohort'])
-        
-        return students
