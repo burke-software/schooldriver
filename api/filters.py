@@ -1,6 +1,6 @@
 from rest_framework import filters
 
-class OwnedByStudentFilter(filters.BaseFilterBackend):
+class BelongsToStudentFilter(filters.BaseFilterBackend):
     """
     A filter class for views that need to only show objects owned by 
     individual students. Admin users can see the entire queryset
