@@ -343,7 +343,7 @@ admin.site.register(AttendanceReason)
 admin.site.register(Personality)
 
 class ClientVisitAdmin(admin.ModelAdmin):
-    form = autocomplete_light.modelform_factory(ClientVisitAdmin)
+    form = autocomplete_light.modelform_factory(ClientVisit)
     fieldsets = [
         (None, {'fields': ['date', 'company', 'notify_mentors', 'notes',]}),
         ("DOL", {'fields': ['dol', 'follow_up_of', 'cra', 'student_worker', 'supervisor',
