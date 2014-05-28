@@ -1,0 +1,15 @@
+Oh hai!
+<form name="form">
+
+<input type="text" ng-model="course.fullname" ng-blur="saveCourse()" />
+
+<br/>
+
+<input type="text" name="credits" ng-model="course.credits"  ng-blur="saveCourse('credits')" />
+<span class="help-block" ng-show="form.credits.$invalid && form.credits.$dirty">
+    <li ng-repeat="error in errorMessage('credits')">
+        {{ error }}
+    </li>
+</span>
+
+</form>

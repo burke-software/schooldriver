@@ -4,12 +4,17 @@
 
 {% block extra_head %}
     {% compress js %}
-    <script type="text/coffeescript" charset="utf-8" src="{% static "schedule/course.coffee" %}"></script>
+    <script type="text/coffeescript" charset="utf-8" src="{% static "app/course.coffee" %}"></script>
     {% endcompress %}
     <script type="text/javascript">
     </script>
 {% endblock %}
 
 {% block content %}
+
+
+<div ng-app="angular_sis">
+<div ng-view></div>
+</div>
 
 {% endblock %}

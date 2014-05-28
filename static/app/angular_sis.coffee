@@ -16,6 +16,7 @@ app.config ($routeProvider, $locationProvider) ->
   $routeProvider.when "/course/student_grades/:student_id/:year_id/",
     controller: "StudentGradesController"
   $routeProvider.when "/schedule/course/:course_id/",
+    templateUrl: '/static/app/partials/course_detail.html',
     controller: "CourseController"
 
   $locationProvider.html5Mode true
