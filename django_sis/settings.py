@@ -107,7 +107,10 @@ BOWER_INSTALLED_APPS = (
     'jquery-migrate',
     'blockui',
     'jquery-color',
+    'angular-route',
     'angular-ui-handsontable',
+    'underscore',
+    'restangular',
     'bootstrap-sass-official',
     'bootstrap-hover-dropdown',
 )

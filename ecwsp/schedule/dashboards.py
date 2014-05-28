@@ -5,7 +5,6 @@ import datetime
 class CourseDashlet(ListDashlet):
     model = CourseSection
     fields = ('__str__', 'number_of_students',)
-    order_by = ('-marking_period__start_date',)
     require_apps = ('ecwsp.schedule',)
 
 
