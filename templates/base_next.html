@@ -139,18 +139,19 @@
       </ul>
       <div class="form-group">
         <form id="lookup-student-form" class="navbar-form navbar-right">
-            <input id="lookup-student" class="form-control" type="text" placeholder="Lookup Student" />
-            <script>
-                $('#lookup-student').yourlabsAutocomplete({
-                    url: '/autocomplete/StudentLookupStudentAutocomplete/',
-                    choiceSelector: 'a',
-                }).input.bind('selectChoice', function(e, choice, autocomplete) {
-                    window.location.href = choice.attr('href');
-                });
-            </script>
-        </div>
+          <input id="lookup-student" class="form-control" type="text" placeholder="Lookup Student" />
+          <script>
+              $('#lookup-student').yourlabsAutocomplete({
+                  url: '/autocomplete/StudentLookupStudentAutocomplete/',
+                  choiceSelector: 'a',
+              }).input.bind('selectChoice', function(e, choice, autocomplete) {
+                  window.location.href = choice.attr('href');
+              });
+          </script>
+        </form>
       </div>
     </div>
+  </div>
 </div>
 </div>
 <div id="secondary-nav" class="navbar navbar-inverse" role="navigation">
