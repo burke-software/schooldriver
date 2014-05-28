@@ -15,5 +15,7 @@ app.config ($routeProvider, $locationProvider) ->
     controller: "StudentGradesController"
   $routeProvider.when "/course/student_grades/:student_id/:year_id/",
     controller: "StudentGradesController"
+  $routeProvider.when "/schedule/course/:course_id/",
+    controller: "CourseController"
 
   $locationProvider.html5Mode true

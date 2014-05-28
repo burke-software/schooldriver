@@ -1,6 +1,8 @@
-from django.conf.urls import *
-from responsive_dashboard import views, dashboard
+from django.conf.urls import patterns, url
+from responsive_dashboard.views import generate_dashboard
+from .views import CourseView
 
 urlpatterns = patterns('',
-    (r'^$', views.generate_dashboard, {'app_name': 'schedule'}),
+    (r'^$', generate_dashboard, {'app_name': 'schedule'}),
+    url(r'^course/(.*)$', CourseView.as_view(), name="course")
 )

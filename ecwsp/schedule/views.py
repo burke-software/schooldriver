@@ -1,29 +1,11 @@
 from django.shortcuts import render_to_response, get_object_or_404, redirect, render
-from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
-from django.contrib import messages
-from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
-from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
-from django.template import RequestContext
-from django.http import HttpResponse, HttpResponseRedirect
-from django.core.urlresolvers import reverse
-from django.db.models import Q
-from django.db.models import Count
-from django.forms.formsets import formset_factory
-from django.forms.models import modelformset_factory
+from django.contrib.auth.decorators import user_passes_test, permission_required
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.generic import TemplateView
+from django.utils.decorators import method_decorator
 
-from ecwsp.sis.models import *
-from ecwsp.sis.uno_report import *
-from ecwsp.sis.xl_report import XlReport
-from ecwsp.schedule.models import *
-from ecwsp.schedule.forms import *
-from ecwsp.administration.models import *
-
-from decimal import Decimal, ROUND_HALF_UP
-import time
-import logging
-
-class struct(): pass
+from ecwsp.sis.models import SchoolYear
+from .models import MarkingPeriod, Course, Period
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')   
 def schedule(request):
@@ -39,3 +21,15 @@ def schedule(request):
     
     return render_to_response('schedule/schedule.html', {'request': request, 'years': years, 'mps': mps, 'periods': periods, 'courses': courses})
 
+
+class CourseView(TemplateView):
+    model = Course
+    template_name = 'schedule/course.html'
+    
+    @method_decorator(staff_member_required)
+    def dispatch(self, *args, **kwargs):
+        return super(CourseView, self).dispatch(*args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(CourseView, self).get_context_data(**kwargs)
+        return context
