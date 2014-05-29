@@ -5,7 +5,9 @@ class CourseSerializer(serializers.ModelSerializer):
     """
     serializing the Course Model for use with the API
     """
-    sections = serializers.PrimaryKeyRelatedField(many=True)
+
+    id = serializers.Field()
+    sections = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Course
