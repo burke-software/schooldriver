@@ -11,3 +11,13 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
+
+class SectionSerializer(serializers.ModelSerializer):
+    """
+    serializing the CourseSection Model for use with the API
+    """
+
+    id = serializers.Field()
+
+    class Meta:
+        model = CourseSection
