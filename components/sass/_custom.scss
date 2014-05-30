@@ -224,6 +224,56 @@ table#gradebook_table img.cancel {
 	}
 }
 
+.autocomplete-lookup-student {
+  background-color: #191A1B!important;
+
+  .choice {
+    color: #fff!important;
+    overflow: hidden;
+    padding: 3px 20px 3px 10px!important;
+    text-align: left;
+    font-size: 14px;
+
+    img {
+      float: left;
+      width: 37px;
+      margin: 2px 7px 2px 0;
+    }
+
+    .no-pic {
+      float: left;
+      margin: 2px 7px 2px 0;
+      width: 38px;
+      background-color: #333;
+      color: #555;
+      font-size: 35px;
+      vertical-align: -15%;
+      padding-left: 1px;
+      padding-top: 2px;
+      line-height: 1;
+    }
+
+    .student-name {
+      font-weight: 600;
+    }
+
+    &.hilight {
+      background-color: #868D92;
+      background-image: none;
+
+      .no-pic {
+        background-color: #bbb;
+        color: #999;
+      }
+    }
+  }
+
+  .no-results {
+    padding: 3px 20px 3px 10px;
+    color: #fff;
+  }
+}
+
 #dashboard_container{
 	.dashlet{
 		border: 1px solid #bebdbd !important;

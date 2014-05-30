@@ -1,5 +1,4 @@
 @charset "UTF-8";
-@import url(//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700);
 /**
 * Gumby Framework
 * ---------------
@@ -1822,6 +1821,15 @@ table#gradebook_table img.cancel { margin-top: 2px; padding-right: 1px; }
 .navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown ul { width: 200px; }
 .navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown ul li { border-top: #bdbebd; background-color: #d0dbe4; }
 .navcontain .navbar .breadcrumbs #breadcrumbs_area .name_dropdown ul li a { font-weight: 600; text-align: center; padding-left: 20px; padding-right: 20px; color: #555655; }
+
+.autocomplete-lookup-student { background-color: #191a1b !important; }
+.autocomplete-lookup-student .choice { color: white !important; overflow: hidden; padding: 3px 20px 3px 10px !important; text-align: left; font-size: 14px; }
+.autocomplete-lookup-student .choice img { float: left; width: 37px; margin: 2px 7px 2px 0; }
+.autocomplete-lookup-student .choice .no-pic { float: left; margin: 2px 7px 2px 0; width: 38px; background-color: #333; color: #555; font-size: 35px; vertical-align: -15%; padding-left: 1px; padding-top: 2px; line-height: 1; }
+.autocomplete-lookup-student .choice .student-name { font-weight: 600; }
+.autocomplete-lookup-student .choice.hilight { background-color: #868D92; background-image: none; }
+.autocomplete-lookup-student .choice.hilight .no-pic { background-color: #bbb; color: #999; }
+.autocomplete-lookup-student .no-results { padding: 3px 20px 3px 10px; color: #fff; }
 
 #dashboard_container .dashlet { border: 1px solid #bebdbd !important; border-radius: 2px; }
 #dashboard_container .dashlet header { background-color: #f4f5f4; color: #78a2cd; }
