@@ -11,6 +11,9 @@ app.config (RestangularProvider) ->
 app.config ($routeProvider, $locationProvider) ->
   $routeProvider.when "/course/course_grades/:course_id/",
     controller: "CourseGradesController"
+  $routeProvider.when "/course/student_grades/:student_id/",
+    templateUrl: '/static/app/partials/student_grades.html',
+    controller: "StudentGradesController"
   $routeProvider.when "/course/student_grades/:student_id/:year_id/",
     templateUrl: '/static/app/partials/student_grades.html',
     controller: "StudentGradesController"

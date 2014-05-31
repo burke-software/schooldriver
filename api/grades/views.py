@@ -16,5 +16,5 @@ class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.all()
     #filter_backends = (BelongsToStudentFilter,)
     serializer_class = GradeSerializer
-    filter_fields = ('course', 'marking_period__school_year')
+    filter_fields = ('course', 'course__marking_period__school_year')
 

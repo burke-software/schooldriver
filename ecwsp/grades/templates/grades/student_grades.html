@@ -16,6 +16,7 @@
     <script type="text/javascript">
         var edit = '{{ edit }}'
         var edit_final = '{{ edit_final }}'
+        var default_school_year_id = '{{ default_school_year.id }}'
     </script>
 {% endblock %}
 
@@ -27,7 +28,7 @@
     <div ng-app="angular_sis">
         Select school year:
         {% for year in school_years %}
-            <a href="../{{ year.id }}/"> {{ year }} </a>
+        <a href="/course/student_grades/{{ object.pk}}/{{ year.id }}/"> {{ year }} </a>
         {% endfor %}
 
 

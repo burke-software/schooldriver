@@ -6,15 +6,19 @@ app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$route
         { width: 160, value: 'row.course', title: 'Course', fixed: true, readOnly: true}
     ]
 
+    grades_api = GradebookService
+    $scope.changeGrade = grades_api.setGrade
+    
     $scope.$on '$routeChangeSuccess', ->
-        grades_api = GradebookService
         grades_api.marking_periods = []
         grades_api.rows = []
         $scope.rows = grades_api.rows
-        $scope.changeGrade = grades_api.setGrade
         grades_api.student_id = $routeParams.student_id
-        year_id = $routeParams.year_id
-        grades_api.getGrades({student: grades_api.student_id, marking_period__school_year: year_id}).then (grades) ->
+        if $routeParams.year_id
+            year_id = $routeParams.year_id
+        else
+            year_id = default_school_year_id
+        grades_api.getGrades({student: grades_api.student_id, course__marking_period__school_year: year_id}).then (grades) ->
             $scope.grades = grades
             # Course | Grade1 | Grade etc | Final
             for grade in grades
