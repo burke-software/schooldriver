@@ -11,7 +11,8 @@ import sys
 from reversion.admin import VersionAdmin
 
 from ecwsp.sis.models import *
-from ecwsp.sis.forms import *
+from ecwsp.schedule.models import AwardStudent, MarkingPeriod, CourseEnrollment
+from ecwsp.sis.forms import StudentForm
 from custom_field.custom_field import CustomFieldAdmin
 
 

@@ -9,7 +9,7 @@
 
 {% block extra_head %}
     {% compress js %}
-    <script type="text/coffeescript" charset="utf-8" src="{% static "grades/app.coffee" %}"></script>
+    <script type="text/coffeescript" charset="utf-8" src="{% static "app/grades.coffee" %}"></script>
     {% endcompress %}
     <script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
     <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
@@ -24,18 +24,14 @@
 {% endblock %}
 
 {% block content %}
-    Select school year:
-    {% for year in school_years %}
-        {% if not forloop.first %} &nbsp;&nbsp; &middot; {% endif %} &nbsp;&nbsp; <a href="{{ year.id }}"> {{ year }} </a>
-    {% endfor %}
+    <div ng-app="angular_sis">
+        Select school year:
+        {% for year in school_years %}
+            <a href="../{{ year.id }}/"> {{ year }} </a>
+        {% endfor %}
 
 
-    <div ng-app="angular_sis" class="content" ng-controller="StudentGradesController">
-    {% verbatim %}
-    <button ng-click="showComments()">{{ comment_button_text }}</button>
+        <div ng-view></div>
+    </div>
 
-    <ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="row in rows" columns="columns">
-    </ui-handsontable>
-
-    {% endverbatim %}
 {% endblock %}

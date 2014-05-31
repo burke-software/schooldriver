@@ -429,6 +429,7 @@ if 'ON_HEROKU' in os.environ:
 if 'test' in sys.argv:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'test',
         'ATOMIC_REQUESTS': True,
     }
 

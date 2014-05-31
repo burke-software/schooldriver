@@ -1,5 +1,6 @@
 from ecwsp.grades.models import Grade
 from rest_framework import serializers
+from django.core.exceptions import ValidationError
 
 class GradeSerializer(serializers.ModelSerializer):
     """
@@ -16,3 +17,8 @@ class GradeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Grade
+        
+    def validate_grade(self, attrs, source):
+        value = attrs[source]
+        Grade.validate_grade(value)
+        return attrs

@@ -6,9 +6,9 @@ from django.conf import settings
 
 from tempfile import mkstemp
 
-from ecwsp.sis.models import *
-from ecwsp.schedule.models import *
-from ecwsp.administration.models import *
+from ecwsp.sis.models import Student, UserPreference, SchoolYear, GradeLevel, Cohort
+from ecwsp.schedule.models import MarkingPeriod, CourseMeet, Award
+from ecwsp.administration.models import Template
 import autocomplete_light
 autocomplete_light.autodiscover()
 
