@@ -102,3 +102,12 @@
 2014-04-17 16:53:26 overwrite css/gumby.css 
 2014-04-17 16:56:07 overwrite css/gumby.css 
 2014-04-17 17:00:21 overwrite css/gumby.css 
+2014-05-30 14:18:26     error sass/gumby.scss (Line 258 of sass/_custom.scss: Undefined variable: "$navbar-default-link-hover-bg".)
+2014-05-30 14:18:26 overwrite css/gumby.css 
+2014-05-30 14:19:31 overwrite css/gumby.css 
+2014-05-30 14:20:49 overwrite css/gumby.css 
+2014-05-30 14:21:30 overwrite css/gumby.css 
+2014-05-30 14:26:28 overwrite css/gumby.css 
+2014-05-30 14:33:51 overwrite css/gumby.css 
+2014-05-30 14:36:54 overwrite css/gumby.css 
+2014-05-30 14:39:10 overwrite css/gumby.css 
