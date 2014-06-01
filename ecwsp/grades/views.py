@@ -151,7 +151,7 @@ class StudentGradesheet(DetailView):
         context = super(StudentGradesheet, self).get_context_data(**kwargs)
         context['letter_grade_required_for_pass'] = Configuration.get_or_default('letter_grade_required_for_pass', '60').value
         context['school_years'] = SchoolYear.objects.filter(markingperiod__coursesection__enrollments=self.object).distinct()
-        context['default_school_year'] = context['school_years'][0]
+        context['default_school_year'] = context['school_years'].first()
         return context
     
 

@@ -2,12 +2,21 @@ app = angular.module 'angular_sis', ['restangular', 'uiHandsontable', 'ngRoute']
 
 
 app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$routeParams', '$route', ($scope, GradebookService, $routeParams, $route) ->
+
     $scope.columns = [
         { width: 160, value: 'row.course', title: 'Course', fixed: true, readOnly: true}
     ]
 
     grades_api = GradebookService
     $scope.changeGrade = grades_api.setGrade
+    $scope.beforeChangeGrade = (changes, source) ->
+        for change in changes
+            id = change[0]
+            row = grades_api.rows[id]
+            attribute = change[1]
+            instance = row[attribute.split('.')[0]]
+            instance.isPristine = false
+
     
     $scope.$on '$routeChangeSuccess', ->
         grades_api.marking_periods = []
@@ -71,6 +80,17 @@ app.controller 'CourseGradesController', ['$scope', '$routeParams', '$route', 'G
 
 
 app.factory 'GradebookService', ['Restangular', (Restangular) ->
+    greenRenderer = (instance, td, row, col, prop, value, cellProperties) ->
+        Handsontable.TextCell.renderer.apply this, arguments
+        data_row = grades_api.rows[row]
+        data_instance = data_row[prop.split('.')[0]]
+        if data_instance.isValid == true
+            td.style.background = "green"
+        else if data_instance.isValid == false
+            td.style.background = "red"
+        else if data_instance.isPristine == false
+            td.style.background = "yellow"
+
     grades_api = Restangular.all('grades')
     grades_api.marking_periods = []
     grades_api.rows = []
@@ -112,7 +132,7 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
         grade_columns = []
         for marking_period in grades_api.marking_periods
             marking_period.grade_key = 'grade' + marking_period.marking_period_id
-            new_column = {width: 70, value: 'row.' + marking_period.grade_key + '.grade', title: marking_period.marking_period}
+            new_column = {width: 70, renderer: greenRenderer, value: 'row.' + marking_period.grade_key + '.grade', title: marking_period.marking_period}
             if edit == 'False'
                 new_column.readOnly = true
             columns.push(new_column)
@@ -167,8 +187,13 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
                     if not row.final.id
                         grades_api.recalculateGrades(row)
                     instance = row[attribute.split('.')[0]]
-                    instance.save()
-                
+                    instance.save().then ((response) ->
+                        instance.isValid = true
+                        $('.handsontable').data('handsontable').render()
+                    ), (response) ->
+                        instance.isValid = false
+                        $('.handsontable').data('handsontable').render()
+
     grades_api.getGrades = (filters) ->
         grades_api.getList(filters).then (grades) ->
             grades_api.findMarkingPeriods(grades)
