@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Count, signals
 from django.conf import settings
@@ -8,6 +9,7 @@ from ecwsp.sis.helper_functions import round_as_decimal
 from ecwsp.administration.models import Configuration
 from django_cached_field import CachedDecimalField
 
+import decimal
 from decimal import Decimal
 import datetime
 
@@ -165,6 +167,18 @@ class GradeLetterRule(models.Model):
         unique_together = ('min_grade', 'max_grade')
 
 
+letter_grade_choices = (
+        ("I", "Incomplete"),
+        ("P", "Pass"),
+        ("F", "Fail"),
+        ("A", "A"),
+        ("B", "B"),
+        ("C", "C"),
+        ("D", "D"),
+        ("HP", "High Pass"),
+        ("LP", "Low Pass"),
+        ("M", "Missing"),
+    )
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
     course = models.ForeignKey('schedule.CourseSection')
@@ -173,18 +187,6 @@ class Grade(models.Model):
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     override_final = models.BooleanField(default=False, help_text="Override final grade for marking period instead of calculating it.")
     comment = models.CharField(max_length=500, blank=True, validators=[grade_comment_length_validator])
-    letter_grade_choices = (
-            ("I", "Incomplete"),
-            ("P", "Pass"),
-            ("F", "Fail"),
-            ("A", "A"),
-            ("B", "B"),
-            ("C", "C"),
-            ("D", "D"),
-            ("HP", "High Pass"),
-            ("LP", "Low Pass"),
-            ("M", "Missing"),
-        )
     letter_grade = models.CharField(max_length=2, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
     letter_grade_behavior = {
         # Letter grade: (*normalized* value for calculations, dominate any average)
@@ -196,6 +198,7 @@ class Grade(models.Model):
         "LP": (1, False),
         "M": (0, False),
     }
+    letter_grade_choices = letter_grade_choices
 
     class Meta:
         unique_together = (("student", "course", "marking_period"),)
@@ -220,17 +223,32 @@ class Grade(models.Model):
             self.grade = grade
             self.letter_grade = None
             return True
-        except:
+        except decimal.InvalidOperation:
             grade = unicode.upper(unicode(grade)).strip()
             if grade in dict(self.letter_grade_choices):
                 self.letter_grade = grade
                 self.grade = None
                 return True
-            elif grade in ('', None, 'None', 'NONE'):
+            elif grade in ('', 'NONE'):
                 self.grade = None
                 self.letter_grade = None
                 return True
             return False
+    
+    @staticmethod
+    def validate_grade(grade):
+        """ Determine if grade is valid or not """
+        try:
+            grade = Decimal(str(grade))
+            if grade >= 0:
+                return
+            raise ValidationError('Grade must be above 0')
+        except decimal.InvalidOperation:
+            grade = unicode.upper(unicode(grade)).strip()
+            if (grade in dict(letter_grade_choices) or
+               grade in ('', 'NONE')):
+                return
+        raise ValidationError('Invalid letter grade.')
 
     def invalidate_cache(self):
         """ Invalidate any related caches """
@@ -277,7 +295,6 @@ class Grade(models.Model):
     api_grade = property(get_grade, set_grade)
 
     def clean(self):
-        from django.core.exceptions import ValidationError
         ''' We must allow simulataneous letter and number grades. Grading mechanisms
         submit both; the number is used for calculations and the letter appears on
         reports. '''
