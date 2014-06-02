@@ -16,23 +16,29 @@
   </span>
     <input type="hidden" name="student" id="id_view_student_dashlet" value="">
     <div id="id_view_student_dashlet_on_deck" style="display: none;" class="results_on_deck"><div></div></div>
-    <script type="text/javascript">//<![CDATA[
-    jQuery(document).ready(function($){
-        addAutoComplete("id_view_student_dashlet", function(html_id) {
-            $("#"+html_id).autocompleteselect({
-                minLength: 1,
-                source: '/ajax_select/ajax_lookup/dstudent',
-            });
+    <script>
+        $('#id_view_student_dashlet_text').yourlabsAutocomplete({
+            url: '/autocomplete/StudentLookupStudentAutocomplete/',
+            choiceSelector: 'a',
+            box: $('<span class="yourlabs-autocomplete autocomplete-lookup-student-dashlet"></span>'),
+            fixPosition: function() {
+              // Insert the autocomplete container after the input.
+              var pos = $.extend({}, this.input.position(), {
+                  height: this.input.outerHeight(),
+                  width:  this.input.outerWidth()
+              });
+
+              this.input.parents().filter(function() {
+                  return $(this).css('overflow') === 'hidden';
+              }).first().css('overflow', 'visible');
+
+              this.box.insertAfter(this.input).css(
+                      {top: pos.top + pos.height, left: pos.left, "min-width": pos.width });
+            }
+        }).input.bind('selectChoice', function(e, choice, autocomplete) {
+            $('#blarg').show();
+            $('#blarg-name').text("Nameeeeeee: "+choice.first_name);
         });
-    $("#id_view_student_dashlet_on_deck").bind('added',function() {
-      var pk = $('#id_view_student_dashlet').val();
-      $.ajax({
-       url: '/sis/ajax_view_student_dashlet/'+pk+'/',
-      }).done(function ( data ) {
-        $('#form_view_student_dashlet').parent().parent().html(data);
-      });
-    });
-    });//]]>
     </script>
   </form>
 {% endblock %}
@@ -45,21 +51,23 @@
     <p>Search for a student to<br>get a photo and info</p>
    {% endif %}
   </div> 
-  <div style="width: 55%; float:left;">
-    <img style="width: 100%; max-width: 530px;" src="{{ student.pic.url_530x400 }}"/>
-  </div>
-  <div style="width:45%; float:left; text-align: left;">
-   {% if object %}
-   <!-- added left side padding to name/year -->
-   <p style="padding-top: 1.75em; padding-left: .75em; padding-bottom: 1.75em;">
-    Name: {{ object }}<br/>
-    Year: {{ object.year }}<br/>
-    Cohort: {{ object.primary_cohort }}<br/>
-   </p>
-   <div class="primary btn">
-    <a href="{% url "ecwsp.sis.views.view_student" object.id %}">View Info</a>
-   </div>
-   {% endif %}
+  <div id="blarg" style="display: none;">
+    <div style="width: 55%; float:left;">
+      <img style="width: 100%; max-width: 530px;" src="{{ student.pic.url_530x400 }}"/>
+    </div>
+    <div style="width:45%; float:left; text-align: left;">
+     
+     <!-- added left side padding to name/year -->
+     <p style="padding-top: 1.75em; padding-left: .75em; padding-bottom: 1.75em;">
+      <div id="blarg-name">Name: {% if object %}{{ object }}{% endif %}</div>
+      <div id="blarg-year">Year: {% if object %}{{ object.year }}{% endif %}</div>
+      <div id="blarg-cohort">Cohort: {% if object %}{{ object.primary_cohort }}{% endif %}</div>
+     </p>
+     <div class="primary btn">
+      <a href="{% if object %}{% url "ecwsp.sis.views.view_student" object.id %}{% endif %}">View Info</a>
+     </div>
+     
+    </div>
   </div>
 {% endblock %}
 

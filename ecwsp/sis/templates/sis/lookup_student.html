@@ -1,7 +1,7 @@
 {% if choices %}
   {% for choice in choices %}
   {% spaceless %}
-  <a class="block choice" href="{% url 'view-student' choice.id %}">
+  <a class="block choice" href="{% url 'view-student' choice.id %}" onClick="return false;">
     {% if choice.pic.url_70x65 %}
       <img src="{{ choice.pic.url_70x65 }}" />
     {% else %}

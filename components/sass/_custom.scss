@@ -224,54 +224,85 @@ table#gradebook_table img.cancel {
 	}
 }
 
+.autocomplete-lookup-student-dashlet {
+	text-transform: none;
+	
+	.choice {
+		color: #555!important;
+
+		.no-pic {
+			background-color: #bbb;
+			color: #999;
+		}
+
+		&.hilight {
+			background-color: #e8e8e8!important;
+			background-image: none;
+
+			.no-pic {
+				background-color: #a4a4a4;
+				color: #828282;
+			}
+		}
+	}
+}
 .autocomplete-lookup-student {
-  background-color: #191A1B!important;
+	background-color: #191A1B!important;
 
-  .choice {
-    color: #fff!important;
-    overflow: hidden;
-    padding: 3px 20px 3px 10px!important;
-    text-align: left;
-    font-size: 14px;
+	.choice {
+		color: #fff!important;
 
-    img {
-      float: left;
-      width: 37px;
-      margin: 2px 7px 2px 0;
-    }
+		.no-pic {
+			background-color: #333;
+			color: #555;
+		}
 
-    .no-pic {
-      float: left;
-      margin: 2px 7px 2px 0;
-      width: 38px;
-      background-color: #333;
-      color: #555;
-      font-size: 35px;
-      vertical-align: -15%;
-      padding-left: 1px;
-      padding-top: 2px;
-      line-height: 1;
-    }
+		&.hilight {
+			background-color: #868D92;
+			background-image: none;
 
-    .student-name {
-      font-weight: 600;
-    }
+			.no-pic {
+				background-color: #bbb;
+				color: #999;
+			}
+		}
+	}
+}
 
-    &.hilight {
-      background-color: #868D92;
-      background-image: none;
+.autocomplete-lookup-student, .autocomplete-lookup-student-dashlet {
+	.choice {
+		overflow: hidden;
+		padding: 3px 20px 3px 10px!important;
+		text-align: left;
+		font-size: 14px;
 
-      .no-pic {
-        background-color: #bbb;
-        color: #999;
-      }
-    }
-  }
+		img {
+			float: left;
+			width: 37px;
+			margin: 2px 7px 2px 0;
+		}
 
-  .no-results {
-    padding: 3px 20px 3px 10px;
-    color: #fff;
-  }
+		.no-pic {
+			float: left;
+			margin: 2px 7px 2px 0;
+			width: 38px;
+			font-size: 35px;
+			vertical-align: -15%;
+			padding-left: 1px;
+			padding-top: 2px;
+			line-height: 1;
+		}
+
+		.student-name {
+			font-weight: 600;
+		}
+
+	}
+
+	.no-results {
+		padding: 3px 20px 3px 10px;
+		color: #fff;
+	}
 }
 
 #dashboard_container{
