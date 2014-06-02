@@ -37,7 +37,12 @@
             }
         }).input.bind('selectChoice', function(e, choice, autocomplete) {
             $('#blarg').show();
-            $('#blarg-name').text("Nameeeeeee: "+choice.first_name);
+            $('#blarg-name').text("Name: " + choice.find(".student-name").text());
+            $('#blarg-year').text("Year: " + choice.find(".student-year").text());
+            if (choice.find("#student-pic")) {
+              $('#blarg-year')  
+            }
+            $('#blarg-year').text("Year: " + choice.find(".student-year").text());
         });
     </script>
   </form>
@@ -53,7 +58,7 @@
   </div> 
   <div id="blarg" style="display: none;">
     <div style="width: 55%; float:left;">
-      <img style="width: 100%; max-width: 530px;" src="{{ student.pic.url_530x400 }}"/>
+      <img style="width: 100%; max-width: 530px; visibility: hidden;" src="{{ student.pic.url_530x400 }}"/>
     </div>
     <div style="width:45%; float:left; text-align: left;">
      
