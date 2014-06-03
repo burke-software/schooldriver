@@ -36,13 +36,14 @@
                       {top: pos.top + pos.height, left: pos.left, "min-width": pos.width });
             }
         }).input.bind('selectChoice', function(e, choice, autocomplete) {
-            $('#blarg').show();
-            $('#blarg-name').text("Name: " + choice.find(".student-name").text());
-            $('#blarg-year').text("Year: " + choice.find(".student-year").text());
+            $('#student-deck').show();
+            $('#student-deck-name').text(choice.find(".student-name").text());
+            $('#student-deck-year').text("Year: " + choice.find(".student-year").text());
+            $('#student-deck-cohort').text("Cohort: " + choice.attr("data-cohort"));
             if (choice.find("#student-pic")) {
-              $('#blarg-year')  
+              $('#student-deck-year')  
             }
-            $('#blarg-year').text("Year: " + choice.find(".student-year").text());
+            $('#student-deck-link').attr("href",choice.attr("href"));
         });
     </script>
   </form>
@@ -51,27 +52,18 @@
 {% block dashlet_body %}
   <!-- Something to try: span the entire width w/ "Search for a student..." then split into parts when student has been searched.
       Make it look clean, like the mockup -->
-  <div>
-   {% if not object %}
-    <p>Search for a student to<br>get a photo and info</p>
-   {% endif %}
-  </div> 
-  <div id="blarg" style="display: none;">
+  <div><em>Search for a student to get a photo and info</em></div>
+  <div id="student-deck" style="display: none;">
     <div style="width: 55%; float:left;">
       <img style="width: 100%; max-width: 530px; visibility: hidden;" src="{{ student.pic.url_530x400 }}"/>
     </div>
     <div style="width:45%; float:left; text-align: left;">
-     
-     <!-- added left side padding to name/year -->
-     <p style="padding-top: 1.75em; padding-left: .75em; padding-bottom: 1.75em;">
-      <div id="blarg-name">Name: {% if object %}{{ object }}{% endif %}</div>
-      <div id="blarg-year">Year: {% if object %}{{ object.year }}{% endif %}</div>
-      <div id="blarg-cohort">Cohort: {% if object %}{{ object.primary_cohort }}{% endif %}</div>
-     </p>
-     <div class="primary btn">
-      <a href="{% if object %}{% url "ecwsp.sis.views.view_student" object.id %}{% endif %}">View Info</a>
-     </div>
-     
+      <div id="student-deck-name"></div>
+      <div id="student-deck-year"></div>
+      <div id="student-deck-cohort"></div>
+      <div class="primary btn">
+        <a id="student-deck-link" href="">View Info</a>
+      </div>
     </div>
   </div>
 {% endblock %}

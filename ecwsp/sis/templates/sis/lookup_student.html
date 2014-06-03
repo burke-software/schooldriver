@@ -1,7 +1,7 @@
 {% if choices %}
   {% for choice in choices %}
   {% spaceless %}
-  <a class="block choice" href="{% url 'view-student' choice.id %}" onClick="return false;" data-firstname="{{ choice.first_name }}" data-lastname="{{ choice.last_name }}">
+  <a class="block choice" href="{% url 'view-student' choice.id %}" onClick="return false;" data-cohort="{{ choice.cache_cohort }}">
     {% if choice.pic.url_70x65 %}
       <img id="student-pic" data-largersrc="{{ choice.pic.url_530x400 }}" src="{{ choice.pic.url_70x65 }}" />
     {% else %}
