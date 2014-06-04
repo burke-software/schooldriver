@@ -20,4 +20,5 @@ app.controller 'CourseController', ['$scope', '$timeout', '$routeParams', '$rout
                         $scope.form[key].$setValidity('server', false)
 
         $scope.courses = Restangular.all('courses').getList().$object
+        $scope.course_options = Restangular.all('courses').options().$object
 ]
