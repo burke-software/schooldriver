@@ -1,6 +1,6 @@
 app = angular.module 'angular_sis', ['restangular', 'ngRoute']
 
-app.controller 'CourseController', ['$scope', '$timeout', '$routeParams', '$route', 'Restangular', ($scope, $timeout, $routeParams, $route, Restangular) ->
+app.controller 'CourseController', ['$scope', '$timeout', '$routeParams', '$route', 'Restangular', 'RestfulModel', ($scope, $timeout, $routeParams, $route, Restangular, RestfulModel) ->
     
     $scope.errorMessage = (name) ->
         return errors[name]
@@ -20,5 +20,21 @@ app.controller 'CourseController', ['$scope', '$timeout', '$routeParams', '$rout
                         $scope.form[key].$setValidity('server', false)
 
         $scope.courses = Restangular.all('courses').getList().$object
-        $scope.course_options = Restangular.all('courses').options().$object
+        course_model = new RestfulModel.Instance("courses")
+        course_model.get_options().then (options) ->
+            $scope.course_options = options
+]
+
+app.factory 'RestfulModel', ['Restangular', (Restangular) ->
+    Instance = (name) ->
+        @model_name = name
+        @get_options = ->
+            Restangular.all(@model_name).options().then (options) ->
+                options.actions.POST
+        @get_one = (object_id) ->
+            console.log('to do')
+        return
+
+    # return these
+    Instance: Instance
 ]
