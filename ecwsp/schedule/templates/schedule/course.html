@@ -3,18 +3,21 @@
 {% load compress %}
 
 {% block extra_head %}
-    {% compress js %}
-    <script type="text/coffeescript" charset="utf-8" src="{% static "app/course.coffee" %}"></script>
-    {% endcompress %}
-    <script type="text/javascript">
-    </script>
+  {% compress js %}
+  <script type="text/coffeescript" charset="utf-8" src="{% static "app/course.coffee" %}"></script>
+  {% endcompress %}
+  <script type="text/javascript">
+  </script>
 {% endblock %}
 
 {% block content %}
 
 
-<div ng-app="angular_sis">
-<div ng-view></div>
+<div class="container-fluid">
+  <div ng-app="angular_sis" class="row">
+    <div class="col-sm-4">Course list here</div>
+    <div class="col-sm-8" ng-view></div>
+  </div>
 </div>
 
 {% endblock %}

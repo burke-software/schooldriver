@@ -1,15 +1,104 @@
-Oh hai!
-<form name="form">
+<form name="form" class="form-horizontal">
+<div class="form-group">
+  <label class="col-sm-2 control-label">Full Course Name</label>
+  <div class="col-sm-10">
+    <input class="form-control" type="text" ng-model="course.fullname" ng-blur="saveCourse()" />
+  </div>
+</div>
+<div class="form-group">
+  <label class="col-sm-2 control-label">Short Name</label>
+  <div class="col-sm-10">
+    <input class="form-control" type="text" ng-model="course.shortname" ng-blur="saveCourse()" />
+  </div>
+</div>
+<div class="form-group">
+  <label class="col-sm-2 control-label">Homeroom?</label>
+  <div class="col-sm-10">
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" ng-model="course.homeroom" ng-blur="saveCourse()" />
+      </label>
+    </div>
+  </div>
+</div>
+<div class="form-group">
+  <label class="col-sm-2 control-label">Graded?</label>
+  <div class="col-sm-10">
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" ng-model="course.graded" ng-blur="saveCourse()" />
+      </label>
+    </div>
+  </div>
+</div>
+<div class="form-group">
+  <label class="col-sm-2 control-label">Description</label>
+  <div class="col-sm-10">
+    <textarea class="form-control" ng-model="course.description" ng-blur="saveCourse()"></textarea>
+  </div>
+</div>
+<div class="form-group">
+  <label class="col-sm-2 control-label">Credits</label>
+  <div class="col-sm-10">
+    <input class="form-control" type="text" name="credits" ng-model="course.credits" ng-blur="saveCourse('credits')" />
+    <span class="help-block" ng-show="form.credits.$invalid && form.credits.$dirty">
+        <li ng-repeat="error in errorMessage('credits')">
+            {{ error }}
+        </li>
+    </span>
+  </div>
+</div>
+<div class="form-group">
+  <label class="col-sm-2 control-label">Award Credits?</label>
+  <div class="col-sm-10">
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" ng-model="course.award_credits" ng-blur="saveCourse()" />
+      </label>
+    </div>
+  </div>
+</div>
+<div class="form-group">
+  <label class="col-sm-2 control-label">Department</label>
+  <div class="col-sm-10">
+    <input class="form-control" type="text" ng-model="course.department.name" ng-blur="saveCourse()" />
+  </div>
+</div>
+<div class="form-group">
+  <label class="col-sm-2 control-label">Grade Level</label>
+  <div class="col-sm-10">
+    <input class="form-control" type="text" ng-model="course.level" ng-blur="saveCourse()" />
+  </div>
+</div>
 
-<input type="text" ng-model="course.fullname" ng-blur="saveCourse()" />
+<div class="form-group">
+  <textarea class="form-control">{{ course }}</textarea>
+</div>
 
-<br/>
+<div ng-repeat="course in courses">{{ course.fullname }}</div>
 
-<input type="text" name="credits" ng-model="course.credits"  ng-blur="saveCourse('credits')" />
-<span class="help-block" ng-show="form.credits.$invalid && form.credits.$dirty">
-    <li ng-repeat="error in errorMessage('credits')">
-        {{ error }}
-    </li>
-</span>
+  <!-- {
+  "id":13,
+  "sections":[10,11,12],
+  "department_id":5,
+  "department": {
+    "id":5,
+    "name":"Language"
+  },
+  "is_active":true,
+  "fullname":"Spanish 101",
+  "shortname":"Spanish 101",
+  "homeroom":false,
+  "graded":true,
+  "description":"¡Este clase esta muy importante! ",
+  "credits":"1",
+  "award_credits":true,
+  "level":9,
+  "route":"courses",
+  "reqParams":null,
+  "fromServer":true,
+  "parentResource":null,
+  "restangularCollection":false
+  } -->
 
 </form>

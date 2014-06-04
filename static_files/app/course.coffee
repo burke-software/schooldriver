@@ -18,4 +18,6 @@ app.controller 'CourseController', ['$scope', '$timeout', '$routeParams', '$rout
                     _.each response.data, (errors, key) ->
                         $scope.form[key].$dirty = true
                         $scope.form[key].$setValidity('server', false)
+
+        $scope.courses = Restangular.all('courses').getList().$object
 ]
