@@ -85,7 +85,7 @@
             <div class="col-sm-10">
               <input class="form-control" type="text" name="credits" ng-model="course.credits" ng-blur="saveCourse('credits')" />
               <span class="help-block" ng-show="form.credits.$invalid && form.credits.$dirty">
-                  <li ng-repeat="error in errorMessage('credits')">
+                  <li ng-repeat="error in form.credits.errors">
                       {{ error }}
                   </li>
               </span>

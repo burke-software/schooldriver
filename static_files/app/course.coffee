@@ -1,42 +1,39 @@
 app = angular.module 'angular_sis', ['restangular', 'ngRoute', 'ui.bootstrap']
 
-app.controller 'CourseController', ['$scope', '$timeout', '$routeParams', '$route', 'Restangular', 'RestfulModel', ($scope, $timeout, $routeParams, $route, Restangular, RestfulModel) ->
-    
-    $scope.errorMessage = (name) ->
-        return errors[name]
-    errors = {}
-    
+app.controller 'CourseController', ['$scope', '$routeParams', '$route', 'RestfulModel', ($scope, $routeParams, $route, RestfulModel) ->
     $scope.$on '$routeChangeSuccess', ->
-        Restangular.one('courses', $routeParams.course_id).get().then (course) ->
-            $scope.course = course
-            $scope.saveCourse = (form_name) ->
-                course.patch().then ((response) ->
-                    $scope.form[form_name].$setValidity('server', true)
-                    errors = {}
-                ), (response) ->
-                    errors = response.data
-                    _.each response.data, (errors, key) ->
-                        $scope.form[key].$dirty = true
-                        $scope.form[key].$setValidity('server', false)
-
-        $scope.courses = Restangular.all('courses').getList().$object
-        course_model = new RestfulModel.Instance("courses")
-        course_model.get_options().then (options) ->
+        courseModel = new RestfulModel.Instance("courses")
+        $scope.courses = courseModel.getList()
+        courseModel.getOptions().then (options) ->
             $scope.course_options = options
-    
+        courseModel.getOne($routeParams.course_id, $scope.form).then (course) ->
+            $scope.course = course
+            $scope.saveCourse = course.saveForm
 ]
 
 app.factory 'RestfulModel', ['Restangular', (Restangular) ->
     Instance = (name) ->
-        @model_name = name
-        @get_options = ->
-            Restangular.all(@model_name).options().then (options) ->
+        @modelName = name
+        @getOptions = ->
+            Restangular.all(@modelName).options().then (options) ->
                 options.actions.POST
-        @get_one = (object_id) ->
-            console.log('to do')
+        @getOne = (object_id, form) ->
+            Restangular.one(@modelName, object_id).get().then (obj) ->
+                obj.saveForm = (form_name) ->
+                    obj.patch().then ((response) ->
+                        form[form_name].$setValidity('server', true)
+                    ), (response) ->
+                        _.each response.data, (errors, key) ->
+                            form[key].$dirty = true
+                            form[key].$setValidity('server', false)
+                            form[key].errors = errors
+                obj
+        @getList = ->
+            console.log('FUCK LIST?')
+            Restangular.all(@modelName).getList().$object
+
         return
 
-    # return these
     Instance: Instance
 ]
 
