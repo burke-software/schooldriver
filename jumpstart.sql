@@ -1,3 +1,8 @@
+-- To use:
+-- git checkout sample_db
+-- sqlite3 sample_db
+-- .read jumpstart.sql
+
 -- Pretty, if desired
 -- .mode column
 .headers on
