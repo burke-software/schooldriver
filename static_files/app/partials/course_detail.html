@@ -18,127 +18,106 @@
     </ul>
   </div>
 
-<div class="panel-group" id="accordion">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="">
-          Collapsible Group Item #1
-        </a>
-      </h4>
-    </div>
-    <div id="collapseOne" class="panel-collapse collapse in">
-      <div class="panel-body">
-        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
-      </div>
-    </div>
-  </div>
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="">
-          Collapsible Group Item #2
-        </a>
-      </h4>
-    </div>
-    <div id="collapseTwo" class="panel-collapse collapse">
-      <div class="panel-body">
-        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
-      </div>
-    </div>
-  </div>
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="">
-          Collapsible Group Item #3
-        </a>
-      </h4>
-    </div>
-    <div id="collapseThree" class="panel-collapse collapse">
-      <div class="panel-body">
-        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
-      </div>
-    </div>
-  </div>
+<div ng-controller="AccordionCtrl">
+  <accordion close-others="oneAtATime">
+    <accordion-group is-open="status.isOpen1">
+      <accordion-heading>
+        <i class="fa fa-fw fa-caret-right" ng-class="{'fa-caret-down': status.isOpen1, 'fa-caret-right': !status.isOpen1}"></i>Attendance
+      </accordion-heading>
+      <p>Course Attendance here, if it's homeroom and there are no sections?</p>
+      <p>I actually don't know if I need the accordion for course? Definitely for course sections; we'll have grades, attendance, and admin-ish.</p>
+    </accordion-group>
+    <accordion-group is-open="status.isOpen2">
+      <accordion-heading>
+        <i class="fa fa-fw fa-caret-right" ng-class="{'fa-caret-down': status.isOpen2, 'fa-caret-right': !status.isOpen2}"></i>Course Sections
+      </accordion-heading>
+      <p>I plan on putting the course sections in the nav to the left. But perhaps it'd be good to put them in a block here? That menu on the left might not make it to mobile, so if it's not hard or burdensome it might be nice to give someone another way to get 'em.</p>
+    </accordion-group>
+    <accordion-group is-open="status.isFirstOpen">
+        <accordion-heading>
+            <i class="fa fa-fw fa-caret-down" ng-class="{'fa-caret-down': status.isFirstOpen, 'fa-caret-right': !status.isFirstOpen}"></i>Edit Course Info
+        </accordion-heading>
+        
+        <form name="form" class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Full Course Name</label>
+            <div class="col-sm-10">
+              <input class="form-control" type="text" ng-model="course.fullname" ng-blur="saveCourse()" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Short Name</label>
+            <div class="col-sm-10">
+              <input class="form-control" type="text" ng-model="course.shortname" ng-blur="saveCourse()" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Homeroom?</label>
+            <div class="col-sm-10">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" ng-model="course.homeroom" ng-blur="saveCourse()" />
+                </label>
+              </div>
+              <span class="help-block" ng-if="course_options.homeroom.help_text">{{ course_options.homeroom.help_text }}</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Graded?</label>
+            <div class="col-sm-10">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" ng-model="course.graded" ng-blur="saveCourse()" />
+                </label>
+              </div>
+              <span class="help-block" ng-if="course_options.actions.POST.graded.help_text">{{ course_options.actions.POST.graded.help_text }}</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Description</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" ng-model="course.description" ng-blur="saveCourse()"></textarea>
+            </div>
+            <span class="help-block" ng-if="course_options.actions.POST.description.help_text">{{ course_options.actions.POST.description.help_text }}</span>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Credits</label>
+            <div class="col-sm-10">
+              <input class="form-control" type="text" name="credits" ng-model="course.credits" ng-blur="saveCourse('credits')" />
+              <span class="help-block" ng-show="form.credits.$invalid && form.credits.$dirty">
+                  <li ng-repeat="error in errorMessage('credits')">
+                      {{ error }}
+                  </li>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Award Credits?</label>
+            <div class="col-sm-10">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" ng-model="course.award_credits" ng-blur="saveCourse()" />
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Department</label>
+            <div class="col-sm-10">
+              <input class="form-control" type="text" ng-model="course.department.name" ng-blur="saveCourse()" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Grade Level</label>
+            <div class="col-sm-10">
+              <input class="form-control" type="text" ng-model="course.level" ng-blur="saveCourse()" />
+            </div>
+          </div>
+
+          </form>
+
+    </accordion-group>
+  </accordion>
 </div>
 
-
-  <form name="form" class="form-horizontal">
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Full Course Name</label>
-    <div class="col-sm-10">
-      <input class="form-control" type="text" ng-model="course.fullname" ng-blur="saveCourse()" />
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Short Name</label>
-    <div class="col-sm-10">
-      <input class="form-control" type="text" ng-model="course.shortname" ng-blur="saveCourse()" />
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Homeroom?</label>
-    <div class="col-sm-10">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" ng-model="course.homeroom" ng-blur="saveCourse()" />
-        </label>
-      </div>
-      <span class="help-block" ng-if="course_options.homeroom.help_text">{{ course_options.homeroom.help_text }}</span>
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Graded?</label>
-    <div class="col-sm-10">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" ng-model="course.graded" ng-blur="saveCourse()" />
-        </label>
-      </div>
-      <span class="help-block" ng-if="course_options.actions.POST.graded.help_text">{{ course_options.actions.POST.graded.help_text }}</span>
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Description</label>
-    <div class="col-sm-10">
-      <textarea class="form-control" ng-model="course.description" ng-blur="saveCourse()"></textarea>
-    </div>
-    <span class="help-block" ng-if="course_options.actions.POST.description.help_text">{{ course_options.actions.POST.description.help_text }}</span>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Credits</label>
-    <div class="col-sm-10">
-      <input class="form-control" type="text" name="credits" ng-model="course.credits" ng-blur="saveCourse('credits')" />
-      <span class="help-block" ng-show="form.credits.$invalid && form.credits.$dirty">
-          <li ng-repeat="error in errorMessage('credits')">
-              {{ error }}
-          </li>
-      </span>
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Award Credits?</label>
-    <div class="col-sm-10">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" ng-model="course.award_credits" ng-blur="saveCourse()" />
-        </label>
-      </div>
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Department</label>
-    <div class="col-sm-10">
-      <input class="form-control" type="text" ng-model="course.department.name" ng-blur="saveCourse()" />
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Grade Level</label>
-    <div class="col-sm-10">
-      <input class="form-control" type="text" ng-model="course.level" ng-blur="saveCourse()" />
-    </div>
-  </div>
-
-  </form>
 </div>

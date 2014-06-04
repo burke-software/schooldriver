@@ -112,6 +112,7 @@ BOWER_INSTALLED_APPS = (
     'restangular',
     'bootstrap-sass-official',
     'bootstrap-hover-dropdown',
+    'angular-ui-bootstrap',
 )
 
 #GRAPPELLI

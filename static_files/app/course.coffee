@@ -1,4 +1,4 @@
-app = angular.module 'angular_sis', ['restangular', 'ngRoute']
+app = angular.module 'angular_sis', ['restangular', 'ngRoute', 'ui.bootstrap']
 
 app.controller 'CourseController', ['$scope', '$timeout', '$routeParams', '$route', 'Restangular', 'RestfulModel', ($scope, $timeout, $routeParams, $route, Restangular, RestfulModel) ->
     
@@ -23,6 +23,7 @@ app.controller 'CourseController', ['$scope', '$timeout', '$routeParams', '$rout
         course_model = new RestfulModel.Instance("courses")
         course_model.get_options().then (options) ->
             $scope.course_options = options
+    
 ]
 
 app.factory 'RestfulModel', ['Restangular', (Restangular) ->
@@ -38,3 +39,13 @@ app.factory 'RestfulModel', ['Restangular', (Restangular) ->
     # return these
     Instance: Instance
 ]
+
+
+app.controller 'AccordionCtrl', ($scope) ->
+    $scope.oneAtATime = false
+
+    $scope.status =
+        isFirstOpen: true
+        isFirstDisabled: false
+
+    return
