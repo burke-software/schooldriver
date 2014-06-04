@@ -80,7 +80,7 @@ app.controller 'CourseGradesController', ['$scope', '$routeParams', '$route', 'G
 
 
 app.factory 'GradebookService', ['Restangular', (Restangular) ->
-    greenRenderer = (instance, td, row, col, prop, value, cellProperties) ->
+    gradeRenderer = (instance, td, row, col, prop, value, cellProperties) ->
         Handsontable.TextCell.renderer.apply this, arguments
         data_row = grades_api.rows[row]
         data_instance = data_row[prop.split('.')[0]]
@@ -90,6 +90,14 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
             td.style.background = "red"
         else if data_instance.isPristine == false
             td.style.background = "yellow"
+    finalRenderer = (instance, td, row, col, prop, value, cellProperties) ->
+        Handsontable.TextCell.renderer.apply this, arguments
+        data_row = grades_api.rows[row]
+        data_instance = data_row['final']
+        if data_instance.isValid == false
+            td.style.background = "red"
+        else if data_instance.hasOverride == true
+            td.style.background = "orange"
 
     grades_api = Restangular.all('grades')
     grades_api.marking_periods = []
@@ -114,6 +122,7 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
                     final += gradeFloat
                     num_of_mp += 1
         final_grade = (final / num_of_mp).toFixed(2)
+        student.hasOverride = false
         if isNaN(final_grade)
             student.final.grade = ''
         else
@@ -132,7 +141,7 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
         grade_columns = []
         for marking_period in grades_api.marking_periods
             marking_period.grade_key = 'grade' + marking_period.marking_period_id
-            new_column = {width: 70, renderer: greenRenderer, value: 'row.' + marking_period.grade_key + '.grade', title: marking_period.marking_period}
+            new_column = {width: 70, renderer: gradeRenderer, value: 'row.' + marking_period.grade_key + '.grade', title: marking_period.marking_period}
             if edit == 'False'
                 new_column.readOnly = true
             columns.push(new_column)
@@ -143,12 +152,14 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
                             row[marking_period.grade_key] = grade
                         else if grade.override_final == true
                             row.final = grade
-        new_column = {width: 70, value: 'row.final.grade', title: 'Final'}
+        new_column = {width: 70, renderer: finalRenderer, value: 'row.final.grade', title: 'Final'}
         if edit_final == 'False'
             new_column.readOnly = true
         columns.push(new_column)
         for row in rows
-            if not row.final.id
+            if row.final.id
+                row.final.hasOverride = true
+            else
                 grades_api.recalculateGrades(row)
         grades_api.rows = rows
             
@@ -166,9 +177,13 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
                             row['final'] = {grade: 0}
                         grades_api.recalculateGrades(row)
                     else
+                        row.final.hasOverride = true
                         if row.final.id
                             # Exists - update it
-                            row.final.save()
+                            row.final.save().then ((response) ->
+                                row.final.isValid = true
+                            ), (response) ->
+                                row.final.isValid = false
                         else
                             new_grade = {
                                 grade: row.final.grade
@@ -182,7 +197,11 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
                                 new_grade.course_id = grades_api.course_id
                             else
                                 new_grade.course_id = row.course_id
-                            grades_api.post(new_grade)
+                            grades_api.post(new_grade).then ((response) ->
+                                row.final.isValid = true
+                            ), (response) ->
+                                row.final.isValid = false
+                                $('.handsontable').data('handsontable').render()
                 else
                     if not row.final.id
                         grades_api.recalculateGrades(row)

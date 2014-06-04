@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import connection
 from django.db.models.signals import post_save, m2m_changed
-from localflavor.us.models import USStateField, PhoneNumberField
+from localflavor.us.models import USStateField, PhoneNumberField  #, USSocialSecurityNumberField
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 
@@ -18,9 +18,6 @@ from decimal import Decimal
 from ecwsp.sis.helper_functions import round_as_decimal
 
 logger = logging.getLogger(__name__)
-
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^ckeditor\.fields\.RichTextField"])
 
 
 def create_faculty(instance, make_user_group=True):
@@ -227,7 +224,7 @@ def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs)
             student_cohort.primary = True
             student_cohort.save()
 
-m2m_changed.connect(after_cohort_m2m, sender='sis.StudentCohort')
+m2m_changed.connect(after_cohort_m2m, sender='sis.Cohort')
 
 class PerCourseCohort(Cohort):
     course = models.ForeignKey('schedule.Course')
@@ -321,7 +318,7 @@ class Student(User, CustomFieldModel):
     date_dismissed = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
     unique_id = models.IntegerField(blank=True, null=True, unique=True, help_text="For integration with outside databases")
-    ssn = models.CharField(max_length=11, blank=True, null=True)
+    ssn = models.CharField(max_length=11, blank=True, null=True)  #Once 1.1 is out USSocialSecurityNumberField(blank=True)
 
     # These fields are cached from emergency contacts
     parent_guardian = models.CharField(max_length=150, blank=True, editable=False)
@@ -509,7 +506,7 @@ class Student(User, CustomFieldModel):
             except:
                 return None
 
-    def save(self, creating_worker=False, *args, **kwargs):
+    def ssave(self, creating_worker=False, *args, **kwargs):
         self.cache_cohorts()
         if self.is_active == False and (Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "True" \
         or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "true" \

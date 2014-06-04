@@ -74,7 +74,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pagination.middleware.PaginationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    #'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
@@ -310,7 +309,6 @@ INSTALLED_APPS = (
     # These can be enabled if desired but the default is off
     #'ldap_groups',
     #'raven.contrib.django',
-    #'debug_toolbar',
     #'ecwsp.integrations.schoolreach',
     #'social.apps.django_app.default',
     #'ecwsp.omr',

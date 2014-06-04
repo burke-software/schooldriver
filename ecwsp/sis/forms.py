@@ -1,5 +1,4 @@
 import floppyforms as forms
-from localflavor.us.forms import *
 from django.contrib.admin import widgets as adminwidgets
 from django.contrib import messages
 from django.conf import settings
@@ -11,14 +10,6 @@ from ecwsp.schedule.models import MarkingPeriod, CourseMeet, Award
 from ecwsp.administration.models import Template
 import autocomplete_light
 autocomplete_light.autodiscover()
-
-class StudentForm(autocomplete_light.ModelForm):
-    class Meta:
-        model = Student
-    
-    ssn = USSocialSecurityNumberField(required=False)
-    state = USStateField()
-    zip = USZipCodeField(required=False)
 
 
 class UserPreferenceForm(forms.ModelForm):
