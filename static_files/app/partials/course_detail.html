@@ -18,7 +18,8 @@
     </ul>
   </div>
 
-<div ng-controller="AccordionCtrl">
+<div>
+  <form name="form" class="form-horizontal">
   <accordion close-others="oneAtATime">
     <accordion-group is-open="status.isOpen1">
       <accordion-heading>
@@ -33,12 +34,8 @@
       </accordion-heading>
       <p>I plan on putting the course sections in the nav to the left. But perhaps it'd be good to put them in a block here? That menu on the left might not make it to mobile, so if it's not hard or burdensome it might be nice to give someone another way to get 'em.</p>
     </accordion-group>
-    <accordion-group is-open="status.isFirstOpen">
-        <accordion-heading>
             <i class="fa fa-fw fa-caret-down" ng-class="{'fa-caret-down': status.isFirstOpen, 'fa-caret-right': !status.isFirstOpen}"></i>Edit Course Info
-        </accordion-heading>
         
-        <form name="form" class="form-horizontal">
           <div class="form-group">
             <label class="col-sm-2 control-label">Full Course Name</label>
             <div class="col-sm-10">
@@ -70,7 +67,7 @@
                   <input type="checkbox" ng-model="course.graded" ng-blur="saveCourse()" />
                 </label>
               </div>
-              <span class="help-block" ng-if="course_options.actions.POST.graded.help_text">{{ course_options.actions.POST.graded.help_text }}</span>
+              <span class="help-block" ng-if="course_options.graded.help_text">{{ course_options.graded.help_text }}</span>
             </div>
           </div>
           <div class="form-group">
@@ -78,7 +75,7 @@
             <div class="col-sm-10">
               <textarea class="form-control" ng-model="course.description" ng-blur="saveCourse()"></textarea>
             </div>
-            <span class="help-block" ng-if="course_options.actions.POST.description.help_text">{{ course_options.actions.POST.description.help_text }}</span>
+            <span class="help-block" ng-if="course_options.description.help_text">{{ course_options.actions.POST.description.help_text }}</span>
           </div>
           <div class="form-group">
             <label class="col-sm-2 control-label">Credits</label>
@@ -114,10 +111,8 @@
             </div>
           </div>
 
-          </form>
-
-    </accordion-group>
   </accordion>
+  </form>
 </div>
 
 </div>

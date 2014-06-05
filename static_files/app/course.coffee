@@ -1,6 +1,11 @@
 app = angular.module 'angular_sis', ['restangular', 'ngRoute', 'ui.bootstrap']
 
 app.controller 'CourseController', ['$scope', '$routeParams', '$route', 'RestfulModel', ($scope, $routeParams, $route, RestfulModel) ->
+    $scope.oneAtATime = false
+    $scope.status =
+        isFirstOpen: true
+        isFirstDisabled: false
+        
     $scope.$on '$routeChangeSuccess', ->
         courseModel = new RestfulModel.Instance("courses")
         $scope.courses = courseModel.getList()
@@ -29,20 +34,9 @@ app.factory 'RestfulModel', ['Restangular', (Restangular) ->
                             form[key].errors = errors
                 obj
         @getList = ->
-            console.log('FUCK LIST?')
             Restangular.all(@modelName).getList().$object
 
         return
 
     Instance: Instance
 ]
-
-
-app.controller 'AccordionCtrl', ($scope) ->
-    $scope.oneAtATime = false
-
-    $scope.status =
-        isFirstOpen: true
-        isFirstDisabled: false
-
-    return
