@@ -27,12 +27,12 @@ class AttendanceStatus(models.Model):
 
 
 class CourseAttendance(models.Model):
-    """ Attendance taken at each course
+    """ Attendance taken at each course (section)
     It compares with the daily "student attendance" and is a way to verify
     students are not skipping classes.
     """
     student =  models.ForeignKey(Student)
-    course = models.ForeignKey('schedule.CourseSection')
+    course_section = models.ForeignKey('schedule.CourseSection')
     period = models.ForeignKey('schedule.Period', blank=True, null=True)
     date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     time_in = models.TimeField(blank=True, null=True)
@@ -107,7 +107,7 @@ post_save.connect(post_save_attendance_handler, sender=StudentAttendance)
 class AttendanceLog(models.Model):
     date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User)
-    course = models.ForeignKey('schedule.CourseSection')
+    course_section = models.ForeignKey('schedule.CourseSection')
     asp = models.BooleanField(default=False, help_text="ASP attendance, if unchecked this is for a homeroom")
     def __unicode__(self):
         return unicode(self.user) + " " + unicode(self.date)

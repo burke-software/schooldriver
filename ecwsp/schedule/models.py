@@ -124,7 +124,7 @@ class Period(models.Model):
 
 class CourseMeet(models.Model):
     period = models.ForeignKey(Period)
-    section = models.ForeignKey('CourseSection')
+    course_section = models.ForeignKey('CourseSection', null=True)
     day_choice = (   # ISOWEEKDAY
         ('1', 'Monday'),
         ('2', 'Tuesday'),
@@ -146,7 +146,7 @@ class Location(models.Model):
 
 
 class CourseEnrollment(models.Model):
-    section = models.ForeignKey('CourseSection')
+    course_section = models.ForeignKey('CourseSection', null=True)
     user = models.ForeignKey('sis.Student')
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
     exclude_days = models.ManyToManyField('Day', blank=True, \
@@ -155,11 +155,11 @@ class CourseEnrollment(models.Model):
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
     class Meta:
-        unique_together = (("section", "user"),)
+        unique_together = (("course_section", "user"),)
 
     def save(self, *args, **kwargs):
         super(CourseEnrollment, self).save(*args, **kwargs)
-        self.section.populate_all_grades()
+        self.course_section.populate_all_grades()
 
     def cache_grades(self):
         """ Set cache on both grade and numeric_grade """
@@ -215,7 +215,7 @@ SELECT ( Sum(grade * weight) {over} / Sum(weight) {over} ) AS ave_grade,
 FROM   grades_grade
        LEFT JOIN schedule_markingperiod
               ON schedule_markingperiod.id = grades_grade.marking_period_id
-WHERE  ( grades_grade.course_id = %s
+WHERE  ( grades_grade.course_section_id = %s
          AND grades_grade.student_id = %s {extra_where} )
        AND ( grade IS NOT NULL
               OR letter_grade IS NOT NULL )
@@ -229,7 +229,7 @@ ORDER  BY grades_grade.override_final DESC limit 1'''
             else:
                 cursor.execute(sql_string.format(
                     over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
-                               (self.section_id, self.user_id, date_report))
+                               (self.course_section_id, self.user_id, date_report))
 
         else:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
@@ -239,7 +239,7 @@ ORDER  BY grades_grade.override_final DESC limit 1'''
             else:
                 cursor.execute(sql_string.format(
                     over='', extra_where=''),
-                               (self.section_id, self.user_id))
+                               (self.course_section_id, self.user_id))
 
         result = cursor.fetchone()
         if result:
@@ -262,7 +262,7 @@ ORDER  BY grades_grade.override_final DESC limit 1'''
         # Letter Grade
         if ignore_letter == False:
             final = 0.0
-            grades = self.section.grade_set.filter(student=self.user)
+            grades = self.course_section.grade_set.filter(student=self.user)
             if date_report:
                 grades = grades.filter(marking_period__end_date__lte=date_report)
             if grades:
@@ -401,11 +401,11 @@ class Course(models.Model):
 
 class CourseSectionTeacher(models.Model):
     teacher = models.ForeignKey('sis.Faculty')
-    coursesection = models.ForeignKey('CourseSection')
+    course_section = models.ForeignKey('CourseSection', null=True)
     is_primary = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('teacher', 'coursesection')
+        unique_together = ('teacher', 'course_section')
 
 class CourseSection(models.Model):
     course = models.ForeignKey(Course, related_name='sections')

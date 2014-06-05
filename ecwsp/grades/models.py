@@ -50,7 +50,7 @@ class StudentMarkingPeriodGrade(models.Model):
     def calculate_grade(self):
         # ignore overriding grades - WRONG!
         return self.student.grade_set.filter(
-            course__courseenrollment__user=self.student, # make sure the student is still enrolled in the course!
+            course_section__courseenrollment__user=self.student, # make sure the student is still enrolled in the course!
             # each course's weight in the MP average is the course's number of
             # credits DIVIDED BY the count of marking periods for the course
             grade__isnull=False, override_final=False, marking_period=self.marking_period).extra(select={
@@ -86,12 +86,12 @@ class StudentYearGrade(models.Model):
     @staticmethod
     def build_cache_student(student):
         years = student.courseenrollment_set.values(
-            'section__marking_period__school_year').annotate(Count('section__marking_period__school_year'))
+            'course_section__marking_period__school_year').annotate(Count('course_section__marking_period__school_year'))
         for year in years:
-            if year['section__marking_period__school_year']:
+            if year['course_section__marking_period__school_year']:
                 year_grade = StudentYearGrade.objects.get_or_create(
                     student=student,
-                    year_id=year['section__marking_period__school_year']
+                    year_id=year['course_section__marking_period__school_year']
                 )[0]
                 if year_grade.credits_recalculation_needed:
                     year_grade.recalculate_credits()
@@ -117,15 +117,15 @@ class StudentYearGrade(models.Model):
         total = Decimal(0)
         credits = Decimal(0)
         for course_enrollment in self.student.courseenrollment_set.filter(
-            section__marking_period__show_reports=True,
-            section__marking_period__school_year=self.year,
-            section__course__credits__isnull=False,
+            course_section__marking_period__show_reports=True,
+            course_section__marking_period__school_year=self.year,
+            course_section__course__credits__isnull=False,
             ).distinct():
             grade = course_enrollment.calculate_grade_real(date_report=date_report, ignore_letter=True)
             #print ('{}\t' * 3).format(course_enrollment.course, course_enrollment.course.credits, grade)
             if grade:
-                total += grade * course_enrollment.section.course.credits
-                credits += course_enrollment.section.course.credits
+                total += grade * course_enrollment.course_section.course.credits
+                credits += course_enrollment.course_section.course.credits
         if credits > 0:
             grade = total / credits
         else:
@@ -181,7 +181,7 @@ letter_grade_choices = (
     )
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
-    course = models.ForeignKey('schedule.CourseSection')
+    course_section = models.ForeignKey('schedule.CourseSection', null=True)
     marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
     date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
@@ -201,7 +201,7 @@ class Grade(models.Model):
     letter_grade_choices = letter_grade_choices
 
     class Meta:
-        unique_together = (("student", "course", "marking_period"),)
+        unique_together = (("student", "course_section", "marking_period"),)
         permissions = (
             ("change_own_grade", "Change grades for own class"),
             ('change_own_final_grade','Change final YTD grades for own class'),
@@ -253,7 +253,7 @@ class Grade(models.Model):
     def invalidate_cache(self):
         """ Invalidate any related caches """
         try:
-            enrollment = self.course.courseenrollment_set.get(user=self.student)
+            enrollment = self.course_section.courseenrollment_set.get(user=self.student)
             enrollment.flag_grade_as_stale()
             enrollment.flag_numeric_grade_as_stale()
         except CourseEnrollment.DoesNotExist:
@@ -299,9 +299,12 @@ class Grade(models.Model):
         submit both; the number is used for calculations and the letter appears on
         reports. '''
         if self.marking_period_id == None:
-            if Grade.objects.filter(student=self.student, course=self.course, marking_period=None
-                                ).exclude(id=self.id).exists():
-                raise ValidationError('Student, Course, MarkingPeriod must be unique')
+            if Grade.objects.filter(
+                    student=self.student, 
+                    course_section=self.course_section, 
+                    marking_period=None
+                    ).exclude(id=self.id).exists():
+                raise ValidationError('Student, Course Section, MarkingPeriod must be unique')
 
     def save(self, *args, **kwargs):
         super(Grade, self).save(*args, **kwargs)
@@ -326,13 +329,13 @@ class Grade(models.Model):
         """
         grade_instance = Grade.objects.filter(
             student = student,
-            course = course_section,
+            course_section = course_section,
             marking_period = marking_period
         )
         if not grade_instance:
             new_grade = Grade(
                 student = student,
-                course = course_section, 
+                course_section = course_section, 
                 marking_period = marking_period,
                 grade = None,
             )

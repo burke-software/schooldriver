@@ -31,7 +31,7 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 
 class CourseAttendanceAdmin(admin.ModelAdmin):
-    list_display = ['student', 'date', 'course', 'course_period', 'status', 'notes']
+    list_display = ['student', 'date', 'course_section', 'course_period', 'status', 'notes']
     list_filter = [
         ('date', DateRangeFilter),
         'status'
