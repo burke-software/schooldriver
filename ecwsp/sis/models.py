@@ -238,8 +238,8 @@ class ReasonLeft(models.Model):
 
 
 class GradeLevel(models.Model):
-    id = models.IntegerField(unique=True, primary_key=True, verbose_name="Grade")
-    name = models.CharField(max_length=150, unique=True)
+    id = models.IntegerField(unique=True, primary_key=True, verbose_name="Grade Number")
+    name = models.CharField(max_length=150, unique=True, verbose_name="Grade Name")
 
     class Meta:
         ordering = ('id',)

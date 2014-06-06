@@ -1,14 +1,17 @@
-<div class="form-group">
-    <label class="col-sm-2 control-label">
+<div class="form-group" ng-class="{'has-error': fieldForm.$invalid && fieldForm.$dirty}">
+    <label class="col-sm-2 control-label" for="fieldForm.name">
         {{ fieldOptions.label }}
     </label>
   <div class="col-sm-10">
     <div ng-transclude></div>
-    <span class="help-block" ng-show="fieldForm.$invalid && fieldForm.$dirty">
-      <li ng-repeat="error in fieldForm.errors">
-        {{ error }}
-      </li>
-      <li ng-show"fieldForm.$error.required">This Field is Required</li>
+    <span class="help-block" ng-if="fieldOptions.help_text">{{ fieldOptions.help_text }}</span>
+    <span class="help-block">
+      <ul class="list-unstyled" ng-show="fieldForm.$invalid && fieldForm.$dirty">
+        <li ng-repeat="error in fieldForm.errors">
+          {{ error }}
+        </li>
+        <li ng-show="fieldForm.$error.required">This field is required.</li>
+      </ul>
     </span>
   </div>
 </div>

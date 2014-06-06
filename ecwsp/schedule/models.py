@@ -307,7 +307,7 @@ class Day(models.Model):
         ordering = ('day',)
 
 class Department(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=True, verbose_name="Department Name")
     order_rank = models.IntegerField(blank=True, null=True, help_text="Rank that courses will show up in reports")
     def get_graduation_credits(self, student):
         try:
@@ -335,7 +335,7 @@ class DepartmentGraduationCredits(models.Model):
 class Course(models.Model):
     is_active = models.BooleanField(default=True)
     fullname = models.CharField(max_length=255, unique=True, verbose_name="Full Course Name")
-    shortname = models.CharField(max_length=255)
+    shortname = models.CharField(max_length=255, verbose_name="Short Name")
     homeroom = models.BooleanField(default=False, help_text="Homerooms can be used for attendance")
     graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
     description = models.TextField(blank=True)
@@ -347,7 +347,7 @@ class Course(models.Model):
         credit totals. However, the number of credits will still be used as a
         weight in GPA calculations.''')
     department = models.ForeignKey(Department, blank=True, null=True)
-    level = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
+    level = models.ForeignKey('sis.GradeLevel', blank=True, null=True, verbose_name="Grade Level")
 
     def __unicode__(self):
         return self.fullname
