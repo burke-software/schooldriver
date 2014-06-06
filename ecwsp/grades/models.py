@@ -158,13 +158,27 @@ class StudentYearGrade(models.Model):
 signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
 
 
-class GradeLetterRule(models.Model):
+class GradeScale(models.Model):
+    """ Translate a numeric grade to some other scale.
+    Example: Letter grade or 4.0 scale. """
+    name = models.CharField(max_length=255, unique=True)
+
+    def __unicode__(self):
+        return '{}'.format(self.name)
+
+
+class GradeScaleRule(models.Model):
     min_grade = models.DecimalField(max_digits=5, decimal_places=2)
     max_grade = models.DecimalField(max_digits=5, decimal_places=2)
-    letter_grade = models.CharField(max_length=50, unique=True)
+    letter_grade = models.CharField(max_length=50, blank=True)
+    numeric_scale = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    grade_scale = models.ForeignKey(GradeScale)
 
     class Meta:
-        unique_together = ('min_grade', 'max_grade')
+        unique_together = ('min_grade', 'max_grade', 'grade_scale')
+
+    def __unicode__(self):
+        return '{}-{} {} {}'.format(self.min_grade, self.max_grade, self.letter_grade, self.numeric_scale)
 
 
 letter_grade_choices = (
@@ -234,7 +248,7 @@ class Grade(models.Model):
                 self.letter_grade = None
                 return True
             return False
-    
+
     @staticmethod
     def validate_grade(grade):
         """ Determine if grade is valid or not """
@@ -261,7 +275,7 @@ class Grade(models.Model):
         self.student.cache_gpa = self.student.calculate_gpa()
         if self.student.cache_gpa != "N/A":
             self.student.save()
-    
+
     def get_grade(self, letter=False, display=False, rounding=None,
         minimum=None, number=False):
         """
@@ -300,8 +314,8 @@ class Grade(models.Model):
         reports. '''
         if self.marking_period_id == None:
             if Grade.objects.filter(
-                    student=self.student, 
-                    course_section=self.course_section, 
+                    student=self.student,
+                    course_section=self.course_section,
                     marking_period=None
                     ).exclude(id=self.id).exists():
                 raise ValidationError('Student, Course Section, MarkingPeriod must be unique')
@@ -322,9 +336,9 @@ class Grade(models.Model):
     def populate_grade(student, marking_period, course_section):
         """
         make sure that each combination of Student/MarkingPeriod/CourseSection
-        has a grade entity associated with it. If none exists, create one and 
-        set the course grade to "None". This method should be called on 
-        enrolling students to an exsiting course or creating a new course, 
+        has a grade entity associated with it. If none exists, create one and
+        set the course grade to "None". This method should be called on
+        enrolling students to an exsiting course or creating a new course,
         or creating a new marking period, or creating a new cource section
         """
         grade_instance = Grade.objects.filter(
@@ -335,7 +349,7 @@ class Grade(models.Model):
         if not grade_instance:
             new_grade = Grade(
                 student = student,
-                course_section = course_section, 
+                course_section = course_section,
                 marking_period = marking_period,
                 grade = None,
             )
