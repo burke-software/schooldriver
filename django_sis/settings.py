@@ -350,6 +350,12 @@ try:
 except ImportError:
     print("Warning: Could not import settings_local.py")
 
+try:  # prefix cache based on school name to avoid collisions.
+    if SCHOOL_NAME and CACHES:
+        CACHES['default']['KEY_PREFIX'] = SCHOOL_NAME
+except NameError:
+    pass # Not using cache
+
 # must do this after importing settings_local
 if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
     AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
