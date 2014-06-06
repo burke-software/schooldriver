@@ -5,12 +5,12 @@ app.controller 'CourseController', ['$scope', '$routeParams', '$route', 'Restful
     $scope.status =
         isFirstOpen: true
         isFirstDisabled: false
-        
+
     $scope.$on '$routeChangeSuccess', ->
         courseModel = new RestfulModel.Instance("courses")
         $scope.courses = courseModel.getList()
         courseModel.getOptions().then (options) ->
-            $scope.course_options = options
+            $scope.courseOptions = options
         courseModel.getOne($routeParams.course_id, $scope.form).then (course) ->
             $scope.course = course
             $scope.saveCourse = course.saveForm
@@ -25,8 +25,12 @@ app.factory 'RestfulModel', ['Restangular', (Restangular) ->
         @getOne = (object_id, form) ->
             Restangular.one(@modelName, object_id).get().then (obj) ->
                 obj.saveForm = (form_name) ->
-                    obj.patch().then ((response) ->
-                        form[form_name].$setValidity('server', true)
+                    # save only the field that was changed.
+                    form_field = form[form_name]
+                    patch_object = {}
+                    patch_object[form_name] = form_field.$viewValue
+                    obj.patch(patch_object).then ((response) ->
+                        form_field.$setValidity('server', true)
                     ), (response) ->
                         _.each response.data, (errors, key) ->
                             form[key].$dirty = true
@@ -40,3 +44,11 @@ app.factory 'RestfulModel', ['Restangular', (Restangular) ->
 
     Instance: Instance
 ]
+
+app.directive "bscField", ->
+    scope:
+        fieldOptions: "="
+        fieldForm: "="
+
+    templateUrl: "/static/app/partials/field.html"
+    transclude: true

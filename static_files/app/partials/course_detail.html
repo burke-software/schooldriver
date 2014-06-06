@@ -36,11 +36,8 @@
     </accordion-group>
             <i class="fa fa-fw fa-caret-down" ng-class="{'fa-caret-down': status.isFirstOpen, 'fa-caret-right': !status.isFirstOpen}"></i>Edit Course Info
         
-          <div class="form-group">
-            <label class="col-sm-2 control-label">Full Course Name</label>
-            <div class="col-sm-10">
-              <input class="form-control" type="text" ng-model="course.fullname" ng-blur="saveCourse()" />
-            </div>
+          <div bsc-field field-options="courseOptions.fullname" field-form="form.fullname">
+            <input class="form-control" name="fullname" ng-required="courseOptions.credits.required" type="text" ng-model="course.fullname" ng-blur="saveCourse('fullname')" />
           </div>
           <div class="form-group">
             <label class="col-sm-2 control-label">Short Name</label>
@@ -77,17 +74,11 @@
             </div>
             <span class="help-block" ng-if="course_options.description.help_text">{{ course_options.actions.POST.description.help_text }}</span>
           </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label">Credits</label>
-            <div class="col-sm-10">
-              <input class="form-control" type="text" name="credits" ng-model="course.credits" ng-blur="saveCourse('credits')" />
-              <span class="help-block" ng-show="form.credits.$invalid && form.credits.$dirty">
-                  <li ng-repeat="error in form.credits.errors">
-                      {{ error }}
-                  </li>
-              </span>
-            </div>
+
+          <div bsc-field field-options="courseOptions.credits" field-form="form.credits">
+            <input class="form-control" name="credits" type="text" ng-required="courseOptions.credits.required" ng-model="course.credits" ng-blur="saveCourse('credits')" />
           </div>
+
           <div class="form-group">
             <label class="col-sm-2 control-label">Award Credits?</label>
             <div class="col-sm-10">

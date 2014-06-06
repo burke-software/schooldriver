@@ -334,7 +334,7 @@ class DepartmentGraduationCredits(models.Model):
 
 class Course(models.Model):
     is_active = models.BooleanField(default=True)
-    fullname = models.CharField(max_length=255, unique=True)
+    fullname = models.CharField(max_length=255, unique=True, verbose_name="Full Course Name")
     shortname = models.CharField(max_length=255)
     homeroom = models.BooleanField(default=False, help_text="Homerooms can be used for attendance")
     graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
@@ -366,7 +366,7 @@ class Course(models.Model):
     def save(self, *args, **kwargs):
         super(Course, self).save(*args, **kwargs)
 
-        # assign teacher in as enrolled user 
+        # assign teacher in as enrolled user
         try:
             if self.teacher:
                 enroll, created = CourseEnrollment.objects.get_or_create(course=self, user=self.teacher, role="teacher")
@@ -417,7 +417,7 @@ class CourseSection(models.Model):
     enrollments = models.ManyToManyField('sis.Student', through=CourseEnrollment, blank=True, null=True)
     cohorts = models.ManyToManyField('sis.Cohort', blank=True, null=True)
     last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
-    
+
     def __unicode__(self):
         return '{}: {}'.format(self.course, self.name)
 
@@ -433,7 +433,7 @@ class CourseSection(models.Model):
     @property
     def credits(self):
         return self.course.credits
-    
+
     @property
     def description(self):
         """ Course description """
@@ -448,7 +448,7 @@ class CourseSection(models.Model):
     def shortname(self):
         """ Course short name """
         return self.course.shortname
-    
+
     @property
     def teacher(self):
         """ Show just the primary teacher, or any if there is no primary """
@@ -473,7 +473,7 @@ class CourseSection(models.Model):
         for student in self.enrollments.all():
             for marking_period in self.marking_period.all():
                 ecwsp.grades.models.Grade.populate_grade(
-                    student = student, 
+                    student = student,
                     marking_period = marking_period,
                     course_section = self
                     )
@@ -481,7 +481,7 @@ class CourseSection(models.Model):
     def save(self, *args, **kwargs):
         super(CourseSection, self).save(*args, **kwargs)
         self.populate_all_grades()
-    
+
 
 class OmitCourseGPA(models.Model):
     """ Used to keep repeated or invalid course from affecting GPA """
