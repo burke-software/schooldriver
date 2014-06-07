@@ -125,6 +125,7 @@ class Period(models.Model):
 class CourseMeet(models.Model):
     period = models.ForeignKey(Period)
     course = models.ForeignKey('Course')
+    course_section = models.ForeignKey('CourseSection', null=True)
     day_choice = (   # ISOWEEKDAY
         ('1', 'Monday'),
         ('2', 'Tuesday'),
@@ -146,8 +147,9 @@ class Location(models.Model):
 
 
 class CourseEnrollment(models.Model):
-    course = models.ForeignKey('Course')
-    user = models.ForeignKey('auth.User')
+    course = models.ForeignKey('Course', null=True)
+    course_section = models.ForeignKey('CourseSection', null=True)
+    user = models.ForeignKey('sis.Student')
     role = models.CharField(max_length=255, default="Student", blank=True)
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
@@ -156,8 +158,8 @@ class CourseEnrollment(models.Model):
     grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
-    class Meta:
-        unique_together = (("course", "user", "role"),)
+    #class Meta:
+    #    unique_together = (("course", "user", "role"),)
 
     def cache_grades(self):
         """ Set cache on both grade and numeric_grade """
@@ -332,6 +334,7 @@ class DepartmentGraduationCredits(models.Model):
 
 class Course(models.Model):
     active = models.BooleanField(default=True, help_text="Sometimes used in third party integrations such as Moodle. Has no affect within django-sis.")
+    is_active = models.BooleanField(default=True)
     fullname = models.CharField(max_length=255, unique=True)
     shortname = models.CharField(max_length=255)
     marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
@@ -340,9 +343,10 @@ class Course(models.Model):
     secondary_teachers = models.ManyToManyField('sis.Faculty', blank=True, null=True, related_name="secondary_teachers")
     homeroom = models.BooleanField(default=False, help_text="Homerooms can be used for attendance")
     graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
-    enrollments = models.ManyToManyField('auth.User', through=CourseEnrollment, blank=True, null=True)
+    enrollments = models.ManyToManyField('sis.Student', through=CourseEnrollment, blank=True, null=True)
     description = models.TextField(blank=True)
     credits = models.DecimalField(max_digits=5, decimal_places=2,
+        null=True, blank=True, # Migration should replace None with 0. Remove this line after migration.
         help_text="Credits affect GPA.",
         default=lambda: Configuration.get_or_default(name='Default course credits').value)
     award_credits = models.BooleanField(default=True,
@@ -397,6 +401,89 @@ class Course(models.Model):
     def number_of_students(self):
         return self.courseenrollment_set.filter(role="student").count()
     number_of_students.short_description = "# of Students"
+
+class CourseSectionTeacher(models.Model):
+    teacher = models.ForeignKey('sis.Faculty', blank=True, null=True)
+    course_section = models.ForeignKey('CourseSection', null=True)
+    is_primary = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('teacher', 'course_section')
+
+class CourseSection(models.Model):
+    course = models.ForeignKey(Course, related_name='sections')
+    is_active = models.BooleanField(default=True)
+    name = models.CharField(max_length=255)
+    marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
+    periods = models.ManyToManyField(Period, blank=True, through=CourseMeet)
+    teachers = models.ManyToManyField('sis.Faculty', through=CourseSectionTeacher, blank=True)
+    enrollments = models.ManyToManyField('sis.Student', through=CourseEnrollment, blank=True, null=True)
+    cohorts = models.ManyToManyField('sis.Cohort', blank=True, null=True)
+    last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
+
+    def __unicode__(self):
+        return '{}: {}'.format(self.course, self.name)
+
+    @property
+    def department(self):
+        return self.course.department
+
+    @property
+    def level(self):
+        """ Course grade level """
+        return self.course.level
+
+    @property
+    def credits(self):
+        return self.course.credits
+
+    @property
+    def description(self):
+        """ Course description """
+        return self.course.description
+
+    @property
+    def fullname(self):
+        """ Course full name """
+        return self.course.fullname
+
+    @property
+    def shortname(self):
+        """ Course short name """
+        return self.course.shortname
+
+    @property
+    def teacher(self):
+        """ Show just the primary teacher, or any if there is no primary """
+        course_teacher = self.coursesectionteacher_set.all().order_by('-is_primary').first()
+        if course_teacher:
+            return course_teacher.teacher
+
+    def number_of_students(self):
+        return self.enrollments.count()
+    number_of_students.short_description = "# of Students"
+
+    def calculate_final_grade(self, student):
+        """ Shim code to calculate final grade WITHOUT cache """
+        enrollment = self.courseenrollment_set.get(user=student)
+        return enrollment.calculate_grade_real()
+
+    def populate_all_grades(self):
+        """
+        calling this method calls Grade.populate_grade on each combination
+        of enrolled_student + marking_period + course_section
+        """
+        for student in self.enrollments.all():
+            for marking_period in self.marking_period.all():
+                ecwsp.grades.models.Grade.populate_grade(
+                    student = student,
+                    marking_period = marking_period,
+                    course_section = self
+                    )
+
+    def save(self, *args, **kwargs):
+        super(CourseSection, self).save(*args, **kwargs)
+        self.populate_all_grades()
 
 class OmitCourseGPA(models.Model):
     """ Used to keep repeated or invalid course from affecting GPA """
