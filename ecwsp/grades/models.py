@@ -166,8 +166,12 @@ class GradeScale(models.Model):
     def __unicode__(self):
         return '{}'.format(self.name)
 
+    def to_letter(self, grade):
+        return 0
+
 
 class GradeScaleRule(models.Model):
+    """ One rule for a grade scale.  """
     min_grade = models.DecimalField(max_digits=5, decimal_places=2)
     max_grade = models.DecimalField(max_digits=5, decimal_places=2)
     letter_grade = models.CharField(max_length=50, blank=True)

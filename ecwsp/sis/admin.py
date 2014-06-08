@@ -99,7 +99,7 @@ admin.site.register(Faculty, FacultyAdmin)
 
 class StudentCourseInline(admin.TabularInline):
     model = CourseEnrollment
-    fields = ('section', 'attendance_note')
+    fields = ('course_section', 'attendance_note')
     extra = 0
     classes = ('grp-collapse grp-closed',)
 

@@ -58,3 +58,5 @@ class GradeCalculationTests(TestCase):
         older = syg.calculate_grade_and_credits()
         self.assertEqual(current, older)
 
+    def test_grade_scale(self):
+        pass
