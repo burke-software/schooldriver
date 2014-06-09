@@ -42,10 +42,10 @@ class StudentMarkingPeriodGrade(models.Model):
     def build_all_cache():
         """ Create object for each student * possible marking periods """
         for student in Student.objects.all():
-            marking_periods = student.courseenrollment_set.values('course__marking_period').annotate(Count('course__marking_period'))
+            marking_periods = student.courseenrollment_set.values('course_section__marking_period').annotate(Count('course_section__marking_period'))
             for marking_period in marking_periods:
                 StudentMarkingPeriodGrade.objects.get_or_create(
-                    student=student, marking_period_id=marking_period['course__marking_period'])
+                    student=student, marking_period_id=marking_period['course_section__marking_period'])
 
     def calculate_grade(self):
         # ignore overriding grades - WRONG!
@@ -58,17 +58,17 @@ class StudentMarkingPeriodGrade(models.Model):
                 Sum(grade *
                       (SELECT credits
                        FROM schedule_course
-                       WHERE schedule_course.id = grades_grade.course_id) /
-                      (SELECT Count(schedule_course_marking_period.markingperiod_id)
-                       FROM schedule_course_marking_period
-                       WHERE schedule_course_marking_period.course_id = grades_grade.course_id)) /
+                       WHERE schedule_course.id = grades_grade.course_section_id) /
+                      (SELECT Count(schedule_coursesection_marking_period.markingperiod_id)
+                       FROM schedule_coursesection_marking_period
+                       WHERE schedule_coursesection_marking_period.coursesection_id = grades_grade.course_section_id)) /
                 Sum(
                       (SELECT credits
                        FROM schedule_course
-                       WHERE schedule_course.id = grades_grade.course_id) /
-                      (SELECT Count(schedule_course_marking_period.markingperiod_id)
-                       FROM schedule_course_marking_period
-                       WHERE schedule_course_marking_period.course_id = grades_grade.course_id))
+                       WHERE schedule_course.id = grades_grade.course_section_id) /
+                      (SELECT Count(schedule_coursesection_marking_period.markingperiod_id)
+                       FROM schedule_coursesection_marking_period
+                       WHERE schedule_coursesection_marking_period.coursesection_id = grades_grade.course_section_id))
             '''
         }).values('ave_grade')[0]['ave_grade']
 

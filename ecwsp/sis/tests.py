@@ -15,7 +15,6 @@ class SisTestMixin(object):
     """ Making a test, use me please """
     def setUp(self):
         """ Prepares simple school data. """
-        print "set up"
         self.populate_database()
 
     def populate_database(self):
@@ -29,25 +28,25 @@ class AttendanceTest(SisTestMixin, TestCase):
         """
         Tests two teachers entering attendance, then admin changing it. Tests conflict resolution
         """
-        attend = StudentAttendance(student=self.student, date=date.today(), status=self.absent)
+        attend = StudentAttendance(student=self.data.student, date=date.today(), status=self.data.absent)
         attend.save()
-        attend2 = StudentAttendance(student=self.student, date=date.today(), status=self.present)    # not a valid one! Should assume absent
+        attend2 = StudentAttendance(student=self.data.student, date=date.today(), status=self.data.present)    # not a valid one! Should assume absent
         attend2.save()
         # admin changes it
-        attend3, created = StudentAttendance.objects.get_or_create(student=self.student, date=date.today())
+        attend3, created = StudentAttendance.objects.get_or_create(student=self.data.student, date=date.today())
         
         # Verify absent
-        self.failUnlessEqual(attend3.status, self.absent)
+        self.failUnlessEqual(attend3.status, self.data.absent)
         
-        attend3.status = self.excused
+        attend3.status = self.data.excused
         attend3.notes = "Doctor"
         attend3.save()
         
         # Verify Excused
-        self.failUnlessEqual(attend3.status, self.excused)
+        self.failUnlessEqual(attend3.status, self.data.excused)
         
         # Verify no duplicates
-        self.failUnlessEqual(StudentAttendance.objects.filter(date=date.today(), student=self.student).count(), 1)
+        self.failUnlessEqual(StudentAttendance.objects.filter(date=date.today(), student=self.data.student).count(), 1)
     
     def test_teacher_attendance(self):
         user = User.objects.get(username='dburke')
@@ -70,10 +69,10 @@ class AttendanceTest(SisTestMixin, TestCase):
     
     def test_grade(self):
         """
-        Tests grade calculations
+        Testing that GPA actually calculates
         """
-        #testing that GPA actually calculates
-        print self.data.student
-        print self.data.student.gpa
+        from ecwsp.grades.tasks import build_grade_cache
+        build_grade_cache()
+        
         gpa = self.data.student.gpa.quantize(Decimal('0.01'))
         self.failUnlessEqual(gpa, Decimal('69.55'))
