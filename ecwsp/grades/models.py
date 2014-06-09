@@ -166,8 +166,18 @@ class GradeScale(models.Model):
     def __unicode__(self):
         return '{}'.format(self.name)
 
+    def get_rule(self, grade):
+        return self.gradescalerule_set.filter(min_grade__lte=grade, max_grade__gte=grade).first()
+
     def to_letter(self, grade):
-        return 0
+        rule = self.get_rule(grade)
+        if rule:
+            return rule.letter_grade
+
+    def to_numeric(self, grade):
+        rule = self.get_rule(grade)
+        if rule:
+            return rule.numeric_scale
 
 
 class GradeScaleRule(models.Model):
