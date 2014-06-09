@@ -8,7 +8,6 @@ from api.routers import api_urls
 from responsive_dashboard import views as dashboard_views
 
 
-admin.autodiscover()
 dajaxice_autodiscover()
 
 urlpatterns = patterns('',

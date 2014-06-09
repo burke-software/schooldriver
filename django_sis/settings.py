@@ -351,6 +351,7 @@ DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 # These are required add ons that we always want to have
 INSTALLED_APPS = (
+    'autocomplete_light',
     'grappelli.dashboard',
     'grappelli',
     'ecwsp.sis',
@@ -365,7 +366,6 @@ INSTALLED_APPS = (
     'ecwsp.standard_test',
     'ajax_select',
     'reversion',
-    'south',
     'djcelery',
     'django.contrib.admin',
     'django.contrib.staticfiles',
@@ -396,8 +396,10 @@ INSTALLED_APPS = (
     'rest_framework',
     'api',
     'compressor',
-    'autocomplete_light',
 ) + INSTALLED_APPS
+import django
+if django.get_version()[:3] != '1.7':
+    INSTALLED_APPS += ('south',)
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
     TEMPLATE_CONTEXT_PROCESSORS += (

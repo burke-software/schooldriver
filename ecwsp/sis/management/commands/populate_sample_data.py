@@ -12,6 +12,10 @@ class Command(BaseCommand):
             if Student.objects.first():
                 raise CommandError('You cannot run this on a already populated database')
         except OperationalError: # New database
+            import django
+            if django.get_version()[:3] != '1.7':
                 call_command('syncdb', all=True, interactive=False)
+            else:
+                call_command('migrate', interactive=False)
         SisData().create_all()
         self.stdout.write('Success. Good Job!')

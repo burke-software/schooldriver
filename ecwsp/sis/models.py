@@ -506,7 +506,7 @@ class Student(User, CustomFieldModel):
             except:
                 return None
 
-    def ssave(self, creating_worker=False, *args, **kwargs):
+    def save(self, creating_worker=False, *args, **kwargs):
         self.cache_cohorts()
         if self.is_active == False and (Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "True" \
         or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "true" \
@@ -579,8 +579,8 @@ class StudentCohort(models.Model):
     primary = models.BooleanField(default=False, )
 
     class Meta:
-        if not 'syncdb' in sys.argv and not 'test' in sys.argv:
-            auto_created = True
+        if not ('syncdb' in sys.argv or 'migrate' in sys.argv) and not 'test' in sys.argv:
+            auto_created = Student
 
     def save(self, *args, **kwargs):
         if self.primary:
