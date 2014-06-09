@@ -124,7 +124,7 @@ class Period(models.Model):
 
 class CourseMeet(models.Model):
     period = models.ForeignKey(Period)
-    course_section = models.ForeignKey('CourseSection', null=True)
+    course_section = models.ForeignKey('CourseSection')
     day_choice = (   # ISOWEEKDAY
         ('1', 'Monday'),
         ('2', 'Tuesday'),
@@ -146,7 +146,7 @@ class Location(models.Model):
 
 
 class CourseEnrollment(models.Model):
-    course_section = models.ForeignKey('CourseSection', null=True)
+    course_section = models.ForeignKey('CourseSection')
     user = models.ForeignKey('sis.Student')
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
     exclude_days = models.ManyToManyField('Day', blank=True, \
@@ -401,7 +401,7 @@ class Course(models.Model):
 
 class CourseSectionTeacher(models.Model):
     teacher = models.ForeignKey('sis.Faculty')
-    course_section = models.ForeignKey('CourseSection', null=True)
+    course_section = models.ForeignKey('CourseSection')
     is_primary = models.BooleanField(default=False)
 
     class Meta:
