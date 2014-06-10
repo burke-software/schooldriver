@@ -21,6 +21,10 @@ class SisTestMixin(object):
         """ Extend me with more data to populate """
         self.data = SisData()
         self.data.create_basics()
+
+    def build_grade_cache(self):
+        from ecwsp.grades.tasks import build_grade_cache
+        build_grade_cache()
         
 
 class AttendanceTest(SisTestMixin, TestCase):
@@ -71,8 +75,6 @@ class AttendanceTest(SisTestMixin, TestCase):
         """
         Testing that GPA actually calculates
         """
-        from ecwsp.grades.tasks import build_grade_cache
-        build_grade_cache()
-        
+        self.build_grade_cache() 
         gpa = self.data.student.gpa.quantize(Decimal('0.01'))
         self.failUnlessEqual(gpa, Decimal('69.55'))

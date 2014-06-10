@@ -290,10 +290,18 @@ class Grade(models.Model):
         if self.student.cache_gpa != "N/A":
             self.student.save()
 
+    def optimized_grade_to_letter(self):
+        """ Optimized version of GradeScale.to_letter """
+        return GradeScaleRule.objects.filter(
+                grade_scale__schoolyear__markingperiod=self.marking_period_id,
+                min_grade__lte=self.grade, 
+                max_grade__gte=self.grade,
+                ).first().letter_grade
+
     def get_grade(self, letter=False, display=False, rounding=None,
         minimum=None, number=False):
         """
-        letter: Converts to a letter based on GradeLetterRule
+        letter: Converts to a letter based on GradeScale 
         display: For letter grade - Return display name instead of abbreviation.
         rounding: Numeric - round to this many decimal places.
         minimum: Numeric - Minimum allowed grade. Will not return lower than this.
@@ -314,8 +322,10 @@ class Grade(models.Model):
                 string = '%.' + str(rounding) + 'f'
                 grade = string % float(str(grade))
             if letter == True:
-                letter_grade = GradeLetterRule.objects.filter(max_grade__gte=grade, min_grade__lte=grade).first()
-                return letter_grade.letter_grade
+                try:
+                    return self.optimized_grade_to_letter()
+                except GradeScaleRule.DoesNotExist:
+                    return "No Grade Scale"
             return grade
         else:
             return ""

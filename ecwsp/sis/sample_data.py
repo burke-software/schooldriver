@@ -124,3 +124,4 @@ class SisData(object):
             Grade(student_id=1, course_section_id=2, marking_period_id=1, grade=50),
             Grade(student_id=1, course_section_id=2, marking_period_id=2, grade=89.09)
         ])
+        self.grade = Grade.objects.get(pk=1)
