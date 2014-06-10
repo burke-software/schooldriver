@@ -124,7 +124,7 @@ class Period(models.Model):
 
 class CourseMeet(models.Model):
     period = models.ForeignKey(Period)
-    course_section = models.ForeignKey('CourseSection', null=True)
+    course_section = models.ForeignKey('CourseSection')
     day_choice = (   # ISOWEEKDAY
         ('1', 'Monday'),
         ('2', 'Tuesday'),
@@ -146,7 +146,7 @@ class Location(models.Model):
 
 
 class CourseEnrollment(models.Model):
-    course_section = models.ForeignKey('CourseSection', null=True)
+    course_section = models.ForeignKey('CourseSection')
     user = models.ForeignKey('sis.Student')
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
     exclude_days = models.ManyToManyField('Day', blank=True, \
@@ -341,6 +341,8 @@ class Course(models.Model):
     description = models.TextField(blank=True)
     credits = models.DecimalField(max_digits=5, decimal_places=2,
         help_text="Credits affect GPA.",
+        # WARNING: this default must NOT be used for migrations! Courses whose
+        # credits=None should have their credits set to 0
         default=lambda: Configuration.get_or_default(name='Default course credits').value)
     award_credits = models.BooleanField(default=True,
         help_text='''When disabled, course will not be included in any student's
@@ -398,10 +400,9 @@ class Course(models.Model):
         new.save()
         messages.success(request, 'Copy successful!')
 
-
 class CourseSectionTeacher(models.Model):
     teacher = models.ForeignKey('sis.Faculty')
-    course_section = models.ForeignKey('CourseSection', null=True)
+    course_section = models.ForeignKey('CourseSection')
     is_primary = models.BooleanField(default=False)
 
     class Meta:
@@ -481,7 +482,6 @@ class CourseSection(models.Model):
     def save(self, *args, **kwargs):
         super(CourseSection, self).save(*args, **kwargs)
         self.populate_all_grades()
-
 
 class OmitCourseGPA(models.Model):
     """ Used to keep repeated or invalid course from affecting GPA """
