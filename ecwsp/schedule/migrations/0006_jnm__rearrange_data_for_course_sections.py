@@ -17,6 +17,9 @@ class Migration(SchemaMigration):
             if course.credits is None:
                 course.credits = 0
             course_section = orm.CourseSection()
+            # If the new CourseSection's PK is the same, it makes it much easier
+            # to migrate other models that reference Course
+            course_section.pk = course.pk
             course_section.course = course
             course.is_active = course.active
             course_section.is_active = course.is_active
