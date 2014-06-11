@@ -98,7 +98,7 @@ class AttendanceSubmissionPercentageDashlet(Dashlet):
         sub_percent = 0
         for homeroom in homerooms:
             homeroom_count += 1
-            log = AttendanceLog.objects.filter(date=datetime.date.today(), course=homeroom)
+            log = AttendanceLog.objects.filter(date=datetime.date.today(), course_section=homeroom)
             if log.count() > 0:
                 submission_count += 1
         if submission_count > 0:
