@@ -1,3 +1,29 @@
 .control-label {
 	text-transform: capitalize;
 }
+
+.table-is-valid {
+	border-left: 2px solid $brand-success;
+
+	&:after {
+		font-family: FontAwesome;
+		//content: "\f00c"; // check
+		content: "\f058"; // check in circle
+		display: inline-block;
+		float: right;
+		color: $brand-success;
+	}
+}
+
+.table-is-not-valid {
+	border-left: 2px solid $brand-danger;
+
+	&:after {
+		font-family: FontAwesome;
+		//content: "\f00d"; // times
+		content: "\f057"; // times in circle
+		display: inline-block;
+		float: right;
+		color: $brand-danger;
+	}
+}
