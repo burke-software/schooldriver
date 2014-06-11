@@ -85,19 +85,21 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
         data_row = grades_api.rows[row]
         data_instance = data_row[prop.split('.')[0]]
         if data_instance.isValid == true
-            td.style.background = "green"
+            # td.style.borderLeft = "2px solid #5cb85c"
+            td.className += "table-is-valid"
         else if data_instance.isValid == false
-            td.style.background = "red"
+            # td.style.borderLeft = "2px solid #d9534f"
+            td.className += "table-is-not-valid"
         else if data_instance.isPristine == false
-            td.style.background = "yellow"
+            td.style.borderLeft = "2px solid #f0ad4e"
     finalRenderer = (instance, td, row, col, prop, value, cellProperties) ->
         Handsontable.TextCell.renderer.apply this, arguments
         data_row = grades_api.rows[row]
         data_instance = data_row['final']
         if data_instance.isValid == false
-            td.style.background = "red"
+            td.style.borderLeft = "2px solid #d9534f"
         else if data_instance.hasOverride == true
-            td.style.background = "orange"
+            td.style.borderLeft = "2px solid orange"
 
     grades_api = Restangular.all('grades')
     grades_api.marking_periods = []

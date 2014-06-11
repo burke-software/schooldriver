@@ -209,7 +209,7 @@ letter_grade_choices = (
     )
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
-    course_section = models.ForeignKey('schedule.CourseSection', null=True)
+    course_section = models.ForeignKey('schedule.CourseSection')
     marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
     date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
