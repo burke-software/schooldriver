@@ -27,7 +27,7 @@ app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$route
             year_id = $routeParams.year_id
         else
             year_id = default_school_year_id
-        grades_api.getGrades({student: grades_api.student_id, course__marking_period__school_year: year_id}).then (grades) ->
+        grades_api.getGrades({student: grades_api.student_id, course_section__marking_period__school_year: year_id}).then (grades) ->
             $scope.grades = grades
             # Course | Grade1 | Grade etc | Final
             for grade in grades
