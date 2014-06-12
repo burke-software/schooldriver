@@ -37,7 +37,7 @@ class Calendar:
         Returns days ['Monday', 'Tuesday'...] and periods
         """
         periods = Period.objects.filter(coursesection__courseenrollment__user=student, coursesection__marking_period=marking_period).order_by('start_time').distinct()
-        course_meets = CourseMeet.objects.filter(section__courseenrollment__user=student, section__marking_period=marking_period).distinct()
+        course_meets = CourseMeet.objects.filter(course_section__courseenrollment__user=student, course_section__marking_period=marking_period).distinct()
         
         if schedule_days is None:
             day_list = CourseMeet.day_choice

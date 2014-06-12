@@ -34,7 +34,7 @@ class ItemForm(forms.ModelForm):
             'category': forms.Select,
             'points_possible': forms.NumberInput,
             'assignment_type': forms.Select,
-            'course': forms.Select, #HiddenInput,
+            'course_section': forms.Select, #HiddenInput,
         }
         exclude = ('multiplier',) # also exclude user-configured fields; see __init__ above
 
@@ -69,9 +69,9 @@ class GradebookFilterForm(forms.Form):
     date_begin = forms.DateField(required=False, widget=forms.DateInput(attrs={'placeholder':'Later than'}), validators=settings.DATE_VALIDATORS)
     date_end = forms.DateField(required=False, widget=forms.DateInput(attrs={'placeholder':'Earlier than'}), validators=settings.DATE_VALIDATORS)
     
-    def update_querysets(self, course):
-        self.fields['cohort'].queryset = Cohort.objects.filter(Q(percoursecohort=None, student__course=course) | Q(percoursecohort__course=course)).distinct().order_by('name')
-        self.fields['marking_period'].queryset = MarkingPeriod.objects.filter(course=course).distinct()
-        self.fields['benchmark'].queryset = Benchmark.objects.filter(item__course=course).distinct()
-        self.fields['assignment_type'].queryset = AssignmentType.objects.filter(item__course=course).distinct()
-        self.fields['category'].queryset = Category.objects.filter(item__course=course).distinct()
+    def update_querysets(self, course_section):
+        self.fields['cohort'].queryset = Cohort.objects.filter(Q(percoursecohort=None, student__coursesection=course_section) | Q(percoursecohort__coursesection=course_section)).distinct().order_by('name')
+        self.fields['marking_period'].queryset = MarkingPeriod.objects.filter(coursesection=course_section).distinct()
+        self.fields['benchmark'].queryset = Benchmark.objects.filter(item__course_section=course_section).distinct()
+        self.fields['assignment_type'].queryset = AssignmentType.objects.filter(item__course_section=course_section).distinct()
+        self.fields['category'].queryset = Category.objects.filter(item__course_section=course_section).distinct()

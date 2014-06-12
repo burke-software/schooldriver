@@ -2,7 +2,7 @@ import simplejson
 from dajaxice.decorators import dajaxice_register
 from dajax.core import Dajax
 from ecwsp.benchmark_grade.models import Category
-from ecwsp.benchmark_grade.views import get_teacher_courses
+from ecwsp.benchmark_grade.views import get_teacher_course_sections
 from ecwsp.grades.models import Grade
 
 @dajaxice_register
@@ -25,15 +25,15 @@ def save_marking_period_average_comment(request, grade_pk, comment):
         if request.user.is_superuser or request.user.groups.filter(name='registrar').count():
             authorized = True
         else:
-            teacher_courses = get_teacher_courses(request.user.username)
-            if teacher_courses is not None and marking_period_average.course in teacher_courses:
+            teacher_course_sections = get_teacher_course_sections(request.user.username)
+            if teacher_course_sections is not None and marking_period_average.course_section in teacher_course_sections:
                 # regular folk can't touch inactive marking periods
                 if marking_period_average.marking_period.active:
                     authorized = True
                 else:
                     message = "You may not modify an inactive marking period."
             else:
-                message = "You may not modify this course."
+                message = "You may not modify this course section."
         if not authorized:
             raise Exception(message)
         if marking_period_average.comment != comment:

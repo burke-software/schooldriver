@@ -710,7 +710,7 @@ class SisReport(ScaffoldReport):
             for course in year.courses:
                 course_enrollment = course.courseenrollment_set.get(user=student)
                 # Grades
-                course_grades = year_grades.filter(course=course).distinct()
+                course_grades = year_grades.filter(course_section=course).distinct()
                 course_aggregates = None
                 i = 1
                 for mp in year.mps:
@@ -766,14 +766,14 @@ class SisReport(ScaffoldReport):
             year.tardy = student.student_attn.filter(status__tardy=True, date__range=(year.start_date, year.end_date)).count()
             year.dismissed = student.student_attn.filter(status__code="D", date__range=(year.start_date, year.end_date)).count()
             # credits per dept
-            student.departments = Department.objects.filter(course__coursesection__courseenrollment__user=student).distinct()
+            student.departments = Department.objects.filter(course__sections__courseenrollment__user=student).distinct()
             student.departments_text = ""
             for dept in student.departments:
                 c = 0
                 for course in student.coursesection_set.filter(
                     course__department=dept,
                     marking_period__school_year__end_date__lte=self.date_end,
-                    graded=True).distinct():
+                    course__graded=True).distinct():
                     if course.award_credits and course.credits and self.is_passing(
                         course.courseenrollment_set.get(user=student).grade
                     ):

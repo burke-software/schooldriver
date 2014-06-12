@@ -436,6 +436,10 @@ class CourseSection(models.Model):
         return self.course.credits
 
     @property
+    def award_credits(self):
+        return self.course.award_credits
+
+    @property
     def description(self):
         """ Course description """
         return self.course.description

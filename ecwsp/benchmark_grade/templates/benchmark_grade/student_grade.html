@@ -73,13 +73,13 @@
         {% for mp in other_mps %}
             <li><a href="{% url "ecwsp.benchmark_grade.views.student_report" student_pk=student.pk marking_period_pk=mp.pk %}">{{ mp.name }}</a></li>
         {% endfor %}
-        {% for course in mp.courses %}
+        {% for course_section in mp.course_sections %}
             <div class="course">
             <h3>
-                <a href="{% url "ecwsp.benchmark_grade.views.student_report" student.pk course.pk mp.pk %}">
-                {{ course.fullname }} <span class="yesIamAhyperlink">(click for more detail)</span></a></h3>
+                <a href="{% url "ecwsp.benchmark_grade.views.student_report" student.pk course_section.pk mp.pk %}">
+                {{ course_section.name }} <span class="yesIamAhyperlink">(click for more detail)</span></a></h3>
             <table>
-                {% for category in course.categories %}
+                {% for category in course_section.categories %}
                     <tr>
                         <td>{{ category.name }} ({{ category.percentage }}%)</td>
                         <td class="categoryAverage">
@@ -88,24 +88,24 @@
                     </tr>
                 {% endfor %}
                 <tr>
-                    <td>{{ course.fullname }} {{ mp.name }} Grade</td>
-                    {% if not course.categories and not course.average %}
-                        <td class="categoryAverage">{{ course.legacy_grade }}</td>
+                    <td>{{ course_section.name }} {{ mp.name }} Grade</td>
+                    {% if not course_section.categories and not course_section.average %}
+                        <td class="categoryAverage">{{ course_section.legacy_grade }}</td>
                     {% else %}
-                        <td class="categoryAverage">{{ course.average }}</td>
+                        <td class="categoryAverage">{{ course_section.average }}</td>
                     {% endif %}
                 </tr>
-                {% if course.category_by_name.Standards and course.category_by_name.Standards.total %}
+                {% if course_section.category_by_name.Standards and course_section.category_by_name.Standards.total %}
                     <tr>
                         <td colspan="2" class="courseNarration">
-                            {% if course.category_by_name.Standards.missing %}
-                                {{ student.fname }} has {{ course.category_by_name.Standards.missing }} missing
-                                {% if course.category_by_name.Standards.missing > 1 %}standards
+                            {% if course_section.category_by_name.Standards.missing %}
+                                {{ student.fname }} has {{ course_section.category_by_name.Standards.missing }} missing
+                                {% if course_section.category_by_name.Standards.missing > 1 %}standards
                                 {% else %}standard
                                 {% endif %}
-                                from {{ mp.name }} {{ course.fullname }}.<br />
+                                from {{ mp.name }} {{ course_section.name }}.<br />
                             {% endif %}
-                            {{ student.fname }} passed <u>{{ course.category_by_name.Standards.passing }}/{{ course.category_by_name.Standards.total }}, or {{ course.category_by_name.Standards.percentage}}%</u> of {{ mp.name }} standards.
+                            {{ student.fname }} passed <u>{{ course_section.category_by_name.Standards.passing }}/{{ course_section.category_by_name.Standards.total }}, or {{ course_section.category_by_name.Standards.percentage}}%</u> of {{ mp.name }} standards.
                         </td>
                     </tr>
                 {% endif %}

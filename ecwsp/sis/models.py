@@ -227,7 +227,7 @@ def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs)
 m2m_changed.connect(after_cohort_m2m, sender='sis.Cohort')
 
 class PerCourseCohort(Cohort):
-    course = models.ForeignKey('schedule.Course')
+    course_section = models.ForeignKey('schedule.CourseSection')
 
 
 class ReasonLeft(models.Model):
