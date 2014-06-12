@@ -4,7 +4,7 @@ app = angular.module 'angular_sis', ['restangular', 'uiHandsontable', 'ngRoute']
 app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$routeParams', '$route', ($scope, GradebookService, $routeParams, $route) ->
 
     $scope.columns = [
-        { width: 160, value: 'row.course', title: 'Course', fixed: true, readOnly: true}
+        { width: 160, value: 'row.course_section', title: 'Course', fixed: true, readOnly: true}
     ]
 
     grades_api = GradebookService
@@ -27,18 +27,20 @@ app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$route
             year_id = $routeParams.year_id
         else
             year_id = default_school_year_id
-        grades_api.getGrades({student: grades_api.student_id, course_section__marking_period__school_year: year_id}).then (grades) ->
+        grades_api.getGrades({student: grades_api.student_id, course_section__marking_period__school_year: year_id, ordering: 'marking_period__start_date'}).then (grades) ->
             $scope.grades = grades
             # Course | Grade1 | Grade etc | Final
             for grade in grades
                 new_row = true
                 for row in grades_api.rows
-                    if row.course_id == grade.course_id
+                    if row.course_section_id == grade.course_section_id
                         new_row = false
                 if new_row
                     final = {grade: 0}
-                    grades_api.rows.push({course: grade.course, course_id: grade.course_id, final: final})
-            grades_api.addMarkingPeriods(grades, grades_api.rows, $scope.columns, 'course_id')
+                    grades_api.rows.push({course_section: grade.course_section, course_section_id: grade.course_section_id, final: final})
+
+
+            grades_api.addMarkingPeriods(grades, grades_api.rows, $scope.columns, 'course_section_id')
             
     $scope.comment_button_text = "Show Comments"
     $scope.showComments = () ->
@@ -56,10 +58,10 @@ app.controller 'CourseGradesController', ['$scope', '$routeParams', '$route', 'G
     $scope.changeGrade = grades_api.setGrade
 
     $scope.$on '$routeChangeSuccess', ->
-        course_id = $routeParams.course_id
-        grades_api.course_id = course_id
+        course_section_id = $routeParams.course_section_id
+        grades_api.course_section_id = course_section_id
         
-        grades_api.getGrades({course: course_id}).then (grades)->
+        grades_api.getGrades({course_section: course_section_id, ordering: 'marking_period__start_date'}).then (grades)->
             grades = grades
             # Student | Grade1 | Grade etc | Final
             for grade in grades
@@ -197,10 +199,10 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
                                 new_grade.student_id = grades_api.student_id
                             else
                                 new_grade.student_id = row.student_id
-                            if grades_api.course_id
-                                new_grade.course_id = grades_api.course_id
+                            if grades_api.course_section_id
+                                new_grade.course_section_id = grades_api.course_section_id
                             else
-                                new_grade.course_id = row.course_id
+                                new_grade.course_section_id = row.course_section_id
                             grades_api.post(new_grade).then ((response) ->
                                 row.final.isValid = true
                             ), (response) ->
