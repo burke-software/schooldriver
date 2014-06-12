@@ -15,10 +15,6 @@ class GradeSerializer(serializers.ModelSerializer):
     course_section_id = serializers.PrimaryKeyRelatedField(source='course_section', required=False)
     grade = serializers.WritableField(source='api_grade', required=False)
 
-    course = serializers.RelatedField(source='course_section', read_only=True)
-    course_id = serializers.PrimaryKeyRelatedField(source='course_section', required=False)
-
-
     class Meta:
         model = Grade
 
