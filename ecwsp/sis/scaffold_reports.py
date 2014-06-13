@@ -394,7 +394,7 @@ class FailReportButton(ReportButton):
         passing_grade = float(Configuration.get_or_default('Passing Grade','70').value)
 
         data = []
-        iy=3
+        iy=2
         for student in students:
             row = [str(student)]
             ix = 1 # letter A
@@ -406,7 +406,7 @@ class FailReportButton(ReportButton):
                 'marking_period__name',
             ).filter(
                 override_final=False,
-                grade__lte=passing_grade,
+                grade__lt=passing_grade,
                 marking_period__in=marking_periods
             ).distinct()
             department_counts = {}
