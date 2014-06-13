@@ -6,6 +6,7 @@
     <div ng-transclude></div>
     <span class="help-block" ng-if="fieldOptions.help_text">{{ fieldOptions.help_text }}</span>
     <span class="help-block">
+    <li ng-show="fieldForm.isSaving">Savin Fool!</li>
       <ul class="list-unstyled" ng-show="fieldForm.$invalid && fieldForm.$dirty">
         <li ng-repeat="error in fieldForm.errors">
           {{ error }}

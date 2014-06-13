@@ -27,10 +27,12 @@ app.factory 'RestfulModel', ['Restangular', (Restangular) ->
                 obj.saveForm = (form_name) ->
                     # save only the field that was changed.
                     form_field = form[form_name]
+                    form_field.isSaving = true
                     patch_object = {}
                     patch_object[form_name] = form_field.$viewValue
                     obj.patch(patch_object).then ((response) ->
                         form_field.$setValidity('server', true)
+                        form_field.isSaving = false
                     ), (response) ->
                         _.each response.data, (errors, key) ->
                             form[key].$dirty = true
