@@ -2,6 +2,7 @@ from ecwsp.sis.models import *
 from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
 from models import *
+from ecwsp.sis.sample_data import SisData
 from django.db import connection
 from ecwsp.schedule.models import CourseEnrollment
 import datetime
@@ -58,6 +59,36 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         current = syg.calculate_grade_and_credits(date_report=datetime.date.today())
         older = syg.calculate_grade_and_credits()
         self.assertEqual(current, older)
+
+class GradeBaltTests(SisTestMixin, TestCase):
+    """ These test ensure we meet requirements defined by Cristo Rey Baltimore including
+    Grade scales, course weights, and letter grades
+    Sample data is anonomized real grade data """
+    def populate_database(self):
+        """ Override, not using traditional test data """
+        self.data = SisData()
+        self.data.create_grade_scale_data()
+    
+    def test_letter_grade(self):
+        mp1 = self.data.mp1
+        mp2 = self.data.mp2
+        mp3 = self.data.mp3
+        mp4 = self.data.mp4
+        test_data = [
+            [mp1, 1, 'C'],
+            [mp1, 2, 'F'],
+            [mp1, 3, 'F'],
+            [mp1, 4, 'A-'],
+            [mp1, 5, 'B-'],
+            [mp1, 6, 'A'],
+            [mp1, 7, 'B-'],
+            [mp1, 8, 'A'],
+            [mp2, 1, 'C+'],
+        ]
+        for x in test_data:
+            grade = Grade.objects.get(marking_period=x[0], course_section_id=x[1])
+            self.assertEqual(grade.get_grade(letter=True), x[2])
+    
 
 class GradeScaleTests(SisTestMixin, TestCase):
     def setUp(self):

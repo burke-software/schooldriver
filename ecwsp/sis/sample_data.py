@@ -129,7 +129,7 @@ class SisData(object):
         aa = Faculty.objects.create(username="aa", first_name="aa", is_superuser=True, is_staff=True)
         aa.set_password('aa')
         aa.save()
-        student = Student.objects.create(first_name="Alexander", last_name="Chandel", username="achandel")
+        student = Student.objects.create(first_name="Anon", last_name="Student", username="someone")
         courses = Course.objects.bulk_create([
             Course(fullname="English", shortname="English", credits=1, graded=True),
             Course(fullname="Precalculus", shortname="Precalc", credits=1, graded=True),
@@ -140,11 +140,11 @@ class SisData(object):
             Course(fullname="Faith & Justice", shortname="Faith", credits=1, graded=True),
             Course(fullname="Writing Lab 12", shortname="Wrt Lab", credits=0, graded=True),
         ])
-        year = SchoolYear.objects.create(name="balt year", start_date=date(2014,7,1), end_date=date(2050,5,1), active_year=True)
-        mp1 = MarkingPeriod.objects.create(name="1st", start_date=date(2014,7,1), end_date=date(2014,9,1), school_year=year)
-        mp2 = MarkingPeriod.objects.create(name="2nd", start_date=date(2014,7,2), end_date=date(2014,9,2), school_year=year)
-        mp3 = MarkingPeriod.objects.create(name="3rd", start_date=date(2014,7,3), end_date=date(2014,9,3), school_year=year)
-        mp4 = MarkingPeriod.objects.create(name="4th", start_date=date(2014,7,4), end_date=date(2014,9,4), school_year=year)
+        self.year = year = SchoolYear.objects.create(name="balt year", start_date=date(2014,7,1), end_date=date(2050,5,1), active_year=True)
+        self.mp1 = mp1 = MarkingPeriod.objects.create(name="1st", start_date=date(2014,7,1), end_date=date(2014,9,1), school_year=year)
+        self.mp2 = mp2 = MarkingPeriod.objects.create(name="2nd", start_date=date(2014,7,2), end_date=date(2014,9,2), school_year=year)
+        self.mp3 = mp3 = MarkingPeriod.objects.create(name="3rd", start_date=date(2014,7,3), end_date=date(2014,9,3), school_year=year)
+        self.mp4 = mp4 = MarkingPeriod.objects.create(name="4th", start_date=date(2014,7,4), end_date=date(2014,9,4), school_year=year)
         for course in courses:
             course = Course.objects.get(fullname=course.fullname)
             section = CourseSection.objects.create(name=course.shortname, course_id=course.id)
@@ -158,8 +158,53 @@ class SisData(object):
             [1, mp2, 77.5],
             [1, mp3, 66.5],
             [1, mp4, 73.9],
+            [2,mp1,55],
+            [2,mp2,81.4],
+            [2,mp3,73.9],
+            [2,mp4,77.2],
+            [3,mp1,69.1],
+            [3,mp2,70.4],
+            [3,mp3,73.8],
+            [3,mp4,72.3],
+            [4,mp1,92.4],
+            [4,mp2,84.4],
+            [4,mp3,72.6],
+            [4,mp4,89.1],
+            [5,mp1,80.4],
+            [5,mp2,72.1],
+            [5,mp3,74.4],
+            [5,mp4,85.8],
+            [6,mp1,92.8],
+            [6,mp2,93.6],
+            [6,mp3,83.3],
+            [6,mp4,90],
+            [7,mp1,79.5],
+            [7,mp2,83.1],
+            [7,mp3,78.3],
+            [7,mp4,88.5],
+            [8,mp1,100],
+            [8,mp2,100],
+            [8,mp3,100],
+            [8,mp4,100],
         ]
         for x in grade_data:
             grade = Grade.objects.get(student=student, course_section_id=x[0], marking_period=x[1])
             grade.grade = x[2]
             grade.save()
+        Grade.objects.create(student=student, course_section_id=3, override_final=True, grade=70)
+        scale = self.scale = GradeScale.objects.create(name="Balt Test Scale")
+        GradeScaleRule.objects.create(min_grade=0, max_grade=69.49, letter_grade='F', numeric_scale=0, grade_scale=scale)
+        GradeScaleRule.objects.create(min_grade=69.50, max_grade=72.49, letter_grade='D', numeric_scale=1, grade_scale=scale)
+        GradeScaleRule.objects.create(min_grade=72.50, max_grade=76.49, letter_grade='C', numeric_scale=2, grade_scale=scale)
+        GradeScaleRule.objects.create(min_grade=76.50, max_grade=79.49, letter_grade='C+', numeric_scale=2.5, grade_scale=scale)
+        GradeScaleRule.objects.create(min_grade=79.50, max_grade=82.49, letter_grade='B-', numeric_scale=2.7, grade_scale=scale)
+        GradeScaleRule.objects.create(min_grade=82.50, max_grade=86.49, letter_grade='B', numeric_scale=3, grade_scale=scale)
+        GradeScaleRule.objects.create(min_grade=86.50, max_grade=89.49, letter_grade='B+', numeric_scale=3.5, grade_scale=scale)
+        GradeScaleRule.objects.create(min_grade=89.50, max_grade=92.49, letter_grade='A-', numeric_scale=3.7, grade_scale=scale)
+        GradeScaleRule.objects.create(min_grade=93.50, max_grade=100, letter_grade='A', numeric_scale=4, grade_scale=scale)
+        year.grade_scale = scale
+        year.save()
+        
+        
+        
+        

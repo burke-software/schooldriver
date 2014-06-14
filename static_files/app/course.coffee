@@ -33,9 +33,11 @@ app.factory 'RestfulModel', ['Restangular', (Restangular) ->
                     obj.patch(patch_object).then ((response) ->
                         form_field.$setValidity('server', true)
                         form_field.isSaving = false
+                        form_field.isSaved = true
                     ), (response) ->
                         _.each response.data, (errors, key) ->
-                            form[key].$dirty = true
+                            form_field.isSaving = false
+                            #form[key].$dirty = true
                             form[key].$setValidity('server', false)
                             form[key].errors = errors
                 obj
