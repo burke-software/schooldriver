@@ -201,7 +201,7 @@ class SisData(object):
         GradeScaleRule.objects.create(min_grade=82.50, max_grade=86.49, letter_grade='B', numeric_scale=3, grade_scale=scale)
         GradeScaleRule.objects.create(min_grade=86.50, max_grade=89.49, letter_grade='B+', numeric_scale=3.5, grade_scale=scale)
         GradeScaleRule.objects.create(min_grade=89.50, max_grade=92.49, letter_grade='A-', numeric_scale=3.7, grade_scale=scale)
-        GradeScaleRule.objects.create(min_grade=93.50, max_grade=100, letter_grade='A', numeric_scale=4, grade_scale=scale)
+        GradeScaleRule.objects.create(min_grade=92.50, max_grade=100, letter_grade='A', numeric_scale=4, grade_scale=scale)
         year.grade_scale = scale
         year.save()
         
