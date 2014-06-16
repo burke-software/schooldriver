@@ -28,16 +28,19 @@ app.factory 'RestfulModel', ['Restangular', (Restangular) ->
                     # save only the field that was changed.
                     form_field = form[form_name]
                     form_field.isSaving = true
+                    form_field.isSaved = false
                     patch_object = {}
                     patch_object[form_name] = form_field.$viewValue
-                    obj.patch(patch_object).then ((response) ->
-                        form_field.$setValidity('server', true)
+                    obj.patch(patch_object).then (response) ->
+                        form_field.$setValidity "server", true
                         form_field.isSaving = false
-                    ), (response) ->
+                        form_field.isSaved = true
+                    , (response) ->
                         _.each response.data, (errors, key) ->
-                            form[key].$dirty = true
-                            form[key].$setValidity('server', false)
-                            form[key].errors = errors
+
+                        form[key].$dirty = true
+                        form[key].$setValidity "server", false
+                        form[key].errors = errors
                 obj
         @getList = ->
             Restangular.all(@modelName).getList().$object
