@@ -68,7 +68,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """ Override, not using traditional test data """
         self.data = SisData()
         self.data.create_grade_scale_data()
-    
+
     def test_letter_grade(self):
         mp1 = self.data.mp1
         mp2 = self.data.mp2
@@ -88,12 +88,15 @@ class GradeBaltTests(SisTestMixin, TestCase):
         for x in test_data:
             grade = Grade.objects.get(marking_period=x[0], course_section_id=x[1])
             self.assertEqual(grade.get_grade(letter=True), x[2])
-    
+            
+    def test_final_grade(self):
+        ce = CourseEnrollment.objects.get(user=self.data.student, course_section=1)
+
 
 class GradeScaleTests(SisTestMixin, TestCase):
     def setUp(self):
         super(GradeScaleTests, self).setUp()
-        self.build_grade_cache() 
+        self.build_grade_cache()
         scale = self.scale = GradeScale.objects.create(name="test")
         GradeScaleRule.objects.create(min_grade=50, max_grade=59.99, letter_grade='F', numeric_scale=1, grade_scale=scale)
         GradeScaleRule.objects.create(min_grade=60, max_grade=69.99, letter_grade='D', numeric_scale=1.5, grade_scale=scale)
