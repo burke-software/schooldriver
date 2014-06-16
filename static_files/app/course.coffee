@@ -35,12 +35,12 @@ app.factory 'RestfulModel', ['Restangular', (Restangular) ->
                         form_field.$setValidity "server", true
                         form_field.isSaving = false
                         form_field.isSaved = true
-                    , (response) ->
+                    ), (response) ->
                         _.each response.data, (errors, key) ->
-
-                        form[key].$dirty = true
-                        form[key].$setValidity "server", false
-                        form[key].errors = errors
+                            form_field.isSaving = false
+                            #form[key].$dirty = true
+                            form[key].$setValidity('server', false)
+                            form[key].errors = errors
                 obj
         @getList = ->
             Restangular.all(@modelName).getList().$object

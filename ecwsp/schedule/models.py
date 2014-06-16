@@ -344,6 +344,8 @@ class Course(models.Model):
         # WARNING: this default must NOT be used for migrations! Courses whose
         # credits=None should have their credits set to 0
         default=lambda: Configuration.get_or_default(name='Default course credits').value)
+    weight = models.DecimalField(max_digits=5, decimal_places=2, default=1,
+        help_text="Weighting can be useful courses that do not affect GPA (weight 0) or honors that might have a weight of 1.2 for GPA")
     award_credits = models.BooleanField(default=True,
         help_text='''When disabled, course will not be included in any student's
         credit totals. However, the number of credits will still be used as a
