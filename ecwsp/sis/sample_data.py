@@ -129,7 +129,7 @@ class SisData(object):
         aa = Faculty.objects.create(username="aa", first_name="aa", is_superuser=True, is_staff=True)
         aa.set_password('aa')
         aa.save()
-        student = Student.objects.create(first_name="Anon", last_name="Student", username="someone")
+        self.student = student = Student.objects.create(first_name="Anon", last_name="Student", username="someone")
         courses = Course.objects.bulk_create([
             Course(fullname="English", shortname="English", credits=1, graded=True),
             Course(fullname="Precalculus", shortname="Precalc", credits=1, graded=True),
@@ -141,57 +141,75 @@ class SisData(object):
             Course(fullname="Writing Lab 12", shortname="Wrt Lab", credits=0, graded=True),
         ])
         self.year = year = SchoolYear.objects.create(name="balt year", start_date=date(2014,7,1), end_date=date(2050,5,1), active_year=True)
-        self.mp1 = mp1 = MarkingPeriod.objects.create(name="1st", start_date=date(2014,7,1), end_date=date(2014,9,1), school_year=year)
-        self.mp2 = mp2 = MarkingPeriod.objects.create(name="2nd", start_date=date(2014,7,2), end_date=date(2014,9,2), school_year=year)
-        self.mp3 = mp3 = MarkingPeriod.objects.create(name="3rd", start_date=date(2014,7,3), end_date=date(2014,9,3), school_year=year)
-        self.mp4 = mp4 = MarkingPeriod.objects.create(name="4th", start_date=date(2014,7,4), end_date=date(2014,9,4), school_year=year)
+        self.mp1 = mp1 = MarkingPeriod.objects.create(name="1st", weight=0.4, start_date=date(2014,7,1), end_date=date(2014,9,1), school_year=year)
+        self.mp2 = mp2 = MarkingPeriod.objects.create(name="2nd", weight=0.4, start_date=date(2014,7,2), end_date=date(2014,9,2), school_year=year)
+        self.mps1x = mps1x = MarkingPeriod.objects.create(name="S1X", weight=0.2, start_date=date(2014,7,2), end_date=date(2014,9,2), school_year=year)
+        self.mp3 = mp3 = MarkingPeriod.objects.create(name="3rd", weight=0.4, start_date=date(2014,7,3), end_date=date(2014,9,3), school_year=year)
+        self.mp4 = mp4 = MarkingPeriod.objects.create(name="4th", weight=0.4, start_date=date(2014,7,4), end_date=date(2014,9,4), school_year=year)
+        self.mps2x = mps2x = MarkingPeriod.objects.create(name="S2X", weight=0.2, start_date=date(2014,7,4), end_date=date(2014,9,4), school_year=year)
         for course in courses:
             course = Course.objects.get(fullname=course.fullname)
             section = CourseSection.objects.create(name=course.shortname, course_id=course.id)
             section.marking_period.add(mp1)
             section.marking_period.add(mp2)
+            if course.credits > 0:
+                section.marking_period.add(mps1x)
             section.marking_period.add(mp3)
             section.marking_period.add(mp4)
+            if course.credits > 0:
+                section.marking_period.add(mps2x)
             CourseEnrollment.objects.create(user=student, course_section=section)
         grade_data = [
             [1, mp1, 72.7],
             [1, mp2, 77.5],
+            [1, mps1x, 90],
             [1, mp3, 66.5],
             [1, mp4, 73.9],
+            [1, mps2x, 79],
             [2,mp1,55],
             [2,mp2,81.4],
+            [2, mps1x, 68],
             [2,mp3,73.9],
             [2,mp4,77.2],
+            [2, mps2x, 52],
             [3,mp1,69.1],
             [3,mp2,70.4],
+            [3, mps1x, 61],
             [3,mp3,73.8],
             [3,mp4,72.3],
+            [3, mps2x, 57],
             [4,mp1,92.4],
             [4,mp2,84.4],
+            [4, mps1x, 84],
             [4,mp3,72.6],
             [4,mp4,89.1],
+            [4, mps2x, 81],
             [5,mp1,80.4],
             [5,mp2,72.1],
+            [5, mps1x, 63],
             [5,mp3,74.4],
             [5,mp4,85.8],
+            [5, mps2x, 80],
             [6,mp1,92.8],
             [6,mp2,93.6],
             [6,mp3,83.3],
             [6,mp4,90],
             [7,mp1,79.5],
             [7,mp2,83.1],
+            [7, mps1x, 70],
             [7,mp3,78.3],
             [7,mp4,88.5],
+            [7, mps2x, 82 ],
             [8,mp1,100],
             [8,mp2,100],
             [8,mp3,100],
             [8,mp4,100],
         ]
+        Grade.objects.create(student=student, course_section_id=3, override_final=True, grade=70)
         for x in grade_data:
             grade = Grade.objects.get(student=student, course_section_id=x[0], marking_period=x[1])
             grade.grade = x[2]
             grade.save()
-        Grade.objects.create(student=student, course_section_id=3, override_final=True, grade=70)
         scale = self.scale = GradeScale.objects.create(name="Balt Test Scale")
         GradeScaleRule.objects.create(min_grade=0, max_grade=69.49, letter_grade='F', numeric_scale=0, grade_scale=scale)
         GradeScaleRule.objects.create(min_grade=69.50, max_grade=72.49, letter_grade='D', numeric_scale=1, grade_scale=scale)

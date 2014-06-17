@@ -3,7 +3,6 @@ from django.db import models
 from django.db.models import Count, signals
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
-from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
 from ecwsp.sis.models import Student
 from ecwsp.sis.helper_functions import round_as_decimal
 from ecwsp.administration.models import Configuration
@@ -32,7 +31,7 @@ def grade_comment_length_validator(value):
 class StudentMarkingPeriodGrade(models.Model):
     """ Stores marking period grades for students, only used for cache """
     student = models.ForeignKey('sis.Student')
-    marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
+    marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="MP Average")
 
     class Meta:
@@ -210,7 +209,7 @@ letter_grade_choices = (
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
     course_section = models.ForeignKey('schedule.CourseSection')
-    marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
+    marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     override_final = models.BooleanField(default=False, help_text="Override final grade for marking period instead of calculating it.")
@@ -284,7 +283,7 @@ class Grade(models.Model):
             enrollment = self.course_section.courseenrollment_set.get(user=self.student)
             enrollment.flag_grade_as_stale()
             enrollment.flag_numeric_grade_as_stale()
-        except CourseEnrollment.DoesNotExist:
+        except enrollment.DoesNotExist:
             pass
         self.student.cache_gpa = self.student.calculate_gpa()
         if self.student.cache_gpa != "N/A":

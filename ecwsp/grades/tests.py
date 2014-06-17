@@ -68,6 +68,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """ Override, not using traditional test data """
         self.data = SisData()
         self.data.create_grade_scale_data()
+        self.build_grade_cache()
 
     def test_letter_grade(self):
         mp1 = self.data.mp1
@@ -107,15 +108,33 @@ class GradeBaltTests(SisTestMixin, TestCase):
             [mp4, 6, 'A-'],
             [mp4, 7, 'B+'],
             [mp4, 8, 'A'],
-            
         ]
         for x in test_data:
             grade = Grade.objects.get(marking_period=x[0], course_section_id=x[1])
             self.assertEqual(grade.get_grade(letter=True), x[2])
+    
+    def test_sx_grade(self):
+        """ Really just a normal run of the mill Marking Period grade """
+        grade = Grade.objects.get(marking_period=self.data.mps1x, course_section_id=1)
+        self.assertEqual(grade.get_grade(), 90)
+        grade = Grade.objects.get(marking_period=self.data.mps2x, course_section_id=1)
+        self.assertEqual(grade.get_grade(), 79)
             
     def test_final_grade(self):
-        ce = CourseEnrollment.objects.get(user=self.data.student, course_section=1)
-
+        test_data = [
+            [1, 'C'],
+            [2, 'D'],
+            [3, 'D'],
+            [4, 'B'],
+            [5, 'C+'],
+            [6, 'A-'],
+            [7, 'B-'],
+            [8, 'A'],
+        ]
+        for x in test_data:
+            ce = CourseEnrollment.objects.get(user=self.data.student, course_section=x[0])
+            with self.assertNumQueries(1):
+                self.assertEqual(ce.get_grade(letter=True), x[1])
 
 class GradeScaleTests(SisTestMixin, TestCase):
     def setUp(self):

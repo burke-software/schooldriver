@@ -6,10 +6,11 @@ from django.db import connection
 
 from ecwsp.sis.models import Student
 from ecwsp.sis.helper_functions import round_as_decimal
+from ecwsp.grades.models import GradeScaleRule, Grade
 from ecwsp.administration.models import Configuration
-import ecwsp
 
 import datetime
+import decimal
 from decimal import Decimal, ROUND_HALF_UP
 import copy
 
@@ -176,18 +177,32 @@ class CourseEnrollment(models.Model):
         self.numeric_grade_recalculation_needed = False
         self.save()
         return grade
+    
+    def optimized_grade_to_letter(self, grade):
+        return GradeScaleRule.objects.filter(
+            grade_scale__schoolyear__markingperiod__coursesection=self,
+            min_grade__lte=grade,
+            max_grade__gte=grade).first().letter_grade
 
-    def get_grade(self, date_report=None, rounding=2):
+    def get_grade(self, date_report=None, rounding=2, letter=False):
         """ Get the grade, use cache when no date change present
+        date_report:
+        rounding: Round to this many decimal places
+        letter: Convert to letter grade scale
         """
         if date_report is None or date_report >= datetime.date.today():
             # Cache will always have the latest grade, so it's fine for
             # today's date and any future date
-            grade = self.grade
+            if self.numeric_grade:
+                grade = self.numeric_grade
+            else:
+                grade = self.grade
         else:
             grade = self.calculate_grade_real(date_report=date_report)
         if rounding and isinstance(grade, (int, long, float, complex, Decimal)):
-            return round_as_decimal(grade, rounding)
+            grade = round_as_decimal(grade, rounding)
+        if letter == True and isinstance(grade, (int, long, float, complex, Decimal)):
+            return self.optimized_grade_to_letter(grade)
         return grade
 
     def calculate_grade(self):
@@ -209,17 +224,14 @@ class CourseEnrollment(models.Model):
         # postgres requires a over () to run
         # http://stackoverflow.com/questions/19271646/how-to-make-a-sum-without-group-by
         sql_string = '''
-SELECT ( Sum(grade * weight) {over} / Sum(weight) {over} ) AS ave_grade,
-       grades_grade.id,
-       grades_grade.override_final
-FROM   grades_grade
-       LEFT JOIN schedule_markingperiod
-              ON schedule_markingperiod.id = grades_grade.marking_period_id
-WHERE  ( grades_grade.course_section_id = %s
-         AND grades_grade.student_id = %s {extra_where} )
-       AND ( grade IS NOT NULL
-              OR letter_grade IS NOT NULL )
-ORDER  BY grades_grade.override_final DESC limit 1'''
+SELECT case when Sum(override_final) {over} = 1 then 'OVERRIDE' else (Sum(grade * weight) {over} / Sum(weight) {over}) end AS ave_grade
+FROM grades_grade
+    LEFT JOIN schedule_markingperiod
+    ON schedule_markingperiod.id = grades_grade.marking_period_id
+WHERE (grades_grade.course_section_id = %s
+    AND grades_grade.student_id = %s {extra_where} )
+    AND ( grade IS NOT NULL
+    OR letter_grade IS NOT NULL )'''
 
         if date_report:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
@@ -243,21 +255,20 @@ ORDER  BY grades_grade.override_final DESC limit 1'''
 
         result = cursor.fetchone()
         if result:
-            (ave_grade, grade_id, override_final) = result
+            ave_grade = result[0]
         else: # No grades at all. The average of no grades is None
             return None
 
-        if override_final:
-            course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
-            grade = course_grades.get_grade()
+        if ave_grade == "OVERRIDE":
+            course_grade = Grade.objects.get(override_final=True, student=self.user, course_section=self.course_section)
+            grade = course_grade.get_grade()
             if ignore_letter and not isinstance(grade, (int, Decimal, float)):
                 return None
             return grade
 
-        if ave_grade:
-            # database math always comes out as a float :(
+        elif ave_grade:
             return Decimal(ave_grade)
-
+        
         # about 0.5 s
         # Letter Grade
         if ignore_letter == False:
@@ -479,7 +490,7 @@ class CourseSection(models.Model):
         """
         for student in self.enrollments.all():
             for marking_period in self.marking_period.all():
-                ecwsp.grades.models.Grade.populate_grade(
+                Grade.populate_grade(
                     student = student,
                     marking_period = marking_period,
                     course_section = self

@@ -696,4 +696,4 @@ class FamilyAccessUser(User):
         return u"{0}, {1}".format(self.last_name, self.first_name)
     def save(self, *args, **kwargs):
         super(FamilyAccessUser, self).save(*args, **kwargs)
-        aelf.groups.add(Group.objects.get_or_create(name='family')[0])
+        self.groups.add(Group.objects.get_or_create(name='family')[0])
