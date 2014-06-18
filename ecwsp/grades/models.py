@@ -11,6 +11,7 @@ from django_cached_field import CachedDecimalField
 import decimal
 from decimal import Decimal
 import datetime
+import ecwsp
 
 class GradeComment(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -283,7 +284,7 @@ class Grade(models.Model):
             enrollment = self.course_section.courseenrollment_set.get(user=self.student)
             enrollment.flag_grade_as_stale()
             enrollment.flag_numeric_grade_as_stale()
-        except enrollment.DoesNotExist:
+        except ecwsp.schedule.models.CourseEnrollment.DoesNotExist:
             pass
         self.student.cache_gpa = self.student.calculate_gpa()
         if self.student.cache_gpa != "N/A":
