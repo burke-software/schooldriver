@@ -1,8 +1,9 @@
-from django.db import models
 from django.contrib import messages
 from django.conf import settings
 from django_cached_field import CachedCharField, CachedDecimalField
 from django.db import connection
+from django.db import models
+from django.db.models.query import QuerySet
 
 from ecwsp.sis.models import Student
 from ecwsp.sis.helper_functions import round_as_decimal
@@ -176,6 +177,42 @@ class CourseEnrollment(models.Model):
         self.grade_recalculation_needed = False
         self.numeric_grade_recalculation_needed = False
         self.save()
+        return grade
+    
+    def get_average_for_marking_periods(self, marking_periods, letter=False):
+        """ Get the average for only some marking periods
+        marking_periods - Queryset or optionally pass ids only as an optimization
+        """
+        if isinstance(marking_periods, QuerySet):
+            marking_periods = tuple(marking_periods.values_list('id', flat=True))
+        else:
+            # Check marking_periods because we can't use sql parameters because sqlite and django suck
+            if all(isinstance(item, int) for item in marking_periods) != True:
+                raise ValueError('marking_periods must be list or tuple of ints')
+            marking_periods = tuple(marking_periods)
+        
+        cursor = connection.cursor()
+        sql_string = '''
+SELECT Sum(grade * weight) {over} / Sum(weight) {over} AS ave_grade FROM grades_grade
+LEFT JOIN schedule_markingperiod
+    ON schedule_markingperiod.id = grades_grade.marking_period_id
+WHERE grades_grade.course_section_id = %s
+    AND grades_grade.student_id = %s
+    AND schedule_markingperiod.id in {marking_periods}
+    AND ( grade IS NOT NULL OR letter_grade IS NOT NULL )'''
+        if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+            sql_string = sql_string.format(over='over ()', marking_periods=marking_periods)
+        else:
+            sql_string = sql_string.format(over='', marking_periods=marking_periods)
+            
+        cursor.execute(sql_string, (self.course_section_id, self.user_id))
+        result = cursor.fetchone()
+        if result:
+            grade = result[0]
+        else:
+            return None
+        if letter:
+            grade = self.optimized_grade_to_letter(grade)
         return grade
     
     def optimized_grade_to_letter(self, grade):

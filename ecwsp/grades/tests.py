@@ -113,12 +113,42 @@ class GradeBaltTests(SisTestMixin, TestCase):
             grade = Grade.objects.get(marking_period=x[0], course_section_id=x[1])
             self.assertEqual(grade.get_grade(letter=True), x[2])
     
-    def test_sx_grade(self):
-        """ Really just a normal run of the mill Marking Period grade """
+    def test_snx_grade(self):
+        """ Really just a normal run of the mill Marking Period grade
+        Balt uses s1x, s2x as tests that affect final grades
+        """
         grade = Grade.objects.get(marking_period=self.data.mps1x, course_section_id=1)
         self.assertEqual(grade.get_grade(), 90)
         grade = Grade.objects.get(marking_period=self.data.mps2x, course_section_id=1)
         self.assertEqual(grade.get_grade(), 79)
+    
+    def test_partial_course_average_grade(self):
+        """ Tests getting the average of some but not all marking period averages """
+        s1_ids = [1,2,3]
+        s2_ids = [4,5,6]
+        test_data = [
+            [1, s1_ids, 78.08, 'C+'],
+            [1, s2_ids, 71.96, 'D'],
+            [2, s1_ids, 68.16, 'F'],
+            [2, s2_ids, 70.84, 'D'],
+            [3, s1_ids, 68.0, 'F'],
+            [3, s2_ids, 69.84, 'D'],
+            [4, s1_ids, 87.52, 'B+'],
+            [4, s2_ids, 80.88, 'B-'],
+            [5, s1_ids, 73.6, 'C'],
+            [5, s2_ids, 80.08, 'B-'],
+            [6, s1_ids, 93.2, 'A'],
+            [6, s2_ids, 86.65, 'B+'],
+            [7, s1_ids, 79.04, 'C+'],
+            [7, s2_ids, 83.12, 'B'],
+            [8, s1_ids, 100, 'A'],
+            [8, s2_ids, 100, 'A'],
+        ]
+        for x in test_data:
+            ce = CourseEnrollment.objects.get(user=self.data.student, course_section=x[0])
+            self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), x[2])
+            self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
+            
             
     def test_final_grade(self):
         test_data = [
