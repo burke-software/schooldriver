@@ -37,6 +37,18 @@ class StudentMarkingPeriodGrade(models.Model):
 
     class Meta:
         unique_together = ('student', 'marking_period')
+        
+    def get_scaled_average(self, rounding=2):
+        """ Convert to scaled grade first, then average
+        Burke Software does not endorse this as a precise way to calculate averages """
+        grade_total = 0.0
+        course_count = 0
+        for grade in self.student.grade_set.filter(marking_period=self.marking_period, grade__isnull=False):
+            grade_value = grade.optimized_grade_to_scale(letter=False)
+            grade_total += float(grade_value)
+            course_count += 1
+        average = grade_total / course_count
+        return round_as_decimal(average, rounding)
 
     @staticmethod
     def build_all_cache():
@@ -48,7 +60,6 @@ class StudentMarkingPeriodGrade(models.Model):
                     student=student, marking_period_id=marking_period['course_section__marking_period'])
 
     def calculate_grade(self):
-        # ignore overriding grades - WRONG!
         return self.student.grade_set.filter(
             course_section__courseenrollment__user=self.student, # make sure the student is still enrolled in the course!
             # each course's weight in the MP average is the course's number of
@@ -290,13 +301,17 @@ class Grade(models.Model):
         if self.student.cache_gpa != "N/A":
             self.student.save()
 
-    def optimized_grade_to_letter(self):
-        """ Optimized version of GradeScale.to_letter """
-        return GradeScaleRule.objects.filter(
+    def optimized_grade_to_scale(self, letter):
+        """ Optimized version of GradeScale.to_letter
+        letter - True for letter grade, false for numeric (ex: 4.0 scale) """
+        rule = GradeScaleRule.objects.filter(
                 grade_scale__schoolyear__markingperiod=self.marking_period_id,
                 min_grade__lte=self.grade, 
                 max_grade__gte=self.grade,
-                ).first().letter_grade
+                ).first()
+        if letter:
+            return rule.letter_grade
+        return rule.numeric_scale
 
     def get_grade(self, letter=False, display=False, rounding=None,
         minimum=None, number=False):
@@ -323,7 +338,7 @@ class Grade(models.Model):
                 grade = string % float(str(grade))
             if letter == True:
                 try:
-                    return self.optimized_grade_to_letter()
+                    return self.optimized_grade_to_scale(letter=True)
                 except GradeScaleRule.DoesNotExist:
                     return "No Grade Scale"
             return grade

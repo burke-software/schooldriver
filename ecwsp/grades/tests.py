@@ -148,8 +148,19 @@ class GradeBaltTests(SisTestMixin, TestCase):
             ce = CourseEnrollment.objects.get(user=self.data.student, course_section=x[0])
             self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), x[2])
             self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
-            
-            
+    
+    def test_scaled_average(self):
+        """ Tests an asinine method for averages by converting to non linear scale first """
+        test_data = [
+            [1, 1.9],
+            [2, 2.2],
+            [4, 1.8],
+            [5, 2.6],
+        ]
+        for x in test_data:
+            smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
+            self.assertEqual(smpg.get_scaled_average(rounding=1), x[1])
+    
     def test_final_grade(self):
         test_data = [
             [1, 'C'],
