@@ -380,6 +380,30 @@ class DepartmentGraduationCredits(models.Model):
     class Meta:
         unique_together = ('department', 'class_year')
 
+class CourseType(models.Model):
+    ''' Some course types, e.g. honors or AP, may have uncommon settings.
+    For consistency, the default data includes a "Normal" type. '''
+    name = models.CharField(max_length=255, unique=True)
+    is_default = models.BooleanField(default=False, help_text="Only one course " \
+        "type can be the default.")
+    weight = models.DecimalField(max_digits=5, decimal_places=2, default=1,
+        help_text="A course's weight in average calculations is this value "
+            "multiplied by the number of credits for the course. A course that "
+            "does not affect averages should have a weight of 0, while an "
+            "honors course might, for example,  have a weight of 1.2.")
+    award_credits = models.BooleanField(default=True,
+        help_text="When disabled, course will not be included in any student's "
+            "credit totals. However, the number of credits and weight will "
+            "still be used when calculating averages.")
+    boost = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    def save(self, *args, **kwargs):
+        ''' If I am the default, no other CourseType can be! '''
+        super(CourseType, self).save(*args, **kwargs)
+        if self.is_default:
+            CourseType.objects.exclude(pk=self.pk).update(is_default=False)
+    def __unicode__(self):
+        return self.name
+
 class Course(models.Model):
     is_active = models.BooleanField(default=True)
     fullname = models.CharField(max_length=255, unique=True, verbose_name="Full Course Name")
@@ -392,14 +416,13 @@ class Course(models.Model):
         # WARNING: this default must NOT be used for migrations! Courses whose
         # credits=None should have their credits set to 0
         default=lambda: Configuration.get_or_default(name='Default course credits').value)
-    weight = models.DecimalField(max_digits=5, decimal_places=2, default=1,
-        help_text="Weighting can be useful courses that do not affect GPA (weight 0) or honors that might have a weight of 1.2 for GPA")
-    award_credits = models.BooleanField(default=True,
-        help_text='''When disabled, course will not be included in any student's
-        credit totals. However, the number of credits will still be used as a
-        weight in GPA calculations.''')
     department = models.ForeignKey(Department, blank=True, null=True)
     level = models.ForeignKey('sis.GradeLevel', blank=True, null=True, verbose_name="Grade Level")
+    course_type = models.ForeignKey(CourseType,
+        help_text='Should only need adjustment when uncommon calculation ' \
+        'methods are used.',
+        default=lambda: CourseType.objects.get(is_default=True)
+    )
 
     def __unicode__(self):
         return self.fullname
@@ -414,16 +437,6 @@ class Course(models.Model):
         mp = MarkingPeriod.objects.filter(coursesection__course=self).order_by('-end_date').first()
         if mp:
             return mp.end_date
-
-    def save(self, *args, **kwargs):
-        super(Course, self).save(*args, **kwargs)
-
-        # assign teacher in as enrolled user
-        try:
-            if self.teacher:
-                enroll, created = CourseEnrollment.objects.get_or_create(course=self, user=self.teacher, role="teacher")
-        except: pass
-
 
     @staticmethod
     def autocomplete_search_fields():
@@ -484,10 +497,6 @@ class CourseSection(models.Model):
     @property
     def credits(self):
         return self.course.credits
-
-    @property
-    def award_credits(self):
-        return self.course.award_credits
 
     @property
     def description(self):
