@@ -38,12 +38,12 @@ class SisData(object):
         # -------------------------------------------------------------------
         #
         # ------------ stuff that makes my tests sad and broken -------------
-        # CourseType.objects.create(name='Normal')
+        # CourseType.objects.create(name='Normal', is_default=True)
         # -------------------------------------------------------------------
         #
         # love: Q 
 
-        CourseType.objects.create(name='Normal', is_default=True)
+        
         self.stupid_hacks()
 
     def create_basics(self):
