@@ -28,6 +28,7 @@ class SisData(object):
 
     def create_required(self):
         """ A place for 100% required data """
+<<<<<<< HEAD
 
         # Hey David - I had to change this to make it work on my local comp
         # I was getting a "uniqueconstraint" error when name="Normal"
@@ -43,6 +44,9 @@ class SisData(object):
         #
         # love: Q 
 
+=======
+        CourseType.objects.create(name='Normal', is_default=True)
+>>>>>>> 35beced3417ad6fe1372a43b4668b3e4a5640781
         self.stupid_hacks()
 
     def create_basics(self):
@@ -141,6 +145,7 @@ class SisData(object):
         self.grade = Grade.objects.get(pk=1)
 
     def create_grade_scale_data(self):
+        self.create_required()
         aa = Faculty.objects.create(username="aa", first_name="aa", is_superuser=True, is_staff=True)
         aa.set_password('aa')
         aa.save()

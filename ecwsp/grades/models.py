@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, connection
 from django.db.models import Count, signals
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
@@ -37,6 +37,10 @@ class StudentMarkingPeriodGrade(models.Model):
 
     class Meta:
         unique_together = ('student', 'marking_period')
+    
+    def get_average(self, rounding=2):
+        """ Returns cached average """
+        return round_as_decimal(self.grade, rounding)
         
     def get_scaled_average(self, rounding=2):
         """ Convert to scaled grade first, then average
@@ -60,28 +64,17 @@ class StudentMarkingPeriodGrade(models.Model):
                     student=student, marking_period_id=marking_period['course_section__marking_period'])
 
     def calculate_grade(self):
-        return self.student.grade_set.filter(
-            course_section__courseenrollment__user=self.student, # make sure the student is still enrolled in the course!
-            # each course's weight in the MP average is the course's number of
-            # credits DIVIDED BY the count of marking periods for the course
-            grade__isnull=False, override_final=False, marking_period=self.marking_period).extra(select={
-            'ave_grade': '''
-                Sum(grade *
-                      (SELECT credits
-                       FROM schedule_course
-                       WHERE schedule_course.id = grades_grade.course_section_id) /
-                      (SELECT Count(schedule_coursesection_marking_period.markingperiod_id)
-                       FROM schedule_coursesection_marking_period
-                       WHERE schedule_coursesection_marking_period.coursesection_id = grades_grade.course_section_id)) /
-                Sum(
-                      (SELECT credits
-                       FROM schedule_course
-                       WHERE schedule_course.id = grades_grade.course_section_id) /
-                      (SELECT Count(schedule_coursesection_marking_period.markingperiod_id)
-                       FROM schedule_coursesection_marking_period
-                       WHERE schedule_coursesection_marking_period.coursesection_id = grades_grade.course_section_id))
-            '''
-        }).values('ave_grade')[0]['ave_grade']
+        cursor = connection.cursor()
+        sql_string = """
+select sum(grade * credits) / sum(credits * 1.0)
+from grades_grade
+left join schedule_coursesection on schedule_coursesection.id=grades_grade.course_section_id
+left join schedule_course on schedule_coursesection.course_id=schedule_course.id
+where marking_period_id=%s and student_id=%s and grade is not null;"""
+        cursor.execute(sql_string, (self.marking_period_id, self.student_id))
+        result = cursor.fetchone()
+        if result:
+            return result[0]
 
 
 class StudentYearGrade(models.Model):
