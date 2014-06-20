@@ -28,7 +28,21 @@ class SisData(object):
 
     def create_required(self):
         """ A place for 100% required data """
-        CourseType.objects.create(name='Normal')
+
+        # Hey David - I had to change this to make it work on my local comp
+        # I was getting a "uniqueconstraint" error when name="Normal"
+        # and a query error when no default was set...
+        #
+        # ---------------- stuff that makes my tests happy ------------------
+        CourseType.objects.create(name='Normal-Test', is_default=True)
+        # -------------------------------------------------------------------
+        #
+        # ------------ stuff that makes my tests sad and broken -------------
+        # CourseType.objects.create(name='Normal')
+        # -------------------------------------------------------------------
+        #
+        # love: Q 
+
         self.stupid_hacks()
 
     def create_basics(self):
