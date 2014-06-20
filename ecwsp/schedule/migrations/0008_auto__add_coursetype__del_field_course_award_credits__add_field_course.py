@@ -8,15 +8,49 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Course.weight'
-        db.add_column(u'schedule_course', 'weight',
-                      self.gf('django.db.models.fields.DecimalField')(default=1, max_digits=5, decimal_places=2),
+        # Adding model 'CourseType'
+        db.create_table(u'schedule_coursetype', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
+            ('is_default', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('weight', self.gf('django.db.models.fields.DecimalField')(default=1, max_digits=5, decimal_places=2)),
+            ('award_credits', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('boost', self.gf('django.db.models.fields.DecimalField')(default=0, max_digits=5, decimal_places=2)),
+        ))
+        db.send_create_signal(u'schedule', ['CourseType'])
+
+        # Deleting field 'Course.award_credits'
+        # No data migration because this was never used in production
+        db.delete_column(u'schedule_course', 'award_credits')
+
+        if not db.dry_run:
+            # Create a default "Normal" CourseType
+            normal_course_type = orm.CourseType()
+            normal_course_type.name = "Normal"
+            normal_course_type.default = "True"
+            normal_course_type.save()
+            default_course_type_pk = normal_course_type.pk
+        else:
+            # Bogus value for dry run
+            default_course_type_pk = 1
+
+        # Adding field 'Course.course_type'
+        db.add_column(u'schedule_course', 'course_type',
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=default_course_type_pk, to=orm['schedule.CourseType']),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting field 'Course.weight'
-        db.delete_column(u'schedule_course', 'weight')
+        # Deleting model 'CourseType'
+        db.delete_table(u'schedule_coursetype')
+
+        # Adding field 'Course.award_credits'
+        db.add_column(u'schedule_course', 'award_credits',
+                      self.gf('django.db.models.fields.BooleanField')(default=True),
+                      keep_default=False)
+
+        # Deleting field 'Course.course_type'
+        db.delete_column(u'schedule_course', 'course_type_id')
 
 
     models = {
@@ -75,7 +109,7 @@ class Migration(SchemaMigration):
         },
         u'schedule.course': {
             'Meta': {'object_name': 'Course'},
-            'award_credits': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'course_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.CourseType']"}),
             'credits': ('django.db.models.fields.DecimalField', [], {'default': "u'1'", 'max_digits': '5', 'decimal_places': '2'}),
             'department': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Department']", 'null': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
@@ -85,8 +119,7 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'level': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.GradeLevel']", 'null': 'True', 'blank': 'True'}),
-            'shortname': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'weight': ('django.db.models.fields.DecimalField', [], {'default': '1', 'max_digits': '5', 'decimal_places': '2'})
+            'shortname': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         u'schedule.courseenrollment': {
             'Meta': {'unique_together': "(('course_section', 'user'),)", 'object_name': 'CourseEnrollment'},
@@ -127,6 +160,15 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'teacher': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Faculty']"})
+        },
+        u'schedule.coursetype': {
+            'Meta': {'object_name': 'CourseType'},
+            'award_credits': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'boost': ('django.db.models.fields.DecimalField', [], {'default': '0', 'max_digits': '5', 'decimal_places': '2'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_default': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'weight': ('django.db.models.fields.DecimalField', [], {'default': '1', 'max_digits': '5', 'decimal_places': '2'})
         },
         u'schedule.day': {
             'Meta': {'ordering': "('day',)", 'object_name': 'Day'},
@@ -275,7 +317,7 @@ class Migration(SchemaMigration):
             'date_dismissed': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'emergency_contacts': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sis.EmergencyContact']", 'symmetrical': 'False', 'blank': 'True'}),
             'family_access_users': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'+'", 'blank': 'True', 'to': u"orm['auth.User']"}),
-            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
+            'family_preferred_language': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.LanguageChoice']", 'null': 'True', 'blank': 'True'}),
             'gpa_recalculation_needed': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'grad_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'individual_education_program': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),

@@ -10,7 +10,7 @@ from daterange_filter.filter import DateRangeFilter
 from ecwsp.sis.models import Faculty, Student
 from ecwsp.schedule.models import CourseMeet, Course, Department, CourseEnrollment, MarkingPeriod
 from ecwsp.schedule.models import Period, Location, OmitCourseGPA, OmitYearGPA, Award, CourseSectionTeacher
-from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day, CourseSection
+from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day, CourseSection, CourseType
 
 def copy(modeladmin, request, queryset):
     for object in queryset:
@@ -37,7 +37,7 @@ class CourseAdmin(admin.ModelAdmin):
         obj.save()        
 
 admin.site.register(Course, CourseAdmin)
-
+admin.site.register(CourseType)
 
 class CourseEnrollmentInline(admin.TabularInline):
     model = CourseEnrollment

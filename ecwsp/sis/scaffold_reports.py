@@ -733,7 +733,7 @@ class SisReport(ScaffoldReport):
                     i += 1
                 course.final = course_enrollment.get_grade(self.date_end)
 
-                if course.award_credits:
+                if course.course.course_type.award_credits:
                     if self.is_passing(course.final):
                         year.credits += course.credits
                     if course.credits:

@@ -28,6 +28,7 @@ class SisData(object):
 
     def create_required(self):
         """ A place for 100% required data """
+        CourseType.objects.create(name='Normal')
         self.stupid_hacks()
 
     def create_basics(self):
