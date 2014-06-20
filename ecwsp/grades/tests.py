@@ -161,6 +161,16 @@ class GradeBaltTests(SisTestMixin, TestCase):
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
             self.assertEqual(smpg.get_scaled_average(rounding=1), x[1])
     
+    def test_average(self):
+        test_data = [
+            [3, 72.7],
+            [6, 71.8],
+        ]
+        for x in test_data:
+            smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
+            self.assertAlmostEqual(smpg.get_average(rounding=1), Decimal(x[1]))
+        
+    
     def test_final_grade(self):
         test_data = [
             [1, 'C'],

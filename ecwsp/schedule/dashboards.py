@@ -2,7 +2,7 @@ from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, RssF
 from .models import Course, CourseSection, MarkingPeriod
 import datetime
 
-class CourseDashlet(ListDashlet):
+class CourseSectionDashlet(ListDashlet):
     model = CourseSection
     fields = ('__str__', 'number_of_students',)
     require_apps = ('ecwsp.schedule',)
@@ -29,7 +29,7 @@ class GradesDashlet(Dashlet):
 class CourseDashboard(Dashboard):
     app = 'schedule'
     dashlets = [
-        CourseDashlet(title="Courses"),
+        CourseSectionDashlet(title="Course Sections"),
         GradesDashlet(title="Grades"),
         AdminListDashlet(title="Schedule", app_label="schedule"),
         AdminListDashlet(title="GradesList", verbose_name="Grades", app_label="grades"),
