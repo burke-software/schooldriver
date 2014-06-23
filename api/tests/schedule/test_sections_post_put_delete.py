@@ -47,7 +47,6 @@ class CourseSectionAPIPostTests(APITest):
         """
         # change the name of an existing section
         self.client.force_authenticate(user=self.data.teacher1)
-
         data = {'course_id': 1, 'name': 'Waka Waka!!!'}
         response = self.client.put('/api/sections/1/', data = data)
 
