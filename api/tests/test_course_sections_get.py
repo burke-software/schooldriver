@@ -1,8 +1,8 @@
 from api.tests.api_test_base import APITest
 
-class CourseSectionAPITest(APITest):
+class CourseSectionAPIGetTests(APITest):
     """
-    test the implementation of our course sections api
+    test the implementation of our course sections api with get requests
     """
 
     def test_sections_get_request_for_simple_permissions(self):
