@@ -1,5 +1,4 @@
 from api.tests.api_test_base import APITest
-import json
 
 class CourseSectionAPITest(APITest):
     """
