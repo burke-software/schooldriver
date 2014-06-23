@@ -16,7 +16,7 @@ class CourseSectionAPIGetTests(APITest):
 
     def test_data_returned_from_specific_get_request(self):
         """
-        the api should successfully retun a specific section when asked
+        the api should successfully return a specific section when asked
         """
         self.client.force_authenticate(user = self.data.teacher1)
         response = self.client.get('/api/sections/1/')
@@ -24,7 +24,6 @@ class CourseSectionAPIGetTests(APITest):
         self.assertEqual(response.data['course']['fullname'], 'Math 101')
 
         # let's try another section just to be sure
-
         response = self.client.get('/api/sections/3/')
         self.assertEqual(response.data['name'], 'History A')
         self.assertEqual(response.data['course']['fullname'], 'History 101')
