@@ -2,12 +2,14 @@ from scaffold_report.report import ScaffoldReport, scaffold_reports, ReportButto
 from scaffold_report.fields import SimpleCompareField
 from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter, ModelChoiceFilter
 from django import forms
+from django.db import models
 from django.conf import settings
-from django.db.models import Count, Q
+from django.db.models import Count, Q, DateField
 from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty, Cohort
+from ecwsp.attendance.models import CourseAttendance, StudentAttendance
 from ecwsp.schedule.calendar import Calendar
-from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet
+from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet, Period, CourseSection
 from ecwsp.grades.models import Grade
 from ecwsp.discipline.models import DisciplineAction
 import autocomplete_light
@@ -135,6 +137,44 @@ class AbsenceFilter(IntCompareFilter):
                 where = ['(' + sql + ') ' + compare_sql + ' %s'],
                 params = (date_begin, date_end, value))
         return queryset
+
+
+class PeriodFilter(ModelMultipleChoiceFilter):
+    verbose_name = "Course attendance by Period"
+    compare_fields_string = "period"
+    add_fields = ['class_period']
+    model = Period
+
+
+class CourseSectionFilter(ModelMultipleChoiceFilter):
+    verbose_name = "Course attendance by Course Section"
+    compare_fields_string = "section"
+    add_fields = ['course section']
+    model = CourseSection
+
+
+class DateFilter(Filter):
+    verbose_name = "Course Attendance by Date"
+    fields = [forms.DateField]
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        value = self.cleaned_data['field_0']
+        queryset = queryset.filter(date=value)
+        return queryset
+
+
+class MarkingPeriodFilter(ModelMultipleChoiceFilter):
+    verbose_name="Course Attendance by Marking Period"
+    compare_fields_string="marking_period"
+    add_fields = ['marking_period']
+    model = MarkingPeriod
+
+
+class YearFilter(ModelMultipleChoiceFilter):
+    verbose_name = "Course Attendance by School Year"
+    compare_fields_string="school_year"
+    add_fields = ['school_year']
+    model = SchoolYear
 
 
 class StudentYearFilter(ModelMultipleChoiceFilter):
@@ -854,4 +894,112 @@ class SisReport(ScaffoldReport):
         context['students'] = students
         return context
 
+
+class AttendanceReport(ScaffoldReport):
+    name = "attendance report"
+    model = CourseAttendance
+
+    filters = (
+        PeriodFilter(),
+        CourseSectionFilter(),
+        DateFilter(),
+        MarkingPeriodFilter(),
+        YearFilter(),
+    )
+
+
+
+
+
+    def attendance_totals(self, courseattendance):
+        students = courseattendance.coursesection_id.enrollments
+        marking_period = courseattendance.course_section_id.marking_period
+
+    def get_appy_template(self):
+        return self.report_context.get('template').file.path
+
+    def get_appy_context(self):
+        context = super(AttendanceReport, self).get_appy_context()
+        context['date'] = datetime.date.today()
+        courses = context['objects']
+        template = self.report_context.get('template')
+
+        if template:
+            self.for_date = self.report_context['date_begin']
+            self.date_end = self.report_context['date_end']
+            context['date_of_report'] = self.date_end # backwards compatibility
+
+
+
+class AttendanceReport2(ScaffoldReport):
+
+    name = 'attendance_report2'
+    model = StudentAttendance
+
+    filters = (
+        PeriodFilter(),
+        CourseSectionFilter(),
+        DateFilter(),
+        MarkingPeriodFilter(),
+        YearFilter(),
+    )
+
+    def daily_report(self, coursesection, date):
+        course = coursesection.course
+        for student in course.get_enrolled_students():
+            student.studentattendance.status_id = student.student_attn.filter(student=student,
+            date=date)
+
+    def marking_period_report(self, course, marking_period):
+        for student in course.get_enrolled_students():
+            marking_period.absent = student.student_attn.filter(status_code='absent',
+                date_range=(marking_period.start_date, marking_period.end_date)).count()
+            marking_period.tardy = student.student_attn.filter(status_code='tardy',
+                date_range=(marking_period.start_date, marking_period.end_date)).count()
+            marking_period.half = student.student_attn.filter(status_code='half',
+                date_range=(marking_period.start_date, marking_period.end_date)).count()
+            marking_period.excused = student.student_attn.filter(status_code='excused',
+                date_range=(marking_period.start_date, marking_period.end_date)).count()
+
+
+    def get_appy_template(self):
+        return self.report_context.get('template').file.path
+
+    def get_appy_context(self):
+        context = super(AttendanceReport2, self).get_appy_context()
+        context['date'] = datetime.date.today()
+        students = context['objects']
+        self.dailyreport(self.report_context.get('coursesection'), self.report_context.get('datefilter'))
+
+
+
+
+        context['students'] = students
+        return context
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 scaffold_reports.register('student_report', SisReport)
+#scaffold_reports.register('attendance_report', AttendanceReport)
+scaffold_reports.register('attendance_report2', AttendanceReport2)
