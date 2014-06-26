@@ -42,8 +42,8 @@ class CourseAttendance(models.Model):
         return unicode(self.student) + " " + unicode(self.date) + " " + unicode(self.status)
     
     def course_period(self):
-        if self.course.coursemeet_set.filter(day=self.date.isoweekday()):
-            return self.course.coursemeet_set.filter(day=self.date.isoweekday())[0].period
+        if self.course_section.coursemeet_set.filter(day=self.date.isoweekday()):
+            return self.course_section.coursemeet_set.filter(day=self.date.isoweekday())[0].period
 
 
 class StudentAttendance(models.Model):

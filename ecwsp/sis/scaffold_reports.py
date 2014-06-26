@@ -141,16 +141,25 @@ class AbsenceFilter(IntCompareFilter):
 
 class PeriodFilter(ModelMultipleChoiceFilter):
     verbose_name = "Course attendance by Period"
-    compare_fields_string = "period"
+    compare_field_string = "class_period"
     add_fields = ['class_period']
     model = Period
 
 
 class CourseSectionFilter(ModelMultipleChoiceFilter):
     verbose_name = "Course attendance by Course Section"
-    compare_fields_string = "section"
-    add_fields = ['course section']
+    compare_field_string = "course_section"
+    add_fields = ['course_section']
     model = CourseSection
+
+    def get_report(self, report_view, context):
+
+        titles = ["Last Name", "First Name", "", "Attendance Status", "", "Date",
+        "Course", "Section", "Period"]
+
+        header = titles
+
+        return report_view.list_to_xlsx_response(header=titles)
 
 
 class DateFilter(Filter):
@@ -165,14 +174,14 @@ class DateFilter(Filter):
 
 class MarkingPeriodFilter(ModelMultipleChoiceFilter):
     verbose_name="Course Attendance by Marking Period"
-    compare_fields_string="marking_period"
+    compare_field_string="marking_period"
     add_fields = ['marking_period']
     model = MarkingPeriod
 
 
 class YearFilter(ModelMultipleChoiceFilter):
     verbose_name = "Course Attendance by School Year"
-    compare_fields_string="school_year"
+    compare_field_string="school_year"
     add_fields = ['school_year']
     model = SchoolYear
 
@@ -491,7 +500,7 @@ class AggregateGradeButton(ReportButton):
         data = [titles]
         ranges = [['100', '90'], ['89.99', '80'], ['79.99', '70'], ['69.99', '60'], ['59.99', '50'], ['49.99', '0']]
         letter_ranges = ['P', 'F']
-        for teacher in Faculty.objects.filter(course__marking_period__in=mps, is_active=True).distinct():
+        for teacher in Faculty.objects.filter(coursesection__marking_period__in=mps, is_active=True).distinct():
             data.append([str(teacher)])
             grades = Grade.objects.filter(
                 marking_period__in=mps,
@@ -564,7 +573,7 @@ class AggregateGradeButton(ReportButton):
             for dept in Department.objects.all():
                 fails = Grade.objects.filter(
                     marking_period__in=mps,
-                    course__department=dept,
+                    course_section__course__department=dept,
                     student__is_active=True,
                     student__year__in=[level],   # Shouldn't need __in. Makes no sense at all.
                     grade__lt=passing,
@@ -572,7 +581,7 @@ class AggregateGradeButton(ReportButton):
                 ).count()
                 total = Grade.objects.filter(
                     marking_period__in=mps,
-                    course__department=dept,
+                    course_section__course__department=dept,
                     student__is_active=True,
                     student__year__in=[level],
                     override_final=False,
@@ -934,7 +943,7 @@ class AttendanceReport(ScaffoldReport):
 class AttendanceReport2(ScaffoldReport):
 
     name = 'attendance_report2'
-    model = StudentAttendance
+    model = CourseAttendance
 
     filters = (
         PeriodFilter(),
@@ -944,38 +953,44 @@ class AttendanceReport2(ScaffoldReport):
         YearFilter(),
     )
 
-    def daily_report(self, coursesection, date):
-        course = coursesection.course
-        for student in course.get_enrolled_students():
-            student.studentattendance.status_id = student.student_attn.filter(student=student,
-            date=date)
+    def get_report(self, report_context, context):
 
-    def marking_period_report(self, course, marking_period):
-        for student in course.get_enrolled_students():
-            marking_period.absent = student.student_attn.filter(status_code='absent',
-                date_range=(marking_period.start_date, marking_period.end_date)).count()
-            marking_period.tardy = student.student_attn.filter(status_code='tardy',
-                date_range=(marking_period.start_date, marking_period.end_date)).count()
-            marking_period.half = student.student_attn.filter(status_code='half',
-                date_range=(marking_period.start_date, marking_period.end_date)).count()
-            marking_period.excused = student.student_attn.filter(status_code='excused',
-                date_range=(marking_period.start_date, marking_period.end_date)).count()
+        titles = ["Last Name", "First Name", "", "Attendance Status", "", "Date",
+        "Course", "Section", "Period"]
 
-
-    def get_appy_template(self):
-        return self.report_context.get('template').file.path
-
-    def get_appy_context(self):
-        context = super(AttendanceReport2, self).get_appy_context()
-        context['date'] = datetime.date.today()
-        students = context['objects']
-        self.dailyreport(self.report_context.get('coursesection'), self.report_context.get('datefilter'))
+        header = titles
 
 
 
+    #def daily_report(self, coursesection, date):
+        #course = coursesection.course
+        #for student in course.get_enrolled_students():
+            #student.studentattendance.status_id = student.student_attn.filter(student=student,
+            #date=date)
 
-        context['students'] = students
-        return context
+    #def marking_period_report(self, course, marking_period):
+        #for student in course.get_enrolled_students():
+            #marking_period.absent = student.student_attn.filter(status_code='absent',
+                #date_range=(marking_period.start_date, marking_period.end_date)).count()
+            #marking_period.tardy = student.student_attn.filter(status_code='tardy',
+                #date_range=(marking_period.start_date, marking_period.end_date)).count()
+            #marking_period.half = student.student_attn.filter(status_code='half',
+                #date_range=(marking_period.start_date, marking_period.end_date)).count()
+            #marking_period.excused = student.student_attn.filter(status_code='excused',
+                #date_range=(marking_period.start_date, marking_period.end_date)).count()
+
+
+    #def get_appy_template(self):
+        #return self.report_context.get('template').file.path
+
+    #def get_appy_context(self):
+        #context = super(AttendanceReport2, self).get_appy_context()
+        #students = context['objects']
+        #self.dailyreport(self.report_context.get('coursesection'), self.report_context.get('date'))
+
+
+        #context['students'] = students
+        #return context
 
 
 
