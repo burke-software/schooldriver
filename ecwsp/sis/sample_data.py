@@ -28,22 +28,7 @@ class SisData(object):
 
     def create_required(self):
         """ A place for 100% required data """
-
-        # Hey David - I had to change this to make it work on my local comp
-        # I was getting a "uniqueconstraint" error when name="Normal"
-        # and a query error when no default was set...
-        #
-        # ---------------- stuff that makes my tests happy ------------------
         CourseType.objects.create(name='Normal-Test', is_default=True)
-        # -------------------------------------------------------------------
-        #
-        # ------------ stuff that makes my tests sad and broken -------------
-        # CourseType.objects.create(name='Normal', is_default=True)
-        # -------------------------------------------------------------------
-        #
-        # love: Q 
-
-        
         self.stupid_hacks()
 
     def create_basics(self):
@@ -147,15 +132,18 @@ class SisData(object):
         aa.set_password('aa')
         aa.save()
         self.student = student = Student.objects.create(first_name="Anon", last_name="Student", username="someone")
+
+        CourseType.objects.create(name='NonCore', weight=0)
+        non_core = CourseType.objects.get(name='NonCore')
         courses = Course.objects.bulk_create([
             Course(fullname="English", shortname="English", credits=1, graded=True),
             Course(fullname="Precalculus", shortname="Precalc", credits=1, graded=True),
             Course(fullname="Physics", shortname="Phys", credits=1, graded=True),
             Course(fullname="Modern World History", shortname="Hist", credits=1, graded=True),
             Course(fullname="Spanish III", shortname="Span", credits=1, graded=True),
-            Course(fullname="Photojournalism", shortname="Photo", credits=0, graded=True),
+            Course(fullname="Photojournalism", shortname="Photo", credits=1, course_type=non_core, graded=True),
             Course(fullname="Faith & Justice", shortname="Faith", credits=1, graded=True),
-            Course(fullname="Writing Lab 12", shortname="Wrt Lab", credits=0, graded=True),
+            Course(fullname="Writing Lab 12", shortname="Wrt Lab", credits=1, course_type=non_core, graded=True),
         ])
         self.year = year = SchoolYear.objects.create(name="balt year", start_date=date(2014,7,1), end_date=date(2050,5,1), active_year=True)
         self.mp1 = mp1 = MarkingPeriod.objects.create(name="1st", weight=0.4, start_date=date(2014,7,1), end_date=date(2014,9,1), school_year=year)

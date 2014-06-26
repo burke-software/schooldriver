@@ -47,8 +47,16 @@ class StudentMarkingPeriodGrade(models.Model):
         Burke Software does not endorse this as a precise way to calculate averages """
         grade_total = 0.0
         course_count = 0
-        for grade in self.student.grade_set.filter(marking_period=self.marking_period, grade__isnull=False):
+        grades = self.student.grade_set.filter(marking_period=self.marking_period, grade__isnull=False, course_section__course__course_type__weight__gt=0)
+        if grades.exclude(course_section__course__course_type__boost=0).exists():
+            boost = True
+        else:
+            boost = False
+        for grade in grades:
             grade_value = grade.optimized_grade_to_scale(letter=False)
+            if boost:
+                boost_value = grade.course_section.course.course_type.boost
+                grade_value += boost_value
             grade_total += float(grade_value)
             course_count += 1
         average = grade_total / course_count

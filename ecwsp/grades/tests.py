@@ -112,7 +112,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         for x in test_data:
             grade = Grade.objects.get(marking_period=x[0], course_section_id=x[1])
             self.assertEqual(grade.get_grade(letter=True), x[2])
-    
+
     def test_snx_grade(self):
         """ Really just a normal run of the mill Marking Period grade
         Balt uses s1x, s2x as tests that affect final grades
@@ -121,7 +121,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         self.assertEqual(grade.get_grade(), 90)
         grade = Grade.objects.get(marking_period=self.data.mps2x, course_section_id=1)
         self.assertEqual(grade.get_grade(), 79)
-    
+
     def test_partial_course_average_grade(self):
         """ Tests getting the average of some but not all marking period averages """
         s1_ids = [1,2,3]
@@ -148,19 +148,19 @@ class GradeBaltTests(SisTestMixin, TestCase):
             ce = CourseEnrollment.objects.get(user=self.data.student, course_section=x[0])
             self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), x[2])
             self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
-    
+
     def test_scaled_average(self):
         """ Tests an asinine method for averages by converting to non linear scale first """
         test_data = [
-            [1, 1.9],
-            [2, 2.2],
-            [4, 1.8],
-            [5, 2.6],
+            [1, Decimal(1.9)],
+            [2, Decimal(2.2)],
+            [4, Decimal(1.8)],
+            [5, Decimal(2.6)],
         ]
         for x in test_data:
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
-            self.assertEqual(smpg.get_scaled_average(rounding=1), x[1])
-    
+            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x[1])
+
     def test_average(self):
         test_data = [
             [3, 72.7],
@@ -169,8 +169,22 @@ class GradeBaltTests(SisTestMixin, TestCase):
         for x in test_data:
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
             self.assertAlmostEqual(smpg.get_average(rounding=1), Decimal(x[1]))
-        
-    
+
+    def test_scaled_multiple_mp_average(self):
+        test_data = [
+            [[1, 2, 3], 1.8],
+            [[4, 5, 6], 1.9],
+        ]
+        for x in test_data:
+            pass
+
+    def test_final_year_average(self):
+        test_data = [
+            [1, 2.0],
+        ]
+        for x in test_data:
+            year = SchoolYear.objects.get(id=x[0])
+
     def test_final_grade(self):
         test_data = [
             [1, 'C'],
