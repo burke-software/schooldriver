@@ -646,6 +646,7 @@ class SisReport(ScaffoldReport):
                 setattr(course, "grade" + str(i), self.blank_grade)
                 i += 1
             course.final = course_enrollment.grade
+            course.ce = course_enrollment
         student.courses = courses
 
         #Attendance for marking period

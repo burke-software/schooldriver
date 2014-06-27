@@ -16,6 +16,7 @@ from ckeditor.fields import RichTextField
 from django_cached_field import CachedDecimalField
 from decimal import Decimal
 from ecwsp.sis.helper_functions import round_as_decimal
+import ecwsp
 
 logger = logging.getLogger(__name__)
 
@@ -353,6 +354,19 @@ class Student(User, CustomFieldModel):
 
     def get_absolute_url():
         pass
+    
+    def get_gpa(self, rounding=2, numeric_scale=False):
+        """ Get cached gpa but with rounding and scale options """
+        gpa = self.gpa
+        if numeric_scale == True:
+            # Get the scale for the last year the student was active in
+            grade_scale = ecwsp.grades.models.GradeScale.objects.filter(
+                schoolyear__markingperiod__coursesection__courseenrollment__user=self).last()
+            if grade_scale:
+                gpa = grade_scale.to_numeric(gpa)
+        if rounding:
+            gpa = round_as_decimal(gpa, rounding)
+        return gpa
 
     def calculate_gpa(self, date_report=None, rounding=2):
         """ Use StudentYearGrade calculation
@@ -389,7 +403,6 @@ class Student(User, CustomFieldModel):
 
     @property
     def phone(self):
-        # TODO - Refactor
         try:
             parent = self.emergency_contacts.order_by('-primary_contact')[0]
             return parent.emergencycontactnumber_set.all()[0].number
@@ -433,7 +446,6 @@ class Student(User, CustomFieldModel):
         return self.alt_email
 
     def get_phone_number(self):
-        # TODO - Refactor
         if self.studentnumber_set.filter(type="C"):
             return self.studentnumber_set.filter(type="C")[0]
         elif self.studentnumber_set.all():

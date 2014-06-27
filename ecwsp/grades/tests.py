@@ -172,18 +172,25 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
     def test_scaled_multiple_mp_average(self):
         test_data = [
-            [[1, 2, 3], 1.8],
-            [[4, 5, 6], 1.9],
+            [[1, 2, 3], Decimal(1.8)],
+            [[4, 5, 6], Decimal(1.9)],
         ]
         for x in test_data:
-            pass
+            average = Grade.get_scaled_multiple_mp_average(self.data.student, x[0], rounding=1)
+            self.assertAlmostEqual(average, x[1])
 
-    def test_final_year_average(self):
+    def test_scaled_final_year_average(self):
         test_data = [
-            [1, 2.0],
+            [1, Decimal(2.0)],
         ]
         for x in test_data:
-            year = SchoolYear.objects.get(id=x[0])
+            year_grade = self.data.student.studentyeargrade_set.get(year=x[0])
+            average = year_grade.get_grade(numeric_scale=True, rounding=1)
+            self.assertAlmostEqual(average, x[1])
+    
+    def test_balt_gpa(self):
+        gpa = self.data.student.get_gpa(rounding=1, numeric_scale=True)
+        self.assertEqual(gpa, 2.0)
 
     def test_final_grade(self):
         test_data = [

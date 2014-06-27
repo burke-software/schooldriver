@@ -132,6 +132,7 @@ class StudentYearGrade(models.Model):
             course_section__marking_period__show_reports=True,
             course_section__marking_period__school_year=self.year,
             course_section__course__credits__isnull=False,
+            course_section__course__course_type__weight__gt=0,
             ).distinct():
             grade = course_enrollment.calculate_grade_real(date_report=date_report, ignore_letter=True)
             #print ('{}\t' * 3).format(course_enrollment.course, course_enrollment.course.credits, grade)
@@ -157,12 +158,15 @@ class StudentYearGrade(models.Model):
         """
         return self.calculate_grade_and_credits(date_report=date_report)[0]
 
-    def get_grade(self, date_report=None, rounding=2):
-        if date_report is None or date_report >= datetime.date.today():
+    def get_grade(self, date_report=None, rounding=2, numeric_scale=False):
+        if numeric_scale == False and (date_report is None or date_report >= datetime.date.today()):
             # Cache will always have the latest grade, so it's fine for
             # today's date and any future date
             return self.grade
         grade = self.calculate_grade(date_report=date_report)
+        if numeric_scale == True:
+            grade_scale = self.year.grade_scale
+            grade = grade_scale.to_numeric(grade)
         if rounding:
             grade = round_as_decimal(grade, rounding)
         return grade
@@ -371,6 +375,24 @@ class Grade(models.Model):
     def __unicode__(self):
         return unicode(self.get_grade(self))
 
+    @staticmethod
+    def get_scaled_multiple_mp_average(student, marking_periods, rounding=2):
+        enrollments = ecwsp.schedule.models.CourseEnrollment.objects.filter(
+                user=student,
+                course_section__course__course_type__weight__gt=0,
+                course_section__marking_period__in=marking_periods)
+        num_courses = 0
+        total_grade = 0
+        for enrollment in enrollments.distinct():
+            grade = enrollment.get_average_for_marking_periods(marking_periods, numeric=True)
+            if grade != None:
+                total_grade += grade
+                num_courses += 1
+        if num_courses > 0:
+            average = total_grade / num_courses
+            return round_as_decimal(average, rounding)
+        else:
+            return None
 
     @staticmethod
     def populate_grade(student, marking_period, course_section):

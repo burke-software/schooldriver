@@ -179,9 +179,11 @@ class CourseEnrollment(models.Model):
         self.save()
         return grade
     
-    def get_average_for_marking_periods(self, marking_periods, letter=False):
+    def get_average_for_marking_periods(self, marking_periods, letter=False, numeric=False):
         """ Get the average for only some marking periods
         marking_periods - Queryset or optionally pass ids only as an optimization
+        letter - Letter grade scale
+        numeric - non linear numeric scale
         """
         if isinstance(marking_periods, QuerySet):
             marking_periods = tuple(marking_periods.values_list('id', flat=True))
@@ -212,14 +214,20 @@ WHERE grades_grade.course_section_id = %s
         else:
             return None
         if letter:
-            grade = self.optimized_grade_to_letter(grade)
+            grade = self.optimized_grade_to_scale(grade, letter=True)
+        elif numeric:
+            grade = self.optimized_grade_to_scale(grade, letter=False)
         return grade
     
-    def optimized_grade_to_letter(self, grade):
-        return GradeScaleRule.objects.filter(
+    def optimized_grade_to_scale(self, grade, letter=True):
+        """ letter - True for letter grade, false for numeric (ex: 4.0 scale) """
+        rule = GradeScaleRule.objects.filter(
             grade_scale__schoolyear__markingperiod__coursesection=self,
             min_grade__lte=grade,
-            max_grade__gte=grade).first().letter_grade
+            max_grade__gte=grade).first()
+        if letter:
+            return rule.letter_grade
+        return rule.numeric_scale
 
     def get_grade(self, date_report=None, rounding=2, letter=False):
         """ Get the grade, use cache when no date change present
@@ -239,7 +247,7 @@ WHERE grades_grade.course_section_id = %s
         if rounding and isinstance(grade, (int, long, float, complex, Decimal)):
             grade = round_as_decimal(grade, rounding)
         if letter == True and isinstance(grade, (int, long, float, complex, Decimal)):
-            return self.optimized_grade_to_letter(grade)
+            return self.optimized_grade_to_scale(grade)
         return grade
 
     def calculate_grade(self):
