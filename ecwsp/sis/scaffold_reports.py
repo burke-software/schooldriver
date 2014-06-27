@@ -146,7 +146,6 @@ class CourseSectionFilter(ModelMultipleChoiceFilter):
     model = CourseSection
 
 
-
 class DateFilter(Filter):
     verbose_name = "Course Attendance by Date"
     fields = [forms.DateField]
@@ -157,9 +156,16 @@ class DateFilter(Filter):
         return queryset
 
 
-class MarkingPeriodFilter(ModelChoiceFilter):
-    model = MarkingPeriod
+class MarkingPeriodFilter(Filter):
+    verbose_name = "Course Attendance by Marking Period"
+    marking_periods = []
+    for marking_period in MarkingPeriod.objects.all():
+        marking_periods.append((str(marking_period.id), str(marking_period.name)))
+    fields = [forms.ChoiceField(choices=marking_periods)]
 
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['marking_period'] = self.cleaned_data['field_0']
+        return queryset
 
 
 class YearFilter(ModelMultipleChoiceFilter):
@@ -640,7 +646,6 @@ class MarkingPeriodButton(ReportButton):
             row.append(excused)
             row.append('')
             row.append(course_section.name)
-            row.append()
         data.append(row)
 
         return report_view.list_to_xlsx_response(data, header=titles)
@@ -928,7 +933,6 @@ class AttendanceReport(ScaffoldReport):
 
     name = 'attendance_report'
     model = CourseAttendance
-
 
     filters = (
         CourseSectionFilter(),
