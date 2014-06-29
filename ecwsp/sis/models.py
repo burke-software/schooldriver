@@ -508,6 +508,17 @@ class Student(User, CustomFieldModel):
             except:
                 return None
 
+    def get_scaled_multiple_mp_average_by_indices(self, indices, rounding=2):
+        """ Get a scaled mulitple marking period average for this student
+        Requires that the property mps be set previously. 
+        This function exists mainly for appy based report cards where speed,
+        and simplicity (in the template) are important.
+        """
+        Grade = ecwsp.grades.models.Grade
+        mps = [ self.mps[i] for i in indices ]
+        return Grade.get_scaled_multiple_mp_average(self, mps, rounding)
+
+
     def determine_year(self):
         """ Set the year (fresh, etc) from the class of XX year.
         """

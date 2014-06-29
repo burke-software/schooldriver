@@ -632,19 +632,27 @@ class SisReport(ScaffoldReport):
             course__graded=True,
             marking_period__in=self.marking_periods,
         ).distinct().order_by('course__department')
+
+        marking_periods = self.marking_periods.order_by('start_date')
+        for marking_period in marking_periods:
+            marking_period.smpg = student.studentmarkingperiodgrade_set.filter(marking_period=marking_period).first()
+        student.mps = list(marking_periods)
+        student.year_grade = student.studentyeargrade_set.get(year=self.school_year)
+
         for course in courses:
             course_enrollment = course.courseenrollment_set.get(user=student)
             grades = course.grade_set.filter(student=student).filter(
                 marking_period__isnull=False,
                 marking_period__show_reports=True).order_by('marking_period__start_date')
-            i = 1
-            for grade in grades:
-                # course.grade1, course.grade2, etc
-                setattr(course, "grade" + str(i), grade)
-                i += 1
-            while i <= 4:
-                setattr(course, "grade" + str(i), self.blank_grade)
-                i += 1
+            for i, marking_period in enumerate(self.marking_periods.order_by('start_date')):
+                for grade in grades:
+                    if grade.marking_period_id == marking_period.id:
+                        # course.grade1, course.grade2, etc
+                        setattr(course, "grade" + str(i + 1), grade)
+                        break
+                attr_name = "grade" + str(i + 1)
+                if not hasattr(course, attr_name):
+                    setattr(course, attr_name, self.blank_grade)
             course.final = course_enrollment.grade
             course.ce = course_enrollment
         student.courses = courses
@@ -825,10 +833,10 @@ class SisReport(ScaffoldReport):
                 from ecwsp.benchmark_grade.report import get_benchmark_report_card_data
                 get_benchmark_report_card_data(self.report_context, context, students)
             elif template.report_card:
-                self.blank_grade = struct()
-                self.blank_grade.comment = ""
+                self.blank_grade = Grade()
                 school_year = SchoolYear.objects.filter(start_date__lte=self.report_context['date_end']
                         ).order_by('-start_date').first()
+                self.school_year = school_year
                 context['year'] = school_year
                 self.marking_periods = MarkingPeriod.objects.filter(
                     school_year=school_year, show_reports=True)

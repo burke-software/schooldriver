@@ -377,6 +377,11 @@ class Grade(models.Model):
 
     @staticmethod
     def get_scaled_multiple_mp_average(student, marking_periods, rounding=2):
+        if (type(marking_periods) is list and 
+            marking_periods and 
+            type(marking_periods[0]) is ecwsp.schedule.models.MarkingPeriod):
+            marking_periods = [ mp.id for mp in marking_periods ]
+
         enrollments = ecwsp.schedule.models.CourseEnrollment.objects.filter(
                 user=student,
                 course_section__course__course_type__weight__gt=0,
