@@ -68,9 +68,9 @@ def teacher_grade(request):
     if Faculty.objects.filter(username=request.user.username):
         teacher = Faculty.objects.get(username=request.user.username)
     else:
-        messages.info(request, 'You do not have any courses.')
+        messages.info(request, 'You do not have any course sections.')
         return HttpResponseRedirect(reverse('admin:index'))
-    courses = CourseSection.objects.filter(
+    course_sections = CourseSection.objects.filter(
             course__graded=True,
             marking_period__school_year__active_year=True,
         ).filter(teachers=teacher).distinct()
@@ -84,15 +84,15 @@ def teacher_grade(request):
                     from ecwsp.engrade_sync.engrade_sync import EngradeSync
                     marking_period = form.cleaned_data['marking_period']
                     include_comments = form.cleaned_data['include_comments']
-                    courses = courses.filter(marking_period=marking_period)
+                    course_sections = course_sections.filter(marking_period=marking_period)
                     es = EngradeSync()
                     errors = ""
-                    for course in courses:
-                        errors += es.sync_course_grades(course, marking_period, include_comments)
+                    for course_section in course_sections:
+                        errors += es.sync_course_grades(course_section, marking_period, include_comments)
                     if errors:
                         messages.success(request, 'Engrade Sync attempted, but has some issues: ' + errors)
                     else:
-                        messages.success(request, 'Engrade Sync successful. Please verify each course!')
+                        messages.success(request, 'Engrade Sync successful. Please verify each course section!')
                 except:
                     messages.info(request, 'Engrade Sync unsuccessful. Contact an administrator.')
                     logging.error('Engrade Sync unsuccessful', exc_info=True, extra={
@@ -105,7 +105,7 @@ def teacher_grade(request):
         form = None
     return render_to_response(
         'grades/teacher_grade.html',
-        {'request': request, 'courses': courses, 'form': form, 'pref': pref},
+        {'request': request, 'course_sections': course_sections, 'form': form, 'pref': pref},
         RequestContext(request, {}),
         )
     
@@ -114,16 +114,16 @@ def teacher_grade(request):
 def teacher_grade_submissions(request):
     teachers = Faculty.objects.filter(
         teacher=True,
-        course__marking_period__school_year__active_year=True,
+        coursesection__marking_period__school_year__active_year=True,
         ).distinct()
     try:
         marking_period = MarkingPeriod.objects.filter(active=True).order_by('-end_date')[0]
     except:
         marking_period = None
-    courses = Course.objects.filter(marking_period=marking_period)
+    course_sections = CourseSection.objects.filter(marking_period=marking_period)
     
     for teacher in teachers:
-        teacher.courses = courses.filter(teacher=teacher)
+        teacher.course_sections = course_sections.filter(teacher=teacher)
     
     return render_to_response(
         'grades/teacher_grade_submissions.html',
@@ -155,21 +155,21 @@ class StudentGradesheet(DetailView):
         return context
     
 
-class CourseGrades(FormMixin, DetailView):
+class CourseSectionGrades(FormMixin, DetailView):
     """ This view is for inputing grades. It supports manual entry or uploading a spreadsheet """
     model = CourseSection
     template_name = "grades/course_grades.html"
     form_class = GradeUpload
     
     def get_success_url(self):
-        return reverse('course-grades', kwargs={'pk': self.object.pk})
+        return reverse('course-section-grades', kwargs={'pk': self.object.pk})
     
     @method_decorator(user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade')))
     def dispatch(self, *args, **kwargs):
-        return super(CourseGrades, self).dispatch(*args, **kwargs)
+        return super(CourseSectionGrades, self).dispatch(*args, **kwargs)
     
     def get_context_data(self, **kwargs):
-        context = super(CourseGrades, self).get_context_data(**kwargs)
+        context = super(CourseSectionGrades, self).get_context_data(**kwargs)
         form_class = self.get_form_class()
         form = self.get_form(form_class)
         form.fields['marking_period'].queryset = form.fields['marking_period'].queryset.filter(coursesection=context['coursesection'])
@@ -200,33 +200,33 @@ class CourseGrades(FormMixin, DetailView):
     
     def form_valid(self, form):
         from ecwsp.sis.importer import Importer
-        course = self.object
+        course_section = self.object
         importer = Importer(self.request.FILES['file'], self.request.user)
-        error = importer.import_grades(course, form.cleaned_data['marking_period'])
+        error = importer.import_grades(course_section, form.cleaned_data['marking_period'])
         if error:
             messages.warning(self.request, error)
         else:
-            course.last_grade_submission = datetime.datetime.now()
-            course.save()
-        return super(CourseGrades, self).form_valid(form)
+            course_section.last_grade_submission = datetime.datetime.now()
+            course_section.save()
+        return super(CourseSectionGrades, self).form_valid(form)
 
 
 @user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade'))   
 def teacher_grade_download(request, id, type=None):
     """ Download grading spreadsheet of requested class 
-    id: course id
+    id: course section id
     type: filetype (ods or xls)"""
     if not type:
         profile = UserPreference.objects.get_or_create(user=request.user)[0]
         type = profile.get_format(type="spreadsheet")
-    course = Course.objects.get(id=id)
+    course_section = CourseSection.objects.get(id=id)
     template, created = Template.objects.get_or_create(name="grade spreadsheet")
-    filename = unicode(course) + "_grade"
+    filename = unicode(course_section) + "_grade"
     data={}
     data['$students'] = []
     data['$username'] = []
     
-    for student in Student.objects.filter(courseenrollment__section=course):
+    for student in Student.objects.filter(courseenrollment__section=course_section):
         data['$students'].append(unicode(student))
         data['$username'].append(unicode(student.username))
     

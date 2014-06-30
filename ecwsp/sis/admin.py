@@ -97,7 +97,7 @@ class FacultyAdmin(admin.ModelAdmin):
 
 admin.site.register(Faculty, FacultyAdmin)
 
-class StudentCourseInline(admin.TabularInline):
+class StudentCourseSectionInline(admin.TabularInline):
     model = CourseEnrollment
     fields = ('course_section', 'attendance_note')
     extra = 0
@@ -170,7 +170,7 @@ class StudentAdmin(VersionAdmin, CustomFieldAdmin):
     form = autocomplete_light.modelform_factory(Student)
     readonly_fields = ['year']
     search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id', 'studentnumber__number']
-    inlines = [StudentCourseInline, StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
+    inlines = [StudentCourseSectionInline, StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
     actions = [mark_inactive]
     list_filter = ['is_active', 'year', 'class_of_year']
     list_display = ['first_name','last_name','year','is_active','primary_cohort', 'phone', 'gpa']
@@ -181,16 +181,16 @@ admin.site.register(Student, StudentAdmin)
 admin.site.register(ClassYear)
 
 ### Second student admin just for courses
-class StudentCourse(Student):
+class StudentCourseSection(Student):
     class Meta:
         proxy = True
-class StudentCourseAdmin(admin.ModelAdmin):
-    inlines = [StudentCourseInline]
+class StudentCourseSectionAdmin(admin.ModelAdmin):
+    inlines = [StudentCourseSectionInline]
     search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     fields = ['first_name', 'last_name']
     list_filter = ['is_active','year']
     readonly_fields = fields
-admin.site.register(StudentCourse, StudentCourseAdmin)
+admin.site.register(StudentCourseSection, StudentCourseSectionAdmin)
 
 
 
@@ -215,9 +215,9 @@ class CohortAdmin(admin.ModelAdmin):
     filter_horizontal = ('students',)
 
     def queryset(self, request):
-        # exclude PerCourseCohorts from Cohort admin
+        # exclude PerCourseSectionCohorts from Cohort admin
         qs = super(CohortAdmin, self).queryset(request)
-        return qs.filter(percoursecohort=None)
+        return qs.filter(percoursesectioncohort=None)
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -240,17 +240,18 @@ class CohortAdmin(admin.ModelAdmin):
 
 admin.site.register(Cohort, CohortAdmin)
 
-class PerCourseCohortAdmin(CohortAdmin):
+class PerCourseSectionCohortAdmin(CohortAdmin):
     exclude = ('primary',)
 
     def __get_teacher_courses(self, username):
         from django.db.models import Q
-        from ecwsp.schedule.models import Course
+        from ecwsp.schedule.models import CourseSection
         try:
             teacher = Faculty.objects.get(username=username)
-            teacher_courses = Course.objects.filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+            teacher_courses = CourseSection.objects.filter(teachers=teacher).distinct()
         except:
             teacher_courses = []
+            #TODO: Clean this! I guess it was to flag DB inconsistencies
             import traceback
             print traceback.format_exc()
         return teacher_courses
@@ -259,17 +260,17 @@ class PerCourseCohortAdmin(CohortAdmin):
         qs = super(CohortAdmin, self).queryset(request)
         if request.user.is_superuser or request.user.groups.filter(name='registrar').count():
             return qs
-        return qs.filter(course__in=self.__get_teacher_courses(request.user.username))
+        return qs.filter(course_section__in=self.__get_teacher_courses(request.user.username))
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # TODO: use a wizard or something and filter by THIS COHORT'S COURSE instead of all the teacher's courses
         if db_field.name == 'students':
             if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count():
-                kwargs['queryset'] = Student.objects.filter(course__in=self.__get_teacher_courses(request.user.username))
-        return super(PerCourseCohortAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
+                kwargs['queryset'] = Student.objects.filter(coursesection__in=self.__get_teacher_courses(request.user.username))
+        return super(PerCourseSectionCohortAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
 
 
-admin.site.register(PerCourseCohort, PerCourseCohortAdmin)
+admin.site.register(PerCourseSectionCohort, PerCourseSectionCohortAdmin)
 
 admin.site.register(ReasonLeft)
 

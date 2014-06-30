@@ -27,8 +27,8 @@ class Calendar:
         mps = MarkingPeriod.objects.filter(start_date__lte=date, end_date__gte=date)
         periods = Period.objects.filter(start_time__lte=date, end_time__gte=date)
         day = date.isoweekday()
-        courses = Course.objects.filter(marking_period__in=mps, periods__in=periods, enrollments__student=student)
-        course_meet = CourseMeet.objects.filter(course__in=courses, day=day, period__in=periods)
+        course_sections = CourseSection.objects.filter(marking_period__in=mps, periods__in=periods, enrollments__student=student)
+        course_meet = CourseMeet.objects.filter(course_section__in=course_sections, day=day, period__in=periods)
         return course_meet[0].location
     
     
@@ -65,11 +65,11 @@ class Calendar:
             period.days = []
             for day in arr_days:
                 if  only_active:
-                    course = course_meets.filter(day=day[0], period=period, course__active=True)
+                    course_section = course_meets.filter(day=day[0], period=period, course_section__active=True)
                 else:
-                    course = course_meets.filter(day=day[0], period=period)
-                if course.count():
-                    period.days.append(course[0])
+                    course_section = course_meets.filter(day=day[0], period=period)
+                if course_section.exists():
+                    period.days.append(course_section[0])
                     has_meeting = True
                 else:
                     period.days.append(None)

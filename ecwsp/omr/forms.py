@@ -13,13 +13,13 @@ from ecwsp.sis.models import Student, Cohort
 class TestForm(autocomplete_light.ModelForm):
     class Meta:
         model = Test
-        fields = ('name', 'school_year', 'teachers', 'department', 'marking_period', 'courses')
+        fields = ('name', 'school_year', 'teachers', 'department', 'marking_period', 'course_sections')
         widgets = {
             'name': forms.TextInput,
             'school_year': forms.Select,
             'department': forms.Select,
             'marking_period': forms.Select,
-            'course': forms.SelectMultiple(attrs={'size': '10', 'style': 'height:100%;'}),
+            'course_section': forms.SelectMultiple(attrs={'size': '10', 'style': 'height:100%;'}),
         }
         
     #teachers = AutoCompleteSelectMultipleField('faculty', required=True, help_text="")

@@ -776,7 +776,7 @@ class Importer:
                     grade = None
                     letter_grade = None
                     student = self.get_student(items)
-                    course = None
+                    course_section = None
                     marking_period = None
                     override_final = False
                     comment = ""
@@ -794,14 +794,14 @@ class Importer:
                                             comment += unicode(cc) + " IS NOT VALID COMMENT CODE! "
                             elif name == "comment":
                                 comment = unicode(value) + " "
-                            elif name == "course":
-                                course = Course.objects.get(fullname=value)
+                            elif name == "course section":
+                                course_section = CourseSection.objects.get(fullname=value)
                             elif name == "marking period":
                                 marking_period = MarkingPeriod.objects.get(name=value)
                             elif name == "override final":
                                 override_final = self.determine_truth(value)
-                    if student and course and grade:
-                        model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period, override_final=override_final)
+                    if student and course_section and grade:
+                        model, created = Grade.objects.get_or_create(student=student, course_section=course_section, marking_period=marking_period, override_final=override_final)
                         model.comment = comment
                         model.set_grade(grade)
                         model.override_final = override_final
@@ -813,7 +813,7 @@ class Importer:
                             self.log_and_commit(model, addition=False)
                             updated += 1
                     else:
-                        raise Exception('Requires student, course, and grade')
+                        raise Exception('Requires student, course section, and grade')
                 except:
                     self.handle_error(row, header, sys.exc_info(), sheet.name)
             x += 1
@@ -821,7 +821,7 @@ class Importer:
     
     
     @transaction.commit_on_success
-    def import_grades(self, course, marking_period):
+    def import_grades(self, course_section, marking_period):
         """ Special import for teachers to upload grades
         Returns Error Message """ 
         from ecwsp.grades.models import Grade,GradeComment
@@ -848,7 +848,7 @@ class Importer:
                     if is_ok:
                         if name == "username":
                             student = Student.objects.get(username=value)
-                            model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period)
+                            model, created = Grade.objects.get_or_create(student=student, course_section=course_section, marking_period=marking_period)
                         elif name in ["final grade %",'marking period grade (%)','grade']:
                             grade = value
                         elif name == "comment code" or name == "comment codes" or name == "comment\ncodes":

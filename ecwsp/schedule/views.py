@@ -5,13 +5,16 @@ from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
 
 from ecwsp.sis.models import SchoolYear
-from .models import MarkingPeriod, Course, Period
+from .models import MarkingPeriod, CourseSection, Period
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')   
 def schedule(request):
     years = SchoolYear.objects.all().order_by('-start_date')[:3]
     mps = MarkingPeriod.objects.all().order_by('-start_date')[:12]
     periods = Period.objects.all()[:20]
+    # TODO: remove this entire function?
+    # jnm note: I'm not touching this because I don't think the following line
+    # could have worked for a very long time
     courses = Course.objects.all().order_by('-startdate')[:20]
     
     if SchoolYear.objects.count() > 2: years.more = True
@@ -23,6 +26,7 @@ def schedule(request):
 
 
 class CourseView(TemplateView):
+    # TODO: figure out if this is really for Course or should be CourseSection
     model = Course
     template_name = 'schedule/course.html'
     

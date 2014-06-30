@@ -152,8 +152,8 @@ class CourseEnrollment(models.Model):
     user = models.ForeignKey('sis.Student')
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
     exclude_days = models.ManyToManyField('Day', blank=True, \
-        help_text="Student does not need to attend on this day. Note courses already specify meeting days; this field is for students who have a special reason to be away.")
-    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
+        help_text="Student does not need to attend on this day. Note course sections already specify meeting days; this field is for students who have a special reason to be away.")
+    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Section Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
     class Meta:
@@ -260,7 +260,7 @@ WHERE grades_grade.course_section_id = %s
         return None
 
     def calculate_grade_real(self, date_report=None, ignore_letter=False):
-        """ Calculate the final grade for a course
+        """ Calculate the final grade for a course section
         ignore_letter can be useful when computing averages
         when you don't care about letter grades
         """
@@ -282,7 +282,7 @@ WHERE (grades_grade.course_section_id = %s
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
                     over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = 1)'),
-                               (self.course_id, self.user_id, date_report))
+                               (self.course_section_id, self.user_id, date_report))
             else:
                 cursor.execute(sql_string.format(
                     over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
@@ -292,7 +292,7 @@ WHERE (grades_grade.course_section_id = %s
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
                     over='over ()', extra_where=''),
-                               (self.course_id, self.user_id))
+                               (self.course_section_id, self.user_id))
             else:
                 cursor.execute(sql_string.format(
                     over='', extra_where=''),
@@ -305,8 +305,8 @@ WHERE (grades_grade.course_section_id = %s
             return None
 
         if ave_grade == "OVERRIDE":
-            course_grade = Grade.objects.get(override_final=True, student=self.user, course_section=self.course_section)
-            grade = course_grade.get_grade()
+            course_section_grade = Grade.objects.get(override_final=True, student=self.user, course_section=self.course_section)
+            grade = course_section_grade.get_grade()
             if ignore_letter and not isinstance(grade, (int, Decimal, float)):
                 return None
             return grade
@@ -398,7 +398,7 @@ class CourseType(models.Model):
         help_text="A course's weight in average calculations is this value "
             "multiplied by the number of credits for the course. A course that "
             "does not affect averages should have a weight of 0, while an "
-            "honors course might, for example,  have a weight of 1.2.")
+            "honors course might, for example, have a weight of 1.2.")
     award_credits = models.BooleanField(default=True,
         help_text="When disabled, course will not be included in any student's "
             "credit totals. However, the number of credits and weight will "

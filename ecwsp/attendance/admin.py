@@ -30,7 +30,7 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
         
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 
-class CourseAttendanceAdmin(admin.ModelAdmin):
+class CourseSectionAttendanceAdmin(admin.ModelAdmin):
     list_display = ['student', 'date', 'course_section', 'course_period', 'status', 'notes']
     list_filter = [
         ('date', DateRangeFilter),
@@ -42,7 +42,7 @@ class CourseAttendanceAdmin(admin.ModelAdmin):
         if lookup in ('student','student__id__exact',):
             return True
         return super(StudentAttendanceAdmin, self).lookup_allowed(lookup, *args, **kwargs)
-admin.site.register(CourseAttendance, CourseAttendanceAdmin)
+admin.site.register(CourseSectionAttendance, CourseSectionAttendanceAdmin)
 
 admin.site.register(AttendanceLog)
 

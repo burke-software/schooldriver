@@ -131,8 +131,8 @@ class AttendanceLinksListDashlet(LinksListDashlet):
             'perm': ('attendance.take_studentattendance',),
         },
         {
-            'text': 'Take course attendance',
-            'link': reverse('ecwsp.attendance.views.select_course_for_attendance'),
+            'text': 'Take course section attendance',
+            'link': reverse('ecwsp.attendance.views.select_course_section_for_attendance'),
             'perm': ('attendance.take_studentattendance',),
         },
         {

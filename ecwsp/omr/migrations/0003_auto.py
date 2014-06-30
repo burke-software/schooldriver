@@ -8,49 +8,29 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'CourseType'
-        db.create_table(u'schedule_coursetype', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('is_default', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('weight', self.gf('django.db.models.fields.DecimalField')(default=1, max_digits=5, decimal_places=2)),
-            ('award_credits', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('boost', self.gf('django.db.models.fields.DecimalField')(default=0, max_digits=5, decimal_places=2)),
-        ))
-        db.send_create_signal(u'schedule', ['CourseType'])
-
-        # Deleting field 'Course.award_credits'
-        # No data migration because this was never used in production
-        db.delete_column(u'schedule_course', 'award_credits')
-
-        if not db.dry_run:
-            # Create a default "Normal" CourseType
-            normal_course_type = orm.CourseType()
-            normal_course_type.name = "Normal"
-            normal_course_type.is_default = True
-            normal_course_type.save()
-            default_course_type_pk = normal_course_type.pk
-        else:
-            # Bogus value for dry run
-            default_course_type_pk = 1
-
-        # Adding field 'Course.course_type'
-        db.add_column(u'schedule_course', 'course_type',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=default_course_type_pk, to=orm['schedule.CourseType']),
-                      keep_default=False)
+        # Renaming M2M table for field courses on 'Test'
+        db.rename_table(
+            db.shorten_name(u'omr_test_courses'),
+            db.shorten_name(u'omr_test_course_sections')
+        )
+        db.rename_column(
+            db.shorten_name(u'omr_test_course_sections'),
+            'course_id',
+            'coursesection_id'
+        )
 
 
     def backwards(self, orm):
-        # Deleting model 'CourseType'
-        db.delete_table(u'schedule_coursetype')
-
-        # Adding field 'Course.award_credits'
-        db.add_column(u'schedule_course', 'award_credits',
-                      self.gf('django.db.models.fields.BooleanField')(default=True),
-                      keep_default=False)
-
-        # Deleting field 'Course.course_type'
-        db.delete_column(u'schedule_course', 'course_type_id')
+        # Renaming M2M table for field courses on 'Test'
+        db.rename_table(
+            db.shorten_name(u'omr_test_course_sections'),
+            db.shorten_name(u'omr_test_courses')
+        )
+        db.rename_column(
+            db.shorten_name(u'omr_test_courses'),
+            'coursesection_id',
+            'course_id'
+        )
 
 
     models = {
@@ -83,6 +63,26 @@ class Migration(SchemaMigration):
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Permission']"}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
+        u'benchmarks.benchmark': {
+            'Meta': {'ordering': "('number', 'name')", 'object_name': 'Benchmark'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'measurement_topics': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['benchmarks.MeasurementTopic']", 'symmetrical': 'False'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '700'}),
+            'number': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
+            'year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.GradeLevel']", 'null': 'True', 'blank': 'True'})
+        },
+        u'benchmarks.department': {
+            'Meta': {'object_name': 'Department'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
+        },
+        u'benchmarks.measurementtopic': {
+            'Meta': {'ordering': "('department', 'name')", 'unique_together': "(('name', 'department'),)", 'object_name': 'MeasurementTopic'},
+            'department': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['benchmarks.Department']", 'null': 'True', 'blank': 'True'}),
+            'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '200'})
+        },
         u'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
             'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
@@ -95,17 +95,91 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
         },
-        u'schedule.award': {
-            'Meta': {'object_name': 'Award'},
+        u'omr.answer': {
+            'Meta': {'ordering': "('order',)", 'object_name': 'Answer'},
+            'answer': ('ckeditor.fields.RichTextField', [], {'blank': 'True'}),
+            'error_type': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
+            'order': ('django.db.models.fields.IntegerField', [], {'default': '-1'}),
+            'point_value': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'question': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['omr.Question']"})
         },
-        u'schedule.awardstudent': {
-            'Meta': {'object_name': 'AwardStudent'},
-            'award': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Award']"}),
+        u'omr.answerbank': {
+            'Meta': {'object_name': 'AnswerBank'},
+            'answer': ('ckeditor.fields.RichTextField', [], {'blank': 'True'}),
+            'error_type': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'point_value': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'question': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['omr.QuestionBank']"})
+        },
+        u'omr.answerinstance': {
+            'Meta': {'unique_together': "(('test_instance', 'question'),)", 'object_name': 'AnswerInstance'},
+            'answer': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['omr.Answer']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'points_earned': ('django.db.models.fields.IntegerField', [], {}),
+            'points_possible': ('django.db.models.fields.IntegerField', [], {}),
+            'question': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['omr.Question']"}),
+            'test_instance': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['omr.TestInstance']"})
+        },
+        u'omr.networkquestionbank': {
+            'Meta': {'object_name': 'NetworkQuestionBank'},
+            'benchmarks': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['benchmarks.Benchmark']", 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_true': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'point_value': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
+            'question': ('ckeditor.fields.RichTextField', [], {'blank': 'True'}),
+            'school': ('django.db.models.fields.TextField', [], {'max_length': '1000', 'blank': 'True'}),
+            'theme': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            'type': ('django.db.models.fields.CharField', [], {'default': "'Multiple Choice'", 'max_length': '25'})
+        },
+        u'omr.question': {
+            'Meta': {'ordering': "['order']", 'object_name': 'Question'},
+            'benchmarks': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['benchmarks.Benchmark']", 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_true': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'order': ('django.db.models.fields.IntegerField', [], {'default': '-1', 'blank': 'True'}),
+            'point_value': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
+            'question': ('ckeditor.fields.RichTextField', [], {'blank': 'True'}),
+            'test': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['omr.Test']"}),
+            'theme': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            'type': ('django.db.models.fields.CharField', [], {'default': "'Multiple Choice'", 'max_length': '25'})
+        },
+        u'omr.questionbank': {
+            'Meta': {'object_name': 'QuestionBank'},
+            'benchmarks': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['benchmarks.Benchmark']", 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_true': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'network_question': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['omr.NetworkQuestionBank']", 'unique': 'True', 'null': 'True', 'blank': 'True'}),
+            'point_value': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
+            'question': ('ckeditor.fields.RichTextField', [], {'blank': 'True'}),
+            'theme': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            'type': ('django.db.models.fields.CharField', [], {'default': "'Multiple Choice'", 'max_length': '25'})
+        },
+        u'omr.test': {
+            'Meta': {'ordering': "('-id',)", 'object_name': 'Test'},
+            'answer_sheet_pdf': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'blank': 'True'}),
+            'banding': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'blank': 'True'}),
+            'course_sections': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['schedule.CourseSection']", 'null': 'True', 'blank': 'True'}),
+            'department': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['benchmarks.Department']", 'null': 'True', 'blank': 'True'}),
+            'finalized': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'marking_period': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.MarkingPeriod']", 'null': 'True', 'blank': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'queXF_pdf': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'blank': 'True'}),
+            'school_year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.SchoolYear']", 'null': 'True', 'blank': 'True'}),
+            'students': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['sis.Student']", 'null': 'True', 'through': u"orm['omr.TestInstance']", 'blank': 'True'}),
+            'teachers': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['sis.Faculty']", 'null': 'True', 'blank': 'True'})
+        },
+        u'omr.testinstance': {
+            'Meta': {'object_name': 'TestInstance'},
+            'date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'marking_period': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.MarkingPeriod']", 'null': 'True', 'blank': 'True'}),
+            'results_received': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'school_year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.SchoolYear']", 'null': 'True', 'blank': 'True'}),
+            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"}),
+            'teachers': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['sis.Faculty']", 'null': 'True', 'blank': 'True'}),
+            'test': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['omr.Test']"})
         },
         u'schedule.course': {
             'Meta': {'object_name': 'Course'},
@@ -175,24 +249,11 @@ class Migration(SchemaMigration):
             'day': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
-        u'schedule.daysoff': {
-            'Meta': {'object_name': 'DaysOff'},
-            'date': ('django.db.models.fields.DateField', [], {}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'marking_period': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.MarkingPeriod']"})
-        },
         u'schedule.department': {
             'Meta': {'ordering': "('order_rank', 'name')", 'object_name': 'Department'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'order_rank': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
-        },
-        u'schedule.departmentgraduationcredits': {
-            'Meta': {'unique_together': "(('department', 'class_year'),)", 'object_name': 'DepartmentGraduationCredits'},
-            'class_year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.ClassYear']"}),
-            'credits': ('django.db.models.fields.DecimalField', [], {'max_digits': '5', 'decimal_places': '2'}),
-            'department': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Department']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'schedule.location': {
             'Meta': {'object_name': 'Location'},
@@ -219,18 +280,6 @@ class Migration(SchemaMigration):
             'tuesday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'wednesday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'weight': ('django.db.models.fields.DecimalField', [], {'default': '1', 'max_digits': '5', 'decimal_places': '3'})
-        },
-        u'schedule.omitcoursegpa': {
-            'Meta': {'object_name': 'OmitCourseGPA'},
-            'course': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Course']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
-        },
-        u'schedule.omityeargpa': {
-            'Meta': {'object_name': 'OmitYearGPA'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"}),
-            'year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.SchoolYear']"})
         },
         u'schedule.period': {
             'Meta': {'ordering': "('start_time',)", 'object_name': 'Period'},
@@ -339,4 +388,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['schedule']
+    complete_apps = ['omr']

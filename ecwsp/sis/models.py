@@ -227,7 +227,7 @@ def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs)
 
 m2m_changed.connect(after_cohort_m2m, sender='sis.Cohort')
 
-class PerCourseCohort(Cohort):
+class PerCourseSectionCohort(Cohort):
     course_section = models.ForeignKey('schedule.CourseSection')
 
 
@@ -417,10 +417,10 @@ class Student(User, CustomFieldModel):
     @property
     def homeroom(self):
         """ Returns homeroom for student """
-        from schedule.models import Course
+        from schedule.models import CourseSection
         try:
-            courses = self.course_set.filter(homeroom=True)
-            homeroom = self.course_set.get( homeroom=True)
+            courses = self.coursesection_set.filter(course__homeroom=True)
+            homeroom = self.coursesection_set.get(course__homeroom=True)
         except:
             return ""
 
