@@ -5,7 +5,7 @@ class APITest(APITestCase):
     """
     test the implementation of our API
 
-    using Django Rest Framework's testing base (which extends Django's)
+    We're using Django-Rest-Framework's testing base (which extends Django's)
     """
 
     def setUp(self):
