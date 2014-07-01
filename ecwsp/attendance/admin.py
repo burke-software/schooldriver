@@ -3,7 +3,7 @@ from django.contrib import messages
 from django import forms
 from daterange_filter.filter import DateRangeFilter
 
-from ecwsp.attendance.models import StudentAttendance, CourseAttendance, AttendanceLog, AttendanceStatus
+from ecwsp.attendance.models import StudentAttendance, CourseSectionAttendance, AttendanceLog, AttendanceStatus
 
 import autocomplete_light
 

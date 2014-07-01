@@ -11,8 +11,8 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
-from .models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
-from .forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
+from .models import StudentAttendance, CourseSectionAttendance, AttendanceStatus, AttendanceLog
+from .forms import CourseSectionAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
 from .forms import StudentAttendanceForm, StudentMultpleAttendanceForm
 from ecwsp.schedule.models import Course, CourseSection, Day, MarkingPeriod
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
@@ -312,10 +312,10 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
     
     students = Student.objects.filter(courseenrollment__course_section=course_section)
     daily_attendance = StudentAttendance.objects.filter(student__in=students,date=for_date).distinct()
-    CourseAttendanceFormSet = formset_factory(CourseAttendanceForm, extra=0)
+    CourseSectionAttendanceFormSet = formset_factory(CourseSectionAttendanceForm, extra=0)
     
     if request.POST:
-        formset = CourseAttendanceFormSet(request.POST)
+        formset = CourseSectionAttendanceFormSet(request.POST)
         if formset.is_valid():
             number_created = 0
             for form in formset.forms:
@@ -323,7 +323,7 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                 if data['status']:
                     number_created += 1
                     try:
-                        course_attendance = CourseAttendance.objects.get(
+                        course_attendance = CourseSectionAttendance.objects.get(
                             student=data['student'],
                             course_section=course_section,
                             date=for_date,
@@ -332,8 +332,8 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                         course_attendance.notes = data['notes']
                         course_attendance.time_in = data['time_in']
                         course_attendance.save()
-                    except CourseAttendance.DoesNotExist:
-                        CourseAttendance.objects.create(
+                    except CourseSectionAttendance.DoesNotExist:
+                        CourseSectionAttendance.objects.create(
                             student=data['student'],
                             course_section=course_section,
                             date=for_date,
@@ -347,15 +347,15 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
         initial_data = []
         for student in students:
             initial_row = {'student': student}
-            if student.courseattendance_set.filter(date=for_date, course_section=course_section):
-                current_attendance = student.courseattendance_set.filter(date=for_date)[0]
+            if student.coursesectionattendance_set.filter(date=for_date, course_section=course_section):
+                current_attendance = student.coursesectionattendance_set.filter(date=for_date)[0]
                 initial_row['status'] = current_attendance.status
                 initial_row['time_in'] = current_attendance.time_in
                 initial_row['notes'] = current_attendance.notes
             elif student.student_attn.filter(date=for_date, status__absent=True):
                 initial_row['status'] = AttendanceStatus.objects.get(name="Absent")
             initial_data.append(initial_row)
-        formset = CourseAttendanceFormSet(initial=initial_data)
+        formset = CourseSectoinAttendanceFormSet(initial=initial_data)
     
     i = 0
     for student in students:
