@@ -122,7 +122,10 @@ class SisData(object):
 
         Grade.objects.bulk_create([
             Grade(student_id=1, course_section_id=2, marking_period_id=1, grade=50),
-            Grade(student_id=1, course_section_id=2, marking_period_id=2, grade=89.09)
+            Grade(student_id=1, course_section_id=2, marking_period_id=2, grade=89.09),
+            Grade(student_id=2, course_section_id=2, marking_period_id=1, grade=75),
+            Grade(student_id=2, course_section_id=1, marking_period_id=2, grade=100),
+            Grade(student_id=3, course_section_id=1, marking_period_id=2, grade=88)
         ])
         self.grade = Grade.objects.get(pk=1)
 
