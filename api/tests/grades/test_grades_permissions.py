@@ -1,8 +1,6 @@
 from api.tests.api_test_base import APITest
 from ecwsp.grades.models import Grade
 
-import sys
-
 class GradeAPIPermissionsTest(APITest):
     """
     test the implementation of permissions on our grades api
@@ -18,12 +16,12 @@ class GradeAPIPermissionsTest(APITest):
         self.assertEqual(response.status_code, 403)
 
         # try it with teacher authentication
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.get('/api/grades/')
         self.assertEqual(response.status_code, 200)
 
         # try it with a student (who clearly has no authoritay)
-        self.client.force_authenticate(user = self.data.student)
+        self.student_login()
         response = self.client.get('/api/grades/')
         self.assertEqual(response.status_code, 403)
 
@@ -37,12 +35,12 @@ class GradeAPIPermissionsTest(APITest):
         self.assertEqual(response.status_code, 403)
 
         # try it with teacher authentication
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.get('/api/grades/1/')
         self.assertEqual(response.status_code, 200)
 
         # try it with a student (who clearly has no authoritay)
-        self.client.force_authenticate(user = self.data.student)
+        self.student_login()
         response = self.client.get('/api/grades/1/')
         self.assertEqual(response.status_code, 403)
 
@@ -57,12 +55,12 @@ class GradeAPIPermissionsTest(APITest):
         self.assertEqual(response.status_code, 403)
 
         # try it with teacher authentication
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.post('/api/grades/', data=data)
         self.assertEqual(response.status_code, 201)
 
         # try it with a student (who clearly has no authoritay)
-        self.client.force_authenticate(user = self.data.student)
+        self.student_login()
         response = self.client.post('/api/grades/', data=data)
         self.assertEqual(response.status_code, 403)
 

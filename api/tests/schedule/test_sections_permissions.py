@@ -13,12 +13,12 @@ class CourseSectionsAPIPermissionsTests(APITest):
         self.assertEqual(response.status_code, 403)
 
         # try it with student authentication 
-        self.client.force_authenticate(user = self.data.student)
+        self.student_login()
         response = self.client.get('/api/sections/')
         self.assertEqual(response.status_code, 403)
 
         # try it with teacher authentication
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.get('/api/sections/')
         self.assertEqual(response.status_code, 200)
 
@@ -31,12 +31,12 @@ class CourseSectionsAPIPermissionsTests(APITest):
         self.assertEqual(response.status_code, 403)
 
         # try it with student authentication 
-        self.client.force_authenticate(user = self.data.student)
+        self.student_login()
         response = self.client.get('/api/sections/')
         self.assertEqual(response.status_code, 403)
 
         # try it with teacher authentication
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.get('/api/sections/1/')
         self.assertEqual(response.status_code, 200)
 
@@ -51,12 +51,12 @@ class CourseSectionsAPIPermissionsTests(APITest):
         self.assertEqual(response.status_code, 403)
 
         # try it with student authentication 
-        self.client.force_authenticate(user = self.data.student)
+        self.student_login()
         response = self.client.get('/api/sections/')
         self.assertEqual(response.status_code, 403)
 
         # try it with teacher authentication
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.post('/api/sections/', data=data)
         self.assertEqual(response.status_code, 201)
 
@@ -71,12 +71,12 @@ class CourseSectionsAPIPermissionsTests(APITest):
         self.assertEqual(response.status_code, 403)
 
         # try it with student authentication 
-        self.client.force_authenticate(user = self.data.student)
+        self.student_login()
         response = self.client.get('/api/sections/')
         self.assertEqual(response.status_code, 403)
 
         # try it with teacher authentication
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.put('/api/sections/1/', data=data)
         self.assertEqual(response.status_code, 200)
 
@@ -89,12 +89,12 @@ class CourseSectionsAPIPermissionsTests(APITest):
         self.assertEqual(response.status_code, 403)
 
         # try it with student authentication 
-        self.client.force_authenticate(user = self.data.student)
+        self.student_login()
         response = self.client.get('/api/sections/')
         self.assertEqual(response.status_code, 403)
 
         # try it with teacher authentication
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.delete('/api/sections/1/')
         self.assertEqual(response.status_code, 204)
 
