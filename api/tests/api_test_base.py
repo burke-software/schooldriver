@@ -25,3 +25,9 @@ class APITest(APITestCase):
         """
         self.client.force_authenticate(user = self.data.teacher1)
 
+    def student_login(self):
+        """
+        provides a simple way to automatically log in a student
+        """
+        self.client.force_authenticate(user = self.data.student)
+
