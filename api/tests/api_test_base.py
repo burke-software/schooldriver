@@ -19,3 +19,9 @@ class APITest(APITestCase):
         self.data = SisData()
         self.data.create_basics()
 
+    def teacher_login(self):
+        """
+        provides a simple way to automatically log in a teacher
+        """
+        self.client.force_authenticate(user = self.data.teacher1)
+
