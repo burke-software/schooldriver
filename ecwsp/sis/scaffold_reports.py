@@ -113,6 +113,7 @@ class TardyFilter(IntCompareFilter):
                 params = (date_begin, date_end, value))
         return queryset
 
+
 class AbsenceFilter(IntCompareFilter):
     compare_field_string = "absence_count"
     add_fields = ['absence_count']
@@ -139,15 +140,19 @@ class AbsenceFilter(IntCompareFilter):
         return queryset
 
 
-class CourseSectionFilter(ModelMultipleChoiceFilter):
-    verbose_name = "Select a Course Section"
-    compare_field_string = "course_section"
-    add_fields = ["course_section"]
-    model = CourseSection
+class CourseSectionFilter(Filter):
+    verbose_name = "Course Section (Required)"
+    add_fields = ['course_section']
+
+    fields = [forms.CharField(widget=forms.TextInput())]
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['course_section'] = self.cleaned_data['field_0']
+        return queryset
 
 
 class DateFilter(Filter):
-    verbose_name = "Course Attendance by Date"
+    verbose_name = "Date"
     fields = [forms.DateField]
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
@@ -156,12 +161,9 @@ class DateFilter(Filter):
         return queryset
 
 
-class MarkingPeriodFilter(Filter):
-    verbose_name = "Course Attendance by Marking Period"
-    marking_periods = []
-    for marking_period in MarkingPeriod.objects.all():
-        marking_periods.append((str(marking_period.id), str(marking_period.name)))
-    fields = [forms.ChoiceField(choices=marking_periods)]
+class MarkingPeriodFilter(ModelChoiceFilter):
+    verbose_name = "Marking Period"
+    model = MarkingPeriod
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         report_context['marking_period'] = self.cleaned_data['field_0']
@@ -169,10 +171,13 @@ class MarkingPeriodFilter(Filter):
 
 
 class YearFilter(ModelMultipleChoiceFilter):
-    verbose_name = "Course Attendance by School Year"
-    compare_field_string="school_year"
-    add_fields = ['school_year']
+    verbose_name = "School Year"
+    compare_field_string = "school_year"
     model = SchoolYear
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['marking_period'] = self.cleaned_data['field_0']
+        return queryset
 
 
 class StudentYearFilter(ModelMultipleChoiceFilter):
@@ -343,6 +348,7 @@ class CohortFilter(ModelMultipleChoiceFilter):
 
 class SelectSpecificStudentsForm(forms.Form):
     select_students = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+
 
 class SelectSpecificStudents(ModelMultipleChoiceFilter):
     model = Student
@@ -616,19 +622,26 @@ class AspReportButton(ReportButton):
         return report_view.list_to_xlsx_response(data, 'ASP_Report', header)
 
 
-class MarkingPeriodButton(ReportButton):
-    name = "Marking Period"
-    name_verbose = "Course Attendance by Marking Period"
+class PeriodBasedAttendanceButton(ReportButton):
+    name = "course_section_attendance"
+    name_verbose = "Course Section Attendance"
 
     def get_report(self, report_view, context):
-        titles = ["Last Name", "First Name", "", "Tardies", "Absences", "Half Days", "Excused", "", "Section",
-                  "MarkingPeriod"]
-        student_attendances = report_view.report.get_queryset()
-        course_section = student_attendances[0].course_section
+        name = report_view.report.report_context.get('course_section')
+        course_section = CourseSection.objects.get(name=name)
+        marking_period = report_view.report.report_context.get('marking_period')
+        time_scale = ""
+        titles = ["Last Name", "First Name", "", "Tardies", "Absences", "Half Days", "Excused", "", "Course"]
+        if marking_period:
+            marking_period = marking_period.name
+            time_scale = marking_period
+            titles = ["Last Name", "First Name", "", "Tardies", "Absences", "Half Days", "Excused", "", "Course",
+                    "MarkingPeriod"]
+        course_attendances = CourseAttendance.objects.filter(course_section=course_section)
         data = []
-        row = []
-        for student_attendance in student_attendances:
-            student = student_attendance.student
+        for course_attendance in course_attendances:
+            row = []
+            student = course_attendance.student
             row.append(student.last_name)
             row.append(student.first_name)
             row.append('')
@@ -646,7 +659,8 @@ class MarkingPeriodButton(ReportButton):
             row.append(excused)
             row.append('')
             row.append(course_section.name)
-        data.append(row)
+            row.append(time_scale)
+            data.append(row)
 
         return report_view.list_to_xlsx_response(data, header=titles)
 
@@ -928,7 +942,6 @@ class SisReport(ScaffoldReport):
         return context
 
 
-
 class AttendanceReport(ScaffoldReport):
 
     name = 'attendance_report'
@@ -942,31 +955,8 @@ class AttendanceReport(ScaffoldReport):
     )
 
     report_buttons = (
-        MarkingPeriodButton(),
+        PeriodBasedAttendanceButton(),
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 scaffold_reports.register('student_report', SisReport)
