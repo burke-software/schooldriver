@@ -1,5 +1,4 @@
 from api.tests.api_test_base import APITest
-import sys
 
 class CourseSectionAPIPostTests(APITest):
     """
@@ -10,7 +9,7 @@ class CourseSectionAPIPostTests(APITest):
         """
         a post request should populate the database with a new section
         """
-        self.client.force_authenticate(user=self.data.teacher1)
+        self.teacher_login()
 
         # get the current number of sections
         response = self.client.get('/api/sections/')
@@ -29,7 +28,7 @@ class CourseSectionAPIPostTests(APITest):
         """
         a delete request should remove a section from the database
         """
-        self.client.force_authenticate(user=self.data.teacher1)
+        self.teacher_login()
         # get the current number of sections
         response = self.client.get('/api/sections/')
         original_number = len(response.data)
@@ -46,7 +45,7 @@ class CourseSectionAPIPostTests(APITest):
         a put request to an existing section should modify the section
         """
         # change the name of an existing section
-        self.client.force_authenticate(user=self.data.teacher1)
+        self.teacher_login()
         data = {'course_id': 1, 'name': 'Waka Waka!!!'}
         response = self.client.put('/api/sections/1/', data = data)
 
@@ -58,7 +57,7 @@ class CourseSectionAPIPostTests(APITest):
         """
         a post request without any data should return an error
         """
-        self.client.force_authenticate(user=self.data.teacher1)
+        self.teacher_login()
         response = self.client.post('/api/sections/')
         self.assertIn('This field is required', response.data['name'][0])
         self.assertIn('This field is required', response.data['course_id'][0])

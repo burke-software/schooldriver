@@ -159,19 +159,19 @@
 					{% endif %}
 				<table class="subsection-table">
 						<tr>
-							<th> Courses </th>
+							<th> Course Sections </th>
 							<th> Teacher </th>
 							{% for mp in year.mps %}
 								<th> {{ mp }} </th>
 							{% endfor %}
 							<th> Final </th>
 						</tr>
-						{% for course in year.courses %}
+						{% for course_section in year.course_sections %}
 						<tr>
-							<td> {{ course.shortname }} </td>
-							<td> {{ course.teacher }} </td>
+							<td> {{ course_section.shortname }} </td>
+							<td> {{ course_section.teacher }} </td>
 							<!-- The logic gets complicated here so html generation is done in python, enjoy your spaghetti -->
-							{{ course.grade_html|safe }}
+							{{ course_section.grade_html|safe }}
 						</tr>
 						{% endfor %}
 				</table>
@@ -201,7 +201,7 @@
                                             <tr>
                                                     <td> {{ period.name }} <br/> {{ period.start_time }} - {{ period.end_time }} </td>
                                                     {% for pday in period.days %}
-                                                            <td> {{ pday.course.shortname }} <br/> {{ pday.location }} </td>
+                                                            <td> {{ pday.course_section.name }} <br/> {{ pday.location }} </td>
                                                     {% endfor %}
                                             </tr>
                                     {% endfor %}

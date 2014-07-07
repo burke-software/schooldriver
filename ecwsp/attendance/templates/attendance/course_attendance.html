@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-    <h2> Attendance for {{ course }} on {{ for_date }} </h2>
+    <h2> Attendance for {{ course_section }} on {{ for_date }} </h2>
     <form method="post" action="" id="myform">
         {{ formset.management_form }}
         {{ formset.non_form_errors }}
@@ -18,7 +18,7 @@
                         <th>Student</th>
                         <th>Daily Attendance</th>
                         <th>Note</th>
-                        <th>Course Attendance</th>
+                        <th>Course Section Attendance</th>
 			<th>Note</th>
                         <th>Time in</th>
                     </tr>

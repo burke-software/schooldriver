@@ -64,9 +64,9 @@ class AttendanceTest(SisTestMixin, TestCase):
         response = c.get('/admin/')
         self.assertEqual(response.status_code, 200)
         
-        course = Course.objects.get(fullname="Homeroom FX 2011")
+        course_section = CourseSection.objects.get(name="Homeroom FX 2011")
         
-        response = c.get('/attendance/teacher_attendance/' + str(course.id), follow=True)
+        response = c.get('/attendance/teacher_attendance/' + str(course_section.id), follow=True)
         self.assertEqual(response.status_code, 200)
         
         #should test if attendance can be submitted

@@ -31,7 +31,7 @@ class StudentMultpleAttendanceForm(autocomplete_light.ModelForm):
         fields = ('date', 'status', 'time', 'notes', 'private_notes')
     
     
-class CourseAttendanceForm(forms.Form):
+class CourseSectionAttendanceForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.all(), widget=forms.HiddenInput())
     status = forms.ModelChoiceField(
         widget=forms.Select(attrs={'class':'status',}),

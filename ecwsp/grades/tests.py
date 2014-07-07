@@ -39,19 +39,43 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         courses = [Course(fullname='Algebra', shortname='alg', id=12, credits=4),
                    Course(fullname='English', shortname='eng', id=13, credits=4),
                    Course(fullname='History', shortname='hist', id=14, credits=4)]
+        course_sections = []
         for course in courses:
             course.save()
-        courses[0].marking_period.add(self.mp)
-        courses[1].marking_period.add(self.mp2)
-        courses[2].marking_period.add(self.mp3)
-        grades = [Grade(student=self.student, course=courses[0], grade=86.78, marking_period=self.mp), Grade(student=self.student,
-                  course=courses[1], grade=94.73, marking_period=self.mp2), Grade(student=self.student, course=courses[2],
-                  grade=77.55, marking_period=self.mp3)]
+            course_section = CourseSection(
+                course=course,
+                name=course.fullname
+            )
+            course_section.save()
+            course_sections.append(course_section)
+        course_sections[0].marking_period.add(self.mp)
+        course_sections[1].marking_period.add(self.mp2)
+        course_sections[2].marking_period.add(self.mp3)
+        grades = [
+            Grade(
+                student=self.student,
+                course_section=course_sections[0],
+                grade=86.78,
+                marking_period=self.mp
+            ), Grade(
+                student=self.student,
+                course_section=course_sections[1],
+                grade=94.73,
+                marking_period=self.mp2
+            ), Grade(
+                student=self.student,
+                course_section=course_sections[2],
+                grade=77.55,
+                marking_period=self.mp3
+            )
+        ]
         for grade in grades:
             grade.save()
-        course_enrollments = [CourseEnrollment(user=self.student, course=courses[0], role='student', grade=grades[0]),
-                              CourseEnrollment(user=self.student, course=courses[1], role='student', grade=grades[1]),
-                              CourseEnrollment(user=self.student, course=courses[2], role='student', grade=grades[2])]
+        course_enrollments = [
+            CourseEnrollment(user=self.student, course_section=course_sections[0], role='student', grade=grades[0]),
+            CourseEnrollment(user=self.student, course_section=course_sections[1], role='student', grade=grades[1]),
+            CourseEnrollment(user=self.student, course_section=course_sections[2], role='student', grade=grades[2])
+        ]
         for course_enrollment in course_enrollments:
             course_enrollment.save()
         StudentYearGrade.objects.create(student=self.student, year=self.year)

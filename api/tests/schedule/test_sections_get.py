@@ -9,7 +9,7 @@ class CourseSectionAPIGetTests(APITest):
         """
         the api should successfully return all pre-populated section data
         """
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.get('/api/sections/')
         # there are 4 sections in the sample data
         self.assertEqual(len(response.data), 4)
@@ -18,7 +18,7 @@ class CourseSectionAPIGetTests(APITest):
         """
         the api should successfully return a specific section when asked
         """
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.teacher_login()
         response = self.client.get('/api/sections/1/')
         self.assertEqual(response.data['name'], 'Math A')
         self.assertEqual(response.data['course']['fullname'], 'Math 101')

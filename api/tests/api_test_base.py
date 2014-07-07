@@ -5,7 +5,7 @@ class APITest(APITestCase):
     """
     test the implementation of our API
 
-    using Django Rest Framework's testing base (which extends Django's)
+    We're using Django-Rest-Framework's testing base (which extends Django's)
     """
 
     def setUp(self):
@@ -18,4 +18,16 @@ class APITest(APITestCase):
         """ Extend me with more data to populate """
         self.data = SisData()
         self.data.create_basics()
+
+    def teacher_login(self):
+        """
+        provides a simple way to automatically log in a teacher
+        """
+        self.client.force_authenticate(user = self.data.teacher1)
+
+    def student_login(self):
+        """
+        provides a simple way to automatically log in a student
+        """
+        self.client.force_authenticate(user = self.data.student)
 

@@ -181,18 +181,18 @@ class CanvasSync:
         """ Create csv string for enrollment
         """
         result = u"course_id,user_id,role,status\n"
-        for course in CourseSection.objects.filter(marking_period__school_year__active_year=True).distinct():
-            for enrollment in course.enrollments.filter(is_active=True):
+        for course_section in CourseSection.objects.filter(marking_period__school_year__active_year=True).distinct():
+            for enrollment in course_section.enrollments.filter(is_active=True):
                 line = u'"%s","%s","%s","%s"' % (
-                    course.id,
+                    course_section.id,
                     enrollment.id,
                     'student',
                     'active',
                 )
                 result += line + u'\n'
-            for teacher in course.teachers.all():
+            for teacher in course_section.teachers.all():
                 line = u'"%s","%s","%s","%s"' % (
-                    course.id,
+                    course_section.id,
                     teacher.id,
                     'teacher',
                     'active',

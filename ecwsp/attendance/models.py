@@ -26,7 +26,7 @@ class AttendanceStatus(models.Model):
         return unicode(self.name)
 
 
-class CourseAttendance(models.Model):
+class CourseSectionAttendance(models.Model):
     """ Attendance taken at each course (section)
     It compares with the daily "student attendance" and is a way to verify
     students are not skipping classes.

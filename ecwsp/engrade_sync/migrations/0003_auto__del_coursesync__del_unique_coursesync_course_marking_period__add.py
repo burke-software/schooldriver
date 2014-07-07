@@ -8,49 +8,27 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'CourseType'
-        db.create_table(u'schedule_coursetype', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('is_default', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('weight', self.gf('django.db.models.fields.DecimalField')(default=1, max_digits=5, decimal_places=2)),
-            ('award_credits', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('boost', self.gf('django.db.models.fields.DecimalField')(default=0, max_digits=5, decimal_places=2)),
-        ))
-        db.send_create_signal(u'schedule', ['CourseType'])
-
-        # Deleting field 'Course.award_credits'
-        # No data migration because this was never used in production
-        db.delete_column(u'schedule_course', 'award_credits')
-
+        # Renaming model 'CourseSync'
+        db.rename_table(u'engrade_sync_coursesync', u'engrade_sync_coursesectionsync')
         if not db.dry_run:
-            # Create a default "Normal" CourseType
-            normal_course_type = orm.CourseType()
-            normal_course_type.name = "Normal"
-            normal_course_type.is_default = True
-            normal_course_type.save()
-            default_course_type_pk = normal_course_type.pk
-        else:
-            # Bogus value for dry run
-            default_course_type_pk = 1
+            orm['contenttypes.contenttype'].objects.filter(
+                app_label='engrade_sync', model='coursesync'
+            ).update(model='coursesectionsync')
 
-        # Adding field 'Course.course_type'
-        db.add_column(u'schedule_course', 'course_type',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=default_course_type_pk, to=orm['schedule.CourseType']),
-                      keep_default=False)
+        # Renaming field 'CourseSync.course'
+        db.rename_column(u'engrade_sync_coursesectionsync', 'course_id', 'course_section_id')
 
 
     def backwards(self, orm):
-        # Deleting model 'CourseType'
-        db.delete_table(u'schedule_coursetype')
+        # Renaming field 'CourseSync.course_section'
+        db.rename_column(u'engrade_sync_coursesectionsync', 'course_section_id', 'course_id')
 
-        # Adding field 'Course.award_credits'
-        db.add_column(u'schedule_course', 'award_credits',
-                      self.gf('django.db.models.fields.BooleanField')(default=True),
-                      keep_default=False)
-
-        # Deleting field 'Course.course_type'
-        db.delete_column(u'schedule_course', 'course_type_id')
+        # Renaming model 'CourseSectionSync'
+        db.rename_table(u'engrade_sync_coursesync', u'engrade_sync_coursesectionsync')
+        if not db.dry_run:
+            orm['contenttypes.contenttype'].objects.filter(
+                app_label='engrade_sync', model='coursesectionsync'
+            ).update(model='coursesync')
 
 
     models = {
@@ -90,22 +68,23 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
+        u'engrade_sync.coursesectionsync': {
+            'Meta': {'unique_together': "(('course_section', 'marking_period'),)", 'object_name': 'CourseSectionSync'},
+            'course_section': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.CourseSection']"}),
+            'engrade_course_id': ('django.db.models.fields.BigIntegerField', [], {'unique': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'marking_period': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.MarkingPeriod']"})
+        },
+        u'engrade_sync.teachersync': {
+            'Meta': {'object_name': 'TeacherSync'},
+            'engrade_teacher_id': ('django.db.models.fields.BigIntegerField', [], {'unique': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'teacher': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Faculty']", 'unique': 'True'})
+        },
         u'grades.gradescale': {
             'Meta': {'object_name': 'GradeScale'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
-        },
-        u'schedule.award': {
-            'Meta': {'object_name': 'Award'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
-        },
-        u'schedule.awardstudent': {
-            'Meta': {'object_name': 'AwardStudent'},
-            'award': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Award']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'marking_period': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.MarkingPeriod']", 'null': 'True', 'blank': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
         },
         u'schedule.course': {
             'Meta': {'object_name': 'Course'},
@@ -175,24 +154,11 @@ class Migration(SchemaMigration):
             'day': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
-        u'schedule.daysoff': {
-            'Meta': {'object_name': 'DaysOff'},
-            'date': ('django.db.models.fields.DateField', [], {}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'marking_period': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.MarkingPeriod']"})
-        },
         u'schedule.department': {
             'Meta': {'ordering': "('order_rank', 'name')", 'object_name': 'Department'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'order_rank': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
-        },
-        u'schedule.departmentgraduationcredits': {
-            'Meta': {'unique_together': "(('department', 'class_year'),)", 'object_name': 'DepartmentGraduationCredits'},
-            'class_year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.ClassYear']"}),
-            'credits': ('django.db.models.fields.DecimalField', [], {'max_digits': '5', 'decimal_places': '2'}),
-            'department': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Department']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'schedule.location': {
             'Meta': {'object_name': 'Location'},
@@ -219,18 +185,6 @@ class Migration(SchemaMigration):
             'tuesday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'wednesday': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'weight': ('django.db.models.fields.DecimalField', [], {'default': '1', 'max_digits': '5', 'decimal_places': '3'})
-        },
-        u'schedule.omitcoursegpa': {
-            'Meta': {'object_name': 'OmitCourseGPA'},
-            'course': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['schedule.Course']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"})
-        },
-        u'schedule.omityeargpa': {
-            'Meta': {'object_name': 'OmitYearGPA'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'student': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.Student']"}),
-            'year': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sis.SchoolYear']"})
         },
         u'schedule.period': {
             'Meta': {'ordering': "('start_time',)", 'object_name': 'Period'},
@@ -339,4 +293,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['schedule']
+    complete_apps = ['engrade_sync']

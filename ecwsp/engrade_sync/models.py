@@ -2,14 +2,14 @@ from django.db import models
 from ecwsp.sis.models import *
 from ecwsp.schedule.models import *
 
-class CourseSync(models.Model):
-    course = models.ForeignKey(CourseSection)
+class CourseSectionSync(models.Model):
+    course_section = models.ForeignKey(CourseSection)
     marking_period = models.ForeignKey(MarkingPeriod)
     engrade_course_id = models.BigIntegerField(unique=True)
     class Meta:
-        unique_together = (('course', 'marking_period'),)
+        unique_together = (('course_section', 'marking_period'),)
     def __unicode__(self):
-        return unicode(self.course)
+        return unicode(self.course_section)
 
 class TeacherSync(models.Model):
     teacher = models.ForeignKey(Faculty, unique=True)

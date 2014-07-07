@@ -2,7 +2,7 @@ from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, RssF
 from ecwsp.discipline.dashboards import DisciplineDashlet
 from ecwsp.schedule.models import Course, MarkingPeriod, CourseSection
 from .models import SchoolYear
-from ecwsp.attendance.models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
+from ecwsp.attendance.models import StudentAttendance, CourseSectionAttendance, AttendanceStatus, AttendanceLog
 from report_builder.models import Report
 import datetime
 
@@ -131,8 +131,8 @@ class AttendanceLinksListDashlet(LinksListDashlet):
             'perm': ('attendance.take_studentattendance',),
         },
         {
-            'text': 'Take course attendance',
-            'link': reverse('ecwsp.attendance.views.select_course_for_attendance'),
+            'text': 'Take course section attendance',
+            'link': reverse('ecwsp.attendance.views.select_course_section_for_attendance'),
             'perm': ('attendance.take_studentattendance',),
         },
         {
