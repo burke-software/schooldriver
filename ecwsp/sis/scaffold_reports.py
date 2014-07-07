@@ -637,7 +637,9 @@ class SisReport(ScaffoldReport):
         for marking_period in marking_periods:
             marking_period.smpg = student.studentmarkingperiodgrade_set.filter(marking_period=marking_period).first()
         student.mps = list(marking_periods)
-        student.year_grade = student.studentyeargrade_set.get(year=self.school_year)
+        print self.school_year
+        student.year_grade = student.studentyeargrade_set.filter(year=self.school_year).first()
+        print student.year_grade
 
         for course_section in course_sections:
             course_enrollment = course_section.courseenrollment_set.get(user=student)
@@ -835,7 +837,7 @@ class SisReport(ScaffoldReport):
             elif template.report_card:
                 self.blank_grade = Grade()
                 school_year = SchoolYear.objects.filter(start_date__lte=self.report_context['date_end']
-                        ).order_by('-start_date').first()
+                        ).order_by('-start_date').last()
                 self.school_year = school_year
                 context['year'] = school_year
                 self.marking_periods = MarkingPeriod.objects.filter(

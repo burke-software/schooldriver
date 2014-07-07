@@ -102,7 +102,8 @@ class StudentYearGrade(models.Model):
     @staticmethod
     def build_cache_student(student):
         years = student.courseenrollment_set.values(
-            'course_section__marking_period__school_year').annotate(Count('course_section__marking_period__school_year'))
+            'course_section__marking_period__school_year'
+            ).annotate(Count('course_section__marking_period__school_year'))
         for year in years:
             if year['course_section__marking_period__school_year']:
                 year_grade = StudentYearGrade.objects.get_or_create(

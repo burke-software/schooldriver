@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
 
 from ecwsp.sis.models import SchoolYear
-from .models import MarkingPeriod, CourseSection, Period
+from .models import MarkingPeriod, Course, Period
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')   
 def schedule(request):
