@@ -35,11 +35,10 @@ class Float(Field):
             maxlength=":field.maxChars"
             value=":inRequest and requestValue or value" type="text"/>''')
 
-    pxSearch = Px('''<x>
-     <label>:_(field.labelId)"></label><br/>&nbsp;&nbsp;
+    pxSearch = Px('''
      <!-- From -->
      <x var="fromName='%s*float' % widgetName">
-      <label lfor=":fromName">:_('search_from')"></label>
+      <label lfor=":fromName">:_('search_from')</label>
       <input type="text" name=":fromName" maxlength=":field.maxChars"
              value=":field.sdefault[0]" size=":field.swidth"/>
      </x>
@@ -48,8 +47,7 @@ class Float(Field):
       <label lfor=":toName">:_('search_to')</label>
       <input type="text" name=":toName" maxlength=":field.maxChars"
              value=":field.sdefault[1]" size="field.swidth"/>
-     </x><br/>
-    </x>''')
+     </x><br/>''')
 
     def __init__(self, validator=None, multiplicity=(0,1), default=None,
                  show=True, page='main', group=None, layouts=None, move=0,
@@ -58,7 +56,7 @@ class Float(Field):
                  maxChars=13, colspan=1, master=None, masterValue=None,
                  focus=False, historized=False, mapping=None, label=None,
                  sdefault=('',''), scolspan=1, swidth=None, sheight=None,
-                 precision=None, sep=(',', '.'), tsep=' '):
+                 persist=True, precision=None, sep=(',', '.'), tsep=' '):
         # The precision is the number of decimal digits. This number is used
         # for rendering the float, but the internal float representation is not
         # rounded.
@@ -79,8 +77,8 @@ class Float(Field):
                        group, layouts, move, indexed, False,
                        specificReadPermission, specificWritePermission, width,
                        height, maxChars, colspan, master, masterValue, focus,
-                       historized, True, mapping, label, sdefault, scolspan,
-                       swidth, sheight)
+                       historized, mapping, label, sdefault, scolspan, swidth,
+                       sheight, persist)
         self.pythonType = float
 
     def getFormattedValue(self, obj, value, showChanges=False):

@@ -33,7 +33,7 @@ class Info(Field):
         Field.__init__(self, None, (0,1), default, show, page, group, layouts,
                        move, indexed, False, specificReadPermission,
                        specificWritePermission, width, height, None, colspan,
-                       master, masterValue, focus, historized, False, mapping,
-                       label, None, None, None, None)
+                       master, masterValue, focus, historized, mapping, label,
+                       None, None, None, None, False)
         self.validable = False
 # ------------------------------------------------------------------------------

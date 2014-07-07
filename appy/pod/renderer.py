@@ -89,6 +89,11 @@ f.close()
 STYLES_POD_FONTS = '<@style@:font-face @style@:name="PodStarSymbol" ' \
                    '@svg@:font-family="StarSymbol"/>'
 
+# do ... \n from text(...) is obsolete.
+OBSOLETE_RENDER_TEXT = 'Obsolete function. Use a pod expression instead ' \
+                       '(field or track-changed). Now, a pod expression ' \
+                       'handles carriage returns and tabs correctly.'
+
 # ------------------------------------------------------------------------------
 class Renderer:
     templateTypes = ('odt', 'ods') # Types of POD templates
@@ -96,21 +101,21 @@ class Renderer:
     def __init__(self, template, context, result, pythonWithUnoPath=None,
                  ooPort=2002, stylesMapping={}, forceOoCall=False,
                  finalizeFunction=None, overwriteExisting=False,
-                 imageResolver=None):
+                 raiseOnError=False, imageResolver=None):
         '''This Python Open Document Renderer (PodRenderer) loads a document
-        template (p_template) which is an ODT file with some elements
-        written in Python. Based on this template and some Python objects
-        defined in p_context, the renderer generates an ODT file
-        (p_result) that instantiates the p_template and fills it with objects
-        from the p_context.
+           template (p_template) which is an ODT or ODS file with some elements
+           written in Python. Based on this template and some Python objects
+           defined in p_context, the renderer generates an ODT file (p_result)
+           that instantiates the p_template and fills it with objects from the
+           p_context.
 
-         - If p_result does not end with .odt, the Renderer
-           will call LibreOffice to perform a conversion. If p_forceOoCall is
-           True, even if p_result ends with .odt, LibreOffice will be called, not
-           for performing a conversion, but for updating some elements like
-           indexes (table of contents, etc) and sections containing links to
-           external files (which is the case, for example, if you use the
-           default function "document").
+         - If p_result does not end with .odt or .ods, the Renderer will call
+           LibreOffice to perform a conversion. If p_forceOoCall is True, even
+           if p_result ends with .odt, LibreOffice will be called, not for
+           performing a conversion, but for updating some elements like indexes
+           (table of contents, etc) and sections containing links to external
+           files (which is the case, for example, if you use the default
+           function "document").
 
          - If the Python interpreter which runs the current script is not
            UNO-enabled, this script will run, in another process, a UNO-enabled
@@ -122,15 +127,19 @@ class Renderer:
            specify a styles mapping in p_stylesMapping.
 
          - If you specify a function in p_finalizeFunction, this function will
-           be called by the renderer before re-zipping the ODT result. This way,
-           you can still perform some actions on the content of the ODT file
-           before it is zipped and potentially converted. This function must
-           accept one arg: the absolute path to the temporary folder containing
-           the un-zipped content of the ODT result.
+           be called by the renderer before re-zipping the ODT/S result. This
+           way, you can still perform some actions on the content of the ODT/S
+           file before it is zipped and potentially converted. This function
+           must accept one arg: the absolute path to the temporary folder
+           containing the un-zipped content of the ODT/S result.
 
          - If you set p_overwriteExisting to True, the renderer will overwrite
            the result file. Else, an exception will be thrown if the result file
            already exists.
+
+         - If p_raiseOnError is False (the default value), any error encountered
+           during the generation of the result file will be dumped into it, as
+           a Python traceback within a note. Else, the error will be raised.
 
          - p_imageResolver allows POD to retrieve images, from "img" tags within
            XHTML content. Indeed, POD may not be able (ie, may not have the
@@ -151,6 +160,7 @@ class Renderer:
         self.forceOoCall = forceOoCall
         self.finalizeFunction = finalizeFunction
         self.overwriteExisting = overwriteExisting
+        self.raiseOnError = raiseOnError
         self.imageResolver = imageResolver
         # Remember potential files or images that will be included through
         # "do ... from document" statements: we will need to declare them in
@@ -158,7 +168,6 @@ class Renderer:
         # ODT file (to dump in manifest.xml); values are original paths of
         # included images (used for avoiding to create multiple copies of a file
         # which is imported several times).
-        # imported file).
         self.fileNames = {}
         self.prepareFolders()
         # Unzip template
@@ -169,8 +178,11 @@ class Renderer:
             # intermediary subfolder(s) if needed.
             fileName = None
             if zippedFile.endswith('/') or zippedFile.endswith(os.sep):
-                # This is an empty folder. Create it nevertheless.
-                os.makedirs(os.path.join(self.unzipFolder, zippedFile))
+                # This is an empty folder. Create it nevertheless. If zippedFile
+                # starts with a '/', os.path.join will consider it an absolute
+                # path and will throw away self.unzipFolder.
+                os.makedirs(os.path.join(self.unzipFolder,
+                                         zippedFile.lstrip('/')))
             else:
                 fileName = os.path.basename(zippedFile)
                 folderName = os.path.dirname(zippedFile)
@@ -192,6 +204,15 @@ class Renderer:
                     # Same remark as above.
                     self.stylesManager = StylesManager(fileContent)
                     self.stylesXml = fileContent
+                elif (fileName == 'mimetype') and \
+                     (fileContent == mimeTypes['ods']):
+                    # From LibreOffice 3.5, it is not possible anymore to dump
+                    # errors into the resulting ods as annotations. Indeed,
+                    # annotations can't reside anymore within paragraphs. ODS
+                    # files generated with pod and containing error messages in
+                    # annotations cause LibreOffice 3.5 and 4.0 to crash.
+                    # LibreOffice >= 4.1 simply does not show the annotation.
+                    self.raiseOnError = True
                 f.write(fileContent)
                 f.close()
         self.templateZip.close()
@@ -259,11 +280,8 @@ class Renderer:
                                   stylesMapping, self).run()
 
     def renderText(self, text, encoding='utf-8', stylesMapping={}):
-        '''Method that can be used (under the name 'text') into a pod template
-           for inserting a text containing carriage returns.'''
-        if text == None: text = ''
-        text = cgi.escape(text).replace('\r\n', '<br/>').replace('\n', '<br/>')
-        return self.renderXhtml(text, encoding, stylesMapping)
+        '''Obsolete method.'''
+        raise Exception(OBSOLETE_RENDER_TEXT)
 
     def evalIfExpression(self, condition, ifTrue, ifFalse):
         '''This method implements the method 'test' which is proposed in the
@@ -286,17 +304,18 @@ class Renderer:
            supposed to be in binary format in p_content. The document
            p_format may be: odt or any format in imageFormats.
 
-           p_anchor, p_wrapInPara and p_size are only relevant for images:
+           p_anchor, p_wrapInPara and p_size, p_sizeUnit and p_style are only
+           relevant for images:
            * p_anchor defines the way the image is anchored into the document;
                       Valid values are 'page','paragraph', 'char' and 'as-char';
            * p_wrapInPara, if true, wraps the resulting 'image' tag into a 'p'
                            tag;
            * p_size, if specified, is a tuple of float or integers
                      (width, height) expressing size in p_sizeUnit (see below).
-                     If not specified, size will be computed from image info.
+                     If not specified, size will be computed from image info;
            * p_sizeUnit is the unit for p_size elements, it can be "cm"
-             (centimeters) or "px" (pixels).
-           * If p_style is given, it is the content of a "style" attribute,
+             (centimeters) or "px" (pixels);
+           * if p_style is given, it is the content of a "style" attribute,
              containing CSS attributes. If "width" and "heigth" attributes are
              found there, they will override p_size and p_sizeUnit.
 
@@ -306,8 +325,7 @@ class Renderer:
         '''
         importer = None
         # Is there someting to import?
-        if not content and not at:
-            raise PodError(DOC_NOT_SPECIFIED)
+        if not content and not at: raise PodError(DOC_NOT_SPECIFIED)
         # Convert Zope files into Appy wrappers.
         if content.__class__.__name__ in ('File', 'Image'):
             content = FileWrapper(content)
@@ -422,17 +440,20 @@ class Renderer:
     # Public interface
     def run(self):
         '''Renders the result.'''
-        # Remember which parser is running
-        self.currentParser = self.contentParser
-        # Create the resulting content.xml
-        self.currentParser.parse(self.contentXml)
-        self.currentParser = self.stylesParser
-        # Create the resulting styles.xml
-        self.currentParser.parse(self.stylesXml)
-        # Patch META-INF/manifest.xml
-        self.patchManifest()
-        # Re-zip the result
-        self.finalize()
+        try:
+            # Remember which parser is running
+            self.currentParser = self.contentParser
+            # Create the resulting content.xml
+            self.currentParser.parse(self.contentXml)
+            self.currentParser = self.stylesParser
+            # Create the resulting styles.xml
+            self.currentParser.parse(self.stylesXml)
+            # Patch META-INF/manifest.xml
+            self.patchManifest()
+            # Re-zip the result
+            self.finalize()
+        finally:
+            FolderDeleter.delete(self.tempFolder)
 
     def getStyles(self):
         '''Returns a dict of the styles that are defined into the template.'''
@@ -580,31 +601,28 @@ class Renderer:
                 resultZip.writestr(zInfo, '')
         resultZip.close()
         resultType = os.path.splitext(self.result)[1].strip('.')
-        try:
-            if (resultType in self.templateTypes) and not self.forceOoCall:
-                # Simply move the ODT result to the result
-                os.rename(resultName, self.result)
-            else:
-                if resultType not in FILE_TYPES:
-                    raise PodError(BAD_RESULT_TYPE % (
-                        self.result, FILE_TYPES.keys()))
-                # Call LibreOffice to perform the conversion or document update.
-                output = self.callLibreOffice(resultName, resultType)
-                # I (should) have the result. Move it to the correct name.
-                resPrefix = os.path.splitext(resultName)[0]
-                if resultType in self.templateTypes:
-                    # converter.py has (normally!) created a second file
-                    # suffixed .res.[resultType]
-                    finalResultName = '%s.res.%s' % (resPrefix, resultType)
-                    if not os.path.exists(finalResultName):
-                        finalResultName = resultName
-                        # In this case OO in server mode could not be called to
-                        # update indexes, sections, etc.
-                else:
-                    finalResultName = '%s.%s' % (resPrefix, resultType)
+        if (resultType in self.templateTypes) and not self.forceOoCall:
+            # Simply move the ODT result to the result
+            os.rename(resultName, self.result)
+        else:
+            if resultType not in FILE_TYPES:
+                raise PodError(BAD_RESULT_TYPE % (
+                    self.result, FILE_TYPES.keys()))
+            # Call LibreOffice to perform the conversion or document update.
+            output = self.callLibreOffice(resultName, resultType)
+            # I (should) have the result. Move it to the correct name.
+            resPrefix = os.path.splitext(resultName)[0]
+            if resultType in self.templateTypes:
+                # converter.py has (normally!) created a second file
+                # suffixed .res.[resultType]
+                finalResultName = '%s.res.%s' % (resPrefix, resultType)
                 if not os.path.exists(finalResultName):
-                    raise PodError(CONVERT_ERROR % output)
-                os.rename(finalResultName, self.result)
-        finally:
-            FolderDeleter.delete(self.tempFolder)
+                    finalResultName = resultName
+                    # In this case OO in server mode could not be called to
+                    # update indexes, sections, etc.
+            else:
+                finalResultName = '%s.%s' % (resPrefix, resultType)
+            if not os.path.exists(finalResultName):
+                raise PodError(CONVERT_ERROR % output)
+            os.rename(finalResultName, self.result)
 # ------------------------------------------------------------------------------

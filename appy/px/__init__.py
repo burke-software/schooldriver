@@ -42,10 +42,22 @@ class Px:
         else:
             self.content = content
         # It this content a complete XML file, or just some part of it?
-        if partial:
+        self.partial = partial
+        # Is this PX based on a template PX?
+        self.template = template
+        self.hook = hook
+        # Is there some (XML, XHTML...) prologue to dump?
+        self.prologue = prologue
+        # Will the result be unicode or str?
+        self.unicode = unicode
+        self.parse()
+
+    def parse(self):
+        '''Parses self.content and create the structure corresponding to this
+           PX.'''
+        if self.partial:
             # Surround the partial chunk with a root tag: it must be valid XML.
             self.content = '<x>%s</x>' % self.content
-        self.partial = partial
         # Create a PX parser
         self.parser = PxParser(PxEnvironment(), self)
         # Parses self.content (a PX code in a string) with self.parser, to
@@ -55,13 +67,6 @@ class Px:
         except xml.sax.SAXParseException, spe:
             self.completeErrorMessage(spe)
             raise spe
-        # Is this PX based on a template PX?
-        self.template = template
-        self.hook = hook
-        # Is there some (XML, XHTML...) prologue to dump?
-        self.prologue = prologue
-        # Will the result be unicode or str?
-        self.unicode = unicode
 
     def completeErrorMessage(self, parsingError):
         '''A p_parsingError occurred. Complete the error message with the
@@ -90,6 +95,9 @@ class Px:
               as is, without re-applying the template (else, an infinite
               recursion would occur).
         '''
+        # Developer, forget the following line forever.
+        if '_ctx_' not in context: context['_ctx_'] = context
+
         if self.hook and applyTemplate:
             # Call the template PX, filling the hook with the current PX.
             context[self.hook] = self
@@ -105,4 +113,12 @@ class Px:
             if not self.unicode:
                 res = res.encode('utf-8')
             return res
+
+    def override(self, content, partial=True):
+        '''Overrides the content of this PX with a new p_content (as a
+           string).'''
+        self.partial = partial
+        self.content = content
+        # Parse again, with new content.
+        self.parse()
 # ------------------------------------------------------------------------------

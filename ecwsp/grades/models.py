@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models, connection
-from django.db.models import Count, signals
+from django.db.models import Count, signals, Sum
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from ecwsp.sis.models import Student
@@ -37,30 +37,34 @@ class StudentMarkingPeriodGrade(models.Model):
 
     class Meta:
         unique_together = ('student', 'marking_period')
-    
+
     def get_average(self, rounding=2):
         """ Returns cached average """
         return round_as_decimal(self.grade, rounding)
-        
+
     def get_scaled_average(self, rounding=2):
         """ Convert to scaled grade first, then average
         Burke Software does not endorse this as a precise way to calculate averages """
         grade_total = 0.0
         course_count = 0
-        grades = self.student.grade_set.filter(marking_period=self.marking_period, grade__isnull=False, course_section__course__course_type__weight__gt=0)
-        if grades.exclude(course_section__course__course_type__boost=0).exists():
-            boost = True
-        else:
-            boost = False
+        grades = self.student.grade_set.filter(
+            marking_period=self.marking_period,
+            grade__isnull=False,
+            course_section__course__course_type__weight__gt=0,
+        )
+        boost_sum = grades.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+
         for grade in grades:
             grade_value = grade.optimized_grade_to_scale(letter=False)
-            if boost:
-                boost_value = grade.course_section.course.course_type.boost
-                grade_value += boost_value
             grade_total += float(grade_value)
             course_count += 1
-        average = grade_total / course_count
-        return round_as_decimal(average, rounding)
+        if course_count:
+            average = grade_total / course_count
+            boost_factor = boost_sum / course_count
+            average += float(boost_factor)
+            return round_as_decimal(average, rounding)
+        else:
+            return None
 
     @staticmethod
     def build_all_cache():
@@ -167,6 +171,14 @@ class StudentYearGrade(models.Model):
         if numeric_scale == True:
             grade_scale = self.year.grade_scale
             grade = grade_scale.to_numeric(grade)
+            enrollments = self.student.courseenrollment_set.filter(
+                course_section__marking_period__show_reports=True,
+                course_section__marking_period__school_year=self.year,
+                course_section__course__credits__isnull=False,
+                course_section__course__course_type__weight__gt=0,)
+            boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+            boost_factor = boost_sum / enrollments.count()
+            grade += boost_factor
         if rounding:
             grade = round_as_decimal(grade, rounding)
         return grade
@@ -311,7 +323,7 @@ class Grade(models.Model):
         letter - True for letter grade, false for numeric (ex: 4.0 scale) """
         rule = GradeScaleRule.objects.filter(
                 grade_scale__schoolyear__markingperiod=self.marking_period_id,
-                min_grade__lte=self.grade, 
+                min_grade__lte=self.grade,
                 max_grade__gte=self.grade,
                 ).first()
         if letter:
@@ -321,7 +333,7 @@ class Grade(models.Model):
     def get_grade(self, letter=False, display=False, rounding=None,
         minimum=None, number=False):
         """
-        letter: Converts to a letter based on GradeScale 
+        letter: Converts to a letter based on GradeScale
         display: For letter grade - Return display name instead of abbreviation.
         rounding: Numeric - round to this many decimal places.
         minimum: Numeric - Minimum allowed grade. Will not return lower than this.
@@ -377,8 +389,8 @@ class Grade(models.Model):
 
     @staticmethod
     def get_scaled_multiple_mp_average(student, marking_periods, rounding=2):
-        if (type(marking_periods) is list and 
-            marking_periods and 
+        if (type(marking_periods) is list and
+            marking_periods and
             type(marking_periods[0]) is ecwsp.schedule.models.MarkingPeriod):
             marking_periods = [ mp.id for mp in marking_periods ]
 
@@ -388,6 +400,7 @@ class Grade(models.Model):
                 course_section__marking_period__in=marking_periods)
         num_courses = 0
         total_grade = 0
+        boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
         for enrollment in enrollments.distinct():
             grade = enrollment.get_average_for_marking_periods(marking_periods, numeric=True)
             if grade != None:
@@ -395,6 +408,8 @@ class Grade(models.Model):
                 num_courses += 1
         if num_courses > 0:
             average = total_grade / num_courses
+            boost_factor = boost_sum /  enrollments.count()
+            average += boost_factor
             return round_as_decimal(average, rounding)
         else:
             return None

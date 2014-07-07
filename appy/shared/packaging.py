@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-import os, os.path, subprocess, md5, shutil, random
+import os, os.path, subprocess, md5, shutil
 from appy.shared.utils import getOsTempFolder, FolderDeleter, cleanFolder
 
 # ------------------------------------------------------------------------------
@@ -334,98 +334,4 @@ class Debianizer:
         # Clean temp files
         FolderDeleter.delete(debFolder)
         os.chdir(curdir)
-
-# ------------------------------------------------------------------------------
-definitionJson = '''{
-  "name": "%s",
-  "description": "%s, a Appy-based application",
-  "packages": [{"name": "python-appy" }, {"name": "python-appy-%s" }],
-  "files": [
-    { "group": "root", "mode": "644", "name": "%s.conf",
-      "owner": "root", "path": "/etc/%s.conf",
-      "template": "%s"
-    }],
-  "handlers": [
-    { "on": ["_install"] },
-    { "on": ["_uninstall" ] },
-    { "on": ["%s_http_port"],
-      "do": [
-        { "action": "update", "resource": "file://%s.conf" }, 
-        { "action": "restart", "resource": "service://%s" }
-      ]}
-    ],
-  "services": [
-    { "name": "%s", "enabled": "true", "running": "false" }, 
-    { "name": "oo",  "enabled": "true",  "running": "false" }]
-}
-'''
-definitionJsonConf = '''{
-  "name": "%s.conf",
-  "uuid": "%s",
-  "parameters": [
-    { "key": "%s_http_port",  "name": "%s HTTP port",
-      "description": "%s HTTP port for the Zope process",
-      "value": "8080"}
-  ]
-}
-'''
-
-class Cortexer:
-    '''This class allows to produce a Cortex application definition for
-       a Debianized Python/Appy application.
-
-       Once the "cortex.admin" folder and its content has been generated, in
-       order to push the app definition into Cortex, go in the folder where
-       "cortex.admin" lies and type (command-line tool "cortex" must
-       be installed):
-
-       cortex sync push --api http://<cortex-host-ip>/api
-    '''
-    def __init__(self, app, pythonVersions=('2.6',)):
-        self.appName = os.path.basename(app)
-        self.pythonVersions = pythonVersions
-        appFolder = os.path.dirname(app)
-        # Prepare the output folder (remove any existing one)
-        cortexFolder = os.path.join(appFolder, 'cortex.admin')
-        if os.path.exists(cortexFolder):
-            FolderDeleter.delete(cortexFolder)
-        allFolders = os.path.join(cortexFolder, 'applications', self.appName)
-        os.makedirs(allFolders)
-        self.out = allFolders
-
-    uuidChars= ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
-    def generateUid(self):
-        '''Generates a 32-chars-wide UID for identifying the configuration file
-           in the Cortex DB.'''
-        res = ''
-        for i in range(32):
-            res += self.uuidChars[random.randint(0,15)]
-        return res
-
-    def run(self):
-        # Create the root app description file "definition.json".
-        uid = self.generateUid()
-        name = os.path.join(self.out, 'definition.json')
-        f = file(name, 'w')
-        n = self.appName
-        nl = self.appName.lower()
-        f.write(definitionJson % (n, n, nl, nl, nl, uid, nl, nl, nl, nl))
-        f.close()
-        # Create the folder corresponding to the config file, and its content.
-        confFolder = os.path.join(self.out, '%s.conf' % nl)
-        os.mkdir(confFolder)
-        # Create the definition file for this config file, that will contain
-        # the names of Cortex-managed variables within the configuration file.
-        name = os.path.join(confFolder, 'definition.json')
-        f = file(name, 'w')
-        f.write(definitionJsonConf % (nl, uid, nl, n, n))
-        f.close()
-        # Create the Zope config file, with Cortex-like variables within in.
-        name = os.path.join(confFolder, '%s.conf' % nl)
-        f = file(name, 'w')
-        productsFolder='/usr/lib/python%s/%s/zope' % (self.pythonVersions[0],n)
-        f.write(zopeConf % ('/var/lib/%s' % n, '/var/lib/%s' % n,
-                            '/var/log/%s' % n, '${%s_http_port}' % nl,
-                            'products %s\n' % productsFolder))
-        f.close()
 # ------------------------------------------------------------------------------

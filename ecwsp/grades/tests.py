@@ -152,10 +152,10 @@ class GradeBaltTests(SisTestMixin, TestCase):
     def test_scaled_average(self):
         """ Tests an asinine method for averages by converting to non linear scale first """
         test_data = [
-            [1, Decimal(1.9)],
-            [2, Decimal(2.2)],
-            [4, Decimal(1.8)],
-            [5, Decimal(2.6)],
+            [1, Decimal(2.0)],
+            [2, Decimal(2.4)],
+            [4, Decimal(1.9)],
+            [5, Decimal(2.8)],
         ]
         for x in test_data:
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
@@ -172,8 +172,8 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
     def test_scaled_multiple_mp_average(self):
         test_data = [
-            [[1, 2, 3], Decimal(1.8)],
-            [[4, 5, 6], Decimal(1.9)],
+            [[1, 2, 3], Decimal(1.9)],
+            [[4, 5, 6], Decimal(2.1)],
         ]
         for x in test_data:
             average = Grade.get_scaled_multiple_mp_average(self.data.student, x[0], rounding=1)
@@ -181,16 +181,16 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
     def test_scaled_final_year_average(self):
         test_data = [
-            [1, Decimal(2.0)],
+            [1, Decimal(2.2)],
         ]
         for x in test_data:
             year_grade = self.data.student.studentyeargrade_set.get(year=x[0])
             average = year_grade.get_grade(numeric_scale=True, rounding=1)
             self.assertAlmostEqual(average, x[1])
-    
+
     def test_balt_gpa(self):
         gpa = self.data.student.get_gpa(rounding=1, numeric_scale=True)
-        self.assertEqual(gpa, 2.0)
+        self.assertAlmostEqual(gpa, Decimal(2.2))
 
     def test_final_grade(self):
         test_data = [

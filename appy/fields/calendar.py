@@ -11,13 +11,12 @@ from persistent.list import PersistentList
 class Calendar(Field):
     '''This field allows to produce an agenda (monthly view) and view/edit
        events on it.'''
-    jsFiles = {'view': ('widgets/calendar.js',)}
+    jsFiles = {'view': ('calendar.js',)}
 
     # Month view for a calendar. Called by pxView, and directly from the UI,
     # via Ajax, when the user selects another month.
     pxMonthView = Px('''
-     <div var="field=zobj.getAppyType(req['fieldName']);
-               ajaxHookId=zobj.UID() + field.name;
+     <div var="ajaxHookId=zobj.id + field.name;
                month=req['month'];
                monthDayOne=DateTime('%s/01' % month);
                today=DateTime('00:00');
@@ -28,15 +27,15 @@ class Calendar(Field):
                defaultDateMonth=defaultDate.strftime('%Y/%m');
                previousMonth=field.getSiblingMonth(month, 'previous');
                nextMonth=field.getSiblingMonth(month, 'next');
-               mayEdit=zobj.allows(widget['writePermission']);
+               mayEdit=zobj.mayEdit(field.writePermission);
                objUrl=zobj.absolute_url();
                startDate=field.getStartDate(zobj);
                endDate=field.getEndDate(zobj);
                otherCalendars=field.getOtherCalendars(zobj, preComputed)"
           id=":ajaxHookId">
 
-      <script type="text/javascript">:'var %s_maxEventLength = %d;' % \
-                                   (field.name, field.maxEventLength)"></script>
+      <script type="text/javascript">:'var %s_maxEventLength = %d' % \
+                                     (field.name, field.maxEventLength)</script>
 
       <!-- Month chooser -->
       <div style="margin-bottom: 5px"
@@ -46,7 +45,7 @@ class Calendar(Field):
                 goForward=not endDate or (endDate.strftime(fmt) &gt; \
                                           grid[-1][-1].strftime(fmt))">
        <!-- Go to the previous month -->
-       <img class="clickable" if="goBack" src=":url('arrowLeftSimple')"
+       <img class="clickable" if="goBack" src=":url('arrowLeft')"
             onclick=":'askMonthView(%s,%s,%s,%s)' % \
                      (q(ajaxHookId),q(objUrl),q(field.name),q(previousMonth))"/>
        <!-- Go back to the default date -->
@@ -59,7 +58,7 @@ class Calendar(Field):
                                  q(objUrl), q(field.name), q(defaultDateMonth))"
               disabled=":defaultDate.strftime(fmt)==monthDayOne.strftime(fmt)"/>
        <!-- Go to the next month -->
-       <img class="clickable" if="goForward" src=":url('arrowRightSimple')"
+       <img class="clickable" if="goForward" src=":url('arrowRight')"
             onclick=":'askMonthView(%s, %s, %s, %s)' % (q(ajaxHookId), \
                                    q(objUrl), q(field.name), q(nextMonth))"/>
        <span>:_('month_%s' % monthDayOne.aMonth())</span>
@@ -100,33 +99,32 @@ class Calendar(Field):
              onmouseout="mayEdit and 'this.getElementsByTagName(\
                %s)[0].style.visibility=%s' % (q('img'), q('hidden')) or ''">
           <span>:day</span>
-          <span if="day == 1">:_('month_%s_short' % date.aMonth())"></span>
+          <span if="day == 1">:_('month_%s_short' % date.aMonth())</span>
           <!-- Icon for adding an event -->
           <x if="mayCreate">
            <img class="clickable" style="visibility:hidden"
                 var="info=field.getApplicableEventsTypesAt(zobj, date, \
                             allEventTypes, preComputed, True)"
-                if="info['eventTypes']" src=":url('plus')"
+                if="info.eventTypes" src=":url('plus')"
                 onclick=":'openEventPopup(%s, %s, %s, null, %s, %s)' % \
-                 (q('new'), q(field.name), q(dayString), q(info['eventTypes']),\
-                  q(info['message']))"/>
+                 (q('new'), q(field.name), q(dayString), q(info.eventTypes),\
+                  q(info.message))"/>
           </x>
           <!-- Icon for deleting an event -->
           <img if="mayDelete" class="clickable" style="visibility:hidden"
                src=":url('delete')"
                onclick=":'openEventPopup(%s, %s, %s, %s, null, null)' % \
-                 (q('del'), q(field.name), q(dayString), q(str(spansDays)))"/>
+                 (q('del'), q(field.name), q(dayString), q(spansDays))"/>
           <!-- A single event is allowed for the moment -->
-          <div if="events" var2="eventType=events[0]['eventType']">
-           <span style="color: grey">:field.getEventName(zobj, \
-                                                         eventType)"></span>
+          <div if="events" var2="eventType=events[0].eventType">
+           <span style="color: grey">:field.getEventName(zobj, eventType)</span>
           </div>
           <!-- Events from other calendars -->
           <x if="otherCalendars"
              var2="otherEvents=field.getOtherEventsAt(zobj, date, \
                                                       otherCalendars)">
-           <div style=":'color: %s; font-style: italic' % event['color']"
-                for="event in otherEvents">:event['name']</div>
+           <div style=":'color: %s; font-style: italic' % event.color"
+                for="event in otherEvents">:event.name</div>
           </x>
           <!-- Additional info -->
           <x var="info=field.getAdditionalInfoAt(zobj, date, preComputed)"
@@ -149,16 +147,15 @@ class Calendar(Field):
         <input type="hidden" name="day"/>
 
         <!-- Choose an event type -->
-        <div align="center" style="margin-bottom: 3px">:_('which_event')"></div>
+        <div align="center" style="margin-bottom: 3px">:_('which_event')</div>
         <select name="eventType">
-         <option value="">:_('choose_a_value')"></option>
+         <option value="">:_('choose_a_value')</option>
          <option for="eventType in allEventTypes"
-                 value=":eventType">:field.getEventName(zobj, eventType)">
-         </option>
+                 value=":eventType">:field.getEventName(zobj,eventType)</option>
         </select><br/><br/>
         <!--Span the event on several days -->
         <div align="center" class="discreet" style="margin-bottom: 3px">
-         <span>:_('event_span')"></span>
+         <span>:_('event_span')</span>
          <input type="text" size="3" name="eventSpan"/>
         </div>
         <input type="button"
@@ -184,8 +181,7 @@ class Calendar(Field):
         <input type="hidden" name="actionType" value="deleteEvent"/>
         <input type="hidden" name="day"/>
 
-        <div align="center" style="margin-bottom: 5px">_('delete_confirm')">
-        </div>
+        <div align="center" style="margin-bottom: 5px">_('action_confirm')</div>
 
         <!-- Delete successive events ? -->
         <div class="discreet" style="margin-bottom: 10px"
@@ -195,7 +191,7 @@ class Calendar(Field):
                  onClick=":'toggleCheckbox(%s, %s)' % \
                            (q('%s_cb' % prefix), q('%s_hd' % prefix))"/>
           <input type="hidden" id=":prefix + '_hd'" name="deleteNext"/>
-          <span>:_('del_next_events')"></span>
+          <span>:_('del_next_events')</span>
         </div>
         <input type="button" value=":_('yes')"
                onClick=":'triggerCalendarEvent(%s, %s, %s, %s)' % \
@@ -225,8 +221,8 @@ class Calendar(Field):
         Field.__init__(self, validator, (0,1), default, show, page, group,
                        layouts, move, False, False, specificReadPermission,
                        specificWritePermission, width, height, None, colspan,
-                       master, masterValue, focus, False, True, mapping, label,
-                       None, None, None, None)
+                       master, masterValue, focus, False, mapping, label, None,
+                       None, None, None, True)
         # eventTypes can be a "static" list or tuple of strings that identify
         # the types of events that are supported by this calendar. It can also
         # be a method that computes such a "dynamic" list or tuple. When
@@ -405,14 +401,10 @@ class Calendar(Field):
         res = Object(eventTypes=eventTypes, message=message)
         if forBrowser:
             res.eventTypes = ','.join(res.eventTypes)
-            if not res.message:
-                res.message = ''
-            else:
-                res.message = obj.formatText(res.message, format='js')
-            return res.__dict__
+            if not res.message: res.message = ''
         return res
 
-    def getEventsAt(self, obj, date, asDict=True):
+    def getEventsAt(self, obj, date):
         '''Returns the list of events that exist at some p_date (=day).'''
         obj = obj.o # Ensure p_obj is not a wrapper.
         if not hasattr(obj.aq_base, self.name): return
@@ -425,16 +417,12 @@ class Calendar(Field):
         days = months[month]
         day = date.day()
         if day not in days: return
-        if asDict:
-            res = [e.__dict__ for e in days[day]]
-        else:
-            res = days[day]
-        return res
+        return days[day]
 
     def getEventTypeAt(self, obj, date):
         '''Returns the event type of the first event defined at p_day, or None
            if unspecified.'''
-        events = self.getEventsAt(obj, date, asDict=False)
+        events = self.getEventsAt(obj, date)
         if not events: return
         return events[0].eventType
 
@@ -525,20 +513,20 @@ class Calendar(Field):
         '''Returns True if, at p_date, an event is found of the same type as
            p_otherEvents.'''
         if not otherEvents: return False
-        events = self.getEventsAt(obj, date, asDict=False)
+        events = self.getEventsAt(obj, date)
         if not events: return False
-        return events[0].eventType == otherEvents[0]['eventType']
+        return events[0].eventType == otherEvents[0].eventType
 
     def getOtherEventsAt(self, obj, date, otherCalendars):
         '''Gets events that are defined in p_otherCalendars at some p_date.'''
         res = []
         for o, field, color in otherCalendars:
-            events = field.getEventsAt(o.o, date, asDict=False)
+            events = field.getEventsAt(o.o, date)
             if events:
                 eventType = events[0].eventType
                 eventName = field.getEventName(o.o, eventType)
                 info = Object(name=eventName, color=color)
-                res.append(info.__dict__)
+                res.append(info)
         return res
 
     def getEventName(self, obj, eventType):
@@ -642,6 +630,8 @@ class Calendar(Field):
            or deletion of a calendar event.'''
         rq = obj.REQUEST
         action = rq['actionType']
+        # Security check
+        obj.mayEdit(self.writePermission, raiseError=True)
         # Get the date for this action
         if action == 'createEvent':
             return self.createEvent(obj, DateTime(rq['day']))

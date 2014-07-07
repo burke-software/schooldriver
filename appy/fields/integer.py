@@ -32,8 +32,7 @@ class Integer(Field):
             maxlength=":field.maxChars"
             value=":inRequest and requestValue or value" type="text"/>''')
 
-    pxSearch = Px('''<x>
-     <label>:_(field.labelId)"></label><br/>&nbsp;&nbsp;
+    pxSearch = Px('''
      <!-- From -->
      <x var="fromName='%s*int' % widgetName">
       <label lfor=":fromName">:_('search_from')</label>
@@ -42,11 +41,10 @@ class Integer(Field):
      </x>
      <!-- To -->
      <x var="toName='%s_to' % name">
-      <label lfor=":toName">:_('search_to')"></label>
+      <label lfor=":toName">:_('search_to')</label>
       <input type="text" name=":toName" maxlength=":field.maxChars"
              value=":field.sdefault[1]" size=":field.swidth"/>
-     </x><br/>
-    </x>''')
+     </x><br/>''')
 
     def __init__(self, validator=None, multiplicity=(0,1), default=None,
                  show=True, page='main', group=None, layouts=None, move=0,
@@ -54,13 +52,14 @@ class Integer(Field):
                  specificWritePermission=False, width=5, height=None,
                  maxChars=13, colspan=1, master=None, masterValue=None,
                  focus=False, historized=False, mapping=None, label=None,
-                 sdefault=('',''), scolspan=1, swidth=None, sheight=None):
+                 sdefault=('',''), scolspan=1, swidth=None, sheight=None,
+                 persist=True):
         Field.__init__(self, validator, multiplicity, default, show, page,
                        group, layouts, move, indexed, searchable,
                        specificReadPermission, specificWritePermission, width,
                        height, maxChars, colspan, master, masterValue, focus,
-                       historized, True, mapping, label, sdefault, scolspan,
-                       swidth, sheight)
+                       historized, mapping, label, sdefault, scolspan, swidth,
+                       sheight, persist)
         self.pythonType = long
 
     def validateValue(self, obj, value):

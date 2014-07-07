@@ -135,8 +135,10 @@ class SisData(object):
 
         CourseType.objects.create(name='NonCore', weight=0)
         non_core = CourseType.objects.get(name='NonCore')
+        CourseType.objects.create(name='AP', weight=1, boost=1.0)
+        ap = CourseType.objects.get(name='AP')
         courses = Course.objects.bulk_create([
-            Course(fullname="English", shortname="English", credits=1, graded=True),
+            Course(fullname="English", shortname="English", credits=1, course_type=ap, graded=True),
             Course(fullname="Precalculus", shortname="Precalc", credits=1, graded=True),
             Course(fullname="Physics", shortname="Phys", credits=1, graded=True),
             Course(fullname="Modern World History", shortname="Hist", credits=1, graded=True),
@@ -227,7 +229,7 @@ class SisData(object):
         GradeScaleRule.objects.create(min_grade=92.50, max_grade=100, letter_grade='A', numeric_scale=4, grade_scale=scale)
         year.grade_scale = scale
         year.save()
-        
-        
-        
-        
+
+
+
+

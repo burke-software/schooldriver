@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Sum
 from django.db import connection
 from django.db.models.signals import post_save, m2m_changed
 from localflavor.us.models import USStateField, PhoneNumberField  #, USSocialSecurityNumberField
@@ -354,7 +355,7 @@ class Student(User, CustomFieldModel):
 
     def get_absolute_url():
         pass
-    
+
     def get_gpa(self, rounding=2, numeric_scale=False):
         """ Get cached gpa but with rounding and scale options """
         gpa = self.gpa
@@ -364,6 +365,11 @@ class Student(User, CustomFieldModel):
                 schoolyear__markingperiod__coursesection__courseenrollment__user=self).last()
             if grade_scale:
                 gpa = grade_scale.to_numeric(gpa)
+                enrollments = self.courseenrollment_set.filter(
+                        course_section__course__course_type__weight__gt=0)
+                boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+                boost_factor = boost_sum /  enrollments.count()
+                gpa += boost_factor
         if rounding:
             gpa = round_as_decimal(gpa, rounding)
         return gpa
@@ -510,7 +516,7 @@ class Student(User, CustomFieldModel):
 
     def get_scaled_multiple_mp_average_by_indices(self, indices, rounding=2):
         """ Get a scaled mulitple marking period average for this student
-        Requires that the property mps be set previously. 
+        Requires that the property mps be set previously.
         This function exists mainly for appy based report cards where speed,
         and simplicity (in the template) are important.
         """
