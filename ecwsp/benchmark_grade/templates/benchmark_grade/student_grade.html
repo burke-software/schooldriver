@@ -54,9 +54,9 @@
         {% for a in available_students %}
             <li>
             {% if a == student %}
-            <strong>{{ a.fname }} {{ a.lname }}</strong>
+            <strong>{{ a.first_name }} {{ a.lname }}</strong>
             {% else %}
-            <a href="{% url "ecwsp.benchmark_grade.views.student_report" a.pk %}">{{ a.fname }} {{ a.lname }}</a>
+            <a href="{% url "ecwsp.benchmark_grade.views.student_report" a.pk %}">{{ a.first_name }} {{ a.lname }}</a>
             {% endif %}
             </li>
         {% endfor %}
@@ -65,7 +65,7 @@
     {% if error_message %}
         <p>{{ error_message }}</p>
     {% else %}
-        <h1>Grade Summary for {{ student.fname }} {{ student.lname }}</h1>
+        <h1>Grade Summary for {{ student.first_name }} {{ student.last_name }}</h1>
     {% endif %}
     {% for mp in mps %}
         <h2 class="getCloser">{{ mp.name }}</h2>
@@ -99,13 +99,13 @@
                     <tr>
                         <td colspan="2" class="courseNarration">
                             {% if course_section.category_by_name.Standards.missing %}
-                                {{ student.fname }} has {{ course_section.category_by_name.Standards.missing }} missing
+                                {{ student.first_name }} has {{ course_section.category_by_name.Standards.missing }} missing
                                 {% if course_section.category_by_name.Standards.missing > 1 %}standards
                                 {% else %}standard
                                 {% endif %}
                                 from {{ mp.name }} {{ course_section.name }}.<br />
                             {% endif %}
-                            {{ student.fname }} passed <u>{{ course_section.category_by_name.Standards.passing }}/{{ course_section.category_by_name.Standards.total }}, or {{ course_section.category_by_name.Standards.percentage}}%</u> of {{ mp.name }} standards.
+                            {{ student.first_name }} passed <u>{{ course_section.category_by_name.Standards.passing }}/{{ course_section.category_by_name.Standards.total }}, or {{ course_section.category_by_name.Standards.percentage}}%</u> of {{ mp.name }} standards.
                         </td>
                     </tr>
                 {% endif %}

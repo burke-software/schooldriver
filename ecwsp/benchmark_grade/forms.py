@@ -70,7 +70,7 @@ class GradebookFilterForm(forms.Form):
     date_end = forms.DateField(required=False, widget=forms.DateInput(attrs={'placeholder':'Earlier than'}), validators=settings.DATE_VALIDATORS)
     
     def update_querysets(self, course_section):
-        self.fields['cohort'].queryset = Cohort.objects.filter(Q(percoursecohort=None, student__coursesection=course_section) | Q(percoursecohort__coursesection=course_section)).distinct().order_by('name')
+        self.fields['cohort'].queryset = Cohort.objects.filter(Q(percoursesectioncohort=None, student__coursesection=course_section) | Q(percoursesectioncohort__coursesection=course_section)).distinct().order_by('name')
         self.fields['marking_period'].queryset = MarkingPeriod.objects.filter(coursesection=course_section).distinct()
         self.fields['benchmark'].queryset = Benchmark.objects.filter(item__course_section=course_section).distinct()
         self.fields['assignment_type'].queryset = AssignmentType.objects.filter(item__course_section=course_section).distinct()

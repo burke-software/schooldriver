@@ -87,7 +87,9 @@ def get_benchmark_report_card_data(report_context, appy_context, students):
                     if course_section_marking_period.category.count_total:
                         course_section_marking_period.category.count_percentage = (Decimal(course_section_marking_period.category.count_passing) / course_section_marking_period.category.count_total * 100).quantize(Decimal('0', ROUND_HALF_UP))
 
-                    if course_section.department is not None and course_section.department.name == 'Corporate Work Study': # TODO: Remove this terrible hack
+                    # TODO: We assume here that flagging something visually means it's "missing." This should be done in a better way that's not opaque to users.
+                    if not calculation_rule.substitution_set.filter(apply_to_departments=course_section.department, flag_visually=True).exists():
+                        print 'Asshole', student, 'got a free pass on', course_section.department
                         course_section_marking_period.category.count_passing = course_section_marking_period.category.count_total
                         course_section_marking_period.category.count_missing = 0
                         course_section_marking_period.category.count_percentage = 100
@@ -178,7 +180,8 @@ def student_incomplete_course_sections(request):
 
     AGGREGATE_CRITERIA = {'category__name': 'Standards', 'cached_substitution': 'INC'}
 
-    school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
+    #school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
+    school_year = SchoolYear.objects.get(active_year=True)
     '''
     if inverse:
         method = Student.objects.exclude
@@ -249,7 +252,8 @@ def count_items_by_category_across_course_sections(year_category_names, current_
     if not inverse:
         titles.append('Course Section')
         for c in all_categories: titles.append(category_heading_format.format(c.name))
-    school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
+    #school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
+    school_year = SchoolYear.objects.get(active_year=True)
     marking_period = school_year.markingperiod_set.filter(show_reports=True, start_date__lt=date.today()).order_by('-start_date')[0]
 
     data = []
