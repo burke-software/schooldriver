@@ -146,7 +146,7 @@ class AbsenceFilter(IntCompareFilter):
 
 
 class CourseSectionFilter(ModelChoiceFilter):
-    verbose_name = "Course Section (Required)"
+    verbose_name = "Course Section"
     add_fields = ['course_section']
     model = CourseSection
 
@@ -620,6 +620,53 @@ class AspReportButton(ReportButton):
         return report_view.list_to_xlsx_response(data, 'ASP_Report', header)
 
 
+class StudentCourseAbsencesButton(ReportButton):
+    name = "student_course_absences"
+    name_verbose = "Student Course Absences"
+
+    def get_report(self, report_view, context):
+        date = report_view.report.report_context.get('date')
+
+        if date:
+            titles = ["Last Name", "First Name", "", "Period", "", "Course Sec.", "", "Date"]
+            data = []
+            student_attendances = StudentAttendance.objects.filter(date=date)
+            for student_attendance in student_attendances:
+                if not student_attendance.status.absent and not student_attendance.status.excused:
+                    student = student_attendance.student
+                    missed_class = False
+                    missed_classes = []
+                    classes = CourseAttendance.objects.filter(student=student, date=date)
+                    for a_class in classes:
+                        if a_class.status.name == "Absent":
+                            missed_class = True
+                            missed_classes.append(a_class)
+                    if missed_class:
+                        row = []
+                        row.append(student.last_name)
+                        row.append(student.first_name)
+                        row.append('')
+                        the_class = missed_classes[0]
+                        the_missed_class = the_class.period.name
+                        row.append(the_missed_class)
+                        row.append('')
+                        course_section = the_class.course_section
+                        row.append(course_section.name)
+                        row.append('')
+                        row.append(str(date))
+                        data.append(row)
+                        for a_class in missed_classes[1:]:
+                            row = []
+                            for i in range(3):
+                                row.append("")
+                            row.append(a_class.period.name)
+                            row.append("")
+                            row.append(a_class.course_section.name)
+                            data.append(row)
+
+        return report_view.list_to_xlsx_response(data, header=titles)
+
+
 class PeriodBasedAttendanceButton(ReportButton):
     name = "course_section_attendance"
     name_verbose = "Course Section Attendance"
@@ -979,10 +1026,12 @@ class AttendanceReport(ScaffoldReport):
         CourseSectionFilter(),
         DateFilter(),
         MarkingPeriodFilter(),
+        SelectSpecificStudents()
     )
 
     report_buttons = (
         PeriodBasedAttendanceButton(),
+        StudentCourseAbsencesButton(),
     )
 
 
