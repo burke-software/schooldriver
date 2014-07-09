@@ -394,7 +394,7 @@ class FailReportButton(ReportButton):
         passing_grade = float(Configuration.get_or_default('Passing Grade','70').value)
 
         data = []
-        iy=3
+        iy=2
         for student in students:
             row = [str(student)]
             ix = 1 # letter A
@@ -406,7 +406,7 @@ class FailReportButton(ReportButton):
                 'marking_period__name',
             ).filter(
                 override_final=False,
-                grade__lte=passing_grade,
+                grade__lt=passing_grade,
                 marking_period__in=marking_periods
             ).distinct()
             department_counts = {}
@@ -811,7 +811,12 @@ class SisReport(ScaffoldReport):
         template = self.report_context.get('template')
         if template:
             self.date_end = self.report_context['date_end']
-            context['date_of_report'] = self.date_end # backwards compatibility for templates
+
+            # backwards compatibility for templates
+            context['date_of_report'] = self.date_end
+            context['school_year'] = self.report_context['school_year']
+            context['school_name'] = Configuration.get_or_default(name="School Name")
+
             if template.transcript:
                 self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
                 self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value

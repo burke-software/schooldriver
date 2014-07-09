@@ -79,6 +79,8 @@ def get_teacher_courses(username):
 
 @staff_member_required
 def gradebook(request, course_id, for_export=False):
+    #if 'bypass' not in request.GET:
+    #    return HttpResponse('Gradebooks are temporarily unavailable while urgent maintenance is performed. We apologize for the inconvenience.')
     course = get_object_or_404(Course, pk=course_id)
     # lots of stuff will fail unceremoniously if there are no MPs assigned
     if not course.marking_period.count():
@@ -178,7 +180,7 @@ def gradebook(request, course_id, for_export=False):
     marks = Mark.objects.filter(item__in=items).order_by('item__id', 'demonstration__id').all() 
     items_count = items.filter(demonstration=None).count() + Demonstration.objects.filter(item__in=items).count()
     for student in students:
-        student_marks = marks.filter(student=student).select_related('item__category_id')
+        student_marks = marks.filter(student=student).exclude(item__category__allow_multiple_demonstrations=True, demonstration=None).select_related('item__category_id')
         student_marks_count = student_marks.count()
         if student_marks_count < items_count:
             # maybe student enrolled after assignments were created
@@ -187,6 +189,8 @@ def gradebook(request, course_id, for_export=False):
                     # must create mark for each demonstration
                     for demonstration in item.demonstration_set.all():
                         mark, created = Mark.objects.get_or_create(item=item, demonstration=demonstration, student=student)
+                    # Create one extra with demonstration=None to store the aggregate of Demonstrations
+                    mark, created = Mark.objects.get_or_create(item=item, demonstration=None, student=student)
                 else:
                     # a regular item without demonstrations; make only one mark
                     mark, created = Mark.objects.get_or_create(item=item, student=student)

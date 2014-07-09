@@ -650,7 +650,7 @@ class SchoolYear(models.Model):
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
     active_year = models.BooleanField(default=False,
         help_text="DANGER!! This is the current school year. There can only be one and setting this will remove it from other years. " \
-                  "If you want to change the active year you almost certainly want to click Admin, Change School Year.")
+                  "If you want to change the active year you almost certainly want to click Management, Change School Year.")
     benchmark_grade = models.BooleanField(default=lambda: str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true",
                                           help_text="Causes additional information to appear on transcripts. The configuration option \"Benchmark-based grading\" sets the default for this field.")
 
