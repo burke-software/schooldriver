@@ -626,9 +626,11 @@ class StudentCourseAbsencesButton(ReportButton):
 
     def get_report(self, report_view, context):
         date = report_view.report.report_context.get('date')
+        marking_period = report_view.report.report_context.get('marking_period')
+        students = Student.objects.all()
 
         if date:
-            titles = ["Last Name", "First Name", "", "Period", "", "Course Sec.", "", "Date"]
+            titles = ["Last Name", "First Name", "", "Period", "", "Course Section", "", "Date"]
             data = []
             student_attendances = StudentAttendance.objects.filter(date=date)
             for student_attendance in student_attendances:
@@ -664,7 +666,54 @@ class StudentCourseAbsencesButton(ReportButton):
                             row.append(a_class.course_section.name)
                             data.append(row)
 
-        return report_view.list_to_xlsx_response(data, header=titles)
+        if marking_period:
+            titles = ["Last Name", "First Name", "", "Period", "", "Course Section", "", "Date", "", "Marking Period", "",
+                      "Total Missed"]
+            data = []
+            student_attendances = StudentAttendance.objects.filter(date__range=(marking_period.start_date, marking_period.end_date))
+            for student_attendance in student_attendances:
+                if not student_attendance.status.absent and not student_attendance.status.excused \
+                        and student_attendance.student in students:
+                    student = student_attendance.student
+                    missed_class = False
+                    missed_classes = []
+                    classes = CourseAttendance.objects.filter(student=student, date=student_attendance.date)
+                    for a_class in classes:
+                        if a_class.status.name == "Absent":
+                            missed_class = True
+                            missed_classes.append(a_class)
+                    if missed_class:
+                        row = []
+                        row.append(student.last_name)
+                        row.append(student.first_name)
+                        row.append('')
+                        the_class = missed_classes[0]
+                        the_missed_class = the_class.period.name
+                        row.append(the_missed_class)
+                        row.append('')
+                        course_section = the_class.course_section
+                        row.append(course_section.name)
+                        row.append('')
+                        row.append(str(the_class.date))
+                        row.append('')
+                        row.append(marking_period.name)
+                        row.append("")
+                        row.append(len(missed_classes))
+                        data.append(row)
+                        for a_class in missed_classes[1:]:
+                            row = []
+                            for i in range(3):
+                                row.append("")
+                            row.append(a_class.period.name)
+                            row.append("")
+                            row.append(a_class.course_section.name)
+                            row.append("")
+                            row.append(str(a_class.date))
+                            for i in range(3):
+                                row.append("")
+                            data.append(row)
+
+        return report_view.list_to_xlsx_response(data, "StudentCourseAbsences", header=titles)
 
 
 class PeriodBasedAttendanceButton(ReportButton):
@@ -735,7 +784,7 @@ class PeriodBasedAttendanceButton(ReportButton):
                 row.append(marking_period.name)
                 data.append(row)
 
-        return report_view.list_to_xlsx_response(data, header=titles)
+        return report_view.list_to_xlsx_response(data, "Course_Attendance", header=titles)
 
 
 def strip_trailing_zeros(x):
@@ -1026,7 +1075,6 @@ class AttendanceReport(ScaffoldReport):
         CourseSectionFilter(),
         DateFilter(),
         MarkingPeriodFilter(),
-        SelectSpecificStudents()
     )
 
     report_buttons = (
