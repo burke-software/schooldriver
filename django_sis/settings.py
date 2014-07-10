@@ -370,7 +370,6 @@ INSTALLED_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
-    'ajax_select',
     'reversion',
     'djcelery',
     'django.contrib.admin',
