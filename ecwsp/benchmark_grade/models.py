@@ -286,6 +286,26 @@ class Mark(models.Model):
             self.normalized_mark = float(self.mark) / float(self.item.points_possible)
         super(Mark, self).save(*args, **kwargs)
 
+        # For Categories that allow multiple Demonstrations, store the aggregate
+        # mark (attribute) in the Mark (model) that's linked to an Item but not
+        # to any Demonstration.
+        # This way, reports can be run using `demonstration=None` as a filter
+        # to include only one mark per Student per Assignment.
+        if self.demonstration is not None and \
+        self.item.category.allow_multiple_demonstrations:
+            Method = self.item.category.aggregation_method
+            aggregated_mark = self.item.mark_set.filter(
+                student=self.student
+            ).exclude(
+                demonstration=None
+            ).aggregate(Method('mark')).popitem()[1]
+            aggregated_model, created = benchmark_get_create_or_flush(
+                Mark, student=self.student, item=self.item, demonstration=None
+            )
+            aggregated_model.mark = aggregated_mark
+            aggregated_model.save()
+
+
     def clean(self):
         from django.core.exceptions import ValidationError
         if self.item.category.fixed_granularity and self.mark and self.mark % self.item.category.fixed_granularity != 0:
