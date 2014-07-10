@@ -41,7 +41,7 @@ class CourseDashboard(Dashboard):
         GradesDashlet(title="Grades"),
         AdminListDashlet(title="Schedule", app_label="schedule"),
         AdminListDashlet(title="GradesList", verbose_name="Grades", app_label="grades"),
-        AttendanceDashlet(title="Course Attendance Reports")
+        AttendanceDashlet(title="Attendance Reports")
     ]
 
 dashboards.register('schedule', CourseDashboard)
