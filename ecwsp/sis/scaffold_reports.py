@@ -637,9 +637,7 @@ class SisReport(ScaffoldReport):
         for marking_period in marking_periods:
             marking_period.smpg = student.studentmarkingperiodgrade_set.filter(marking_period=marking_period).first()
         student.mps = list(marking_periods)
-        print self.school_year
         student.year_grade = student.studentyeargrade_set.filter(year=self.school_year).first()
-        print student.year_grade
 
         for course_section in course_sections:
             course_enrollment = course_section.courseenrollment_set.get(user=student)
