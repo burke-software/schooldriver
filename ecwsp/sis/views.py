@@ -375,7 +375,7 @@ class StudentViewDashletView(generic.DetailView):
         return super(StudentViewDashletView, self).dispatch(*args, **kwargs)
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def increment_year_confirm(request, year_id):
     """ Show user a preview of what increment year will do before making it
     """
