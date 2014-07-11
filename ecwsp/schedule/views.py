@@ -4,8 +4,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
 
-from ecwsp.sis.models import SchoolYear
-from .models import MarkingPeriod, Course, Period
+from ecwsp.sis.models import SchoolYear, Student
+from .models import MarkingPeriod, Course, Period, CourseSection, CourseEnrollment
+from .forms import EnrollForm
 
 @user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')   
 def schedule(request):
@@ -37,3 +38,31 @@ class CourseView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(CourseView, self).get_context_data(**kwargs)
         return context
+
+
+@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')   
+def schedule_enroll(request, id):
+    course = get_object_or_404(CourseSection, pk=id)
+    if request.method == 'POST':
+        form = EnrollForm(request.POST)
+        if form.is_valid():
+            CourseEnrollment.objects.filter(course_section=course).delete() # start afresh; only students passed in from the form should be enrolled
+            # add manually select students first
+            selected = form.cleaned_data['students']
+            for student in selected:
+                # add
+                enroll, created = CourseEnrollment.objects.get_or_create(user=student, course_section=course)
+                # left get_or_create in case another schedule_enroll() is running simultaneously
+                if created: enroll.save()
+            # add cohort students second
+            cohorts = form.cleaned_data['cohorts']
+            for cohort in cohorts:
+                for student in cohort.student_set.all():
+                    enroll, created = CourseEnrollment.objects.get_or_create(user=student, course_section=course)
+                
+            if 'save' in request.POST:
+                return HttpResponseRedirect(reverse('admin:schedule_course_change', args=[id]))
+    
+    students = Student.objects.filter(courseenrollment__course_section=course)
+    form = EnrollForm(initial={'students': students})
+    return render(request, 'schedule/enroll.html', {'request': request, 'form': form, 'course': course})

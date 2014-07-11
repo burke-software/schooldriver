@@ -9,7 +9,7 @@
                 <li><a href="{% url 'ecwsp.grades.views.teacher_grade_download' object_id %}" class="historylink"> Gradesheet Template </a></li>
                 <li><a href="{% url 'course-section-grades' object_id %}" class="historylink"> Grades </a></li>
             {% endif %}
-            <li><a href="" class="historylink">Enroll Students (TODO)</a></li>
+            <li><a href="/schedule/enroll/{{ object_id }}" class="historylink">Enroll Students</a></li>
         {% endif %}
         {{ block.super }}
     {% endif %}

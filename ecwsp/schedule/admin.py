@@ -19,7 +19,7 @@ def copy(modeladmin, request, queryset):
 class CourseMeetInline(admin.TabularInline):
     model = CourseMeet
     extra = 1
-    
+
 class CourseSectionInline(admin.StackedInline):
     model = CourseSection
     extra = 0
@@ -29,12 +29,12 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ['fullname', 'shortname', 'description', 'coursesection__teachers__username']
     list_filter = ['level', 'is_active', 'graded', 'homeroom', 'department']
     inlines = [CourseSectionInline]
-    
+
     def save_model(self, request, obj, form, change):
         """Override save_model because django doesn't have a better way to access m2m fields"""
         obj.save()
         form.save_m2m()
-        obj.save()        
+        obj.save()
 
 admin.site.register(Course, CourseAdmin)
 admin.site.register(CourseType)
@@ -78,9 +78,9 @@ admin.site.register(Department, DepartmentAdmin)
 class DaysOffInline(admin.TabularInline):
     model = DaysOff
     extra = 1
-    
+
 admin.site.register(Day)
-    
+
 class CourseEnrollmentAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'user__first_name',]
     list_display = ['user', 'attendance_note']
