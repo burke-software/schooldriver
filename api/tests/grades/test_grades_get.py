@@ -1,5 +1,4 @@
 from api.tests.api_test_base import APITest
-from ecwsp.grades.models import Grade
 
 class GradeAPIGetTest(APITest):
     """
@@ -49,6 +48,31 @@ class GradeAPIGetTest(APITest):
         filters = {'student': 2, 'course_section': 1}
         response = self.client.get('/api/grades/', filters)
         self.assertEqual(len(response.data), 1)
+
+    def test_ungraded_courses(self):
+        """
+        grades should not appear from courses that are "ungraded"
+        """
+        self.teacher_login()
+        # change the first course to be non-graded
+        self.data.course.graded = False
+        self.data.course.save()
+
+        # none of the grades from that course should be retured by the API
+        # since all of the grades were from this course, the length is '0'
+        response = self.client.get('/api/grades/')
+        self.assertEqual(len(response.data), 0)
+
+        # Now let's set it back and hopefully things work as expected again
+        self.data.course.graded = True
+        self.data.course.save()
+        response = self.client.get('/api/grades/')
+        self.assertEqual(len(response.data), 5)
+
+
+
+
+
 
 
 
