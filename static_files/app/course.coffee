@@ -1,6 +1,6 @@
 app = angular.module 'angular_sis', ['restangular', 'ngRoute', 'ui.bootstrap']
 
-app.controller 'CourseController', ['$scope', '$routeParams', '$route', 'RestfulModel', ($scope, $routeParams, $route, RestfulModel) ->
+app.controller 'CourseController', ($scope, $routeParams, $route, RestfulModel) ->
     $scope.oneAtATime = false
     $scope.status =
         isFirstOpen: true
@@ -14,9 +14,9 @@ app.controller 'CourseController', ['$scope', '$routeParams', '$route', 'Restful
         courseModel.getOne($routeParams.course_id, $scope.form).then (course) ->
             $scope.course = course
             $scope.saveCourse = course.saveForm
-]
 
-app.factory 'RestfulModel', ['Restangular', (Restangular) ->
+
+app.factory 'RestfulModel', (Restangular) ->
     Instance = (name) ->
         @modelName = name
         @getOptions = ->
@@ -48,7 +48,7 @@ app.factory 'RestfulModel', ['Restangular', (Restangular) ->
         return
 
     Instance: Instance
-]
+
 
 app.directive "bscField", ->
     scope:

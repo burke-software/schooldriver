@@ -1,8 +1,7 @@
 app = angular.module 'angular_sis', ['restangular', 'uiHandsontable', 'ngRoute']
 
 
-app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$routeParams', '$route', ($scope, GradebookService, $routeParams, $route) ->
-
+app.controller 'StudentGradesController', ($scope, GradebookService, $routeParams, $route) ->
     $scope.columns = [
         { width: 160, value: 'row.course_section', title: 'Course', fixed: true, readOnly: true}
     ]
@@ -45,14 +44,12 @@ app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$route
     $scope.comment_button_text = "Show Comments"
     $scope.showComments = () ->
        $scope.comment_button_text = grades_api.toggleComments($scope.columns)
-]
 
 
-app.controller 'CourseGradesController', ['$scope', '$routeParams', '$route', 'GradebookService', ($scope, $routeParams, $route, GradebookService) ->
+app.controller 'CourseGradesController', ($scope, $routeParams, $route, GradebookService) ->
     $scope.columns = [
         {width: 160, value: 'row.student', title: 'Student', fixed: true, readOnly: true}
     ]
-
     grades_api = GradebookService
     $scope.rows = grades_api.rows
     $scope.changeGrade = grades_api.setGrade
@@ -78,10 +75,9 @@ app.controller 'CourseGradesController', ['$scope', '$routeParams', '$route', 'G
     $scope.comment_button_text = "Show Comments"
     $scope.showComments = () ->
        $scope.comment_button_text = grades_api.toggleComments($scope.columns)
-]
 
 
-app.factory 'GradebookService', ['Restangular', (Restangular) ->
+app.factory 'GradebookService', (Restangular) ->
     gradeRenderer = (instance, td, row, col, prop, value, cellProperties) ->
         Handsontable.TextCell.renderer.apply this, arguments
         data_row = grades_api.rows[row]
@@ -244,4 +240,3 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
             return "Show Comments"
             
     return grades_api
-]
