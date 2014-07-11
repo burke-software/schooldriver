@@ -74,9 +74,6 @@ class Migration(SchemaMigration):
         # Changing field 'CourseEnrollment.course'
         db.alter_column(u'schedule_courseenrollment', 'course_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['schedule.Course'], null=True))
 
-        # Changing field 'CourseEnrollment.user'
-        db.alter_column(u'schedule_courseenrollment', 'user_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.Student']))
-
 
     models = {
         u'auth.group': {
