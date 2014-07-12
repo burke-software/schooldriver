@@ -12,6 +12,8 @@ class Migration(SchemaMigration):
         if orm.CourseSection.objects.exists():
             raise Exception('This migration must only be run on a legacy ' \
                 'database that has no existing CourseSections!')
+
+        db.start_transaction()
         courses = orm.Course.objects.all()
         for course in courses:
             if course.credits is None:
@@ -75,6 +77,12 @@ class Migration(SchemaMigration):
                 course_enrollment.save()
             course_section.save()
             course.save()
+        db.commit_transaction()
+
+        # Now that all Faculty CourseEnrollments have been migrated, we can
+        # restrict CourseEnrollment to Students
+        # Changing field 'CourseEnrollment.user'
+        db.alter_column(u'schedule_courseenrollment', 'user_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sis.Student']))
 
     def backwards(self, orm):
         print 'Not today!'

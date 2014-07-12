@@ -1,4 +1,5 @@
 django>=1.6,<1.6.99
+django-ckeditor-updated
 django-admin-export>=1.8
 django-autocomplete-light>=2.0.0a1
 django-custom-field
@@ -33,7 +34,6 @@ django-filter>=0.5.4
 # django-positions 0.5.1 may have a bug; messes up OMR question order
 django-positions==0.5.0
 django-bower
-django-ckeditor
 django-su
 django-cached-field>=1.2.6
 feedparser>=5.1.2
@@ -49,3 +49,4 @@ Markdown==2.4
 djangorestframework==2.3.13
 djangorestframework-bulk
 django_compressor
+django-libsass
