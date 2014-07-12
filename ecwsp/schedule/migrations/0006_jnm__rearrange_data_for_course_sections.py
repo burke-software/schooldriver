@@ -3,7 +3,6 @@ from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
 
 
 class Migration(SchemaMigration):
@@ -39,43 +38,37 @@ class Migration(SchemaMigration):
             for course_meet in course.coursemeet_set.all():
                 course_meet.course_section = course_section
                 course_meet.save()
-            try:
-                if course.teacher is not None:
-                    orm.CourseSectionTeacher.objects.get_or_create(
-                        course_section = course_section,
-                        is_primary = True,
-                        teacher = course.teacher
-                    )
-            except ObjectDoesNotExist:
-                print "Broken teacher reference found for course ID {}".format(course)
+            if course.teacher is not None:
+                orm.CourseSectionTeacher.objects.get_or_create(
+                    course_section = course_section,
+                    is_primary = True,
+                    teacher = course.teacher
+                )
             # South doesn't seem to like this either
             #for secondary_teacher in course.secondary_teachers.all():
             for course_secondary_teacher in course.secondary_teachers.through.objects.filter(
                 course=course
             ):
-                try:
-                    secondary_teacher = orm['sis.Faculty'].objects.get(
-                        pk=course_secondary_teacher.faculty_id
+                secondary_teacher = orm['sis.Faculty'].objects.get(
+                    pk=course_secondary_teacher.faculty_id
+                )
+                obj, created = orm.CourseSectionTeacher.objects.get_or_create(
+                    course_section = course_section,
+                    teacher = secondary_teacher
+                )
+                # try to handle contradictory duplicates gracefully
+                if created:
+                    obj.is_primary = False
+                    obj.save()
+                else:
+                    print '{} ({}) / {} ({}) appears to be both a primary ' \
+                        'and secondary teacher for course {} ({})!'.format(
+                            secondary_teacher.username,
+                            secondary_teacher.pk,
+                            course.teacher.username,
+                            course.teacher.pk, course.fullname,
+                            course.pk
                     )
-                    obj, created = orm.CourseSectionTeacher.objects.get_or_create(
-                        course_section = course_section,
-                        teacher = secondary_teacher
-                    )
-                    # try to handle contradictory duplicates gracefully
-                    if created:
-                        obj.is_primary = False
-                        obj.save()
-                    else:
-                        print '{} ({}) / {} ({}) appears to be both a primary ' \
-                            'and secondary teacher for course {} ({})!'.format(
-                                secondary_teacher.username,
-                                secondary_teacher.pk,
-                                course.teacher.username,
-                                course.teacher.pk, course.fullname,
-                                course.pk
-                        )
-                except ObjectDoesNotExist:
-                    print "No faculty found for {}".format(course_secondary_teacher.faculty_id)
             course.courseenrollment_set.filter(role__iexact='Teacher').delete()
             for course_enrollment in course.courseenrollment_set.all():
                 course_enrollment.course_section = course_section
