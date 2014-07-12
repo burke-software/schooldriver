@@ -14,6 +14,6 @@ class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.filter(course_section__course__graded = True)
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     serializer_class = GradeSerializer
-    filter_fields = ('student', 'course_section', 'course_section__marking_period__school_year')
+    filter_fields = ('student', 'course_section', 'course_section__marking_period', 'course_section__marking_period__school_year')
     ordering_fields = ('marking_period__start_date',)
 
