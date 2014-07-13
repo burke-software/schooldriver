@@ -70,7 +70,7 @@ def supervisor_xls(request):
     return report.as_download()
 
 
-@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='students').first())
 def student_timesheet(request):
     """ A student's timesheet. """
     try:
@@ -203,7 +203,7 @@ def approve(request):
             'studentName': sheet.student, 'supervisorName': sheet.student.primary_contact,}, RequestContext(request, {}))
     
 
-@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='company').first())
 def supervisor_dash(request, msg=""):
     """ Supervisor dashboard view to checking and making student time sheets
     """
@@ -243,7 +243,7 @@ def supervisor_dash(request, msg=""):
 
 
         
-@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='company').first())
 def supervisor_view(request):
     """ ?
     """
@@ -254,7 +254,7 @@ def supervisor_view(request):
         {'supervisor': True, 'timeSheets': time_sheets},
         RequestContext(request, {}))
     
-@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='students').first())
 def student_view(request):
     """ Student "dashboard"
     """
@@ -271,7 +271,7 @@ def student_view(request):
         {'timeSheets': time_sheets, 'student': this_student},
         RequestContext(request, {}))
     
-@user_passes_test(lambda u: u.groups.filter(name='students').count() > 0, login_url='/')
+@user_passes_test(lambda u: u.groups.filter(name='students').first())
 def student_edit(request, tsid):
     """ Student edits own timesheet
     """
@@ -321,7 +321,7 @@ def student_edit(request, tsid):
         return render_to_response('work_study/student_timesheet.html', {'student': True, 'form': form, 'studentName': thisStudent, \
             'supervisorName': supervisorName,}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0, login_url='/')    
+@user_passes_test(lambda u: u.groups.filter(name='company').first())
 def create_time_card(request, studentId):
     thisStudent = StudentWorker.objects.get(id = studentId)
     comp = WorkTeam.objects.filter(login=request.user)[0]
@@ -407,7 +407,7 @@ def contracts_report():
     return report.as_download()
     
     
-@user_passes_test(lambda u: u.groups.filter(name='company').count() > 0 or u.is_superuser, login_url='/')    
+@user_passes_test(lambda u: u.groups.filter(name='company').first() or u.is_superuser)    
 def change_supervisor(request, studentId):
     thisStudent = StudentWorker.objects.get(id = studentId)
     try:
