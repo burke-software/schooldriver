@@ -269,7 +269,7 @@ WHERE grades_grade.course_section_id = %s
         # postgres requires a over () to run
         # http://stackoverflow.com/questions/19271646/how-to-make-a-sum-without-group-by
         sql_string = '''
-SELECT case when Sum(override_final) {over} = 1 then 'OVERRIDE' else (Sum(grade * weight) {over} / Sum(weight) {over}) end AS ave_grade
+SELECT case when Sum(override_final{postgres_type_cast}) {over} = 1 then -9001 else (Sum(grade * weight) {over} / Sum(weight) {over}) end AS ave_grade
 FROM grades_grade
     LEFT JOIN schedule_markingperiod
     ON schedule_markingperiod.id = grades_grade.marking_period_id
@@ -281,21 +281,21 @@ WHERE (grades_grade.course_section_id = %s
         if date_report:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
-                    over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = 1)'),
+                    postgres_type_cast='::int', over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = 1)'),
                                (self.course_section_id, self.user_id, date_report))
             else:
                 cursor.execute(sql_string.format(
-                    over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
+                    postgres_type_cast='', over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
                                (self.course_section_id, self.user_id, date_report))
 
         else:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
-                    over='over ()', extra_where=''),
+                    postgres_type_cast='::int', over='over ()', extra_where=''),
                                (self.course_section_id, self.user_id))
             else:
                 cursor.execute(sql_string.format(
-                    over='', extra_where=''),
+                    postgres_type_cast='', over='', extra_where=''),
                                (self.course_section_id, self.user_id))
 
         result = cursor.fetchone()
@@ -304,7 +304,8 @@ WHERE (grades_grade.course_section_id = %s
         else: # No grades at all. The average of no grades is None
             return None
 
-        if ave_grade == "OVERRIDE":
+        # -9001 = override. We can't mix text and int in picky postgress. 
+        if str(ave_grade) == "-9001":
             course_section_grade = Grade.objects.get(override_final=True, student=self.user, course_section=self.course_section)
             grade = course_section_grade.get_grade()
             if ignore_letter and not isinstance(grade, (int, Decimal, float)):
