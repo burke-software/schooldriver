@@ -3,6 +3,7 @@ from ecwsp.sis.models import *
 from ecwsp.attendance.models import *
 from ecwsp.grades.models import *
 from ecwsp.schedule.models import *
+from ecwsp.grades.tasks import *
 
 
 class SisData(object):
@@ -132,6 +133,7 @@ class SisData(object):
             Grade(student_id=3, course_section_id=1, marking_period_id=2, grade=88)
         ])
         self.grade = Grade.objects.get(pk=1)
+        build_grade_cache()
 
     def create_grade_scale_data(self):
         self.create_required()
