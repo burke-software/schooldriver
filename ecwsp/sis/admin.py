@@ -99,6 +99,7 @@ admin.site.register(Faculty, FacultyAdmin)
 
 class StudentCourseSectionInline(admin.TabularInline):
     model = CourseEnrollment
+    form = autocomplete_light.modelform_factory(CourseEnrollment)
     fields = ('course_section', 'attendance_note')
     extra = 0
     classes = ('grp-collapse grp-closed',)

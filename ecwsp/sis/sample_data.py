@@ -83,7 +83,7 @@ class SisData(object):
             CourseSection(course_id=1, name="Math A"),
             CourseSection(course_id=1, name="Math B"),
             CourseSection(course_id=2, name="History A"),
-            CourseSection(course_id=2, name="History A"),
+            CourseSection(course_id=2, name="History 1 MP only"),
         ])
         self.course_section = CourseSection.objects.get(pk=1)
 
@@ -101,12 +101,15 @@ class SisData(object):
 
         self.course_section1 = CourseSection.objects.get(id=1)
         self.course_section2 = CourseSection.objects.get(id=2)
+        self.course_section3 = CourseSection.objects.get(id=3)
+        self.course_section4 = CourseSection.objects.get(id=4)
         self.course_section1.marking_period.add(1)
         self.course_section1.marking_period.add(2)
         self.course_section1.marking_period.add(3)
         self.course_section2.marking_period.add(1)
         self.course_section2.marking_period.add(2)
         self.course_section2.marking_period.add(3)
+        self.course_section4.marking_period.add(1)
 
         self.enroll1 = CourseSectionTeacher.objects.create(course_section_id=1, teacher=self.teacher1)
         self.enroll2 = CourseSectionTeacher.objects.create(course_section_id=3, teacher=self.teacher2)
@@ -117,6 +120,7 @@ class SisData(object):
         CourseEnrollment.objects.bulk_create([
             CourseEnrollment(user=self.student, course_section_id=1),
             CourseEnrollment(user=self.student, course_section_id=2),
+            CourseEnrollment(user=self.student, course_section_id=4),
         ])
         self.course_enrollment = CourseEnrollment.objects.get(pk=1)
 

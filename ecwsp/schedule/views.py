@@ -8,7 +8,7 @@ from ecwsp.sis.models import SchoolYear, Student
 from .models import MarkingPeriod, Course, Period, CourseSection, CourseEnrollment
 from .forms import EnrollForm
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')   
+@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser)   
 def schedule(request):
     years = SchoolYear.objects.all().order_by('-start_date')[:3]
     mps = MarkingPeriod.objects.all().order_by('-start_date')[:12]
@@ -40,7 +40,7 @@ class CourseView(TemplateView):
         return context
 
 
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser, login_url='/')   
+@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser)   
 def schedule_enroll(request, id):
     course = get_object_or_404(CourseSection, pk=id)
     if request.method == 'POST':

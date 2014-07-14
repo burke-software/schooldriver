@@ -96,7 +96,7 @@ def family_redirect(request):
         return student_report(request)
     return render_to_response('base.html', {'msg': "Welcome!", 'request': request,}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')
+@user_passes_test(lambda u: u.has_perm("sis.view_student"))
 def photo_flash_card(request, year=None):
     """ Simple flash card game"""
     students = Student.objects.filter(is_active=True)
@@ -146,7 +146,7 @@ def paper_attendance(request, day):
         messages.error(request, 'Problem making paper attendance, does the template exist?')
         return HttpResponseRedirect('/')
 
-@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')
+@user_passes_test(lambda u: u.has_perm("sis.view_student"))
 def transcript_nonofficial(request, student_id):
     """ Build a transcripte based on template called "Transcript Nonoffical"
     """
@@ -194,7 +194,7 @@ def ajax_include_deleted(request):
     profile.save()
     return HttpResponse('SUCCESS')
 
-@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')
+@user_passes_test(lambda u: u.has_perm("sis.view_student"))
 def view_student(request, id=None):
     """ Lookup all student information
     """

@@ -15,7 +15,6 @@ app.controller 'StudentGradesController', ($scope, GradebookService, $routeParam
             attribute = change[1]
             instance = row[attribute.split('.')[0]]
             instance.isPristine = false
-
     
     $scope.$on '$routeChangeSuccess', ->
         grades_api.marking_periods = []
@@ -82,16 +81,18 @@ app.factory 'GradebookService', (Restangular) ->
         Handsontable.TextCell.renderer.apply this, arguments
         data_row = grades_api.rows[row]
         data_instance = data_row[prop.split('.')[0]]
-        if data_instance.isValid == true
-            td.className += "table-is-valid"
-        else if data_instance.isValid == false
-            td.className += "table-is-not-valid"
-        else if data_instance.isPristine == true
-            td.style.borderRight = "2px solid #f00"
-            console.log("pristine")
-        else if data_instance.isPristine == false
-            td.style.borderRight = "2px solid #00f"
-            console.log("not pristine")
+        if data_instance
+            if data_instance.isValid == true
+                td.className += "table-is-valid"
+            else if data_instance.isValid == false
+                td.className += "table-is-not-valid"
+            else if data_instance.isPristine == true
+                td.style.borderRight = "2px solid #f00"
+            else if data_instance.isPristine == false
+                td.style.borderRight = "2px solid #00f"
+        else
+            td.className += 'no-marking-period'
+            cellProperties.readOnly = true
     finalRenderer = (instance, td, row, col, prop, value, cellProperties) ->
         Handsontable.TextCell.renderer.apply this, arguments
         data_row = grades_api.rows[row]
@@ -108,21 +109,23 @@ app.factory 'GradebookService', (Restangular) ->
         final = 0.0
         num_of_mp = 0
         for marking_period in grades_api.marking_periods
-            grade = student['grade' + marking_period.marking_period_id].grade
-            gradeFloat = parseFloat(grade)
-            if grade != null
-                if isNaN(gradeFloat)
-                    gradeLower = grade.toLowerCase()
-                    if gradeLower == "i"
-                        return "I"
-                    else if gradeLower in ["p", "lp", "hp"]
-                        final += 100
+            grade_object = student['grade' + marking_period.marking_period_id]
+            if grade_object
+                grade = grade_object.grade
+                gradeFloat = parseFloat(grade)
+                if grade != null
+                    if isNaN(gradeFloat)
+                        gradeLower = grade.toLowerCase()
+                        if gradeLower == "i"
+                            return "I"
+                        else if gradeLower in ["p", "lp", "hp"]
+                            final += 100
+                            num_of_mp += 1
+                        else if gradeLower in ["f", "m"]
+                            num_of_mp += 1
+                    else
+                        final += gradeFloat
                         num_of_mp += 1
-                    else if gradeLower in ["f", "m"]
-                        num_of_mp += 1
-                else
-                    final += gradeFloat
-                    num_of_mp += 1
         final_grade = (final / num_of_mp).toFixed(2)
         student.hasOverride = false
         if isNaN(final_grade)
