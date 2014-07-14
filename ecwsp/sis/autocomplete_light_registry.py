@@ -4,6 +4,9 @@ from .models import Student, EmergencyContact, Faculty
 class UserAutocomplete(autocomplete_light.AutocompleteModelBase):
     split_words = True
     search_fields = ['first_name', 'last_name']
+    attrs = {
+        'placeholder': 'Lookup Student(s)',
+    }
     
 class ActiveUserAutocomplete(UserAutocomplete):
     choices=Student.objects.filter(is_active=True)

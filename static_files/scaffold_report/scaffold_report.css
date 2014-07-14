@@ -1,0 +1,43 @@
+#sortable_filters{
+  padding-top: 1em;
+  padding-bottom: 1em;
+  min-height: 50px;
+}
+
+#scaffold_active_filters .filter_error {
+    background-color: #ffffcc;
+}
+
+.bad-field {
+	border: 1px solid #333300!important;
+}
+
+.error-number {
+	display: none;
+	z-index: 9999;
+	background-color: #eeee00;
+	padding: 3px 9px;
+	font-size: 0.8em;
+	border-radius: 500px;
+	margin: 4px -12px 0 0;
+	vertical-align: top;
+	position: relative;
+}
+
+.error-text {
+	line-height: 1.25em;
+	margin-top: 5px;
+}
+
+.generate-warning {
+	display: none;
+}
+
+/* Hacky, but it'll do for now. This overrides some issues that adding autocompletelight created. */
+#id_select_students-autocomplete {
+	width: 230px!important;
+}
+
+#id_select_students-wrapper {
+	display: inline!important;
+}
