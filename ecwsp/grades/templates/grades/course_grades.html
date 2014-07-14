@@ -36,26 +36,19 @@
 
 <ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onchange="changeGrade" datarows="row in rows" columns="columns">
 </ui-handsontable>
-
-<div class="well">
-    <h4>Key</h4>
-    <table class="table">
-        <tr>
-            <td><i class="fa fa-check-circle"></i></td>
-            <td>Changes are valid and have been saved</td>
-        </tr>
-        <tr>
-            <td><i class="fa fa-times-circle"></i></td>
-            <td>Changes are not valid and have not been saved</td>
-        </tr>
-        <tr>
-            <td><i class="fa fa-pencil"></i></td>
-            <td>Manual input has overridden automatic calculations (and it's been saved correctly)</td>
-        </tr>
-        <tr>
-        </tr>
-    </table>
+{% endverbatim %}
 </div>
 
-{% endverbatim %}
+<div class="row">
+    <div class="col-lg-4 col-md-6">
+        <div class="well well-key">
+            <table class="table">
+                <h4>Key</h4>
+                <p><i class="fa fa-check-circle text-success"></i>Saved</p>
+                <p><i class="fa fa-pencil text-info"></i>Saved (Overriding Automatic Calculation)</p>
+                <p><i class="fa fa-times-circle text-danger"></i>Not Saved - Invalid Input</p>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

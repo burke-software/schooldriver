@@ -47,6 +47,7 @@
 				display: inline-block;
 				float: right;
 				color: $brand-info;
+				// color: $brand-success;
 			}
 		}
 
@@ -57,7 +58,14 @@
 }
 
 .well-key {
+	padding: 5px 15px 0;
+	margin: 20px 0;
+
+	p {
+		margin-bottom: 5px;
+	}
+
 	i {
-		margin-right: 7px;
+		margin-right: 5px;
 	}
 }
