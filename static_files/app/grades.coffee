@@ -91,7 +91,7 @@ app.factory 'GradebookService', (Restangular) ->
             else if data_instance.isPristine == false
                 td.style.borderRight = "2px solid #00f"
         else
-            td.className += 'no-marking-period'
+            td.className += ' no-marking-period'
             cellProperties.readOnly = true
     finalRenderer = (instance, td, row, col, prop, value, cellProperties) ->
         Handsontable.TextCell.renderer.apply this, arguments

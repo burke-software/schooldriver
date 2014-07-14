@@ -49,6 +49,15 @@
 				color: $brand-info;
 			}
 		}
+
+		&.no-marking-period {
+			background-color: #ccc;
+		}
 	}
 }
 
+.well-key {
+	i {
+		margin-right: 7px;
+	}
+}
