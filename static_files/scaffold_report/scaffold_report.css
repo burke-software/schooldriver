@@ -38,6 +38,39 @@
 	width: 230px!important;
 }
 
+/* Doing some stuff to the autocomplete styling */
 #id_select_students-wrapper {
-	display: inline!important;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+
+	-webkit-box-direction: reverse;
+	-moz-box-direction: reverse;
+	-ms-flex-direction: column-reverse;
+	-webkit-flex-direction: column-reverse;
+	flex-direction: column-reverse;
+}
+
+#id_select_students-autocomplete {
+	display: inline-block;
+}
+
+#id_select_students-deck {
+	display: inline-block;
+}
+	
+#id_select_students-deck > span {
+	border: 1px solid #ccc;
+	background-color: #eee;
+	border-radius: 50px;
+	margin: 10px 10px 10px 0px;
+	font-size: 0.9em;
+	padding: 0px 12px 0px 8px;
+}
+
+.autocomplete-light-widget .deck [data-value] .remove {
+    vertical-align: middle;
+    margin-right: 5px;
+    margin-top: -2px;
 }
