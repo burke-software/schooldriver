@@ -232,6 +232,27 @@ class GradeBaltTests(SisTestMixin, TestCase):
             with self.assertNumQueries(1):
                 self.assertEqual(ce.get_grade(letter=True), x[1])
 
+    def test_honors_and_ap_grades(self):
+        """
+        assert that the honors and ap grades receive correct boost by 
+        replicating the grades in our manual spreadsheet
+        """
+
+        # Let's first make sure all the courses are of the correct type
+        self.data.create_sample_honors_and_ap_data()
+
+        # Now, test that the scaled averages are correct
+        test_data = [
+            {'mp_id': 1, 'scaled': Decimal(4.0), 'unscaled': Decimal(3.7)},
+            {'mp_id': 2, 'scaled': Decimal(3.6), 'unscaled': Decimal(3.3)},
+            {'mp_id': 4, 'scaled': Decimal(3.7), 'unscaled': Decimal(3.4)},
+            {'mp_id': 5, 'scaled': Decimal(3.5), 'unscaled': Decimal(3.2)}
+        ]
+        for x in test_data:
+            smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.honors_student, marking_period=x['mp_id'])
+            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['scaled'])
+
+
 class GradeScaleTests(SisTestMixin, TestCase):
     def setUp(self):
         super(GradeScaleTests, self).setUp()
