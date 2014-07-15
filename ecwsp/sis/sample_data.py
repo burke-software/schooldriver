@@ -5,6 +5,7 @@ from ecwsp.grades.models import *
 from ecwsp.schedule.models import *
 from ecwsp.grades.tasks import *
 
+import logging
 
 class SisData(object):
     """ Put data creation code here. sample data code not here is punishible by death .
@@ -29,7 +30,7 @@ class SisData(object):
 
     def create_required(self):
         """ A place for 100% required data """
-        CourseType.objects.create(name='Normal-Test', is_default=True)
+        self.normal_type = CourseType.objects.create(name='Normal-Test', is_default=True)
         self.stupid_hacks()
 
     def create_basics(self):
@@ -143,18 +144,24 @@ class SisData(object):
         self.student = student = Student.objects.create(first_name="Anon", last_name="Student", username="someone")
 
         CourseType.objects.create(name='NonCore', weight=0)
-        non_core = CourseType.objects.get(name='NonCore')
+        self.non_core = CourseType.objects.get(name='NonCore')
         CourseType.objects.create(name='AP', weight=1, boost=1.0)
-        ap = CourseType.objects.get(name='AP')
+        self.ap = CourseType.objects.get(name='AP')
+        CourseType.objects.create(name="Honors", weight = 1, boost = 0.5)
+        self.honors = CourseType.objects.get(name="Honors")
+
         courses = Course.objects.bulk_create([
-            Course(fullname="English", shortname="English", credits=1, course_type=ap, graded=True),
+            Course(fullname="English", shortname="English", credits=1, course_type=self.ap, graded=True),
             Course(fullname="Precalculus", shortname="Precalc", credits=1, graded=True),
             Course(fullname="Physics", shortname="Phys", credits=1, graded=True),
             Course(fullname="Modern World History", shortname="Hist", credits=1, graded=True),
             Course(fullname="Spanish III", shortname="Span", credits=1, graded=True),
-            Course(fullname="Photojournalism", shortname="Photo", credits=1, course_type=non_core, graded=True),
+            Course(fullname="Photojournalism", shortname="Photo", credits=1, course_type=self.non_core, graded=True),
             Course(fullname="Faith & Justice", shortname="Faith", credits=1, graded=True),
-            Course(fullname="Writing Lab 12", shortname="Wrt Lab", credits=1, course_type=non_core, graded=True),
+            Course(fullname="Writing Lab 12", shortname="Wrt Lab", credits=1, course_type=self.non_core, graded=True),
+            Course(fullname="English Honors", shortname="English-H", credits=1, course_type=self.honors, graded=True),
+            Course(fullname="Precalculus Honors", shortname="Precalc-H", credits=1, course_type=self.honors, graded=True),
+            Course(fullname="AP Modern World History", shortname="Hist-AP", credits=1, course_type=self.ap, graded=True),
         ])
         self.year = year = SchoolYear.objects.create(name="balt year", start_date=date(2014,7,1), end_date=date(2050,5,1), active_year=True)
         self.mp1 = mp1 = MarkingPeriod.objects.create(name="1st", weight=0.4, start_date=date(2014,7,1), end_date=date(2014,9,1), school_year=year)
@@ -238,6 +245,52 @@ class SisData(object):
         GradeScaleRule.objects.create(min_grade=92.50, max_grade=100, letter_grade='A', numeric_scale=4, grade_scale=scale)
         year.grade_scale = scale
         year.save()
+
+    def create_sample_honors_and_ap_data(self):
+        """
+        populate the gradebook with grades matching 'Report Car With Honors'
+        depends on create_grade_scale_data() being called first
+        """
+
+        # here we have an honors student
+        self.honors_student = Student.objects.create(first_name="Snotty", last_name="McGillicuddy", username="snottymc")
+
+        # let's enroll him in each one of these sections
+        shortname_list = ['English-H', 'Precalc-H', 'Phys', 'Hist-AP', 'Span', 'Photo', 'Faith', 'Wrt Lab']
+        for shortname in shortname_list:
+            section = CourseSection.objects.get(name=shortname)
+            CourseEnrollment.objects.create(user=self.honors_student, course_section=section)
+
+        # now assign these grades to our honors student
+        # Format: {'section': name, 'grades': [1, 2, s1x, 3, 4, s2x]
+        # '?' means the grade is unknown
+        known_grades = [
+            {'section': 'English-H',   'grades': [89.1, 90.1, 89,  83.4, 82.4, 84  ]},
+            {'section': 'Precalc-H',   'grades': [95.9, 80.3, 80,  89.5, 77.8, 73  ]},
+            {'section': 'Phys',      'grades': [93.2, 89.9, 92,  92.8, 90.4, '?' ]},
+            {'section': 'Hist-AP',      'grades': [87.3, 78.7, 80,  81.1, 85,   '?' ]},
+            {'section': 'Span',      'grades': [91.4, 88.6, 91,  88.1, 88,   71  ]},
+            {'section': 'Photo',     'grades': [100,  95,   '?', 97.8, 100,  '?' ]},
+            {'section': 'Faith',     'grades': [88.1, 87.3, 88,  88.8, 91.5, '?' ]},
+            {'section': 'Wrt Lab',   'grades': [100,  100,  '?', 100,  100,  '?' ]},
+        ]
+        marking_periods = [self.mp1, self.mp2, self.mps1x, self.mp3, self.mp4, self.mps2x]
+        for grd in known_grades:
+            section = CourseSection.objects.get(name=grd['section'])
+            for i in range(6):
+                if grd['grades'][i] != '?':
+                    # we really need to figure out those unknown grades...
+                    grade = Grade.objects.get(
+                        student=self.honors_student, 
+                        course_section_id=section.id, 
+                        marking_period=marking_periods[i]
+                        )
+                    grade.grade = grd['grades'][i]
+                    grade.save()
+
+        build_grade_cache()
+
+
 
 
 
