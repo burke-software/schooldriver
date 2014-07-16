@@ -415,7 +415,8 @@ if 'social.apps.django_app.default' in INSTALLED_APPS:
 if 'ON_HEROKU' in os.environ:
     ON_HEROKU = True
     # Use S3
-    INSTALLED_APPS += ('storages',)
+    INSTALLED_APPS += ('storages', 'collectfast')
+    AWS_PRELOAD_METADATA = True
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     for environment_variable in (
