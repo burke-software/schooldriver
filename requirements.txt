@@ -19,7 +19,7 @@ httpagentparser>=1.0.2
 ./install/hatchery/elementtree-1.2.7-20070827-preview.tar.gz
 poster>=0.8.1
 suds>=0.4
-south>=0.7.6
+south>=1.0
 xlwt>=0.7.2
 raven>=3.3.7
 reportlab
