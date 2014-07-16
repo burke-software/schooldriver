@@ -430,8 +430,7 @@ if 'ON_HEROKU' in os.environ:
     # Use Heroku's DB
     import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
-    #DATABASES['default'] = dj_database_url.config(default='postgres:///local_maroon')
-    DATABASES = {}
+    DATABASES['default'] = dj_database_url.config()
 
 # Keep this *LAST* to avoid overwriting production DBs with test data
 if 'test' in sys.argv:
