@@ -51,3 +51,4 @@ djangorestframework-bulk
 django_compressor
 django-libsass
 Collectfast
+mysql-python
