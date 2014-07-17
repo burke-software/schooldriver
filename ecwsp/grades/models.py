@@ -184,7 +184,7 @@ class StudentYearGrade(models.Model):
             grade = round_as_decimal(grade, rounding)
         return grade
 
-signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
+#signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
 
 
 class GradeScale(models.Model):

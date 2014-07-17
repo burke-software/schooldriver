@@ -30,7 +30,7 @@ class SisData(object):
 
     def create_required(self):
         """ A place for 100% required data """
-        self.normal_type = CourseType.objects.create(name='Normal-Test', is_default=True)
+        self.normal_type = CourseType.build_default()
         self.stupid_hacks()
 
     def create_basics(self):
@@ -281,8 +281,8 @@ class SisData(object):
                 if grd['grades'][i] != '?':
                     # we really need to figure out those unknown grades...
                     grade = Grade.objects.get(
-                        student=self.honors_student, 
-                        course_section_id=section.id, 
+                        student=self.honors_student,
+                        course_section_id=section.id,
                         marking_period=marking_periods[i]
                         )
                     grade.grade = grd['grades'][i]
