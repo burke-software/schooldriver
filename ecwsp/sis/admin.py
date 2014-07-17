@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.conf import settings
@@ -10,7 +11,10 @@ from django.contrib.admin.models import LogEntry, CHANGE
 import sys
 from reversion.admin import VersionAdmin
 
-from ecwsp.sis.models import *
+from ecwsp.sis.models import (Student, StudentNumber, EmergencyContactNumber, TranscriptNote,
+        StudentFile, ClassYear, EmergencyContact, StudentHealthRecord, Faculty, GradeLevel,
+        LanguageChoice, Cohort, PerCourseSectionCohort, ReasonLeft, TranscriptNoteChoices,
+        SchoolYear, GradeScale, GradeScaleRule, MessageToStudent, FamilyAccessUser)
 from ecwsp.schedule.models import AwardStudent, MarkingPeriod, CourseEnrollment, CourseSection
 from custom_field.custom_field import CustomFieldAdmin
 import autocomplete_light
@@ -64,6 +68,7 @@ class StudentAwardInline(admin.TabularInline):
 
 class StudentCohortInline(admin.TabularInline):
     model = Student.cohorts.through
+    form = autocomplete_light.modelform_factory(Student.cohorts.through)
     extra = 0
 
 class StudentECInline(admin.TabularInline):
@@ -213,7 +218,7 @@ admin.site.register(EmergencyContact, EmergencyContactAdmin)
 admin.site.register(LanguageChoice)
 
 class CohortAdmin(admin.ModelAdmin):
-    filter_horizontal = ('students',)
+    inlines = (StudentCohortInline,)
 
     def queryset(self, request):
         # exclude PerCourseSectionCohorts from Cohort admin
@@ -286,6 +291,14 @@ class SchoolYearAdmin(admin.ModelAdmin):
         return form
     inlines = [MarkingPeriodInline]
 admin.site.register(SchoolYear, SchoolYearAdmin)
+
+class GradeScaleRuleInline(admin.TabularInline):
+    model = GradeScaleRule
+
+class GradeScaleAdmin(admin.ModelAdmin):
+    inlines = [GradeScaleRuleInline]
+admin.site.register(GradeScale, GradeScaleAdmin)
+
 
 admin.site.register(MessageToStudent)
 

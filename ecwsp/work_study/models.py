@@ -1,26 +1,6 @@
-#       models.py
-#       
-#       Copyright 2010 Cristo Rey New York High School
-#        Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
-from django.db import models
+from django.db import models, connection
 from django.db.models.signals import m2m_changed
-from django.db import connection
+from django.db.utils import OperationalError
 from django.core.mail import send_mail
 from django.contrib.auth.models import User, Group
 from django.core import urlresolvers
@@ -38,12 +18,11 @@ from datetime import timedelta
 import hashlib
 import sys
 import urllib
-from decimal import *
+from decimal import Decimal
 import random
 from cStringIO import StringIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
 from ckeditor.fields import RichTextField
 import logging
@@ -649,9 +628,13 @@ m2m_changed.connect(set_stu_int_placement, sender=StudentInteraction.student.thr
 def get_next_rank():
     """ Return next ranking """
     try:
-        return TimeSheetPerformanceChoice.objects.order_by('-rank')[0].id + 1
-    except IndexError:
-        return 1
+        choice = TimeSheetPerformanceChoice.objects.order_by('-rank').first()
+    except OperationalError:
+        choice = None  # Can happen during migration
+    if choice:
+        return choice.id + 1
+    return 1
+
 class TimeSheetPerformanceChoice(models.Model):
     name = models.CharField(max_length=255, unique=True)
     rank = models.IntegerField(unique=True, default=get_next_rank, help_text="Must be unique. Convention is that higher numbers are better.")

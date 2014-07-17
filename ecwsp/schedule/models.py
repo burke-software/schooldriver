@@ -5,9 +5,9 @@ from django.db import connection
 from django.db import models
 from django.db.models.query import QuerySet
 
-from ecwsp.sis.models import Student
+from ecwsp.sis.models import Student, GradeScaleRule
 from ecwsp.sis.helper_functions import round_as_decimal
-from ecwsp.grades.models import GradeScaleRule, Grade
+from ecwsp.grades.models import Grade
 from ecwsp.administration.models import Configuration
 
 import datetime

@@ -17,7 +17,6 @@ from ckeditor.fields import RichTextField
 from django_cached_field import CachedDecimalField
 from decimal import Decimal
 from ecwsp.sis.helper_functions import round_as_decimal
-import ecwsp
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +209,7 @@ class Faculty(User):
 class Cohort(models.Model):
     name = models.CharField(max_length=255)
     long_name = models.CharField(max_length=500, blank=True, help_text="Optional verbose name")
-    students = models.ManyToManyField('Student', blank=True, through='StudentCohort') # someday, to fix syncdb : related_name="student_cohorts")
+    students = models.ManyToManyField('Student', blank=True, through='StudentCohort')
     primary = models.BooleanField(default=False, help_text="If set true - all students in this cohort will have it set as primary!")
 
     class Meta:
@@ -361,7 +360,7 @@ class Student(User, CustomFieldModel):
         gpa = self.gpa
         if numeric_scale == True:
             # Get the scale for the last year the student was active in
-            grade_scale = ecwsp.grades.models.GradeScale.objects.filter(
+            grade_scale = GradeScale.objects.filter(
                 schoolyear__markingperiod__coursesection__courseenrollment__user=self).last()
             if grade_scale:
                 gpa = grade_scale.to_numeric(gpa)
@@ -520,7 +519,7 @@ class Student(User, CustomFieldModel):
         This function exists mainly for appy based report cards where speed,
         and simplicity (in the template) are important.
         """
-        Grade = ecwsp.grades.models.Grade
+        from ecwsp.grades.models import Grade
         mps = [ self.mps[i] for i in indices ]
         return Grade.get_scaled_multiple_mp_average(self, mps, rounding)
 
@@ -607,9 +606,8 @@ class StudentCohort(models.Model):
     cohort = models.ForeignKey(Cohort)
     primary = models.BooleanField(default=False, )
 
-    class Meta:
-        if not ('syncdb' in sys.argv or 'migrate' in sys.argv) and not 'test' in sys.argv:
-            auto_created = Student
+    #class Meta:
+    #    auto_created = Student
 
     def save(self, *args, **kwargs):
         if self.primary:
@@ -669,6 +667,42 @@ class StudentHealthRecord(models.Model):
     record = models.TextField()
 
 
+class GradeScale(models.Model):
+    """ Translate a numeric grade to some other scale.
+    Example: Letter grade or 4.0 scale. """
+    name = models.CharField(max_length=255, unique=True)
+
+    def __unicode__(self):
+        return '{}'.format(self.name)
+
+    def get_rule(self, grade):
+        return self.gradescalerule_set.filter(min_grade__lte=grade, max_grade__gte=grade).first()
+
+    def to_letter(self, grade):
+        rule = self.get_rule(grade)
+        if rule:
+            return rule.letter_grade
+
+    def to_numeric(self, grade):
+        rule = self.get_rule(grade)
+        if rule:
+            return rule.numeric_scale
+
+
+class GradeScaleRule(models.Model):
+    """ One rule for a grade scale.  """
+    min_grade = models.DecimalField(max_digits=5, decimal_places=2)
+    max_grade = models.DecimalField(max_digits=5, decimal_places=2)
+    letter_grade = models.CharField(max_length=50, blank=True)
+    numeric_scale = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    grade_scale = models.ForeignKey(GradeScale)
+
+    class Meta:
+        unique_together = ('min_grade', 'max_grade', 'grade_scale')
+
+    def __unicode__(self):
+        return '{}-{} {} {}'.format(self.min_grade, self.max_grade, self.letter_grade, self.numeric_scale)
+
 
 def get_default_benchmark_grade():
     return str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"
@@ -678,7 +712,7 @@ class SchoolYear(models.Model):
     start_date = models.DateField(validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(validators=settings.DATE_VALIDATORS)
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
-    grade_scale = models.ForeignKey('grades.GradeScale', blank=True, null=True, help_text="Alternative grade scale such as letter grades or a 4.0 scale")
+    grade_scale = models.ForeignKey(GradeScale, blank=True, null=True, help_text="Alternative grade scale such as letter grades or a 4.0 scale")
     active_year = models.BooleanField(default=False,
         help_text="DANGER!! This is the current school year. There can only be one and setting this will remove it from other years. " \
                   "If you want to change the active year you almost certainly want to click Management, Change School Year.")

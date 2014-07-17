@@ -3,7 +3,7 @@ from django.db import models, connection
 from django.db.models import Count, signals, Sum
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
-from ecwsp.sis.models import Student
+from ecwsp.sis.models import Student, GradeScaleRule
 from ecwsp.sis.helper_functions import round_as_decimal
 from ecwsp.administration.models import Configuration
 from django_cached_field import CachedDecimalField
@@ -187,41 +187,6 @@ class StudentYearGrade(models.Model):
 #signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
 
 
-class GradeScale(models.Model):
-    """ Translate a numeric grade to some other scale.
-    Example: Letter grade or 4.0 scale. """
-    name = models.CharField(max_length=255, unique=True)
-
-    def __unicode__(self):
-        return '{}'.format(self.name)
-
-    def get_rule(self, grade):
-        return self.gradescalerule_set.filter(min_grade__lte=grade, max_grade__gte=grade).first()
-
-    def to_letter(self, grade):
-        rule = self.get_rule(grade)
-        if rule:
-            return rule.letter_grade
-
-    def to_numeric(self, grade):
-        rule = self.get_rule(grade)
-        if rule:
-            return rule.numeric_scale
-
-
-class GradeScaleRule(models.Model):
-    """ One rule for a grade scale.  """
-    min_grade = models.DecimalField(max_digits=5, decimal_places=2)
-    max_grade = models.DecimalField(max_digits=5, decimal_places=2)
-    letter_grade = models.CharField(max_length=50, blank=True)
-    numeric_scale = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    grade_scale = models.ForeignKey(GradeScale)
-
-    class Meta:
-        unique_together = ('min_grade', 'max_grade', 'grade_scale')
-
-    def __unicode__(self):
-        return '{}-{} {} {}'.format(self.min_grade, self.max_grade, self.letter_grade, self.numeric_scale)
 
 
 letter_grade_choices = (
