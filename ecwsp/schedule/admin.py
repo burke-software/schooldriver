@@ -41,8 +41,8 @@ admin.site.register(CourseType)
 
 class CourseEnrollmentInline(admin.TabularInline):
     model = CourseEnrollment
-    fields = ['user', 'attendance_note', 'grade']
-    readonly_fields = ['user','grade']
+    fields = ['user', 'attendance_note']
+    readonly_fields = ['user']
     def has_add_permission(self, request):
         return False
 

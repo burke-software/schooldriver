@@ -415,7 +415,8 @@ if 'social.apps.django_app.default' in INSTALLED_APPS:
 if 'ON_HEROKU' in os.environ:
     ON_HEROKU = True
     # Use S3
-    INSTALLED_APPS += ('storages',)
+    INSTALLED_APPS += ('storages', 'collectfast')
+    AWS_PRELOAD_METADATA = True
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     for environment_variable in (
@@ -429,7 +430,7 @@ if 'ON_HEROKU' in os.environ:
     # Use Heroku's DB
     import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
-    DATABASES['default'] = dj_database_url.config(default='postgres:///local_maroon')
+    DATABASES['default'] = dj_database_url.config()
 
 # Keep this *LAST* to avoid overwriting production DBs with test data
 if 'test' in sys.argv:

@@ -178,7 +178,7 @@ class CourseEnrollment(models.Model):
         self.numeric_grade_recalculation_needed = False
         self.save()
         return grade
-    
+
     def get_average_for_marking_periods(self, marking_periods, letter=False, numeric=False):
         """ Get the average for only some marking periods
         marking_periods - Queryset or optionally pass ids only as an optimization
@@ -192,7 +192,7 @@ class CourseEnrollment(models.Model):
             if all(isinstance(item, int) for item in marking_periods) != True:
                 raise ValueError('marking_periods must be list or tuple of ints')
             marking_periods = tuple(marking_periods)
-        
+
         cursor = connection.cursor()
         sql_string = '''
 SELECT Sum(grade * weight) {over} / Sum(weight) {over} AS ave_grade FROM grades_grade
@@ -206,7 +206,7 @@ WHERE grades_grade.course_section_id = %s
             sql_string = sql_string.format(over='over ()', marking_periods=marking_periods)
         else:
             sql_string = sql_string.format(over='', marking_periods=marking_periods)
-            
+
         cursor.execute(sql_string, (self.course_section_id, self.user_id))
         result = cursor.fetchone()
         if result:
@@ -218,7 +218,7 @@ WHERE grades_grade.course_section_id = %s
         elif numeric:
             grade = self.optimized_grade_to_scale(grade, letter=False)
         return grade
-    
+
     def optimized_grade_to_scale(self, grade, letter=True):
         """ letter - True for letter grade, false for numeric (ex: 4.0 scale) """
         rule = GradeScaleRule.objects.filter(
@@ -304,7 +304,7 @@ WHERE (grades_grade.course_section_id = %s
         else: # No grades at all. The average of no grades is None
             return None
 
-        # -9001 = override. We can't mix text and int in picky postgress. 
+        # -9001 = override. We can't mix text and int in picky postgress.
         if str(ave_grade) == "-9001":
             course_section_grade = Grade.objects.get(override_final=True, student=self.user, course_section=self.course_section)
             grade = course_section_grade.get_grade()
@@ -314,7 +314,7 @@ WHERE (grades_grade.course_section_id = %s
 
         elif ave_grade:
             return Decimal(ave_grade)
-        
+
         # about 0.5 s
         # Letter Grade
         if ignore_letter == False:
@@ -413,6 +413,21 @@ class CourseType(models.Model):
     def __unicode__(self):
         return self.name
 
+    @staticmethod
+    def build_default():
+        """ Always reference this function when creating the default """
+        return CourseType.objects.get_or_create(name='Normal-Test', is_default=True)[0]
+
+
+def get_course_type_default():
+    try:
+        return CourseType.objects.get(is_default=True).pk
+    except CourseType.DoesNotExist:
+        return CourseType.build_default().pk
+
+def get_credits_default():
+    return Configuration.get_or_default(name='Default course credits').value
+
 class Course(models.Model):
     is_active = models.BooleanField(default=True)
     fullname = models.CharField(max_length=255, unique=True, verbose_name="Full Course Name")
@@ -424,13 +439,13 @@ class Course(models.Model):
         help_text="Credits affect GPA.",
         # WARNING: this default must NOT be used for migrations! Courses whose
         # credits=None should have their credits set to 0
-        default=lambda: Configuration.get_or_default(name='Default course credits').value)
+        default=get_credits_default)
     department = models.ForeignKey(Department, blank=True, null=True)
     level = models.ForeignKey('sis.GradeLevel', blank=True, null=True, verbose_name="Grade Level")
     course_type = models.ForeignKey(CourseType,
         help_text='Should only need adjustment when uncommon calculation ' \
         'methods are used.',
-        default=lambda: CourseType.objects.get(is_default=True)
+        default=get_course_type_default,
     )
 
     def __unicode__(self):
