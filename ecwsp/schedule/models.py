@@ -155,6 +155,7 @@ class CourseEnrollment(models.Model):
         help_text="Student does not need to attend on this day. Note course sections already specify meeting days; this field is for students who have a special reason to be away.")
     grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Section Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = (("course_section", "user"),)
