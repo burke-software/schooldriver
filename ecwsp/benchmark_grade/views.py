@@ -1,21 +1,3 @@
-#   Copyright 2011 Burke Software and Consulting LLC
-#   Author: John Milner <john@tmoj.net>
-#
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib.admin.views.decorators import staff_member_required
@@ -27,9 +9,7 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 
 from ecwsp.sis.models import SchoolYear, Student, Faculty
-#from ecwsp.sis.uno_report import *
 from ecwsp.schedule.models import CourseSection, MarkingPeriod
-#from ecwsp.schedule.forms import 
 from ecwsp.grades.models import Grade
 from ecwsp.grades.forms import GradeUpload
 from ecwsp.administration.models import Configuration

@@ -24,7 +24,7 @@
     {% csrf_token %}
     <button type="submit" name="upload" class="btn btn-primary">Upload Grades</button>
     {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
-        <br/><p><a href="ecwsp.benchmark_grade.views.gradebookcourse_id=course.id">Click here for Online Gradebook</a></p><br/>
+    <br/><p><a href="{% url 'ecwsp.benchmark_grade.views.gradebook' course_section_id=coursesection.id %}">Click here for Online Gradebook</a></p><br/>
     {% endif %}
 </form>
 
