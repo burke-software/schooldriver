@@ -23,7 +23,6 @@ from ecwsp.sis.helper_functions import *
 from ecwsp.schedule.models import CourseSection
 from ecwsp.benchmarks.models import Benchmark
 
-from elementtree.SimpleXMLWriter import XMLWriter
 import django_filters
 import MySQLdb
 import logging
