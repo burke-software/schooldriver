@@ -263,7 +263,6 @@ class SisData(object):
 
         # now assign these grades to our honors student
         # Format: {'section': name, 'grades': [1, 2, s1x, 3, 4, s2x]
-        # '?' means the grade is unknown
         known_grades = [
             {'section': 'English-H',    'grades': [89.1, 90.1, 89,   83.4, 82.4, 84  ]},
             {'section': 'Precalc-H',    'grades': [95.9, 80.3, 80,   89.5, 77.8, 73  ]},
