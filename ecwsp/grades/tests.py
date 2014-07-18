@@ -246,15 +246,15 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
         # Now, test that the scaled averages are correct
         test_data = [
-            {'mp_id': 1, 'scaled': Decimal(4.0), 'unscaled': Decimal(3.7)},
-            {'mp_id': 2, 'scaled': Decimal(3.6), 'unscaled': Decimal(3.3)},
-            {'mp_id': 4, 'scaled': Decimal(3.7), 'unscaled': Decimal(3.4)},
-            {'mp_id': 5, 'scaled': Decimal(3.5), 'unscaled': Decimal(3.2)}
+            {'mp_id': 1, 'boosted': Decimal(4.0), 'unboosted': Decimal(3.7)},
+            {'mp_id': 2, 'boosted': Decimal(3.6), 'unboosted': Decimal(3.3)},
+            {'mp_id': 4, 'boosted': Decimal(3.7), 'unboosted': Decimal(3.4)},
+            {'mp_id': 5, 'boosted': Decimal(3.5), 'unboosted': Decimal(3.2)}
         ]
         for x in test_data:
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.honors_student, marking_period=x['mp_id'])
-            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['scaled'])
-            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1, boost=False), x['unscaled'])
+            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['boosted'])
+            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1, boost=False), x['unboosted'])
 
 
 class GradeScaleTests(SisTestMixin, TestCase):
