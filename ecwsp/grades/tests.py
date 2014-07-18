@@ -95,6 +95,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """ Override, not using traditional test data """
         self.data = SisData()
         self.data.create_grade_scale_data()
+        self.data.create_sample_honors_and_ap_data()
         self.build_grade_cache()
 
     def test_letter_grade(self):
