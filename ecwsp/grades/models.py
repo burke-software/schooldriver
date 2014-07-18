@@ -13,6 +13,8 @@ from decimal import Decimal
 import datetime
 import ecwsp
 
+import logging
+
 class GradeComment(models.Model):
     id = models.IntegerField(primary_key=True)
     comment = models.CharField(max_length=500)
@@ -205,6 +207,7 @@ letter_grade_choices = (
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
     course_section = models.ForeignKey('schedule.CourseSection')
+    enrollment = models.ForeignKey('schedule.CourseEnrollment', blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
@@ -345,6 +348,16 @@ class Grade(models.Model):
                 raise ValidationError('Student, Course Section, MarkingPeriod must be unique')
 
     def save(self, *args, **kwargs):
+        if not self.enrollment:
+            try:
+                enrollment = ecwsp.schedule.models.CourseEnrollment.objects.get(
+                    course_section = self.course_section,
+                    user = self.student
+                    )
+                self.enrollment = enrollment
+            except:
+                logging.info("No enrollment exists for this student, this grade is useless!")
+
         super(Grade, self).save(*args, **kwargs)
         self.invalidate_cache()
 
@@ -401,6 +414,10 @@ class Grade(models.Model):
                 student = student,
                 course_section = course_section,
                 marking_period = marking_period,
+                enrollment = ecwsp.schedule.models.CourseEnrollment.objects.get(
+                    course_section = course_section,
+                    user = student
+                ),
                 grade = None,
             )
             new_grade.save()
