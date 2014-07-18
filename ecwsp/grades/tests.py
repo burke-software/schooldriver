@@ -4,7 +4,7 @@ from django.test import TestCase
 from models import *
 from ecwsp.sis.sample_data import SisData
 from django.db import connection
-from ecwsp.schedule.models import CourseEnrollment, Course
+from ecwsp.schedule.models import CourseEnrollment, Course, CourseSection
 import datetime
 
 import time
@@ -236,14 +236,11 @@ class GradeBaltTests(SisTestMixin, TestCase):
             with self.assertNumQueries(1):
                 self.assertEqual(ce.get_grade(letter=True), x[1])
 
-    def test_honors_and_ap_grades(self):
+    def test_honors_and_ap_scaled_grades(self):
         """
         assert that the honors and ap grades receive correct boost by 
         replicating the grades in our manual spreadsheet
         """
-
-        # Let's first make sure all the courses are of the correct type
-        self.data.create_sample_honors_and_ap_data()
 
         # Now, test that the scaled averages are correct
         test_data = [
@@ -256,6 +253,50 @@ class GradeBaltTests(SisTestMixin, TestCase):
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.honors_student, marking_period=x['mp_id'])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['boosted'])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1, boost=False), x['unboosted'])
+
+    def test_honors_and_ap_final_gpa(self):
+        """
+        assert that the end of the year GPA is correct
+        """
+        gpa = self.data.honors_student.get_gpa(rounding=1, numeric_scale=True)
+        self.assertAlmostEqual(gpa, Decimal(3.5))
+
+    def test_honors_and_ap_letter_grades(self):
+        """
+        assert that the end-of-semester and final letter grades are correct
+        """
+        expected_grades = [
+            {'section': 'English-H', 's1': 'B+', 's2': 'B',  'final': 'B' },
+            {'section': 'Precalc-H', 's1': 'B',  's2': 'B-', 'final': 'B' },
+            {'section': 'Phys',      's1': 'A-', 's2': 'A-', 'final': 'A-'},
+            {'section': 'Hist-AP',   's1': 'B-', 's2': 'B',  'final': 'B' },
+            {'section': 'Span',      's1': 'A-', 's2': 'B',  'final': 'B+'},
+            {'section': 'Photo',     's1': 'A',  's2': 'A',  'final': 'A' },
+            {'section': 'Faith',     's1': 'B+', 's2': 'A-', 'final': 'B+'},
+            {'section': 'Wrt Lab',   's1': 'A',  's2': 'A',  'final': 'A' }
+            ]
+
+        # first check final grades
+        for x in expected_grades:
+            section = CourseSection.objects.get(name = x['section'])
+            ce = CourseEnrollment.objects.get(
+                user = self.data.honors_student, 
+                course_section = section,
+                )
+            with self.assertNumQueries(1):
+                self.assertEqual(ce.get_grade(letter=True), x['final'])
+
+            sm1_grade = ce.get_average_for_marking_periods(
+                marking_periods = [1,2,3],
+                letter = True,
+                )
+            sm2_grade = ce.get_average_for_marking_periods(
+                marking_periods = [4,5,6],
+                letter = True,
+                )
+
+            self.assertEqual(sm1_grade, x['s1'])
+            self.assertEqual(sm2_grade, x['s2'])
 
 
 class GradeScaleTests(SisTestMixin, TestCase):
