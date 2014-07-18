@@ -1,6 +1,8 @@
+from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, redirect, render
 from django.contrib.auth.decorators import user_passes_test, permission_required
 from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
 
@@ -61,7 +63,7 @@ def schedule_enroll(request, id):
                     enroll, created = CourseEnrollment.objects.get_or_create(user=student, course_section=course)
                 
             if 'save' in request.POST:
-                return HttpResponseRedirect(reverse('admin:schedule_course_change', args=[id]))
+                return HttpResponseRedirect(reverse('admin:schedule_coursesection_change', args=[id]))
     
     students = Student.objects.filter(courseenrollment__course_section=course)
     form = EnrollForm(initial={'students': students})
