@@ -254,6 +254,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         for x in test_data:
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.honors_student, marking_period=x['mp_id'])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['scaled'])
+            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1, boost=False), x['unscaled'])
 
 
 class GradeScaleTests(SisTestMixin, TestCase):

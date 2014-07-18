@@ -42,7 +42,7 @@ class StudentMarkingPeriodGrade(models.Model):
         """ Returns cached average """
         return round_as_decimal(self.grade, rounding)
 
-    def get_scaled_average(self, rounding=2):
+    def get_scaled_average(self, rounding=2, boost=True):
         """ Convert to scaled grade first, then average
         Burke Software does not endorse this as a precise way to calculate averages """
         grade_total = 0.0
@@ -60,8 +60,9 @@ class StudentMarkingPeriodGrade(models.Model):
             course_count += 1
         if course_count:
             average = grade_total / course_count
-            boost_factor = boost_sum / course_count
-            average += float(boost_factor)
+            if boost:
+                boost_factor = boost_sum / course_count
+                average += float(boost_factor)
             return round_as_decimal(average, rounding)
         else:
             return None
