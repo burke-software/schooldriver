@@ -163,8 +163,8 @@ class Applicant(models.Model, CustomFieldModel):
     state = USStateField(blank=True)
     zip = models.CharField(max_length=10, blank=True)
     ssn = models.CharField(max_length=11, blank=True, verbose_name="SSN")
-    parent_email = models.EmailField(blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
+    parent_email = models.EmailField(blank=True)
+    email = models.EmailField(blank=True)
     notes = models.TextField(blank=True)
     family_preferred_language = models.ForeignKey(
         'sis.LanguageChoice',
