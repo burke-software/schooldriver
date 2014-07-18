@@ -265,14 +265,14 @@ class SisData(object):
         # Format: {'section': name, 'grades': [1, 2, s1x, 3, 4, s2x]
         # '?' means the grade is unknown
         known_grades = [
-            {'section': 'English-H',   'grades': [89.1, 90.1, 89,  83.4, 82.4, 84  ]},
-            {'section': 'Precalc-H',   'grades': [95.9, 80.3, 80,  89.5, 77.8, 73  ]},
-            {'section': 'Phys',      'grades': [93.2, 89.9, 92,  92.8, 90.4, '?' ]},
-            {'section': 'Hist-AP',      'grades': [87.3, 78.7, 80,  81.1, 85,   '?' ]},
-            {'section': 'Span',      'grades': [91.4, 88.6, 91,  88.1, 88,   71  ]},
-            {'section': 'Photo',     'grades': [100,  95,   '?', 97.8, 100,  '?' ]},
-            {'section': 'Faith',     'grades': [88.1, 87.3, 88,  88.8, 91.5, '?' ]},
-            {'section': 'Wrt Lab',   'grades': [100,  100,  '?', 100,  100,  '?' ]},
+            {'section': 'English-H',    'grades': [89.1, 90.1, 89,   83.4, 82.4, 84  ]},
+            {'section': 'Precalc-H',    'grades': [95.9, 80.3, 80,   89.5, 77.8, 73  ]},
+            {'section': 'Phys',         'grades': [93.2, 89.9, 92,   92.8, 90.4, None ]},
+            {'section': 'Hist-AP',      'grades': [87.3, 78.7, 80,   81.1, 85,   None ]},
+            {'section': 'Span',         'grades': [91.4, 88.6, 91,   88.1, 88,   71  ]},
+            {'section': 'Photo',        'grades': [100,  95,   None, 97.8, 100,  None ]},
+            {'section': 'Faith',        'grades': [88.1, 87.3, 88,   88.8, 91.5, None ]},
+            {'section': 'Wrt Lab',      'grades': [100,  100,  None, 100,  100,  None ]},
         ]
         marking_periods = [self.mp1, self.mp2, self.mps1x, self.mp3, self.mp4, self.mps2x]
         for grd in known_grades:
