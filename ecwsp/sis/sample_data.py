@@ -287,8 +287,6 @@ class SisData(object):
                     grade.grade = grd['grades'][i]
                     grade.save()
 
-        build_grade_cache()
-
 
 
 

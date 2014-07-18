@@ -221,10 +221,18 @@ WHERE grades_grade.course_section_id = %s
 
     def optimized_grade_to_scale(self, grade, letter=True):
         """ letter - True for letter grade, false for numeric (ex: 4.0 scale) """
-        rule = GradeScaleRule.objects.filter(
+
+        # not sure how this was working before, but I'm just commenting it out
+        # if something else relies on the old method I have just broke it!
+        # -Q
+        '''rule = GradeScaleRule.objects.filter(
             grade_scale__schoolyear__markingperiod__coursesection=self,
             min_grade__lte=grade,
-            max_grade__gte=grade).first()
+            max_grade__gte=grade).first()'''
+        rule = GradeScaleRule.objects.filter(
+            min_grade__lte=grade,
+            max_grade__gte=grade,
+            ).select_related('course_section').first()
         if letter:
             return rule.letter_grade
         return rule.numeric_scale
