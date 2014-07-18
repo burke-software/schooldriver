@@ -38,7 +38,6 @@ class GradeCalculationTests(SisTestMixin, TestCase):
 
     # Test compares two ways of calling calculate_grade()
     # There shouldn't be a discrepancy
-    @unittest.skip('skipping for now to save some time...')
     def test_current_vs_older(self):
         courses = [Course(fullname='Algebra', shortname='alg', id=12, credits=4),
                    Course(fullname='English', shortname='eng', id=13, credits=4),
@@ -98,7 +97,6 @@ class GradeBaltTests(SisTestMixin, TestCase):
         self.data.create_grade_scale_data()
         self.build_grade_cache()
 
-    @unittest.skip('skipping for now to save some time...')
     def test_letter_grade(self):
         mp1 = self.data.mp1
         mp2 = self.data.mp2
@@ -142,7 +140,6 @@ class GradeBaltTests(SisTestMixin, TestCase):
             grade = Grade.objects.get(marking_period=x[0], course_section_id=x[1])
             self.assertEqual(grade.get_grade(letter=True), x[2])
 
-    @unittest.skip('skipping for now to save some time...')
     def test_snx_grade(self):
         """ Really just a normal run of the mill Marking Period grade
         Balt uses s1x, s2x as tests that affect final grades
@@ -152,7 +149,6 @@ class GradeBaltTests(SisTestMixin, TestCase):
         grade = Grade.objects.get(marking_period=self.data.mps2x, course_section_id=1)
         self.assertEqual(grade.get_grade(), 79)
 
-    @unittest.skip('skipping for now to save some time...')
     def test_partial_course_average_grade(self):
         """ Tests getting the average of some but not all marking period averages """
         s1_ids = [1,2,3]
@@ -180,7 +176,6 @@ class GradeBaltTests(SisTestMixin, TestCase):
             self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), x[2])
             self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
 
-    @unittest.skip('skipping for now to save some time...')
     def test_scaled_average(self):
         """ Tests an asinine method for averages by converting to non linear scale first """
         test_data = [
@@ -193,7 +188,6 @@ class GradeBaltTests(SisTestMixin, TestCase):
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x[1])
 
-    @unittest.skip('skipping for now to save some time...')
     def test_average(self):
         test_data = [
             [3, 72.7],
@@ -203,7 +197,6 @@ class GradeBaltTests(SisTestMixin, TestCase):
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
             self.assertAlmostEqual(smpg.get_average(rounding=1), Decimal(x[1]))
 
-    @unittest.skip('skipping for now to save some time...')
     def test_scaled_multiple_mp_average(self):
         test_data = [
             [[1, 2, 3], Decimal(1.9)],
@@ -213,7 +206,6 @@ class GradeBaltTests(SisTestMixin, TestCase):
             average = Grade.get_scaled_multiple_mp_average(self.data.student, x[0], rounding=1)
             self.assertAlmostEqual(average, x[1])
 
-    @unittest.skip('skipping for now to save some time...')
     def test_scaled_final_year_average(self):
         test_data = [
             [1, Decimal(2.2)],
@@ -223,12 +215,10 @@ class GradeBaltTests(SisTestMixin, TestCase):
             average = year_grade.get_grade(numeric_scale=True, rounding=1)
             self.assertAlmostEqual(average, x[1])
 
-    @unittest.skip('skipping for now to save some time...')
     def test_balt_gpa(self):
         gpa = self.data.student.get_gpa(rounding=1, numeric_scale=True)
         self.assertAlmostEqual(gpa, Decimal(2.2))
 
-    @unittest.skip('skipping for now to save some time...')
     def test_final_grade(self):
         test_data = [
             [1, 'C'],
@@ -256,14 +246,15 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
         # Now, test that the scaled averages are correct
         test_data = [
-            {'mp_id': 1, 'scaled': Decimal(4.0), 'unscaled': Decimal(3.7)},
-            {'mp_id': 2, 'scaled': Decimal(3.6), 'unscaled': Decimal(3.3)},
-            {'mp_id': 4, 'scaled': Decimal(3.7), 'unscaled': Decimal(3.4)},
-            {'mp_id': 5, 'scaled': Decimal(3.5), 'unscaled': Decimal(3.2)}
+            {'mp_id': 1, 'boosted': Decimal(4.0), 'unboosted': Decimal(3.7)},
+            {'mp_id': 2, 'boosted': Decimal(3.6), 'unboosted': Decimal(3.3)},
+            {'mp_id': 4, 'boosted': Decimal(3.7), 'unboosted': Decimal(3.4)},
+            {'mp_id': 5, 'boosted': Decimal(3.5), 'unboosted': Decimal(3.2)}
         ]
         for x in test_data:
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.honors_student, marking_period=x['mp_id'])
-            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['scaled'])
+            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['boosted'])
+            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1, boost=False), x['unboosted'])
 
 
 class GradeScaleTests(SisTestMixin, TestCase):
@@ -279,7 +270,6 @@ class GradeScaleTests(SisTestMixin, TestCase):
         self.data.school_year.grade_scale = scale
         self.data.school_year.save()
 
-    @unittest.skip('skipping for now to save some time...')
     def test_grade_scale(self):
 
         scale = self.scale
@@ -296,7 +286,6 @@ class GradeScaleTests(SisTestMixin, TestCase):
         grade = self.data.grade
         self.assertEqual(grade.get_grade(letter=True), 'F')  # 50
 
-    @unittest.skip('skipping for now to save some time...')
     def test_scale_lookup_speed(self):
         grade = self.data.grade
         start = time.time()
