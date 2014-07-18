@@ -322,7 +322,7 @@ INSTALLED_APPS = (
 )
 
 COMPRESS_PRECOMPILERS = (
-   ('text/coffeescript', 'coffeecompressorcompiler.filter.CoffeeScriptCompiler'),
+   ('text/coffeescript', 'coffee --compile --stdio'),
    ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 
