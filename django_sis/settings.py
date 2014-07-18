@@ -418,7 +418,7 @@ if 'ON_HEROKU' in os.environ:
     INSTALLED_APPS += ('storages', 'collectfast')
     AWS_PRELOAD_METADATA = True
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-    STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     for environment_variable in (
         'AWS_ACCESS_KEY_ID',
         'AWS_SECRET_ACCESS_KEY',
@@ -426,7 +426,7 @@ if 'ON_HEROKU' in os.environ:
     ):
         # Cower, all ye Stack Overflow pedants!
         globals()[environment_variable] = os.environ[environment_variable]
-    STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
+    COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
     # Use Heroku's DB
     import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
