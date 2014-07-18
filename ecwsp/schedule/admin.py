@@ -23,6 +23,13 @@ class CourseMeetInline(admin.TabularInline):
 class CourseSectionInline(admin.StackedInline):
     model = CourseSection
     extra = 0
+    readonly_fields = ['course_section_link']
+    fields = ['course_section_link', 'name', 'is_active', 'marking_period', 'cohorts']
+
+    def course_section_link(self, obj):
+        change_url = urlresolvers.reverse('admin:schedule_coursesection_change', args=(obj.id,))
+        return mark_safe('<a href="%s">%s</a>' % (change_url, obj))
+    course_section_link.short_description = 'Course Section Link'
 
 class CourseAdmin(admin.ModelAdmin):
     list_display = ['fullname', 'grades_link', 'department', 'credits', 'graded', 'is_active']
@@ -56,11 +63,12 @@ class CourseSectionAdmin(admin.ModelAdmin):
     list_filter = ['course__level', 'course__department', 'teachers']
     search_fields = ['name', 'course__fullname', 'teachers__username', 'enrollments__username']
     readonly_fields = ['course_link']
+    fields = [['course', 'course_link'], 'name', 'is_active', 'marking_period', 'cohorts']
 
     def course_link(self, obj):
         change_url = urlresolvers.reverse('admin:schedule_course_change', args=(obj.course.id,))
         return mark_safe('<a href="%s">%s</a>' % (change_url, obj.course))
-    course_link.short_description = 'Course'
+    course_link.short_description = 'Course Link'
 admin.site.register(CourseSection, CourseSectionAdmin)
 
 
