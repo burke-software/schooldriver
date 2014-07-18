@@ -264,6 +264,8 @@ class GradeBaltTests(SisTestMixin, TestCase):
     def test_honors_and_ap_letter_grades(self):
         """
         assert that the end-of-semester and final letter grades are correct
+
+        for individual course sections that is...
         """
         expected_grades = [
             {'section': 'English-H', 's1': 'B+', 's2': 'B',  'final': 'B' },
