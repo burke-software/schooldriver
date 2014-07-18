@@ -275,14 +275,15 @@ class Grade(models.Model):
 
     def invalidate_cache(self):
         """ Invalidate any related caches """
+        print "fucking invalidate it"
         try:
             enrollment = self.course_section.courseenrollment_set.get(user=self.student)
             enrollment.flag_grade_as_stale()
             enrollment.flag_numeric_grade_as_stale()
         except ecwsp.schedule.models.CourseEnrollment.DoesNotExist:
             pass
-        self.student.cache_gpa = self.student.calculate_gpa()
-        if self.student.cache_gpa != "N/A":
+        self.student.cached_gpa = self.student.calculate_gpa()
+        if self.student.cached_gpa != "N/A":
             self.student.save()
 
     def optimized_grade_to_scale(self, letter):
