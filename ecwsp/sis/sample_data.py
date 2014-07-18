@@ -53,7 +53,7 @@ class SisData(object):
         # so it's ok to not use bulk
         # Don't change the order, other objects depend on the id being in this order
         self.student = Student.objects.create(first_name="Joe", last_name="Student", username="jstudent")
-        Student.objects.create(first_name="Jane", last_name="Student", username="jastudent")
+        self.student2 = Student.objects.create(first_name="Jane", last_name="Student", username="jastudent")
         Student.objects.create(first_name="Tim", last_name="Duck", username="tduck")
         Student.objects.create(first_name="Molly", last_name="Maltov", username="mmaltov")
 
@@ -123,9 +123,11 @@ class SisData(object):
             CourseEnrollment(user=self.student, course_section_id=1),
             CourseEnrollment(user=self.student, course_section_id=2),
             CourseEnrollment(user=self.student, course_section_id=4),
+            CourseEnrollment(user=self.student2, course_section_id=1),
         ])
         self.course_enrollment = CourseEnrollment.objects.get(pk=1)
 
+        '''
         Grade.objects.bulk_create([
             Grade(student_id=1, course_section_id=2, marking_period_id=1, grade=50),
             Grade(student_id=1, course_section_id=2, marking_period_id=2, grade=89.09),
@@ -133,6 +135,23 @@ class SisData(object):
             Grade(student_id=2, course_section_id=1, marking_period_id=2, grade=100),
             Grade(student_id=3, course_section_id=1, marking_period_id=2, grade=88)
         ])
+        '''
+        grade_data = [
+            { 'student' : 1, 'section' : 2, 'mp' : 1, 'grade' : 50 },
+            { 'student' : 1, 'section' : 2, 'mp' : 2, 'grade' : 89.09 },
+            { 'student' : 2, 'section' : 2, 'mp' : 1, 'grade' : 75 },
+            { 'student' : 2, 'section' : 1, 'mp' : 2, 'grade' : 100 },
+            { 'student' : 3, 'section' : 1, 'mp' : 2, 'grade' : 88 },
+        ]
+        for x in grade_data:
+            grade_object, created = Grade.objects.get_or_create(
+                student_id = x['student'],
+                course_section_id = x['section'],
+                marking_period_id = x['mp']
+                )
+            grade_object.grade = x['grade']
+            grade_object.save()
+
         self.grade = Grade.objects.get(pk=1)
         build_grade_cache()
 
