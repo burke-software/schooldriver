@@ -89,7 +89,6 @@ def get_benchmark_report_card_data(report_context, appy_context, students):
 
                     # TODO: We assume here that flagging something visually means it's "missing." This should be done in a better way that's not opaque to users.
                     if not calculation_rule.substitution_set.filter(apply_to_departments=course_section.department, flag_visually=True).exists():
-                        print 'Asshole', student, 'got a free pass on', course_section.department
                         course_section_marking_period.category.count_passing = course_section_marking_period.category.count_total
                         course_section_marking_period.category.count_missing = 0
                         course_section_marking_period.category.count_percentage = 100
