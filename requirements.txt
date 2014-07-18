@@ -49,3 +49,4 @@ django_compressor
 django-libsass
 Collectfast
 #mysql-python
+coffee-compressor-compiler
