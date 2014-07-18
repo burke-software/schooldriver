@@ -11,7 +11,11 @@ class GradeViewSet(viewsets.ModelViewSet):
     an API endpoint for the Grade model
     """
     permission_classes = (IsAdminUser,)
-    queryset = Grade.objects.filter(course_section__course__graded = True)
+    queryset = Grade.objects.filter(
+        course_section__course__graded = True,
+        enrollment__is_active = True,
+        ) 
+
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     serializer_class = GradeSerializer
     filter_fields = ('student', 'course_section', 'course_section__marking_period__school_year')
