@@ -638,18 +638,37 @@ class AspReportButton(ReportButton):
         return report_view.list_to_xlsx_response(data, 'ASP_Report', header)
 
 
+def get_students(report_view):
+    students = Student.objects.all()
+    select_students = report_view.report.report_context.get('students')
+    if select_students:
+        students = select_students
+    return students
+
+
 class MissedClassPeriodsButton(ReportButton):
     """ This report shows when students were present for first period but missed classes later in the day. """
     name = "missed_class_periods"
     name_verbose = "Daily Attendance: Missed Class Periods"
 
+    def append_to_row(self, student, missed_classes, row):
+        row.append(student.last_name)
+        row.append(student.first_name)
+        row.append('')
+        the_class = missed_classes[0]
+        the_missed_class = the_class.period.name
+        row.append(the_missed_class)
+        row.append('')
+        course_section = the_class.course_section
+        row.append(course_section.name)
+        row.append('')
+        return the_class
+
+
     def get_report(self, report_view, context):
         date = report_view.report.report_context.get('date')
         marking_period = report_view.report.report_context.get('marking_period')
-        students = Student.objects.all()
-        select_students = report_view.report.report_context.get('students')
-        if select_students:
-            students = select_students
+        students = get_students(report_view)
         class_periods = Period.objects.all()
         select_class_periods = report_view.report.report_context.get('class_periods')
         if select_class_periods:
@@ -672,16 +691,7 @@ class MissedClassPeriodsButton(ReportButton):
                             missed_classes.append(a_class)
                     if missed_class:
                         row = []
-                        row.append(student.last_name)
-                        row.append(student.first_name)
-                        row.append('')
-                        the_class = missed_classes[0]
-                        the_missed_class = the_class.period.name
-                        row.append(the_missed_class)
-                        row.append('')
-                        course_section = the_class.course_section
-                        row.append(course_section.name)
-                        row.append('')
+                        self.append_to_row(student, missed_classes, row)
                         row.append(str(date))
                         data.append(row)
                         for a_class in missed_classes[1:]:
@@ -717,16 +727,7 @@ class MissedClassPeriodsButton(ReportButton):
                             missed_classes.append(a_class)
                     if missed_class:
                         row = []
-                        row.append(student.last_name)
-                        row.append(student.first_name)
-                        row.append('')
-                        the_class = missed_classes[0]
-                        the_missed_class = the_class.period.name
-                        row.append(the_missed_class)
-                        row.append('')
-                        course_section = the_class.course_section
-                        row.append(course_section.name)
-                        row.append('')
+                        the_class = self.append_to_row(student, missed_classes, row)
                         row.append(str(the_class.date))
                         row.append('')
                         row.append(marking_period.name)
@@ -757,10 +758,7 @@ class PeriodBasedAttendanceButton(ReportButton):
 
     def get_report(self, report_view, context):
 
-        students = Student.objects.all()
-        select_students = report_view.report.report_context.get('students')
-        if select_students:
-            students = select_students
+        students = get_students(report_view)
         
         course_section = report_view.report.report_context.get('course_section')
         if not course_section:
