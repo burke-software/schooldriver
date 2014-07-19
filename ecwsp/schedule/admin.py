@@ -63,7 +63,7 @@ class CourseSectionAdmin(admin.ModelAdmin):
     list_filter = ['course__level', 'course__department', 'teachers']
     search_fields = ['name', 'course__fullname', 'teachers__username', 'enrollments__username']
     readonly_fields = ['course_link']
-    fields = [['course', 'course_link'], 'name', 'is_active', 'marking_period', 'cohorts']
+    fields = ['course', 'course_link', 'name', 'is_active', 'marking_period', 'cohorts']
 
     def course_link(self, obj):
         change_url = urlresolvers.reverse('admin:schedule_course_change', args=(obj.course.id,))
