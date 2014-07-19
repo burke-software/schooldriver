@@ -6,7 +6,7 @@ from localflavor.us.forms import *
 from ecwsp.engrade_sync.models import *
 from ecwsp.schedule.models import MarkingPeriod
 
-class SetupCoursesForm(forms.Form):
+class SetupCourseForm(forms.Form):
     marking_period = forms.ModelChoiceField(MarkingPeriod.objects.all())
     
 class GradeSyncForm(forms.Form):

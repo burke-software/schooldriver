@@ -74,17 +74,32 @@ class Table(PodElement):
 class Expression(PodElement):
     '''Represents a Python expression that is found in a pod or px.'''
     OD = None
-    def __init__(self, pyExpr, pod):
-        # The Python expression
-        self.expr = pyExpr.strip()
-        self.pod = pod # True if I work for pod, False if I work for px.
-        # Must we, when evaluating the expression, escape XML special chars
-        # or not?
-        if self.expr.startswith(':'):
-            self.expr = self.expr[1:]
-            self.escapeXml = False
+    def extractInfo(self, py):
+        '''Within p_py, several elements can be included:
+           - the fact that XML chars must be escaped or not (leading ":")
+           - the "normal" Python expression,
+           - an optional "error" expression, that is evaluated when the normal
+             expression raises an exception.
+           This method return a tuple (escapeXml, normaExpr, errorExpr).'''
+        # Determine if we must escape XML chars or not.
+        escapeXml = True
+        if py.startswith(':'):
+            py = py[1:]
+            escapeXml = False
+        # Extract normal and error expression
+        if '|' not in py:
+            expr = py
+            errorExpr = None
         else:
-            self.escapeXml = True
+            expr, errorExpr = py.rsplit('|', 1)
+            expr = expr.strip()
+            errorExpr = errorExpr.strip()
+        return escapeXml, expr, errorExpr
+
+    def __init__(self, py, pod):
+        # Extract parts from expression p_py.
+        self.escapeXml, self.expr, self.errorExpr = self.extractInfo(py.strip())
+        self.pod = pod # True if I work for pod, False if I work for px.
         if self.pod:
             # pod-only: store here the expression's true result (before being
             # converted to a string).
@@ -97,6 +112,18 @@ class Expression(PodElement):
             self.evaluated = False
             # self.result and self.evaluated are not used by PX, because they
             # are not thread-safe.
+
+    def _eval(self, context):
+        '''Evaluates self.expr with p_context. If self.errorExpr is defined,
+           evaluate it if self.expr raises an error.'''
+        if self.errorExpr:
+            try:
+                res = eval(self.expr, context)
+            except Exception:
+                res = eval(self.errorExpr, context)
+        else:
+            res = eval(self.expr, context)
+        return res
 
     def evaluate(self, context):
         '''Evaluates the Python expression (self.expr) with a given
@@ -114,8 +141,7 @@ class Expression(PodElement):
             # with another context.
             self.evaluated = False
         else:
-            # Evaluates the Python expression
-            res = eval(self.expr, context)
+            res = self._eval(context)
             # pod-only: cache the expression result.
             if self.pod: self.result = res
         # Converts the expr result to a string that can be inserted in the

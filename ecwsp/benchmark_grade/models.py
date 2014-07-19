@@ -117,14 +117,14 @@ AGGREGATE_METHODS = (
 class CalculationRule(models.Model):
     ''' A per-year GPA calculation rule. It should also be applied to future years unless a more current rule exists.
     '''
-    # Potential calculation components: career, year, marking period, course
+    # Potential calculation components: career, year, marking period, course section
     first_year_effective = models.ForeignKey('sis.SchoolYear', unique=True, help_text='Rule also applies to subsequent years unless a more recent rule exists.')
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, default=4)
     decimal_places = models.IntegerField(default=2)
     def substitute(self, item_or_aggregate, value):
         calculate_as = value
         display_as = None
-        for s in self.substitution_set.filter(apply_to_departments=item_or_aggregate.course.department, apply_to_categories=item_or_aggregate.category):
+        for s in self.substitution_set.filter(apply_to_departments=item_or_aggregate.course_section.department, apply_to_categories=item_or_aggregate.category):
             if s.applies_to(value):
                 if s.calculate_as is not None:
                     calculate_as = s.calculate_as
@@ -137,7 +137,7 @@ class CalculationRule(models.Model):
         return u'Rule of ' + self.first_year_effective.name
 
 class CalculationRulePerCourseCategory(models.Model):
-    ''' A weight assignment for a category within each course.
+    ''' A weight assignment for a category within each course section.
     '''
     category = models.ForeignKey('Category')
     weight = models.DecimalField(max_digits=5, decimal_places=4, default=1)
@@ -145,11 +145,14 @@ class CalculationRulePerCourseCategory(models.Model):
     calculation_rule = models.ForeignKey('CalculationRule', related_name='per_course_category_set')
 
 class CalculationRuleCategoryAsCourse(models.Model):
-    ''' A category whose average is given the same weight as a course in a marking period's average
+    ''' A category whose average is given the same weight as a course section in a marking period's average
     '''
     category = models.ForeignKey('Category')
     include_departments = models.ManyToManyField('schedule.Department', blank=True, null=True)
     calculation_rule = models.ForeignKey('CalculationRule', related_name='category_as_course_set')
+    special_course_section = models.ForeignKey('schedule.CourseSection',
+        help_text=''' Grades for this course section will be OVERWRITTEN by the
+        category averages! ''')
 
 class CalculationRuleSubstitution(models.Model):
     operator = models.CharField(max_length=2, choices=OPERATOR_CHOICES)
@@ -236,7 +239,7 @@ class Item(models.Model):
     @property
     def benchmark_description(self): return self.benchmark.name
     multiplier = models.DecimalField(max_digits=8, decimal_places=2, default=1) # not used yet
-    course = models.ForeignKey('schedule.Course')
+    course_section = models.ForeignKey('schedule.CourseSection')
     def clean(self):
         from django.core.exceptions import ValidationError
         # must use hasattr when checking if non-nullable field is null
@@ -283,6 +286,26 @@ class Mark(models.Model):
             self.normalized_mark = float(self.mark) / float(self.item.points_possible)
         super(Mark, self).save(*args, **kwargs)
 
+        # For Categories that allow multiple Demonstrations, store the aggregate
+        # mark (attribute) in the Mark (model) that's linked to an Item but not
+        # to any Demonstration.
+        # This way, reports can be run using `demonstration=None` as a filter
+        # to include only one mark per Student per Assignment.
+        if self.demonstration is not None and \
+        self.item.category.allow_multiple_demonstrations:
+            Method = self.item.category.aggregation_method
+            aggregated_mark = self.item.mark_set.filter(
+                student=self.student
+            ).exclude(
+                demonstration=None
+            ).aggregate(Method('mark')).popitem()[1]
+            aggregated_model, created = benchmark_get_create_or_flush(
+                Mark, student=self.student, item=self.item, demonstration=None
+            )
+            aggregated_model.mark = aggregated_mark
+            aggregated_model.save()
+
+
     def clean(self):
         from django.core.exceptions import ValidationError
         if self.item.category.fixed_granularity and self.mark and self.mark % self.item.category.fixed_granularity != 0:
@@ -322,30 +345,30 @@ class Aggregate(models.Model):
     cached_value = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     cached_substitution = models.CharField(max_length=16, blank=True, null=True)
     student = models.ForeignKey('sis.Student', blank=True, null=True)
-    course = models.ForeignKey('schedule.Course', blank=True, null=True)
+    course_section = models.ForeignKey('schedule.CourseSection', blank=True, null=True)
     category = models.ForeignKey('Category', blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     class Meta:
-        unique_together = ('student', 'course', 'category', 'marking_period')
+        unique_together = ('student', 'course_section', 'category', 'marking_period')
 
     def __getattribute__(self, name):
         ''' Sometimes people use the gradebook for one marking period, but
         something else for another. This is a fairly awful way to display the
-        correct course average in those circumstances. Eventually, we will stop
-        calculating course averages altogether and leave that work to
+        correct course section average in those circumstances. Eventually, we will stop
+        calculating course section averages altogether and leave that work to
         ecwsp.grades. '''
         get_ = lambda x: super(Aggregate, self).__getattribute__(x)
         if name == 'cached_value' and \
             get_('cached_value') is None and \
             get_('category_id') is None and \
-            get_('course_id') is not None and \
+            get_('course_section_id') is not None and \
             get_('marking_period_id') is not None and \
             get_('student_id') is not None:
             try:
                 grade = Grade.objects.get(
                     marking_period_id=get_('marking_period_id'),
-                    course_id=get_('course_id'),
+                    course_section_id=get_('course_section_id'),
                     student_id=get_('student_id'))
                 return grade.grade
             except Grade.DoesNotExist:
@@ -357,15 +380,15 @@ class Aggregate(models.Model):
         ''' Find the CalculationRule that applies to this Aggregate '''
         if self.marking_period is not None:
             return benchmark_find_calculation_rule(self.marking_period.school_year)
-        if self.course is not None:
+        if self.course_section is not None:
             return benchmark_find_calculation_rule(
-                self.course.marking_period.all()[0].school_year)
+                self.course_section.marking_period.all()[0].school_year)
         # implicit return None
 
     @property
     def mark_set(self):
         ''' All the marks needed to calculate this aggregate '''
-        item_fields = ('course', 'category', 'marking_period')
+        item_fields = ('course_section', 'category', 'marking_period')
         criteria = {'student_id': self.student.pk}
         for field in item_fields:
             field += '_id'
@@ -406,48 +429,48 @@ class Aggregate(models.Model):
         ''' Returns all Aggregates, in the form of [(Aggregate, created, weight),], immediately required to calculate
         this Aggregate. Not recursive; multiple levels of dependency are NOT considered. '''
         aggregate_tuples = []
-        ours = [self.student_id, self.course_id,
+        ours = [self.student_id, self.course_section_id,
                 self.category_id, self.marking_period_id]
         ours = [x is not None for x in ours]
         if ours == [True, True, True, True]:
             ''' As specific as it gets. Average for one category
-            in one course during one marking period. '''
+            in one course section during one marking period. '''
             return aggregate_tuples
         if ours == [True, True, True, False]:
-            ''' Average for one category across the entire duration of the course. ''' 
+            ''' Average for one category across the entire duration of the course section. ''' 
             # Not currently used? Gets created by gradebook_recalculate_on_item_change()
-            marking_periods = self.course.marking_period.all()
+            marking_periods = self.course_section.marking_period.all()
             for marking_period in marking_periods:
                 aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
-                    course_id=self.course_id, category_id=self.category_id, marking_period_id=marking_period.pk) + (marking_period.weight,))
+                    course_section_id=self.course_section_id, category_id=self.category_id, marking_period_id=marking_period.pk) + (marking_period.weight,))
             return aggregate_tuples
         if ours == [True, True, False, True]:
-            ''' Course grade for one marking period. '''
+            ''' Course section grade for one marking period. '''
             rule = self.calculation_rule
-            per_course_categories = rule.per_course_category_set.filter(apply_to_departments=self.course.department)
+            per_course_categories = rule.per_course_category_set.filter(apply_to_departments=self.course_section.department)
             for per_course_category in per_course_categories:
                 aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
-                    course_id=self.course_id, category_id=per_course_category.category_id,
+                    course_section_id=self.course_section_id, category_id=per_course_category.category_id,
                     marking_period_id=self.marking_period_id) + (per_course_category.weight,))
             return aggregate_tuples
         if ours == [True, True, False, False]:
-            ''' Overall course grade, for the entire duration of the course. '''
-            marking_periods = self.course.marking_period.all()
+            ''' Overall course section grade, for the entire duration of the course section. '''
+            marking_periods = self.course_section.marking_period.all()
             for marking_period in marking_periods:
                 aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
-                    course_id=self.course_id, category_id=None, marking_period_id=marking_period.pk) + (marking_period.weight,))
+                    course_section_id=self.course_section_id, category_id=None, marking_period_id=marking_period.pk) + (marking_period.weight,))
             return aggregate_tuples
         if ours == [True, False, True, True]:
-            ''' Average of a category across all courses for one marking period.
-            TC used this last year and counted it in GPAs as if it were a course. '''
+            ''' Average of a category across all course sections for one marking period.
+            Some schools count it in GPAs as if it were a course section. '''
             rule = self.calculation_rule
             departments = rule.category_as_course_set.get(category_id=self.category_id).include_departments.all()
-            courses = self.student.course_set.filter(marking_period=self.marking_period_id,
-                department__in=departments, graded=True)
-            for course in courses:
-                weight = Decimal(course.credits) / course.marking_period.count()
+            course_sections = self.student.coursesection_set.filter(marking_period=self.marking_period_id,
+                department__in=departments, graded=True, course__course_type__award_credits=True)
+            for course_section in course_sections:
+                weight = Decimal(course_section.credits) / course_section.marking_period.count()
                 aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
-                    course_id=course.pk, category_id=self.category_id, marking_period_id=self.marking_period_id) + (weight,))
+                    course_section_id=course_section.pk, category_id=self.category_id, marking_period_id=self.marking_period_id) + (weight,))
             return aggregate_tuples
         raise Exception("Aggregate type unrecognized.")
 
@@ -468,7 +491,7 @@ class Aggregate(models.Model):
                     denominator += weight
                     if aggregate.cached_substitution is not None:
                         # Allow substitutions to bubble up,
-                        # e.g. INC on one Item yields INC on the whole Category and Course
+                        # e.g. INC on one Item yields INC on the whole Category and CourseSection
                         self.cached_substitution = aggregate.cached_substitution
             if denominator:
                 self.cached_value = numerator / denominator
@@ -533,30 +556,56 @@ class Aggregate(models.Model):
 
     def _copy_to_grade(self):
         # temporary(?) integration with the rest of sword
-        g, g_created = Grade.objects.get_or_create(student=self.student, course=self.course, marking_period=self.marking_period, override_final=False)
+        g, g_created = Grade.objects.get_or_create(student=self.student,
+            course_section=self.course_section,
+            marking_period=self.marking_period,
+            override_final=False)
+        # set the letter grade if it exists
         if self.cached_substitution is not None:
             # FIDDLESTICKS... INC does not fit in the column
             letter_grade_max_length = Grade._meta.get_field_by_name('letter_grade')[0].max_length
             g.letter_grade = self.cached_substitution[:letter_grade_max_length]
-            g.grade = None
+        # always set the numeric grade
+        grade_max_value = Grade._meta.get_field_by_name('grade')[0]
+        # whee...
+        grade_max_value = 10 ** (grade_max_value.max_digits - grade_max_value.decimal_places) - 10 ** (-1 * grade_max_value.decimal_places)
+        if self.cached_value > grade_max_value:
+            # people abuse points_possible (set marks way above it),
+            # either to give out extra credit or because they are just screwing around.
+            # don't attempt to set a Grade larger than the maximum permissable value
+            g.grade = grade_max_value
         else:
-            grade_max_value = Grade._meta.get_field_by_name('grade')[0]
-            # whee...
-            grade_max_value = 10 ** (grade_max_value.max_digits - grade_max_value.decimal_places) - 10 ** (-1 * grade_max_value.decimal_places)
-            if self.cached_value > grade_max_value:
-                # people abuse points_possible (set marks way above it),
-                # either to give out extra credit or because they are just screwing around.
-                # don't attempt to set a Grade larger than the maximum permissable value
-                g.set_grade(grade_max_value)
-            else:
-                g.set_grade(self.cached_value)
+            g.grade = self.cached_value
+        g.save()
+        return g, g_created
+
+    def _copy_to_special_course_section(self):
+        special_course_section = self.calculation_rule.category_as_course_set.get(
+            category_id=self.category_id).special_course_section
+        # make sure our MarkingPeriod is assigned to the CourseSection
+        self.marking_period.coursesection_set.add(special_course_section)
+        # make sure our Student is enrolled in the CourseSection
+        special_course_section.courseenrollment_set.get_or_create(user=self.student,
+            role='Student')
+        # copy our average to ecwsp.grades
+        g, g_created = Grade.objects.get_or_create(student=self.student,
+            course_section=special_course_section, marking_period=self.marking_period,
+            override_final=False)
+        g.set_grade(self.cached_value)
         g.save()
         return g, g_created
 
     def save(self, *args, **kwargs):
-        if self.student_id is not None and self.course_id is not None and \
-            self.marking_period_id is not None and self.category_id is None:
+        ours = [self.student_id, self.course_section_id,
+                self.category_id, self.marking_period_id]
+        ours = [x is not None for x in ours]
+        if ours == [True, True, False, True]:
+            ''' CourseSection grade for one marking period. '''
             self._copy_to_grade()
+        if ours == [True, False, True, True]:
+            ''' Average of a category across all course sections for one marking period.
+            Some schools count it in GPAs as if it were a course section. '''
+            self._copy_to_special_course_section()
         super(Aggregate, self).save(*args, **kwargs)
 
     def __unicode__(self):

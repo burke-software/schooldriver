@@ -3,15 +3,15 @@ from localflavor.us.forms import *
 from django.contrib.admin import widgets as adminwidgets
 from django.conf import settings
 
-from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
-
+import autocomplete_light
 from ecwsp.sis.forms import TimeBasedForm
 from ecwsp.administration.models import Configuration
 from models import *
+from ecwsp.sis.models import Student
 import datetime
 
-class DisciplineViewForm(forms.Form):
-    student = AutoCompleteSelectField('discipline_view_student')
+class DisciplineViewForm(autocomplete_light.ModelForm):
+    student = forms.ModelChoiceField(queryset=Student.objects.all())
     
 class DisciplineForm(forms.ModelForm):
     class Meta:
@@ -19,7 +19,7 @@ class DisciplineForm(forms.ModelForm):
         widgets = {
             'comments': forms.TextInput(),
         }
-    def add_fields(self, form, index):
+    def aadd_fields(self, form, index):
         super(DisciplineForm, self).add_fields(form, index)
         form.fields["students"] = AutoCompleteSelectMultipleField('dstudent')
         

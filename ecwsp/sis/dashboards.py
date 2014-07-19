@@ -1,8 +1,8 @@
 from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, RssFeedDashlet
 from ecwsp.discipline.dashboards import DisciplineDashlet
-from ecwsp.schedule.models import Course, MarkingPeriod
+from ecwsp.schedule.models import Course, MarkingPeriod, CourseSection
 from .models import SchoolYear
-from ecwsp.attendance.models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
+from ecwsp.attendance.models import StudentAttendance, CourseSectionAttendance, AttendanceStatus, AttendanceLog
 from report_builder.models import Report
 import datetime
 
@@ -84,12 +84,12 @@ class AttendanceIndividualDashlet(Dashlet):
 class AttendanceSubmissionPercentageDashlet(Dashlet):
     template_name = 'attendance/teacher_submissions_percentage.html'
     
-    # ripped directly from teacher_submissions in attendance/views.py. Create function or class for common use cases in future...
+    # Create function or class for common use cases in future...
     def submission_percentage(self):
         """ Returns the percentage of teachers who have submitted attendance today. 
             e.g. 2/3 teachers submit attendance, thus 66%. """
         logs = AttendanceLog.objects.filter(date=datetime.date.today())
-        homerooms = Course.objects.filter(homeroom=True)
+        homerooms = CourseSection.objects.filter(course__homeroom=True)
         homerooms = homerooms.filter(marking_period__school_year__active_year=True)
         homerooms = homerooms.filter(coursemeet__day__contains=datetime.date.today().isoweekday()).distinct()
         submissions = []
@@ -98,7 +98,7 @@ class AttendanceSubmissionPercentageDashlet(Dashlet):
         sub_percent = 0
         for homeroom in homerooms:
             homeroom_count += 1
-            log = AttendanceLog.objects.filter(date=datetime.date.today(), course=homeroom)
+            log = AttendanceLog.objects.filter(date=datetime.date.today(), course_section=homeroom)
             if log.count() > 0:
                 submission_count += 1
         if submission_count > 0:
@@ -131,8 +131,8 @@ class AttendanceLinksListDashlet(LinksListDashlet):
             'perm': ('attendance.take_studentattendance',),
         },
         {
-            'text': 'Take course attendance',
-            'link': reverse('ecwsp.attendance.views.select_course_for_attendance'),
+            'text': 'Take course section attendance',
+            'link': reverse('ecwsp.attendance.views.select_course_section_for_attendance'),
             'perm': ('attendance.take_studentattendance',),
         },
         {

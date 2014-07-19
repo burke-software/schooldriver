@@ -1,32 +1,14 @@
-#   Copyright 2012 Burke Software and Consulting LLC
-#   Author David M Burke <david@burkesoftware.com>
-#   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 3 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.contrib import admin
 from django.contrib import messages
 from django import forms
 from daterange_filter.filter import DateRangeFilter
 
-from ecwsp.attendance.models import StudentAttendance, CourseAttendance, AttendanceLog, AttendanceStatus
+from ecwsp.attendance.models import StudentAttendance, CourseSectionAttendance, AttendanceLog, AttendanceStatus
 
-from ajax_select import make_ajax_form
+import autocomplete_light
 
 class StudentAttendanceAdmin(admin.ModelAdmin):
-    form = make_ajax_form(StudentAttendance, dict(student='attendance_quick_view_student'))
+    form = autocomplete_light.modelform_factory(StudentAttendance)
     list_display = ['student', 'date', 'status', 'notes', 'time']
     list_filter = [
         ('date', DateRangeFilter),
@@ -48,8 +30,8 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
         
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 
-class CourseAttendanceAdmin(admin.ModelAdmin):
-    list_display = ['student', 'date', 'course', 'course_period', 'status', 'notes']
+class CourseSectionAttendanceAdmin(admin.ModelAdmin):
+    list_display = ['student', 'date', 'course_section', 'course_period', 'status', 'notes']
     list_filter = [
         ('date', DateRangeFilter),
         'status'
@@ -60,7 +42,7 @@ class CourseAttendanceAdmin(admin.ModelAdmin):
         if lookup in ('student','student__id__exact',):
             return True
         return super(StudentAttendanceAdmin, self).lookup_allowed(lookup, *args, **kwargs)
-admin.site.register(CourseAttendance, CourseAttendanceAdmin)
+admin.site.register(CourseSectionAttendance, CourseSectionAttendanceAdmin)
 
 admin.site.register(AttendanceLog)
 

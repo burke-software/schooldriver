@@ -1,7 +1,9 @@
 from django.conf.urls import *
 from ecwsp.work_study import views
+from responsive_dashboard.views import generate_dashboard
 
 urlpatterns = patterns('',
+    (r'^$', generate_dashboard, {'app_name': 'work_study'}),
     (r'^reports/$', views.report_builder_view),
     (r'^student_timesheet/$', views.student_timesheet),
     (r'^supervisor/create_timesheet/(?P<studentId>\d+)/$', views.create_time_card),

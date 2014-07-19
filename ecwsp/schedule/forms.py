@@ -80,5 +80,3 @@ class GradeFilterForm(TimeBasedForm):
     filter_tardy = forms.ChoiceField(choices=filter_choices, required=False)
     filter_tardy_times = forms.CharField(max_length=2, required=False, widget=forms.TextInput(attrs={'style':'width:20px;'}))
     
-class CourseSelectionForm(forms.Form):
-    course = forms.ModelChoiceField(queryset=Course.objects.filter(marking_period__school_year__active_year=True).distinct(), required=False)

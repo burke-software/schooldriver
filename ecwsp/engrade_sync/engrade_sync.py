@@ -1,22 +1,5 @@
-#       Copyright 2011 David M Burke <david@davidmburke.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
-from ecwsp.engrade_sync.python_engrade import *
-from ecwsp.engrade_sync.models import *
+from .python_engrade import *
+from .models import *
 from ecwsp.schedule.models import *
 from ecwsp.grades.models import Grade
 
@@ -67,51 +50,51 @@ class EngradeSync:
         Genererate all courses in Engrade for a given marking period.
         Returns list of engrade course id's
         """
-        courses = Course.objects.filter(marking_period=marking_period)
-        course_ids = ""
-        for course in courses:
+        course_sections = CourseSection.objects.filter(marking_period=marking_period)
+        course_ids = "" # from Engrade
+        for course_section in course_sections:
             try:
-                course_ids += unicode(self.get_engrade_course(course, marking_period)) + ", "
+                course_ids += unicode(self.get_engrade_course(course_section, marking_period)) + ", "
             except:
-                course_ids += "Error creating %s, " % (course,)
+                course_ids += "Error creating %s, " % (course_section,)
         return course_ids
     
-    def get_engrade_course(self, course, marking_period):
+    def get_engrade_course(self, course_section, marking_period):
         """ Get an engrade course id, create if non existant. Creates teacher if
         non existant.
-        course: schedule.models.Course
+        course_section: schedule.models.CourseSection
         marking_period: unlike SWORD, engrade considers different marking
         periods as different courses
         returns engrade course id"""
-        course_sync = CourseSync.objects.filter(course=course, marking_period=marking_period)
-        if not course_sync.count():
-            name = course.shortname
-            syr = course.marking_period.all()[0].school_year.name
+        course_section_sync = CourseSectionSync.objects.filter(course_section=course_section, marking_period=marking_period)
+        if not course_section_sync.exists():
+            name = course_section.name
+            syr = course_section.marking_period.all()[0].school_year.name
             # Figure out gp by determining the order in which the SWORD marking
             # periods occure
             gp = 0
-            for mp in course.marking_period.order_by('start_date'):
+            for mp in course_section.marking_period.order_by('start_date'):
                 gp += 1
                 if mp == marking_period:
                     break
             students = ""
-            for student in course.get_enrolled_students():
+            for student in Student.objects.filter(courseenrollment__course_section=course_section):
                 students += "%s %s %s\n" % (student.fname, student.lname, student.id)
-            priteach = self.get_engrade_teacher(course.teacher)
+            priteach = self.get_engrade_teacher(course_section.teacher)
             engrade_id = self.api.school_class_new(name, syr, gp, students, priteach)
-            course_sync = CourseSync(course=course, marking_period=marking_period, engrade_course_id=engrade_id)
-            course_sync.save()
+            course_section_sync = CourseSectionSync(course_section=course_section, marking_period=marking_period, engrade_course_id=engrade_id)
+            course_section_sync.save()
         else:
-            course_sync = course_sync[0]
-        return course_sync.engrade_course_id
+            course_section_sync = course_section_sync[0]
+        return course_section_sync.engrade_course_id
     
-    def sync_course_grades(self, course, marking_period, include_comments):
-        """ Loads grades from engrade into Course grades for particular marking period.
+    def sync_course_grades(self, course_section, marking_period, include_comments):
+        """ Loads grades from engrade into CourseSection grades for particular marking period.
         Returns: list of errors """
         try:
-            engrade_course = CourseSync.objects.get(course=course, marking_period=marking_period)
-        except CourseSync.DoesNotExist:
-            return "%s does not exist in engrade. " % (course,)
+            engrade_course = CourseSectionSync.objects.get(course_section=course_section, marking_period=marking_period)
+        except CourseSectionSync.DoesNotExist:
+            return "%s does not exist in engrade. " % (course_section,)
         students = self.api.gradebook(engrade_course.engrade_course_id)
         errors = ""
         for engrade_student in students:
@@ -119,14 +102,14 @@ class EngradeSync:
                 student = None
                 student = Student.objects.get(id=engrade_student['stuid'])
                 grade = engrade_student['grade']
-                model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period)
+                model, created = Grade.objects.get_or_create(student=student, course_section=course_section, marking_period=marking_period)
                 model.set_grade(grade)
                 model.save()
             except:
                 if student:
-                    errors += '%s: %s\'s grade not set! ' % (course,student,)
+                    errors += '%s: %s\'s grade not set! ' % (course_section,student,)
                 else:
-                    errors += "%s: Student doesn't exist! " % (course,)
+                    errors += "%s: Student doesn't exist! " % (course_section,)
                 print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
         if include_comments:
             students = self.api.class_comments(engrade_course.engrade_course_id)
@@ -135,15 +118,15 @@ class EngradeSync:
                     student = None
                     student = Student.objects.get(id=engrade_student['stuid'])
                     comment = engrade_student['comment']
-                    model, created = Grade.objects.get_or_create(student=student, course=course, marking_period=marking_period)
+                    model, created = Grade.objects.get_or_create(student=student, course_section=course_section, marking_period=marking_period)
                     model.comment = comment
                     model.save()
                 except:
                     if student:
-                        errors += '%s: %s\'s comment not set! ' % (course,student,)
+                        errors += '%s: %s\'s comment not set! ' % (course_section,student,)
                     else:
-                        errors += "%s: Student doesn't exist! " % (course,)
+                        errors += "%s: Student doesn't exist! " % (course_section,)
                     print >> sys.stderr, "ENGRADE_SYNC:" + unicode(sys.exc_info()[0]) + unicode(sys.exc_info()[1])
-        course.last_grade_submission = datetime.datetime.now()
-        course.save()
+        course_section.last_grade_submission = datetime.datetime.now()
+        course_section.save()
         return errors

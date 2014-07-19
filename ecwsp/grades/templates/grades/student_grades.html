@@ -1,0 +1,51 @@
+{% extends 'base_next.html' %}
+{% load staticfiles %}
+{% load compress %}
+
+{% block breadcrumbs %}
+  <li><a href="../">Grades Dashboard</a></li>
+  <li>{{ object }} Grades</li>
+{% endblock %}
+
+{% block extra_head %}
+    {% compress js %}
+    <script type="text/coffeescript" charset="utf-8" src="{% static "app/grades.coffee" %}"></script>
+    {% endcompress %}
+    <script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
+    <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
+    <script type="text/javascript">
+        var edit = '{{ edit }}'
+        var edit_final = '{{ edit_final }}'
+        var default_school_year_id = '{{ default_school_year.id }}'
+    </script>
+{% endblock %}
+
+{% block title %}
+    Grades - {{ object }}
+{% endblock %}
+
+{% block content %}
+    <div ng-app="angular_sis">
+        <p>
+        Select school year:
+        {% for year in school_years %}
+        <a class="btn btn-primary" href="/course/student_grades/{{ object.pk}}/{{ year.id }}/"> {{ year }} </a>
+        {% endfor %}
+        </p>
+
+        <div ng-view></div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 col-md-6">
+            <div class="well well-key">
+                <table class="table">
+                    <h4>Key</h4>
+                    <p><i class="fa fa-check-circle text-success"></i>Saved</p>
+                    <p><i class="fa fa-pencil text-info"></i>Saved (Overriding Automatic Calculation)</p>
+                    <p><i class="fa fa-times-circle text-danger"></i>Not Saved - Invalid Input</p>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% load i18n admin_static %}
+<h3>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/widgets.css" %}" />
+<style>
+    .calendarbox, .clockbox {
+        /* Make sure the calendar widget popover displays in front of the sidebar */
+        z-index: 1100;
+        margin-left: -251px;
+    }
+    .datetimeshortcuts a{
+        /* Make text for "Today" a bit smaller so it appears on one line. */
+        font-size: 8pt;
+    }
+</style>
+<form method="GET" action="">
+     {{ spec.form.media }}
+     <script>
+         (function($) {
+             $(document).ready(function() {
+                 grappelli.initDateAndTimePicker();
+             });
+         })(grp.jQuery);
+    </script>
+{{ spec.form.as_p }}
+<p>
+    <input type="submit" value="{% trans "Search" %}">
+    <input type="reset" value="{% trans "Clear" %}">
+    </p>
+</form>

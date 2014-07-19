@@ -23,6 +23,7 @@ sequenceTypes = (list, tuple)
 
 # ------------------------------------------------------------------------------
 class FolderDeleter:
+    @staticmethod
     def delete(dirName):
         '''Recursively deletes p_dirName.'''
         dirName = os.path.abspath(dirName)
@@ -32,7 +33,19 @@ class FolderDeleter:
             for name in dirs:
                 os.rmdir(os.path.join(root, name))
         os.rmdir(dirName)
-    delete = staticmethod(delete)
+
+    @staticmethod
+    def deleteEmpty(dirName):
+        '''Deletes p_dirName and its parent dirs if they are empty.'''
+        while True:
+            try:
+                if not os.listdir(dirName):
+                    os.rmdir(dirName)
+                    dirName = os.path.dirname(dirName)
+                else:
+                    break
+            except OSError, oe:
+                break
 
 # ------------------------------------------------------------------------------
 extsToClean = ('.pyc', '.pyo', '.fsz', '.deltafsz', '.dat', '.log')
@@ -203,6 +216,7 @@ def normalizeString(s, usage='fileName'):
        * alphanum: it removes any non-alphanumeric char;
        * alpha: it removes any non-letter char.
     '''
+    strNeeded = isinstance(s, str)
     # We work in unicode. Convert p_s to unicode if not unicode.
     if isinstance(s, str):           s = s.decode('utf-8')
     elif not isinstance(s, unicode): s = unicode(s)
@@ -223,8 +237,12 @@ def normalizeString(s, usage='fileName'):
         res = ''
         for char in s:
             if rex.match(char): res += char
+    elif usage == 'noAccents':
+        res = s
     else:
         res = s
+    # Re-code the result as a str if a str was given.
+    if strNeeded: res = res.encode('utf-8')
     return res
 
 def normalizeText(s):
@@ -238,6 +256,31 @@ def keepDigits(s):
     res = ''
     for c in s:
         if c.isdigit(): res += c
+    return res
+
+def getStringDict(d):
+    '''Gets the string literal corresponding to dict p_d.'''
+    res = []
+    for k, v in d.iteritems():
+        if type(v) not in sequenceTypes:
+            value = "'%s':'%s'" % (k, v.replace("'", "\\'"))
+        else:
+            value = "'%s':%s" % (k, v)
+        res.append(value)
+    return '{%s}' % ','.join(res)
+
+def stretchText(s, pattern, char=' '):
+    '''Inserts occurrences of p_char within p_s according to p_pattern.
+       Example: stretchText("475123456", (3,2,2,2)) returns '475 12 34 56'.'''
+    res = ''
+    i = 0
+    for nb in pattern:
+        j = 0
+        while j < nb:
+            res += s[i+j]
+            j += 1
+        res += char
+        i += nb
     return res
 
 # ------------------------------------------------------------------------------
@@ -300,8 +343,8 @@ def upper(s):
 # ------------------------------------------------------------------------------
 typeLetters = {'b': bool, 'i': int, 'j': long, 'f':float, 's':str, 'u':unicode,
                'l': list, 'd': dict}
-exts = {'py': ('.py', '.vpy', '.cpy'), 'pt': ('.pt', '.cpt')}
 
+# ------------------------------------------------------------------------------
 class CodeAnalysis:
     '''This class holds information about some code analysis (line counts) that
        spans some folder hierarchy.'''
@@ -317,25 +360,6 @@ class CodeAnalysis:
     def numberOfLines(self):
         '''Computes the total number of lines within analysed files.'''
         return self.emptyLines + self.commentLines + self.codeLines
-
-    def analyseZptFile(self, theFile):
-        '''Analyses the ZPT file named p_fileName.'''
-        inDoc = False
-        for line in theFile:
-            stripped = line.strip()
-            # Manage a comment
-            if not inDoc and (line.find('<tal:comment ') != -1):
-                inDoc = True
-            if inDoc:
-                self.commentLines += 1
-                if line.find('</tal:comment>') != -1:
-                    inDoc = False
-                continue
-            # Manage an empty line
-            if not stripped:
-                self.emptyLines += 1
-            else:
-                self.codeLines += 1
 
     docSeps = ('"""', "'''")
     def isPythonDoc(self, line, start, isStart=False):
@@ -389,8 +413,7 @@ class CodeAnalysis:
         self.numberOfFiles += 1
         theFile = file(fileName)
         ext = os.path.splitext(fileName)[1]
-        if ext in exts['py']:   self.analysePythonFile(theFile)
-        elif ext in exts['pt']: self.analyseZptFile(theFile)
+        if ext == '.py': self.analysePythonFile(theFile)
         theFile.close()
 
     def printReport(self):
@@ -416,11 +439,9 @@ class LinesCounter:
         else:
             # It is a Python module
             self.folder = os.path.dirname(folderOrModule.__file__)
-        # These dicts will hold information about analysed files
+        # These dict will hold information about analysed files.
         self.python = {False: CodeAnalysis('Python'),
                        True:  CodeAnalysis('Python (test)')}
-        self.zpt = {False: CodeAnalysis('ZPT'),
-                    True:  CodeAnalysis('ZPT (test)')}
         # Are we currently analysing real or test code?
         self.inTest = False
         # Which paths to exclude from the analysis?
@@ -430,7 +451,6 @@ class LinesCounter:
     def printReport(self):
         '''Displays on stdout a small analysis report about self.folder.'''
         for zone in (False, True): self.python[zone].printReport()
-        for zone in (False, True): self.zpt[zone].printReport()
 
     def isExcluded(self, path):
         '''Must p_path be excluded from the analysis?'''
@@ -456,14 +476,12 @@ class LinesCounter:
             # Scan the files in this folder
             for fileName in files:
                 ext = os.path.splitext(fileName)[1]
-                if ext in exts['py']:
+                if ext == '.py':
                     self.python[self.inTest].analyseFile(j(root, fileName))
-                elif ext in exts['pt']:
-                    self.zpt[self.inTest].analyseFile(j(root, fileName))
         self.printReport()
 
 # ------------------------------------------------------------------------------
-CONVERSION_ERROR = 'An error occurred while executing command "%s". %s'
+CONVERSION_ERROR = 'An error occurred. %s'
 class FileWrapper:
     '''When you get, from an appy object, the value of a File attribute, you
        get an instance of this class.'''
@@ -501,10 +519,10 @@ class FileWrapper:
            must exist. If not, the file will be dumped in the OS temp folder.
            The absolute path name of the dumped file is returned.
            If an error occurs, the method returns None. If p_format is
-           specified, OpenOffice will be called for converting the dumped file
+           specified, LibreOffice will be called for converting the dumped file
            to the desired format. In this case, p_tool, a Appy tool, must be
            provided. Indeed, any Appy tool contains parameters for contacting
-           OpenOffice in server mode.'''
+           LibreOffice in server mode.'''
         if not filePath:
             filePath = '%s/file%f.%s' % (getOsTempFolder(), time.time(),
                 normalizeString(self.name))
@@ -536,7 +554,7 @@ class FileWrapper:
             else:
                 filePath = '%s.%s' % (baseName, format)
             if not os.path.exists(filePath):
-                tool.log(CONVERSION_ERROR % (cmd, errorMessage), type='error')
+                tool.log(CONVERSION_ERROR % errorMessage, type='error')
                 return
         return filePath
 

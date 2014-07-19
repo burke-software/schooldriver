@@ -107,6 +107,9 @@ class PodEnvironment(OdfEnvironment):
         self.currentOdsHook = None
         # Names of some tags, that we will compute after namespace propagation
         self.tags = None
+        # When an error occurs, must we raise it or write it into he current
+        # buffer?
+        self.raiseOnError = None # Will be initialized by PodParser.__init__
 
     def getTable(self):
         '''Gets the currently parsed table.'''
@@ -219,6 +222,7 @@ class PodEnvironment(OdfEnvironment):
 class PodParser(OdfParser):
     def __init__(self, env, caller):
         OdfParser.__init__(self, env, caller)
+        env.raiseOnError = caller.raiseOnError
 
     def endDocument(self):
         self.env.currentBuffer.content.close()

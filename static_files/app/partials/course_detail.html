@@ -1,0 +1,99 @@
+<div class="col-sm-4 col-md-3">
+  <h1>Courses</h1>
+  <h3>
+    <a href="/schedule/course/{{ course.id }}"><i class="fa fa-fw fa-list"></i></a>
+    <a href="/admin/report_builder/report/"><i class="fa fa-fw fa-file-text"></i></a>
+    <a href="/admin/schedule/course/{{ course.id }}/"><i class="fa fa-fw fa-sitemap"></i></a>
+  </h3>
+  <ul class="nav nav-pills nav-stacked">
+    <li ng-repeat="course in courses">
+      <a href="/schedule/course/{{ course.id }}">{{ course.fullname }}</a>
+      <ul class="nav nav-pills nav-stacked" ng-if="course.sections.length > 0">
+        <li ng-repeat="section in course.sections"><a href="">{{ section }}</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+<div class="col-sm-8 col-md-9">
+  <div class="well">
+    <h1>{{ course.fullname }}<br /><small>{{ course.description }}</small></h1>
+    <ul>
+      <li>{{ course.department.name }} Department</li>
+      <li>{{ course.sections.length }} Course Sections</li>
+    </ul>
+  </div>
+
+<form name="form" class="form-horizontal">
+<div>
+  <accordion close-others="oneAtATime">
+    <accordion-group is-open="status.isOpen1">
+      <accordion-heading>
+        <i class="fa fa-fw fa-caret-right" ng-class="{'fa-caret-down': status.isOpen1, 'fa-caret-right': !status.isOpen1}"></i>Attendance
+      </accordion-heading>
+      <p>Course Attendance here, if it's homeroom and there are no sections?</p>
+      <p>I actually don't know if I need the accordion for course? Definitely for course sections; we'll have grades, attendance, and admin-ish.</p>
+    </accordion-group>
+    <accordion-group is-open="status.isOpen2">
+      <accordion-heading>
+        <i class="fa fa-fw fa-caret-right" ng-class="{'fa-caret-down': status.isOpen2, 'fa-caret-right': !status.isOpen2}"></i>Course Sections
+      </accordion-heading>
+      <p>I plan on putting the course sections in the nav to the left. But perhaps it'd be good to put them in a block here? That menu on the left might not make it to mobile, so if it's not hard or burdensome it might be nice to give someone another way to get 'em.</p>
+    </accordion-group>
+    <accordion-group is-open="status.isFirstOpen">
+      <accordion-heading>
+        <i class="fa fa-fw fa-caret-down" ng-class="{'fa-caret-down': status.isFirstOpen, 'fa-caret-right': !status.isFirstOpen}"></i>Edit Course Info
+      </accordion-heading>
+
+        <div bsc-field field-options="courseOptions.fullname" field-form="form.fullname">
+          <input class="form-control" name="fullname" ng-required="courseOptions.fullname.required" type="text" ng-model="course.fullname" ng-blur="saveCourse('fullname')" />
+        </div>
+
+        <div bsc-field field-options="courseOptions.shortname" field-form="form.shortname">
+          <input class="form-control" name="shortname" ng-required="courseOptions.shortname.required" type="text" ng-model="course.shortname" ng-blur="saveCourse('shortname')" />
+        </div>
+
+        <div bsc-field field-options="courseOptions.homeroom" field-form="form.homeroom">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" name="homeroom" ng-model="course.homeroom" ng-change="saveCourse('homeroom')" ng-required="courseOptions.homeroom.required" />
+            </label>
+          </div>
+        </div>
+
+        <div bsc-field field-options="courseOptions.graded" field-form="form.graded">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" name="graded" ng-model="course.graded" ng-change="saveCourse('graded')" ng-required="courseOptions.graded.required" />
+            </label>
+          </div>
+        </div>
+
+        <div bsc-field field-options="courseOptions.description" field-form="form.description">
+          <textarea class="form-control" name="description" ng-required="courseOptions.description.required" ng-model="course.description" ng-blur="saveCourse('description')"></textarea>
+        </div>
+
+        <div bsc-field field-options="courseOptions.credits" field-form="form.credits">
+          <input class="form-control" name="credits" type="text" ng-required="courseOptions.credits.required" ng-model="course.credits" ng-blur="saveCourse('credits')" />
+        </div>
+
+        <div bsc-field field-options="courseOptions.award_credits" field-form="form.award_credits">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" name="award_credits" ng-model="course.award_credits" ng-change="saveCourse('award_credits')" ng-required="courseOptions.award_credits.required" />
+            </label>
+          </div>
+        </div>
+
+        <div bsc-field field-options="courseOptions.department.name" field-form="form.department.name">
+          <input class="form-control" name="department.name" ng-required="courseOptions.department.name.required" type="text" ng-model="course.department.name" ng-blur="saveCourse('department.name')" />
+        </div>
+
+        <div bsc-field field-options="courseOptions.level" field-form="form.level">
+          <input class="form-control" name="level" ng-required="courseOptions.level.required" type="text" ng-model="course.level" ng-blur="saveCourse('level')" />
+        </div>
+    </accordion-group>
+  </accordion>
+</div>
+</form>
+
+</div>

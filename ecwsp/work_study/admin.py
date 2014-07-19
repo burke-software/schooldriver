@@ -1,21 +1,3 @@
-#       Copyright 2010-2012 Burke Software and Consulting LLC
-#        Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
 from ecwsp.work_study.models import *
 from ecwsp.sis.models import *
 from ecwsp.sis.admin import StudentFileInline
@@ -31,12 +13,11 @@ from daterange_filter.filter import DateRangeFilter
 
 from django import forms
 from ecwsp.work_study.forms import StudentForm, WorkTeamForm
-from ecwsp.sis.helper_functions import ReadPermissionModelAdmin
 from ecwsp.administration.models import Configuration
 from django.contrib.auth.models import User
 from django.db.models import Q
-from ajax_select import make_ajax_form
 from custom_field.custom_field import CustomFieldAdmin
+import autocomplete_light
 
 import logging
     
@@ -169,7 +150,7 @@ class WorkStudyUserAdmin(UserAdmin,admin.ModelAdmin):
     
 admin.site.register(WorkTeamUser,WorkStudyUserAdmin)
 
-class StudentAdmin(ReadPermissionModelAdmin):
+class StudentAdmin(admin.ModelAdmin):
     form = StudentForm
     
     def changelist_view(self, request, extra_context=None):
@@ -241,7 +222,7 @@ class StudentAdmin(ReadPermissionModelAdmin):
         ('Parent and address', {'fields': ['parent_guardian', 'emergency_contacts', 'street',
                                            'city', 'state', 'zip', 'parent_email', 'alt_email'],
             'classes': ['collapse']}),
-        ('Personality', {'fields': ['personality_type', 'handout33'], 'classes': ['collapse']}),
+        ('Personality', {'fields': ['personality_type',], 'classes': ['collapse']}),
     ]
     
     def get_readonly_fields(self, request, obj=None):
@@ -253,7 +234,6 @@ class StudentAdmin(ReadPermissionModelAdmin):
     inlines = [StudentNumberInline, StudentFileInline, CompanyHistoryInline]
     list_filter = ['day', 'year', 'is_active','placement__cras']
     list_display = ('first_name', 'last_name', 'day', 'company', 'pickUp', 'cra', 'contact')
-    filter_horizontal = ('handout33',)
     search_fields = ['first_name', 'last_name', 'unique_id', 'placement__team_name', 'username', 'id']
     readonly_fields = ['is_active', 'first_name', 'last_name', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']    
 admin.site.register(StudentWorker, StudentAdmin)
@@ -261,7 +241,7 @@ admin.site.register(StudentWorkerRoute)
 admin.site.register(PresetComment)
 
 class StudentInteractionAdmin(admin.ModelAdmin):
-    form = make_ajax_form(StudentInteraction, dict(student='studentworker'))
+    form = autocomplete_light.modelform_factory(StudentInteraction)
     
     list_display = ('students', 'date', 'type', 'cra', 'comment_Brief', 'reported_by')
     list_filter = ['type', 'date', 'student','student__is_active']
@@ -341,7 +321,7 @@ admin.site.register(TimeSheet, TimeSheetAdmin)
 admin.site.register(CompanyHistory)
 
 class AttendanceAdmin(admin.ModelAdmin):
-    form = make_ajax_form(Attendance, dict(student='studentworker'))
+    form = autocomplete_light.modelform_factory(Attendance)
     search_fields = ['student__first_name', 'student__last_name', 'absence_date']
     list_editable = ('makeup_date','reason', 'fee', 'billed')
     list_filter = [('absence_date', DateRangeFilter), 'makeup_date', 'reason', 'fee', 'student','tardy']
@@ -361,10 +341,9 @@ admin.site.register(Attendance, AttendanceAdmin)
 admin.site.register(AttendanceFee)
 admin.site.register(AttendanceReason)
 admin.site.register(Personality)
-admin.site.register(Handout33)
 
 class ClientVisitAdmin(admin.ModelAdmin):
-    form = make_ajax_form(ClientVisit, dict(student_worker='studentworker', supervisor='company_contact', company='company'))
+    form = autocomplete_light.modelform_factory(ClientVisit)
     fieldsets = [
         (None, {'fields': ['date', 'company', 'notify_mentors', 'notes',]}),
         ("DOL", {'fields': ['dol', 'follow_up_of', 'cra', 'student_worker', 'supervisor',

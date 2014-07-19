@@ -1,21 +1,3 @@
-#   Copyright 2012 Burke Software and Consulting LLC
-#   Author David M Burke <david@burkesoftware.com>
-#   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 3 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
@@ -44,13 +26,13 @@ class AttendanceStatus(models.Model):
         return unicode(self.name)
 
 
-class CourseAttendance(models.Model):
-    """ Attendance taken at each course
+class CourseSectionAttendance(models.Model):
+    """ Attendance taken at each course (section)
     It compares with the daily "student attendance" and is a way to verify
     students are not skipping classes.
     """
     student =  models.ForeignKey(Student)
-    course = models.ForeignKey('schedule.Course')
+    course_section = models.ForeignKey('schedule.CourseSection')
     period = models.ForeignKey('schedule.Period', blank=True, null=True)
     date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     time_in = models.TimeField(blank=True, null=True)
@@ -60,8 +42,8 @@ class CourseAttendance(models.Model):
         return unicode(self.student) + " " + unicode(self.date) + " " + unicode(self.status)
     
     def course_period(self):
-        if self.course.coursemeet_set.filter(day=self.date.isoweekday()):
-            return self.course.coursemeet_set.filter(day=self.date.isoweekday())[0].period
+        if self.course_section.coursemeet_set.filter(day=self.date.isoweekday()):
+            return self.course_section.coursemeet_set.filter(day=self.date.isoweekday())[0].period
 
 
 class StudentAttendance(models.Model):
@@ -125,7 +107,7 @@ post_save.connect(post_save_attendance_handler, sender=StudentAttendance)
 class AttendanceLog(models.Model):
     date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User)
-    course = models.ForeignKey('schedule.Course')
+    course_section = models.ForeignKey('schedule.CourseSection')
     asp = models.BooleanField(default=False, help_text="ASP attendance, if unchecked this is for a homeroom")
     def __unicode__(self):
         return unicode(self.user) + " " + unicode(self.date)

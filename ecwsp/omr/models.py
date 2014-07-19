@@ -31,7 +31,7 @@ class Test(models.Model):
     school_year = models.ForeignKey('sis.SchoolYear', default=get_active_year, blank=True, null=True)
     marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     department = models.ForeignKey('benchmarks.Department', blank=True, null=True)
-    courses = models.ManyToManyField('schedule.Course', blank=True, null=True, help_text="Enroll an entire course, students will not show until saving.")
+    course_sections = models.ManyToManyField('schedule.CourseSection', blank=True, null=True, help_text="Enroll an entire course section; students will not show until saving.")
     students = models.ManyToManyField('sis.Student', blank=True, null=True, through='TestInstance')
     finalized = models.BooleanField(default=False, help_text="This test is finished and should no longer be edited!")
     answer_sheet_pdf = FileField(upload_to="student_tests", blank=True)
@@ -102,8 +102,8 @@ class Test(models.Model):
         return u'; '.join(map(u'{}'.format, self.teachers.all()))
     
     @property
-    def get_courses(self):
-        return u'; '.join(map(u'{}'.format, self.courses.all()))
+    def get_course_sections(self):
+        return u'; '.join(map(u'{}'.format, self.course_sections.all()))
         
     @property
     def points_average(self):
@@ -117,16 +117,17 @@ class Test(models.Model):
             kill_instances = TestInstance.objects.filter(test=self).exclude(student__in=students.all())
             for kill_instance in kill_instances:
                 kill_instance.delete()
-            self.enroll_course()
+            self.enroll_course_section()
     
-    def enroll_course(self):
-        for course in self.courses.all():
-            students = Student.objects.filter(course=course)
+    def enroll_course_section(self):
+        for course_section in self.course_sections.all():
+            students = Student.objects.filter(coursesection=course_section)
             for student in students:
                 self.__enroll_student(student)
-def enroll_course_signal(sender, instance, signal, *args, **kwargs):
-    instance.enroll_course()
-signals.m2m_changed.connect(enroll_course_signal, sender=Test.courses.through)
+def enroll_course_section_signal(sender, instance, signal, *args, **kwargs):
+    instance.enroll_course_section()
+signals.m2m_changed.connect(enroll_course_section_signal,
+    sender=Test.course_sections.through)
     
 
 class QuestionAbstract(models.Model):

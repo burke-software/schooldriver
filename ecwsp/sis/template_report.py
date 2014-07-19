@@ -44,7 +44,8 @@ class TemplateReport(object):
         import time
         
         if ext == None:
-            ext = "." + self.file_format
+            #ext = "." + self.file_format
+            ext = ".odt"
         
         # strip comma's from filename
         filename = self.filename.replace(",", "")

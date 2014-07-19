@@ -214,8 +214,8 @@ class StylesManager:
              (a) if the key is (1), (2) or (3), value must be the display name
                  of an ODT style
              (b) if the key is (4), value must be an integer indicating how to
-                 map the outline level of outlined styles (ie, for mapping HTML
-                 tag "h1" to the ODT style with outline-level=2, value must be
+                 map the outline level of outlined styles (ie, for mapping XHTML
+                 tag "h1" to the OD style with outline-level=2, value must be
                  integer "1". In that case, h2 will be mapped to the ODT style
                  with outline-level=3, etc.). Note that this value can also be
                  negative.

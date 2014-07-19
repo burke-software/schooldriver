@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
 from ecwsp.sis.models import Student, Faculty, Cohort, SchoolYear
-from ecwsp.schedule.models import Department, MarkingPeriod, Course
+from ecwsp.schedule.models import Department, MarkingPeriod, Course, CourseSection
 
 import os
 import tempfile
@@ -39,17 +39,13 @@ class CanvasSync:
         zip_file.writestr('accounts.csv', smart_str(self.gen_accounts()))
         zip_file.writestr('terms.csv', smart_str(self.gen_terms()))
         zip_file.writestr('courses.csv', smart_str(self.gen_courses()))
+        zip_file.writestr('sections.csv', smart_str(self.gen_sections()))
         zip_file.writestr('enrollments.csv', smart_str(self.gen_enrollments()))
         zip_file.writestr('groups.csv', smart_str(self.gen_groups()))
         zip_file.writestr('groups_membership.csv', smart_str(self.gen_groups_membership()))
         zip_file.close()
 
-
-
         return response
-
-
-
 
         temp_file = tempfile.TemporaryFile()
         temp_file.write(buf.getvalue())
@@ -78,8 +74,8 @@ class CanvasSync:
                 student.id,
                 student.username,
                 '',
-                student.fname,
-                student.lname,
+                student.first_name,
+                student.last_name,
                 student.get_email,
             )
             if student.is_active:
@@ -93,11 +89,11 @@ class CanvasSync:
                     faculty.id,
                     faculty.username,
                     '',
-                    faculty.fname,
-                    faculty.lname,
+                    faculty.first_name,
+                    faculty.last_name,
                     faculty.email,
                 )
-                if faculty.inactive:
+                if not faculty.is_active:
                     line += u'"deleted"'
                 else:
                     line += u'"active"'
@@ -149,7 +145,7 @@ class CanvasSync:
         """ Create csv string for courses
         """
         result = u"course_id,short_name,long_name,account_id,term_id,status,start_date,end_date\n"
-        for course in Course.objects.filter(marking_period__school_year__active_year=True).distinct():
+        for course in Course.objects.filter(coursesection__marking_period__school_year__active_year=True).distinct():
             if course.department:
                 department_id = course.department_id
             else:
@@ -159,41 +155,44 @@ class CanvasSync:
                 course.shortname,
                 course.fullname,
                 department_id,
-                course.marking_period.all()[0].school_year_id,
+                MarkingPeriod.objects.filter(coursesection__course=course).first().school_year_id,
                 'active',
-                course.marking_period.order_by('start_date')[0].start_date.strftime('%Y-%m-%d'),
-                course.marking_period.order_by('-end_date')[0].end_date.strftime('%Y-%m-%d'),
+                course.start_date.strftime('%Y-%m-%d'),
+                course.end_date.strftime('%Y-%m-%d'),
             )
             result += line + u'\n'
+        return result
+
+    def gen_sections(self):
+        result = 'section_id,course_id,name,status,start_date,end_date'
+        for section in CourseSection.objects.filter(marking_period__school_year__active_year=True).distinct():
+            line = '{},{},{},{},{},{}'.format(
+                    section.id,
+                    section.course_id,
+                    section.name,
+                    'active',
+                    section.marking_period.order_by('start_date')[0].start_date.strftime('%Y-%m-%d'),
+                    section.marking_period.order_by('-end_date')[0].end_date.strftime('%Y-%m-%d'),
+                    )
+            result += line + '\n'
         return result
 
     def gen_enrollments(self):
         """ Create csv string for enrollment
         """
         result = u"course_id,user_id,role,status\n"
-        for course in Course.objects.filter(marking_period__school_year__active_year=True).distinct():
-            for enrollment in course.enrollments.filter(inactive=False):
+        for course_section in CourseSection.objects.filter(marking_period__school_year__active_year=True).distinct():
+            for enrollment in course_section.enrollments.filter(is_active=True):
                 line = u'"%s","%s","%s","%s"' % (
-                    course.id,
+                    course_section.id,
                     enrollment.id,
                     'student',
                     'active',
                 )
                 result += line + u'\n'
-            if course.teacher:
-                teacher_id = course.teacher_id
-            else:
-                teacher_id = ''
-            line = u'"%s","%s","%s","%s"' % (
-                course.id,
-                teacher_id,
-                'teacher',
-                'active',
-            )
-            result += line + u'\n'
-            for teacher in course.secondary_teachers.all():
+            for teacher in course_section.teachers.all():
                 line = u'"%s","%s","%s","%s"' % (
-                    course.id,
+                    course_section.id,
                     teacher.id,
                     'teacher',
                     'active',

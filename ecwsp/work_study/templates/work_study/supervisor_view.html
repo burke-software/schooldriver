@@ -43,7 +43,7 @@
             </tr>
             {% for timesheet in timeSheets %}
                <tr>
-                   <td class="border"> {{ timesheet.student.lname }}, {{ timesheet.student.fname }} </td>
+                   <td class="border"> {{ timesheet.student }} </td>
                    <td class="border" style="text-align:center;"> {{ timesheet.date }} </td>
                    <td class="border" style="text-align:center;"> {{ timesheet.hours }} </td>
                    <td class="border" style="text-align:center;"> {{ timesheet.for_pay|yesno }} </td>

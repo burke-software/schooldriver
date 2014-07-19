@@ -1,21 +1,3 @@
-#   Copyright 2012 Burke Software and Consulting LLC
-#   Author David M Burke <david@burkesoftware.com>
-#   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 3 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
@@ -29,10 +11,10 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
-from .models import StudentAttendance, CourseAttendance, AttendanceStatus, AttendanceLog
-from .forms import CourseAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
+from .models import StudentAttendance, CourseSectionAttendance, AttendanceStatus, AttendanceLog
+from .forms import CourseSectionAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
 from .forms import StudentAttendanceForm, StudentMultpleAttendanceForm
-from ecwsp.schedule.models import Course
+from ecwsp.schedule.models import Course, CourseSection, Day, MarkingPeriod
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
@@ -40,30 +22,53 @@ from ecwsp.administration.models import Template
 
 import datetime
 
+def get_school_day_number(date):
+    mps = MarkingPeriod.objects.filter(school_year__active_year=True).order_by('start_date')
+    current_day = mps[0].start_date
+    day = 0
+    while current_day <= date:
+        is_day = False
+        for mp in mps:
+            if current_day >= mp.start_date and current_day <= mp.end_date:
+                days_off = []
+                for d in mp.daysoff_set.all().values_list('date'): days_off.append(d[0])
+                if not current_day in days_off:
+                    if mp.monday and current_day.isoweekday() == 1:
+                        is_day = True
+                    elif mp.tuesday and current_day.isoweekday() == 2:
+                        is_day = True
+                    elif mp.wednesday and current_day.isoweekday() == 3:
+                        is_day = True
+                    elif mp.thursday and current_day.isoweekday() == 4:
+                        is_day = True
+                    elif mp.friday and current_day.isoweekday() == 5:
+                        is_day = True
+                    elif mp.saturday and current_day.isoweekday() == 6:
+                        is_day = True
+                    elif mp.sunday and current_day.isoweekday() == 7:
+                        is_day = True
+        if is_day: day += 1
+        current_day += datetime.timedelta(days=1)
+    return day
+
 @user_passes_test(lambda u: u.has_perm('attendance.take_studentattendance') or
                   u.has_perm('attendance.change_studentattendance'))
-def teacher_attendance(request, course=None):
+def teacher_attendance(request, course_section=None):
     """ Take attendance. show course selection if there is more than one course
     """
     today = datetime.date.today()
     if request.user.has_perm('attendance.change_studentattendance'):
-        courses = Course.objects.filter(
-            homeroom=True,
+        course_sections = CourseSection.objects.filter(
+            course__homeroom=True,
             marking_period__start_date__lte=today,
             marking_period__end_date__gte=today)
     elif Faculty.objects.filter(username=request.user.username).count() == 1:
         teacher = Faculty.objects.get(username=request.user.username)
-        courses = Course.objects.filter(
-            homeroom=True,
-            teacher=teacher,
+        course_sections = CourseSection.objects.filter(
+            course__homeroom=True,
+            teachers=teacher,
             marking_period__start_date__lte=today,
             marking_period__end_date__gte=today)
-        sec_courses = Course.objects.filter(
-            homeroom=True,
-            secondary_teachers=teacher,
-            marking_period__start_date__lte=today,
-            marking_period__end_date__gte=today)
-        courses = courses | sec_courses
     else:
         messages.info(
             request,
@@ -71,28 +76,34 @@ def teacher_attendance(request, course=None):
                 "Ensure "teacher" is checked off.')
         return HttpResponseRedirect(reverse('admin:index'))
     
-    if course:
-        course = Course.objects.get(id=course)
+    if course_section:
+        course_section = CourseSection.objects.get(id=course_section)
     else:
-        if courses.count() > 1:
+        if course_sections.count() > 1:
             return render_to_response(
                 'attendance/teacher_attendance_which.html',
                 {
                     'request': request,
                     'type':type,
-                    'courses': courses}, RequestContext(request, {}))
-        elif courses.count() == 0:
+                    'course_sections': course_sections}, RequestContext(request, {}))
+        elif course_sections.count() == 0:
             messages.info(
                 request,
-                "You are a teacher, but have no courses with attendance. This may also occur if " \
-                    "the course is not set to the current marking period.")
+                "You are a teacher but have no course sections with attendance. This may also occur if " \
+                    "the course section is not set to the current marking period.")
             return HttpResponseRedirect(reverse('admin:index'))
-        course = courses[0]
-    students = course.get_attendance_students()
+        course_section = course_sections[0]
+    today, created = Day.objects.get_or_create(day=str(today.isoweekday()))
+    all = Student.objects.filter(courseenrollment__course_section=course_section, is_active=True)
+    exclude = Student.objects.filter(courseenrollment__course_section=course, is_active=True, courseenrollment__exclude_days=today)
+    ids = []
+    for id in exclude.values('id'):
+        ids.append(int(id['id']))
+    students = all.exclude(id__in=ids)
     
     readonly = False
     msg = ""
-    if AttendanceLog.objects.filter(date=datetime.date.today(), user=request.user, course=course).count() > 0:
+    if AttendanceLog.objects.filter(date=datetime.date.today(), user=request.user, course_section=course_section).count() > 0:
         readonly = True
     AttendanceFormset = modelformset_factory(
         StudentAttendance, form=StudentAttendanceForm,
@@ -110,7 +121,7 @@ def teacher_attendance(request, course=None):
                     object_repr     = unicode(object), 
                     action_flag     = ADDITION
                 )
-            AttendanceLog(user=request.user, date=datetime.date.today(), course=course).save()
+            AttendanceLog(user=request.user, date=datetime.date.today(), course_section=course_section).save()
             messages.success(request, 'Attendance recorded')
             return HttpResponseRedirect(reverse('admin:index'))
         else:
@@ -129,7 +140,7 @@ def teacher_attendance(request, course=None):
         else:
             student.marked = False
             initial.append({'student': student.id, 'status': None, 'notes': None, 'date': datetime.date.today() })
-            note = student.courseenrollment_set.filter(course=course)[0].attendance_note
+            note = student.courseenrollment_set.filter(course_section=course_section)[0].attendance_note
             if note: enroll_notes.append(unicode(note))
             else: enroll_notes.append("")
     formset = AttendanceFormset(initial=initial, queryset=StudentAttendance.objects.none())
@@ -162,7 +173,7 @@ def teacher_attendance(request, course=None):
 @permission_required('attendance.change_studentattendance')
 def teacher_submissions(request):
     logs = AttendanceLog.objects.filter(date=datetime.date.today())
-    homerooms = Course.objects.filter(homeroom=True)
+    homerooms = CourseSection.objects.filter(course__homeroom=True)
     homerooms = homerooms.filter(marking_period__school_year__active_year=True)
     homerooms = homerooms.filter(coursemeet__day__contains=datetime.date.today().isoweekday()).distinct()
     submissions = []
@@ -171,7 +182,7 @@ def teacher_submissions(request):
         submission['homeroom'] = homeroom
         if homeroom.teacher:
             submission['teacher'] = homeroom.teacher
-        log = AttendanceLog.objects.filter(date=datetime.date.today(), course=homeroom)
+        log = AttendanceLog.objects.filter(date=datetime.date.today(), course_section=homeroom)
         if log.count() > 0:
             submission['submitted'] = "Yes"
             if log[0].user and Faculty.objects.filter(username=log[0].user.username):
@@ -184,9 +195,11 @@ def teacher_submissions(request):
         {'request': request, 'submissions': submissions})
 
 
+def daily_attendance_report_wrapper(request):
+    return daily_attendance_report(datetime.date.today())
+
 def daily_attendance_report(adate, private_notes=False, type="odt", request=None):
     from ecwsp.sis.models import GradeLevel
-    from ecwsp.sis.report import get_school_day_number
     template = Template.objects.get_or_create(name="Daily Attendance")[0]
     template = template.get_template_path(request)
     if not template:
@@ -208,6 +221,8 @@ def daily_attendance_report(adate, private_notes=False, type="odt", request=None
     for year in GradeLevel.objects.all():
         attns = attendance.filter(student__year__id=year.id)
         for attn in attns:
+            attn.student.fname = attn.student.first_name
+            attn.student.lname = attn.student.last_name
             if attn.status.absent:
                 attn.total = StudentAttendance.objects.filter(student=attn.student, status__absent=True, status__half=False, date__range=active_year_dates).count()
                 halfs = StudentAttendance.objects.filter(student=attn.student, status__absent=True, status__half=True,date__range=active_year_dates).count() / 2 
@@ -240,12 +255,12 @@ def daily_attendance_report(adate, private_notes=False, type="odt", request=None
     report.filename = "daily_attendance"
     return report.pod_save(template)
 
-def check_attendance_permission(course, user):
+def check_attendance_permission(course_section, user):
     """ Returns true if user has permission to take attendance
     """
     if Faculty.objects.filter(username=user.username):
         teacher = Faculty.objects.get(username=user.username)
-        if teacher == course.teacher or teacher in course.secondary_teachers.all():
+        if course_section.teachers.filter(pk=teacher.pk).exists():
             return True
     if user.has_perm('attendance.change_studentattendance'):
         return True
@@ -253,8 +268,8 @@ def check_attendance_permission(course, user):
     
     
 @permission_required('attendance.take_studentattendance')
-def select_course_for_attendance(request):
-    """ View for a teacher to select which course to take attendance for
+def select_course_section_for_attendance(request):
+    """ View for a teacher to select which course section to take attendance for
     """
     today=datetime.datetime.now()
     if not Faculty.objects.filter(username=request.user.username):
@@ -264,48 +279,43 @@ def select_course_for_attendance(request):
         return HttpResponseRedirect(reverse('admin:index'))
     
     teacher = Faculty.objects.get(username=request.user.username)
-    courses = Course.objects.filter(
-        teacher=teacher,
+    course_sections = CourseSections.objects.filter(
+        teachers=teacher,
         marking_period__start_date__lte=today,
         marking_period__end_date__gte=today)
-    sec_courses = Course.objects.filter(
-        secondary_teachers=teacher,
-        marking_period__start_date__lte=today,
-        marking_period__end_date__gte=today)
-    courses = courses | sec_courses
     
-    predicted_course = None
-    if courses.filter(
+    predicted_course_section = None
+    if course_sections.filter(
         coursemeet__day__exact=today.isoweekday(),
         coursemeet__period__start_time__gt=today.time()
         ):
-        predicted_course = courses.filter(
+        predicted_course_section = course_sections.filter(
             coursemeet__day__exact=today.isoweekday(),
             coursemeet__period__start_time__gt=today.time(),
             ).order_by('coursemeet__period__start_time')[0]
     return render_to_response(
         'attendance/select_course_attendance.html',
         {
-            'courses': courses,
-            'predicted_course': predicted_course,
+            'course_sections': course_sections,
+            'predicted_course_section': predicted_course_section,
         },
         RequestContext(request, {}))
     
 
 @permission_required('attendance.take_studentattendance')
-def course_attendance(request, course_id, for_date=datetime.date.today):
-    """ View for a teacher to take course attendance
+def course_section_attendance(request, course_section_id, for_date=datetime.date.today):
+    """ View for a teacher to take course section attendance
     """
     for_date=datetime.date.today()
-    course = get_object_or_404(Course, pk=course_id)
-    check_attendance_permission(course, request.user)
+    course_section = get_object_or_404(CourseSection, pk=course_section_id)
+    check_attendance_permission(course_section, request.user)
     
-    students = course.get_enrolled_students()
+    students = Student.objects.filter(courseenrollment__course_section=course_section)
     daily_attendance = StudentAttendance.objects.filter(student__in=students,date=for_date).distinct()
-    CourseAttendanceFormSet = formset_factory(CourseAttendanceForm, extra=0)
+    CourseSectionAttendanceFormSet = formset_factory(CourseSectionAttendanceForm, extra=0)
     
     if request.POST:
-        formset = CourseAttendanceFormSet(request.POST)
+        formset = CourseSectionAttendanceFormSet(request.POST)
         if formset.is_valid():
             number_created = 0
             for form in formset.forms:
@@ -313,19 +323,19 @@ def course_attendance(request, course_id, for_date=datetime.date.today):
                 if data['status']:
                     number_created += 1
                     try:
-                        course_attendance = CourseAttendance.objects.get(
+                        course_attendance = CourseSectionAttendance.objects.get(
                             student=data['student'],
-                            course=course,
+                            course_section=course_section,
                             date=for_date,
                         )
                         course_attendance.status = data['status']
                         course_attendance.notes = data['notes']
                         course_attendance.time_in = data['time_in']
                         course_attendance.save()
-                    except CourseAttendance.DoesNotExist:
-                        CourseAttendance.objects.create(
+                    except CourseSectionAttendance.DoesNotExist:
+                        CourseSectionAttendance.objects.create(
                             student=data['student'],
-                            course=course,
+                            course_section=course_section,
                             date=for_date,
                             status = data['status'],
                             notes = data['notes'],
@@ -337,15 +347,15 @@ def course_attendance(request, course_id, for_date=datetime.date.today):
         initial_data = []
         for student in students:
             initial_row = {'student': student}
-            if student.courseattendance_set.filter(date=for_date, course=course):
-                current_attendance = student.courseattendance_set.filter(date=for_date)[0]
+            if student.coursesectionattendance_set.filter(date=for_date, course_section=course_section):
+                current_attendance = student.coursesectionattendance_set.filter(date=for_date)[0]
                 initial_row['status'] = current_attendance.status
                 initial_row['time_in'] = current_attendance.time_in
                 initial_row['notes'] = current_attendance.notes
             elif student.student_attn.filter(date=for_date, status__absent=True):
                 initial_row['status'] = AttendanceStatus.objects.get(name="Absent")
             initial_data.append(initial_row)
-        formset = CourseAttendanceFormSet(initial=initial_data)
+        formset = CourseSectoinAttendanceFormSet(initial=initial_data)
     
     i = 0
     for student in students:
@@ -361,7 +371,7 @@ def course_attendance(request, course_id, for_date=datetime.date.today):
     return render_to_response(
         'attendance/course_attendance.html',
         {
-            'course': course,
+            'course_section': course_section,
             'formset': formset,
             'for_date': for_date,
         },

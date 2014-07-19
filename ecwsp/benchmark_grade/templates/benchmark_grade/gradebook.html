@@ -52,19 +52,19 @@
 {% block bigcontent %}
   <div style="padding: 0px 20px 0px;">
     <div class="topbar">
-        <span class="logo">{{ course.shortname }} Gradebook</span>
+        <span class="logo">{{ course_section.name }} Gradebook</span>
         <div id="topTools">
-            <span id="comments"><a href="/benchmark_grade/gradebook/export/{{ course.id }}" target="_blank">Export</a></span>
-            <span id="comments"><a href="/benchmark_grade/comments/{{ course.id }}" target="_blank">Enter comments</a></span>
+            <span id="comments"><a href="/benchmark_grade/gradebook/export/{{ course_section.id }}" target="_blank">Export</a></span>
+            <span id="comments"><a href="/benchmark_grade/comments/{{ course_section.id }}" target="_blank">Enter comments</a></span>
         </div>
     </div><!-- topbar -->
-    {% if teacher_courses %} 
+    {% if teacher_course_sections %} 
         <div class="courseSelect">
             <ul>
-                <li class="courseSelected">{{ course.shortname }}</li>
-                {% for teacher_course in teacher_courses %}
-                    {% if teacher_course != course %}
-                        <li><a href="/benchmark_grade/gradebook/{{ teacher_course.id }}/">{{ teacher_course.shortname }}</a></li>
+                <li class="courseSelected">{{ course_section.name }}</li>
+                {% for teacher_course_section in teacher_course_sections %}
+                    {% if teacher_course_section != course_section %}
+                        <li><a href="/benchmark_grade/gradebook/{{ teacher_course_section.id }}/">{{ teacher_course_section.name }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -198,7 +198,7 @@
                             </div></th>
                         {% endif %}
                         <th><div class="average">
-                            Course<br />Average
+                            Course Section<br />Average
                         </div></th>
                     </tr>
                 </thead>
@@ -244,15 +244,15 @@
                             <td><!-- filtered standards demonstrated -->
                                 <div>{{ totals.filtered_standards_text }}</div> 
                             </td>
-                            <td><!-- filtered course average -->
+                            <td><!-- filtered course section average -->
                                 <div>{{ totals.filtered_average }}</div>
                             </td>
                         {% endif %}
                         <td><!-- standards demonstrated -->
                             <div>{{ totals.standards_text }}</div> 
                         </td>
-                        <td><!-- course average -->
-                            <div>{{ totals.course_average }}</div>
+                        <td><!-- course section average -->
+                            <div>{{ totals.course_section_average }}</div>
                         </td>
                     </tr>
                 {% endif %} 
@@ -271,12 +271,12 @@
                             {% endif %}
                         {% endfor %}
                         {% if filtered %}
-                            <td><!-- filtered course average -->
+                            <td><!-- filtered course section average -->
                                 <div>{{ totals.filtered_average }}</div>
                             </td>
                         {% endif %}
-                        <td><!-- course average -->
-                            <div>{{ totals.course_average }}</div>
+                        <td><!-- course section average -->
+                            <div>{{ totals.course_section_average }}</div>
                         </td>
                     </tr>
                 {% endif %} 

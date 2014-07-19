@@ -96,7 +96,7 @@ class Converter:
     def getResultFilter(self):
         '''Based on the result type, identifies which OO filter to use for the
            document conversion.'''
-        if FILE_TYPES.has_key(self.resultType):
+        if self.resultType in FILE_TYPES:
             res = FILE_TYPES[self.resultType]
             if isinstance(res, dict):
                 res = res[self.inputType]
@@ -128,8 +128,9 @@ class Converter:
             f.close()
             os.remove(res)
             return unohelper.systemPathToFileUrl(res)
-        except (OSError, IOError), ioe:
-            raise ConverterError(CANNOT_WRITE_RESULT % (res, ioe))
+        except (OSError, IOError):
+            e = sys.exc_info()[1]
+            raise ConverterError(CANNOT_WRITE_RESULT % (res, e))
 
     def connect(self):
         '''Connects to LibreOffice'''
@@ -155,8 +156,9 @@ class Converter:
             # Get the central desktop object
             self.oo = smgr.createInstanceWithContext(
                 'com.sun.star.frame.Desktop', self.loContext)
-        except NoConnectException, nce:
-            raise ConverterError(CONNECT_ERROR % (self.port, nce))
+        except NoConnectException:
+            e = sys.exc_info()[1]
+            raise ConverterError(CONNECT_ERROR % (self.port, e))
 
     def updateOdtDocument(self):
         '''If the input file is an ODT document, we will perform 2 tasks:
@@ -222,8 +224,9 @@ class Converter:
                 self.doc.refresh()
             except AttributeError:
                 pass
-        except IllegalArgumentException, iae:
-            raise ConverterError(URL_NOT_FOUND % (self.docPath, iae))
+        except IllegalArgumentException:
+            e = sys.exc_info()[1]
+            raise ConverterError(URL_NOT_FOUND % (self.docPath, e))
 
     def convertDocument(self):
         '''Calls LO to perform a document conversion. Note that the conversion
@@ -280,8 +283,9 @@ class ConverterScript:
         converter = Converter(args[0], args[1], options.port)
         try:
             converter.run()
-        except ConverterError, ce:
-            sys.stderr.write(str(ce))
+        except ConverterError:
+            e = sys.exc_info()[1]
+            sys.stderr.write(str(e))
             sys.stderr.write('\n')
             optParser.print_help()
             sys.exit(ERROR_CODE)

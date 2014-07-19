@@ -1,13 +1,17 @@
 from django.contrib import admin
+from django.db import models
 from django.forms import CheckboxSelectMultiple
 
-from ajax_select import make_ajax_form
-from models import *
+from .models import StudentMeeting, StudentMeetingCategory, FollowUpAction
+from .models import ReferralCategory, ReferralReason, ReferralForm
+import autocomplete_light
 
 class StudentMeetingAdmin(admin.ModelAdmin):
     list_display = ['category','display_students','date','reported_by']
     fields = ['category','students','date','notes','file','follow_up_action','follow_up_notes','reported_by']
-    form = make_ajax_form(StudentMeeting, dict(students='student'))
+    form = autocomplete_light.modelform_factory(StudentMeeting)
+    
+    search_fields = ['students__username', 'students__last_name', 'students__first_name', 'category__name', 'reported_by__username']
     
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'reported_by':
@@ -33,7 +37,7 @@ class ReferralFormAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.ManyToManyField: {'widget': CheckboxSelectMultiple},
     }
-    form = make_ajax_form(ReferralForm, dict(student='student'))
+    form = autocomplete_light.modelform_factory(ReferralForm)
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name in ['referred_by','classroom_teacher']:
             kwargs['initial'] = request.user.id

@@ -1,27 +1,8 @@
-#       models.py
-#       
-#       Copyright 2010 Cristo Rey New York High School
-#        Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
 from django.db import models
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files import File
 from datetime import datetime
 import httpagentparser
@@ -48,13 +29,13 @@ class AccessLog(models.Model):
             return httpagentparser.simple_detect(self.ua)[1]
         except:
             return "Unknown"
-        
+
 class Configuration(models.Model):
     name = models.CharField(max_length=100, unique=True)
     value = models.TextField(blank=True)
     file = models.FileField(blank=True, null=True, upload_to="configuration", help_text="Some configuration options are for file uploads")
     help_text = models.TextField(blank=True)
-    
+
     default_configs = {
         'letter_grade_required_for_pass': ('60', 'Minimum grade required to be considered "passing"'),
         'school pay rate per hour': ('13.00', ''),
@@ -102,11 +83,12 @@ class Configuration(models.Model):
         'Gradebook extra information': ('averages', "Set to 'averages' to see the class average for each assignment. \
 Use 'demonstrations' to see counts of demonstrations for students and assignments."),
         'Gradebook hide fields': ('', "Separate with commas. Options include: marking_period, assignment_type, benchmark, date, description."),
+        'Default course credits': (1, "This number will appear in the 'Credits' field when creating new courses."),
     }
-    
+
     def __unicode__(self):
         return self.name
-    
+
     def get_or_default(name, default=None, help_text=None):
         """ Get the config object or create it with a default. Always use this when gettings configs
         Defaults are hard coded into this python file, you must add new values here for new configs!
@@ -120,33 +102,42 @@ Use 'demonstrations' to see counts of demonstrations for students and assignment
             object.save()
         return object
     get_or_default = Callable(get_or_default)
-    
-        
+
+
+def validate_file_extension(value):
+    if not value.name[-4:] in ['.odt', '.ods']:
+        raise ValidationError('Template must be odt or ods file.')
+
 class Template(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    file = models.FileField(upload_to="templates")
+    file = models.FileField(upload_to="templates", validators=[validate_file_extension])
     general_student = models.BooleanField(default=False, help_text="Can be used on student reports")
-    report_card = models.BooleanField(help_text="Can be used on grade reports, gathers data for one year")
+    report_card = models.BooleanField(default=False, help_text="Can be used on grade reports, gathers data for one year")
     benchmark_report_card = models.BooleanField(default=False, help_text="A highly detailed, single-year report card for benchmark-based grading")
     transcript = models.BooleanField(default=False, help_text="Can be used on grade reports, gathers data for all years")
-    
+
     def __unicode__(self):
-        return self.name
-    
+        text = self.name
+        if self.report_card:
+            text += ' (report card)'
+        if self.transcript:
+            text += ' (transcript)'
+        return text
+
     def get_template(self, request):
         """ Get template or return False with error message. """
         if self.file:
             return self.file
         messages.error(request, 'Template %s not found!' % (self.name,))
         return False
-    
+
     def get_template_path(self, request):
         """ Get template file path, or return False with error message. """
         if self.file:
             return self.file.path
         messages.error(request, 'Template %s not found!' % (self.name,))
         return False
-    
+
     def get_or_make_blank(name):
         """ Get a template. If it doesn't exist create one that will be a blank document to prevent errors """
         template, created = Template.objects.get_or_create(name=name)
@@ -159,4 +150,4 @@ class Template(models.Model):
             template.save()
         return template
     get_or_make_blank = Callable(get_or_make_blank)
-        
+

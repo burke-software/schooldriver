@@ -4,7 +4,7 @@
 {% block object-tools-items %}
     {% if has_add_permission %}
         {% if 'ecwsp.grades' in settings.INSTALLED_APPS %}
-            <li><a href="{% url "ecwsp.grades.views.student_gradesheet" object_id %}" class="historylink">{% trans "Gradesheet" %}</a></li>
+            <li><a href="{% url "student-grades" object_id %}" class="historylink">{% trans "Gradesheet" %}</a></li>
         {% endif %}
     {% endif %}
     <li><a href="history/">{% trans "History" %}</a></li>
@@ -55,39 +55,4 @@
             });
         });
     </script>
-{% endblock %}
-
-{% block after_field_sets %}
-    <fieldset class="grp-module module collapse closed open">
-        <h2 class="collapse-handler">Courses</h2>
-        <div class="form-row checklist">
-            <p>
-                <a href="/admin/sis/studentcourse/{{ object_id }}" target="_blank" >Change Enrollment (Will open new tab)</a>
-            </p>
-             <table>
-                  {% for course in courses %}
-                       <tr>
-                            <td><a href="/admin/schedule/course/{{ course.id }}">{{ course }}</a></td>
-                            <td><a href="/admin/schedule/courseenrollment/{{ course.enroll }}"> Enrollment </a></td>
-                            <td><a href="{% url "ecwsp.grades.views.teacher_grade_upload" course.id %}"> Grades </a></td>
-                       </tr>
-                  {% endfor %}
-             </table>
-             {% if other_courses %}
-             <br/>
-             <a href="javascript:void(0)" onclick="$('#all_courses').toggle('fast');"> See all courses </a>
-             <div id="all_courses" style="display: none">
-                  <table>
-                      {% for course in other_courses %}
-                           <tr>
-                                <td><a href="/admin/schedule/course/{{ course.id }}">{{ course }}</a></td>
-                                <td><a href="/admin/schedule/courseenrollment/{{ course.enroll }}"> Enrollment </a></td>
-                                <td><a href="/schedule/teacher_grade/upload/{{ course.id }}"> Grades </a></td>
-                           </tr>
-                      {% endfor %}
-                 {% endif %}
-                 </table>
-             </div>
-        </div>
-    </fieldset>
 {% endblock %}

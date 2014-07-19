@@ -20,87 +20,61 @@ from appy.px import  Px
 
 # ------------------------------------------------------------------------------
 class Computed(Field):
+    WRONG_METHOD = 'Wrong value "%s". Param "method" must contain a method ' \
+                   'or a PX.'
+    pxView = pxCell = pxEdit = Px('''<x if="field.plainText">:value</x>
+      <x if="not field.plainText">::value</x>''')
 
-    # Ajax-called view content of a non sync Computed field.
-    pxViewContent = Px('''
-     <x var="name=req['fieldName'];
-             field=zobj.getAppyType(name);
-             value=zobj.getFieldValue(name);
-             sync=True">:field.pxView</x>''')
-
-    pxView = pxCell = pxEdit = Px('''<x>
-     <x if="sync">
-      <x if="field.plainText">:value</x><x if="not field.plainText">::value></x>
-     </x>
-     <div if="not sync">
-          var2="ajaxHookId=zobj.UID() + name" id="ajaxHookId">
-      <script type="text/javascript">:'askComputedField(%s, %s, %s)' % \
-        (q(ajaxHookId), q(zobj.absolute_url()), q(name))">
-      </script>
-     </div>
-    </x>''')
-
-    pxSearch = Px('''<x>
-     <label lfor=":name">:field.labelId</label><br/>&nbsp;&nbsp;
-     <input type="text" name=":'%s*string' % name" maxlength=":field.maxChars"
-            size=":field.width" value=":field.sdefault"/>
-    </x>''')
+    pxSearch = Px('''
+     <input type="text" name=":'%s*string' % widgetName"
+            maxlength=":field.maxChars" size=":field.width"
+            value=":field.sdefault"/>''')
 
     def __init__(self, validator=None, multiplicity=(0,1), default=None,
-                 show='view', page='main', group=None, layouts=None, move=0,
-                 indexed=False, searchable=False, specificReadPermission=False,
-                 specificWritePermission=False, width=None, height=None,
-                 maxChars=None, colspan=1, method=None, plainText=True,
-                 master=None, masterValue=None, focus=False, historized=False,
-                 sync=True, mapping=None, label=None, sdefault='', scolspan=1,
-                 swidth=None, sheight=None, context={}):
-        # The Python method used for computing the field value
+                 show=('view', 'result'), page='main', group=None,
+                 layouts=None, move=0, indexed=False, searchable=False,
+                 specificReadPermission=False, specificWritePermission=False,
+                 width=None, height=None, maxChars=None, colspan=1, method=None,
+                 plainText=False, master=None, masterValue=None, focus=False,
+                 historized=False, mapping=None, label=None, sdefault='',
+                 scolspan=1, swidth=None, sheight=None, context=None):
+        # The Python method used for computing the field value, or a PX.
         self.method = method
+        if isinstance(self.method, basestring):
+            # A legacy macro identifier. Raise an exception
+            raise Exception(self.WRONG_METHOD % self.method)
         # Does field computation produce plain text or XHTML?
         self.plainText = plainText
-        if isinstance(method, basestring):
-            # When field computation is done with a macro, we know the result
-            # will be HTML.
+        if isinstance(method, Px):
+            # When field computation is done with a PX, the result is XHTML.
             self.plainText = False
-        # The context is a dict (or method returning a dict) that will be given
-        # to the macro specified in self.method. If the dict contains key
-        # "someKey", it will be available to the macro as "options/someKey".
+        # If method is a PX, its context can be given in p_context.
         self.context = context
         Field.__init__(self, None, multiplicity, default, show, page, group,
                        layouts, move, indexed, searchable,
                        specificReadPermission, specificWritePermission, width,
                        height, None, colspan, master, masterValue, focus,
-                       historized, sync, mapping, label, sdefault, scolspan,
-                       swidth, sheight)
+                       historized, mapping, label, sdefault, scolspan, swidth,
+                       sheight, False)
         self.validable = False
-
-    def callMacro(self, obj, macroPath):
-        '''Returns the macro corresponding to p_macroPath. The base folder
-           where we search is "ui".'''
-        # Get the special page in Appy that allows to call a macro
-        macroPage = obj.ui.callMacro
-        # Get, from p_macroPath, the page where the macro lies, and the macro
-        # name.
-        names = self.method.split('/')
-        # Get the page where the macro lies
-        page = obj.ui
-        for name in names[:-1]:
-            page = getattr(page, name)
-        macroName = names[-1]
-        # Compute the macro context.
-        ctx = {'contextObj':obj, 'page':page, 'macroName':macroName}
-        if callable(self.context):
-            ctx.update(self.context(obj.appy()))
-        else:
-            ctx.update(self.context)
-        return macroPage(obj, **ctx)
 
     def getValue(self, obj):
         '''Computes the value instead of getting it in the database.'''
         if not self.method: return
-        if isinstance(self.method, basestring):
-            # self.method is a path to a macro that will produce the field value
-            return self.callMacro(obj, self.method)
+        if isinstance(self.method, Px):
+            obj = obj.appy()
+            tool = obj.tool
+            req = obj.request
+            # Get the context of the currently executed PX if present
+            try:
+                ctx = req.pxContext
+            except AttributeError:
+                # Create some standard context
+                ctx = {'obj': obj, 'zobj': obj.o, 'field': self,
+                       'req': req, 'tool': tool, 'ztool': tool.o,
+                       '_': tool.translate, 'url': tool.o.getIncludeUrl}
+            if self.context: ctx.update(self.context)
+            return self.method(ctx)
         else:
             # self.method is a method that will return the field value
             return self.callMethod(obj, self.method, cache=False)

@@ -1,0 +1,20 @@
+<div class="form-group has-feedback" ng-class="{'has-error': fieldForm.$invalid && fieldForm.$dirty}">
+    <label class="col-sm-2 control-label">
+        {{ fieldOptions.label }}
+    </label>
+  <div class="col-sm-10">
+    <div ng-transclude></div>
+    <i ng-show="fieldForm.isSaving && fieldForm.$dirty && fieldForm.$valid" class="fa fa-circle-o-notch fa-spin form-control-feedback"></i>
+    <i ng-show="fieldForm.isSaved && fieldForm.$dirty && fieldForm.$valid" class="fa fa-check-circle form-control-feedback"></i>
+    <i ng-show="fieldForm.$dirty && fieldForm.$invalid" class="fa fa-times-circle form-control-feedback"></i>
+    <span class="help-block" ng-if="fieldOptions.help_text">{{ fieldOptions.help_text }}</span>
+    <span class="help-block">
+      <ul class="list-unstyled" ng-show="fieldForm.$invalid && fieldForm.$dirty">
+        <li ng-repeat="error in fieldForm.errors">
+          {{ error }}
+        </li>
+        <li ng-show="fieldForm.$error.required">This field is required.</li>
+      </ul>
+    </span>
+  </div>
+</div>

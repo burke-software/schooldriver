@@ -1,0 +1,214 @@
+//@import url(//fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic);
+
+body {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+// Nav
+
+blink {
+  -webkit-animation: blink 3s step-end infinite;
+  animation: blink 3s step-end infinite
+}
+ 
+@-webkit-keyframes blink {
+  0% { color: #f00; }
+  5% { color: #ffa500; }
+  10% { color: #ff0; }
+  15% { color: #0f0; }
+  20% { color: #00f; }
+  25% { color: #f0f; }
+  30% { opacity: 0 }
+  50% { 
+  	opacity: 100;
+  	color: #fff;
+  	text-shadow: 0px 10px 5px rgba(0,0,0, 1);
+  }
+  70% { opacity: 0; }
+}
+ 
+@keyframes blink {
+  0% { color: #f00; }
+  5% { color: #ffa500; }
+  10% { color: #ff0; }
+  15% { color: #0f0; }
+  20% { color: #00f; }
+  25% { color: #f0f; }
+  30% { opacity: 0 }
+  50% { 
+  	opacity: 100;
+  	color: #fff; 
+  	text-shadow: 0px 10px 5px rgba(0,0,0, 1);
+  }
+  70% { opacity: 0; }
+}
+
+
+#main-nav {
+	margin-bottom: 0;
+  
+  ul.dropdown-menu {
+    left: 0!important;
+    right: auto!important;
+  }
+
+  .nav > li > a {
+    @media screen and (max-width: $screen-md-max + 10) {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+    @media screen and (max-width: 1128px) {
+      padding-left: 7px;
+      padding-right: 7px;
+    }
+    @media screen and (max-width: 1030px) {
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+    @media screen and (max-width: $screen-sm-max) {
+      padding-left: 7px;
+      padding-right: 7px;
+    }
+    @media screen and (max-width: 795px) {
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+    @media screen and (max-width: $screen-xs-max) {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  }
+}
+
+.dropdown-menu {
+  padding: 0;
+
+  &> li {
+    &> a {
+      color: $link-color;
+      padding: 10px 20px;
+      text-transform: uppercase;
+      font-weight: 600;
+      border-bottom: 1px solid #ccc;
+    }
+
+    &:last-child > a {
+      border-bottom: 0;
+    }
+  }
+}
+
+.navbar-default .navbar-nav > li > a {
+  text-shadow: 0 1px 2px #191a1b, 0 1px 0 #191a1b;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+@media screen and (min-width: $screen-sm-min) and (max-width: 910px) {
+  .navbar-collapse {
+    padding-left: 0;
+  }
+}
+
+.navbar-brand {
+  padding: 10px 15px;
+
+  img {
+    height: 40px;
+  }
+}
+
+#lookup-student-form {
+  margin-right: 5px;
+  @media screen and (min-width: $screen-sm-min) and (max-width: 940px) {
+    padding-left: 0;
+    padding-right: 5px;
+  }
+
+  #lookup-student {
+    border-radius: 25px;
+    color: #f2f2f2;
+    background-color: #191A1B;
+    border: 1px solid #000;
+    outline: none;
+    box-shadow: none;
+
+    @media screen and (max-width: 1090px) {
+      width: 150px;
+    }
+    @media screen and (max-width: 895px) {
+      width: 100px;
+    }
+    @media screen and (max-width: 845px) {
+      width: 50px;
+    }
+    @media screen and (max-width: $screen-xs-max) {
+      width: 100%;
+    }
+  }
+}
+
+.autocomplete-lookup-student {
+  background-color: #191A1B;
+
+  .choice {
+    color: #fff;
+    overflow: hidden;
+    padding: 3px 20px 3px 10px;
+
+    img {
+      float: left;
+      width: 37px;
+      margin: 2px 7px 2px 0;
+    }
+
+    .no-pic {
+      float: left;
+      margin: 2px 7px 2px 0;
+      width: 38px;
+      background-color: #333;
+      color: #555;
+      font-size: 35px;
+      vertical-align: -15%;
+      padding-left: 5px;
+      padding-top: 2px;
+    }
+
+    .student-name {
+      font-weight: 600;
+    }
+
+    &.hilight {
+      background-color: $navbar-default-link-hover-bg;
+      background-image: none;
+
+      .no-pic {
+        background-color: #bbb;
+        color: #999;
+      }
+    }
+  }
+
+  .no-results {
+    padding: 3px 20px 3px 10px;
+    color: #fff;
+  }
+}
+
+#secondary-nav {
+  font-weight: 600;
+
+  &.navbar {
+    min-height: 40px;
+  }
+
+  &.navbar-inverse .navbar-nav > li > a {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+
+
+
+// End nav

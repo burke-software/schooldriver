@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import m2m_changed
 from custom_field.custom_field import CustomFieldModel
-from ecwsp.sis.models import get_default_language, GradeLevel, SchoolYear
+from ecwsp.sis.models import get_default_language, GradeLevel, SchoolYear, Faculty
 
 import datetime
 
@@ -31,8 +31,8 @@ class AdmissionLevel(models.Model):
         return msg
     class Meta:
         ordering = ('order',)
-        
-    
+
+
 class AdmissionCheck(models.Model):
     name = models.CharField(max_length=255)
     level = models.ForeignKey(AdmissionLevel)
@@ -51,7 +51,7 @@ class EthnicityChoice(models.Model):
         return unicode(self.name)
     class Meta:
         ordering = ['name']
-        
+
 class ReligionChoice(models.Model):
     name = models.CharField(max_length=255)
     def __unicode__(self):
@@ -65,7 +65,7 @@ class HeardAboutUsOption(models.Model):
         return unicode(self.name)
     class Meta:
         ordering = ['name']
-    
+
 class FirstContactOption(models.Model):
     name = models.CharField(max_length=255, unique=True)
     def __unicode__(self):
@@ -107,7 +107,7 @@ class FeederSchool(models.Model):
         return unicode(self.name)
     class Meta:
         ordering = ['name']
-        
+
 class OpenHouse(models.Model):
     name = models.CharField(max_length=255, blank=True)
     date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
@@ -123,24 +123,25 @@ class WithdrawnChoices(models.Model):
     class Meta:
         ordering = ['name']
         verbose_name_plural = "Withdrawn choices"
-        
+
 class CountryOption(models.Model):
     name = models.CharField(max_length=500)
     def __unicode__(self):
         return unicode(self.name)
     class Meta:
         ordering = ['name']
-        
+
 class ImmigrationOption(models.Model):
     name = models.CharField(max_length=500)
     def __unicode__(self):
         return unicode(self.name)
     class Meta:
-        ordering = ['name'] 
+        ordering = ['name']
 
 
 def get_default_country():
-    return CountryOption.objects.get_or_create(name=settings.ADMISSIONS_DEFAULT_COUNTRY)[0]
+    return CountryOption.objects.get_or_create(name=settings.ADMISSIONS_DEFAULT_COUNTRY)[0].pk
+
 def get_school_year():
     try:
         return SchoolYear.objects.get(active_year=True).get_next_by_end_date()
@@ -162,8 +163,8 @@ class Applicant(models.Model, CustomFieldModel):
     state = USStateField(blank=True)
     zip = models.CharField(max_length=10, blank=True)
     ssn = models.CharField(max_length=11, blank=True, verbose_name="SSN")
-    parent_email = models.EmailField(blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
+    parent_email = models.EmailField(blank=True)
+    email = models.EmailField(blank=True)
     notes = models.TextField(blank=True)
     family_preferred_language = models.ForeignKey(
         'sis.LanguageChoice',
@@ -207,16 +208,16 @@ class Applicant(models.Model, CustomFieldModel):
         null=True,
         related_name="appl_student",
         on_delete=models.SET_NULL)
-    
+
     total_income = models.DecimalField(max_digits=10, decimal_places=2, blank=True,null=True)
     adjusted_available_income = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
     calculated_payment = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
-    
+
     date_added = models.DateField(auto_now_add=True, blank=True, null=True, validators=settings.DATE_VALIDATORS)
     level = models.ForeignKey(AdmissionLevel, blank=True, null=True, on_delete=models.SET_NULL)
     checklist = models.ManyToManyField(AdmissionCheck, blank=True, null=True)
     application_decision = models.ForeignKey(ApplicationDecisionOption, blank=True, null=True, on_delete=models.SET_NULL,)
-    application_decision_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL,)
+    application_decision_by = models.ForeignKey(Faculty, blank=True, null=True, on_delete=models.SET_NULL,)
     withdrawn = models.ForeignKey(WithdrawnChoices, blank=True, null=True, on_delete=models.SET_NULL,)
     withdrawn_note = models.CharField(max_length=500, blank=True)
     first_to_college = models.BooleanField(default=False, blank=True)
@@ -226,20 +227,20 @@ class Applicant(models.Model, CustomFieldModel):
         max_length=50,
         choices=(('Both Parents','Both Parents'),('Mother','Mother'),('Father','Father'),('Guardian(s)','Guardian(s)'),),
     )
-    
+
     class Meta:
         ordering = ('lname','fname',)
-    
+
     def __unicode__(self):
         return "%s %s %s" % (self.fname, self.mname, self.lname)
-    
+
     @property
     def parent_guardian(self):
         """ Compatibility to act like sis.student parent_guardian
         """
         return u"{} {}".format(self.parent_guardian_first_name, self.parent_guardian_last_name)
-    
-    
+
+
     def set_cache(self, contact):
         self.parent_guardian_first_name = contact.fname
         self.parent_guardian_last_name = contact.lname
@@ -249,13 +250,13 @@ class Applicant(models.Model, CustomFieldModel):
         self.city = contact.city
         self.parent_email = contact.email
         self.save()
-        
+
         for contact in self.parent_guardians.exclude(id=contact.id):
             # There should only be one primary contact!
             if contact.primary_contact:
                 contact.primary_contact = False
                 contact.save()
-    
+
     def __set_level(self):
         prev = None
         for level in AdmissionLevel.objects.all():
@@ -268,7 +269,7 @@ class Applicant(models.Model, CustomFieldModel):
                 break
             prev = level
         self.level = prev
-    
+
     def save(self, *args, **kwargs):
         if self.id:
             self.__set_level()
@@ -283,7 +284,7 @@ class Applicant(models.Model, CustomFieldModel):
                 )
                 contact_log.save()
         super(Applicant, self).save(*args, **kwargs)
-        
+
 def cache_applicant_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
     for ec in instance.parent_guardians.filter(primary_contact=True):
         ec.cache_student_addresses()
@@ -303,15 +304,15 @@ class ContactLog(models.Model):
     date = models.DateField(validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User, blank=True, null=True)
     note = models.TextField()
-    
+
     def save(self, **kwargs):
         if not self.date and not self.id:
             self.date = datetime.date.today()
         super(ContactLog,self).save()
-    
+
     def __unicode__(self):
         return "%s %s: %s" % (self.user, self.date, self.note)
-    
+
 
 class ApplicantStandardTestResult(models.Model):
     """ Standardized test instance. This is the result of a student taking a test. """
@@ -320,16 +321,16 @@ class ApplicantStandardTestResult(models.Model):
     test = models.ForeignKey('standard_test.StandardTest')
     show_on_reports = models.BooleanField(default=True, help_text="If true, show this test result on a report such as a transcript. " + \
         "Note entire test types can be marked as shown on report or not. This is useful if you have a test that is usually shown, but have a few instances where you don't want it to show.")
-    
+
     class Meta:
         unique_together = ('date', 'applicant', 'test')
-    
+
     def __unicode__(self):
         try:
             return '%s %s %s' % (unicode(self.applicant), unicode(self.test), self.date)
         except:
             return "Standard Test Result"
-    
+
     @property
     def total(self):
         """Returns total for the test instance

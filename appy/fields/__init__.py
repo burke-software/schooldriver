@@ -16,293 +16,100 @@
 
 # ------------------------------------------------------------------------------
 import copy, types, re
+from appy import Object
 from appy.gen.layout import Table, defaultFieldLayouts
 from appy.gen import utils as gutils
+from appy.px import Px
 from appy.shared import utils as sutils
+from group import Group
+from page import Page
 
-# ------------------------------------------------------------------------------
-nullValues = (None, '', [])
-validatorTypes = (types.FunctionType, types.UnboundMethodType,
-                  type(re.compile('')))
-labelTypes = ('label', 'descr', 'help')
-
-def initMasterValue(v):
-    '''Standardizes p_v as a list of strings.'''
-    if not isinstance(v, bool) and not v: res = []
-    elif type(v) not in sutils.sequenceTypes: res = [v]
-    else: res = v
-    return [str(v) for v in res]
-
-class No:
-    '''When you write a workflow condition method and you want to return False
-       but you want to give to the user some explanations about why a transition
-       can't be triggered, do not return False, return an instance of No
-       instead. When creating such an instance, you can specify an error
-       message.'''
-    def __init__(self, msg):
-        self.msg = msg
-    def __nonzero__(self):
-        return False
-
-# ------------------------------------------------------------------------------
-# Page. Every field lives into a Page.
-# ------------------------------------------------------------------------------
-class Page:
-    '''Used for describing a page, its related phase, show condition, etc.'''
-    subElements = ('save', 'cancel', 'previous', 'next', 'edit')
-    def __init__(self, name, phase='main', show=True, showSave=True,
-                 showCancel=True, showPrevious=True, showNext=True,
-                 showEdit=True):
-        self.name = name
-        self.phase = phase
-        self.show = show
-        # When editing the page, must I show the "save" button?
-        self.showSave = showSave
-        # When editing the page, must I show the "cancel" button?
-        self.showCancel = showCancel
-        # When editing the page, and when a previous page exists, must I show
-        # the "previous" button?
-        self.showPrevious = showPrevious
-        # When editing the page, and when a next page exists, must I show the
-        # "next" button?
-        self.showNext = showNext
-        # When viewing the page, must I show the "edit" button?
-        self.showEdit = showEdit
-
-    @staticmethod
-    def get(pageData):
-        '''Produces a Page instance from p_pageData. User-defined p_pageData
-           can be:
-           (a) a string containing the name of the page;
-           (b) a string containing <pageName>_<phaseName>;
-           (c) a Page instance.
-           This method returns always a Page instance.'''
-        res = pageData
-        if res and isinstance(res, basestring):
-            # Page data is given as a string.
-            pageElems = pageData.rsplit('_', 1)
-            if len(pageElems) == 1: # We have case (a)
-                res = Page(pageData)
-            else: # We have case (b)
-                res = Page(pageData[0], phase=pageData[1])
-        return res
-
-    def isShowable(self, obj, layoutType, elem='page'):
-        '''Must this page be shown for p_obj? "Show value" can be True, False
-           or 'view' (page is available only in "view" mode).
-
-           If p_elem is not "page", this method returns the fact that a
-           sub-element is viewable or not (buttons "save", "cancel", etc).'''
-        # Define what attribute to test for "showability".
-        showAttr = 'show'
-        if elem != 'page':
-            showAttr = 'show%s' % elem.capitalize()
-        # Get the value of the show attribute as identified above.
-        show = getattr(self, showAttr)
-        if callable(show):
-            show = show(obj.appy())
-        # Show value can be 'view', for example. Thanks to p_layoutType,
-        # convert show value to a real final boolean value.
-        res = show
-        if res == 'view': res = layoutType == 'view'
-        return res
-
-    def getInfo(self, obj, layoutType):
-        '''Gets information about this page, for p_obj, as a dict.'''
-        res = {}
-        for elem in Page.subElements:
-            res['show%s' % elem.capitalize()] = self.isShowable(obj, layoutType,
-                                                                elem=elem)
-        return res
-
-# ------------------------------------------------------------------------------
-# Group. Fields can be grouped.
-# ------------------------------------------------------------------------------
-class Group:
-    '''Used for describing a group of widgets within a page.'''
-    def __init__(self, name, columns=['100%'], wide=True, style='section2',
-                 hasLabel=True, hasDescr=False, hasHelp=False,
-                 hasHeaders=False, group=None, colspan=1, align='center',
-                 valign='top', css_class='', master=None, masterValue=None,
-                 cellpadding=1, cellspacing=1, cellgap='0.6em', label=None,
-                 translated=None):
-        self.name = name
-        # In its simpler form, field "columns" below can hold a list or tuple
-        # of column widths expressed as strings, that will be given as is in
-        # the "width" attributes of the corresponding "td" tags. Instead of
-        # strings, within this list or tuple, you may give Column instances
-        # (see below).
-        self.columns = columns
-        self._setColumns()
-        # If field "wide" below is True, the HTML table corresponding to this
-        # group will have width 100%. You can also specify some string value,
-        # which will be used for HTML param "width".
-        if wide == True:
-            self.wide = '100%'
-        elif isinstance(wide, basestring):
-            self.wide = wide
-        else:
-            self.wide = ''
-        # If style = 'fieldset', all widgets within the group will be rendered
-        # within an HTML fieldset. If style is 'section1' or 'section2', widgets
-        # will be rendered after the group title.
-        self.style = style
-        # If hasLabel is True, the group will have a name and the corresponding
-        # i18n label will be generated.
-        self.hasLabel = hasLabel
-        # If hasDescr is True, the group will have a description and the
-        # corresponding i18n label will be generated.
-        self.hasDescr = hasDescr
-        # If hasHelp is True, the group will have a help text associated and the
-        # corresponding i18n label will be generated.
-        self.hasHelp = hasHelp
-        # If hasheaders is True, group content will begin with a row of headers,
-        # and a i18n label will be generated for every header.
-        self.hasHeaders = hasHeaders
-        self.nbOfHeaders = len(columns)
-        # If this group is himself contained in another group, the following
-        # attribute is filled.
-        self.group = Group.get(group)
-        # If the group is rendered into another group, we can specify the number
-        # of columns that this group will span.
-        self.colspan = colspan
-        self.align = align
-        self.valign = valign
-        self.cellpadding = cellpadding
-        self.cellspacing = cellspacing
-        # Beyond standard cellpadding and cellspacing, cellgap can define an
-        # additional horizontal gap between cells in a row. So this value does
-        # not add space before the first cell or after the last one.
-        self.cellgap = cellgap
-        if style == 'tabs':
-            # Group content will be rendered as tabs. In this case, some
-            # param combinations have no sense.
-            self.hasLabel = self.hasDescr = self.hasHelp = False
-            # The rendering is forced to a single column
-            self.columns = self.columns[:1]
-            # Header labels will be used as labels for the tabs.
-            self.hasHeaders = True
-        self.css_class = css_class
-        self.master = master
-        self.masterValue = initMasterValue(masterValue)
-        if master: master.slaves.append(self)
-        self.label = label # See similar attr of Type class.
-        # If a translated name is already given here, we will use it instead of
-        # trying to translate the group label.
-        self.translated = translated
-
-    def _setColumns(self):
-        '''Standardizes field "columns" as a list of Column instances. Indeed,
-           the initial value for field "columns" may be a list or tuple of
-           Column instances or strings.'''
-        for i in range(len(self.columns)):
-            columnData = self.columns[i]
-            if not isinstance(columnData, Column):
-                self.columns[i] = Column(self.columns[i])
-
-    @staticmethod
-    def get(groupData):
-        '''Produces a Group instance from p_groupData. User-defined p_groupData
-           can be a string or a Group instance; this method returns always a
-           Group instance.'''
-        res = groupData
-        if res and isinstance(res, basestring):
-            # Group data is given as a string. 2 more possibilities:
-            # (a) groupData is simply the name of the group;
-            # (b) groupData is of the form <groupName>_<numberOfColumns>.
-            groupElems = groupData.rsplit('_', 1)
-            if len(groupElems) == 1:
-                res = Group(groupElems[0])
-            else:
-                try:
-                    nbOfColumns = int(groupElems[1])
-                except ValueError:
-                    nbOfColumns = 1
-                width = 100.0 / nbOfColumns
-                res = Group(groupElems[0], ['%.2f%%' % width] * nbOfColumns)
-        return res
-
-    def getMasterData(self):
-        '''Gets the master of this group (and masterValue) or, recursively, of
-           containing groups when relevant.'''
-        if self.master: return (self.master, self.masterValue)
-        if self.group: return self.group.getMasterData()
-
-    def generateLabels(self, messages, classDescr, walkedGroups,
-                       forSearch=False):
-        '''This method allows to generate all the needed i18n labels related to
-           this group. p_messages is the list of i18n p_messages (a PoMessages
-           instance) that we are currently building; p_classDescr is the
-           descriptor of the class where this group is defined. If p_forSearch
-           is True, this group is used for grouping searches, and not fields.'''
-        # A part of the group label depends on p_forSearch.
-        if forSearch: gp = 'searchgroup'
-        else:         gp = 'group'
-        if self.hasLabel:
-            msgId = '%s_%s_%s' % (classDescr.name, gp, self.name)
-            messages.append(msgId, self.name)
-        if self.hasDescr:
-            msgId = '%s_%s_%s_descr' % (classDescr.name, gp, self.name)
-            messages.append(msgId, ' ', nice=False)
-        if self.hasHelp:
-            msgId = '%s_%s_%s_help' % (classDescr.name, gp, self.name)
-            messages.append(msgId, ' ', nice=False)
-        if self.hasHeaders:
-            for i in range(self.nbOfHeaders):
-                msgId = '%s_%s_%s_col%d' % (classDescr.name, gp, self.name, i+1)
-                messages.append(msgId, ' ', nice=False)
-        walkedGroups.add(self)
-        if self.group and (self.group not in walkedGroups) and \
-           not self.group.label:
-            # We remember walked groups for avoiding infinite recursion.
-            self.group.generateLabels(messages, classDescr, walkedGroups,
-                                      forSearch=forSearch)
-
-    def insertInto(self, widgets, groupDescrs, page, metaType, forSearch=False):
-        '''Inserts the GroupDescr instance corresponding to this Group instance
-           into p_widgets, the recursive structure used for displaying all
-           widgets in a given p_page (or all searches), and returns this
-           GroupDescr instance.'''
-        # First, create the corresponding GroupDescr if not already in
-        # p_groupDescrs.
-        if self.name not in groupDescrs:
-            groupDescr = groupDescrs[self.name] = gutils.GroupDescr(\
-                self, page, metaType, forSearch=forSearch).get()
-            # Insert the group at the higher level (ie, directly in p_widgets)
-            # if the group is not itself in a group.
-            if not self.group:
-                widgets.append(groupDescr)
-            else:
-                outerGroupDescr = self.group.insertInto(widgets, groupDescrs,
-                                            page, metaType, forSearch=forSearch)
-                gutils.GroupDescr.addWidget(outerGroupDescr, groupDescr)
-        else:
-            groupDescr = groupDescrs[self.name]
-        return groupDescr
-
-class Column:
-    '''Used for describing a column within a Group like defined above.'''
-    def __init__(self, width, align="left"):
-        self.width = width
-        self.align = align
-
-# ------------------------------------------------------------------------------
-# Abstract base class for every field.
 # ------------------------------------------------------------------------------
 class Field:
     '''Basic abstract class for defining any field.'''
+
+    # Some global static variables
+    nullValues = (None, '', [])
+    validatorTypes = (types.FunctionType, types.UnboundMethodType,
+                      type(re.compile('')))
+    labelTypes = ('label', 'descr', 'help')
+
     # Those attributes can be overridden by subclasses for defining,
     # respectively, names of CSS and Javascript files that are required by this
     # field, keyed by layoutType.
     cssFiles = {}
     jsFiles = {}
     dLayouts = 'lrv-d-f'
+    hLayouts = 'lhrv-f'
+    wLayouts = Table('lrv-f')
+
+    # Render a field. Optional vars:
+    # * fieldName   can be given as different as field.name for fields included
+    #               in List fields: in this case, fieldName includes the row
+    #               index.
+    # * showChanges If True, a variant of the field showing successive changes
+    #               made to it is shown.
+    pxRender = Px('''
+     <x var="showChanges=showChanges|req.get('showChanges',False);
+             layoutType=layoutType|req.get('layoutType');
+             isSearch = layoutType == 'search';
+             layout=field.layouts[layoutType];
+             name=fieldName|field.name;
+             widgetName = isSearch and ('w_%s' % name) or name;
+             outerValue=value|None;
+             rawValue=not isSearch and zobj.getFieldValue(name, \
+                        layoutType=layoutType, outerValue=outerValue);
+             value=not isSearch and \
+                   field.getFormattedValue(zobj, rawValue, showChanges);
+             requestValue=not isSearch and zobj.getRequestFieldValue(name);
+             inRequest=req.has_key(name);
+             error=req.get('%s_error' % name);
+             isMultiple=(field.multiplicity[1] == None) or \
+                        (field.multiplicity[1] &gt; 1);
+             masterCss=field.slaves and ('master_%s' % name) or '';
+             slaveCss=field.getSlaveCss();
+             tagCss=tagCss|'';
+             tagCss=('%s %s' % (slaveCss, tagCss)).strip();
+             zobj=zobj or ztool;
+             tagId='%s_%s' % (zobj.id, name);
+             tagName=field.master and 'slave' or '';
+             layoutTarget=field">:tool.pxLayoutedObject</x>''')
+
+    # Displays a field label.
+    pxLabel = Px('''<label if="field.hasLabel and field.renderLabel"
+     lfor=":field.name">::_('label', field=field)</label>''')
+
+    # Displays a field description.
+    pxDescription = Px('''<span if="field.hasDescr"
+     class="discreet">::_('descr', field=field)</span>''')
+
+    # Displays a field help.
+    pxHelp = Px('''<acronym title=":_('help', field=field)"><img
+     src=":url('help')"/></acronym>''')
+
+    # Displays validation-error-related info about a field.
+    pxValidation = Px('''<x><acronym if="error" title=":error"><img
+     src=":url('warning')"/></acronym><img if="not error"
+     src=":url('warning_no.gif')"/></x>''')
+
+    # Displays the fact that a field is required.
+    pxRequired = Px('''<img src=":url('required.gif')"/>''')
+
+    # Button for showing changes to the field.
+    pxChanges = Px('''<x if=":zobj.hasHistory(name)"><img class="clickable"
+     if="not showChanges" src=":url('changes')" title="_('changes_show')"
+     onclick=":'askField(%s,%s,%s,%s)' % \
+               (q(tagId), q(zobj.absolute_url()), q('view'), q('True'))"/><img
+     class="clickable" if="showChanges" src=":url('changesNo')"
+     onclick=":'askField(%s,%s,%s,%s)' % \
+               (q(tagId), q(zobj.absolute_url(), q('view'), q('True'))"
+     title=":_('changes_hide')"/></x>''')
 
     def __init__(self, validator, multiplicity, default, show, page, group,
                  layouts, move, indexed, searchable, specificReadPermission,
                  specificWritePermission, width, height, maxChars, colspan,
-                 master, masterValue, focus, historized, sync, mapping, label,
-                 sdefault, scolspan, swidth, sheight):
+                 master, masterValue, focus, historized, mapping, label,
+                 sdefault, scolspan, swidth, sheight, persist):
         # The validator restricts which values may be defined. It can be an
         # interval (1,None), a list of string values ['choice1', 'choice2'],
         # a regular expression, a custom function, a Selection instance, etc.
@@ -359,23 +166,25 @@ class Field:
         self.maxChars = maxChars or ''
         # If the widget is in a group with multiple columns, the following
         # attribute specifies on how many columns to span the widget.
-        self.colspan = colspan
+        self.colspan = colspan or 1
         # The list of slaves of this field, if it is a master
         self.slaves = []
         # The behaviour of this field may depend on another, "master" field
         self.master = master
         if master: self.master.slaves.append(self)
-        # When master has some value(s), there is impact on this field.
-        self.masterValue = initMasterValue(masterValue)
+        # The semantics of attribute "masterValue" below is as follows:
+        # - if "masterValue" is anything but a method, the field will be shown
+        #   only when the master has this value, or one of it if multivalued;
+        # - if "masterValue" is a method, the value(s) of the slave field will
+        #   be returned by this method, depending on the master value(s) that
+        #   are given to it, as its unique parameter.
+        self.masterValue = gutils.initMasterValue(masterValue)
         # If a field must retain attention in a particular way, set focus=True.
         # It will be rendered in a special way.
         self.focus = focus
         # If we must keep track of changes performed on a field, "historized"
         # must be set to True.
         self.historized = historized
-        # self.sync below determines if the field representations will be
-        # retrieved in a synchronous way by the browser or not (Ajax).
-        self.sync = self.formatSync(sync)
         # Mapping is a dict of contexts that, if specified, are given when
         # translating the label, descr or help related to this field.
         self.mapping = self.formatMapping(mapping)
@@ -401,10 +210,14 @@ class Field:
         # default value will be present.
         self.sdefault = sdefault
         # Colspan for rendering the search widget corresponding to this field.
-        self.scolspan = scolspan
+        self.scolspan = scolspan or 1
         # Width and height for the search widget
         self.swidth = swidth or width
         self.sheight = sheight or height
+        # "persist" indicates if field content must be stored in the database.
+        # For some fields it is not wanted (ie, fields used only as masters to
+        # update slave's selectable values).
+        self.persist = persist
 
     def init(self, name, klass, appName):
         '''When the application server starts, this secondary constructor is
@@ -442,14 +255,14 @@ class Field:
         elif rp and isinstance(rp, basestring):
             self.readPermission = rp
         else:
-            self.readPermission = 'View'
+            self.readPermission = 'read'
         wp = self.specificWritePermission
         if wp and not isinstance(wp, basestring):
             self.writePermission = '%s: Write %s %s' % (appName, prefix, name)
         elif wp and isinstance(wp, basestring):
             self.writePermission = wp
         else:
-            self.writePermission = 'Modify portal content'
+            self.writePermission = 'write'
         if (self.type == 'Ref') and not self.isBack:
             # We must initialise the corresponding back reference
             self.back.klass = klass
@@ -494,9 +307,9 @@ class Field:
         '''When displaying p_obj on a given p_layoutType, must we show this
            field?'''
         # Check if the user has the permission to view or edit the field
-        if layoutType == 'edit': perm = self.writePermission
-        else:                    perm = self.readPermission
-        if not obj.allows(perm): return False
+        perm = (layoutType == 'edit') and self.writePermission or \
+                                          self.readPermission
+        if not obj.allows(perm): return
         # Evaluate self.show
         if callable(self.show):
             res = self.callMethod(obj, self.show)
@@ -506,7 +319,7 @@ class Field:
         if type(res) in sutils.sequenceTypes:
             for r in res:
                 if r == layoutType: return True
-            return False
+            return
         elif res in ('view', 'edit', 'result'):
             return res == layoutType
         return bool(res)
@@ -518,6 +331,7 @@ class Field:
         if not masterData: return True
         else:
             master, masterValue = masterData
+            if masterValue and callable(masterValue): return True
             reqValue = master.getRequestValue(obj.REQUEST)
             # reqValue can be a list or not
             if type(reqValue) not in sutils.sequenceTypes:
@@ -527,16 +341,6 @@ class Field:
                     for r in reqValue:
                         if m == r: return True
 
-    def formatSync(self, sync):
-        '''Creates a dictionary indicating, for every layout type, if the field
-           value must be retrieved synchronously or not.'''
-        if isinstance(sync, bool):
-            sync = {'edit': sync, 'view': sync, 'cell': sync}
-        for layoutType in ('edit', 'view', 'cell'):
-            if layoutType not in sync:
-                sync[layoutType] = False
-        return sync
-
     def formatMapping(self, mapping):
         '''Creates a dict of mappings, one entry by label type (label, descr,
            help).'''
@@ -544,12 +348,12 @@ class Field:
             # Is it a dict like {'label':..., 'descr':...}, or is it directly a
             # dict with a mapping?
             for k, v in mapping.iteritems():
-                if (k not in labelTypes) or isinstance(v, basestring):
+                if (k not in self.labelTypes) or isinstance(v, basestring):
                     # It is already a mapping
                     return {'label':mapping, 'descr':mapping, 'help':mapping}
             # If we are here, we have {'label':..., 'descr':...}. Complete
             # it if necessary.
-            for labelType in labelTypes:
+            for labelType in self.labelTypes:
                 if labelType not in mapping:
                     mapping[labelType] = None # No mapping for this value.
             return mapping
@@ -591,9 +395,13 @@ class Field:
         for layoutType in layouts.iterkeys():
             if isinstance(layouts[layoutType], basestring):
                 layouts[layoutType] = Table(layouts[layoutType])
-        # Derive "view" and "cell" layouts from the "edit" layout when relevant
+        # Derive "view", "search" and "cell" layouts from the "edit" layout
+        # when relevant.
         if 'view' not in layouts:
             layouts['view'] = Table(other=layouts['edit'], derivedType='view')
+        if 'search' not in layouts:
+            layouts['search'] = Table(other=layouts['view'],
+                                      derivedType='search')
         # Create the "cell" layout from the 'view' layout if not specified.
         if 'cell' not in layouts:
             layouts['cell'] = Table(other=layouts['view'], derivedType='cell')
@@ -604,9 +412,11 @@ class Field:
             layouts['view'].addCssClasses('focus')
             layouts['edit'].addCssClasses('focus')
         # If layouts are the default ones, set width=None instead of width=100%
-        # for the field if it is not in a group (excepted for rich texts).
+        # for the field if it is not in a group (excepted for rich texts and
+        # refs).
         if areDefault and not self.group and \
-           not ((self.type == 'String') and (self.format == self.XHTML)):
+           not ((self.type == 'String') and (self.format == self.XHTML)) and \
+           not (self.type == 'Ref'):
             for layoutType in layouts.iterkeys():
                 layouts[layoutType].width = ''
         # Remove letters "r" from the layouts if the field is not required.
@@ -615,12 +425,15 @@ class Field:
                 layouts[layoutType].removeElement('r')
         # Derive some boolean values from the layouts.
         self.hasLabel = self.hasLayoutElement('l', layouts)
+        # "renderLabel" indicates if the existing label (if hasLabel is True)
+        # must be rendered by pxLabel. For example, if field is an action, the
+        # label will be rendered within the button, not by pxLabel.
+        self.renderLabel = self.hasLabel
+        # If field is within a group rendered like a tab, the label will already
+        # be rendered in the corresponding tab.
+        if self.group and (self.group.style == 'tabs'): self.renderLabel = False
         self.hasDescr = self.hasLayoutElement('d', layouts)
         self.hasHelp  = self.hasLayoutElement('h', layouts)
-        # Store Table instance's dicts instead of instances: this way, they can
-        # be manipulated in ZPTs.
-        for layoutType in layouts.iterkeys():
-            layouts[layoutType] = layouts[layoutType].get()
         return layouts
 
     def hasLayoutElement(self, element, layouts):
@@ -640,7 +453,7 @@ class Field:
            value for the Field constructor.'''
         res = '{'
         for k, v in self.layouts.iteritems():
-            res += '"%s":"%s",' % (k, v['layoutString'])
+            res += '"%s":"%s",' % (k, v.layoutString)
         res += '}'
         return res
 
@@ -755,7 +568,7 @@ class Field:
            representation of the field value coming from the request.
            This method computes the real (potentially converted or manipulated
            in some other way) value as can be stored in the database.'''
-        if self.isEmptyValue(value): return None
+        if self.isEmptyValue(value): return
         return value
 
     def getMasterData(self):
@@ -764,15 +577,37 @@ class Field:
         if self.master: return (self.master, self.masterValue)
         if self.group: return self.group.getMasterData()
 
+    def getSlaveCss(self):
+        '''Gets the CSS class that must apply to this field in the web UI when
+           this field is the slave of another field.'''
+        if not self.master: return ''
+        res = 'slave*%s*' % self.masterName
+        if not callable(self.masterValue):
+            res += '*'.join(self.masterValue)
+        else:
+            res += '+'
+        return res
+
+    def getOnChange(self, zobj, layoutType, className=None):
+        '''When this field is a master, this method computes the call to the
+           Javascript function that will be called when its value changes (in
+           order to update slaves).'''
+        if not self.slaves: return ''
+        q = zobj.getTool().quote
+        # When the field is on a search screen, we need p_className.
+        cName = className and (',%s' % q(className)) or ''
+        return 'updateSlaves(this,null,%s,%s,null,null%s)' % \
+               (q(zobj.absolute_url()), q(layoutType), cName)
+
     def isEmptyValue(self, value, obj=None):
         '''Returns True if the p_value must be considered as an empty value.'''
-        return value in nullValues
+        return value in self.nullValues
 
     def validateValue(self, obj, value):
         '''This method may be overridden by child classes and will be called at
            the right moment by m_validate defined below for triggering
            type-specific validation. p_value is never empty.'''
-        return None
+        return
 
     def securityCheck(self, obj, value):
         '''This method performs some security checks on the p_value that
@@ -797,7 +632,7 @@ class Field:
                 # master/slave relationships, we consider it not to be required.
                 return obj.translate('field_required')
             else:
-                return None
+                return
         # Perform security checks on p_value
         self.securityCheck(obj, value)
         # Triggers the sub-class-specific validation for this value
@@ -805,9 +640,9 @@ class Field:
         if message: return message
         # Evaluate the custom validator if one has been specified
         value = self.getStorableValue(value)
-        if self.validator and (type(self.validator) in validatorTypes):
+        if self.validator and (type(self.validator) in self.validatorTypes):
             obj = obj.appy()
-            if type(self.validator) != validatorTypes[-1]:
+            if type(self.validator) != self.validatorTypes[-1]:
                 # It is a custom function. Execute it.
                 try:
                     validValue = self.validator(obj, value)
@@ -825,21 +660,12 @@ class Field:
             else:
                 # It is a regular expression
                 if not self.validator.match(value):
-                    # If the regular expression is among the default ones, we
-                    # generate a specific error message.
-                    if self.validator == String.EMAIL:
-                        return obj.translate('bad_email')
-                    elif self.validator == String.URL:
-                        return obj.translate('bad_url')
-                    elif self.validator == String.ALPHANUMERIC:
-                        return obj.translate('bad_alphanumeric')
-                    else:
-                        return obj.translate('field_invalid')
+                    return obj.translate('field_invalid')
 
     def store(self, obj, value):
         '''Stores the p_value (produced by m_getStorableValue) that complies to
            p_self type definition on p_obj.'''
-        setattr(obj, self.name, value)
+        if self.persist: setattr(obj, self.name, value)
 
     def callMethod(self, obj, method, cache=True):
         '''This method is used to call a p_method on p_obj. p_method is part of
@@ -866,6 +692,13 @@ class Field:
         except Exception, e:
             obj.log(sutils.Traceback.get(), type='error')
             raise e
+
+    def getAttribute(self, obj, name):
+        '''Gets the value of attribue p_name on p_self, which can be a simple
+           value or the result of a method call on p_obj.'''
+        res = getattr(self, name)
+        if not callable(res): return res
+        return self.callMethod(obj, res)
 
     def process(self, obj):
         '''This method is a general hook allowing a field to perform some

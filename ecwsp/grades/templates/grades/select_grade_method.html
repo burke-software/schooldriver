@@ -17,6 +17,7 @@
 	selection.
     </p>
     <form method="post" action="">
+    {% csrf_token %}
         {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
 	    <div>
 		<button style="width:auto" type="submit" name="choice" value="O" class="grp-button">Online gradebook</button>    

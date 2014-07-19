@@ -1,35 +1,27 @@
-import os,sys, logging
+import os, sys, logging
 
-# PATHS
-from os.path import join, abspath, dirname
-here = lambda *x: join(abspath(dirname(__file__)), *x)
-PROJECT_ROOT = here("..",)
-root = lambda *x: join(abspath(PROJECT_ROOT), *x)
-
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = (
-    root('templates/'),
+    os.path.join(BASE_DIR, 'templates/'),
 )
 STATICFILES_DIRS = (
-    root('static_files/'),
-    ('gumby_css', root('components/css/')),
+    os.path.join(BASE_DIR, 'static_files/'),
+    ('gumby_css', os.path.join(BASE_DIR, 'components/css/')),
 )
-STATIC_ROOT = root('static/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = root('media/')
-CKEDITOR_UPLOAD_PATH = root('media/uploads')
-BOWER_COMPONENTS_ROOT = root('components/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+CKEDITOR_UPLOAD_PATH = os.path.join(BASE_DIR, 'media/uploads')
+BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components/')
 
 # Django stuff
 LOGIN_REDIRECT_URL = "/"
-ADMINS = (
-    ('Admin', 'someone@example.com'),
-)
-MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'sample_db',
+        'ATOMIC_REQUESTS': True,
     },
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
@@ -79,8 +71,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pagination.middleware.PaginationMiddleware',
-    #'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     )
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
@@ -96,9 +89,10 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'djangobower.finders.BowerFinder',
+    'compressor.finders.CompressorFinder',
 )
 #STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
-STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage'
+#STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage'
 
 DEBUG = True
 TEMPLATE_DEBUG = True
@@ -112,6 +106,13 @@ BOWER_INSTALLED_APPS = (
     'jquery-migrate',
     'blockui',
     'jquery-color',
+    'angular-route',
+    'angular-ui-handsontable',
+    'underscore',
+    'restangular',
+    'bootstrap-sass-official',
+    'bootstrap-hover-dropdown',
+    'angular-ui-bootstrap',
 )
 
 #GRAPPELLI
@@ -146,31 +147,6 @@ if GAPPS:
     AUTHENTICATION_BACKENDS += ('ecwsp.google_auth.backends.GoogleAppsBackend',)
 
 AUTHENTICATION_BACKENDS += ('django_su.backends.SuBackend',)
-
-#Django AJAX selects
-AJAX_LOOKUP_CHANNELS = {
-    # the simplest case, pass a DICT with the model and field to search against :
-    'student' : ('ecwsp.sis.lookups', 'StudentLookup'),
-    'all_student' : ('ecwsp.sis.lookups', 'AllStudentLookup'),
-    'dstudent' : ('ecwsp.sis.lookups', 'StudentLookupSmall'),
-    'faculty' : ('ecwsp.sis.lookups', 'FacultyLookup'),
-    'faculty_user' : ('ecwsp.sis.lookups', 'FacultyUserLookup'),
-    'attendance_quick_view_student': ('ecwsp.attendance.lookups', 'AttendanceAddStudentLookup'),
-    'emergency_contact' : ('ecwsp.sis.lookups', 'EmergencyContactLookup'),
-    'attendance_view_student': ('ecwsp.attendance.lookups', 'AttendanceStudentLookup'),
-    'discstudent' : ('ecwsp.discipline.lookups', 'StudentWithDisciplineLookup'),
-    'discipline_view_student': ('ecwsp.discipline.lookups', 'DisciplineViewStudentLookup'),
-    'volunteer': ('ecwsp.volunteer_track.lookups', 'VolunteerLookup'),
-    'site': ('ecwsp.volunteer_track.lookups', 'SiteLookup'),
-    'site_supervisor': ('ecwsp.volunteer_track.lookups', 'SiteSupervisorLookup'),
-    'theme': ('ecwsp.omr.lookups', 'ThemeLookup'),
-    'studentworker' : ('ecwsp.work_study.lookups', 'StudentLookup'),
-    'company_contact':('ecwsp.work_study.lookups','ContactLookup'),
-    'course': {'model':'schedule.course', 'search_field':'fullname'},
-    'day': ('ecwsp.schedule.lookups','DayLookup'),
-    'company'  : {'model':'work_study.workteam', 'search_field':'team_name'},
-    'benchmark' : ('ecwsp.omr.lookups', 'BenchmarkLookup'),
-}
 
 #CKEDITOR
 CKEDITOR_MEDIA_PREFIX = "/static/ckeditor/"
@@ -329,13 +305,11 @@ INSTALLED_APPS = (
     'ecwsp.work_study',
     'ecwsp.engrade_sync',
     'ecwsp.benchmarks',
-    'ecwsp.standard_test',
     'ecwsp.benchmark_grade',
     'ecwsp.naviance_sso',
     # These can be enabled if desired but the default is off
     #'ldap_groups',
     #'raven.contrib.django',
-    #'debug_toolbar',
     #'ecwsp.integrations.schoolreach',
     #'social.apps.django_app.default',
     #'ecwsp.omr',
@@ -347,6 +321,16 @@ INSTALLED_APPS = (
     #'rosetta',
 )
 
+COMPRESS_PRECOMPILERS = (
+   ('text/coffeescript', 'coffee --compile --stdio'),
+   ('text/x-scss', 'django_libsass.SassCompiler'),
+)
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 # this will load additional settings from the file settings_local.py
 try:
@@ -358,9 +342,11 @@ try:
 except ImportError:
     print("Warning: Could not import settings_local.py")
 
-# must do this after importing settings_local
-if 'ecwsp.benchmark_grade' in INSTALLED_APPS:
-    AJAX_LOOKUP_CHANNELS['refering_course_student'] = ('ecwsp.benchmark_grade.lookups', 'ReferingCourseStudentLookup')
+try:  # prefix cache based on school name to avoid collisions.
+    if SCHOOL_NAME and CACHES:
+        CACHES['default']['KEY_PREFIX'] = SCHOOL_NAME
+except NameError:
+    pass # Not using cache
 
 if DEBUG:
     CELERY_ALWAYS_EAGER = True
@@ -371,6 +357,7 @@ DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 # These are required add ons that we always want to have
 INSTALLED_APPS = (
+    'autocomplete_light',
     'grappelli.dashboard',
     'grappelli',
     'ecwsp.sis',
@@ -383,9 +370,7 @@ INSTALLED_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
-    'ajax_select',
     'reversion',
-    'south',
     'djcelery',
     'django.contrib.admin',
     'django.contrib.staticfiles',
@@ -407,13 +392,19 @@ INSTALLED_APPS = (
     'responsive_dashboard',
     'simple_import',
     'djangobower',
-    #'scaffold_report',
+    'scaffold_report',
     'django_su',
     'floppy_gumby_forms',
     'floppyforms',
     'widget_tweaks',
     'django_cached_field',
+    'rest_framework',
+    'api',
+    'compressor',
 ) + INSTALLED_APPS
+import django
+if django.get_version()[:3] != '1.7':
+    INSTALLED_APPS += ('south',)
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
     TEMPLATE_CONTEXT_PROCESSORS += (
@@ -424,9 +415,10 @@ if 'social.apps.django_app.default' in INSTALLED_APPS:
 if 'ON_HEROKU' in os.environ:
     ON_HEROKU = True
     # Use S3
-    INSTALLED_APPS += ('storages',)
+    INSTALLED_APPS += ('storages', 'collectfast')
+    AWS_PRELOAD_METADATA = True
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-    STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     for environment_variable in (
         'AWS_ACCESS_KEY_ID',
         'AWS_SECRET_ACCESS_KEY',
@@ -434,12 +426,21 @@ if 'ON_HEROKU' in os.environ:
     ):
         # Cower, all ye Stack Overflow pedants!
         globals()[environment_variable] = os.environ[environment_variable]
-    STATIC_URL = '//{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
+    COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
     # Use Heroku's DB
     import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
-    DATABASES['default'] = dj_database_url.config(default='postgres:///local_maroon')
+    DATABASES['default'] = dj_database_url.config()
 
 # Keep this *LAST* to avoid overwriting production DBs with test data
 if 'test' in sys.argv:
-    DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'test',
+        'ATOMIC_REQUESTS': True,
+    }
+
+REST_FRAMEWORK = {
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+}

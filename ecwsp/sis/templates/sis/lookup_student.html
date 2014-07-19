@@ -1,0 +1,18 @@
+{% if choices %}
+  {% for choice in choices %}
+  {% spaceless %}
+  <a class="block choice" href="{% url 'view-student' choice.id %}" onClick="return false;" data-cohort="{{ choice.cache_cohort }}">
+    {% if choice.pic.url_70x65 %}
+      <img id="student-pic" data-largersrc="{{ choice.pic.url_530x400 }}" src="{{ choice.pic.url_70x65 }}" />
+    {% else %}
+      <i class="fa fa-user icon-user no-pic"></i>
+    {% endif %}
+      <span class="student-name">{{ choice.first_name }} {{ choice.last_name }}</span>
+    {% if choice.year %}
+      <br /><span class="student-year">{{ choice.year }}</span>{% endif %}
+  </a>
+  {% endspaceless %}
+  {% endfor %}
+{% else %}
+  <span class="no-results">No results found.</span>
+{% endif %}

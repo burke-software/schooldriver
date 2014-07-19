@@ -1,26 +1,6 @@
-#       models.py
-#       
-#       Copyright 2010 Cristo Rey New York High School
-#        Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
-from django.db import models
+from django.db import models, connection
 from django.db.models.signals import m2m_changed
-from django.db import connection
+from django.db.utils import OperationalError
 from django.core.mail import send_mail
 from django.contrib.auth.models import User, Group
 from django.core import urlresolvers
@@ -38,12 +18,11 @@ from datetime import timedelta
 import hashlib
 import sys
 import urllib
-from decimal import *
+from decimal import Decimal
 import random
 from cStringIO import StringIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from custom_field.models import *
 from custom_field.custom_field import CustomFieldModel
 from ckeditor.fields import RichTextField
 import logging
@@ -155,7 +134,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     inactive = models.BooleanField(default=False, help_text="Will unset student's placements.")
     company = models.ForeignKey(Company, blank=True, null=True)
     team_name = models.CharField(max_length=255, unique=True)
-    login = models.ManyToManyField(WorkTeamUser, blank=True, help_text="user from <a href=\"/admin/auth/user/\">here</a> that this company may login with, ensure user is in the \"company\" group so they have correct permissions")
+    login = models.ManyToManyField(WorkTeamUser, blank=True, help_text="Optional. This creates users with \"company\" permissions, allowing them to sign into the database to review/approve pending and past time sheets for the assigned workteam.")
     paying = models.CharField(max_length=1, choices=(('P', 'Paying'), ('N', 'Non-Paying'), ('F', 'Funded')), blank=True)
     funded_by = models.CharField(max_length=150, blank=True)
     cras = models.ManyToManyField(CraContact, blank=True, null=True)
@@ -384,14 +363,6 @@ class Personality(models.Model):
         verbose_name_plural = 'Personality types'
     
 
-class Handout33(models.Model):
-    category = models.CharField(max_length=100)
-    like = models.CharField(max_length=255)
-    def __unicode__(self):
-        return unicode(self.category) + ": " + unicode(self.like)
-    class Meta:
-        ordering = ('category', 'like',)
-
 class StudentWorkerRoute(models.Model):
     name = models.CharField(max_length=100, unique=True)
     def __unicode__(self):
@@ -419,7 +390,6 @@ class StudentWorker(Student):
     student_pay_rate = models.DecimalField(blank=True, max_digits=5, decimal_places=2, null=True)
     primary_contact = models.ForeignKey(Contact, on_delete=models.SET_NULL, blank=True, null=True, help_text="This is the primary supervisor to whom e-mails will be sent. If the desired contact is not showing, they may need to be added to the company. New contacts are not automatically assigned to a company unless the supervisor adds them.")
     personality_type = models.ForeignKey(Personality, blank=True, null=True)
-    handout33 = models.ManyToManyField(Handout33, blank=True, null=True)
     adp_number = models.CharField(max_length=5, blank=True, verbose_name="ADP Number")
     
     am_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="am_student_set")
@@ -658,9 +628,13 @@ m2m_changed.connect(set_stu_int_placement, sender=StudentInteraction.student.thr
 def get_next_rank():
     """ Return next ranking """
     try:
-        return TimeSheetPerformanceChoice.objects.order_by('-rank')[0].id + 1
-    except IndexError:
-        return 1
+        choice = TimeSheetPerformanceChoice.objects.order_by('-rank').first()
+    except OperationalError:
+        choice = None  # Can happen during migration
+    if choice:
+        return choice.id + 1
+    return 1
+
 class TimeSheetPerformanceChoice(models.Model):
     name = models.CharField(max_length=255, unique=True)
     rank = models.IntegerField(unique=True, default=get_next_rank, help_text="Must be unique. Convention is that higher numbers are better.")

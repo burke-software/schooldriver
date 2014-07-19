@@ -36,7 +36,7 @@ class UnmarshalledFile:
     def __init__(self):
         self.name = '' # The name of the file on disk
         self.mimeType = None # The MIME type of the file
-        self.content = '' # The binary content of the file of a file object
+        self.content = '' # The binary content of the file or a file object
         self.size = 0 # The length of the file in bytes.
 
 class UnicodeBuffer:

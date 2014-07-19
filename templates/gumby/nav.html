@@ -10,25 +10,32 @@
   <ul class="fourteen columns" style="float: right;">
     {% if perms.sis.change_student or perms.sis.view_student %}
     <li class="field">
-        <div class="admin-title view_student" style="heig;">
-            <form id="form_view_student" style="margin-bottom: 0px;" class="view_student" action="/sis/view_student/" method="post">
-                <input type='hidden' name='csrfmiddlewaretoken' value='RgVLrCUEmKq7vd7puOH2tlouKv7U5GSv' />
-                <input type="search" style="width:100%;" placeholder="Lookup Student" name="view_student_text" id="id_view_student_text" value="" maxlength="255" class="ui-autocomplete-input view_student search input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
-                <input type="hidden" name="student" id="id_view_student" value="">
-                <div id="id_view_student_on_deck" style="display: none;" class="results_on_deck"><div></div></div>
-                <script type="text/javascript">//<![CDATA[
-                jQuery(document).ready(function($){
-                        addAutoComplete("id_view_student", function(html_id) {
-                                $("#"+html_id).autocompleteselect({
-                                        minLength: 1,
-                                        source: '/ajax_select/ajax_lookup/dstudent',
-                                });
+        <div class="admin-title view_student" style="position: relative;">
+            <form id="form_view_student" style="margin-bottom: 0px;" class="view_student">
+              <input id="id_view_student_text" class="ui-autocomplete-input view_student search input" type="text" placeholder="Lookup Student" autocomplete="off" aria-autocomplete="list" aria-haspopup="true" style="width:100%;" role="textbox" name="view_student_text" />
+              <script>
+                  $('#id_view_student_text').yourlabsAutocomplete({
+                      url: '/autocomplete/StudentLookupStudentAutocomplete/',
+                      choiceSelector: 'a',
+                      box: $('<span class="yourlabs-autocomplete autocomplete-lookup-student"></span>'),
+                      fixPosition: function() {
+                        // Insert the autocomplete container after the input.
+                        var pos = $.extend({}, this.input.position(), {
+                            height: this.input.outerHeight(),
+                            width:  this.input.outerWidth()
                         });
-                $("#id_view_student_on_deck").bind('added',function() {
-                    $('#form_view_student').submit()
-                });
-                });//]]>
-                </script>
+
+                        this.input.parents().filter(function() {
+                            return $(this).css('overflow') === 'hidden';
+                        }).first().css('overflow', 'visible');
+
+                        this.box.insertAfter(this.input).css(
+                                {top: pos.top + pos.height, left: pos.left, "min-width": pos.width });
+                      }
+                  }).input.bind('selectChoice', function(e, choice, autocomplete) {
+                      window.location.href = choice.attr('href');
+                  });
+              </script>
             </form>
         </div>
 
@@ -68,9 +75,12 @@
                   <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Attendance' %} </a>
                   </li>
               {% endif %}
+                  <li>
+                  <a href="/attendance/daily_attendance_report/">Daily Attendance Report</a>
+                  </li>
               {% endif %}
               {% if perms.sis.reports %}
-                <li><a href="{% url "ecwsp.sis.views.school_report_builder_view" %}">{% trans 'Reports' %}</a></li>
+                  <li><a href="/reports/student_report/">{% trans 'Reports' %}</a></li>
               {% endif %}
             </ul>
           </div>
@@ -93,10 +103,6 @@
                   <a href="/omr/dashboard"> OMR </a>
                 </li>
               {% endif %}
-              {% endif %}
-              {% if perms.sis.reports %}
-                <li><a href="{% url "ecwsp.sis.views.grade_report" %}">{% trans 'Grade Reports' %}</a></li>
-                <li><a href="{% url "ecwsp.schedule.views.grade_analytics" %}">{% trans 'Analytics' %}</a></li>
               {% endif %}
           </ul>
         </div>

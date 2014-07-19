@@ -2,22 +2,22 @@
 {% load i18n %}
 
 {% block content %}
-    <h2> Select course for attendance </h2>
+    <h2> Select course section for attendance </h2>
     
-    {% if predicted_course %}
+    {% if predicted_course_section %}
         <p>
             Perhaps you want
-            <a href="{% url "ecwsp.attendance.views.course_attendance" predicted_course.id %}">
-                {{ predicted_course }}
+            <a href="{% url "ecwsp.attendance.views.course_section_attendance" predicted_course_section.id %}">
+                {{ predicted_course_section }}
             </a>?
         </p>
         <br/>
     {% endif %}
     <ul>
-        {% for course in courses %}
+        {% for course_section in course_sections %}
             <li>
-                <a href="{% url "ecwsp.attendance.views.course_attendance" course.id %}">
-                    {{ course }}
+                <a href="{% url "ecwsp.attendance.views.course_section_attendance" course_section.id %}">
+                    {{ course_section }}
                 </a>
             </li>
         {% endfor %}
