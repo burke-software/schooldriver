@@ -143,7 +143,6 @@ class StudentYearGrade(models.Model):
             course_section__course__course_type__weight__gt=0,
             ).distinct():
             grade = course_enrollment.calculate_grade_real(date_report=date_report, ignore_letter=True)
-            #print ('{}\t' * 3).format(course_enrollment.course, course_enrollment.course.credits, grade)
             if grade:
                 total += grade * course_enrollment.course_section.course.credits
                 credits += course_enrollment.course_section.course.credits
@@ -278,7 +277,6 @@ class Grade(models.Model):
 
     def invalidate_cache(self):
         """ Invalidate any related caches """
-        print "fucking invalidate it"
         try:
             enrollment = self.course_section.courseenrollment_set.get(user=self.student)
             enrollment.flag_grade_as_stale()
