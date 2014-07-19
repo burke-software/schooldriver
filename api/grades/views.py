@@ -13,7 +13,6 @@ class GradeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
     queryset = Grade.objects.filter(
         course_section__course__graded = True,
-        enrollment__is_active = True,
         ) 
 
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
