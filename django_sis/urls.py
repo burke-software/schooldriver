@@ -8,11 +8,6 @@ from api.routers import api_urls
 from responsive_dashboard import views as dashboard_views
 
 
-print "Doing autodiscover in django_sis/urls.py, please remove on django 1.7"
-admin.autodiscover()
-############# END OF AUTODISCOVER #####################
-
-
 dajaxice_autodiscover()
 
 urlpatterns = patterns('',

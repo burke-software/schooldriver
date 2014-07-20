@@ -10,10 +10,6 @@ from ecwsp.schedule.models import MarkingPeriod, CourseMeet, Award
 from ecwsp.administration.models import Template
 import autocomplete_light
 
-print "Doing autodiscover in ecwsp/sis/forms.py, please remove on django 1.7"
-autocomplete_light.autodiscover()
-############# END OF AUTODISCOVER #####################
-
 class UserPreferenceForm(forms.ModelForm):
     class Meta:
         model = UserPreference

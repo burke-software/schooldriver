@@ -1,10 +1,10 @@
-from ecwsp.work_study.models import *
-from ecwsp.administration.models import *
+from ecwsp.work_study.models import (StudentWorker, TimeSheet, Contact,
+        TimeSheetPerformanceChoice, ClientVisit, WorkTeam, CompContract,
+        Attendance)
 from ecwsp.sis.forms import StudentReportWriterForm
 
 from django import forms
 from django.contrib.admin import widgets as adminwidgets
-from localflavor.us.forms import *
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
@@ -15,14 +15,6 @@ import autocomplete_light
 from decimal import Decimal
 from datetime import datetime, date
 from itertools import chain
-
-class StudentForm(autocomplete_light.ModelForm):
-    class Meta:
-        model = StudentWorker
-    
-    ssn = USSocialSecurityNumberField(required=False)
-    state = USStateField(required=False)
-    zip = USZipCodeField(required=False)
 
 
 class CustomCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
@@ -84,14 +76,6 @@ class TdNoTextRadioRenderer(forms.RadioSelect.renderer):
         return mark_safe(u'\n'.join([u'<td class="none nofont" style="font-size: 0px !important; padding-left:10px; padding-right:10px;"> <span style="font-size: 0px;">%s</span> </td>\n' % w for w in self]))
 
 
-class MapImageWidget(forms.CheckboxInput):
-    def render(self, name, value, attrs=None):
-        output = []
-        output.append(super(MapImageWidget, self).render(name, value, attrs))
-        output.append("If checked, the above map file will be overwritten with Google Maps. <table><tr><td><a href=\"javascript:get_map()\">Preview Google Maps</a></td></tr><tr><td> <img width=\"400px\" height=\"400px\" name=\"mapframe\"></iframe> </td></tr></table>")
-        return mark_safe(u''.join(output))
-        
-            
 class TimeSheetForm(forms.ModelForm):
     class Meta:
         model = TimeSheet
@@ -161,11 +145,6 @@ class ChangeSupervisorForm(forms.ModelForm):
         super(ChangeSupervisorForm, self).__init__(*args, **kwargs)
         self.fields["primary_contact"].queryset = Contact.objects.filter(workteam=comp)
 
-class WorkTeamForm(forms.ModelForm):
-    class Meta:
-        model = WorkTeam
-    
-    use_google_maps = forms.BooleanField(required=False, widget=MapImageWidget)
         
 class AddSupervisor(forms.ModelForm):
     class Meta:

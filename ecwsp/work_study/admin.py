@@ -1,7 +1,4 @@
-from ecwsp.work_study.models import *
-from ecwsp.sis.models import *
-from ecwsp.sis.admin import StudentFileInline
-from reversion.admin import VersionAdmin
+from django import forms
 from django.http import HttpResponseRedirect
 from django.contrib import admin
 from django.utils.encoding import smart_unicode
@@ -11,8 +8,14 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from daterange_filter.filter import DateRangeFilter
 
-from django import forms
-from ecwsp.work_study.forms import StudentForm, WorkTeamForm
+from .models import (CompContract, CompanyHistory, Company, WorkTeam, CraContact,
+        PickupLocation, WorkTeamUser, StudentWorker, StudentWorkerRoute, PresetComment, 
+        StudentInteraction, Contact, TimeSheetPerformanceChoice, TimeSheet, Attendance,
+        AttendanceFee, AttendanceReason, Personality, ClientVisit, Survey, PaymentOption,
+        StudentDesiredSkill, StudentFunctionalResponsibility, MessageToSupervisor)
+from ecwsp.sis.models import StudentNumber
+from ecwsp.sis.admin import StudentFileInline
+from reversion.admin import VersionAdmin
 from ecwsp.administration.models import Configuration
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -61,6 +64,22 @@ class CompanyAdmin(admin.ModelAdmin):
     list_display = ('name','fte')
     inlines = [CompContractInline]
 admin.site.register(Company, CompanyAdmin)
+
+
+class MapImageWidget(forms.CheckboxInput):
+    def render(self, name, value, attrs=None):
+        output = []
+        output.append(super(MapImageWidget, self).render(name, value, attrs))
+        output.append("If checked, the above map file will be overwritten with Google Maps. <table><tr><td><a href=\"javascript:get_map()\">Preview Google Maps</a></td></tr><tr><td> <img width=\"400px\" height=\"400px\" name=\"mapframe\"></iframe> </td></tr></table>")
+        return mark_safe(u''.join(output))
+        
+            
+class WorkTeamForm(forms.ModelForm):
+    class Meta:
+        model = WorkTeam
+    
+    use_google_maps = forms.BooleanField(required=False, widget=MapImageWidget)
+
 
 class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
     form = WorkTeamForm
@@ -151,7 +170,7 @@ class WorkStudyUserAdmin(UserAdmin,admin.ModelAdmin):
 admin.site.register(WorkTeamUser,WorkStudyUserAdmin)
 
 class StudentAdmin(admin.ModelAdmin):
-    form = StudentForm
+    form = autocomplete_light.modelform_factory(StudentWorker)
     
     def changelist_view(self, request, extra_context=None):
         """override to hide inactive students by default"""
