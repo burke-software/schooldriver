@@ -53,7 +53,9 @@ class BufferAction:
     def getExceptionLine(self, e):
         '''Gets the line describing exception p_e, containing the pathname of
            the exception class, the exception's message and line number.'''
-        return '%s.%s: %s' % (e.__module__, e.__class__.__name__, str(e))
+        # https://bugs.launchpad.net/appy/+bug/1244738
+        #return '%s.%s: %s' % (e.__module__, e.__class__.__name__, str(e))
+        return '%s: %s' % (e.__class__.__name__, str(e))
 
     def manageError(self, result, context, errorMessage, dumpTb=True):
         '''Manage the encountered error: dump it into the buffer or raise an
@@ -275,7 +277,7 @@ class ForAction(BufferAction):
             if isCell:
                 currentColIndex += 1
         # Cell: leave the last row with the correct number of cells
-        if isCell and elems:
+        if isCell and elems and False:
             wrongNbOfCells = (currentColIndex-1) - initialColIndex
             if wrongNbOfCells < 0: # Too few cells for last row
                 for i in range(abs(wrongNbOfCells)):

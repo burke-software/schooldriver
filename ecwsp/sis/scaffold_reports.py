@@ -385,7 +385,9 @@ class FailReportButton(ReportButton):
             courseenrollment__course_section__marking_period__in=marking_periods
         ).distinct()
         titles = ['']
-        departments = Department.objects.filter(course_section__courseenrollment__user__is_active=True).distinct()
+        departments = Department.objects.filter(
+            course__sections__courseenrollment__user__is_active=True
+        ).distinct()
 
         for department in departments:
             titles += [str(department)]
@@ -783,7 +785,7 @@ class SisReport(ScaffoldReport):
                     course__department=dept,
                     marking_period__school_year__end_date__lte=self.date_end,
                     course__graded=True).distinct():
-                    if course_section.course.course_type._award_credits and course_section.course.credits and self.is_passing(
+                    if course_section.course.course_type.award_credits and course_section.course.credits and self.is_passing(
                         course_section.courseenrollment_set.get(user=student).grade
                     ):
                         c += course_section.credits

@@ -516,7 +516,7 @@ class CourseSection(models.Model):
     last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
 
     def __unicode__(self):
-        return '{}: {}'.format(self.course, self.name)
+        return u'{}: {}'.format(self.course, self.name)
 
     @property
     def department(self):
