@@ -667,8 +667,7 @@ def ajax_save_grade(request):
         try: mark = Mark.objects.get(id=mark_id)
         except Mark.DoesNotExist: return HttpResponse('NO MARK WITH ID ' + mark_id, status=404) 
         if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
-            and request.user.username != mark.item.course_section.teacher.username \
-            and not mark.item.course_section.secondary_teachers.filter(username=request.user.username).count():
+            and not mark.item.course_section.teachers.filter(username=request.user.username).exists():
             return HttpResponse(status=403)
 
         if not request.user.has_perm('grades.change_grade') \
