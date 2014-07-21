@@ -52,12 +52,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='applicant',
-            name='school_year',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=ecwsp.admissions.models.get_school_year, blank=True, to='sis.SchoolYear', null=True),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='applicant',
             name='siblings',
             field=models.ManyToManyField(to='sis.Student', blank=True),
             preserve_default=True,
