@@ -386,7 +386,7 @@ class FailReportButton(ReportButton):
         ).distinct()
         titles = ['']
         departments = Department.objects.filter(
-            course__course_section__courseenrollment__user__is_active=True
+            course__sections__courseenrollment__user__is_active=True
         ).distinct()
 
         for department in departments:
