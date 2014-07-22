@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files import File
 from datetime import datetime
 import httpagentparser
@@ -103,9 +104,13 @@ Use 'demonstrations' to see counts of demonstrations for students and assignment
     get_or_default = Callable(get_or_default)
 
 
+def validate_file_extension(value):
+    if not value.name[-4:] in ['.odt', '.ods']:
+        raise ValidationError('Template must be odt or ods file.')
+
 class Template(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    file = models.FileField(upload_to="templates")
+    file = models.FileField(upload_to="templates", validators=[validate_file_extension])
     general_student = models.BooleanField(default=False, help_text="Can be used on student reports")
     report_card = models.BooleanField(default=False, help_text="Can be used on grade reports, gathers data for one year")
     benchmark_report_card = models.BooleanField(default=False, help_text="A highly detailed, single-year report card for benchmark-based grading")

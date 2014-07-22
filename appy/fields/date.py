@@ -31,8 +31,8 @@ class Date(Field):
        <option value="">-</option>
        <option for="day in days"
                var2="zDay=str(day).zfill(2)" value=":zDay"
-               selected="field.isSelected(zobj, 'day', day, \
-                                          rawValue)">:zDay</option>
+               selected=":field.isSelected(zobj, 'day', day, \
+                                           rawValue)">:zDay</option>
       </select>
 
       <!-- Month -->
@@ -41,23 +41,23 @@ class Date(Field):
        <option value="">-</option>
        <option for="month in months"
                var2="zMonth=str(month).zfill(2)" value=":zMonth"
-               selected="field.isSelected(zobj, 'month', month, \
-                                          rawValue)">:zMonth</option>
+               selected=":field.isSelected(zobj, 'month', month, \
+                                           rawValue)">:zMonth</option>
       </select>
 
       <!-- Year -->
       <select name=":'%s_year' % name" id=":'%s_year' % name">
        <option value="">-</option>
        <option for="year in years" value=":year"
-               selected="field.isSelected(zobj, name, 'year', year, \
-                                          rawValue)">:year</option>
+               selected=":field.isSelected(zobj, 'year', year, \
+                                           rawValue)">:year</option>
       </select>
 
       <!-- The icon for displaying the calendar popup -->
       <x if="field.calendar">
        <input type="hidden" id=":name" name=":name"/>
        <img id=":'%s_img' % name" src=":url('calendar.gif')"/>
-       <script type="text/javascript">:field.getJsInit(name, years)</script>
+       <script type="text/javascript">::field.getJsInit(name, years)</script>
       </x>
 
       <!-- Hour and minutes -->
@@ -81,17 +81,14 @@ class Date(Field):
       </x>
      </x>''')
 
-    pxSearch = Px('''
-     <x var="years=range(field.startYear, field.endYear+1)">
-      <label>:_(field.labelId)</label>
-      <table>
+    pxSearch = Px('''<table var="years=range(field.startYear, field.endYear+1)">
        <!-- From -->
        <tr var="fromName='%s_from' % name;
                 dayFromName='%s_from_day' % name;
                 monthFromName='%s_from_month' % name;
                 yearFromName='%s*date' % widgetName">
         <td width="10px">&nbsp;</td>
-        <td><label>:_('search_from')"></label></td>
+        <td><label>:_('search_from')</label></td>
         <td>
          <select id=":dayFromName" name=":dayFromName">
           <option value="">--</option>
@@ -112,7 +109,7 @@ class Date(Field):
          <x if="field.calendar">
           <input type="hidden" id=":fromName" name=":fromName"/>
           <img id=":'%s_img' % fromName" src=":url('calendar.gif')"/>
-          <script type="text/javascript">:field.getJsInit(fromName, years)
+          <script type="text/javascript">::field.getJsInit(fromName, years)
           </script>
          </x>
         </td>
@@ -124,7 +121,7 @@ class Date(Field):
                 monthToName='%s_to_month' % name;
                 yearToName='%s_to_year' % name">
         <td></td>
-        <td><label>_('search_to')"></label>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td><label>:_('search_to')</label>&nbsp;&nbsp;&nbsp;&nbsp;</td>
         <td height="20px">
          <select id=":dayToName" name=":dayToName">
           <option value="">--</option>
@@ -142,16 +139,15 @@ class Date(Field):
                   value=":value">:value</option>
          </select>
          <!-- The icon for displaying the calendar popup -->
-         <x if="widget.calendar">
+         <x if="field.calendar">
           <input type="hidden" id=":toName" name=":toName"/>
           <img id=":'%s_img' % toName" src=":url('calendar.gif')"/>
-          <script type="text/javascript">:field.getJsInit(toName, years)">
+          <script type="text/javascript">::field.getJsInit(toName, years)
           </script>
          </x>
         </td>
        </tr>
-      </table>
-     </x>''')
+      </table>''')
 
     # Required CSS and Javascript files for this type.
     cssFiles = {'edit': ('jscalendar/calendar-blue.css',)}
@@ -173,7 +169,8 @@ class Date(Field):
                  specificWritePermission=False, width=None, height=None,
                  maxChars=None, colspan=1, master=None, masterValue=None,
                  focus=False, historized=False, mapping=None, label=None,
-                 sdefault=None, scolspan=1, swidth=None, sheight=None):
+                 sdefault=None, scolspan=1, swidth=None, sheight=None,
+                 persist=True):
         self.format = format
         self.calendar = calendar
         self.startYear = startYear
@@ -185,8 +182,8 @@ class Date(Field):
                        group, layouts, move, indexed, searchable,
                        specificReadPermission, specificWritePermission, width,
                        height, None, colspan, master, masterValue, focus,
-                       historized, True, mapping, label, sdefault, scolspan,
-                       swidth, sheight)
+                       historized, mapping, label, sdefault, scolspan, swidth,
+                       sheight, persist)
 
     def getCss(self, layoutType, res):
         # CSS files are only required if the calendar must be shown.

@@ -9,8 +9,6 @@ from ecwsp.sis.models import Student, UserPreference, SchoolYear, GradeLevel, Co
 from ecwsp.schedule.models import MarkingPeriod, CourseMeet, Award
 from ecwsp.administration.models import Template
 import autocomplete_light
-autocomplete_light.autodiscover()
-
 
 class UserPreferenceForm(forms.ModelForm):
     class Meta:

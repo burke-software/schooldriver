@@ -1,15 +1,17 @@
-from django.db import models
 from django.contrib import messages
 from django.conf import settings
 from django_cached_field import CachedCharField, CachedDecimalField
 from django.db import connection
+from django.db import models
+from django.db.models.query import QuerySet
 
-from ecwsp.sis.models import Student
+from ecwsp.sis.models import Student, GradeScaleRule
 from ecwsp.sis.helper_functions import round_as_decimal
+from ecwsp.grades.models import Grade
 from ecwsp.administration.models import Configuration
-import ecwsp
 
 import datetime
+import decimal
 from decimal import Decimal, ROUND_HALF_UP
 import copy
 
@@ -124,7 +126,7 @@ class Period(models.Model):
 
 class CourseMeet(models.Model):
     period = models.ForeignKey(Period)
-    course_section = models.ForeignKey('CourseSection', null=True)
+    course_section = models.ForeignKey('CourseSection')
     day_choice = (   # ISOWEEKDAY
         ('1', 'Monday'),
         ('2', 'Tuesday'),
@@ -146,13 +148,14 @@ class Location(models.Model):
 
 
 class CourseEnrollment(models.Model):
-    course_section = models.ForeignKey('CourseSection', null=True)
+    course_section = models.ForeignKey('CourseSection')
     user = models.ForeignKey('sis.Student')
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
     exclude_days = models.ManyToManyField('Day', blank=True, \
-        help_text="Student does not need to attend on this day. Note courses already specify meeting days; this field is for students who have a special reason to be away.")
-    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Grade", editable=False)
+        help_text="Student does not need to attend on this day. Note course sections already specify meeting days; this field is for students who have a special reason to be away.")
+    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Section Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = (("course_section", "user"),)
@@ -177,17 +180,83 @@ class CourseEnrollment(models.Model):
         self.save()
         return grade
 
-    def get_grade(self, date_report=None, rounding=2):
+    def get_average_for_marking_periods(self, marking_periods, letter=False, numeric=False):
+        """ Get the average for only some marking periods
+        marking_periods - Queryset or optionally pass ids only as an optimization
+        letter - Letter grade scale
+        numeric - non linear numeric scale
+        """
+        if isinstance(marking_periods, QuerySet):
+            marking_periods = tuple(marking_periods.values_list('id', flat=True))
+        else:
+            # Check marking_periods because we can't use sql parameters because sqlite and django suck
+            if all(isinstance(item, int) for item in marking_periods) != True:
+                raise ValueError('marking_periods must be list or tuple of ints')
+            marking_periods = tuple(marking_periods)
+
+        cursor = connection.cursor()
+        sql_string = '''
+SELECT Sum(grade * weight) {over} / Sum(weight) {over} AS ave_grade FROM grades_grade
+LEFT JOIN schedule_markingperiod
+    ON schedule_markingperiod.id = grades_grade.marking_period_id
+WHERE grades_grade.course_section_id = %s
+    AND grades_grade.student_id = %s
+    AND schedule_markingperiod.id in {marking_periods}
+    AND ( grade IS NOT NULL OR letter_grade IS NOT NULL )'''
+        if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+            sql_string = sql_string.format(over='over ()', marking_periods=marking_periods)
+        else:
+            sql_string = sql_string.format(over='', marking_periods=marking_periods)
+
+        cursor.execute(sql_string, (self.course_section_id, self.user_id))
+        result = cursor.fetchone()
+        if result:
+            grade = result[0]
+        else:
+            return None
+        if letter:
+            grade = self.optimized_grade_to_scale(grade, letter=True)
+        elif numeric:
+            grade = self.optimized_grade_to_scale(grade, letter=False)
+        return grade
+
+    def optimized_grade_to_scale(self, grade, letter=True):
+        """ letter - True for letter grade, false for numeric (ex: 4.0 scale) """
+
+        # not sure how this was working before, but I'm just commenting it out
+        # if something else relies on the old method I have just broke it!
+        # -Q
+        '''rule = GradeScaleRule.objects.filter(
+            grade_scale__schoolyear__markingperiod__coursesection=self,
+            min_grade__lte=grade,
+            max_grade__gte=grade).first()'''
+        rule = GradeScaleRule.objects.filter(
+            min_grade__lte=grade,
+            max_grade__gte=grade,
+            ).select_related('course_section').first()
+        if letter:
+            return rule.letter_grade
+        return rule.numeric_scale
+
+    def get_grade(self, date_report=None, rounding=2, letter=False):
         """ Get the grade, use cache when no date change present
+        date_report:
+        rounding: Round to this many decimal places
+        letter: Convert to letter grade scale
         """
         if date_report is None or date_report >= datetime.date.today():
             # Cache will always have the latest grade, so it's fine for
             # today's date and any future date
-            grade = self.grade
+            if self.numeric_grade:
+                grade = self.numeric_grade
+            else:
+                grade = self.grade
         else:
             grade = self.calculate_grade_real(date_report=date_report)
         if rounding and isinstance(grade, (int, long, float, complex, Decimal)):
-            return round_as_decimal(grade, rounding)
+            grade = round_as_decimal(grade, rounding)
+        if letter == True and isinstance(grade, (int, long, float, complex, Decimal)):
+            return self.optimized_grade_to_scale(grade)
         return grade
 
     def calculate_grade(self):
@@ -200,7 +269,7 @@ class CourseEnrollment(models.Model):
         return None
 
     def calculate_grade_real(self, date_report=None, ignore_letter=False):
-        """ Calculate the final grade for a course
+        """ Calculate the final grade for a course section
         ignore_letter can be useful when computing averages
         when you don't care about letter grades
         """
@@ -209,53 +278,50 @@ class CourseEnrollment(models.Model):
         # postgres requires a over () to run
         # http://stackoverflow.com/questions/19271646/how-to-make-a-sum-without-group-by
         sql_string = '''
-SELECT ( Sum(grade * weight) {over} / Sum(weight) {over} ) AS ave_grade,
-       grades_grade.id,
-       grades_grade.override_final
-FROM   grades_grade
-       LEFT JOIN schedule_markingperiod
-              ON schedule_markingperiod.id = grades_grade.marking_period_id
-WHERE  ( grades_grade.course_section_id = %s
-         AND grades_grade.student_id = %s {extra_where} )
-       AND ( grade IS NOT NULL
-              OR letter_grade IS NOT NULL )
-ORDER  BY grades_grade.override_final DESC limit 1'''
+SELECT case when Sum(override_final{postgres_type_cast}) {over} = 1 then -9001 else (Sum(grade * weight) {over} / Sum(weight) {over}) end AS ave_grade
+FROM grades_grade
+    LEFT JOIN schedule_markingperiod
+    ON schedule_markingperiod.id = grades_grade.marking_period_id
+WHERE (grades_grade.course_section_id = %s
+    AND grades_grade.student_id = %s {extra_where} )
+    AND ( grade IS NOT NULL
+    OR letter_grade IS NOT NULL )'''
 
         if date_report:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
-                    over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = 1)'),
-                               (self.course_id, self.user_id, date_report))
+                    postgres_type_cast='::int', over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = 1)'),
+                               (self.course_section_id, self.user_id, date_report))
             else:
                 cursor.execute(sql_string.format(
-                    over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
+                    postgres_type_cast='', over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
                                (self.course_section_id, self.user_id, date_report))
 
         else:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
-                    over='over ()', extra_where=''),
-                               (self.course_id, self.user_id))
+                    postgres_type_cast='::int', over='over ()', extra_where=''),
+                               (self.course_section_id, self.user_id))
             else:
                 cursor.execute(sql_string.format(
-                    over='', extra_where=''),
+                    postgres_type_cast='', over='', extra_where=''),
                                (self.course_section_id, self.user_id))
 
         result = cursor.fetchone()
         if result:
-            (ave_grade, grade_id, override_final) = result
+            ave_grade = result[0]
         else: # No grades at all. The average of no grades is None
             return None
 
-        if override_final:
-            course_grades = ecwsp.grades.models.Grade.objects.get(id=grade_id)
-            grade = course_grades.get_grade()
+        # -9001 = override. We can't mix text and int in picky postgress.
+        if str(ave_grade) == "-9001":
+            course_section_grade = Grade.objects.get(override_final=True, student=self.user, course_section=self.course_section)
+            grade = course_section_grade.get_grade()
             if ignore_letter and not isinstance(grade, (int, Decimal, float)):
                 return None
             return grade
 
-        if ave_grade:
-            # database math always comes out as a float :(
+        elif ave_grade:
             return Decimal(ave_grade)
 
         # about 0.5 s
@@ -307,7 +373,7 @@ class Day(models.Model):
         ordering = ('day',)
 
 class Department(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=True, verbose_name="Department Name")
     order_rank = models.IntegerField(blank=True, null=True, help_text="Rank that courses will show up in reports")
     def get_graduation_credits(self, student):
         try:
@@ -332,22 +398,64 @@ class DepartmentGraduationCredits(models.Model):
     class Meta:
         unique_together = ('department', 'class_year')
 
+class CourseType(models.Model):
+    ''' Some course types, e.g. honors or AP, may have uncommon settings.
+    For consistency, the default data includes a "Normal" type. '''
+    name = models.CharField(max_length=255, unique=True)
+    is_default = models.BooleanField(default=False, help_text="Only one course " \
+        "type can be the default.")
+    weight = models.DecimalField(max_digits=5, decimal_places=2, default=1,
+        help_text="A course's weight in average calculations is this value "
+            "multiplied by the number of credits for the course. A course that "
+            "does not affect averages should have a weight of 0, while an "
+            "honors course might, for example, have a weight of 1.2.")
+    award_credits = models.BooleanField(default=True,
+        help_text="When disabled, course will not be included in any student's "
+            "credit totals. However, the number of credits and weight will "
+            "still be used when calculating averages.")
+    boost = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    def save(self, *args, **kwargs):
+        ''' If I am the default, no other CourseType can be! '''
+        super(CourseType, self).save(*args, **kwargs)
+        if self.is_default:
+            CourseType.objects.exclude(pk=self.pk).update(is_default=False)
+    def __unicode__(self):
+        return self.name
+
+    @staticmethod
+    def build_default():
+        """ Always reference this function when creating the default """
+        return CourseType.objects.get_or_create(name='Normal-Test', is_default=True)[0]
+
+
+def get_course_type_default():
+    try:
+        return CourseType.objects.get(is_default=True).pk
+    except CourseType.DoesNotExist:
+        return CourseType.build_default().pk
+
+def get_credits_default():
+    return Configuration.get_or_default(name='Default course credits').value
+
 class Course(models.Model):
     is_active = models.BooleanField(default=True)
     fullname = models.CharField(max_length=255, unique=True, verbose_name="Full Course Name")
-    shortname = models.CharField(max_length=255)
+    shortname = models.CharField(max_length=255, verbose_name="Short Name")
     homeroom = models.BooleanField(default=False, help_text="Homerooms can be used for attendance")
     graded = models.BooleanField(default=True, help_text="Teachers can submit grades for this course")
     description = models.TextField(blank=True)
     credits = models.DecimalField(max_digits=5, decimal_places=2,
         help_text="Credits affect GPA.",
-        default=lambda: Configuration.get_or_default(name='Default course credits').value)
-    award_credits = models.BooleanField(default=True,
-        help_text='''When disabled, course will not be included in any student's
-        credit totals. However, the number of credits will still be used as a
-        weight in GPA calculations.''')
+        # WARNING: this default must NOT be used for migrations! Courses whose
+        # credits=None should have their credits set to 0
+        default=get_credits_default)
     department = models.ForeignKey(Department, blank=True, null=True)
-    level = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
+    level = models.ForeignKey('sis.GradeLevel', blank=True, null=True, verbose_name="Grade Level")
+    course_type = models.ForeignKey(CourseType,
+        help_text='Should only need adjustment when uncommon calculation ' \
+        'methods are used.',
+        default=get_course_type_default,
+    )
 
     def __unicode__(self):
         return self.fullname
@@ -362,16 +470,6 @@ class Course(models.Model):
         mp = MarkingPeriod.objects.filter(coursesection__course=self).order_by('-end_date').first()
         if mp:
             return mp.end_date
-
-    def save(self, *args, **kwargs):
-        super(Course, self).save(*args, **kwargs)
-
-        # assign teacher in as enrolled user
-        try:
-            if self.teacher:
-                enroll, created = CourseEnrollment.objects.get_or_create(course=self, user=self.teacher, role="teacher")
-        except: pass
-
 
     @staticmethod
     def autocomplete_search_fields():
@@ -398,10 +496,9 @@ class Course(models.Model):
         new.save()
         messages.success(request, 'Copy successful!')
 
-
 class CourseSectionTeacher(models.Model):
     teacher = models.ForeignKey('sis.Faculty')
-    course_section = models.ForeignKey('CourseSection', null=True)
+    course_section = models.ForeignKey('CourseSection')
     is_primary = models.BooleanField(default=False)
 
     class Meta:
@@ -419,7 +516,7 @@ class CourseSection(models.Model):
     last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
 
     def __unicode__(self):
-        return '{}: {}'.format(self.course, self.name)
+        return u'{}: {}'.format(self.course, self.name)
 
     @property
     def department(self):
@@ -472,7 +569,7 @@ class CourseSection(models.Model):
         """
         for student in self.enrollments.all():
             for marking_period in self.marking_period.all():
-                ecwsp.grades.models.Grade.populate_grade(
+                Grade.populate_grade(
                     student = student,
                     marking_period = marking_period,
                     course_section = self
@@ -481,7 +578,6 @@ class CourseSection(models.Model):
     def save(self, *args, **kwargs):
         super(CourseSection, self).save(*args, **kwargs)
         self.populate_all_grades()
-
 
 class OmitCourseGPA(models.Model):
     """ Used to keep repeated or invalid course from affecting GPA """

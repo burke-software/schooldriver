@@ -36,6 +36,7 @@
     <h2> {{ subtitle }} </h2>
     {{ msg }}
     <form method="post" enctype="multipart/form-data" action="">
+        {% csrf_token %}
 		<table>
         {{ form.as_table }}
 		</table>

@@ -22,6 +22,12 @@ class XlReport:
         self.workbook = Workbook()
         self.workbook.remove_sheet(self.workbook.get_active_sheet())
         self.file_name = file_name
+        # Sniff the openpyxl version
+        try:
+            from openpyxl import __major__ as openpyxl_major_version
+            self.old_openpyxl = openpyxl_major_version < 2
+        except ImportError:
+            self.old_openpyxl = False
     
     def add_sheet(self, data, title=None, header_row=None, heading=None, auto_width=False, max_auto_width=50):
         """ Add a sheet with data to workbook
@@ -48,9 +54,20 @@ class XlReport:
             sheet.append(header_row)
             row = sheet.get_highest_row()
             for i, header_cell in enumerate(header_row):
-                cell = sheet.cell(row=row-1, column=i)
-                cell.style.font.bold = True
-                cell.style.borders.bottom.border_style = openpyxl.style.Border.BORDER_THIN
+                if self.old_openpyxl:
+                    cell = sheet.cell(row=row-1, column=i)
+                    cell.style.font.bold = True
+                    cell.style.borders.bottom.border_style = openpyxl.style.Border.BORDER_THIN
+                else:
+                    cell = sheet.cell(row=row, column=i+1)
+                    cell.style = cell.style.copy(
+                        font=cell.style.font.copy(bold=True),
+                        border=openpyxl.styles.Border(
+                            bottom=openpyxl.styles.Side(
+                                border_style=openpyxl.styles.borders.BORDER_THIN
+                            )
+                        )
+                    )
         for row in data:
             row = map(unicode, row)
             sheet.append(row)

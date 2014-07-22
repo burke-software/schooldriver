@@ -37,6 +37,21 @@
 	        <a href="{% url 'ecwsp.sis.views.paper_attendance' 5 %}" class="preport">Friday</a>
 		</div>
 
+        <h4>Benchmark Grade</h4>
+		<div class="medium primary btn">
+	        <a href="/benchmark_grade/student_incomplete_course_sections" class="preport">Students with one or more incomplete courses </a>
+		</div>
+		<div class="medium primary btn">
+	        <a href="/benchmark_grade/student_incomplete_course_sections?inverse " class="preport">Inverse: Students with no incomplete courses </a>
+		</div>
+		<div class="medium primary btn">
+	        <a href="/benchmark_grade/student_zero_dp_standards" class="preport">Students with zeros on 20% or more of Daily Practice assignments and Standards combined in three or more classes</a>
+		</div>
+		<div class="medium primary btn">
+	        <a href="/benchmark_grade/student_zero_dp_standards?inverse" class="preport">Inverse: Students without zeros on 20% or more of Daily Practice assignments and Standards combined in three or more classes </a>
+		</div>
+
+
 	</div>
 </div>
 {% endblock %}

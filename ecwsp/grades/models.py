@@ -1,10 +1,9 @@
 from django.core.exceptions import ValidationError
-from django.db import models
-from django.db.models import Count, signals
+from django.db import models, connection
+from django.db.models import Count, signals, Sum
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
-from ecwsp.schedule.models import MarkingPeriod, Course, CourseEnrollment
-from ecwsp.sis.models import Student
+from ecwsp.sis.models import Student, GradeScaleRule
 from ecwsp.sis.helper_functions import round_as_decimal
 from ecwsp.administration.models import Configuration
 from django_cached_field import CachedDecimalField
@@ -12,6 +11,9 @@ from django_cached_field import CachedDecimalField
 import decimal
 from decimal import Decimal
 import datetime
+import ecwsp
+
+import logging
 
 class GradeComment(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -32,45 +34,62 @@ def grade_comment_length_validator(value):
 class StudentMarkingPeriodGrade(models.Model):
     """ Stores marking period grades for students, only used for cache """
     student = models.ForeignKey('sis.Student')
-    marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
+    marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="MP Average")
 
     class Meta:
         unique_together = ('student', 'marking_period')
 
+    def get_average(self, rounding=2):
+        """ Returns cached average """
+        return round_as_decimal(self.grade, rounding)
+
+    def get_scaled_average(self, rounding=2, boost=True):
+        """ Convert to scaled grade first, then average
+        Burke Software does not endorse this as a precise way to calculate averages """
+        grade_total = 0.0
+        course_count = 0
+        grades = self.student.grade_set.filter(
+            marking_period=self.marking_period,
+            grade__isnull=False,
+            course_section__course__course_type__weight__gt=0,
+        )
+        boost_sum = grades.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+
+        for grade in grades:
+            grade_value = grade.optimized_grade_to_scale(letter=False)
+            grade_total += float(grade_value)
+            course_count += 1
+        if course_count:
+            average = grade_total / course_count
+            if boost:
+                boost_factor = boost_sum / course_count
+                average += float(boost_factor)
+            return round_as_decimal(average, rounding)
+        else:
+            return None
+
     @staticmethod
     def build_all_cache():
         """ Create object for each student * possible marking periods """
         for student in Student.objects.all():
-            marking_periods = student.courseenrollment_set.values('course__marking_period').annotate(Count('course__marking_period'))
+            marking_periods = student.courseenrollment_set.values('course_section__marking_period').annotate(Count('course_section__marking_period'))
             for marking_period in marking_periods:
                 StudentMarkingPeriodGrade.objects.get_or_create(
-                    student=student, marking_period_id=marking_period['course__marking_period'])
+                    student=student, marking_period_id=marking_period['course_section__marking_period'])
 
     def calculate_grade(self):
-        # ignore overriding grades - WRONG!
-        return self.student.grade_set.filter(
-            course_section__courseenrollment__user=self.student, # make sure the student is still enrolled in the course!
-            # each course's weight in the MP average is the course's number of
-            # credits DIVIDED BY the count of marking periods for the course
-            grade__isnull=False, override_final=False, marking_period=self.marking_period).extra(select={
-            'ave_grade': '''
-                Sum(grade *
-                      (SELECT credits
-                       FROM schedule_course
-                       WHERE schedule_course.id = grades_grade.course_id) /
-                      (SELECT Count(schedule_course_marking_period.markingperiod_id)
-                       FROM schedule_course_marking_period
-                       WHERE schedule_course_marking_period.course_id = grades_grade.course_id)) /
-                Sum(
-                      (SELECT credits
-                       FROM schedule_course
-                       WHERE schedule_course.id = grades_grade.course_id) /
-                      (SELECT Count(schedule_course_marking_period.markingperiod_id)
-                       FROM schedule_course_marking_period
-                       WHERE schedule_course_marking_period.course_id = grades_grade.course_id))
-            '''
-        }).values('ave_grade')[0]['ave_grade']
+        cursor = connection.cursor()
+        sql_string = """
+select sum(grade * credits) / sum(credits * 1.0)
+from grades_grade
+left join schedule_coursesection on schedule_coursesection.id=grades_grade.course_section_id
+left join schedule_course on schedule_coursesection.course_id=schedule_course.id
+where marking_period_id=%s and student_id=%s and grade is not null;"""
+        cursor.execute(sql_string, (self.marking_period_id, self.student_id))
+        result = cursor.fetchone()
+        if result:
+            return result[0]
 
 
 class StudentYearGrade(models.Model):
@@ -86,7 +105,8 @@ class StudentYearGrade(models.Model):
     @staticmethod
     def build_cache_student(student):
         years = student.courseenrollment_set.values(
-            'course_section__marking_period__school_year').annotate(Count('course_section__marking_period__school_year'))
+            'course_section__marking_period__school_year'
+            ).annotate(Count('course_section__marking_period__school_year'))
         for year in years:
             if year['course_section__marking_period__school_year']:
                 year_grade = StudentYearGrade.objects.get_or_create(
@@ -120,9 +140,9 @@ class StudentYearGrade(models.Model):
             course_section__marking_period__show_reports=True,
             course_section__marking_period__school_year=self.year,
             course_section__course__credits__isnull=False,
+            course_section__course__course_type__weight__gt=0,
             ).distinct():
             grade = course_enrollment.calculate_grade_real(date_report=date_report, ignore_letter=True)
-            #print ('{}\t' * 3).format(course_enrollment.course, course_enrollment.course.credits, grade)
             if grade:
                 total += grade * course_enrollment.course_section.course.credits
                 credits += course_enrollment.course_section.course.credits
@@ -145,26 +165,30 @@ class StudentYearGrade(models.Model):
         """
         return self.calculate_grade_and_credits(date_report=date_report)[0]
 
-    def get_grade(self, date_report=None, rounding=2):
-        if date_report is None or date_report >= datetime.date.today():
+    def get_grade(self, date_report=None, rounding=2, numeric_scale=False):
+        if numeric_scale == False and (date_report is None or date_report >= datetime.date.today()):
             # Cache will always have the latest grade, so it's fine for
             # today's date and any future date
             return self.grade
         grade = self.calculate_grade(date_report=date_report)
+        if numeric_scale == True:
+            grade_scale = self.year.grade_scale
+            grade = grade_scale.to_numeric(grade)
+            enrollments = self.student.courseenrollment_set.filter(
+                course_section__marking_period__show_reports=True,
+                course_section__marking_period__school_year=self.year,
+                course_section__course__credits__isnull=False,
+                course_section__course__course_type__weight__gt=0,)
+            boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+            boost_factor = boost_sum / enrollments.count()
+            grade += boost_factor
         if rounding:
             grade = round_as_decimal(grade, rounding)
         return grade
 
-signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
+#signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
 
 
-class GradeLetterRule(models.Model):
-    min_grade = models.DecimalField(max_digits=5, decimal_places=2)
-    max_grade = models.DecimalField(max_digits=5, decimal_places=2)
-    letter_grade = models.CharField(max_length=50, unique=True)
-
-    class Meta:
-        unique_together = ('min_grade', 'max_grade')
 
 
 letter_grade_choices = (
@@ -181,8 +205,9 @@ letter_grade_choices = (
     )
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
-    course_section = models.ForeignKey('schedule.CourseSection', null=True)
-    marking_period = models.ForeignKey(MarkingPeriod, blank=True, null=True)
+    course_section = models.ForeignKey('schedule.CourseSection')
+    enrollment = models.ForeignKey('schedule.CourseEnrollment', blank=True, null=True)
+    marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
     date = models.DateField(auto_now=True, validators=settings.DATE_VALIDATORS)
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     override_final = models.BooleanField(default=False, help_text="Override final grade for marking period instead of calculating it.")
@@ -234,7 +259,7 @@ class Grade(models.Model):
                 self.letter_grade = None
                 return True
             return False
-    
+
     @staticmethod
     def validate_grade(grade):
         """ Determine if grade is valid or not """
@@ -256,16 +281,28 @@ class Grade(models.Model):
             enrollment = self.course_section.courseenrollment_set.get(user=self.student)
             enrollment.flag_grade_as_stale()
             enrollment.flag_numeric_grade_as_stale()
-        except CourseEnrollment.DoesNotExist:
+        except ecwsp.schedule.models.CourseEnrollment.DoesNotExist:
             pass
-        self.student.cache_gpa = self.student.calculate_gpa()
-        if self.student.cache_gpa != "N/A":
+        self.student.cached_gpa = self.student.calculate_gpa()
+        if self.student.cached_gpa != "N/A":
             self.student.save()
-    
+
+    def optimized_grade_to_scale(self, letter):
+        """ Optimized version of GradeScale.to_letter
+        letter - True for letter grade, false for numeric (ex: 4.0 scale) """
+        rule = GradeScaleRule.objects.filter(
+                grade_scale__schoolyear__markingperiod=self.marking_period_id,
+                min_grade__lte=self.grade,
+                max_grade__gte=self.grade,
+                ).first()
+        if letter:
+            return rule.letter_grade
+        return rule.numeric_scale
+
     def get_grade(self, letter=False, display=False, rounding=None,
         minimum=None, number=False):
         """
-        letter: Converts to a letter based on GradeLetterRule
+        letter: Converts to a letter based on GradeScale
         display: For letter grade - Return display name instead of abbreviation.
         rounding: Numeric - round to this many decimal places.
         minimum: Numeric - Minimum allowed grade. Will not return lower than this.
@@ -286,8 +323,10 @@ class Grade(models.Model):
                 string = '%.' + str(rounding) + 'f'
                 grade = string % float(str(grade))
             if letter == True:
-                letter_grade = GradeLetterRule.objects.filter(max_grade__gte=grade, min_grade__lte=grade).first()
-                return letter_grade.letter_grade
+                try:
+                    return self.optimized_grade_to_scale(letter=True)
+                except GradeScaleRule.DoesNotExist:
+                    return "No Grade Scale"
             return grade
         else:
             return ""
@@ -300,13 +339,23 @@ class Grade(models.Model):
         reports. '''
         if self.marking_period_id == None:
             if Grade.objects.filter(
-                    student=self.student, 
-                    course_section=self.course_section, 
+                    student=self.student,
+                    course_section=self.course_section,
                     marking_period=None
                     ).exclude(id=self.id).exists():
                 raise ValidationError('Student, Course Section, MarkingPeriod must be unique')
 
     def save(self, *args, **kwargs):
+        if not self.enrollment:
+            try:
+                enrollment = ecwsp.schedule.models.CourseEnrollment.objects.get(
+                    course_section = self.course_section,
+                    user = self.student
+                    )
+                self.enrollment = enrollment
+            except:
+                logging.info("No enrollment exists for this student, this grade is useless!")
+
         super(Grade, self).save(*args, **kwargs)
         self.invalidate_cache()
 
@@ -317,14 +366,40 @@ class Grade(models.Model):
     def __unicode__(self):
         return unicode(self.get_grade(self))
 
+    @staticmethod
+    def get_scaled_multiple_mp_average(student, marking_periods, rounding=2):
+        if (type(marking_periods) is list and
+            marking_periods and
+            type(marking_periods[0]) is ecwsp.schedule.models.MarkingPeriod):
+            marking_periods = [ mp.id for mp in marking_periods ]
+
+        enrollments = ecwsp.schedule.models.CourseEnrollment.objects.filter(
+                user=student,
+                course_section__course__course_type__weight__gt=0,
+                course_section__marking_period__in=marking_periods)
+        num_courses = 0
+        total_grade = 0
+        boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+        for enrollment in enrollments.distinct():
+            grade = enrollment.get_average_for_marking_periods(marking_periods, numeric=True)
+            if grade != None:
+                total_grade += grade
+                num_courses += 1
+        if num_courses > 0:
+            average = total_grade / num_courses
+            boost_factor = boost_sum /  enrollments.count()
+            average += boost_factor
+            return round_as_decimal(average, rounding)
+        else:
+            return None
 
     @staticmethod
     def populate_grade(student, marking_period, course_section):
         """
         make sure that each combination of Student/MarkingPeriod/CourseSection
-        has a grade entity associated with it. If none exists, create one and 
-        set the course grade to "None". This method should be called on 
-        enrolling students to an exsiting course or creating a new course, 
+        has a grade entity associated with it. If none exists, create one and
+        set the course grade to "None". This method should be called on
+        enrolling students to an exsiting course or creating a new course,
         or creating a new marking period, or creating a new cource section
         """
         grade_instance = Grade.objects.filter(
@@ -335,8 +410,12 @@ class Grade(models.Model):
         if not grade_instance:
             new_grade = Grade(
                 student = student,
-                course_section = course_section, 
+                course_section = course_section,
                 marking_period = marking_period,
+                enrollment = ecwsp.schedule.models.CourseEnrollment.objects.get(
+                    course_section = course_section,
+                    user = student
+                ),
                 grade = None,
             )
             new_grade.save()

@@ -40,6 +40,8 @@ CUSTOM_CONVERSION_ERROR = 'Custom converter for "%s" values produced an ' \
                           'error while converting value "%s". %s'
 XML_SPECIAL_CHARS = {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;',
                      "'": '&apos;'}
+XML_SPECIAL_CHARS_NO_APOS = XML_SPECIAL_CHARS.copy()
+del XML_SPECIAL_CHARS_NO_APOS["'"]
 XML_ENTITIES = {'lt': '<', 'gt': '>', 'amp': '&', 'quot': '"', 'apos': "'"}
 HTML_ENTITIES = {
         'iexcl': '¡',  'cent': '¢', 'pound': '£', 'curren': '€', 'yen': '¥',
@@ -61,7 +63,7 @@ HTML_ENTITIES = {
         'ntilde':'ñ', 'ograve':'ò', 'oacute':'ó', 'ocirc':'ô', 'otilde':'õ',
         'ouml':'ö', 'divide':'÷', 'oslash':'ø', 'ugrave':'ù', 'uacute':'ú',
         'ucirc':'û', 'uuml':'ü', 'yacute':'ý', 'thorn':'þ', 'yuml':'ÿ',
-        'euro':'€', 'nbsp':' ', "rsquo":"'", "lsquo":"'", "ldquo":"'",
+        'euro':'€', 'nbsp':' ', "rsquo":"'", "lsquo":"'", "ldquo":"'",
         "rdquo":"'", 'ndash': '—', 'mdash': '—', 'oelig':'oe', 'quot': "'",
         'mu': 'µ'}
 import htmlentitydefs
@@ -71,20 +73,23 @@ for k, v in htmlentitydefs.entitydefs.iteritems():
 
 def escapeXml(s, format='xml', nsText='text'):
     '''Returns p_s, whose XML special chars have been replaced with escaped XML
-       entities. If p_format is "odf", line breaks are converted to ODF line
-       breaks. In this case, it is needed to give the name of the "text"
-       namespace (p_nsText) as defined in the ODF document where the line breaks
-       must be inserted.'''
+       entities. If p_format is "odf", line breaks and tabs are converted to
+       their ODF counterparts. In this case, it is needed to give the name of
+       the "text" namespace (p_nsText) as defined in the ODF document where the
+       line breaks and tabs must be inserted.'''
     if isinstance(s, unicode):
         res = u''
     else:
         res = ''
     odf = format == 'odf'
     for c in s:
-        if XML_SPECIAL_CHARS.has_key(c):
-            res += XML_SPECIAL_CHARS[c]
+        if XML_SPECIAL_CHARS_NO_APOS.has_key(c):
+            # We do not escape 'apos': there is no particular need for that.
+            res += XML_SPECIAL_CHARS_NO_APOS[c]
         elif odf and (c == '\n'):
             res += '<%s:line-break/>' % nsText
+        elif odf and (c == '\t'):
+            res += '<%s:tab/>' % nsText
         elif odf and (c == '\r'):
             pass
         else:
@@ -99,8 +104,8 @@ def escapeXhtml(s):
     else:
         res = ''
     for c in s:
-        if XML_SPECIAL_CHARS.has_key(c):
-            res += XML_SPECIAL_CHARS[c]
+        if XML_SPECIAL_CHARS_NO_APOS.has_key(c):
+            res += XML_SPECIAL_CHARS_NO_APOS[c]
         elif c == '\n':
             res += '<br/>'
         elif c == '\r':
@@ -593,31 +598,48 @@ class XmlMarshaller:
     def dumpFile(self, res, v):
         '''Dumps a file into the result.'''
         if not v: return
+        w = res.write
         # p_value contains the (possibly binary) content of a file. We will
         # encode it in Base64, in one or several parts.
         partTag = self.getTagName('part')
         res.write('<%s type="base64" number="1">' % partTag)
         if hasattr(v, 'data'):
             # The file is an Archetypes file.
-            valueType = v.data.__class__.__name__
-            if valueType == 'Pdata':
+            if v.data.__class__.__name__ == 'Pdata':
                 # There will be several parts.
-                res.write(v.data.data.encode('base64'))
+                w(v.data.data.encode('base64'))
                 # Write subsequent parts
                 nextPart = v.data.next
-                nextPartNumber = 2
+                nextPartNb = 2
                 while nextPart:
-                    res.write('</%s>' % partTag) # Close the previous part
-                    res.write('<%s type="base64" number="%d">' % \
-                              (partTag, nextPartNumber))
-                    res.write(nextPart.data.encode('base64'))
+                    w('</%s>' % partTag) # Close the previous part
+                    w('<%s type="base64" number="%d">' % (partTag, nextPartNb))
+                    w(nextPart.data.encode('base64'))
                     nextPart = nextPart.next
-                    nextPartNumber += 1
+                    nextPartNb += 1
             else:
-                res.write(v.data.encode('base64'))
+                w(v.data.encode('base64'))
+            w('</%s>' % partTag)
+        elif hasattr(v, 'uploadName'):
+            # The file is a Appy FileInfo instance. Read the file from disk.
+            filePath = v.getFilePath(self.instance)
+            f = file(filePath, 'rb')
+            partNb = 1
+            while True:
+                chunk = f.read(v.BYTES)
+                if not chunk: break
+                # We have one more chunk. Dump the start tag (excepted if it is
+                # the first chunk: the start tag has already been dumped, see
+                # above).
+                if partNb > 1:
+                    w('<%s type="base64" number="%d">' % (partTag, partNb))
+                w(chunk.encode('base64'))
+                w('</%s>' % partTag) # Close the tag
+                partNb += 1
+            f.close()
         else:
-            res.write(v.encode('base64'))
-        res.write('</%s>' % partTag)
+            w(v.encode('base64'))
+            w('</%s>' % partTag)
 
     def dumpDict(self, res, v):
         '''Dumps the XML version of dict p_v.'''
@@ -701,11 +723,22 @@ class XmlMarshaller:
                 if fieldValue: length = len(fieldValue)
                 res.write(' count="%d"' % length)
         if fType == 'file':
+            # Get the MIME type
+            mimeType = None
             if hasattr(fieldValue, 'content_type'):
-                res.write(' mimeType="%s"' % fieldValue.content_type)
+                mimeType = fieldValue.content_type
+            elif hasattr(fieldValue, 'mimeType'):
+                mimeType = fieldValue.mimeType
+            if mimeType: res.write(' mimeType="%s"' % mimeType)
+            # Get the file name
+            fileName = None
             if hasattr(fieldValue, 'filename'):
+                fileName = fieldValue.filename
+            elif hasattr(fieldValue, 'uploadName'):
+                fileName = fieldValue.uploadName
+            if fileName:
                 res.write(' name="')
-                self.dumpString(res, fieldValue.filename)
+                self.dumpString(res, fileName)
                 res.write('"')
         res.write('>')
         # Dump the field value
@@ -721,6 +754,8 @@ class XmlMarshaller:
            an instance at all, but another Python data structure or basic type,
            p_objectType is ignored.'''
         self.objectType = objectType
+        # The Appy object is needed to marshall its File fields.
+        if objectType == 'appy': self.instance = instance
         # Call the XmlMarshaller constructor if it hasn't been called yet.
         if not hasattr(self, 'cdata'):
             XmlMarshaller.__init__(self)
@@ -786,10 +821,9 @@ class XmlMarshaller:
                     if field.type == 'File':
                         fieldType = 'file'
                         v = field.getValue(instance)
-                        if v: v = v._zopeFile
                     elif field.type == 'Ref':
                         fieldType = 'ref'
-                        v = field.getValue(instance, type='zobjects')
+                        v = field.getValue(instance, appy=False)
                     else:
                         v = field.getValue(instance)
                     self.dumpField(res, field.name, v, fieldType=fieldType)
@@ -1135,7 +1169,10 @@ class XhtmlCleaner(XmlParser):
         # between tags.
         if not self.env.currentContent or \
            self.env.currentContent[-1] in ('\n', ' '):
-            toAdd = content.lstrip()
+            # I give here to lstrip an explicit list of what is to be considered
+            # as blank chars, because I do not want unicode NBSP chars to be in
+            # this list.
+            toAdd = content.lstrip(u' \n\r\t')
         else:
             toAdd = content
         # Re-transform XML special chars to entities.

@@ -62,7 +62,7 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.sis.models.Student',
                 'ecwsp.sis.models.EmergencyContact',
                 'ecwsp.sis.models.Cohort',
-                'ecwsp.sis.models.PerCourseCohort',
+                'ecwsp.sis.models.PerCourseSectionCohort',
                 'ecwsp.sis.models.ReasonLeft',
                 'ecwsp.sis.models.Faculty',
                 'ecwsp.sis.models.MessageToStudent',
@@ -106,7 +106,7 @@ class CustomIndexDashboard(Dashboard):
         ))
     
         self.children.append(modules.ModelList(
-            title='Courses and Grades',
+            title='Courses Sections and Grades',
             column=1,
             models=('ecwsp.schedule.*','ecwsp.grades.*','ecwsp.benchmark_grade.*','ecwsp.benchmarks.*'),
         ))

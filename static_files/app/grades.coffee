@@ -1,10 +1,9 @@
 app = angular.module 'angular_sis', ['restangular', 'uiHandsontable', 'ngRoute']
 
 
-app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$routeParams', '$route', ($scope, GradebookService, $routeParams, $route) ->
-
+app.controller 'StudentGradesController', ($scope, GradebookService, $routeParams, $route) ->
     $scope.columns = [
-        { width: 160, value: 'row.course', title: 'Course', fixed: true, readOnly: true}
+        { width: 160, value: 'row.course_section', title: 'Course', fixed: true, readOnly: true}
     ]
 
     grades_api = GradebookService
@@ -16,7 +15,6 @@ app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$route
             attribute = change[1]
             instance = row[attribute.split('.')[0]]
             instance.isPristine = false
-
     
     $scope.$on '$routeChangeSuccess', ->
         grades_api.marking_periods = []
@@ -27,39 +25,39 @@ app.controller 'StudentGradesController', ['$scope', 'GradebookService', '$route
             year_id = $routeParams.year_id
         else
             year_id = default_school_year_id
-        grades_api.getGrades({student: grades_api.student_id, course__marking_period__school_year: year_id}).then (grades) ->
+        grades_api.getGrades({student: grades_api.student_id, course_section__marking_period__school_year: year_id, ordering: 'marking_period__start_date'}).then (grades) ->
             $scope.grades = grades
             # Course | Grade1 | Grade etc | Final
             for grade in grades
                 new_row = true
                 for row in grades_api.rows
-                    if row.course_id == grade.course_id
+                    if row.course_section_id == grade.course_section_id
                         new_row = false
                 if new_row
                     final = {grade: 0}
-                    grades_api.rows.push({course: grade.course, course_id: grade.course_id, final: final})
-            grades_api.addMarkingPeriods(grades, grades_api.rows, $scope.columns, 'course_id')
+                    grades_api.rows.push({course_section: grade.course_section, course_section_id: grade.course_section_id, final: final})
+
+
+            grades_api.addMarkingPeriods(grades, grades_api.rows, $scope.columns, 'course_section_id')
             
     $scope.comment_button_text = "Show Comments"
     $scope.showComments = () ->
        $scope.comment_button_text = grades_api.toggleComments($scope.columns)
-]
 
 
-app.controller 'CourseGradesController', ['$scope', '$routeParams', '$route', 'GradebookService', ($scope, $routeParams, $route, GradebookService) ->
+app.controller 'CourseGradesController', ($scope, $routeParams, $route, GradebookService) ->
     $scope.columns = [
         {width: 160, value: 'row.student', title: 'Student', fixed: true, readOnly: true}
     ]
-
     grades_api = GradebookService
     $scope.rows = grades_api.rows
     $scope.changeGrade = grades_api.setGrade
 
     $scope.$on '$routeChangeSuccess', ->
-        course_id = $routeParams.course_id
-        grades_api.course_id = course_id
+        course_section_id = $routeParams.course_section_id
+        grades_api.course_section_id = course_section_id
         
-        grades_api.getGrades({course: course_id}).then (grades)->
+        grades_api.getGrades({course_section: course_section_id, ordering: 'marking_period__start_date'}).then (grades)->
             grades = grades
             # Student | Grade1 | Grade etc | Final
             for grade in grades
@@ -76,28 +74,33 @@ app.controller 'CourseGradesController', ['$scope', '$routeParams', '$route', 'G
     $scope.comment_button_text = "Show Comments"
     $scope.showComments = () ->
        $scope.comment_button_text = grades_api.toggleComments($scope.columns)
-]
 
 
-app.factory 'GradebookService', ['Restangular', (Restangular) ->
+app.factory 'GradebookService', (Restangular) ->
     gradeRenderer = (instance, td, row, col, prop, value, cellProperties) ->
         Handsontable.TextCell.renderer.apply this, arguments
         data_row = grades_api.rows[row]
         data_instance = data_row[prop.split('.')[0]]
-        if data_instance.isValid == true
-            td.style.background = "green"
-        else if data_instance.isValid == false
-            td.style.background = "red"
-        else if data_instance.isPristine == false
-            td.style.background = "yellow"
+        if data_instance
+            if data_instance.isValid == true
+                td.className += "table-is-valid"
+            else if data_instance.isValid == false
+                td.className += "table-is-not-valid"
+            else if data_instance.isPristine == true
+                td.style.borderRight = "2px solid #f00"
+            else if data_instance.isPristine == false
+                td.style.borderRight = "2px solid #00f"
+        else
+            td.className += ' no-marking-period'
+            cellProperties.readOnly = true
     finalRenderer = (instance, td, row, col, prop, value, cellProperties) ->
         Handsontable.TextCell.renderer.apply this, arguments
         data_row = grades_api.rows[row]
         data_instance = data_row['final']
         if data_instance.isValid == false
-            td.style.background = "red"
+            td.className += "table-is-not-valid"
         else if data_instance.hasOverride == true
-            td.style.background = "orange"
+            td.className += "table-is-overridden"
 
     grades_api = Restangular.all('grades')
     grades_api.marking_periods = []
@@ -106,21 +109,23 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
         final = 0.0
         num_of_mp = 0
         for marking_period in grades_api.marking_periods
-            grade = student['grade' + marking_period.marking_period_id].grade
-            gradeFloat = parseFloat(grade)
-            if grade != null
-                if isNaN(gradeFloat)
-                    gradeLower = grade.toLowerCase()
-                    if gradeLower == "i"
-                        return "I"
-                    else if gradeLower in ["p", "lp", "hp"]
-                        final += 100
+            grade_object = student['grade' + marking_period.marking_period_id]
+            if grade_object
+                grade = grade_object.grade
+                gradeFloat = parseFloat(grade)
+                if grade != null
+                    if isNaN(gradeFloat)
+                        gradeLower = grade.toLowerCase()
+                        if gradeLower == "i"
+                            return "I"
+                        else if gradeLower in ["p", "lp", "hp"]
+                            final += 100
+                            num_of_mp += 1
+                        else if gradeLower in ["f", "m"]
+                            num_of_mp += 1
+                    else
+                        final += gradeFloat
                         num_of_mp += 1
-                    else if gradeLower in ["f", "m"]
-                        num_of_mp += 1
-                else
-                    final += gradeFloat
-                    num_of_mp += 1
         final_grade = (final / num_of_mp).toFixed(2)
         student.hasOverride = false
         if isNaN(final_grade)
@@ -193,10 +198,10 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
                                 new_grade.student_id = grades_api.student_id
                             else
                                 new_grade.student_id = row.student_id
-                            if grades_api.course_id
-                                new_grade.course_id = grades_api.course_id
+                            if grades_api.course_section_id
+                                new_grade.course_section_id = grades_api.course_section_id
                             else
-                                new_grade.course_id = row.course_id
+                                new_grade.course_section_id = row.course_section_id
                             grades_api.post(new_grade).then ((response) ->
                                 row.final.isValid = true
                             ), (response) ->
@@ -238,4 +243,3 @@ app.factory 'GradebookService', ['Restangular', (Restangular) ->
             return "Show Comments"
             
     return grades_api
-]

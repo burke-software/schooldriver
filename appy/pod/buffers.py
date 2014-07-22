@@ -19,6 +19,7 @@ import re
 from xml.sax.saxutils import quoteattr
 from appy.shared.xml_parser import xmlPrologue, escapeXml
 from appy.pod import PodError
+from appy.shared.utils import Traceback
 from appy.pod.elements import *
 from appy.pod.actions import IfAction, ElseAction, ForAction, VariablesAction, \
                              NullAction
@@ -188,7 +189,7 @@ class Buffer:
     def dumpContent(self, content):
         '''Dumps string p_content into the buffer.'''
         if self.pod:
-            # Take care of converting line breaks to odf line breaks.
+            # Take care of converting line breaks and tabs.
             content = escapeXml(content, format='odf',
                                 nsText=self.env.namespaces[self.env.NS_TEXT])
         else:
@@ -223,7 +224,11 @@ class FileBuffer(Buffer):
             if escape: self.dumpContent(res)
             else: self.write(res)
         except Exception, e:
-            PodError.dump(self, EVAL_EXPR_ERROR % (expression, e), dumpTb=False)
+            if not self.env.raiseOnError:
+                PodError.dump(self, EVAL_EXPR_ERROR % (expression, e),
+                              dumpTb=False)
+            else:
+                raise Exception(EVAL_EXPR_ERROR % (expression, e))
 
     def addAttributes(self):
         # Into a FileBuffer, it is not possible to insert Attributes. Every
@@ -241,7 +246,7 @@ class MemoryBuffer(Buffer):
     actionRex = re.compile('(?:(\w+)\s*\:\s*)?do\s+(\w+)(-)?' \
                            '(?:\s+(for|if|else|with)\s*(.*))?')
     forRex = re.compile('\s*([\w\-_]+)\s+in\s+(.*)')
-    varRex = re.compile('\s*([\w\-_]+)\s*=\s*(.*)')
+    varRex = re.compile('\s*(@?[\w\-_]+)\s*=\s*(.*)')
 
     def __init__(self, env, parent):
         Buffer.__init__(self, env, parent)
@@ -280,7 +285,7 @@ class MemoryBuffer(Buffer):
         return res
 
     def isMainElement(self, elem):
-        '''Is p_elem the main elemen within this buffer?'''
+        '''Is p_elem the main element within this buffer?'''
         mainElem = self.getMainElement()
         if not mainElem: return
         if hasattr(mainElem, 'OD'): mainElem = mainElem.OD.elem
@@ -569,7 +574,8 @@ class MemoryBuffer(Buffer):
     def getElementIndexes(self, expressions=True):
         res = []
         for index, elem in self.elements.iteritems():
-            condition = isinstance(elem, Expression)
+            condition = isinstance(elem, Expression) or \
+                        isinstance(elem, Attributes)
             if not expressions:
                 condition = not condition
             if condition:
@@ -665,10 +671,12 @@ class MemoryBuffer(Buffer):
                         if escape: result.dumpContent(res)
                         else: result.write(res)
                     except Exception, e:
-                        if self.pod:
+                        #print "OHHH YEAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
+                        #result.dumpContent('')
+                        if not self.env.raiseOnError:
                             PodError.dump(result, EVAL_EXPR_ERROR % (
                                           evalEntry.expr, e), dumpTb=False)
-                        else: # px
+                        else:
                             raise Exception(EVAL_EXPR_ERROR %(evalEntry.expr,e))
                 elif isinstance(evalEntry, Attributes) or \
                      isinstance(evalEntry, Attribute):

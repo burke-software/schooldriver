@@ -32,6 +32,10 @@ alpha  = re.compile('[a-zA-Z0-9]')
 letter = re.compile('[a-zA-Z]')
 digits = '0123456789'
 letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+# No "0" or "1" that could be interpreted as letters "O" or "l".
+passwordDigits = '23456789'
+# No letters i, l, o (nor lowercase nor uppercase) that could be misread.
+passwordLetters = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ'
 emptyTuple = ()
 
 # ------------------------------------------------------------------------------
@@ -53,7 +57,8 @@ class Selection:
 
     def getText(self, obj, value, appyType):
         '''Gets the text that corresponds to p_value.'''
-        for v, text in appyType.getPossibleValues(obj, withTranslations=True):
+        for v, text in appyType.getPossibleValues(obj, ignoreMasterValues=True,\
+                                                  withTranslations=True):
             if v == value:
                 return text
         return value
@@ -92,36 +97,35 @@ class String(Field):
       <!-- Unformatted text -->
       <x if="value and (fmt == 1)">::zobj.formatText(value, format='html')</x>
       <!-- XHTML text -->
-      <x if="value and (fmt == 2)">
-       <div if="not mayAjaxEdit" class="xhtml">::value</div>
+      <x if="fmt == 2">
+       <div if="not mayAjaxEdit" class="xhtml">::value or '-'</div>
        <div if="mayAjaxEdit" class="xhtml" contenteditable="true"
-            id=":'%s_%s_ck' % (zobj.UID(), name)">::value</div>
-       <script if="mayAjaxEdit">:field.getJsInlineInit(zobj)"></script>
+            id=":'%s_%s_ck' % (zobj.id, name)">::value or '-'</div>
+       <script if="mayAjaxEdit">::field.getJsInlineInit(zobj)</script>
       </x>
+      <span if="not value and (fmt != 2)" class="smaller">-</span>
       <input type="hidden" if="masterCss" class=":masterCss" value=":rawValue"
              name=":name" id=":name"/>
      </x>''')
 
     pxEdit = Px('''
      <x var="fmt=field.format;
-             isSelect=field.isSelect;
-             isMaster=field.slaves;
              isOneLine=fmt in (0,3,4)">
-      <select if="isSelect"
+      <select if="field.isSelect"
               var2="possibleValues=field.getPossibleValues(zobj, \
                       withTranslations=True, withBlankValue=True)"
               name=":name" id=":name" class=":masterCss"
               multiple=":isMultiple and 'multiple' or ''"
-              onchange=":isMaster and 'updateSlaves(this)' or ''"
+              onchange=":field.getOnChange(zobj, layoutType)"
               size=":isMultiple and field.height or 1">
        <option for="val in possibleValues" value=":val[0]"
-               selected=":field.isSelected(zobj, val[0], rawValue)"
-               title=":val[1]">:ztool.truncateValue(val[1], field.width)">
-       </option>
+               selected=":field.isSelected(zobj, name, val[0], rawValue)"
+               title=":val[1]">:ztool.truncateValue(val[1],field.width)</option>
       </select>
-      <x if="isOneLine and not isSelect">
+      <x if="isOneLine and not field.isSelect"
+         var2="placeholder=field.getAttribute(obj, 'placeholder') or ''">
        <input id=":name" name=":name" size=":field.width"
-              maxlength=":field.maxChars"
+              maxlength=":field.maxChars" placeholder=":placeholder"
               value=":inRequest and requestValue or value"
               style=":'text-transform:%s' % field.transform"
               type=":(fmt == 3) and 'password' or 'text'"/>
@@ -137,18 +141,17 @@ class String(Field):
                  rows=":field.height">:inRequest and requestValue or value
        </textarea>
        <script if="fmt == 2"
-               type="text/javascript">:field.getJsInit(zobj)</script>
+               type="text/javascript">::field.getJsInit(zobj)</script>
       </x>
      </x>''')
 
     pxCell = Px('''
      <x var="multipleValues=value and isMultiple">
-      <x if="multipleValues">:', '.join(value)"></x>
+      <x if="multipleValues">:', '.join(value)</x>
       <x if="not multipleValues">:field.pxView</x>
      </x>''')
 
-    pxSearch = Px('''<x>
-     <label lfor="widgetName">:_(field.labelId)"></label><br/>&nbsp;&nbsp;
+    pxSearch = Px('''
      <!-- Show a simple search field for most String fields -->
      <input if="not field.isSelect" type="text" maxlength=":field.maxChars"
             size=":field.swidth" value=":field.sdefault"
@@ -166,18 +169,18 @@ class String(Field):
               value="or"/>
        <label lfor=":orName">:_('search_or')</label>
        <input type="radio" name=":operName" id=":andName" value="and"/>
-       <label lfor=":andName">:_('search_and')"></label><br/>
+       <label lfor=":andName">:_('search_and')</label><br/>
       </x>
       <!-- The list of values -->
       <select var="preSelected=field.sdefault"
-              name=":widgetName" size=":field.sheight" multiple="multiple">
+              name=":widgetName" size=":field.sheight" multiple="multiple"
+              onchange=":field.getOnChange(ztool, 'search', className)">
        <option for="v in field.getPossibleValues(ztool, withTranslations=True,\
                                      withBlankValue=False, className=className)"
                selected=":v[0] in preSelected" value=":v[0]"
-               title=":v[1]">ztool.truncateValue(v[1], field.swidth)</option>
+               title=":v[1]">:ztool.truncateValue(v[1], field.swidth)</option>
       </select>
-     </x><br/>
-    </x>''')
+     </x><br/>''')
 
     # Some predefined functions that may also be used as validators
     @staticmethod
@@ -295,8 +298,9 @@ class String(Field):
                  width=None, height=None, maxChars=None, colspan=1, master=None,
                  masterValue=None, focus=False, historized=False, mapping=None,
                  label=None, sdefault='', scolspan=1, swidth=None, sheight=None,
-                 transform='none', styles=('p','h1','h2','h3','h4'),
-                 allowImageUpload=True, inlineEdit=False):
+                 persist=True, transform='none', placeholder=None,
+                 styles=('p','h1','h2','h3','h4'), allowImageUpload=True,
+                 spellcheck=False, contentLanguage=None, inlineEdit=False):
         # According to format, the widget will be different: input field,
         # textarea, inline editor... Note that there can be only one String
         # field of format CAPTCHA by page, because the captcha challenge is
@@ -308,6 +312,10 @@ class String(Field):
         self.styles = styles
         # When format is XHTML, do we allow the user to upload images in it ?
         self.allowImageUpload = allowImageUpload
+        # When format is XHTML, do we run the CK spellchecker ?
+        self.spellcheck = spellcheck
+        # What is the language of field content?
+        self.contentLanguage = contentLanguage
         # When format in XHTML, can the field be inline-edited (ckeditor)?
         self.inlineEdit = inlineEdit
         # The following field has a direct impact on the text entered by the
@@ -316,12 +324,19 @@ class String(Field):
         # CSS property: "none" (default), "uppercase", "capitalize" or
         # "lowercase".
         self.transform = transform
+        # "placeholder", similar to the HTML attribute of the same name, allows
+        # to specify a short hint that describes the expected value of the input
+        # field. It is shown inside the input field and disappears as soon as
+        # the user encodes something in it. Works only for strings whose format
+        # is LINE. Does not work with IE < 10. You can specify a method here,
+        # that can, for example, return an internationalized value.
+        self.placeholder = placeholder
         Field.__init__(self, validator, multiplicity, default, show, page,
                        group, layouts, move, indexed, searchable,
                        specificReadPermission, specificWritePermission, width,
                        height, maxChars, colspan, master, masterValue, focus,
-                       historized, True, mapping, label, sdefault, scolspan,
-                       swidth, sheight)
+                       historized, mapping, label, sdefault, scolspan, swidth,
+                       sheight, persist)
         self.isSelect = self.isSelection()
         # If self.isSelect, self.sdefault must be a list of value(s).
         if self.isSelect and not sdefault:
@@ -393,6 +408,7 @@ class String(Field):
 
     def store(self, obj, value):
         '''When the value is XHTML, we perform some cleanup.'''
+        if not self.persist: return
         if (self.format == String.XHTML) and value:
             # When image upload is allowed, ckeditor inserts some "style" attrs
             # (ie for image size when images are resized). So in this case we
@@ -405,6 +421,12 @@ class String(Field):
                 obj.log('Unparsable XHTML content in field "%s".' % self.name,
                         type='warning')
         Field.store(self, obj, value)
+
+    def storeFromAjax(self, obj):
+        '''Stores the new field value from an Ajax request, or do nothing if
+           the action was canceled.'''
+        rq = obj.REQUEST
+        if rq.get('cancel') != 'True': self.store(obj, rq['fieldContent'])
 
     def getDiffValue(self, obj, value):
         '''Returns a version of p_value that includes the cumulative diffs
@@ -479,7 +501,8 @@ class String(Field):
         return res
 
     def getPossibleValues(self, obj, withTranslations=False,
-                          withBlankValue=False, className=None):
+                          withBlankValue=False, className=None,
+                          ignoreMasterValues=False):
         '''Returns the list of possible values for this field (only for fields
            with self.isSelect=True). If p_withTranslations is True, instead of
            returning a list of string values, the result is a list of tuples
@@ -488,52 +511,70 @@ class String(Field):
            p_className is given, p_obj is the tool and, if we need an instance
            of p_className, we will need to use obj.executeQuery to find one.'''
         if not self.isSelect: raise Exception('This field is not a selection.')
-        if isinstance(self.validator, Selection):
-            # We need to call self.methodName for getting the (dynamic) values.
-            # If methodName begins with _appy_, it is a special Appy method:
-            # we will call it on the Mixin (=p_obj) directly. Else, it is a
-            # user method: we will call it on the wrapper (p_obj.appy()). Some
-            # args can be hidden into p_methodName, separated with stars,
-            # like in this example: method1*arg1*arg2. Only string params are
-            # supported.
-            methodName = self.validator.methodName
-            # Unwrap parameters if any.
-            if methodName.find('*') != -1:
-                elems = methodName.split('*')
-                methodName = elems[0]
-                args = elems[1:]
+        req = obj.REQUEST
+        if ('masterValues' in req) and not ignoreMasterValues:
+            # Get possible values from self.masterValue
+            masterValues = req['masterValues']
+            if '*' in masterValues: masterValues = masterValues.split('*')
+            values = self.masterValue(obj.appy(), masterValues)
+            if not withTranslations: res = values
             else:
-                args = ()
-            # On what object must we call the method that will produce the
-            # values?
-            if methodName.startswith('tool:'):
-                obj = obj.getTool()
-                methodName = methodName[5:]
-            else:
-                # We must call on p_obj. But if we have something in
-                # p_className, p_obj is the tool and not an instance of
-                # p_className as required. So find such an instance.
-                if className:
-                    brains = obj.executeQuery(className, maxResults=1,
-                                              brainsOnly=True)
-                    if brains:
-                        obj = brains[0].getObject()
-            # Do we need to call the method on the object or on the wrapper?
-            if methodName.startswith('_appy_'):
-                exec 'res = obj.%s(*args)' % methodName
-            else:
-                exec 'res = obj.appy().%s(*args)' % methodName
-            if not withTranslations: res = [v[0] for v in res]
-            elif isinstance(res, list): res = res[:]
+                res = []
+                for v in values:
+                    res.append( (v, self.getFormattedValue(obj, v)) )
         else:
-            # The list of (static) values is directly given in self.validator.
-            res = []
-            for value in self.validator:
-                label = '%s_list_%s' % (self.labelId, value)
-                if withTranslations:
-                    res.append( (value, obj.translate(label)) )
+            # If this field is an ajax-updatable slave, no need to compute
+            # possible values: it will be overridden by method self.masterValue
+            # by a subsequent ajax request (=the "if" statement above).
+            if self.masterValue and callable(self.masterValue) and \
+               not ignoreMasterValues: return []
+            if isinstance(self.validator, Selection):
+                # We need to call self.methodName for getting the (dynamic)
+                # values. If methodName begins with _appy_, it is a special Appy
+                # method: we will call it on the Mixin (=p_obj) directly. Else,
+                # it is a user method: we will call it on the wrapper
+                # (p_obj.appy()). Some args can be hidden into p_methodName,
+                # separated with stars, like in this example: method1*arg1*arg2.
+                # Only string params are supported.
+                methodName = self.validator.methodName
+                # Unwrap parameters if any.
+                if methodName.find('*') != -1:
+                    elems = methodName.split('*')
+                    methodName = elems[0]
+                    args = elems[1:]
                 else:
-                    res.append(value)
+                    args = ()
+                # On what object must we call the method that will produce the
+                # values?
+                if methodName.startswith('tool:'):
+                    obj = obj.getTool()
+                    methodName = methodName[5:]
+                else:
+                    # We must call on p_obj. But if we have something in
+                    # p_className, p_obj is the tool and not an instance of
+                    # p_className as required. So find such an instance.
+                    if className:
+                        brains = obj.executeQuery(className, maxResults=1,
+                                                  brainsOnly=True)
+                        if brains:
+                            obj = brains[0].getObject()
+                # Do we need to call the method on the object or on the wrapper?
+                if methodName.startswith('_appy_'):
+                    exec 'res = obj.%s(*args)' % methodName
+                else:
+                    exec 'res = obj.appy().%s(*args)' % methodName
+                if not withTranslations: res = [v[0] for v in res]
+                elif isinstance(res, list): res = res[:]
+            else:
+                # The list of (static) values is directly given in
+                # self.validator.
+                res = []
+                for value in self.validator:
+                    label = '%s_list_%s' % (self.labelId, value)
+                    if withTranslations:
+                        res.append( (value, obj.translate(label)) )
+                    else:
+                        res.append(value)
         if withBlankValue and not self.isMultiValued():
             # Create the blank value to insert at the beginning of the list
             if withTranslations:
@@ -557,7 +598,7 @@ class String(Field):
                 return obj.translate('bad_captcha')
         elif self.isSelect:
             # Check that the value is among possible values
-            possibleValues = self.getPossibleValues(obj)
+            possibleValues = self.getPossibleValues(obj,ignoreMasterValues=True)
             if isinstance(value, basestring):
                 error = value not in possibleValues
             else:
@@ -568,21 +609,14 @@ class String(Field):
                         break
             if error: return obj.translate('bad_select_value')
 
-    accents = {'é':'e','è':'e','ê':'e','ë':'e','à':'a','â':'a','ä':'a',
-               'ù':'u','û':'u','ü':'u','î':'i','ï':'i','ô':'o','ö':'o',
-               'ç':'c', 'Ç':'C',
-               'Ù':'U','Û':'U','Ü':'U','Î':'I','Ï':'I','Ô':'O','Ö':'O',
-               'É':'E','È':'E','Ê':'E','Ë':'E','À':'A','Â':'A','Ä':'A'}
     def applyTransform(self, value):
         '''Applies a transform as required by self.transform on single
            value p_value.'''
         if self.transform in ('uppercase', 'lowercase'):
-            # For those transforms, I will remove any accent, because
-            # (1) 'é'.upper() or 'Ê'.lower() has no effect;
-            # (2) most of the time, if the user wants to apply such effect, it
-            #     is for ease of data manipulation, so I guess without accent.
-            for c, n in self.accents.iteritems():
-                if c in value: value = value.replace(c, n)
+            # For those transforms, I will remove any accent, because, most of
+            # the time, if the user wants to apply such effect, it is for ease
+            # of data manipulation, so I guess without accent.
+            value = sutils.normalizeString(value, usage='noAccents')
         # Apply the transform
         if   self.transform == 'lowercase':  return value.lower()
         elif self.transform == 'uppercase':  return value.upper()
@@ -629,7 +663,7 @@ class String(Field):
         text = '' # The challenge the user needs to type (minus one char)
         for i in range(length):
             j = random.randint(0, 1)
-            chars = (j == 0) and digits or letters
+            chars = (j == 0) and passwordDigits or passwordLetters
             # Choose a char
             text += chars[random.randint(0,len(chars)-1)]
         res = {'text': text, 'number': number}
@@ -641,42 +675,69 @@ class String(Field):
            generator).'''
         return self.getCaptchaChallenge({})['text']
 
-    def getJsInit(self, obj):
-        '''Gets the Javascript init code for displaying a rich editor for this
-           field (rich field only).'''
-        # Define the attributes that will initialize the ckeditor instance for
-        # this field.
+    ckLanguages = {'en': 'en_US', 'pt': 'pt_BR', 'da': 'da_DK', 'nl': 'nl_NL',
+                   'fi': 'fi_FI', 'fr': 'fr_FR', 'de': 'de_DE', 'el': 'el_GR',
+                   'it': 'it_IT', 'nb': 'nb_NO', 'pt': 'pt_PT', 'es': 'es_ES',
+                   'sv': 'sv_SE'}
+    def getCkLanguage(self):
+        '''Gets the language for CK editor SCAYT. We will use
+           self.contentLanguage. If it is not supported by CK, we use
+           english.'''
+        lang = self.contentLanguage
+        if lang and (lang in self.ckLanguages): return self.ckLanguages[lang]
+        return 'en_US'
+
+    def getCkParams(self, obj):
+        '''Gets the base params to set on a rich text field.'''
         ckAttrs = {'toolbar': 'Appy',
-                   'format_tags': '%s' % ';'.join(self.styles)}
+                   'format_tags': ';'.join(self.styles),
+                   'scayt_sLang': self.getCkLanguage()}
         if self.width: ckAttrs['width'] = self.width
+        if self.spellcheck: ckAttrs['scayt_autoStartup'] = True
         if self.allowImageUpload:
             ckAttrs['filebrowserUploadUrl'] = '%s/upload' % obj.absolute_url()
         ck = []
         for k, v in ckAttrs.iteritems():
             if isinstance(v, int): sv = str(v)
+            if isinstance(v, bool): sv = str(v).lower()
             else: sv = '"%s"' % v
             ck.append('%s: %s' % (k, sv))
-        return 'CKEDITOR.replace("%s", {%s})' % (name, ', '.join(ck))
+        return ', '.join(ck)
+
+    def getJsInit(self, obj):
+        '''Gets the Javascript init code for displaying a rich editor for this
+           field (rich field only).'''
+        return 'CKEDITOR.replace("%s", {%s})' % \
+               (self.name, self.getCkParams(obj))
 
     def getJsInlineInit(self, obj):
         '''Gets the Javascript init code for enabling inline edition of this
            field (rich text only).'''
-        uid = obj.UID()
+        uid = obj.id
+        return "CKEDITOR.disableAutoInline = true;\n" \
+               "CKEDITOR.inline('%s_%s_ck', {%s, on: {blur: " \
+               "function( event ) { var content = event.editor.getData(); " \
+               "doInlineSave('%s', '%s', '%s', content)}}})" % \
+               (uid, self.name, self.getCkParams(obj), uid, self.name,
+                obj.absolute_url())
+
         return "CKEDITOR.disableAutoInline = true;\n" \
                "CKEDITOR.inline('%s_%s_ck', {on: {blur: " \
                "function( event ) { var data = event.editor.getData(); " \
-               "askAjaxChunk('%s_%s','POST','%s','page','saveField', "\
-               "{'fieldName':'%s', 'fieldContent': encodeURIComponent(data)}, "\
+               "askAjaxChunk('%s_%s','POST','%s','%s:pxSave', " \
+               "{'fieldContent': encodeURIComponent(data)}, " \
                "null, evalInnerScripts);}}});"% \
                (uid, self.name, uid, self.name, obj.absolute_url(), self.name)
 
-    def isSelected(self, obj, vocabValue, dbValue):
+    def isSelected(self, obj, fieldName, vocabValue, dbValue):
         '''When displaying a selection box (only for fields with a validator
-           being a list), must the _vocabValue appear as selected?'''
+           being a list), must the _vocabValue appear as selected? p_fieldName
+           is given and used instead of field.name because it may be a a fake
+           name containing a row number from a field within a list field.'''
         rq = obj.REQUEST
         # Get the value we must compare (from request or from database)
-        if rq.has_key(self.name):
-            compValue = rq.get(self.name)
+        if rq.has_key(fieldName):
+            compValue = rq.get(fieldName)
         else:
             compValue = dbValue
         # Compare the value

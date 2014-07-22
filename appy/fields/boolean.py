@@ -23,39 +23,35 @@ from appy.gen.layout import Table
 class Boolean(Field):
     '''Field for storing boolean values.'''
 
-    pxView = pxCell = Px('''
-     <x><x>:value</x>
-      <input type="hidden" if="masterCss"
-             class=":masterCss" value=":rawValue" name=":name" id=":name"/>
-     </x>''')
+    pxView = pxCell = Px('''<x>:value</x>
+     <input type="hidden" if="masterCss"
+            class=":masterCss" value=":rawValue" name=":name" id=":name"/>''')
 
     pxEdit = Px('''
      <x var="isChecked=field.isChecked(zobj, rawValue)">
       <input type="checkbox" name=":name + '_visible'" id=":name"
              class=":masterCss" checked=":isChecked"
-             onclick=":'toggleCheckbox(%s, %s); updateSlaves(this)' % \
-                       (q(name), q('%s_hidden' % name))"/>
+             onclick=":'toggleCheckbox(%s, %s); %s' % (q(name), \
+                       q('%s_hidden' % name), \
+                       field.getOnChange(zobj, layoutType))"/>
       <input type="hidden" name=":name" id=":'%s_hidden' % name"
-             value=":isChecked and 'True' or 'False')"/>
+             value=":isChecked and 'True' or 'False'"/>
      </x>''')
 
-    pxSearch = Px('''
-     <x var="typedWidget='%s*bool' % widgetName">
-      <label lfor=":widgetName">:_(field.labelId)"></label><br/>&nbsp;&nbsp;
+    pxSearch = Px('''<x var="typedWidget='%s*bool' % widgetName">
       <x var="valueId='%s_yes' % name">
        <input type="radio" value="True" name=":typedWidget" id=":valueId"/>
        <label lfor=":valueId">:_('yes')</label>
       </x>
       <x var="valueId='%s_no' % name">
        <input type="radio" value="False" name=":typedWidget" id=":valueId"/>
-       <label lfor=":valueId">:_('no')"></label>
+       <label lfor=":valueId">:_('no')</label>
       </x>
       <x var="valueId='%s_whatever' % name">
        <input type="radio" value="" name=":typedWidget" id=":valueId"
               checked="checked"/>
        <label lfor=":valueId">:_('whatever')</label>
-      </x><br/>
-     </x>''')
+      </x><br/></x>''')
 
     def __init__(self, validator=None, multiplicity=(0,1), default=None,
                  show=True, page='main', group=None, layouts = None, move=0,
@@ -63,13 +59,14 @@ class Boolean(Field):
                  specificWritePermission=False, width=None, height=None,
                  maxChars=None, colspan=1, master=None, masterValue=None,
                  focus=False, historized=False, mapping=None, label=None,
-                 sdefault=False, scolspan=1, swidth=None, sheight=None):
+                 sdefault=False, scolspan=1, swidth=None, sheight=None,
+                 persist=True):
         Field.__init__(self, validator, multiplicity, default, show, page,
                        group, layouts, move, indexed, searchable,
                        specificReadPermission, specificWritePermission, width,
                        height, None, colspan, master, masterValue, focus,
-                       historized, True, mapping, label, sdefault, scolspan,
-                       swidth, sheight)
+                       historized, mapping, label, sdefault, scolspan, swidth,
+                       sheight, persist)
         self.pythonType = bool
 
     # Layout including a description
@@ -78,7 +75,8 @@ class Boolean(Field):
     cLayouts = {'view': 'lf|', 'edit': 'flrv|'}
 
     def getDefaultLayouts(self):
-        return {'view': 'lf', 'edit': Table('f;lrv;=', width=None)}
+        return {'view': 'lf', 'edit': Table('f;lrv;=', width=None),
+                'search': 'l-f'}
 
     def getValue(self, obj):
         '''Never returns "None". Returns always "True" or "False", even if

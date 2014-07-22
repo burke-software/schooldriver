@@ -1,7 +1,5 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from api.permissions import BelongsToStudent
-from api.filters import BelongsToStudentFilter
+from rest_framework.permissions import IsAdminUser
 from rest_framework import filters
 from ecwsp.grades.models import Grade
 from ecwsp.schedule.models import CourseSection
@@ -12,9 +10,13 @@ class GradeViewSet(viewsets.ModelViewSet):
     """
     an API endpoint for the Grade model
     """
-    permission_classes = (IsAuthenticated, BelongsToStudent)
-    queryset = Grade.objects.all()
-    #filter_backends = (BelongsToStudentFilter,)
+    permission_classes = (IsAdminUser,)
+    queryset = Grade.objects.filter(
+        course_section__course__graded = True,
+        ) 
+
+    filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     serializer_class = GradeSerializer
-    filter_fields = ('course_section', 'course_section__marking_period__school_year')
+    filter_fields = ('student', 'course_section', 'course_section__marking_period__school_year')
+    ordering_fields = ('marking_period__start_date',)
 

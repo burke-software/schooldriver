@@ -42,9 +42,9 @@
 {% endblock %}
 
 {% block content %}
-    <h1>{{ course }}</h2>
+    <h1>{{ course_section }}</h2>
     <div class="noPrint">
-    <form action="/benchmark_grade/gradebook/{{ course.id }}" method="get">
+    <form action="/benchmark_grade/gradebook/{{ course_section.id }}" method="get">
     <input type="submit" value="Online Gradebook" />
     </form>
     <hr class="paddedRuler" />

@@ -26,13 +26,26 @@
 
 {% block content %}
     <div ng-app="angular_sis">
+        <p>
         Select school year:
         {% for year in school_years %}
-        <a href="/course/student_grades/{{ object.pk}}/{{ year.id }}/"> {{ year }} </a>
+        <a class="btn btn-primary" href="/course/student_grades/{{ object.pk}}/{{ year.id }}/"> {{ year }} </a>
         {% endfor %}
-
+        </p>
 
         <div ng-view></div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 col-md-6">
+            <div class="well well-key">
+                <table class="table">
+                    <h4>Key</h4>
+                    <p><i class="fa fa-check-circle text-success"></i>Saved</p>
+                    <p><i class="fa fa-pencil text-info"></i>Saved (Overriding Automatic Calculation)</p>
+                    <p><i class="fa fa-times-circle text-danger"></i>Not Saved - Invalid Input</p>
+            </div>
+        </div>
     </div>
 
 {% endblock %}

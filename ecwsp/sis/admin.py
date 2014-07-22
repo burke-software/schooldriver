@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.conf import settings
@@ -10,7 +11,10 @@ from django.contrib.admin.models import LogEntry, CHANGE
 import sys
 from reversion.admin import VersionAdmin
 
-from ecwsp.sis.models import *
+from ecwsp.sis.models import (Student, StudentNumber, EmergencyContactNumber, TranscriptNote,
+        StudentFile, ClassYear, EmergencyContact, StudentHealthRecord, Faculty, GradeLevel,
+        LanguageChoice, Cohort, PerCourseSectionCohort, ReasonLeft, TranscriptNoteChoices,
+        SchoolYear, GradeScale, GradeScaleRule, MessageToStudent, FamilyAccessUser)
 from ecwsp.schedule.models import AwardStudent, MarkingPeriod, CourseEnrollment, CourseSection
 from custom_field.custom_field import CustomFieldAdmin
 import autocomplete_light
@@ -64,6 +68,7 @@ class StudentAwardInline(admin.TabularInline):
 
 class StudentCohortInline(admin.TabularInline):
     model = Student.cohorts.through
+    form = autocomplete_light.modelform_factory(Student.cohorts.through)
     extra = 0
 
 class StudentECInline(admin.TabularInline):
@@ -97,9 +102,10 @@ class FacultyAdmin(admin.ModelAdmin):
 
 admin.site.register(Faculty, FacultyAdmin)
 
-class StudentCourseInline(admin.TabularInline):
+class StudentCourseSectionInline(admin.TabularInline):
     model = CourseEnrollment
-    fields = ('section', 'attendance_note')
+    form = autocomplete_light.modelform_factory(CourseEnrollment)
+    fields = ('course_section', 'attendance_note')
     extra = 0
     classes = ('grp-collapse grp-closed',)
 
@@ -160,17 +166,40 @@ class StudentAdmin(VersionAdmin, CustomFieldAdmin):
             kwargs['exclude'] = exclude
         return super(StudentAdmin,self).get_form(request,obj,**kwargs)
 
-    fieldsets = [
-        (None, {'fields': [('last_name', 'first_name'), ('mname', 'is_active'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), ('class_of_year', 'year'),('unique_id','ssn'),
-            'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
-    ]
-    if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
-        fieldsets[0][1]['fields'].append('family_access_users')
+    def get_fieldsets(self, request, obj=None):
+        ssn = request.user.has_perm('sis.view_ssn_student')
+        family_access_users = 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS
+        return ((
+            None,
+            {
+                'fields': (
+                    ('last_name', 'first_name'),
+                    ('mname', 'is_active'),
+                    ('date_dismissed', 'reason_left'),
+                    'username',
+                    'grad_date',
+                    'pic',
+                    'alert',
+                    ('sex', 'bday'),
+                    ('class_of_year', 'year'),
+                    ('unique_id', 'ssn') if ssn else 'unique_id',
+                    'family_preferred_language',
+                    'alt_email',
+                    'notes',
+                    'emergency_contacts',
+                    'siblings',
+                    'individual_education_program',
+                    # `None` does not work well! Use an empty tuple instead.
+                    'family_access_users' if family_access_users else tuple(),
+                )
+            }
+        ),)
+
     change_list_template = "admin/sis/student/change_list.html"
     form = autocomplete_light.modelform_factory(Student)
     readonly_fields = ['year']
     search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id', 'studentnumber__number']
-    inlines = [StudentCourseInline, StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
+    inlines = [StudentCourseSectionInline, StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
     actions = [mark_inactive]
     list_filter = ['is_active', 'year', 'class_of_year']
     list_display = ['first_name','last_name','year','is_active','primary_cohort', 'phone', 'gpa']
@@ -181,16 +210,16 @@ admin.site.register(Student, StudentAdmin)
 admin.site.register(ClassYear)
 
 ### Second student admin just for courses
-class StudentCourse(Student):
+class StudentCourseSection(Student):
     class Meta:
         proxy = True
-class StudentCourseAdmin(admin.ModelAdmin):
-    inlines = [StudentCourseInline]
+class StudentCourseSectionAdmin(admin.ModelAdmin):
+    inlines = [StudentCourseSectionInline]
     search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id']
     fields = ['first_name', 'last_name']
     list_filter = ['is_active','year']
     readonly_fields = fields
-admin.site.register(StudentCourse, StudentCourseAdmin)
+admin.site.register(StudentCourseSection, StudentCourseSectionAdmin)
 
 
 
@@ -212,12 +241,12 @@ admin.site.register(EmergencyContact, EmergencyContactAdmin)
 admin.site.register(LanguageChoice)
 
 class CohortAdmin(admin.ModelAdmin):
-    filter_horizontal = ('students',)
+    inlines = (StudentCohortInline,)
 
     def queryset(self, request):
-        # exclude PerCourseCohorts from Cohort admin
+        # exclude PerCourseSectionCohorts from Cohort admin
         qs = super(CohortAdmin, self).queryset(request)
-        return qs.filter(percoursecohort=None)
+        return qs.filter(percoursesectioncohort=None)
 
     def save_model(self, request, obj, form, change):
         if obj.id:
@@ -240,17 +269,18 @@ class CohortAdmin(admin.ModelAdmin):
 
 admin.site.register(Cohort, CohortAdmin)
 
-class PerCourseCohortAdmin(CohortAdmin):
+class PerCourseSectionCohortAdmin(CohortAdmin):
     exclude = ('primary',)
 
     def __get_teacher_courses(self, username):
         from django.db.models import Q
-        from ecwsp.schedule.models import Course
+        from ecwsp.schedule.models import CourseSection
         try:
             teacher = Faculty.objects.get(username=username)
-            teacher_courses = Course.objects.filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+            teacher_courses = CourseSection.objects.filter(teachers=teacher).distinct()
         except:
             teacher_courses = []
+            #TODO: Clean this! I guess it was to flag DB inconsistencies
             import traceback
             print traceback.format_exc()
         return teacher_courses
@@ -259,17 +289,17 @@ class PerCourseCohortAdmin(CohortAdmin):
         qs = super(CohortAdmin, self).queryset(request)
         if request.user.is_superuser or request.user.groups.filter(name='registrar').count():
             return qs
-        return qs.filter(course__in=self.__get_teacher_courses(request.user.username))
+        return qs.filter(course_section__in=self.__get_teacher_courses(request.user.username))
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # TODO: use a wizard or something and filter by THIS COHORT'S COURSE instead of all the teacher's courses
         if db_field.name == 'students':
             if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count():
-                kwargs['queryset'] = Student.objects.filter(course__in=self.__get_teacher_courses(request.user.username))
-        return super(PerCourseCohortAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
+                kwargs['queryset'] = Student.objects.filter(coursesection__in=self.__get_teacher_courses(request.user.username))
+        return super(PerCourseSectionCohortAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
 
 
-admin.site.register(PerCourseCohort, PerCourseCohortAdmin)
+admin.site.register(PerCourseSectionCohort, PerCourseSectionCohortAdmin)
 
 admin.site.register(ReasonLeft)
 
@@ -284,6 +314,14 @@ class SchoolYearAdmin(admin.ModelAdmin):
         return form
     inlines = [MarkingPeriodInline]
 admin.site.register(SchoolYear, SchoolYearAdmin)
+
+class GradeScaleRuleInline(admin.TabularInline):
+    model = GradeScaleRule
+
+class GradeScaleAdmin(admin.ModelAdmin):
+    inlines = [GradeScaleRuleInline]
+admin.site.register(GradeScale, GradeScaleAdmin)
+
 
 admin.site.register(MessageToStudent)
 

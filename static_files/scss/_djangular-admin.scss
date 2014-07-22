@@ -1,0 +1,71 @@
+.control-label {
+	text-transform: capitalize;
+}
+
+.handsontable table.htCore {
+	padding-top: 20px;
+
+	td {
+		// padding-left: 5px;
+		// padding: 3px 7px;
+
+		&.table-is-valid {
+			border-bottom: 2px solid $brand-success;
+			// padding-left: 3px;
+
+			&:after {
+				font-family: FontAwesome;
+				//content: "\f00c"; // check
+				content: "\f058"; // check in circle
+				display: inline-block;
+				float: right;
+				color: $brand-success;
+			}
+		}
+
+		&.table-is-not-valid {
+			border-bottom: 2px solid $brand-danger;
+			// padding-left: 3px;
+
+			&:after {
+				font-family: FontAwesome;
+				//content: "\f00d"; // times
+				content: "\f057"; // times in circle
+				display: inline-block;
+				float: right;
+				color: $brand-danger;
+			}
+		}
+
+		&.table-is-overridden {
+			border-bottom: 2px solid $brand-info;
+			// padding-left: 3px;
+
+			&:after {
+				font-family: FontAwesome;
+				content: "\f040"; // pencil
+				display: inline-block;
+				float: right;
+				color: $brand-info;
+				// color: $brand-success;
+			}
+		}
+
+		&.no-marking-period {
+			background-color: #ccc;
+		}
+	}
+}
+
+.well-key {
+	padding: 5px 15px 0;
+	margin: 20px 0;
+
+	p {
+		margin-bottom: 5px;
+	}
+
+	i {
+		margin-right: 5px;
+	}
+}

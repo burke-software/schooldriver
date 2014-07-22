@@ -10,7 +10,7 @@ from daterange_filter.filter import DateRangeFilter
 from ecwsp.sis.models import Faculty, Student
 from ecwsp.schedule.models import CourseMeet, Course, Department, CourseEnrollment, MarkingPeriod
 from ecwsp.schedule.models import Period, Location, OmitCourseGPA, OmitYearGPA, Award, CourseSectionTeacher
-from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day, CourseSection
+from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day, CourseSection, CourseType
 
 def copy(modeladmin, request, queryset):
     for object in queryset:
@@ -19,30 +19,37 @@ def copy(modeladmin, request, queryset):
 class CourseMeetInline(admin.TabularInline):
     model = CourseMeet
     extra = 1
-    
+
 class CourseSectionInline(admin.StackedInline):
     model = CourseSection
     extra = 0
+    readonly_fields = ['course_section_link']
+    fields = ['course_section_link', 'name', 'is_active', 'marking_period', 'cohorts']
+
+    def course_section_link(self, obj):
+        change_url = urlresolvers.reverse('admin:schedule_coursesection_change', args=(obj.id,))
+        return mark_safe('<a href="%s">%s</a>' % (change_url, obj))
+    course_section_link.short_description = 'Course Section Link'
 
 class CourseAdmin(admin.ModelAdmin):
     list_display = ['fullname', 'grades_link', 'department', 'credits', 'graded', 'is_active']
     search_fields = ['fullname', 'shortname', 'description', 'coursesection__teachers__username']
     list_filter = ['level', 'is_active', 'graded', 'homeroom', 'department']
     inlines = [CourseSectionInline]
-    
+
     def save_model(self, request, obj, form, change):
         """Override save_model because django doesn't have a better way to access m2m fields"""
         obj.save()
         form.save_m2m()
-        obj.save()        
+        obj.save()
 
 admin.site.register(Course, CourseAdmin)
-
+admin.site.register(CourseType)
 
 class CourseEnrollmentInline(admin.TabularInline):
     model = CourseEnrollment
-    fields = ['user', 'attendance_note', 'grade']
-    readonly_fields = ['user','grade']
+    fields = ['user', 'attendance_note']
+    readonly_fields = ['user']
     def has_add_permission(self, request):
         return False
 
@@ -56,11 +63,12 @@ class CourseSectionAdmin(admin.ModelAdmin):
     list_filter = ['course__level', 'course__department', 'teachers']
     search_fields = ['name', 'course__fullname', 'teachers__username', 'enrollments__username']
     readonly_fields = ['course_link']
+    fields = ['course', 'course_link', 'name', 'is_active', 'marking_period', 'cohorts']
 
     def course_link(self, obj):
         change_url = urlresolvers.reverse('admin:schedule_course_change', args=(obj.course.id,))
         return mark_safe('<a href="%s">%s</a>' % (change_url, obj.course))
-    course_link.short_description = 'Course'
+    course_link.short_description = 'Course Link'
 admin.site.register(CourseSection, CourseSectionAdmin)
 
 
@@ -78,9 +86,9 @@ admin.site.register(Department, DepartmentAdmin)
 class DaysOffInline(admin.TabularInline):
     model = DaysOff
     extra = 1
-    
+
 admin.site.register(Day)
-    
+
 class CourseEnrollmentAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'user__first_name',]
     list_display = ['user', 'attendance_note']

@@ -8,13 +8,12 @@ from api.routers import api_urls
 from responsive_dashboard import views as dashboard_views
 
 
-admin.autodiscover()
 dajaxice_autodiscover()
 
 urlpatterns = patterns('',
     (r'^admin/', include("massadmin.urls")),
     (r'^admin_export/', include("admin_export.urls")),
-    (r'^ckeditor/', include('ckeditor.urls')),
+    (r'^ckeditor/', include('ecwsp.ckeditor_urls')),#include('ckeditor.urls')),
     (r'^grappelli/', include('grappelli.urls')),
     (r'^$', 'ecwsp.sis.views.index'),
     (r'^sis/', include('ecwsp.sis.urls')),

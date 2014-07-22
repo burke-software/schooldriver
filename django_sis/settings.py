@@ -19,10 +19,13 @@ BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components/')
 LOGIN_REDIRECT_URL = "/"
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'sample_db',
-        'ATOMIC_REQUESTS': True,
-    },
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'docker',
+        'USER': 'docker',
+        'PASSWORD': 'docker',
+        'HOST': os.environ.get('DB_1_PORT_5432_TCP_ADDR'),
+        'PORT': os.environ.get('DB_1_PORT_5432_TCP_PORT'),
+    }
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
 # Prefered file format, may be changed in user preferences.
@@ -74,6 +77,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pagination.middleware.PaginationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'ecwsp.sis.disable.DisableCSRF',
     )
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
@@ -307,6 +311,7 @@ INSTALLED_APPS = (
     'ecwsp.benchmarks',
     'ecwsp.benchmark_grade',
     'ecwsp.naviance_sso',
+    'rosetta',
     # These can be enabled if desired but the default is off
     #'ldap_groups',
     #'raven.contrib.django',
@@ -317,14 +322,18 @@ INSTALLED_APPS = (
     #'django_extensions',
     #'google_auth',
     #'ldap_groups',
-    #'rosetta-grappelli',
-    #'rosetta',
 )
 
 COMPRESS_PRECOMPILERS = (
    ('text/coffeescript', 'coffee --compile --stdio'),
    ('text/x-scss', 'django_libsass.SassCompiler'),
 )
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 # this will load additional settings from the file settings_local.py
 try:
@@ -351,6 +360,7 @@ DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 # These are required add ons that we always want to have
 INSTALLED_APPS = (
+    'autocomplete_light',
     'grappelli.dashboard',
     'grappelli',
     'ecwsp.sis',
@@ -363,9 +373,7 @@ INSTALLED_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
-    'ajax_select',
     'reversion',
-    'south',
     'djcelery',
     'django.contrib.admin',
     'django.contrib.staticfiles',
@@ -396,8 +404,10 @@ INSTALLED_APPS = (
     'rest_framework',
     'api',
     'compressor',
-    'autocomplete_light',
 ) + INSTALLED_APPS
+import django
+if django.get_version()[:3] != '1.7':
+    INSTALLED_APPS += ('south',)
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
     TEMPLATE_CONTEXT_PROCESSORS += (
@@ -408,9 +418,10 @@ if 'social.apps.django_app.default' in INSTALLED_APPS:
 if 'ON_HEROKU' in os.environ:
     ON_HEROKU = True
     # Use S3
-    INSTALLED_APPS += ('storages',)
+    INSTALLED_APPS += ('storages', 'collectfast')
+    AWS_PRELOAD_METADATA = True
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-    STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     for environment_variable in (
         'AWS_ACCESS_KEY_ID',
         'AWS_SECRET_ACCESS_KEY',
@@ -418,11 +429,11 @@ if 'ON_HEROKU' in os.environ:
     ):
         # Cower, all ye Stack Overflow pedants!
         globals()[environment_variable] = os.environ[environment_variable]
-    STATIC_URL = '//{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
+    COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
     # Use Heroku's DB
     import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
-    DATABASES['default'] = dj_database_url.config(default='postgres:///local_maroon')
+    DATABASES['default'] = dj_database_url.config()
 
 # Keep this *LAST* to avoid overwriting production DBs with test data
 if 'test' in sys.argv:

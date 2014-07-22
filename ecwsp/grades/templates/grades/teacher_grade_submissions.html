@@ -6,18 +6,18 @@
     <table>
 				<tr>
 						<th>Teacher</th>
-						<th>Course</th>
+						<th>Course Section</th>
 						<th>Last grade submission</th>
 				</tr>
 		{% for teacher in teachers %}
 				<tr>
 						<td>{{ teacher }}</td>
 				</tr>
-				{% for course in teacher.courses %}
+				{% for course_section in teacher.course_sections %}
 						<tr>
 								<td></td>
-								<td>{{ course }}</td>
-								<td>{{ course.last_grade_submission }}</td>
+								<td>{{ course_section }}</td>
+								<td>{{ course_section.last_grade_submission }}</td>
 						</tr>
 				{% endfor %}
 		{% endfor %}

@@ -61,15 +61,33 @@ class DashletTests(TestCase):
         self.user1.save()
         self.user2.save()
         
-        self.course1 = Course(fullname="Homeroom FX 2011", shortname="FX1", teacher=self.teacher1, homeroom=True, credits=1)
+        self.course1 = Course(fullname="Homeroom FX 2011", shortname="FX1", homeroom=True, credits=1)
         self.course1.save()
-        self.course2 = Course(fullname="Homeroom FX 2012", shortname="FX2", teacher=self.teacher2, homeroom=True, credits=1)
+        self.course_section1 = CourseSection(name="Homeroom FX 2011")
+        self.course_section1.save()
+        self.course_section_teacher1 = CourseSectionTeacher(
+            teacher=self.teacher1,
+            course_section=self.course_section1,
+            is_primary=True
+        )
+        self.course_section_teacher1.save()
+
+        self.course2 = Course(fullname="Homeroom FX 2012", shortname="FX2", homeroom=True, credits=1)
         self.course2.save()
+        self.course_section2 = CourseSection(name="Homeroom FX 2012")
+        self.course_section2.save()
+        self.course_section_teacher2 = CourseSectionTeacher(
+            teacher=self.teacher2,
+            course_section=self.course_section2,
+            is_primary=True
+        )
+        self.course_section_teacher2.save()
+
         self.period = Period(name="Homeroom (M)", start_time=datetime.now(), end_time=datetime.now())
         self.period.save()
-        self.course_meet1 = CourseMeet(course=self.course1, period=self.period, day="1")
+        self.course_meet1 = CourseMeet(course_section=self.course_section1, period=self.period, day="1")
         self.course_meet1.save()
-        self.course_meet2 = CourseMeet(course=self.course2, period=self.period, day="2")
+        self.course_meet2 = CourseMeet(course_section=self.course_section2, period=self.period, day="2")
         self.course_meet2.save()
         self.course1.marking_period.add(self.mp)
         self.course1.marking_period.add(self.mp2)
@@ -80,9 +98,9 @@ class DashletTests(TestCase):
         self.course2.marking_period.add(self.mp3)
         self.course2.save()
         
-        self.enroll1 = CourseEnrollment(course=self.course1, user=self.teacher1)
+        self.enroll1 = CourseEnrollment(course_section=self.course_section1, user=self.teacher1)
         self.enroll1.save()
-        self.enroll2 = CourseEnrollment(course=self.course2, user=self.teacher2)
+        self.enroll2 = CourseEnrollment(course_section=self.course_section2, user=self.teacher2)
         self.enroll2.save()
         self.present = AttendanceStatus(name="Present", code="P", teacher_selectable=True)
         self.present.save()
@@ -108,16 +126,16 @@ class DashletTests(TestCase):
         response = c.get('/admin/')
         self.assertEqual(response.status_code, 200)
         
-        course = Course.objects.get(fullname="Homeroom FX 2011")
+        course_section = CourseSection.objects.get(name="Homeroom FX 2011")
         
-        response = c.get('/attendance/teacher_attendance/' + str(course.id), follow=True)
+        response = c.get('/attendance/teacher_attendance/' + str(course_section.id), follow=True)
         self.assertEqual(response.status_code, 200)
         
-        AttendanceLog(user=user, course=self.course1).save()
-        AttendanceLog(user=user, course=self.course2).save()
+        AttendanceLog(user=user, course_section=self.course_section1).save()
+        AttendanceLog(user=user, course_section=self.course_section2).save()
         
-        homerooms = Course.objects.filter(homeroom=True)
+        homerooms = CourseSection.objects.filter(course__homeroom=True)
         for homeroom in homerooms:
-            log = AttendanceLog.objects.filter(course=homeroom)
+            log = AttendanceLog.objects.filter(course_section=homeroom)
             assert log.count() > 0
                 

@@ -1,21 +1,3 @@
-#   Copyright 2011 Burke Software and Consulting LLC
-#   Author: John Milner <john@tmoj.net>
-#
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib.admin.views.decorators import staff_member_required
@@ -27,9 +9,7 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 
 from ecwsp.sis.models import SchoolYear, Student, Faculty
-#from ecwsp.sis.uno_report import *
-from ecwsp.schedule.models import Course, MarkingPeriod
-#from ecwsp.schedule.forms import 
+from ecwsp.schedule.models import CourseSection, MarkingPeriod
 from ecwsp.grades.models import Grade
 from ecwsp.grades.forms import GradeUpload
 from ecwsp.administration.models import Configuration
@@ -64,30 +44,34 @@ def require_item_in_active_marking_period(item):
     if item.marking_period and not item.marking_period.active:
         raise ValidationError("This item's marking period, {}, is not active.".format(item.marking_period))
 
-def get_teacher_courses(username):
-    """ Utility function that returns courses a given teacher may access """
+def get_teacher_course_sections(username):
+    """ Utility function that returns course sections a given teacher may access """
     try:
         teacher = Faculty.objects.get(username=username)
-        teacher_courses = Course.objects.filter(
-            graded=True,
+        teacher_course_sections = CourseSection.objects.filter(
+            course__graded=True,
             marking_period__school_year__active_year=True,
-        ).filter(Q(teacher=teacher) | Q(secondary_teachers=teacher)).distinct()
+            teachers=teacher
+        ).distinct()
     except Faculty.DoesNotExist:
-        teacher_courses = None
-    return teacher_courses
+        teacher_course_sections = None
+    return teacher_course_sections
 
 
 @staff_member_required
-def gradebook(request, course_id, for_export=False):
-    course = get_object_or_404(Course, pk=course_id)
+def gradebook(request, course_section_id, for_export=False):
+    #if 'bypass' not in request.GET:
+    #    return HttpResponse('Gradebooks are temporarily unavailable while urgent maintenance is performed. We apologize for the inconvenience.')
+    course_section = get_object_or_404(CourseSection, pk=course_section_id)
     # lots of stuff will fail unceremoniously if there are no MPs assigned
-    if not course.marking_period.count():
+    if not course_section.marking_period.count():
         messages.add_message(request, messages.ERROR,
-            'The gradebook cannot be opened because there are no marking periods assigned to the course ' +
-            course.fullname + '.')
+            'The gradebook cannot be opened because there are no marking ' \
+            ' periods assigned to the course section ' +
+            course_section.name + '.')
         return HttpResponseRedirect(reverse('admin:index'))
 
-    school_year = course.marking_period.all()[0].school_year
+    school_year = course_section.marking_period.all()[0].school_year
     try:
         calculation_rule = benchmark_find_calculation_rule(school_year)
     except Exception as e:
@@ -95,25 +79,24 @@ def gradebook(request, course_id, for_export=False):
             raise
         messages.add_message(request, messages.ERROR, e)
         return HttpResponseRedirect(reverse('admin:index'))
-    teacher_courses = get_teacher_courses(request.user.username)
+    teacher_course_sections = get_teacher_course_sections(request.user.username)
     extra_info = Configuration.get_or_default('Gradebook extra information').value.lower().strip()
     quantizer = Decimal(10) ** (-1 * calculation_rule.decimal_places)
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
-    (teacher_courses is None or course not in teacher_courses):
+    (teacher_course_sections is None or course_section not in teacher_course_sections):
         messages.add_message(request, messages.ERROR,
-            'You do not have access to the gradebook for ' + course.fullname + '.')
+            'You do not have access to the gradebook for ' + course_section.name + '.')
         return HttpResponseRedirect(reverse('admin:index'))
 
-    students = Student.objects.filter(is_active=True,course=course)
-    #students = Student.objects.filter(course=course)
-    items = Item.objects.filter(course=course)
+    students = Student.objects.filter(is_active=True, coursesection=course_section)
+    items = Item.objects.filter(course_section=course_section)
     filtered = False
     temporary_aggregate = False
     totals = {
         'filtered_average': Decimal(0),
         'filtered_average_count': Decimal(0),
-        'course_average': Decimal(0),
-        'course_average_count': Decimal(0),
+        'course_section_average': Decimal(0),
+        'course_section_average_count': Decimal(0),
         'filtered_standards_passing': 0,
         'filtered_standards_all': 0,
         'standards_passing': 0,
@@ -122,7 +105,7 @@ def gradebook(request, course_id, for_export=False):
 
     if request.GET:
         filter_form = GradebookFilterForm(request.GET)
-        filter_form.update_querysets(course)
+        filter_form.update_querysets(course_section)
         if filter_form.is_valid():
             for filter_key, filter_value in filter_form.cleaned_data.iteritems():
                 if filter_value is not None:
@@ -157,17 +140,17 @@ def gradebook(request, course_id, for_export=False):
                     filtered = True
     else:
         # show only the active marking period by default
-        active_mps = course.marking_period.filter(active=True)
+        active_mps = course_section.marking_period.filter(active=True)
         if active_mps and not for_export: # no default filtering on export requests
             filter_form = GradebookFilterForm(initial={'marking_period': active_mps[0]})
             items = items.filter(marking_period=active_mps[0])
             filtered = True
         else:
             filter_form = GradebookFilterForm()
-        filter_form.update_querysets(course)
+        filter_form.update_querysets(course_section)
         
     # make a note of any aggregates pending recalculation
-    pending_aggregate_pks = Aggregate.objects.filter(course=course, aggregatetask__in=AggregateTask.objects.all()).values_list('pk', flat=True).distinct()
+    pending_aggregate_pks = Aggregate.objects.filter(course_section=course_section, aggregatetask__in=AggregateTask.objects.all()).values_list('pk', flat=True).distinct()
     
     # Freeze these now in case someone else gets in here!
     # TODO: something that actually works. all() does not evaluate a QuerySet.
@@ -178,7 +161,7 @@ def gradebook(request, course_id, for_export=False):
     marks = Mark.objects.filter(item__in=items).order_by('item__id', 'demonstration__id').all() 
     items_count = items.filter(demonstration=None).count() + Demonstration.objects.filter(item__in=items).count()
     for student in students:
-        student_marks = marks.filter(student=student).select_related('item__category_id')
+        student_marks = marks.filter(student=student).exclude(item__category__allow_multiple_demonstrations=True, demonstration=None).select_related('item__category_id')
         student_marks_count = student_marks.count()
         if student_marks_count < items_count:
             # maybe student enrolled after assignments were created
@@ -187,6 +170,8 @@ def gradebook(request, course_id, for_export=False):
                     # must create mark for each demonstration
                     for demonstration in item.demonstration_set.all():
                         mark, created = Mark.objects.get_or_create(item=item, demonstration=demonstration, student=student)
+                    # Create one extra with demonstration=None to store the aggregate of Demonstrations
+                    mark, created = Mark.objects.get_or_create(item=item, demonstration=None, student=student)
                 else:
                     # a regular item without demonstrations; make only one mark
                     mark, created = Mark.objects.get_or_create(item=item, student=student)
@@ -201,17 +186,17 @@ def gradebook(request, course_id, for_export=False):
             mark.category_id = mark.item.category_id
         
         student.marks = student_marks
-        student.average, student.average_pk = gradebook_get_average_and_pk(student, course, None, None, None)
+        student.average, student.average_pk = gradebook_get_average_and_pk(student, course_section, None, None, None)
         if student.average is not None:
-            totals['course_average'] += Aggregate.objects.get(pk=student.average_pk).cached_value # can't use a substitution
-            totals['course_average_count'] += 1
+            totals['course_section_average'] += Aggregate.objects.get(pk=student.average_pk).cached_value # can't use a substitution
+            totals['course_section_average_count'] += 1
         if filtered:
             cleaned_or_initial = getattr(filter_form, 'cleaned_data', filter_form.initial)
             filter_category = cleaned_or_initial.get('category', None)
             filter_marking_period = cleaned_or_initial.get('marking_period', None)
             filter_items = items if temporary_aggregate else None
             student.filtered_average, student.filtered_average_pk = gradebook_get_average_and_pk(
-                student, course, filter_category, filter_marking_period, filter_items)
+                student, course_section, filter_category, filter_marking_period, filter_items)
             if student.filtered_average is not None:
                 totals['filtered_average'] += Aggregate.objects.get(pk=student.filtered_average_pk).cached_value # can't use a substitution
                 totals['filtered_average_count'] += 1
@@ -220,7 +205,7 @@ def gradebook(request, course_id, for_export=False):
             # TODO: don't hardcode
             standards_category = Category.objects.get(name='Standards')
             PASSING_GRADE = 3
-            standards_objects = Item.objects.filter(course=course, category=standards_category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+            standards_objects = Item.objects.filter(course_section=course_section, category=standards_category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
             standards_count_passing = standards_objects.filter(best_mark__gte=PASSING_GRADE).count()
             standards_count_total = standards_objects.count()
             totals['standards_passing'] += standards_count_passing
@@ -230,7 +215,7 @@ def gradebook(request, course_id, for_export=False):
             else:
                 student.standards_counts = None
             if filtered:
-                standards_objects = items.filter(course=course, category=standards_category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
+                standards_objects = items.filter(course_section=course_section, category=standards_category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
                 standards_count_passing = standards_objects.filter(best_mark__gte=PASSING_GRADE).count()
                 standards_count_total = standards_objects.count()
                 totals['filtered_standards_passing'] += standards_count_passing
@@ -282,15 +267,15 @@ def gradebook(request, course_id, for_export=False):
             # assume we need to divide the mark by points possible before comparing to criterion
             use_dict = normalized_category_flag_criteria
         use_dict[category.pk] = []
-        substitutions = calculation_rule.substitution_set.filter(apply_to_departments=course.department, apply_to_categories=category, flag_visually=True)
+        substitutions = calculation_rule.substitution_set.filter(apply_to_departments=course_section.department, apply_to_categories=category, flag_visually=True)
         for substitution in substitutions:
             use_dict[category.pk].append(substitution.operator + ' ' + str(substitution.match_value))
 
-    # calculate course-wide averages and counts
-    if totals['course_average_count']:
-        totals['course_average'] = Decimal(totals['course_average'] / totals['course_average_count']).quantize(quantizer)
+    # calculate course-section-wide averages and counts
+    if totals['course_section_average_count']:
+        totals['course_section_average'] = Decimal(totals['course_section_average'] / totals['course_section_average_count']).quantize(quantizer)
     else:
-        totals['course_average'] = None
+        totals['course_section_average'] = None
     if totals['filtered_average_count']:
         totals['filtered_average'] = Decimal(totals['filtered_average'] / totals['filtered_average_count']).quantize(quantizer)
     else:
@@ -311,8 +296,8 @@ def gradebook(request, course_id, for_export=False):
         'item_pks': ','.join(map(str,items.values_list('pk', flat=True))),
         'pending_aggregate_pks': json.dumps(map(str, pending_aggregate_pks)),
         'students': students,
-        'course': course,
-        'teacher_courses': teacher_courses,
+        'course_section': course_section,
+        'teacher_course_sections': teacher_course_sections,
         'filtered' : filtered,
         'filter_form': filter_form,
         'absolute_category_flag_criteria': absolute_category_flag_criteria,
@@ -329,13 +314,13 @@ def gradebook(request, course_id, for_export=False):
 
 @staff_member_required
 @transaction.commit_on_success
-def ajax_delete_item_form(request, course_id, item_id):
+def ajax_delete_item_form(request, course_section_id, item_id):
     item = get_object_or_404(Item, pk=item_id)
     if not request.user.has_perm('grades.delete_grade') and not item.marking_period.active:
         # you aren't a registrar, so you can't modify an inactive marking period
         return HttpResponse(status=403)
     ghost_item = Item()
-    ghost_item.course = item.course
+    ghost_item.course_section = item.course_section
     ghost_item.category = item.category
     ghost_item.marking_period = item.marking_period
     message = '%s deleted' % (item,)
@@ -346,11 +331,11 @@ def ajax_delete_item_form(request, course_id, item_id):
 
 @staff_member_required
 @transaction.commit_on_success
-def ajax_get_item_form(request, course_id, item_id=None):
+def ajax_get_item_form(request, course_section_id, item_id=None):
     ''' the transaction decorator helps, but people can still hammer the submit button
     and create tons of assignments. for some reason, only one shows up right away, and the rest
     don't appear until reload '''
-    course = get_object_or_404(Course, pk=course_id)
+    course_section = get_object_or_404(CourseSection, pk=course_section_id)
     item = None
     lists = None
     
@@ -358,17 +343,17 @@ def ajax_get_item_form(request, course_id, item_id=None):
         if item_id:
             # modifying an existing item
             item = get_object_or_404(Item, pk=item_id)
-            original_course_id = item.course_id
+            original_course_section_id = item.course_section_id
             form = ItemForm(request.POST, instance=item, prefix="item")
             if not request.user.has_perm('grades.change_grade') and not item.marking_period.active:
                 # you aren't a registrar, so you can't modify an item from an inactive marking period
                 form.fields['marking_period'].validators.append(
                     make_validationerror_raiser('This item belongs to the inactive marking period {}.'.format(item.marking_period))
                 )
-            if original_course_id != long(form.data['item-course']):
-                # don't support moving items between courses
-                form.fields['course'].validators.append(
-                    make_validationerror_raiser('Please click "Make a Copy" if you would like to add this item to another course.')
+            if original_course_section_id != long(form.data['item-course_section']):
+                # don't support moving items between course sections
+                form.fields['course_section'].validators.append(
+                    make_validationerror_raiser('Please click "Make a Copy" if you would like to add this item to another course section.')
                 )
         else:
             # creating a new item
@@ -392,7 +377,7 @@ def ajax_get_item_form(request, course_id, item_id=None):
                         dem.item = item
                         dem.save()
                     # must create blank marks for each student
-                    for student in Student.objects.filter(course=course):
+                    for student in Student.objects.filter(coursesection=course_section):
                         mark, created = Mark.objects.get_or_create(item=item, student=student, demonstration=dem)
                 else:
                     # modifying an existing item
@@ -431,23 +416,23 @@ def ajax_get_item_form(request, course_id, item_id=None):
                         student.best_mark * float(item.points_possible), item.points_possible, student.best_mark * 100, unicode(student)))
                 lists = ({'heading':'Students Missing This Item', 'items':text_missing},)
         else:
-            active_mps = course.marking_period.filter(active=True)
+            active_mps = course_section.marking_period.filter(active=True)
             if active_mps:
-                form = ItemForm(initial={'course': course, 'marking_period':active_mps[0]}, prefix="item")
+                form = ItemForm(initial={'course_section': course_section, 'marking_period':active_mps[0]}, prefix="item")
             else:
-                form = ItemForm(initial={'course': course}, prefix="item")
+                form = ItemForm(initial={'course_section': course_section}, prefix="item")
     
     # some fields may have been disabled by user configuration
-    try: form.fields['marking_period'].queryset = course.marking_period.all()
+    try: form.fields['marking_period'].queryset = course_section.marking_period.all()
     except KeyError: pass
     try: form.fields['category'].queryset = Category.objects.filter(display_in_gradebook=True)
     except KeyError: pass
     try: form.fields['benchmark'].queryset = Benchmark.objects.filter()
     except KeyError: pass
-    available_courses = get_teacher_courses(request.user.username)
-    if (not available_courses or not len(available_courses)) and request.user.has_perm('grades.change_grade'):
-        available_courses = Course.objects.all()
-    try: form.fields['course'].queryset = available_courses
+    available_course_sections = get_teacher_course_sections(request.user.username)
+    if (not available_course_sections or not len(available_course_sections)) and request.user.has_perm('grades.change_grade'):
+        available_course_sections = CourseSection.objects.all()
+    try: form.fields['course_section'].queryset = available_course_sections
     except KeyError: pass
     try:
         form.fields['category'].widget.attrs = {
@@ -464,8 +449,8 @@ def ajax_get_item_form(request, course_id, item_id=None):
     }, RequestContext(request, {}),)
 
 @staff_member_required
-def ajax_get_item_tooltip(request, course_id, item_id):
-    course = get_object_or_404(Course, pk=course_id)
+def ajax_get_item_tooltip(request, course_section_id, item_id):
+    course_section = get_object_or_404(CourseSection, pk=course_section_id)
     item = get_object_or_404(Item, pk=item_id)
     attribute_names = (
         'name',
@@ -496,14 +481,14 @@ def ajax_get_item_tooltip(request, course_id, item_id):
 
 @staff_member_required
 @transaction.commit_on_success
-def ajax_delete_demonstration_form(request, course_id, demonstration_id):
+def ajax_delete_demonstration_form(request, course_section_id, demonstration_id):
     demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
     item = demonstration.item
     if not request.user.has_perm('grades.delete_grade') and not item.marking_period.active:
         # you aren't a registrar, so you can't modify an inactive marking period
         return HttpResponse(status=403)
     ghost_item = Item()
-    ghost_item.course = item.course
+    ghost_item.course_section = item.course_section
     ghost_item.category = item.category
     ghost_item.marking_period = item.marking_period
     message = '%s deleted' % (demonstration,)
@@ -522,11 +507,11 @@ def ajax_delete_demonstration_form(request, course_id, demonstration_id):
 
 @staff_member_required
 @transaction.commit_on_success
-def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
+def ajax_get_demonstration_form(request, course_section_id, demonstration_id=None):
     ''' the transaction decorator helps, but people can still hammer the submit button
     and create tons of assignments. for some reason, only one shows up right away, and the rest
     don't appear until reload '''
-    course = get_object_or_404(Course, pk=course_id)
+    course_section = get_object_or_404(CourseSection, pk=course_section_id)
     lists = None
     
     if request.POST:
@@ -550,7 +535,7 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
             demonstration = form.save()
             if demonstration_id is None:
                 # a new demonstration; must create blank marks for each student
-                for student in Student.objects.filter(course=course):
+                for student in Student.objects.filter(coursesection=course_section):
                     mark, created = Mark.objects.get_or_create(item=demonstration.item, demonstration=demonstration, student=student)
             else:
                 # do we belong to a different Item?
@@ -585,9 +570,9 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
                 if not students_missing: students_missing = ('None',)
                 lists = ({'heading':'Students Missing This Demonstration', 'items':students_missing},)
         else:
-            form = DemonstrationForm(initial={'course': course}, prefix="demonstration")
+            form = DemonstrationForm(initial={'course_section': course_section}, prefix="demonstration")
     
-    form.fields['item'].queryset = Item.objects.filter(course=course,
+    form.fields['item'].queryset = Item.objects.filter(course_section=course_section,
                                                        category__display_in_gradebook=True, category__allow_multiple_demonstrations=True)
 
     return render_to_response('benchmark_grade/demonstration_form_fragment.html', {
@@ -597,20 +582,20 @@ def ajax_get_demonstration_form(request, course_id, demonstration_id=None):
     }, RequestContext(request, {}),)
 
 @staff_member_required
-def ajax_get_student_info(request, course_id, student_id):
+def ajax_get_student_info(request, course_section_id, student_id):
     student = get_object_or_404(Student, pk=student_id)
-    course = get_object_or_404(Course, pk=course_id)
+    course_section = get_object_or_404(CourseSection, pk=course_section_id)
 
     # TODO: remove TC hard-coding
     try:
         Category.objects.get(name='Standards') # are we in TC land?
-        standards_missing = Item.objects.filter(course=course, category__name='Standards', mark__student=student).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
+        standards_missing = Item.objects.filter(course_section=course_section, category__name='Standards', mark__student=student).annotate(best_mark=Max('mark__mark')).filter(best_mark__lt=3)
         if not standards_missing: standards_missing = ('None',)
         lists = ({'heading':'Standards Missing for {}'.format(student), 'items':standards_missing},)
     except Category.DoesNotExist:
         pass_letters = Configuration.get_or_default("Letter Passing Grade").value.split(',')
         pass_number = float(Configuration.get_or_default("Passing Grade").value) / 100 # yay, assumptions
-        items_missing = Item.objects.filter(course=course, mark__student=student).annotate(best_mark=Max('mark__normalized_mark')).filter(
+        items_missing = Item.objects.filter(course_section=course_section, mark__student=student).annotate(best_mark=Max('mark__normalized_mark')).filter(
             best_mark__lt=pass_number)
         text_missing = []
         for item in items_missing:
@@ -620,7 +605,7 @@ def ajax_get_student_info(request, course_id, student_id):
                 item.best_mark * float(item.points_possible), item.points_possible, item.best_mark * 100, unicode(item)))
         lists = ({'heading':'Items Missing for {}'.format(student), 'items':text_missing},)
     afterword = '<a onclick="open_grade_detail({}, {})">Create report from current view of gradebook (in new tab)</a>'
-    afterword = afterword.format(course_id, student_id)
+    afterword = afterword.format(course_section_id, student_id)
 
     return render_to_response('sis/generic_list_fragment.html', {
         'lists': lists,
@@ -628,14 +613,14 @@ def ajax_get_student_info(request, course_id, student_id):
     }, RequestContext(request, {}),)
 
 @staff_member_required
-def ajax_get_fill_all_form(request, course_id, object_type, object_id):
+def ajax_get_fill_all_form(request, course_section_id, object_type, object_id):
     model_base = Item if object_type == 'item' else Demonstration
     item_or_demonstration = get_object_or_404(model_base, pk=object_id)
-    course = get_object_or_404(Course, pk=course_id)
-    if type(item_or_demonstration) == Item and item_or_demonstration.course != course:
-        raise Exception('This Item does not belong to the specified Course.')
-    if type(item_or_demonstration) == Demonstration and item_or_demonstration.item.course != course:
-        raise Exception('This Demonstration does not belong to the specified Course.')
+    course_section = get_object_or_404(CourseSection, pk=course_section_id)
+    if type(item_or_demonstration) == Item and item_or_demonstration.course_section != course_section:
+        raise Exception('This Item does not belong to the specified CourseSection.')
+    if type(item_or_demonstration) == Demonstration and item_or_demonstration.item.course_section != course_section:
+        raise Exception('This Demonstration does not belong to the specified CourseSection.')
     if type(item_or_demonstration) == Item and item_or_demonstration.category.allow_multiple_demonstrations:
         raise Exception('Marks must be assigned to Demonstrations for this Item, not directly to the Item.')
     if not item_or_demonstration.mark_set.count:
@@ -682,8 +667,7 @@ def ajax_save_grade(request):
         try: mark = Mark.objects.get(id=mark_id)
         except Mark.DoesNotExist: return HttpResponse('NO MARK WITH ID ' + mark_id, status=404) 
         if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
-            and request.user.username != mark.item.course.teacher.username \
-            and not mark.item.course.secondary_teachers.filter(username=request.user.username).count():
+            and not mark.item.course_section.teachers.filter(username=request.user.username).exists():
             return HttpResponse(status=403)
 
         if not request.user.has_perm('grades.change_grade') \
@@ -711,7 +695,7 @@ def ajax_save_grade(request):
             # BAD BAD BAD... stale Aggregates ahead!
             logging.error("Mark {} saved successfully but Aggregate calculation failed".format(mark.pk), exc_info=True)
             affected_agg_pks = None
-        # just the whole course average for now
+        # just the whole course section average for now
         # TODO: update filtered average
         #average = gradebook_get_average(mark.student, mark.item.course, None, None, None) 
         return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': 'Please clear your browser\'s cache.', 'affected_aggregates': affected_agg_pks}))
@@ -719,13 +703,13 @@ def ajax_save_grade(request):
         return HttpResponse('POST DATA INCOMPLETE', status=400) 
 
 @staff_member_required
-def ajax_task_poll(request, course_pk=None):
-    if 'aggregate_pks[]' not in request.POST:
-        # no aggregates specified; just return the number of active tasks for this course
-        course = get_object_or_404(Course, pk=course_pk)
+def ajax_task_poll(request, course_section_pk=None):
+    if 'aggregate_pks' not in request.POST:
+        # no aggregates specified; just return the number of active tasks for this course section
+        course_section = get_object_or_404(CourseSection, pk=course_section_pk)
         count = AggregateTask.objects.values('task_id').distinct().count()
         return HttpResponse(json.dumps({'outstanding_tasks': count}))
-    agg_pks = request.POST.getlist('aggregate_pks[]')
+    agg_pks = request.POST.getlist('aggregate_pks')
     aggs = Aggregate.objects.filter(pk__in=agg_pks)
     count = AggregateTask.objects.filter(aggregate__in=aggs).values('task_id').distinct().count()
     if count:
@@ -742,7 +726,7 @@ def ajax_task_poll(request, course_pk=None):
         return HttpResponse(json.dumps({'results': results}))
 
 @login_required
-def student_report(request, student_pk=None, course_pk=None, marking_period_pk=None):
+def student_report(request, student_pk=None, course_section_pk=None, marking_period_pk=None):
     authorized = False
     family_available_students = None
     try:
@@ -776,8 +760,8 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         }, RequestContext(request, {}),)
 
     # is this a summary or detail report?
-    if not course_pk:
-        # summary report for all courses
+    if not course_section_pk:
+        # summary report for all course sections
         PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
         school_year = SchoolYear.objects.get(active_year=True)
         all_mps = MarkingPeriod.objects.filter(school_year=school_year, start_date__lte=datetime.date.today()).order_by('-start_date')
@@ -792,35 +776,35 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         other_mps = all_mps.exclude(pk__in=mp_pks)
         calculation_rule = benchmark_find_calculation_rule(school_year)
         for mp in mps:
-            mp.courses = Course.objects.filter(courseenrollment__user=student, graded=True, marking_period=mp).order_by('fullname')
-            for course in mp.courses:
-                course.categories = Category.objects.filter(item__course=course, item__mark__student=student).distinct()
-                course.category_by_name = {}
-                for category in course.categories:
+            mp.course_sections = CourseSection.objects.filter(courseenrollment__user=student, course__graded=True, marking_period=mp).order_by('name')
+            for course_section in mp.course_sections:
+                course_section.categories = Category.objects.filter(item__course_section=course_section, item__mark__student=student).distinct()
+                course_section.category_by_name = {}
+                for category in course_section.categories:
                     try:
                         category.percentage = calculation_rule.per_course_category_set.get(
-                            category=category, apply_to_departments=course.department).weight * 100
+                            category=category, apply_to_departments=course_section.department).weight * 100
                         category.percentage = category.percentage.quantize(Decimal('0'))
                     except CalculationRulePerCourseCategory.DoesNotExist:
-                        # sometimes a course has items belonging to categories that don't count in the course average
+                        # sometimes a course section has items belonging to categories that don't count in the course section average
                         # but we want to display them anyway
                         category.percentage = 0
-                    category.average = gradebook_get_average(student, course, category, mp, None)
-                    items = Item.objects.filter(course=course, category=category, marking_period=mp, mark__student=student).annotate(best_mark=Max('mark__mark'))
+                    category.average = gradebook_get_average(student, course_section, category, mp, None)
+                    items = Item.objects.filter(course_section=course_section, category=category, marking_period=mp, mark__student=student).annotate(best_mark=Max('mark__mark'))
                     counts = {}
                     counts['total'] = items.exclude(best_mark=None).distinct().count()
                     counts['missing'] = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
                     counts['passing'] = items.filter(best_mark__gte=PASSING_GRADE).distinct().count()
                     if counts['total']:
                         counts['percentage'] = (Decimal(counts['passing']) / counts['total'] * 100).quantize(Decimal('0'))
-                    course.category_by_name[category.name] = counts
-                course.average = gradebook_get_average(student, course, None, mp, None)
+                    course_section.category_by_name[category.name] = counts
+                course_section.average = gradebook_get_average(student, course_section, None, mp, None)
                 try:
-                    course.legacy_grade = course.grade_set.get(student=student, marking_period=mp).get_grade()
-                    if course.legacy_grade == '':
-                        course.legacy_grade = None # be consistent
+                    course_section.legacy_grade = course_section.grade_set.get(student=student, marking_period=mp).get_grade()
+                    if course_section.legacy_grade == '':
+                        course_section.legacy_grade = None # be consistent
                 except Grade.DoesNotExist:
-                    course.legacy_grade = None
+                    course_section.legacy_grade = None
 
         return render_to_response('benchmark_grade/student_grade.html', {
             'student': student,
@@ -830,8 +814,8 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         }, RequestContext(request, {}),)
 
     else:
-        # detail report for a single course
-        course = get_object_or_404(Course, pk=course_pk)
+        # detail report for a single course section
+        course_section = get_object_or_404(CourseSection, pk=course_section_pk)
 
         # TODO: move into CalculationRule?
         CATEGORY_NAME_TO_FLAG_CRITERIA = {
@@ -849,8 +833,8 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         else:
             items = Item.objects
             specific_items = False
-        # always filter in case a bad person passes us items from a different course
-        items = items.filter(course=course, mark__student=student)
+        # always filter in case a bad person passes us items from a different course section
+        items = items.filter(course_section=course_section, mark__student=student)
 
         all_mps = MarkingPeriod.objects.filter(item__in=items).distinct().order_by('-start_date')
         if specific_items:
@@ -885,9 +869,9 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
                     category.item_groups[item_name] = category_items.filter(name=item_name).distinct() 
                 if specific_items:
                     # get a disposable average for these specific items
-                    category.average = gradebook_get_average(student, course, category, mp, category_items)
+                    category.average = gradebook_get_average(student, course_section, category, mp, category_items)
                 else:
-                    category.average = gradebook_get_average(student, course, category, mp, None)
+                    category.average = gradebook_get_average(student, course_section, category, mp, None)
                 category.flagged_item_pks = []
                 if category.name in CATEGORY_NAME_TO_FLAG_CRITERIA:
                     category.flagged_item_pks = category_items.filter(**CATEGORY_NAME_TO_FLAG_CRITERIA[category.name]).values_list('pk', flat=True)
@@ -895,30 +879,30 @@ def student_report(request, student_pk=None, course_pk=None, marking_period_pk=N
         return render_to_response('benchmark_grade/student_grade_course_detail.html', {
             'student': student,
             'available_students': family_available_students,
-            'course': course,
+            'course_section': course_section,
             'mps': mps,
             'other_mps': other_mps
         }, RequestContext(request, {}),)
 
 @staff_member_required
-def comments(request, course_id):
-    course = get_object_or_404(Course, pk=course_id)
-    school_year = course.marking_period.all()[0].school_year
-    teacher_courses = get_teacher_courses(request.user.username)
+def comments(request, course_section_id):
+    course_section = get_object_or_404(CourseSection, pk=course_section_id)
+    school_year = course_section.marking_period.all()[0].school_year
+    teacher_course_sections = get_teacher_course_sections(request.user.username)
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
-    (teacher_courses is None or course not in teacher_courses):
+    (teacher_course_sections is None or course_section not in teacher_course_sections):
         messages.add_message(request, messages.ERROR,
-            'You do not have access to the gradebook for ' + course.fullname + '.')
+            'You do not have access to the gradebook for ' + course_section.name + '.')
         return HttpResponseRedirect(reverse('admin:index'))
 
     # lots of stuff will fail unceremoniously if there are no MPs assigned
-    if not course.marking_period.count():
+    if not course_section.marking_period.count():
         messages.add_message(request, messages.ERROR,
-            'The gradebook cannot be opened because there are no marking periods assigned to the course ' +
-            course.fullname + '.')
+            'The gradebook cannot be opened because there are no marking periods assigned to the course section ' +
+            course_section.name + '.')
         return HttpResponseRedirect(reverse('admin:index'))
 
-    marking_periods = list(course.marking_period.order_by('start_date'))
+    marking_periods = list(course_section.marking_period.order_by('start_date'))
     for marking_period in reversed(marking_periods):
         if marking_period.active:
             marking_period.current = True
@@ -927,19 +911,19 @@ def comments(request, course_id):
         marking_periods[0].current = True
 
     for marking_period in marking_periods:
-        marking_period.students = Student.objects.filter(courseenrollment__section=course)
+        marking_period.students = Student.objects.filter(courseenrollment__course_section=course_section)
         for student in marking_period.students:
             try:
-                grade = Grade.objects.get(student=student, course=course, marking_period=marking_period)
+                grade = Grade.objects.get(student=student, course_section=course_section, marking_period=marking_period)
                 student.marking_period_average_pk = grade.pk
-                student.marking_period_average = Grade.objects.get(student=student, course=course, marking_period=marking_period)
+                student.marking_period_average = Grade.objects.get(student=student, course_section=course_section, marking_period=marking_period)
                 student.comment = grade.comment
             except Grade.DoesNotExist:
                 student.marking_period_average = None
                 student.comment = None
 
     return render_to_response('benchmark_grade/comments.html', {
-        'course' : course,
+        'course_section' : course_section,
         'marking_periods': marking_periods,
         'max_length': Configuration.get_or_default('Grade comment length limit').value,
     }, RequestContext(request, {}),)

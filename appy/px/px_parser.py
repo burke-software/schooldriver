@@ -30,6 +30,8 @@ class PxEnvironment(XmlEnvironment):
         # XmlParser for better performance. Indeed, the base parser and env
         # process namespaces, and we do not need this for the PX parser.
         self.currentElem = None
+        # Exceptions are always raised (for pod, it is not the case)
+        self.raiseOnError = True
 
     def addSubBuffer(self):
         subBuffer = self.currentBuffer.addSubBuffer()

@@ -12,5 +12,5 @@ urlpatterns = patterns('',
     url(r'^student_grades/(?P<pk>\d+)/(?P<year_id>\d+)/$', views.StudentGradesheet.as_view()),
     (r'^view_comment_codes/$', views.view_comment_codes),
     (r'^select_grade_method/$', views.select_grade_method),
-    url(r'^course_grades/(?P<pk>\d+)/$', views.CourseGrades.as_view(), name="course-grades"),
+    url(r'^course_section_grades/(?P<pk>\d+)/$', views.CourseSectionGrades.as_view(), name="course-section-grades"),
 )

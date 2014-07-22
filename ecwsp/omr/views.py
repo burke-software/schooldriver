@@ -20,10 +20,9 @@ from ecwsp.omr.forms import *
 from ecwsp.omr.reports import *
 from ecwsp.sis.models import Faculty, UserPreference
 from ecwsp.sis.helper_functions import *
-from ecwsp.schedule.models import Course
+from ecwsp.schedule.models import CourseSection
 from ecwsp.benchmarks.models import Benchmark
 
-from elementtree.SimpleXMLWriter import XMLWriter
 import django_filters
 import MySQLdb
 import logging
@@ -152,9 +151,11 @@ def download_test(request, test_id):
 @permission_required('omr.teacher_test')
 def edit_test(request, id=None):
     teacher = Faculty.objects.get(username=request.user.username)
-    teacher_courses = Course.objects.filter(
-        Q(teacher=teacher) | Q(secondary_teachers=teacher)).annotate(
-        models.Max('marking_period__start_date')).order_by('-marking_period__start_date__max')
+    teacher_course_sections = CourseSection.objects.filter(
+        teachers=teacher
+    ).annotate(
+        models.Max('marking_period__start_date')
+    ).order_by('-marking_period__start_date__max')
     if id:
         add = False
         test = Test.objects.get(id=id)
@@ -211,7 +212,7 @@ def edit_test(request, id=None):
             elif '_next' in request.POST:
                 return HttpResponseRedirect(reverse(edit_test_questions, args=[instance.id]))
                 
-    test_form.fields['courses'].queryset = teacher_courses
+    test_form.fields['course_sections'].queryset = teacher_courses
     return render_to_response('omr/edit_test.html', {
         'test_form': test_form,
         'test': test,

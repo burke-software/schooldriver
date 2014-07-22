@@ -53,8 +53,8 @@ class Ogone(Field):
         Field.__init__(self, None, (0,1), None, show, page, group, layouts,
                        move, False, False,specificReadPermission,
                        specificWritePermission, width, height, None, colspan,
-                       master, masterValue, focus, False, True, mapping, label,
-                       None, None, None, None)
+                       master, masterValue, focus, False, mapping, label, None,
+                       None, None, None, False)
         # orderMethod must contain a method returning a dict containing info
         # about the order. Following keys are mandatory:
         #   * orderID   An identifier for the order. Don't use the object UID
@@ -112,7 +112,7 @@ class Ogone(Field):
         res.update(self.callMethod(obj, self.orderMethod))
         # Add user-related information
         res['CN'] = str(tool.getUserName(normalized=True))
-        user = obj.appy().appyUser
+        user = obj.appy().user
         res['EMAIL'] = user.email or user.login
         # Add standard back URLs
         siteUrl = tool.getSiteUrl()

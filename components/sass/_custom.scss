@@ -335,3 +335,27 @@ table#gradebook_table img.cancel {
 .list_item{
 	padding: 5px;
 }
+
+// Student/Emergency Contact autocomplete styles
+#id_emergency_contacts-deck {
+	display: block;
+	margin: 10px 0;
+
+	.acl-emergency-contact-wrapper {
+		display: block;
+		padding-top: 0;
+		padding-bottom: 10px;
+	}
+}
+
+.acl-contact-name {
+	font-size: 1.125em;
+}
+
+.acl-edit-link {
+	display: none;
+}
+
+#id_emergency_contacts-deck .acl-edit-link {
+	display: inline-block;
+}

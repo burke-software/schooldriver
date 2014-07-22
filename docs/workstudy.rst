@@ -19,7 +19,7 @@ Adding a Student Worker
 --------------------------
 To create a student worker, staff members are only required to add a student. All students in the software will immediately be made into student workers.
 
-1. Access the student dash by selecting **Student** at the navigation bar, then **EDIT**
+1. Access the student dash by selecting **Student** at the navigation bar, then **EDIT STUDENTS**
 
 .. image:: /images/cwspnav1.png
 
@@ -33,13 +33,14 @@ You may now access the list of student workers by clicking CWSP at the top menu 
 Creating Supervisor Logins
 ---------------------------
 
-1. Under the CWSP section from the main Django-SIS dash, select **work teams** and click on your desired work team.
+1. Under the CWSP section from the main Django-SIS dash, select **work teams** below the **edit work study** dashlet and click on your desired work team.
 2. Select an available login, or click the blue plus located to the right of the box.
 
 
 .. image:: /images/cwspsuperlogin.png
 
 **Things to keep in mind**
+
 - You need access to create users.
 - Supervisors must log in to the base site, not the admin site. 
 - Do not mark these users (Company) as Faculty or Student users. Doing so will produce unexpected results.
@@ -51,7 +52,7 @@ Creating Contact Supervisors
 
 Contact supervisors are individuals at companies that supervise a school's student worker. Accordingly, these contact supervisors are those people who will be receiving emails to evaluate/appraise a student worker's time card that has been submitted to them. To set them up, follow the directions below:
 
-1. Under the **Company Data** tab from the Django-SIS dash, select Add+ by **Contact Supervisors**
+1. Under the **Edit Work Study** dashlet from the CWSP Django-SIS dash, select Add+ by **Contact Supervisors**
 2. Fill out the available data fields.
 3. Save
 
@@ -68,7 +69,7 @@ Work Teams
 
 Work teams are a single student, or group of students that are assigned jobs at a company. Work teams are especially helpful for when a school has multiple students working at the same company, but have different types of jobs at that company. For example,
 
-Student A and Student B both work at Sample Company, but in differenet departments.
+Student A and Student B both work at Sample Company, but in different departments.
 
 Work teams allow schools to create unique work teams that are still associated with the same company:
 
@@ -77,7 +78,7 @@ Student B - Sample Company Marketing Dept.
 
 **Creating Work Teams**
 
-1. Select Add+ by **Work Teams** located under the *Company Data* tab.
+1. Select Add+ by **Work Teams** located under the *Edit Work Study* dashlet.
 2. Fill out the information available. A team name is *required*. 
 3. Save
 
@@ -149,7 +150,7 @@ From here, the supervisor may write questions/comments in the provided text box,
 Work Study Attendance
 ------------------------
 
-The work study attendance feature will allow Django-SIS to sync work study attendance with the SIS attendance taken by homeroom teachers throughout the day and update as needed. Work Study staff will select the "Take today's attendance" button from their CWSP Attendance page.
+Work Study staff members are able to track their own attendance. By selecting "Take today's attendance" button from their CWSP Attendance dashlet.
 
  .. image:: /images/wsatnd1.png
 
@@ -167,9 +168,9 @@ Electronic Contracts
 
 Django-SIS supports the ability to store and sign fully electronic work study contracts between the school and the student's work placement. Contracts can be filled out by the client from a web interface, or manually added to a company under the **Companies** selection from the CWSP header. 
 
-**Note:** Contracts are linked to companies, not work teams.
+**Note:** Contracts are linked to *companies*, not work teams.
 
-1. For fully electronic contracts, start by editing or creating a template, and be make certain that it's named "Work Study Contract". If your school has purchased Django-SIS support, feel free to email for assistance in this  regard, otherwise refer to the "Report Writing and Creating Templates" section above to do so indepedently. 
+1. For fully electronic contracts, start by editing or creating a template, and be make certain that it's named "Work Study Contract". If your school has purchased Django-SIS support, feel free to email for assistance in this regard, otherwise refer to the "Report Writing and Creating Templates" section above to do so indepedently. 
 
 .. image:: /images/cwspaddtemplate.png
 
@@ -186,7 +187,7 @@ Message to Supervisors
 ------------------------
 Django-SIS allows school officials to send out messages/reminders for all supervisors to see when they log in to approve a student's time card. The steps are as follows, with an attached picture depicting the steps and outcome:
 
-1. Under **Company Data**, select ADD under the *Message to Supervisors* subheading.    
+1. Under **Edit Work Study** dashlet, select ADD under the *Message to Supervisors* subheading.    
 2. Type out your desired message to display to all supervisors.
 3. Select a Start and End date to indicate how long the message will be visible.
 4. Click Save.

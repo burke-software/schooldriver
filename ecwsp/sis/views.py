@@ -96,7 +96,7 @@ def family_redirect(request):
         return student_report(request)
     return render_to_response('base.html', {'msg': "Welcome!", 'request': request,}, RequestContext(request, {}))
 
-@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')
+@user_passes_test(lambda u: u.has_perm("sis.view_student"))
 def photo_flash_card(request, year=None):
     """ Simple flash card game"""
     students = Student.objects.filter(is_active=True)
@@ -136,9 +136,9 @@ def paper_attendance(request, day):
     else:
         from ecwsp.schedule.models import CourseMeet
         cm = CourseMeet.objects.filter(day=day)
-        courses = CourseSection.objects.filter(coursemeet__in=cm, course__homeroom=True).distinct()
+        course_sections = CourseSection.objects.filter(coursemeet__in=cm, course__homeroom=True).distinct()
         report = TemplateReport(request.user)
-        report.data['courses'] = courses
+        report.data['course_sections'] = course_sections
         result = report.pod_save(template)
     if result:
         return result
@@ -146,7 +146,7 @@ def paper_attendance(request, day):
         messages.error(request, 'Problem making paper attendance, does the template exist?')
         return HttpResponseRedirect('/')
 
-@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')
+@user_passes_test(lambda u: u.has_perm("sis.view_student"))
 def transcript_nonofficial(request, student_id):
     """ Build a transcripte based on template called "Transcript Nonoffical"
     """
@@ -194,7 +194,7 @@ def ajax_include_deleted(request):
     profile.save()
     return HttpResponse('SUCCESS')
 
-@user_passes_test(lambda u: u.has_perm("sis.view_student"), login_url='/')
+@user_passes_test(lambda u: u.has_perm("sis.view_student"))
 def view_student(request, id=None):
     """ Lookup all student information
     """
@@ -298,20 +298,20 @@ def view_student(request, id=None):
     from ecwsp.grades.models import Grade
     for year in years:
         year.mps = MarkingPeriod.objects.filter(coursesection__courseenrollment__user=student, school_year=year).distinct().order_by("start_date")
-        year.courses = CourseSection.objects.filter(courseenrollment__user=student, course__graded=True, marking_period__school_year=year).distinct()
-        for course in year.courses:
+        year.course_sections = CourseSection.objects.filter(courseenrollment__user=student, course__graded=True, marking_period__school_year=year).distinct()
+        for course_section in year.course_sections:
             # Too much logic for the template here, so just generate html.
-            course.grade_html = ""
+            course_section.grade_html = ""
             for marking_period in year.mps:
                 try:
-                    course.grade_html += '<td> %s </td>' % (
-                        Grade.objects.get(student=student, course=course, marking_period=marking_period).get_grade(),)
+                    course_section.grade_html += '<td> %s </td>' % (
+                        Grade.objects.get(student=student, course_section=course_section, marking_period=marking_period).get_grade(),)
                 except:
-                    course.grade_html += '<td> </td>'
+                    course_section.grade_html += '<td> </td>'
             try:
-                course.grade_html += '<td> %s </td>' % (unicode(course.courseenrollment_set.get(user=student).grade),)
+                course_section.grade_html += '<td> %s </td>' % (unicode(course_section.courseenrollment_set.get(user=student).grade),)
             except CourseEnrollment.DoesNotExist:
-                course.grade_html += '<td></td>'
+                course_section.grade_html += '<td></td>'
 
         # Attendance
         if 'ecwsp.attendance' in settings.INSTALLED_APPS:
@@ -375,7 +375,7 @@ class StudentViewDashletView(generic.DetailView):
         return super(StudentViewDashletView, self).dispatch(*args, **kwargs)
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def increment_year_confirm(request, year_id):
     """ Show user a preview of what increment year will do before making it
     """

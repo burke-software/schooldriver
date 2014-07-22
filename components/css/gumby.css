@@ -1848,3 +1848,12 @@ table#gradebook_table img.cancel { margin-top: 2px; padding-right: 1px; }
 #dashboard_container .dashlet .dashlet_body .row { padding: 5px; }
 
 .list_item { padding: 5px; }
+
+#id_emergency_contacts-deck { display: block; margin: 10px 0; }
+#id_emergency_contacts-deck .acl-emergency-contact-wrapper { display: block; padding-top: 0; padding-bottom: 10px; }
+
+.acl-contact-name { font-size: 1.125em; }
+
+.acl-edit-link { display: none; }
+
+#id_emergency_contacts-deck .acl-edit-link { display: inline-block; }
