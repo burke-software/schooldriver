@@ -1,6 +1,6 @@
 from responsive_dashboard.dashboard import Dashboard, Dashlet, ListDashlet, RssFeedDashlet, AdminListDashlet, dashboards
 from .models import Course, CourseSection, MarkingPeriod
-from ecwsp.attendance.models import CourseAttendance
+from ecwsp.attendance.models import CourseSectionAttendance
 import datetime
 
 class CourseSectionDashlet(ListDashlet):
@@ -29,7 +29,7 @@ class GradesDashlet(Dashlet):
 
 class AttendanceDashlet(Dashlet):
     template_name = 'attendance/course_attendance_dashlet.html'
-    model = CourseAttendance
+    model = CourseSectionAttendance
     require_apps = ('ecwsp.attendance',)
 
 
