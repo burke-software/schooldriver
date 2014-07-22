@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db.models import Count, Q, DateField
 from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty, Cohort
-from ecwsp.attendance.models import CourseAttendance, StudentAttendance
+from ecwsp.attendance.models import CourseSectionAttendance, StudentAttendance
 from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet, Period, CourseSection, Course
 from ecwsp.grades.models import Grade
@@ -689,7 +689,7 @@ class MissedClassPeriodsButton(ReportButton):
                     student = student_attendance.student
                     missed_classes = []
                     missed_class = False
-                    classes = CourseAttendance.objects.filter(student=student, date=date)
+                    classes = CourseSectionAttendance.objects.filter(student=student, date=date)
                     for a_class in classes:
                         missed_class = self.missed_later_period(a_class, class_periods, missed_classes, missed_class)
                     if missed_class:
@@ -723,7 +723,7 @@ class MissedClassPeriodsButton(ReportButton):
                     student = student_attendance.student
                     missed_class = False
                     missed_classes = []
-                    classes = CourseAttendance.objects.filter(student=student, date=student_attendance.date)
+                    classes = CourseSectionAttendance.objects.filter(student=student, date=student_attendance.date)
                     for a_class in classes:
                         missed_class = self.missed_later_period(a_class, class_periods, missed_classes, missed_class)
                     if missed_class:
@@ -759,7 +759,7 @@ class PeriodBasedAttendanceButton(ReportButton):
     name_verbose = "Attendance by Course Section"
 
     def get_report(self, report_view, context):
-        
+
         course_section = report_view.report.report_context.get('course_section')
         if not course_section:
             raise Exception("You have not selected a course section.")
@@ -770,13 +770,13 @@ class PeriodBasedAttendanceButton(ReportButton):
 
         date = report_view.report.report_context.get('date')
         if date:
-            if CourseAttendance.objects.filter(course_section=course_section, date=date):
+            if CourseSectionAttendance.objects.filter(course_section=course_section, date=date):
                 pass
             else:
                 raise Exception("Attendance record does not exist for chosen course section and date.")
-            
+
             titles = ["Last Name", "First Name", "", "Status", "", "Course", "", "Period", "", "Date"]
-            course_attendances = CourseAttendance.objects.filter(course_section=course_section, date=date)
+            course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section, date=date)
             data = []
             for course_attendance in course_attendances:
                 flag = True
@@ -813,7 +813,7 @@ class PeriodBasedAttendanceButton(ReportButton):
                     raise Exception("Attendance record does not exist for chosen course section and marking period.")
             titles = ["Last Name", "First Name", "", "Tardies", "Absences", "Half Days", "Excused", "", "Course",
                       "", "Period", "", "Marking Period"]
-            course_attendances = CourseAttendance.objects.filter(course_section=course_section)
+            course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section)
             data = []
             for course_attendance in course_attendances:
                 flag = True
@@ -1158,7 +1158,7 @@ class SisReport(ScaffoldReport):
 class AttendanceReport(ScaffoldReport):
 
     name = 'attendance_report'
-    model = CourseAttendance
+    model = CourseSectionAttendance
 
     filters = (
         CourseSectionFilter(),
