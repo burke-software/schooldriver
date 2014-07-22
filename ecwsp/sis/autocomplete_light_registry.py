@@ -20,7 +20,6 @@ class ContactAutocomplete(autocomplete_light.AutocompleteModelTemplate):
     attrs = {
         'placeholder': 'Lookup Contact(s)',
     }
-    autocomplete_template = 'sis/autocomplete_contact.html'
     choice_template = 'sis/autocomplete_contact.html'
 
 autocomplete_light.register(EmergencyContact, ContactAutocomplete)
