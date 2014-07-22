@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('admissions', '0003_auto_20140717_0952'),
+        ('sis', '0003_auto_20140717_1002'),
     ]
 
     operations = [
