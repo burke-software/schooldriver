@@ -1,1 +1,38 @@
-<span data-value="{{ choice.pk }}">{{ choice }}</span><br>
+{% for choice in choices %}
+<span class="acl-emergency-contact-wrapper" data-value="{{ choice.pk }}">
+  <span class="acl-emergency-contact">
+    <span class="acl-contact-name">{{ choice.fname }} {{ choice.lname }}</span>
+    {% if choice.relationship_to_student %}
+      <span class="light label">{{ choice.relationship_to_student }}</span>
+    {% endif %}
+    {% if choice.primary_contact %}
+      <span class="light label">Primary Contact</span>
+    {% endif %}
+    {% if choice.emergency_only %}
+      <span class="light label">Emergency Only</span>
+    {% endif %}
+    <span class="acl-edit-link"><a href="/admin/sis/emergencycontact/{{ choice.id }}">Edit</a></span>
+    {% if choice.street %}<br />{{ choice.street }}, {{ choice.city }}, {{ choice.state }} {{ choice.zip }}{% endif %}
+    {% if choice.street and choice.email %} - {% endif %}
+    {% if choice.email %}
+      <a href="mailto:{{ choice.email }}">E-mail</a>
+    {% endif %}
+    <ul class="acl-contact-numbers">
+    {% for ecn in choice.emergencycontactnumber_set.all %}
+      <li>
+        {% if ecn.get_type_display %}
+          {{ ecn.get_type_display }}: 
+        {% endif %}
+        {{ ecn.number }} 
+        {% if ecn.ext %}
+          x{{ ecn.ext }}
+        {% endif %} 
+        {% if ecn.primary %}
+          <span class="light label">Primary Number</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+  </span>
+</span> 
+{% endfor %}

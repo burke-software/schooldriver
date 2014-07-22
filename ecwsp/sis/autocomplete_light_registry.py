@@ -17,6 +17,9 @@ class LookupStudentAutocomplete(UserAutocomplete, autocomplete_light.Autocomplet
 class ContactAutocomplete(autocomplete_light.AutocompleteModelTemplate):
     split_words = True
     search_fields = ['fname', 'lname']
+    attrs = {
+        'placeholder': 'Lookup Contact(s)',
+    }
     autocomplete_template = 'sis/autocomplete_contact.html'
     choice_template = 'sis/autocomplete_contact.html'
 
