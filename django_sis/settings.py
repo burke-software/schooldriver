@@ -77,6 +77,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pagination.middleware.PaginationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'ecwsp.sis.disable.DisableCSRF',
     )
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",

@@ -166,12 +166,35 @@ class StudentAdmin(VersionAdmin, CustomFieldAdmin):
             kwargs['exclude'] = exclude
         return super(StudentAdmin,self).get_form(request,obj,**kwargs)
 
-    fieldsets = [
-        (None, {'fields': [('last_name', 'first_name'), ('mname', 'is_active'), ('date_dismissed','reason_left'), 'username', 'grad_date', 'pic', 'alert', ('sex', 'bday'), ('class_of_year', 'year'),('unique_id','ssn'),
-            'family_preferred_language', 'alt_email', 'notes','emergency_contacts', 'siblings','individual_education_program',]}),
-    ]
-    if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
-        fieldsets[0][1]['fields'].append('family_access_users')
+    def get_fieldsets(self, request, obj=None):
+        ssn = request.user.has_perm('sis.view_ssn_student')
+        family_access_users = 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS
+        return ((
+            None,
+            {
+                'fields': (
+                    ('last_name', 'first_name'),
+                    ('mname', 'is_active'),
+                    ('date_dismissed', 'reason_left'),
+                    'username',
+                    'grad_date',
+                    'pic',
+                    'alert',
+                    ('sex', 'bday'),
+                    ('class_of_year', 'year'),
+                    ('unique_id', 'ssn') if ssn else 'unique_id',
+                    'family_preferred_language',
+                    'alt_email',
+                    'notes',
+                    'emergency_contacts',
+                    'siblings',
+                    'individual_education_program',
+                    # `None` does not work well! Use an empty tuple instead.
+                    'family_access_users' if family_access_users else tuple(),
+                )
+            }
+        ),)
+
     change_list_template = "admin/sis/student/change_list.html"
     form = autocomplete_light.modelform_factory(Student)
     readonly_fields = ['year']

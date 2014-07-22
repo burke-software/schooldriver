@@ -83,7 +83,7 @@ def gradebook(request, course_section_id, for_export=False):
     extra_info = Configuration.get_or_default('Gradebook extra information').value.lower().strip()
     quantizer = Decimal(10) ** (-1 * calculation_rule.decimal_places)
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
-    (teacher_course_sections is None or course_section not in teacher_course_sectionss):
+    (teacher_course_sections is None or course_section not in teacher_course_sections):
         messages.add_message(request, messages.ERROR,
             'You do not have access to the gradebook for ' + course_section.name + '.')
         return HttpResponseRedirect(reverse('admin:index'))
@@ -667,8 +667,7 @@ def ajax_save_grade(request):
         try: mark = Mark.objects.get(id=mark_id)
         except Mark.DoesNotExist: return HttpResponse('NO MARK WITH ID ' + mark_id, status=404) 
         if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
-            and request.user.username != mark.item.course_section.teacher.username \
-            and not mark.item.course_section.secondary_teachers.filter(username=request.user.username).count():
+            and not mark.item.course_section.teachers.filter(username=request.user.username).exists():
             return HttpResponse(status=403)
 
         if not request.user.has_perm('grades.change_grade') \
