@@ -36,7 +36,6 @@ django-cached-field>=1.2.6
 feedparser>=5.1.2
 django-ldap-groups
 django-rosetta>=0.7.1
--e git://github.com/zsiciarz/django-rosetta-grappelli.git#egg=django-rosetta-grappelli
 django-celery>=3.1.9
 django-daterange-filter
 django-toolbelt

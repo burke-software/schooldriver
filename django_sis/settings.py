@@ -310,6 +310,7 @@ INSTALLED_APPS = (
     'ecwsp.benchmarks',
     'ecwsp.benchmark_grade',
     'ecwsp.naviance_sso',
+    'rosetta',
     # These can be enabled if desired but the default is off
     #'ldap_groups',
     #'raven.contrib.django',
@@ -320,8 +321,6 @@ INSTALLED_APPS = (
     #'django_extensions',
     #'google_auth',
     #'ldap_groups',
-    #'rosetta-grappelli',
-    #'rosetta',
 )
 
 COMPRESS_PRECOMPILERS = (
