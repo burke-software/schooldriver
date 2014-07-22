@@ -1057,7 +1057,10 @@ class SisReport(ScaffoldReport):
             year.tardy = student.student_attn.filter(status__tardy=True, date__range=(year.start_date, year.end_date)).count()
             year.dismissed = student.student_attn.filter(status__code="D", date__range=(year.start_date, year.end_date)).count()
             # credits per dept
-            student.departments = Department.objects.filter(course__sections__courseenrollment__user=student).distinct()
+            student.departments = Department.objects.filter(
+                course__sections__courseenrollment__user=student,
+                course__course_type__award_credits=True,
+            ).distinct()
             student.departments_text = ""
             for dept in student.departments:
                 c = 0

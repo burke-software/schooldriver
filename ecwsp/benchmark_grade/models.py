@@ -585,8 +585,7 @@ class Aggregate(models.Model):
         # make sure our MarkingPeriod is assigned to the CourseSection
         self.marking_period.coursesection_set.add(special_course_section)
         # make sure our Student is enrolled in the CourseSection
-        special_course_section.courseenrollment_set.get_or_create(user=self.student,
-            role='Student')
+        special_course_section.courseenrollment_set.get_or_create(user=self.student)
         # copy our average to ecwsp.grades
         g, g_created = Grade.objects.get_or_create(student=self.student,
             course_section=special_course_section, marking_period=self.marking_period,
