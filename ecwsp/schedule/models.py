@@ -483,19 +483,6 @@ class Course(models.Model):
     def get_enrolled_students(self):
         return Student.objects.filter(courseenrollment__section=self)
 
-    def copy_instance(self, request):
-        changes = (("fullname", self.fullname + " copy"),)
-        new = duplicate(self, changes)
-        for enroll in self.courseenrollment_set.all():
-            new_enrollment = CourseEnrollment(course=new, user=enroll.user, role=enroll.role, attendance_note=enroll.attendance_note)
-            new_enrollment.save()
-            for day in enroll.exclude_days.all():
-                new_enrollment.exclude_days.add(day)
-        for cm in self.coursemeet_set.all():
-            new.coursemeet_set.create(location=cm.location,day=cm.day,period=cm.period)
-        new.save()
-        messages.success(request, 'Copy successful!')
-
 class CourseSectionTeacher(models.Model):
     teacher = models.ForeignKey('sis.Faculty')
     course_section = models.ForeignKey('CourseSection')
@@ -578,6 +565,33 @@ class CourseSection(models.Model):
     def save(self, *args, **kwargs):
         super(CourseSection, self).save(*args, **kwargs)
         self.populate_all_grades()
+
+    def copy_instance(self, request):
+        changes = (("name", self.name + " copy"),)
+        new = duplicate(self, changes)
+        for enroll in self.courseenrollment_set.all():
+            new_enrollment = CourseEnrollment(
+                course_section=new,
+                user=enroll.user,
+                attendance_note=enroll.attendance_note
+            )
+            new_enrollment.save()
+            for day in enroll.exclude_days.all():
+                new_enrollment.exclude_days.add(day)
+        for cm in self.coursemeet_set.all():
+            new.coursemeet_set.create(
+                location=cm.location,
+                day=cm.day,
+                period=cm.period
+            )
+        for teacher in self.coursesectionteacher_set.all():
+            CourseSectionTeacher(
+                course_section=new,
+                teacher=teacher.teacher,
+                is_primary=teacher.is_primary
+            ).save()
+        new.save()
+        messages.success(request, 'Copy successful!')
 
 class OmitCourseGPA(models.Model):
     """ Used to keep repeated or invalid course from affecting GPA """
