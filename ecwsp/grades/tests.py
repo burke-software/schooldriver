@@ -91,6 +91,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
     """ These test ensure we meet requirements defined by Cristo Rey Baltimore including
     Grade scales, course weights, and letter grades
     Sample data is anonomized real grade data """
+    
     def populate_database(self):
         """ Override, not using traditional test data """
         self.data = SisData()
@@ -138,7 +139,11 @@ class GradeBaltTests(SisTestMixin, TestCase):
             [mp4, 8, 'A'],
         ]
         for x in test_data:
-            grade = Grade.objects.get(marking_period=x[0], course_section_id=x[1])
+            grade = Grade.objects.get(
+                student = self.data.student,
+                marking_period=x[0], 
+                course_section_id=x[1]
+                )
             self.assertEqual(grade.get_grade(letter=True), x[2])
 
     def test_snx_grade(self):
@@ -213,7 +218,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         ]
         for x in test_data:
             year_grade = self.data.student.studentyeargrade_set.get(year=x[0])
-            average = year_grade.get_grade(numeric_scale=True, rounding=1)
+            average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True)
             self.assertAlmostEqual(average, x[1])
 
     def test_balt_gpa(self):
@@ -254,12 +259,25 @@ class GradeBaltTests(SisTestMixin, TestCase):
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['boosted'])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1, boost=False), x['unboosted'])
 
-    def test_honors_and_ap_final_gpa(self):
+    def test_honors_and_ap_student_year_grade(self):
         """
-        assert that the end of the year GPA is correct
+        assert that the end of the year grade is correct
         """
-        gpa = self.data.honors_student.get_gpa(rounding=1, numeric_scale=True)
-        self.assertAlmostEqual(gpa, Decimal(3.5))
+
+        # try without pre-scaling
+        year_grade = self.data.honors_student.studentyeargrade_set.get(year=1)
+        average = year_grade.get_grade(numeric_scale=True, rounding=1)
+        self.assertAlmostEqual(average, Decimal(3.8))
+
+        # try with pre-scaling
+        year_grade = self.data.honors_student.studentyeargrade_set.get(year=1)
+        average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True)
+        self.assertAlmostEqual(average, Decimal(3.6))
+
+        # try with pre-scaling but without boost
+        year_grade = self.data.honors_student.studentyeargrade_set.get(year=1)
+        average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True, boost=False)
+        self.assertAlmostEqual(average, Decimal(3.3))
 
     def test_honors_and_ap_letter_grades(self):
         """
