@@ -3,7 +3,7 @@ from scaffold_report.fields import SimpleCompareField
 from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter, ModelChoiceFilter
 from django import forms
 from django.conf import settings
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Max
 from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty, Cohort
 from ecwsp.schedule.calendar import Calendar
@@ -339,6 +339,25 @@ class OmitSubstitutions(Filter):
         report_context['omit_substitutions'] = self.cleaned_data['field_0']
         return queryset
 
+
+class SortCourses(Filter):
+    """ Allows sorting the courses on a transcript and other templates """
+    verbose_name = "Sort Courses"
+    fields = [forms.ChoiceField(
+        choices=(
+            ('department', 'department'),
+            ('marking_period, department', 'marking_period, department'),
+            ('marking_period, fullname', 'marking_period, fullname'),
+        ),
+        help_text="Sort Courses in template reports",
+        initial='department',
+    )]
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['sort_courses'] = self.cleaned_data['field_0']
+        return queryset
+
+
 class GPAReportButton(ReportButton):
     name = "gpa_report"
     name_verbose = "GPA per year"
@@ -595,6 +614,7 @@ class SisReport(ScaffoldReport):
     preview_fields = ['first_name', 'last_name']
     permissions_required = ['sis_reports']
     filters = (
+        SortCourses(),
         SchoolDateFilter(),
         DecimalCompareFilter(verbose_name="Filter by GPA", compare_field_string="cached_gpa", add_fields=('gpa',)),
         AbsenceFilter(),
@@ -715,7 +735,13 @@ class SisReport(ScaffoldReport):
                 course__graded=True,
                 marking_period__school_year=year,
                 marking_period__show_reports=True
-            ).distinct().order_by('course__department')
+            ).distinct()
+            if self.report_context.get('sort_courses') == 'marking_period, department':
+                year.course_sections = year.course_sections.annotate(Count('marking_period'), Max('marking_period__end_date')).order_by('-marking_period__count', 'marking_period__end_date__max', 'course__department')
+            if self.report_context.get('sort_courses') == 'marking_period, fullname':
+                year.course_sections = year.course_sections.annotate(Count('marking_period'), Max('marking_period__end_date')).order_by('-marking_period__count', 'marking_period__end_date__max', 'course__fullname')
+            else:
+                year.course_sections = year.course_sections.order_by('course__department')
             year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_end'])
             # course section grades
             for course_section in year.course_sections:
@@ -749,6 +775,8 @@ class SisReport(ScaffoldReport):
                         year.credits += course_section.credits
                     if course_section.credits:
                         year.possible_credits += course_section.credits
+
+            year.courses = year.course_sections  # Backwards template compatibility
 
             # Averages per marking period
             i = 1
