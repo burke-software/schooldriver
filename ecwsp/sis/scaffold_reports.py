@@ -678,6 +678,7 @@ class SisReport(ScaffoldReport):
             course_section.final = course_enrollment.grade
             course_section.ce = course_enrollment
         student.course_sections = course_sections
+        student.courses = student.course_sections  # Backwards compatibility
 
         #Attendance for marking period
         i = 1
