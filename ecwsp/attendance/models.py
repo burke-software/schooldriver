@@ -31,7 +31,7 @@ class CourseSectionAttendance(models.Model):
     It compares with the daily "student attendance" and is a way to verify
     students are not skipping classes.
     """
-    student =  models.ForeignKey(Student)
+    student = models.ForeignKey(Student)
     course_section = models.ForeignKey('schedule.CourseSection')
     period = models.ForeignKey('schedule.Period', blank=True, null=True)
     date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
@@ -47,7 +47,7 @@ class CourseSectionAttendance(models.Model):
 
 
 class StudentAttendance(models.Model):
-    student =  models.ForeignKey(Student, related_name="student_attn", help_text="Start typing a student's first or last name to search")
+    student = models.ForeignKey(Student, related_name="student_attn", help_text="Start typing a student's first or last name to search")
     date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     status = models.ForeignKey(AttendanceStatus)
     time = models.TimeField(blank=True,null=True)

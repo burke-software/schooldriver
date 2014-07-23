@@ -2,18 +2,23 @@ from scaffold_report.report import ScaffoldReport, scaffold_reports, ReportButto
 from scaffold_report.fields import SimpleCompareField
 from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter, ModelChoiceFilter
 from django import forms
+from django.forms.extras.widgets import SelectDateWidget
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
 from django.conf import settings
-from django.db.models import Count, Q
+from django.db.models import Count, Q, DateField
 from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty, Cohort
+from ecwsp.attendance.models import CourseSectionAttendance, StudentAttendance
 from ecwsp.schedule.calendar import Calendar
-from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet
+from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet, Period, CourseSection, Course
 from ecwsp.grades.models import Grade
 from ecwsp.discipline.models import DisciplineAction
 import autocomplete_light
 import datetime
 from decimal import Decimal
 from openpyxl.cell import get_column_letter
+
 
 def reverse_compare(compare):
     """ Get the opposite comparison
@@ -28,8 +33,10 @@ def reverse_compare(compare):
         compare = "gt"
     return compare
 
+
 def get_active_year():
     return SchoolYear.objects.get(active_year=True)
+
 
 class TimeBasedForm(forms.Form):
     """A generic template for time and school year based forms"""
@@ -111,6 +118,7 @@ class TardyFilter(IntCompareFilter):
                 params = (date_begin, date_end, value))
         return queryset
 
+
 class AbsenceFilter(IntCompareFilter):
     compare_field_string = "absence_count"
     add_fields = ['absence_count']
@@ -137,11 +145,58 @@ class AbsenceFilter(IntCompareFilter):
         return queryset
 
 
+class CourseSectionFilter(ModelChoiceFilter):
+    verbose_name = "Course Section"
+    add_fields = ['course_section']
+    model = CourseSection
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['course_section'] = self.cleaned_data['field_0']
+        return queryset
+
+
+class DateFilter(Filter):
+    verbose_name = "Date"
+    fields = [forms.DateField(widget=SelectDateWidget(years=range(2014, datetime.date.today().year + 1)))]
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['date'] = self.cleaned_data['field_0']
+        return queryset
+
+
+class MarkingPeriodFilter(ModelChoiceFilter):
+    verbose_name = "Marking Period"
+    model = MarkingPeriod
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['marking_period'] = self.cleaned_data['field_0']
+        return queryset
+
+
+class StudentsFilter(ModelMultipleChoiceFilter):
+    verbose_name = "Select Students"
+    model = Student
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['students'] = self.cleaned_data['field_0']
+        return queryset
+
+
+class ClassPeriodsFilter(ModelMultipleChoiceFilter):
+    verbose_name = "Class Periods"
+    model = Period
+
+    def queryset_filter(self, queryset, report_context=None, **kwargs):
+        report_context['class_periods'] = self.cleaned_data['field_0']
+        return queryset
+
+
 class StudentYearFilter(ModelMultipleChoiceFilter):
     verbose_name="Student Year"
     compare_field_string="year"
     add_fields = ['year']
     model = GradeLevel
+
 
 class DisciplineForm(forms.Form):
     disc_action = forms.ModelChoiceField(queryset=DisciplineAction.objects.all())
@@ -217,6 +272,7 @@ class CourseSectionGradeFilter(Filter):
             queryset = queryset.exclude(**grade_kwarg).annotate(
                 course_section_grade_count=Count('courseenrollment', distinct=True))
         return queryset
+
 
 class MpAvgGradeFilter(CourseSectionGradeFilter):
     verbose_name = "Grades (Marking Period Average)"
@@ -306,6 +362,7 @@ class CohortFilter(ModelMultipleChoiceFilter):
 class SelectSpecificStudentsForm(forms.Form):
     select_students = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
 
+
 class SelectSpecificStudents(ModelMultipleChoiceFilter):
     model = Student
     compare_field_string = "pk"
@@ -323,6 +380,7 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
             return queryset.filter(pk__in=selected)
         return queryset
 
+
 class ScheduleDaysFilter(Filter):
     fields = [forms.MultipleChoiceField(required=False, choices=CourseMeet.day_choice,
         help_text='''On applicable reports, only the selected days will be included.
@@ -331,6 +389,7 @@ class ScheduleDaysFilter(Filter):
         report_context['schedule_days'] = self.cleaned_data['field_0']
         return queryset
 
+
 class OmitSubstitutions(Filter):
     fields = [forms.BooleanField(initial=False, required=False,
         help_text='''On applicable reports, number grades will be shown instead
@@ -338,6 +397,7 @@ class OmitSubstitutions(Filter):
     def queryset_filter(self, queryset, report_context, **kwargs):
         report_context['omit_substitutions'] = self.cleaned_data['field_0']
         return queryset
+
 
 class GPAReportButton(ReportButton):
     name = "gpa_report"
@@ -580,14 +640,234 @@ class AspReportButton(ReportButton):
         return report_view.list_to_xlsx_response(data, 'ASP_Report', header)
 
 
+class MissedClassPeriodsButton(ReportButton):
+    """ This report shows when students were present for first period but missed classes later in the day. """
+    name = "missed_class_periods"
+    name_verbose = "Daily Attendance: Missed Class Periods"
+
+    def append_to_row(self, student, missed_classes, row):
+        row.append(student.last_name)
+        row.append(student.first_name)
+        row.append('')
+        the_class = missed_classes[0]
+        the_missed_class = the_class.period.name
+        row.append(the_missed_class)
+        row.append('')
+        course_section = the_class.course_section
+        row.append(course_section.name)
+        row.append('')
+        return the_class
+
+    def present_for_first_period(self, students, student_attendance):
+        return not student_attendance.status.absent and not student_attendance.status.excused\
+            and student_attendance.student in students
+
+    def missed_later_period(self, a_class, class_periods, missed_classes, missed_class):
+        # If a student missed a class period other than first period
+        if a_class.status.name == "Absent" and a_class.period in class_periods:
+            missed_class = True
+            missed_classes.append(a_class)
+        return missed_class
+
+    def get_report(self, report_view, context):
+        date = report_view.report.report_context.get('date')
+        marking_period = report_view.report.report_context.get('marking_period')
+        students = report_view.report.report_context.get('students')
+        if not students:  # If student filter not used
+            students = Student.objects.all()
+        class_periods = Period.objects.all()
+        select_class_periods = report_view.report.report_context.get('class_periods')
+        if select_class_periods:  # If class periods filter is used
+            class_periods = select_class_periods
+
+        if date:
+            titles = ["Last Name", "First Name", "", "Period", "", "Course Section", "", "Date"]
+            data = []
+            student_attendances = StudentAttendance.objects.filter(date=date)
+            for student_attendance in student_attendances:
+                if self.present_for_first_period(students, student_attendance):
+                    student = student_attendance.student
+                    missed_classes = []
+                    missed_class = False
+                    classes = CourseSectionAttendance.objects.filter(student=student, date=date)
+                    for a_class in classes:
+                        missed_class = self.missed_later_period(a_class, class_periods, missed_classes, missed_class)
+                    if missed_class:
+                        # Add relevant information to report
+                        row = []
+                        self.append_to_row(student, missed_classes, row)
+                        row.append(str(date))
+                        data.append(row)
+                        for a_class in missed_classes[1:]:
+                            row = []
+                            for i in range(3):
+                                row.append("")
+                            row.append(a_class.period.name)
+                            row.append("")
+                            row.append(a_class.course_section.name)
+                            data.append(row)
+
+        else:
+            if not marking_period:
+                try:
+                    marking_periods = MarkingPeriod.objects.filter(active=True)
+                    marking_period = marking_periods[0]
+                except:
+                    raise Exception("Please select a marking period")
+            titles = ["Last Name", "First Name", "", "Period", "", "Course Section", "", "Date", "", "Marking Period", "",
+                      "Total Classes Missed (Absences)"]
+            data = []
+            student_attendances = StudentAttendance.objects.filter(date__range=(marking_period.start_date, marking_period.end_date))
+            for student_attendance in student_attendances:
+                if self.present_for_first_period(students, student_attendance):
+                    student = student_attendance.student
+                    missed_class = False
+                    missed_classes = []
+                    classes = CourseSectionAttendance.objects.filter(student=student, date=student_attendance.date)
+                    for a_class in classes:
+                        missed_class = self.missed_later_period(a_class, class_periods, missed_classes, missed_class)
+                    if missed_class:
+                        # Add relevant information to report
+                        row = []
+                        the_class = self.append_to_row(student, missed_classes, row)
+                        row.append(str(the_class.date))
+                        row.append('')
+                        row.append(marking_period.name)
+                        row.append("")
+                        row.append(len(missed_classes))
+                        data.append(row)
+                        for a_class in missed_classes[1:]:
+                            row = []
+                            for i in range(3):
+                                row.append("")
+                            row.append(a_class.period.name)
+                            row.append("")
+                            row.append(a_class.course_section.name)
+                            row.append("")
+                            row.append(str(a_class.date))
+                            for i in range(3):
+                                row.append("")
+                            data.append(row)
+
+        return report_view.list_to_xlsx_response(data, "StudentCourseAbsences", header=titles)
+
+
+class PeriodBasedAttendanceButton(ReportButton):
+    """ This report shows the attendance records of each student in a particular course section. """
+
+    name = "course_section_attendance"
+    name_verbose = "Attendance by Course Section"
+
+    def get_report(self, report_view, context):
+
+        course_section = report_view.report.report_context.get('course_section')
+        if not course_section:
+            raise Exception("You have not selected a course section.")
+
+        students = report_view.report.report_context.get('students')
+
+        class_periods = report_view.report.report_context.get('class_periods')
+
+        date = report_view.report.report_context.get('date')
+        if date:
+            if CourseSectionAttendance.objects.filter(course_section=course_section, date=date):
+                pass
+            else:
+                raise Exception("Attendance record does not exist for chosen course section and date.")
+
+            titles = ["Last Name", "First Name", "", "Status", "", "Course", "", "Period", "", "Date"]
+            course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section, date=date)
+            data = []
+            for course_attendance in course_attendances:
+                flag = True
+                if class_periods:  # If class periods filter used
+                    flag = False
+                    if course_attendance.period in class_periods:
+                        flag = True
+                if flag:
+                    row = []
+                    student = course_attendance.student
+                    # If student filter is not used or
+                    # student filter is used and the student is one of the chosen students
+                    if not students or students and student in students:
+                        # Add relevant information to report
+                        row.append(student.last_name)
+                        row.append(student.first_name)
+                        row.append('')
+                        status = course_attendance.status
+                        row.append(status.name)
+                        row.append('')
+                        row.append(course_section.name)
+                        row.append('')
+                        row.append(course_attendance.period.name)
+                        row.append('')
+                        row.append(str(date))
+                        data.append(row)
+
+        else:
+            marking_period = report_view.report.report_context.get('marking_period')
+            if marking_period:
+                try:
+                    course_section = CourseSection.objects.get(name=course_section.name, marking_period=marking_period)
+                except ObjectDoesNotExist:
+                    raise Exception("Attendance record does not exist for chosen course section and marking period.")
+            titles = ["Last Name", "First Name", "", "Tardies", "Absences", "Half Days", "Excused", "", "Course",
+                      "", "Period", "", "Marking Period"]
+            course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section)
+            data = []
+            for course_attendance in course_attendances:
+                flag = True
+                if class_periods:  # If class periods filter used
+                    flag = False
+                    if course_attendance.period in class_periods:
+                        flag = True
+                if flag:
+                    row = []
+                    student = course_attendance.student
+                    # If student filter is not used or
+                    # student filter is used and the student is one of the chosen students
+                    if not students or students and student in students:
+                        # Add relevant information to report
+                        row.append(student.last_name)
+                        row.append(student.first_name)
+                        row.append('')
+                        tardies = student.courseattendance_set.filter(course_section=course_section,
+                                    status__tardy=True).count()
+                        row.append(tardies)
+                        absences = student.courseattendance_set.filter(course_section=course_section,
+                                    status__absent=True).count()
+                        row.append(absences)
+                        half = student.courseattendance_set.filter(course_section=course_section,
+                                    status__half=True).count()
+                        row.append(half)
+                        excused = student.courseattendance_set.filter(course_section=course_section,
+                                    status__excused=True).count()
+                        row.append(excused)
+                        row.append('')
+                        row.append(course_section.name)
+                        row.append('')
+                        row.append(course_attendance.period.name)
+                        row.append('')
+                        if marking_period:
+                            row.append(marking_period.name)
+                        else:
+                            marking_period = MarkingPeriod.objects.get(coursesection=course_section)
+                            row.append(marking_period.name)
+                        data.append(row)
+
+        return report_view.list_to_xlsx_response(data, "Course_Attendance", header=titles)
+
+
 def strip_trailing_zeros(x):
     x = str(x).strip()
     # http://stackoverflow.com/a/2440786
     return x.rstrip('0').rstrip('.')
 
+
 class struct(object):
     def __unicode__(self):
         return ""
+
 
 class SisReport(ScaffoldReport):
     name = "student_report"
@@ -777,7 +1057,10 @@ class SisReport(ScaffoldReport):
             year.tardy = student.student_attn.filter(status__tardy=True, date__range=(year.start_date, year.end_date)).count()
             year.dismissed = student.student_attn.filter(status__code="D", date__range=(year.start_date, year.end_date)).count()
             # credits per dept
-            student.departments = Department.objects.filter(course__sections__courseenrollment__user=student).distinct()
+            student.departments = Department.objects.filter(
+                course__sections__courseenrollment__user=student,
+                course__course_type__award_credits=True,
+            ).distinct()
             student.departments_text = ""
             for dept in student.departments:
                 c = 0
@@ -871,4 +1154,25 @@ class SisReport(ScaffoldReport):
         context['students'] = students
         return context
 
+
+class AttendanceReport(ScaffoldReport):
+
+    name = 'attendance_report'
+    model = CourseSectionAttendance
+
+    filters = (
+        CourseSectionFilter(),
+        DateFilter(),
+        MarkingPeriodFilter(),
+        StudentsFilter(),
+        ClassPeriodsFilter()
+    )
+
+    report_buttons = (
+        PeriodBasedAttendanceButton(),
+        MissedClassPeriodsButton(),
+    )
+
+
 scaffold_reports.register('student_report', SisReport)
+scaffold_reports.register('attendance_report', AttendanceReport)

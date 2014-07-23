@@ -337,7 +337,7 @@ table#gradebook_table img.cancel {
 }
 
 // Student/Emergency Contact autocomplete styles
-#id_emergency_contacts-deck {
+#id_emergency_contacts-deck, #id_parent_guardians-deck {
 	display: block;
 	margin: 10px 0;
 
@@ -356,6 +356,6 @@ table#gradebook_table img.cancel {
 	display: none;
 }
 
-#id_emergency_contacts-deck .acl-edit-link {
+#id_emergency_contacts-deck .acl-edit-link, #id_parent_guardians-deck .acl-edit-link {
 	display: inline-block;
 }

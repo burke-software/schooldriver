@@ -1,4 +1,4 @@
-{% for choice in choices %}
+
 <span class="acl-emergency-contact-wrapper" data-value="{{ choice.pk }}">
   <span class="acl-emergency-contact">
     <span class="acl-contact-name">{{ choice.fname }} {{ choice.lname }}</span>
@@ -11,7 +11,7 @@
     {% if choice.emergency_only %}
       <span class="light label">Emergency Only</span>
     {% endif %}
-    <span class="acl-edit-link"><a href="/admin/sis/emergencycontact/{{ choice.id }}">Edit</a></span>
+    <span class="acl-edit-link"><a href="{% url 'admin:sis_emergencycontact_change' choice.pk %}" target="_blank">Edit</a></span>
     {% if choice.street %}<br />{{ choice.street }}, {{ choice.city }}, {{ choice.state }} {{ choice.zip }}{% endif %}
     {% if choice.street and choice.email %} - {% endif %}
     {% if choice.email %}
@@ -35,4 +35,3 @@
     </ul>
   </span>
 </span> 
-{% endfor %}
