@@ -9,6 +9,7 @@ from ecwsp.sis.models import Student, UserPreference, SchoolYear, GradeLevel, Co
 from ecwsp.schedule.models import MarkingPeriod, CourseMeet, Award
 from ecwsp.administration.models import Template
 import autocomplete_light
+import datetime
 
 class UserPreferenceForm(forms.ModelForm):
     class Meta:
@@ -69,7 +70,7 @@ class TimeBasedForm(forms.Form):
         if data['this_year'] and not data['marking_period']:
             start = SchoolYear.objects.get(active_year=True).start_date
             # if they want a date in the future, let them specify it explicitly
-            end = min(date.today(), SchoolYear.objects.get(active_year=True).end_date)
+            end = min(datetime.date.today(), SchoolYear.objects.get(active_year=True).end_date)
         elif not data['this_year'] and not data['all_years'] and not data['marking_period']:
             start = data['date_begin']
             end = data['date_end']
@@ -77,8 +78,8 @@ class TimeBasedForm(forms.Form):
             start = data['marking_period'].all().order_by('start_date')[0].start_date
             end = data['marking_period'].all().order_by('-end_date')[0].end_date
         else: # all of time
-            start = date(1980, 1, 1)
-            end = date(2980, 1, 1)
+            start = datetime.date(1980, 1, 1)
+            end = datetime.date(2980, 1, 1)
         return (start, end)
 
 class YearSelectForm(forms.Form):
