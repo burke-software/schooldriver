@@ -7,7 +7,7 @@ django-simple-import
 django-dajax-ng
 django-dajaxice>=0.5.5
 django-grappelli>=2.4.3
-django-mass-edit
+django-mass-edit>=2.2
 django-pagination>=1.0.7
 django-reversion>=1.6.3
 django-localflavor
