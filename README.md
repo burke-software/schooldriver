@@ -96,3 +96,84 @@ Student work attendance is also tracked, allowing faculty to list reasons for mi
 SWoRD allows users to save basic company information for each work site associated with the school including Department of Labor forms. Additionally, information from client visits is saved along with the pertinent evaluations shown below. 
 ![Alt text](https://raw.github.com/burke-software/django-sis/master/screenshots/cwsp4.jpg)
 
+# Development Environment
+You can easily get Djanog-sis running in an isolated development environment using [Fig and Docker](http://orchardup.github.io/fig/). We have testing this to work on both OSX and Ubuntu. 
+
+## OSX
+
+#### Pre-req's
+Before you begin, make sure you have both [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://www.vagrantup.com/downloads.html) installed. 
+
+#### Install docker-osx  (** Warning: This may take forever **)
+
+(May want to refer to: [http://orchardup.github.io/fig/install.html]() for up-to-date instrutions)
+
+```
+curl https://raw.githubusercontent.com/noplay/docker-osx/1.1.1/docker-osx > /usr/local/bin/docker-osx
+```
+```
+chmod +x /usr/local/bin/docker-osx
+```
+```
+docker-osx shell
+```
+
+#### Install fig (works inside the docker shell, so just continue from the previous step)
+
+```
+curl -L https://github.com/orchardup/fig/releases/download/0.5.1/darwin > /usr/local/bin/fig
+```
+```
+chmod +x /usr/local/bin/fig
+```
+#### Migrate
+
+```
+fig run web python manage.py migrate
+```
+#### Run
+
+```
+fig up
+```
+
+Enjoy your django-sis instance on **localdocker:8000**, yeah that's right, it's *not localhost*. Whatever. 
+
+## Ubuntu
+
+#### Install Docker
+Follow the instructions on the docker website, [here](http://docs.docker.com/installation/ubuntulinux/)
+
+#### Add user to group
+
+```
+sudo gpasswd -a ${USER} docker
+```
+
+#### Install Fig
+
+```
+curl -L https://github.com/orchardup/fig/releases/download/0.5.1/linux > /usr/local/bin/fig
+```
+```
+chmod +x /usr/local/bin/fig
+```
+#### Migrate
+
+```
+fig run web python manage.py migrate
+```
+#### Run
+
+```
+fig up
+```
+
+Enjoy your django-sis instance on **localhost:8000**
+
+
+
+
+
+
+
