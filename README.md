@@ -171,7 +171,12 @@ fig up
 
 Enjoy your django-sis instance on **localhost:8000**
 
+## Sample Data
+We have some sample data that might be useful when testing out the development environment. To load the data, try this:
 
+```
+fig run web python manage.py populate_sample_data
+```
 
 
 
