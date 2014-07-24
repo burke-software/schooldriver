@@ -358,6 +358,7 @@ class Student(User, CustomFieldModel):
     def get_gpa(self, rounding=2, numeric_scale=False, boost=True):
         """ Get cached gpa but with rounding and scale options """
         gpa = self.gpa
+
         if numeric_scale == True:
             # Get the scale for the last year the student was active in
             grade_scale = GradeScale.objects.filter(
@@ -374,7 +375,7 @@ class Student(User, CustomFieldModel):
             gpa = round_as_decimal(gpa, rounding)
         return gpa
 
-    def calculate_gpa(self, date_report=None, rounding=2, prescale=False):
+    def calculate_gpa(self, date_report=None, rounding=2, prescale=False, boost=True):
         """ Use StudentYearGrade calculation
         No further weighting needed.
         """
@@ -384,7 +385,16 @@ class Student(User, CustomFieldModel):
         if date_report:
             grade_years = grade_years.filter(year__start_date__lt=date_report)
         for grade_year in grade_years.distinct():
-            grade = grade_year.calculate_grade(date_report=date_report, prescale=prescale)
+            
+            # grade = grade_year.calculate_grade(date_report=date_report, prescale=prescale)
+            
+            grade = grade_year.get_grade(
+                date_report = date_report,
+                numeric_scale = True, 
+                rounding = rounding, 
+                prescale = prescale, 
+                boost = boost
+                )
             if grade:
                 # Is this an incomplete complete year?
                 if date_report and date_report < grade_year.year.end_date:

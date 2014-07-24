@@ -318,6 +318,13 @@ class GradeBaltTests(SisTestMixin, TestCase):
             self.assertEqual(sm1_grade, x['s1'])
             self.assertEqual(sm2_grade, x['s2'])
 
+    def test_honors_student_gpa(self):
+        """
+        test that the student's gpa after 1 year is correct!
+        """
+        gpa = self.data.honors_student.calculate_gpa(rounding=1, prescale=True)
+        self.assertAlmostEqual(gpa, Decimal(3.6))
+
 
 class GradeScaleTests(SisTestMixin, TestCase):
     def setUp(self):
