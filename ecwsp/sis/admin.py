@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, CHANGE
+from django.forms import ValidationError
 
 import sys
 from reversion.admin import VersionAdmin
@@ -349,7 +350,7 @@ class UserForm(UserChangeForm):
         teacher_group = Group.objects.get_or_create(name="teacher")[0]
         if student_group in groups and teacher_group in groups:
             message = "User cannot be both a teacher and a student"
-            raise forms.ValidationError(message)
+            raise ValidationError(message)
         return self.cleaned_data
 
 class UserAdmin(UserAdmin):
