@@ -33,7 +33,7 @@ class CourseSectionInline(admin.StackedInline):
 
 class CourseAdmin(admin.ModelAdmin):
     list_display = ['fullname', 'grades_link', 'department', 'credits', 'graded', 'is_active']
-    search_fields = ['fullname', 'shortname', 'description', 'coursesection__teachers__username']
+    search_fields = ['fullname', 'shortname', 'description', 'sections__teachers__username']
     list_filter = ['level', 'is_active', 'graded', 'homeroom', 'department']
     inlines = [CourseSectionInline]
 
