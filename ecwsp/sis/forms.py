@@ -34,7 +34,7 @@ class DeletedStudentLookupForm(forms.Form):
 
 
 class StudentLookupForm(forms.Form):
-    student = autocomplete_light.ChoiceField('StudentActiveUserAutocomplete')
+    student = autocomplete_light.ChoiceField('StudentActiveStudentAutocomplete')
     
 
 class UploadFileForm(forms.Form):
@@ -92,7 +92,7 @@ class YearSelectForm(forms.Form):
 class StudentSelectForm(TimeBasedForm):
     """ Generic student selection form."""
     all_students = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':''}))
-    student = autocomplete_light.ChoiceField('StudentActiveUserAutocomplete')
+    student = autocomplete_light.ChoiceField('StudentActiveStudentAutocomplete')
     sort_by = forms.ChoiceField(choices=(('last_name', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
     filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
     filter_cohort = forms.ModelMultipleChoiceField(required=False, queryset=Cohort.objects.all())
