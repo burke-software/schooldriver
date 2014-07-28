@@ -343,14 +343,12 @@ class SisData(object):
         for grd in grade_hash:
             section = CourseSection.objects.get(name=grd['section'])
             for i in range(6):
-                if grd['grades'][i] != '?':
-                    # we really need to figure out those unknown grades...
-                    grade = Grade.objects.get(
-                        student=self.honors_student,
-                        course_section_id=section.id,
-                        marking_period=marking_periods[i]
-                        )
-                    grade.grade = grd['grades'][i]
-                    grade.save() 
+                grade = Grade.objects.get(
+                    student=self.honors_student,
+                    course_section_id=section.id,
+                    marking_period=marking_periods[i]
+                    )
+                grade.grade = grd['grades'][i]
+                grade.save() 
 
 
