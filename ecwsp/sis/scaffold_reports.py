@@ -19,7 +19,6 @@ import datetime
 from decimal import Decimal
 from openpyxl.cell import get_column_letter
 
-
 def reverse_compare(compare):
     """ Get the opposite comparison
     greater than becomes less than equals """
@@ -914,27 +913,47 @@ class SisReport(ScaffoldReport):
             course__graded=True,
             marking_period__in=self.marking_periods,
         ).distinct().order_by('course__department')
-
         marking_periods = self.marking_periods.order_by('start_date')
+        mp_grade = {}
         for marking_period in marking_periods:
-            marking_period.smpg = student.studentmarkingperiodgrade_set.filter(marking_period=marking_period).first()
+            smpg = student.studentmarkingperiodgrade_set.filter(marking_period=marking_period).first()
+            marking_period.smpg = smpg
+            # also save to a dict for alternative lookup
+            mp_grade[marking_period.name] = smpg
         student.mps = list(marking_periods)
         student.year_grade = student.studentyeargrade_set.filter(year=self.school_year).first()
+
+        # for example: student.mp_grade['1st'] or ...['S1X']
+        student.mp_grade = mp_grade
 
         for course_section in course_sections:
             course_enrollment = course_section.courseenrollment_set.get(user=student)
             grades = course_section.grade_set.filter(student=student).filter(
                 marking_period__isnull=False,
                 marking_period__show_reports=True).order_by('marking_period__start_date')
+            
+            section_mp_grades = {}
             for i, marking_period in enumerate(self.marking_periods.order_by('start_date')):
                 for grade in grades:
                     if grade.marking_period_id == marking_period.id:
                         # course_section.grade1, course_section.grade2, etc
                         setattr(course_section, "grade" + str(i + 1), grade)
+
+                        # also save grade in a dict; fetched by MP name
+                        # useful if mp.id is in unexpected order
+                        # i.e. course_section.mp_grade['S1X']
+                        section_mp_grades[marking_period.name] = grade
                         break
                 attr_name = "grade" + str(i + 1)
                 if not hasattr(course_section, attr_name):
                     setattr(course_section, attr_name, self.blank_grade)
+
+                if marking_period.name not in section_mp_grades:
+                    # populate the dict with blank grade
+                    section_mp_grades[marking_period.name] = self.blank_grade
+            
+                # set the mp_grades dict to the course_section object
+                setattr(course_section, 'mp_grade', section_mp_grades)
             course_section.final = course_enrollment.grade
             course_section.ce = course_enrollment
         student.course_sections = course_sections
