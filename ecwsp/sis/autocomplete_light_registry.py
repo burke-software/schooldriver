@@ -8,7 +8,13 @@ class UserAutocomplete(autocomplete_light.AutocompleteModelBase):
         'placeholder': 'Lookup Student(s)',
     }
 
-class ActiveUserAutocomplete(UserAutocomplete):
+class FacultyAutocomplete(UserAutocomplete):
+    attrs = {
+        'placeholder': 'Lookup Faculty',
+    }
+
+    
+class ActiveStudentAutocomplete(UserAutocomplete):
     choices=Student.objects.filter(is_active=True)
 
 class LookupStudentAutocomplete(UserAutocomplete, autocomplete_light.AutocompleteModelTemplate):
@@ -24,6 +30,6 @@ class ContactAutocomplete(autocomplete_light.AutocompleteModelTemplate):
 
 autocomplete_light.register(EmergencyContact, ContactAutocomplete)
 autocomplete_light.register(Student, UserAutocomplete)
-autocomplete_light.register(Student, ActiveUserAutocomplete)
-autocomplete_light.register(Faculty, ActiveUserAutocomplete)
+autocomplete_light.register(Student, ActiveStudentAutocomplete)
+autocomplete_light.register(Faculty, FacultyAutocomplete)
 autocomplete_light.register(Student, LookupStudentAutocomplete)

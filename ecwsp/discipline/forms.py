@@ -19,10 +19,8 @@ class DisciplineForm(forms.ModelForm):
         widgets = {
             'comments': forms.TextInput(),
         }
-    def aadd_fields(self, form, index):
-        super(DisciplineForm, self).add_fields(form, index)
-        form.fields["students"] = AutoCompleteSelectMultipleField('dstudent')
         
+
 class DisciplineStudentStatistics(TimeBasedForm):
     """Form to gather information to be used in a report of discipline issues"""
     order_by = forms.ChoiceField(required=False, choices=(('Student','Student Name'),('Year','Year'),))

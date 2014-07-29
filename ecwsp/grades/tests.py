@@ -4,7 +4,7 @@ from django.test import TestCase
 from models import *
 from ecwsp.sis.sample_data import SisData
 from django.db import connection
-from ecwsp.schedule.models import CourseEnrollment, Course, CourseSection
+from ecwsp.schedule.models import CourseEnrollment, Course, CourseSection, MarkingPeriod
 import datetime
 
 import time
@@ -12,7 +12,7 @@ import unittest
 
 
 class GradeCalculationTests(SisTestMixin, TestCase):
-    def old________setUp(self):
+    def setUp(self):
         try:
             sql = '''CREATE TABLE `sis_studentcohort` (
                 `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -75,9 +75,9 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         for grade in grades:
             grade.save()
         course_enrollments = [
-            CourseEnrollment(user=self.student, course_section=course_sections[0], role='student', grade=grades[0]),
-            CourseEnrollment(user=self.student, course_section=course_sections[1], role='student', grade=grades[1]),
-            CourseEnrollment(user=self.student, course_section=course_sections[2], role='student', grade=grades[2])
+            CourseEnrollment(user=self.student, course_section=course_sections[0], grade=grades[0]),
+            CourseEnrollment(user=self.student, course_section=course_sections[1], grade=grades[1]),
+            CourseEnrollment(user=self.student, course_section=course_sections[2], grade=grades[2])
         ]
         for course_enrollment in course_enrollments:
             course_enrollment.save()

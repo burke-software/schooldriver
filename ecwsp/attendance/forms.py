@@ -29,6 +29,7 @@ class StudentMultpleAttendanceForm(autocomplete_light.ModelForm):
             'time': adminwidgets.AdminTimeWidget(),
         }
         fields = ('date', 'status', 'time', 'notes', 'private_notes')
+    student = autocomplete_light.ModelMultipleChoiceField('StudentUserAutocomplete') 
     
     
 class CourseSectionAttendanceForm(forms.Form):
