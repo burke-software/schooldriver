@@ -782,7 +782,7 @@ class SisReport(ScaffoldReport):
             # Averages per marking period
             i = 1
             for mp in year.mps:
-                if mp.end_date < self.report_context['date_begin']:
+                if mp.end_date <= self.report_context['date_end']:
                     mp_grade = student.studentmarkingperiodgrade_set.get(marking_period=mp)
                     setattr(year, 'mp' + str(i) + 'ave', mp_grade.grade)
                     i += 1
