@@ -1,5 +1,5 @@
 Collectfast==0.2.0
-Django==1.7c1
+https://www.djangoproject.com/download/1.7c2/tarball/
 Markdown==2.4
 Pillow==2.5.1
 South==1.0
