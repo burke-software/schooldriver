@@ -9,7 +9,6 @@ argparse==1.2.1
 billiard==3.3.0.18
 boto==2.31.1
 celery==3.1.13
-chardet==2.0.1
 colorama==0.2.5
 dj-database-url==0.3.0
 dj-static==0.0.6
