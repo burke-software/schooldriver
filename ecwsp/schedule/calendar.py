@@ -65,7 +65,7 @@ class Calendar:
             period.days = []
             for day in arr_days:
                 if  only_active:
-                    course_section = course_meets.filter(day=day[0], period=period, course_section__active=True)
+                    course_section = course_meets.filter(day=day[0], period=period, course_section__is_active=True)
                 else:
                     course_section = course_meets.filter(day=day[0], period=period)
                 if course_section.exists():
