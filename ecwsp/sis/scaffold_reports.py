@@ -890,7 +890,7 @@ class SisReport(ScaffoldReport):
                     end_date__lte=self.report_context['date_end']).order_by('start_date')
                 if not marking_periods.count():
                     marking_periods = MarkingPeriod.objects.filter(start_date__gte=self.report_context['date_begin']).order_by('start_date')
-                current_mp = marking_periods[0]
+                current_mp = marking_periods.first()
                 for student in students:
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
