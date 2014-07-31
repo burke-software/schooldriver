@@ -188,7 +188,7 @@ class StudentYearGrade(models.Model):
         grade = self.calculate_grade(date_report=date_report, prescale=prescale)
         if numeric_scale == True:
             grade_scale = self.year.grade_scale
-            if not prescale:
+            if grade_scale and not prescale:
                 grade = grade_scale.to_numeric(grade)
             if boost:
                 enrollments = self.student.courseenrollment_set.filter(
