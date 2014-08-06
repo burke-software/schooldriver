@@ -6,6 +6,7 @@ from ecwsp.grades import views
 urlpatterns = patterns('',
     (r'^teacher_grade/$', views.teacher_grade),
     (r'^teacher_grade_submissions/$', views.teacher_grade_submissions),
+    (r'^teacher_grade/upload/(?P<id>\d+)$', views.teacher_grade_upload),
     (r'^teacher_grade/download/(?P<id>\d+)/(?P<type>[a-z]+)$', views.teacher_grade_download),
     (r'^teacher_grade/download/(?P<id>\d+)/$', views.teacher_grade_download),
     url(r'^student_grades/(?P<pk>\d+)/$', views.StudentGradesheet.as_view(), name="student-grades"),
