@@ -875,7 +875,7 @@ class SisReport(ScaffoldReport):
             elif template.report_card:
                 self.blank_grade = Grade()
                 school_year = SchoolYear.objects.filter(start_date__lte=self.report_context['date_end']
-                        ).order_by('-start_date').last()
+                        ).order_by('-start_date').first()
                 self.school_year = school_year
                 context['year'] = school_year
                 self.marking_periods = MarkingPeriod.objects.filter(
