@@ -130,7 +130,7 @@ class StudentAdmin(VersionAdmin, CustomFieldAdmin):
         return super(StudentAdmin, self).lookup_allowed(lookup, *args, **kwargs)
 
     def render_change_form(self, request, context, *args, **kwargs):
-        if 'original' in context:
+        if 'original' in context and context['original'] is not None:
             if context['original'].alert:
                 messages.add_message(request, messages.INFO, 'ALERT: {0}'.format(context["original"].alert))
             for record in context['original'].studenthealthrecord_set.all():
