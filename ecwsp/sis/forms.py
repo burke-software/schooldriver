@@ -11,6 +11,8 @@ from ecwsp.administration.models import Template
 import autocomplete_light
 import datetime
 
+autocomplete_light.autodiscover()
+
 class UserPreferenceForm(forms.ModelForm):
     class Meta:
         model = UserPreference
