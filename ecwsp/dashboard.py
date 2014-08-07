@@ -67,6 +67,7 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.sis.models.Faculty',
                 'ecwsp.sis.models.MessageToStudent',
                 'ecwsp.sis.models.FamilyAccessUser',
+                'ecwsp.sis.models.GradeScale',
             ),
         ))
 
