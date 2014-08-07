@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -545,7 +545,7 @@ def add_multiple(request):
             updated_records = 0
             for student in data["student"]:
                 record, created = StudentAttendance.objects.get_or_create(
-                    student_id=student,
+                    student=student,
                     date=data['date'],
                     status=data['status'],
                 )
@@ -560,6 +560,7 @@ def add_multiple(request):
             messages.success(
                 request,
                 'Created {0} and updated {1} attendance records'.format(created_records, updated_records),)
+            return redirect(reverse('admin:attendance_studentattendance_changelist'))
             
     else:
         form = StudentMultpleAttendanceForm()

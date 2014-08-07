@@ -212,9 +212,9 @@ class StudentAdmin(admin.ModelAdmin):
                 compContacts = Contact.objects.filter(workteam=context['original'].placement)
                 context['adminform'].form.fields['primary_contact'].queryset = compContacts
                 txt = "<span style=\"color:#444;\"><a href=\"/admin/work_study/timesheet/?q=%s+%s\" target=\"_blank\">Time Sheets for this student</a>" % \
-                    (context['original'].fname, context['original'].lname)
+                    (context['original'].first_name, context['original'].last_name)
                 txt += "<br/><a href=\"/admin/work_study/survey/?q=%s+%s\" target=\"_blank\">Surveys for this student</a>" % \
-                    (context['original'].fname, context['original'].lname)
+                    (context['original'].first_name, context['original'].last_name)
                 txt += "<br/>Go to work team " + str(context['original'].company())
                 if context['original'].placement:
                     txt += "<br/>Company Contacts:"

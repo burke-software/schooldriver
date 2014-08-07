@@ -1080,7 +1080,7 @@ class SisReport(ScaffoldReport):
             # Averages per marking period
             i = 1
             for mp in year.mps:
-                if mp.end_date < self.report_context['date_begin']:
+                if mp.end_date <= self.report_context['date_end']:
                     mp_grade = student.studentmarkingperiodgrade_set.get(marking_period=mp)
                     setattr(year, 'mp' + str(i) + 'ave', mp_grade.grade)
                     i += 1
@@ -1173,7 +1173,7 @@ class SisReport(ScaffoldReport):
             elif template.report_card:
                 self.blank_grade = Grade()
                 school_year = SchoolYear.objects.filter(start_date__lte=self.report_context['date_end']
-                        ).order_by('-start_date').last()
+                        ).order_by('-start_date').first()
                 self.school_year = school_year
                 context['year'] = school_year
                 self.marking_periods = MarkingPeriod.objects.filter(
@@ -1188,7 +1188,7 @@ class SisReport(ScaffoldReport):
                     end_date__lte=self.report_context['date_end']).order_by('start_date')
                 if not marking_periods.count():
                     marking_periods = MarkingPeriod.objects.filter(start_date__gte=self.report_context['date_begin']).order_by('start_date')
-                current_mp = marking_periods[0]
+                current_mp = marking_periods.first()
                 for student in students:
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
