@@ -198,7 +198,8 @@ class StudentYearGrade(models.Model):
                     course_section__course__course_type__weight__gt=0,)
                 boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
                 boost_factor = boost_sum / enrollments.count()
-                grade += boost_factor
+                if grade:
+                    grade += boost_factor
         if rounding:
             grade = round_as_decimal(grade, rounding)
         return grade
