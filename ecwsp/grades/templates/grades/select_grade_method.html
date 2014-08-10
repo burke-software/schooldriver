@@ -16,6 +16,12 @@
 	There may be multiple ways for you to grade or view grades. Please select one. You may change it after your
 	selection.
     </p>
+    <div style="border: 5px solid black; width: 32em; margin: 5px 0; padding: 5px">
+      <p style="font-size: larger; text-align: justify"><strong>WARNING:</strong>
+        If you have already entered grades with one method and then switch to another one,
+        the grades you entered with the first method <em>will be overwritten!</em>
+      </p>
+    </div>
     <form method="post" action="">
     {% csrf_token %}
         {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
