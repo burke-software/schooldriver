@@ -27,7 +27,9 @@
             <tr>
                 <td style="text-align: left;">
                     {% if pref in 'SME' %}
-                        <a href="upload/{{ course_section.id }}"> {{ course_section }}  </a>
+                        <a href="{% url 'course-section-grades' course_section.id %}">
+                            {{ course_section }}
+                        </a>
                     {% elif pref == 'O' %}
                         <a href="{% url "ecwsp.benchmark_grade.views.gradebook" course_section.id %}">
                             {{ course_section }}

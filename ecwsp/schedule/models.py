@@ -4,6 +4,7 @@ from django_cached_field import CachedCharField, CachedDecimalField
 from django.db import connection
 from django.db import models
 from django.db.models.query import QuerySet
+from django.core.urlresolvers import reverse
 
 from ecwsp.sis.models import Student, GradeScaleRule
 from ecwsp.sis.helper_functions import round_as_decimal
@@ -476,8 +477,10 @@ class Course(models.Model):
         return ("shortname__icontains", "fullname__icontains",)
 
     def grades_link(self):
-       link = '<a href="/grades/teacher_grade/upload/%s" class="historylink"> Grades </a>' % (self.id,)
-       return link
+        link = '<a href="{}" class="historylink"> Grades </a>'.format(
+            reverse('course-section-grades', args=(self.pk,))
+        )
+        return link
     grades_link.allow_tags = True
 
     def get_enrolled_students(self):
