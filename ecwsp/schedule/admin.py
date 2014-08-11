@@ -32,7 +32,7 @@ class CourseSectionInline(admin.StackedInline):
     course_section_link.short_description = 'Course Section Link'
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ['fullname', 'grades_link', 'department', 'credits', 'graded', 'is_active']
+    list_display = ['fullname', 'department', 'credits', 'graded', 'is_active']
     search_fields = ['fullname', 'shortname', 'description', 'sections__teachers__username']
     list_filter = ['level', 'is_active', 'graded', 'homeroom', 'department']
     inlines = [CourseSectionInline]
@@ -59,7 +59,7 @@ class CourseSectionTeacherInline(admin.TabularInline):
 
 class CourseSectionAdmin(admin.ModelAdmin):
     inlines = [CourseMeetInline, CourseSectionTeacherInline, CourseEnrollmentInline]
-    list_display = ['name', 'course', 'is_active']
+    list_display = ['name', 'grades_link', 'course', 'is_active']
     list_filter = ['course__level', 'course__department', 'teachers']
     search_fields = ['name', 'course__fullname', 'teachers__username', 'enrollments__username']
     readonly_fields = ['course_link']
