@@ -476,13 +476,6 @@ class Course(models.Model):
     def autocomplete_search_fields():
         return ("shortname__icontains", "fullname__icontains",)
 
-    def grades_link(self):
-        link = '<a href="{}" class="historylink"> Grades </a>'.format(
-            reverse('course-section-grades', args=(self.pk,))
-        )
-        return link
-    grades_link.allow_tags = True
-
     def get_enrolled_students(self):
         return Student.objects.filter(courseenrollment__section=self)
 
@@ -546,6 +539,13 @@ class CourseSection(models.Model):
     def number_of_students(self):
         return self.enrollments.count()
     number_of_students.short_description = "# of Students"
+
+    def grades_link(self):
+        link = '<a href="{}" class="historylink"> Grades </a>'.format(
+            reverse('course-section-grades', args=(self.pk,))
+        )
+        return link
+    grades_link.allow_tags = True
 
     def calculate_final_grade(self, student):
         """ Shim code to calculate final grade WITHOUT cache """
