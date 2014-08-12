@@ -319,7 +319,6 @@ INSTALLED_APPS = (
     #'social.apps.django_app.default',
     #'ecwsp.omr',
     #'ecwsp.integrations.canvas_sync',
-    #'django_extensions',
     #'google_auth',
     #'ldap_groups',
 )
@@ -408,6 +407,9 @@ INSTALLED_APPS = (
 import django
 if django.get_version()[:3] != '1.7':
     INSTALLED_APPS += ('south',)
+
+if DEBUG:
+    INSTALLED_APPS += ('django_extensions',)
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
     TEMPLATE_CONTEXT_PROCESSORS += (
