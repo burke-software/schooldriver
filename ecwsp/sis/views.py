@@ -146,11 +146,34 @@ def paper_attendance(request, day):
         messages.error(request, 'Problem making paper attendance, does the template exist?')
         return HttpResponseRedirect('/')
 
+from scaffold_report.views import DownloadReportView
+from .scaffold_reports import SisReport
+
 @user_passes_test(lambda u: u.has_perm("sis.view_student"))
 def transcript_nonofficial(request, student_id):
     """ Build a transcripte based on template called "Transcript Nonoffical"
     """
-    # TODO
+    students = Student.objects.filter(pk=student_id)
+    template = Template.objects.filter(name="Transcript Nonoffical").first()
+    if not template:
+        messages.error(request, 'This feature requires a "Transcript Nonoffical" template.')
+        return HttpResponseRedirect('/')
+    school_year = SchoolYear.objects.get(active_year=True)
+    today = date.today()
+
+    view = DownloadReportView()
+    view.report = SisReport()
+    view.report.student_queryset = students
+    view.report.report_context = {
+        'template': template,
+        'date_begin': today,
+        'date_end': today.replace(today.year + 50),
+        'school_year': school_year,
+    }
+    get = request.GET.copy()
+    get['type'] = 'appy'
+    request.GET = get
+    return view.post(request)
 
 
 def logout_view(request):

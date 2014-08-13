@@ -1148,7 +1148,12 @@ class SisReport(ScaffoldReport):
     def get_appy_context(self):
         context = super(SisReport, self).get_appy_context()
         context['date'] = datetime.date.today()
-        students = context['objects']
+        # Need this to override student_queryset on special reports
+        if hasattr(self, 'student_queryset'):
+            students = self.student_queryset
+            context['objects'] = students
+        else:
+            students = context['objects']
         template = self.report_context.get('template')
         if template:
             # TODO: Change to date_end?
