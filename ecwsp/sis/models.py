@@ -687,7 +687,8 @@ class GradeScale(models.Model):
         return '{}'.format(self.name)
 
     def get_rule(self, grade):
-        return self.gradescalerule_set.filter(min_grade__lte=grade, max_grade__gte=grade).first()
+        if grade is not None:
+            return self.gradescalerule_set.filter(min_grade__lte=grade, max_grade__gte=grade).first()
 
     def to_letter(self, grade):
         rule = self.get_rule(grade)
