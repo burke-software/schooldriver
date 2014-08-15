@@ -196,9 +196,9 @@ def teacher_submissions(request):
 
 
 def daily_attendance_report_wrapper(request):
-    return daily_attendance_report(datetime.date.today())
+    return daily_attendance_report(datetime.date.today(), request)
 
-def daily_attendance_report(adate, private_notes=False, type="odt", request=None):
+def daily_attendance_report(adate, request, private_notes=False, type="odt"):
     from ecwsp.sis.models import GradeLevel
     template = Template.objects.get_or_create(name="Daily Attendance")[0]
     template = template.get_template_path(request)
@@ -392,9 +392,9 @@ def attendance_report(request):
                 type = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
                 return daily_attendance_report(
                     daily_form.cleaned_data['date'],
+                    request,
                     daily_form.cleaned_data['include_private_notes'],
                     type=type,
-                    request=request,
                     )
         elif 'studentlookup' in request.POST:
             lookup_form = AttendanceViewForm(request.POST)
