@@ -95,7 +95,7 @@ def teacher_attendance(request, course_section=None):
         course_section = course_sections[0]
     today, created = Day.objects.get_or_create(day=str(today.isoweekday()))
     all = Student.objects.filter(courseenrollment__course_section=course_section, is_active=True)
-    exclude = Student.objects.filter(courseenrollment__course_section=course, is_active=True, courseenrollment__exclude_days=today)
+    exclude = Student.objects.filter(courseenrollment__course_section=course_section, is_active=True, courseenrollment__exclude_days=today)
     ids = []
     for id in exclude.values('id'):
         ids.append(int(id['id']))
