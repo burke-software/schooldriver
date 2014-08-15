@@ -72,7 +72,7 @@
               {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
               {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
                   <li>
-                  <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Attendance' %} </a>
+                  <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Daily Attendance' %} </a>
                   </li>
               {% endif %}
                   <li>
@@ -96,6 +96,11 @@
           <ul>
               {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
                 <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
+              {% endif %}
+              {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
+                  <li>
+                  <a href="{% url 'ecwsp.attendance.views.select_course_section_for_attendance' %}"> {% trans 'Take Course Attendance' %} </a>
+                  </li>
               {% endif %}
               {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
               {% if perms.omr.change_test or perms.omr.teacher_test %}
