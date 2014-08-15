@@ -529,6 +529,11 @@ class CourseSection(models.Model):
         """ Course short name """
         return self.course.shortname
 
+    def get_todays_period(self):
+        """ Useful if you want to know today's schedule """
+        return self.periods.filter(coursemeet__day__exact=datetime.date.today().isoweekday()).first()
+
+
     @property
     def teacher(self):
         """ Show just the primary teacher, or any if there is no primary """
