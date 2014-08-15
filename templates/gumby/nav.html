@@ -102,6 +102,11 @@
                   <a href="{% url 'ecwsp.attendance.views.select_course_section_for_attendance' %}"> {% trans 'Take Course Attendance' %} </a>
                   </li>
               {% endif %}
+              {% if perms.attendance.change_coursesectionattendance %}
+                  <li>
+                  <a href="/reports/attendance_report/"> {% trans 'Course Attendance Reports' %} </a>
+                  </li>
+              {% endif %}
               {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
               {% if perms.omr.change_test or perms.omr.teacher_test %}
                 <li>
