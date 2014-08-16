@@ -18,6 +18,7 @@ import autocomplete_light
 import datetime
 from decimal import Decimal
 from openpyxl.cell import get_column_letter
+from django.core.exceptions import ValidationError
 
 def reverse_compare(compare):
     """ Get the opposite comparison
@@ -727,10 +728,9 @@ class MissedClassPeriodsButton(ReportButton):
         else:
             if not marking_period:
                 try:
-                    marking_periods = MarkingPeriod.objects.filter(active=True)
-                    marking_period = marking_periods[0]
+                    marking_period = MarkingPeriod.objects.get(active=True)
                 except:
-                    raise Exception("Please select a marking period")
+                    pass
             titles = ["Last Name", "First Name", "", "Period", "", "Course Section", "", "Date", "", "Marking Period", "",
                       "Total Classes Missed (Absences)"]
             data = []
@@ -766,6 +766,11 @@ class MissedClassPeriodsButton(ReportButton):
                                 row.append("")
                             data.append(row)
 
+            else:
+                data = []
+                titles = []
+
+
         return report_view.list_to_xlsx_response(data, "StudentCourseAbsences", header=titles)
 
 
@@ -778,102 +783,99 @@ class PeriodBasedAttendanceButton(ReportButton):
     def get_report(self, report_view, context):
 
         course_section = report_view.report.report_context.get('course_section')
-        if not course_section:
-            raise Exception("You have not selected a course section.")
-
-        students = report_view.report.report_context.get('students')
-
-        class_periods = report_view.report.report_context.get('class_periods')
-
         date = report_view.report.report_context.get('date')
-        if date:
-            if CourseSectionAttendance.objects.filter(course_section=course_section, date=date):
-                pass
-            else:
-                raise Exception("Attendance record does not exist for chosen course section and date.")
+        marking_period = report_view.report.report_context.get('marking_period')
+        if course_section:
 
-            titles = ["Last Name", "First Name", "", "Status", "", "Course", "", "Period", "", "Date"]
-            course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section, date=date)
-            data = []
-            for course_attendance in course_attendances:
-                flag = True
-                if class_periods:  # If class periods filter used
-                    flag = False
-                    if course_attendance.period in class_periods:
-                        flag = True
-                if flag:
-                    row = []
-                    student = course_attendance.student
-                    # If student filter is not used or
-                    # student filter is used and the student is one of the chosen students
-                    if not students or students and student in students:
-                        # Add relevant information to report
-                        row.append(student.last_name)
-                        row.append(student.first_name)
-                        row.append('')
-                        status = course_attendance.status
-                        row.append(status.name)
-                        row.append('')
-                        row.append(course_section.name)
-                        row.append('')
-                        row.append(course_attendance.period.name)
-                        row.append('')
-                        row.append(str(date))
-                        data.append(row)
+            students = report_view.report.report_context.get('students')
+            class_periods = report_view.report.report_context.get('class_periods')
+
+            if date:
+                titles = ["Last Name", "First Name", "", "Status", "", "Course", "", "Period", "", "Date"]
+                course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section, date=date)
+                data = []
+                for course_attendance in course_attendances:
+                    flag = True
+                    if class_periods:  # If class periods filter used
+                        flag = False
+                        if course_attendance.period in class_periods:
+                            flag = True
+                    if flag:
+                        row = []
+                        student = course_attendance.student
+                        # If student filter is not used or
+                        # student filter is used and the student is one of the chosen students
+                        if not students or students and student in students:
+                            # Add relevant information to report
+                            row.append(student.last_name)
+                            row.append(student.first_name)
+                            row.append('')
+                            status = course_attendance.status
+                            row.append(status.name)
+                            row.append('')
+                            row.append(course_section.name)
+                            row.append('')
+                            row.append(course_attendance.period.name)
+                            row.append('')
+                            row.append(str(date))
+                            data.append(row)
+
+            else:
+                if not marking_period:
+                    try:
+                        marking_period = MarkingPeriod.objects.get(active=True)
+                    except:
+                        pass
+
+                titles = ["Last Name", "First Name", "", "Tardies", "Absences", "Half Days", "Excused", "", "Course",
+                            "", "Period", "", "Marking Period"]
+                course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section)
+                data = []
+                for course_attendance in course_attendances:
+                    flag = True
+                    if class_periods:  # If class periods filter used
+                        flag = False
+                        if course_attendance.period in class_periods:
+                            flag = True
+                    if flag:
+                        row = []
+                        student = course_attendance.student
+                        # If student filter is not used or
+                        # student filter is used and the student is one of the chosen students
+                        if not students or students and student in students:
+                            # Add relevant information to report
+                            row.append(student.last_name)
+                            row.append(student.first_name)
+                            row.append('')
+                            tardies = student.coursesectionattendance_set.filter(course_section=course_section,
+                                            status__tardy=True).count()
+                            row.append(tardies)
+                            absences = student.coursesectionattendance_set.filter(course_section=course_section,
+                                        status__absent=True).count()
+                            row.append(absences)
+                            half = student.coursesectionattendance_set.filter(course_section=course_section,
+                                        status__half=True).count()
+                            row.append(half)
+                            excused = student.coursesectionattendance_set.filter(course_section=course_section,
+                                        status__excused=True).count()
+                            row.append(excused)
+                            row.append('')
+                            row.append(course_section.name)
+                            row.append('')
+                            row.append(course_attendance.period.name)
+                            row.append('')
+                            if marking_period:
+                                row.append(marking_period.name)
+                            else:
+                                marking_period = MarkingPeriod.objects.get(coursesection=course_section)
+                                row.append(marking_period.name)
+                            data.append(row)
 
         else:
-            marking_period = report_view.report.report_context.get('marking_period')
-            if marking_period:
-                try:
-                    course_section = CourseSection.objects.get(name=course_section.name, marking_period=marking_period)
-                except ObjectDoesNotExist:
-                    raise Exception("Attendance record does not exist for chosen course section and marking period.")
-            titles = ["Last Name", "First Name", "", "Tardies", "Absences", "Half Days", "Excused", "", "Course",
-                      "", "Period", "", "Marking Period"]
-            course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section)
             data = []
-            for course_attendance in course_attendances:
-                flag = True
-                if class_periods:  # If class periods filter used
-                    flag = False
-                    if course_attendance.period in class_periods:
-                        flag = True
-                if flag:
-                    row = []
-                    student = course_attendance.student
-                    # If student filter is not used or
-                    # student filter is used and the student is one of the chosen students
-                    if not students or students and student in students:
-                        # Add relevant information to report
-                        row.append(student.last_name)
-                        row.append(student.first_name)
-                        row.append('')
-                        tardies = student.courseattendance_set.filter(course_section=course_section,
-                                    status__tardy=True).count()
-                        row.append(tardies)
-                        absences = student.courseattendance_set.filter(course_section=course_section,
-                                    status__absent=True).count()
-                        row.append(absences)
-                        half = student.courseattendance_set.filter(course_section=course_section,
-                                    status__half=True).count()
-                        row.append(half)
-                        excused = student.courseattendance_set.filter(course_section=course_section,
-                                    status__excused=True).count()
-                        row.append(excused)
-                        row.append('')
-                        row.append(course_section.name)
-                        row.append('')
-                        row.append(course_attendance.period.name)
-                        row.append('')
-                        if marking_period:
-                            row.append(marking_period.name)
-                        else:
-                            marking_period = MarkingPeriod.objects.get(coursesection=course_section)
-                            row.append(marking_period.name)
-                        data.append(row)
+            titles = []
 
         return report_view.list_to_xlsx_response(data, "Course_Attendance", header=titles)
-
 
 def strip_trailing_zeros(x):
     x = str(x).strip()

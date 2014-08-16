@@ -769,7 +769,8 @@ class FamilyAccessUser(User):
     This proxy model allows non-superuser registrars to update family user accounts.
     """
     class Meta:
-        proxy = True
+        # This was causing migration errors
+        #proxy = True
         ordering = ("last_name", "first_name")
     def __unicode__(self):
         return u"{0}, {1}".format(self.last_name, self.first_name)
