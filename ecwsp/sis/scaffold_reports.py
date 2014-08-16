@@ -690,6 +690,8 @@ class MissedClassPeriodsButton(ReportButton):
     def get_report(self, report_view, context):
         date = report_view.report.report_context.get('date')
         marking_period = report_view.report.report_context.get('marking_period')
+        if not marking_period:
+            marking_period = MarkingPeriod.objects.get(active=True)
         students = report_view.report.report_context.get('students')
         if not students:  # If student filter not used
             students = Student.objects.all()
@@ -725,12 +727,7 @@ class MissedClassPeriodsButton(ReportButton):
                             row.append(a_class.course_section.name)
                             data.append(row)
 
-        else:
-            if not marking_period:
-                try:
-                    marking_period = MarkingPeriod.objects.get(active=True)
-                except:
-                    pass
+        if marking_period:
             titles = ["Last Name", "First Name", "", "Period", "", "Course Section", "", "Date", "", "Marking Period", "",
                       "Total Classes Missed (Absences)"]
             data = []
@@ -766,9 +763,9 @@ class MissedClassPeriodsButton(ReportButton):
                                 row.append("")
                             data.append(row)
 
-            else:
-                data = []
-                titles = []
+        else:
+            data = []
+            titles = []
 
 
         return report_view.list_to_xlsx_response(data, "StudentCourseAbsences", header=titles)
@@ -862,7 +859,10 @@ class PeriodBasedAttendanceButton(ReportButton):
                             row.append('')
                             row.append(course_section.name)
                             row.append('')
-                            row.append(course_attendance.period.name)
+                            if course_attendance.period:
+                                row.append(course_attendance.period.name)
+                            else:
+                                row.append('')
                             row.append('')
                             if marking_period:
                                 row.append(marking_period.name)
