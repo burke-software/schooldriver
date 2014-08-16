@@ -728,7 +728,7 @@ class MissedClassPeriodsButton(ReportButton):
                             row.append(a_class.course_section.name)
                             data.append(row)
 
-        if marking_period:
+        if marking_period and not date:
             titles = ["Last Name", "First Name", "", "Period", "", "Course Section", "", "Date", "", "Marking Period", "",
                       "Total Classes Missed (Absences)"]
             data = []
