@@ -3,7 +3,7 @@ anyjson==0.3.3
 argparse==1.2.1
 billiard==3.3.0.18
 boto==2.32.0
-celery[redis]==3.1.13
+celery==3.1.13
 chardet==2.2.1
 Collectfast==0.2.0
 colorama==0.3.1
