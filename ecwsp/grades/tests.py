@@ -222,7 +222,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
             self.assertAlmostEqual(average, x[1])
 
     def test_balt_gpa(self):
-        gpa = self.data.student.get_gpa(rounding=1, numeric_scale=True)
+        gpa = self.data.student.calculate_gpa(rounding=1, prescale=True)
         self.assertAlmostEqual(gpa, Decimal(2.2))
 
     def test_final_grade(self):

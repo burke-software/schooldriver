@@ -13,7 +13,7 @@ from ecwsp.sis.models import Student, UserPreference, Faculty
 
 class ViewStudentDashlet(Dashlet):
     template_name = 'sis/view_student_dashlet.html'
-    
+
 
 class EventsDashlet(Dashlet):
     template_name = 'sis/events_dashlet.html'
@@ -22,24 +22,24 @@ class EventsDashlet(Dashlet):
         context = super(EventsDashlet, self).get_context_data(**kwargs)
         today = datetime.date.today()
         news_alerts = []
-        
+
         try:
             school_year = SchoolYear.objects.filter(active_year=True)[0]
         except IndexError:
             school_year = None
-        
+
         marking_periods = MarkingPeriod.objects.filter(end_date__gte=today).order_by('start_date')
         if marking_periods:
             marking_period = marking_periods[0]
         else:
             marking_period = None
-        
+
         future_marking_periods = marking_periods.filter(start_date__gte=today)
         if future_marking_periods:
             next_marking_period = future_marking_periods[0]
         else:
             next_marking_period = None
-        
+
         new_year = None
         if school_year:
             date_delta = school_year.start_date - today
@@ -48,8 +48,8 @@ class EventsDashlet(Dashlet):
                 news_alerts += ["A new school year has started on {}.".format(school_year.start_date)]
             elif date_delta < 60:
                 news_alerts += ['A new school year will start on {}.'.format(school_year.start_date)]
-            
-        
+
+
         context = dict(context.items() + {
             'marking_period': marking_period,
             'next_marking_period': next_marking_period,
@@ -73,20 +73,20 @@ class ReportBuilderDashlet(ListDashlet):
         self.queryset = Report.objects.filter(starred=self.request.user)
         return context
 
-class AnnouncementsDashlet(RssFeedDashlet):
-    feed_url = 'http://feeds.feedburner.com/FeedForBurkeSoftwareAndConsultingLlc'
-    more_link = 'https://plus.google.com/u/0/112784955559393766110'
+#class AnnouncementsDashlet(RssFeedDashlet):
+#    feed_url = 'http://feeds.feedburner.com/FeedForBurkeSoftwareAndConsultingLlc'
+#    more_link = 'https://plus.google.com/u/0/112784955559393766110'
 
 
 class AttendanceIndividualDashlet(Dashlet):
     template_name = 'attendance/individual_attendance_report.html'
-    
+
 class AttendanceSubmissionPercentageDashlet(Dashlet):
     template_name = 'attendance/teacher_submissions_percentage.html'
-    
+
     # Create function or class for common use cases in future...
     def submission_percentage(self):
-        """ Returns the percentage of teachers who have submitted attendance today. 
+        """ Returns the percentage of teachers who have submitted attendance today.
             e.g. 2/3 teachers submit attendance, thus 66%. """
         logs = AttendanceLog.objects.filter(date=datetime.date.today())
         homerooms = CourseSection.objects.filter(course__homeroom=True)
@@ -104,7 +104,7 @@ class AttendanceSubmissionPercentageDashlet(Dashlet):
         if submission_count > 0:
             sub_percent = int((submission_count/homeroom_count)*100)
         return sub_percent
-		
+
     def get_context_data(self, **kwargs):
         context = super(AttendanceSubmissionPercentageDashlet, self).get_context_data(**kwargs)
         submission_percentage = self.submission_percentage()
@@ -112,8 +112,8 @@ class AttendanceSubmissionPercentageDashlet(Dashlet):
             'submission_percentage': submission_percentage,
         }.items())
         return context
-		
-				
+
+
 
 class AttendanceDashlet(ListDashlet):
     model = StudentAttendance
@@ -163,7 +163,7 @@ class SisDashboard(Dashboard):
         EventsDashlet(title="School Events"),
         ViewStudentDashlet(title="Student"),
         ReportBuilderDashlet(title="Starred Reports", model=Report),
-        AnnouncementsDashlet(title="Announcements"),
+        #AnnouncementsDashlet(title="Announcements"),
         AttendanceSubmissionPercentageDashlet(title="Attendance Report"),
         AttendanceDashlet(title="Recent Attendance"),
         AttendanceLinksListDashlet(title="Links"),

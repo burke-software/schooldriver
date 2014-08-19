@@ -27,21 +27,26 @@ class GradeAPIPermissionsTest(APITest):
 
     def test_specific_get_request_permissions(self):
         """
-        test a specific get request (/api/grades/:id) for permissions
+        test a specific get request (/api/grades/) for permissions
         """
-
         # try it with a no authentication
         response = self.client.get('/api/grades/1/')
         self.assertEqual(response.status_code, 403)
 
         # try it with teacher authentication
+
         self.teacher_login()
-        response = self.client.get('/api/grades/1/')
+        # figure out what the id of the first grade object is so we can 
+        # make sure we are testing on an actual grade that exists
+        grade_instance = Grade.objects.all()[:1].get()
+        grade_id = grade_instance.id
+
+        response = self.client.get('/api/grades/%s/' % grade_id)
         self.assertEqual(response.status_code, 200)
 
         # try it with a student (who clearly has no authoritay)
         self.student_login()
-        response = self.client.get('/api/grades/1/')
+        response = self.client.get('/api/grades/%s/' % grade_id)
         self.assertEqual(response.status_code, 403)
 
     def test_post_request_permissions(self):
@@ -57,11 +62,11 @@ class GradeAPIPermissionsTest(APITest):
         # try it with teacher authentication
         self.teacher_login()
         response = self.client.post('/api/grades/', data=data)
-        self.assertEqual(response.status_code, 201)
+        self.assertNotEqual(response.status_code, 403)
 
         # try it with a student (who clearly has no authoritay)
         self.student_login()
-        response = self.client.post('/api/grades/', data=data)
+        response = self.client.put('/api/grades/', data=data)
         self.assertEqual(response.status_code, 403)
 
 
