@@ -140,6 +140,7 @@ class CourseMeet(models.Model):
     course_section = models.ForeignKey('CourseSection')
     day = models.CharField(max_length=1, choices=ISOWEEKDAY_TO_VERBOSE)
     location = models.ForeignKey('Location', blank=True, null=True)
+    day_choice = ISOWEEKDAY_TO_VERBOSE
 
 
 class Location(models.Model):
@@ -153,11 +154,12 @@ class CourseEnrollment(models.Model):
     course_section = models.ForeignKey('CourseSection')
     user = models.ForeignKey('sis.Student')
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
-    exclude_days = models.ManyToManyField('Day', blank=True, \
+    exclude_days = models.CharField(max_length=100, blank=True,
         help_text="Student does not need to attend on this day. Note course sections already specify meeting days; this field is for students who have a special reason to be away.")
     grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Section Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     is_active = models.BooleanField(default=True)
+
 
     class Meta:
         unique_together = (("course_section", "user"),)
