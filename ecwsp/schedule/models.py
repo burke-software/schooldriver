@@ -16,6 +16,16 @@ import decimal
 from decimal import Decimal, ROUND_HALF_UP
 import copy
 
+ISOWEEKDAY_TO_VERBOSE = (
+    ("1", 'Monday'),
+    ("2", 'Tuesday'),
+    ("3", 'Wednesday'),
+    ("4", 'Thursday'),
+    ("5", 'Friday'),
+    ("6", 'Saturday'),
+    ("7", 'Sunday'),
+)
+
 def duplicate(obj, changes=None):
     """ Duplicates any object including m2m fields
     changes: any changes that should occur, example
@@ -128,16 +138,7 @@ class Period(models.Model):
 class CourseMeet(models.Model):
     period = models.ForeignKey(Period)
     course_section = models.ForeignKey('CourseSection')
-    day_choice = (   # ISOWEEKDAY
-        ('1', 'Monday'),
-        ('2', 'Tuesday'),
-        ('3', 'Wednesday'),
-        ('4', 'Thursday'),
-        ('5', 'Friday'),
-        ('6', 'Saturday'),
-        ('7', 'Sunday'),
-    )
-    day = models.CharField(max_length=1, choices=day_choice)
+    day = models.CharField(max_length=1, choices=ISOWEEKDAY_TO_VERBOSE)
     location = models.ForeignKey('Location', blank=True, null=True)
 
 
@@ -356,22 +357,6 @@ WHERE (grades_grade.course_section_id = %s
                         return "F"
         return None
 
-
-class Day(models.Model):
-    dayOfWeek = (
-        ("1", 'Monday'),
-        ("2", 'Tuesday'),
-        ("3", 'Wednesday'),
-        ("4", 'Thursday'),
-        ("5", 'Friday'),
-        ("6", 'Saturday'),
-        ("7", 'Sunday'),
-    )
-    day = models.CharField(max_length=1, choices=dayOfWeek)
-    def __unicode__(self):
-        return self.get_day_display()
-    class Meta:
-        ordering = ('day',)
 
 class Department(models.Model):
     name = models.CharField(max_length=255, unique=True, verbose_name="Department Name")
