@@ -20,6 +20,7 @@ from decimal import Decimal
 from openpyxl.cell import get_column_letter
 from django.core.exceptions import ValidationError
 
+
 def reverse_compare(compare):
     """ Get the opposite comparison
     greater than becomes less than equals """
@@ -149,6 +150,7 @@ class CourseSectionFilter(ModelChoiceFilter):
     verbose_name = "Course Section"
     add_fields = ['course_section']
     model = CourseSection
+    default = True
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         report_context['course_section'] = self.cleaned_data['field_0']
