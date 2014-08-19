@@ -450,6 +450,7 @@ if 'test' in sys.argv:
         'NAME': 'test',
         'ATOMIC_REQUESTS': True,
     }
+    CELERY_ALWAYS_EAGER = True
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
