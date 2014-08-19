@@ -14,7 +14,7 @@ from django.template import RequestContext
 from .models import StudentAttendance, CourseSectionAttendance, AttendanceStatus, AttendanceLog
 from .forms import CourseSectionAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
 from .forms import StudentAttendanceForm, StudentMultpleAttendanceForm
-from ecwsp.schedule.models import Course, CourseSection, Day, MarkingPeriod
+from ecwsp.schedule.models import Course, CourseSection, MarkingPeriod
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
@@ -93,7 +93,7 @@ def teacher_attendance(request, course_section=None):
                     "the course section is not set to the current marking period.")
             return HttpResponseRedirect(reverse('admin:index'))
         course_section = course_sections[0]
-    today, created = Day.objects.get_or_create(day=str(today.isoweekday()))
+    today = today.isoweekday()
     all = Student.objects.filter(courseenrollment__course_section=course_section, is_active=True)
     exclude = Student.objects.filter(courseenrollment__course_section=course_section, is_active=True, courseenrollment__exclude_days=today)
     ids = []
