@@ -832,7 +832,7 @@ class PeriodBasedAttendanceButton(ReportButton):
                                 row.append('')
                                 row.append(str(date))
                                 data.append(row)
-                                print data
+
 
                 if marking_period:
                     titles = ["Last Name", "First Name", "", "Tardies", "Absences", "Half Days", "Excused", "", "Course",
@@ -873,7 +873,6 @@ class PeriodBasedAttendanceButton(ReportButton):
                                     row.append('')
                                     row.append(course_section.name)
                                     row.append('')
-                                    row.append(course_attendance.period.name)
                                     if course_attendance.period:
                                         row.append(course_attendance.period.name)
                                     else:
