@@ -840,6 +840,7 @@ class PeriodBasedAttendanceButton(ReportButton):
                     course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section)
                     students_added = []
                     for course_attendance in course_attendances:
+                        print course_attendance
                         if course_attendance.student not in students_added:
                             flag = True
                             if class_periods:  # If class periods filter used
@@ -873,7 +874,6 @@ class PeriodBasedAttendanceButton(ReportButton):
                                     row.append('')
                                     row.append(course_section.name)
                                     row.append('')
-                                    row.append(course_attendance.period.name)
                                     if course_attendance.period:
                                         row.append(course_attendance.period.name)
                                     else:
