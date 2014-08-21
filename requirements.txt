@@ -79,3 +79,4 @@ django-extensions
 Werkzeug
 ipython
 ipdb
+redis==2.10.3

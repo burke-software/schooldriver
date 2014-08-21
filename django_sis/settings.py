@@ -302,6 +302,7 @@ CANVAS_BASE_URL = ''
 
 # django-report-builder
 REPORT_BUILDER_GLOBAL_EXPORT = True
+REPORT_BUILDER_ASYNC_REPORT = True
 
 
 # Default apps, settings_local.py will override them.
