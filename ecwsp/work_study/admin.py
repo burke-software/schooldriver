@@ -2,6 +2,7 @@ from django import forms
 from django.http import HttpResponseRedirect
 from django.contrib import admin
 from django.utils.encoding import smart_unicode
+from django.utils.safestring import mark_safe
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
@@ -9,7 +10,7 @@ from django.core.urlresolvers import reverse
 from daterange_filter.filter import DateRangeFilter
 
 from .models import (CompContract, CompanyHistory, Company, WorkTeam, CraContact,
-        PickupLocation, WorkTeamUser, StudentWorker, StudentWorkerRoute, PresetComment, 
+        PickupLocation, WorkTeamUser, StudentWorker, StudentWorkerRoute, PresetComment,
         StudentInteraction, Contact, TimeSheetPerformanceChoice, TimeSheet, Attendance,
         AttendanceFee, AttendanceReason, Personality, ClientVisit, Survey, PaymentOption,
         StudentDesiredSkill, StudentFunctionalResponsibility, MessageToSupervisor)
@@ -17,17 +18,18 @@ from ecwsp.sis.models import StudentNumber
 from ecwsp.sis.admin import StudentFileInline
 from reversion.admin import VersionAdmin
 from ecwsp.administration.models import Configuration
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from custom_field.custom_field import CustomFieldAdmin
 import autocomplete_light
 
 import logging
-    
+import sys
+
 class StudentNumberInline(admin.TabularInline):
     model = StudentNumber
-    extra = 1    
-    
+    extra = 1
+
 class CompContractInline(admin.TabularInline):
     model = CompContract
     extra = 0
@@ -72,18 +74,18 @@ class MapImageWidget(forms.CheckboxInput):
         output.append(super(MapImageWidget, self).render(name, value, attrs))
         output.append("If checked, the above map file will be overwritten with Google Maps. <table><tr><td><a href=\"javascript:get_map()\">Preview Google Maps</a></td></tr><tr><td> <img width=\"400px\" height=\"400px\" name=\"mapframe\"></iframe> </td></tr></table>")
         return mark_safe(u''.join(output))
-        
-            
+
+
 class WorkTeamForm(forms.ModelForm):
     class Meta:
         model = WorkTeam
-    
+
     use_google_maps = forms.BooleanField(required=False, widget=MapImageWidget)
 
 
 class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
     form = WorkTeamForm
-    
+
     def changelist_view(self, request, extra_context=None):
         """override to hide inactive workteams by default"""
         try:
@@ -92,9 +94,9 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
                 return HttpResponseRedirect("/admin/work_study/workteam/?inactive__exact=0")
         except: pass # In case there is no referer
         return super(WorkTeamAdmin,self).changelist_view(request, extra_context=extra_context)
-    
+
     def render_change_form(self, request, context, *args, **kwargs):
-        # only show login in group company    
+        # only show login in group company
         compUsers = User.objects.filter(Q(groups__name='company'))
         context['adminform'].form.fields['login'].queryset = compUsers
         try:
@@ -103,14 +105,14 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
             for stu in students:
                 txt += unicode(stu.edit_link() + '<br/>')
             txt += "<br/><br/><a href=\"/admin/work_study/timesheet/?company__id__exact=%s\" target=\"_blank\">Timesheets for company</a>" % \
-                (context['original'].id) 
+                (context['original'].id)
             txt += "<br/><a href=\"/admin/work_study/survey/?q=%s\" target=\"_blank\">Surveys for this company</a>" % \
                 (context['original'].team_name)
             context['adminform'].form.fields['team_name'].help_text = txt
         except:
             print >> sys.stderr, "KeyError at /admin/work_study/company/add/  original"
         return super(WorkTeamAdmin, self).render_change_form(request, context, args, kwargs)
-    
+
     def save_model(self, request, obj, form, change):
         super(WorkTeamAdmin, self).save_model(request, obj, form, change)
         form.save_m2m()
@@ -118,7 +120,7 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
         for user in obj.login.all():
             user.groups.add(group)
             user.save()
-    
+
     search_fields = ['company__name', 'team_name', 'address',]
     list_filter = ['inactive', 'pm_transport_group', 'travel_route', 'industry_type', 'paying','cras']
     fieldsets = [
@@ -142,18 +144,18 @@ def increaseGradeLevel(modeladmin, request, queryset):
         obj.year = obj.year + 1
         obj.save()
 increaseGradeLevel.shortDescription = "Increase grade level of selected students"
-    
+
 def approve(modeladmin, request, queryset):
     queryset.update(approved = True)
     for object in queryset:
         LogEntry.objects.log_action(
-                    user_id         = request.user.pk, 
+                    user_id         = request.user.pk,
                     content_type_id = ContentType.objects.get_for_model(object).pk,
                     object_id       = object.pk,
-                    object_repr     = unicode(object), 
+                    object_repr     = unicode(object),
                     action_flag     = CHANGE
                 )
-    
+
 def move_to_former_students(modeladmin, request, queryset):
     for object in queryset:
         object.delete()
@@ -166,12 +168,12 @@ class WorkStudyUserAdmin(UserAdmin,admin.ModelAdmin):
     list_filter = ('is_active','workteam')
     def queryset(self,request):
         return WorkTeamUser.objects.filter(groups__name='Company')
-    
+
 admin.site.register(WorkTeamUser,WorkStudyUserAdmin)
 
 class StudentAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(StudentWorker)
-    
+
     def changelist_view(self, request, extra_context=None):
         """override to hide inactive students by default"""
         try:
@@ -191,7 +193,7 @@ class StudentAdmin(admin.ModelAdmin):
         for fs in fieldsets:
             fs[1]['fields'] = [f for f in fs[1]['fields'] if self.can_view_field(request, obj, f)]
         return fieldsets
-    
+
     def get_form(self, request, obj=None):
         superclass = super(StudentAdmin, self)
         formclass = superclass.get_form(request, obj)
@@ -199,13 +201,13 @@ class StudentAdmin(admin.ModelAdmin):
             if not request.user.is_superuser and name == "ssn":
                 self.exclude = ('ssn',)
         return formclass
-    
+
     def can_view_field(self, request, object, field_name):
         "Only allow superuser's to view ssn"
         if not request.user.is_superuser and field_name == "ssn":
             return False
         return True
-    
+
     def render_change_form(self, request, context, *args, **kwargs):
         try:
             if 'original' in context:
@@ -222,7 +224,7 @@ class StudentAdmin(admin.ModelAdmin):
                         txt += "<br/>%s %s" % (smart_unicode(compContact.edit_link),compContact.phone)
                 txt += '</span>'
                 context['adminform'].form.fields['placement'].help_text += txt
-        
+
                 # add contact info for pri contact
                 if context['original'].primary_contact:
                     txt = '<br/><span style="color:#444;">Number: %s</span>' % (context['original'].primary_contact.phone,)
@@ -232,7 +234,7 @@ class StudentAdmin(admin.ModelAdmin):
                 'request': request,
             })
         return super(StudentAdmin, self).render_change_form(request, context, *args, **kwargs)
-        
+
     fieldsets = [
         (None, {'fields': ['is_active', ('first_name', 'last_name'), 'mname', 'sex', 'bday', 'day', 'transport_exception',
                            'pic', 'unique_id', 'adp_number', 'ssn', 'username', 'work_permit_no',
@@ -243,7 +245,7 @@ class StudentAdmin(admin.ModelAdmin):
             'classes': ['collapse']}),
         ('Personality', {'fields': ['personality_type',], 'classes': ['collapse']}),
     ]
-    
+
     def get_readonly_fields(self, request, obj=None):
         edit_all = Configuration.get_or_default("Edit all Student Worker Fields", "False")
         if edit_all.value == "True":
@@ -254,40 +256,40 @@ class StudentAdmin(admin.ModelAdmin):
     list_filter = ['day', 'year', 'is_active','placement__cras']
     list_display = ('first_name', 'last_name', 'day', 'company', 'pickUp', 'cra', 'contact')
     search_fields = ['first_name', 'last_name', 'unique_id', 'placement__team_name', 'username', 'id']
-    readonly_fields = ['is_active', 'first_name', 'last_name', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']    
+    readonly_fields = ['is_active', 'first_name', 'last_name', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']
 admin.site.register(StudentWorker, StudentAdmin)
 admin.site.register(StudentWorkerRoute)
 admin.site.register(PresetComment)
 
 class StudentInteractionAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(StudentInteraction)
-    
+
     list_display = ('students', 'date', 'type', 'cra', 'comment_Brief', 'reported_by')
     list_filter = ['type', 'date', 'student','student__is_active']
     search_fields = ['comments', 'student__first_name', 'student__last_name', 'type', 'companies__team_name', 'reported_by__first_name' , 'reported_by__last_name']
     filter_horizontal = ('preset_comment',)
     readonly_fields = ['companies', ]
     fields = ['type', 'student', 'comments', 'preset_comment','companies', 'reported_by']
-    
+
     def lookup_allowed(self, lookup, *args, **kwargs):
         if lookup in ('student__student_ptr__exact', 'student__id__exact',):
             return True
         return super(StudentInteractionAdmin, self).lookup_allowed(lookup, *args, **kwargs)
-    
+
     def save_model(self, request, obj, form, change):
         obj.save()
         try:
             comp = WorkTeam.objects.get(id=obj.student.placement.id)
             cra = CraContact.objects.get(id=comp.cra.id)
-            
-            msg = str(obj.student) + " had a " + str(obj.get_type_display()) + " meeting on " + str(obj.date) + "\n" + str(obj.comments) + "\n" 
+
+            msg = str(obj.student) + " had a " + str(obj.get_type_display()) + " meeting on " + str(obj.date) + "\n" + str(obj.comments) + "\n"
             for comment in obj.preset_comment.all():
                 msg += str(comment) + "\n"
-            
+
             send_mail(str(obj.get_type_display()) + " report: " + str(obj.student), msg, str(request.user.email), [cra.email])
         except:
             print >> sys.stderr, "could not send CRA email"
-        
+
 admin.site.register(StudentInteraction, StudentInteractionAdmin)
 
 class ContactAdmin(admin.ModelAdmin):
@@ -301,7 +303,7 @@ class ContactAdmin(admin.ModelAdmin):
         except:
             print >> sys.stderr, "contact admin error, probably from making new one"
         return super(ContactAdmin, self).render_change_form(request, context, args, kwargs)
-            
+
     search_fields = ['fname', 'lname']
     list_display = ('fname','lname',)
     exclude = ('guid',)
@@ -310,7 +312,7 @@ admin.site.register(Contact, ContactAdmin)
 class TimeSheetPerformanceChoiceAdmin(admin.ModelAdmin):
     list_display = ('edit', 'name', 'rank')
     list_editable = ('name', 'rank')
-    
+
 admin.site.register(TimeSheetPerformanceChoice, TimeSheetPerformanceChoiceAdmin)
 
 class TimeSheetAdmin(admin.ModelAdmin):
@@ -318,14 +320,14 @@ class TimeSheetAdmin(admin.ModelAdmin):
         if 'original' in context:
             txt = context['original'].student.primary_contact
             context['adminform'].form.fields['supervisor_comment'].help_text = txt
-            
+
             from django.conf import settings
             from django.core.urlresolvers import reverse
             from ecwsp.work_study.views import approve
             url = settings.BASE_URL + reverse(approve) + '?key=' + context['original'].supervisor_key
             context['adminform'].form.fields['approved'].help_text = 'Supervisor Approve Link <a href="%s">%s</a>' % (url,url)
         return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
-        
+
     search_fields = ['student__first_name', 'student__last_name', 'company__team_name']
     list_filter = [('date', DateRangeFilter),'creation_date', 'approved', 'performance', 'for_pay', 'make_up', 'company',
                    'student__is_active']
