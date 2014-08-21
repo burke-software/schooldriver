@@ -19,7 +19,7 @@ BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components/')
 LOGIN_REDIRECT_URL = "/"
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'tenant_schemas.postgresql_backend',
         'NAME': 'docker',
         'USER': 'docker',
         'PASSWORD': 'docker',
@@ -69,6 +69,7 @@ ROOT_URLCONF = 'django_sis.urls'
 WSGI_APPLICATION = 'ecwsp.wsgi.application'
 
 MIDDLEWARE_CLASSES = (
+    'tenant_schemas.middleware.TenantMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -124,7 +125,6 @@ ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
 ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
 GRAPPELLI_INDEX_DASHBOARD = 'ecwsp.dashboard.CustomIndexDashboard'
 GRAPPELLI_ADMIN_TITLE = '<img src="/static/images/logo.png"/ style="height: 30px; margin-left: -10px; margin-top: -8px; margin-bottom: -11px;">'
-
 
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
@@ -363,11 +363,25 @@ except NameError:
 STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
-# These are required add ons that we always want to have
-INSTALLED_APPS = (
-    'autocomplete_light',
+SHARED_APPS = (
+    'tenant_schemas',
+    'ecwsp.customers',
+    'ecwsp.administration',
+    'south',
+    'django.contrib.contenttypes',
     'grappelli.dashboard',
     'grappelli',
+    'django.contrib.admin',
+    'django.contrib.staticfiles',
+    'django.contrib.auth',
+    'django.contrib.sessions',
+)
+# These are required add ons that we always want to have
+TENANT_APPS = (
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.admin',
+    'autocomplete_light',
     'ecwsp.sis',
     'ecwsp.administration',
     'ecwsp.schedule',
@@ -378,13 +392,9 @@ INSTALLED_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
+    'south',
     'reversion',
     'djcelery',
-    'django.contrib.admin',
-    'django.contrib.staticfiles',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'localflavor',
     'dajax',
     'dajaxice',
@@ -410,6 +420,13 @@ INSTALLED_APPS = (
     'api',
     'compressor',
 ) + INSTALLED_APPS
+
+INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+TENANT_MODEL = "customers.Client"
+SOUTH_DATABASE_ADAPTERS = {
+    'default': 'south.db.postgresql_psycopg2',
+}
+
 import django
 if django.get_version()[:3] != '1.7':
     INSTALLED_APPS += ('south',)

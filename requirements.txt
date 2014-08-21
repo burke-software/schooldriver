@@ -80,3 +80,4 @@ Werkzeug
 ipython
 ipdb
 redis==2.10.3
+django-tenant-schemas==1.4.7

@@ -8,6 +8,7 @@ web:
   volumes:
     - .:/code
       #- /home/david/Dropbox/Projects/django-report-builder/report_builder:/usr/local/lib/python2.7/dist-packages/report_builder
+    - /home/david/Dropbox/Projects/django-autocomplete-light/autocomplete_light:/usr/local/lib/python2.7/site-packages/autocomplete_light
   ports:
     - "8000:8000"
   links:
