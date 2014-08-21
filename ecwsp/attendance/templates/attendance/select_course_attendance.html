@@ -19,6 +19,8 @@
                 <a href="{% url "ecwsp.attendance.views.course_section_attendance" course_section.id %}">
                     {{ course_section }}
                 </a>
+                {{ course_section.get_todays_period }}
+
             </li>
         {% endfor %}
     </ul>

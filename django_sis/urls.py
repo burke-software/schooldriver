@@ -7,8 +7,8 @@ from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 from api.routers import api_urls
 from responsive_dashboard import views as dashboard_views
 
-
 dajaxice_autodiscover()
+admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^admin/', include("massadmin.urls")),

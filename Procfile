@@ -1,1 +1,1 @@
-web: gunicorn ecwsp.wsgi
+web: gunicorn ecwsp.wsgi --log-file -

@@ -144,7 +144,7 @@ def get_default_country():
 
 def get_school_year():
     try:
-        return SchoolYear.objects.get(active_year=True).get_next_by_end_date()
+        return SchoolYear.objects.get(active_year=True).get_next_by_end_date().pk
     except:
         return None
 def get_year():

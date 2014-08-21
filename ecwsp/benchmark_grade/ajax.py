@@ -9,7 +9,8 @@ from ecwsp.grades.models import Grade
 def check_fixed_points_possible(request, category):
     dajax = Dajax()
     if Category.objects.get(id=category).fixed_points_possible is not None:
-        dajax.assign('#id_item-points_possible', 'value', Category.objects.get(id=category).fixed_points_possible)
+        # str() otherwise json.dumps complains that it can't handle Decimals
+        dajax.assign('#id_item-points_possible', 'value', str(Category.objects.get(id=category).fixed_points_possible))
         dajax.assign('#id_item-points_possible', 'disabled', 'true')
     else:
         dajax.clear('#id_item-points_possible', 'disabled')

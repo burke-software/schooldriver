@@ -12,20 +12,32 @@
     <h2> Select course section to submit or check grades. </h2>
     <table style="text-align: center;">
         <tr>
-            <th>Course Section</th>
-            {% if pref == "S" %}
-                <th>Download blank gradebook</th>
+            {% if pref == 'S' %}
+                <th>Verify and Upload Grades</th>
+                <th>Download Blank Grade Spreadsheet</th>
             {% elif pref == 'O' %}
-                <th>Online gradebook</th>
+                <th>Online Gradebook</th>
+            {% elif pref == 'M' %}
+                <th>Manual Grade Entry</th>
+            {% elif pref == 'E' %}
+                <th>Verify Grades Already Synced</th>
             {% endif %}
         </tr>
         {% for course_section in course_sections %}
             <tr>
-                <td style="text-align: left;"> <a href="upload/{{ course_section.id }}"> {{ course_section }}  </a> </td>
+                <td style="text-align: left;">
+                    {% if pref in 'SME' %}
+                        <a href="{% url 'course-section-grades' course_section.id %}">
+                            {{ course_section }}
+                        </a>
+                    {% elif pref == 'O' %}
+                        <a href="{% url "ecwsp.benchmark_grade.views.gradebook" course_section.id %}">
+                            {{ course_section }}
+                        </a>
+                    {% endif %}
+                </td>
                 {% if pref == 'S' %}
-                    <td> <a href="download/{{ course_section.id }}/"> Download XLS </a> </td>
-                {% elif pref == 'O' %}
-                    <td><a href="{% url "ecwsp.benchmark_grade.views.gradebook" course_section.id %}">Gradebook</a></td>
+                    <td><a href="download/{{ course_section.id }}/"> Download XLS </a></td>
                 {% endif %}
             </tr>
         {% endfor %}
@@ -48,5 +60,5 @@
     {% endif %}
     
     <br/>
-    <p><a href="{% url "ecwsp.grades.views.select_grade_method" %}?override=true&next=teacher_grade">Click here to change grading method</a></p>
+    <p class="btn primary medium"><a href="{% url "ecwsp.grades.views.select_grade_method" %}?override=true&next=teacher_grade">Change Grading Method</a></p>
 {% endblock %}

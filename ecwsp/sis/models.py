@@ -355,9 +355,10 @@ class Student(User, CustomFieldModel):
     def get_absolute_url():
         pass
 
-    def get_gpa(self, rounding=2, numeric_scale=False):
+    def get_gpa(self, rounding=2, numeric_scale=False, boost=True):
         """ Get cached gpa but with rounding and scale options """
         gpa = self.gpa
+
         if numeric_scale == True:
             # Get the scale for the last year the student was active in
             grade_scale = GradeScale.objects.filter(
@@ -366,14 +367,15 @@ class Student(User, CustomFieldModel):
                 gpa = grade_scale.to_numeric(gpa)
                 enrollments = self.courseenrollment_set.filter(
                         course_section__course__course_type__weight__gt=0)
-                boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
-                boost_factor = boost_sum /  enrollments.count()
-                gpa += boost_factor
+                if boost:
+                    boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+                    boost_factor = boost_sum /  enrollments.count()
+                    gpa += boost_factor
         if rounding:
             gpa = round_as_decimal(gpa, rounding)
         return gpa
 
-    def calculate_gpa(self, date_report=None, rounding=2):
+    def calculate_gpa(self, date_report=None, rounding=2, prescale=False, boost=True):
         """ Use StudentYearGrade calculation
         No further weighting needed.
         """
@@ -383,7 +385,16 @@ class Student(User, CustomFieldModel):
         if date_report:
             grade_years = grade_years.filter(year__start_date__lt=date_report)
         for grade_year in grade_years.distinct():
-            grade = grade_year.calculate_grade(date_report=date_report)
+            
+            # grade = grade_year.calculate_grade(date_report=date_report, prescale=prescale)
+            
+            grade = grade_year.get_grade(
+                date_report = date_report,
+                numeric_scale = True, 
+                rounding = rounding, 
+                prescale = prescale, 
+                boost = boost
+                )
             if grade:
                 # Is this an incomplete complete year?
                 if date_report and date_report < grade_year.year.end_date:
@@ -676,7 +687,8 @@ class GradeScale(models.Model):
         return '{}'.format(self.name)
 
     def get_rule(self, grade):
-        return self.gradescalerule_set.filter(min_grade__lte=grade, max_grade__gte=grade).first()
+        if grade is not None:
+            return self.gradescalerule_set.filter(min_grade__lte=grade, max_grade__gte=grade).first()
 
     def to_letter(self, grade):
         rule = self.get_rule(grade)

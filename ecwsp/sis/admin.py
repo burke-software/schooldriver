@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, CHANGE
+from django.forms import ValidationError
 
 import sys
 from reversion.admin import VersionAdmin
@@ -129,7 +130,7 @@ class StudentAdmin(VersionAdmin, CustomFieldAdmin):
         return super(StudentAdmin, self).lookup_allowed(lookup, *args, **kwargs)
 
     def render_change_form(self, request, context, *args, **kwargs):
-        if 'original' in context:
+        if 'original' in context and context['original'] is not None:
             if context['original'].alert:
                 messages.add_message(request, messages.INFO, 'ALERT: {0}'.format(context["original"].alert))
             for record in context['original'].studenthealthrecord_set.all():
@@ -349,7 +350,7 @@ class UserForm(UserChangeForm):
         teacher_group = Group.objects.get_or_create(name="teacher")[0]
         if student_group in groups and teacher_group in groups:
             message = "User cannot be both a teacher and a student"
-            raise forms.ValidationError(message)
+            raise ValidationError(message)
         return self.cleaned_data
 
 class UserAdmin(UserAdmin):

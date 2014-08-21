@@ -181,6 +181,8 @@ class SisData(object):
             Course(fullname="English Honors", shortname="English-H", credits=1, course_type=self.honors, graded=True),
             Course(fullname="Precalculus Honors", shortname="Precalc-H", credits=1, course_type=self.honors, graded=True),
             Course(fullname="AP Modern World History", shortname="Hist-AP", credits=1, course_type=self.ap, graded=True),
+            Course(fullname="Spanish III AP", shortname="Span-H", credits=1, graded=True, course_type=self.ap),
+            Course(fullname="Faith & Justice Honors", shortname="Faith-H", credits=1, graded=True, course_type=self.honors),
         ])
         self.year = year = SchoolYear.objects.create(name="balt year", start_date=date(2014,7,1), end_date=date(2050,5,1), active_year=True)
         self.mp1 = mp1 = MarkingPeriod.objects.create(name="1st", weight=0.4, start_date=date(2014,7,1), end_date=date(2014,9,1), school_year=year)
@@ -200,7 +202,11 @@ class SisData(object):
             section.marking_period.add(mp4)
             if course.credits > 0:
                 section.marking_period.add(mps2x)
-            CourseEnrollment.objects.create(user=student, course_section=section)
+
+            if course.shortname in ['English','Precalc','Phys','Hist','Span','Photo','Faith', 'Wrt Lab']:
+                # only enroll self.student in these particular classes, 
+                # the other ones will be used for other students later on
+                CourseEnrollment.objects.create(user=student, course_section=section)
         grade_data = [
             [1, mp1, 72.7],
             [1, mp2, 77.5],
@@ -276,9 +282,7 @@ class SisData(object):
 
         # let's enroll him in each one of these sections
         shortname_list = ['English-H', 'Precalc-H', 'Phys', 'Hist-AP', 'Span', 'Photo', 'Faith', 'Wrt Lab']
-        for shortname in shortname_list:
-            section = CourseSection.objects.get(name=shortname)
-            CourseEnrollment.objects.create(user=self.honors_student, course_section=section)
+        self.enroll_student_in_sections(self.honors_student, shortname_list)
 
         # now assign these grades to our honors student
         # Format: {'section': name, 'grades': [1, 2, s1x, 3, 4, s2x]
@@ -292,22 +296,59 @@ class SisData(object):
             {'section': 'Faith',        'grades': [88.1, 87.3, 88,   88.8, 91.5, None ]},
             {'section': 'Wrt Lab',      'grades': [100,  100,  None, 100,  100,  None ]},
         ]
+        self.populate_student_grades(self.honors_student, known_grades)
+
+
+    def create_sample_student_two(self):
+        """
+        just some more data that might be useful
+        """
+        #create a sample student
+        self.sample_student1 = Student.objects.create(first_name="Price", last_name="Isright", username="priceisright")
+
+        # let's enroll him in each one of these sections
+        shortname_list = ['English', 'Precalc', 'Phys', 'Hist', 'Span-AP', 'Photo', 'Faith-H', 'Wrt Lab']
+        self.enroll_student_in_sections(self.sample_student1, shortname_list)
+
+        # now assign these grades to our honors student
+        # Format: {'section': name, 'grades': [1, 2, s1x, 3, 4, s2x]
+        known_grades = [
+            {'section': 'English',  'grades': [95, 96, 89,   78, 87, 88  ]},
+            {'section': 'Precalc',  'grades': [87, 78, 80,   89, 98, 88  ]},
+            {'section': 'Phys',     'grades': [76, 88, 92,   88, 87, 94 ]},
+            {'section': 'Hist',     'grades': [79, 90, 80,   76, 99, 90 ]},
+            {'section': 'Span-AP',  'grades': [98, 87, 91,   98, 92, 67 ]},
+            {'section': 'Photo',    'grades': [88,  98,  67, 84, 92,  90 ]},
+            {'section': 'Faith-H',  'grades': [78, 88, 88,   98, 92, 90 ]},
+            {'section': 'Wrt Lab',  'grades': [100,  100,  100, 100,  100, 100]},
+        ]
+        
+        self.populate_student_grades(self.sample_student1, known_grades)
+
+    def enroll_student_in_sections(self, student, shortname_list):
+        """
+        enroll the student in each section listed in the shortname_list
+        """
+        for shortname in shortname_list:
+            section = CourseSection.objects.get(name=shortname)
+            CourseEnrollment.objects.create(user=student, course_section=section)
+
+    def populate_student_grades(self, student, grade_hash):
+        """
+        helper method for populating a bunch of student grades
+
+        see examples above for syntax of the grade_hash
+        """
         marking_periods = [self.mp1, self.mp2, self.mps1x, self.mp3, self.mp4, self.mps2x]
-        for grd in known_grades:
+        for grd in grade_hash:
             section = CourseSection.objects.get(name=grd['section'])
             for i in range(6):
-                if grd['grades'][i] != '?':
-                    # we really need to figure out those unknown grades...
-                    grade = Grade.objects.get(
-                        student=self.honors_student,
-                        course_section_id=section.id,
-                        marking_period=marking_periods[i]
-                        )
-                    grade.grade = grd['grades'][i]
-                    grade.save()
-
-
-
-
+                grade = Grade.objects.get(
+                    student=self.honors_student,
+                    course_section_id=section.id,
+                    marking_period=marking_periods[i]
+                    )
+                grade.grade = grd['grades'][i]
+                grade.save() 
 
 

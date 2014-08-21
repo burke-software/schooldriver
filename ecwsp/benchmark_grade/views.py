@@ -343,18 +343,29 @@ def ajax_get_item_form(request, course_section_id, item_id=None):
         if item_id:
             # modifying an existing item
             item = get_object_or_404(Item, pk=item_id)
-            original_course_section_id = item.course_section_id
             form = ItemForm(request.POST, instance=item, prefix="item")
             if not request.user.has_perm('grades.change_grade') and not item.marking_period.active:
                 # you aren't a registrar, so you can't modify an item from an inactive marking period
                 form.fields['marking_period'].validators.append(
                     make_validationerror_raiser('This item belongs to the inactive marking period {}.'.format(item.marking_period))
                 )
-            if original_course_section_id != long(form.data['item-course_section']):
+            if item.course_section_id != long(form.data['item-course_section']):
                 # don't support moving items between course sections
                 form.fields['course_section'].validators.append(
                     make_validationerror_raiser('Please click "Make a Copy" if you would like to add this item to another course section.')
                 )
+            try:
+                new_category = Category.objects.get(pk=long(form.data['item-category']))
+                if item.category.allow_multiple_demonstrations != new_category.allow_multiple_demonstrations and \
+                    item.demonstration_set.count() > 1:
+                    form.fields['category'].validators.append(
+                        make_validationerror_raiser(
+                            'You must remove all but one demonstration before '
+                            'changing to a category that does not allow multiple demonstrations.'
+                        )
+                    )
+            except Category.DoesNotExist:
+                pass # invalid form data, will be handled by standard Django
         else:
             # creating a new item
             form = ItemForm(request.POST, prefix="item")
@@ -383,6 +394,28 @@ def ajax_get_item_form(request, course_section_id, item_id=None):
                     # modifying an existing item
                     old_item = Item.objects.get(pk=item.pk)
                     item = form.save()
+                    # Deal with changes between Categories that support multiple
+                    # Demonstrations and those that don't
+                    if old_item.category.allow_multiple_demonstrations != item.category.allow_multiple_demonstrations:
+                        if item.category.allow_multiple_demonstrations:
+                            # Previous category didn't allow demonstrations; this one does
+                            if item.demonstration_set.exists():
+                                raise Exception('Item {} should not have any Demonstrations yet.'.format(item.pk))
+                            dem = Demonstration()
+                            dem.name = 'Dem.1'
+                            dem.item = item
+                            dem.save()
+                            item.mark_set.update(demonstration=dem)
+                        else:
+                            # This category does not allow demonstrations, but the previous one did
+                            if item.demonstration_set.count() != 1:
+                                raise Exception('Item {} should have exactly one Demonstration.'.format(item.pk))
+                            # Remove cached multi-demonstration aggregate Marks
+                            item.mark_set.filter(demonstration=None).delete()
+                            dem = item.demonstration_set.first()
+                            item.mark_set.filter(demonstration=dem).update(demonstration=None)
+                            dem.delete()
+                    # Recalculate lots of stuff!
                     gradebook_recalculate_on_item_change(item, old_item=old_item)
                 reversion.set_user(request.user)
                 reversion.set_comment("gradebook")
@@ -430,7 +463,7 @@ def ajax_get_item_form(request, course_section_id, item_id=None):
     try: form.fields['benchmark'].queryset = Benchmark.objects.filter()
     except KeyError: pass
     available_course_sections = get_teacher_course_sections(request.user.username)
-    if (not available_course_sections or not len(available_course_sections)) and request.user.has_perm('grades.change_grade'):
+    if request.user.has_perm('grades.change_grade'):
         available_course_sections = CourseSection.objects.all()
     try: form.fields['course_section'].queryset = available_course_sections
     except KeyError: pass

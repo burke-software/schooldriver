@@ -4,6 +4,7 @@ from django_cached_field import CachedCharField, CachedDecimalField
 from django.db import connection
 from django.db import models
 from django.db.models.query import QuerySet
+from django.core.urlresolvers import reverse
 
 from ecwsp.sis.models import Student, GradeScaleRule
 from ecwsp.sis.helper_functions import round_as_decimal
@@ -14,6 +15,16 @@ import datetime
 import decimal
 from decimal import Decimal, ROUND_HALF_UP
 import copy
+
+ISOWEEKDAY_TO_VERBOSE = (
+    ("1", 'Monday'),
+    ("2", 'Tuesday'),
+    ("3", 'Wednesday'),
+    ("4", 'Thursday'),
+    ("5", 'Friday'),
+    ("6", 'Saturday'),
+    ("7", 'Sunday'),
+)
 
 def duplicate(obj, changes=None):
     """ Duplicates any object including m2m fields
@@ -127,17 +138,9 @@ class Period(models.Model):
 class CourseMeet(models.Model):
     period = models.ForeignKey(Period)
     course_section = models.ForeignKey('CourseSection')
-    day_choice = (   # ISOWEEKDAY
-        ('1', 'Monday'),
-        ('2', 'Tuesday'),
-        ('3', 'Wednesday'),
-        ('4', 'Thursday'),
-        ('5', 'Friday'),
-        ('6', 'Saturday'),
-        ('7', 'Sunday'),
-    )
-    day = models.CharField(max_length=1, choices=day_choice)
+    day = models.CharField(max_length=1, choices=ISOWEEKDAY_TO_VERBOSE)
     location = models.ForeignKey('Location', blank=True, null=True)
+    day_choice = ISOWEEKDAY_TO_VERBOSE
 
 
 class Location(models.Model):
@@ -151,11 +154,12 @@ class CourseEnrollment(models.Model):
     course_section = models.ForeignKey('CourseSection')
     user = models.ForeignKey('sis.Student')
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
-    exclude_days = models.ManyToManyField('Day', blank=True, \
+    exclude_days = models.CharField(max_length=100, blank=True,
         help_text="Student does not need to attend on this day. Note course sections already specify meeting days; this field is for students who have a special reason to be away.")
     grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Section Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     is_active = models.BooleanField(default=True)
+
 
     class Meta:
         unique_together = (("course_section", "user"),)
@@ -356,22 +360,6 @@ WHERE (grades_grade.course_section_id = %s
         return None
 
 
-class Day(models.Model):
-    dayOfWeek = (
-        ("1", 'Monday'),
-        ("2", 'Tuesday'),
-        ("3", 'Wednesday'),
-        ("4", 'Thursday'),
-        ("5", 'Friday'),
-        ("6", 'Saturday'),
-        ("7", 'Sunday'),
-    )
-    day = models.CharField(max_length=1, choices=dayOfWeek)
-    def __unicode__(self):
-        return self.get_day_display()
-    class Meta:
-        ordering = ('day',)
-
 class Department(models.Model):
     name = models.CharField(max_length=255, unique=True, verbose_name="Department Name")
     order_rank = models.IntegerField(blank=True, null=True, help_text="Rank that courses will show up in reports")
@@ -475,11 +463,6 @@ class Course(models.Model):
     def autocomplete_search_fields():
         return ("shortname__icontains", "fullname__icontains",)
 
-    def grades_link(self):
-       link = '<a href="/grades/teacher_grade/upload/%s" class="historylink"> Grades </a>' % (self.id,)
-       return link
-    grades_link.allow_tags = True
-
     def get_enrolled_students(self):
         return Student.objects.filter(courseenrollment__section=self)
 
@@ -533,6 +516,11 @@ class CourseSection(models.Model):
         """ Course short name """
         return self.course.shortname
 
+    def get_todays_period(self):
+        """ Useful if you want to know today's schedule """
+        return self.periods.filter(coursemeet__day__exact=datetime.date.today().isoweekday()).first()
+
+
     @property
     def teacher(self):
         """ Show just the primary teacher, or any if there is no primary """
@@ -543,6 +531,13 @@ class CourseSection(models.Model):
     def number_of_students(self):
         return self.enrollments.count()
     number_of_students.short_description = "# of Students"
+
+    def grades_link(self):
+        link = '<a href="{}" class="historylink"> Grades </a>'.format(
+            reverse('course-section-grades', args=(self.pk,))
+        )
+        return link
+    grades_link.allow_tags = True
 
     def calculate_final_grade(self, student):
         """ Shim code to calculate final grade WITHOUT cache """

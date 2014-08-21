@@ -13,7 +13,7 @@ class CustomIndexDashboard(Dashboard):
     """
     def __init__(self, **kwargs):
         Dashboard.__init__(self, **kwargs)
-        
+
         self.children.append(modules.Group(
             column=1,
             title='CWSP',
@@ -53,7 +53,7 @@ class CustomIndexDashboard(Dashboard):
                 ),
             ]
         ))
-        
+
         self.children.append(modules.ModelList(
             title=_('School Information'),
             column=1,
@@ -67,6 +67,7 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.sis.models.Faculty',
                 'ecwsp.sis.models.MessageToStudent',
                 'ecwsp.sis.models.FamilyAccessUser',
+                'ecwsp.sis.models.GradeScale',
             ),
         ))
 
@@ -86,7 +87,7 @@ class CustomIndexDashboard(Dashboard):
                     'ecwsp.sis.models.ASPAttendance',
                 ),
         ))
-        
+
         self.children.append(modules.ModelList(
             title = 'Discipline',
             column=1,
@@ -96,7 +97,7 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.discipline.models.PresetComment',
             ),
         ))
-        
+
         self.children.append(modules.ModelList(
             title = 'Attendance',
             column=1,
@@ -104,43 +105,43 @@ class CustomIndexDashboard(Dashboard):
                 'ecwsp.attendance.*',
             ),
         ))
-    
+
         self.children.append(modules.ModelList(
-            title='Courses Sections and Grades',
+            title='Courses and Grades',
             column=1,
-            models=('ecwsp.schedule.*','ecwsp.grades.*','ecwsp.benchmark_grade.*','ecwsp.benchmarks.*'),
+            models=('ecwsp.schedule.*', 'ecwsp.benchmark_grade.*', 'ecwsp.benchmarks.*'),
         ))
-        
+
         self.children.append(modules.ModelList(
             title='Standard Tests',
             column=1,
             models=('ecwsp.standard_test.*',),
         ))
-        
+
         self.children.append(modules.ModelList(
             title='Admissions',
             column=1,
             models=('ecwsp.admissions.*',),
         ))
-        
+
         self.children.append(modules.ModelList(
             title='Counseling',
             column=1,
             models=('ecwsp.counseling.*',),
         ))
-        
+
         self.children.append(modules.ModelList(
             title='Alumni',
             column=1,
             models=('ecwsp.alumni.*',),
         ))
-        
+
         self.children.append(modules.ModelList(
             title='OpenMetricRecognition',
             column=1,
             models=('ecwsp.omr.*',),
         ))
-        
+
         self.children.append(modules.AppList(
             title='Administration',
             column=2,
@@ -152,14 +153,14 @@ class CustomIndexDashboard(Dashboard):
                 'google_auth.*',
             )
         ))
-        
+
         # append a recent actions module
         self.children.append(modules.RecentActions(
             title='Recent Actions',
             column=2,
             limit=5
         ))
-        
+
         self.children.append(modules.LinkList(
             column=2,
             children=(

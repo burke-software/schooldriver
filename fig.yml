@@ -1,11 +1,15 @@
 db:
   image: orchardup/postgresql
+redis:
+  image: dockerfile/redis
 web:
   build: .
-  command: python manage.py runserver 0.0.0.0:8000
+  command: ./run.sh
   volumes:
     - .:/code
+      #- /home/david/Dropbox/Projects/django-report-builder/report_builder:/usr/local/lib/python2.7/dist-packages/report_builder
   ports:
     - "8000:8000"
   links:
     - db
+    - redis

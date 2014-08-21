@@ -131,11 +131,16 @@ class StudentYearGrade(models.Model):
         """ The number of credits a student has earned in 1 year """
         return self.calculate_grade_and_credits()[1]
 
-    def calculate_grade_and_credits(self, date_report=None):
+    def calculate_grade_and_credits(self, date_report=None, prescale=False):
         """ Just recalculate them both at once
-        returns (grade, credits) """
+        returns (grade, credits) 
+
+        if "prescale=True" grades are scaled (i.e. 4.0) before averaged
+        """
         total = Decimal(0)
         credits = Decimal(0)
+        prescaled_grade = Decimal(0)
+        grade_scale = self.year.grade_scale
         for course_enrollment in self.student.courseenrollment_set.filter(
             course_section__marking_period__show_reports=True,
             course_section__marking_period__school_year=self.year,
@@ -144,10 +149,16 @@ class StudentYearGrade(models.Model):
             ).distinct():
             grade = course_enrollment.calculate_grade_real(date_report=date_report, ignore_letter=True)
             if grade:
-                total += grade * course_enrollment.course_section.course.credits
-                credits += course_enrollment.course_section.course.credits
+                num_credits = course_enrollment.course_section.course.credits
+                if prescale:
+                    # scale the grades before averaging them if requested
+                    prescaled_grade += grade_scale.to_numeric(grade) * num_credits
+                total += grade * num_credits
+                credits += num_credits
         if credits > 0:
             grade = total / credits
+            if prescale:
+                prescaled_grade = prescaled_grade / credits
         else:
             grade = None
         if date_report == None: # If set would indicate this is not for cache!
@@ -156,32 +167,40 @@ class StudentYearGrade(models.Model):
             self.grade_recalculation_needed = False
             self.credits_recalculation_needed = False
             self.save()
-        return (grade, credits)
 
-    def calculate_grade(self, date_report=None):
+        if prescale:
+            return (prescaled_grade, credits)
+        else:
+            return (grade, credits)
+
+    def calculate_grade(self, date_report=None, prescale=False):
         """ Calculate grade considering MP weights and course credits
         course_enrollment.calculate_real_grade returns a MP weighted result,
         so just have to consider credits
         """
-        return self.calculate_grade_and_credits(date_report=date_report)[0]
+        return self.calculate_grade_and_credits(date_report=date_report, prescale=prescale)[0]
 
-    def get_grade(self, date_report=None, rounding=2, numeric_scale=False):
+    def get_grade(self, date_report=None, rounding=2, numeric_scale=False, prescale=False, boost=True):
         if numeric_scale == False and (date_report is None or date_report >= datetime.date.today()):
             # Cache will always have the latest grade, so it's fine for
             # today's date and any future date
             return self.grade
-        grade = self.calculate_grade(date_report=date_report)
+        grade = self.calculate_grade(date_report=date_report, prescale=prescale)
         if numeric_scale == True:
             grade_scale = self.year.grade_scale
-            grade = grade_scale.to_numeric(grade)
-            enrollments = self.student.courseenrollment_set.filter(
-                course_section__marking_period__show_reports=True,
-                course_section__marking_period__school_year=self.year,
-                course_section__course__credits__isnull=False,
-                course_section__course__course_type__weight__gt=0,)
-            boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
-            boost_factor = boost_sum / enrollments.count()
-            grade += boost_factor
+            if grade_scale and not prescale:
+                grade = grade_scale.to_numeric(grade)
+            if boost:
+                enrollments = self.student.courseenrollment_set.filter(
+                    course_section__marking_period__show_reports=True,
+                    course_section__marking_period__school_year=self.year,
+                    course_section__course__credits__isnull=False,
+                    course_section__course__course_type__weight__gt=0,)
+                boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+                if enrollments.count() > 0 and boost_sum:
+                    boost_factor = boost_sum / enrollments.count()
+                    if grade and boost_factor:
+                        grade += boost_factor
         if rounding:
             grade = round_as_decimal(grade, rounding)
         return grade

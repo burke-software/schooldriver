@@ -134,7 +134,7 @@ class Template(models.Model):
     def get_template_path(self, request):
         """ Get template file path, or return False with error message. """
         if self.file:
-            return self.file.path
+            return self.file
         messages.error(request, 'Template %s not found!' % (self.name,))
         return False
 

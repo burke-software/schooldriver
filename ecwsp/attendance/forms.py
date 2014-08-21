@@ -18,8 +18,8 @@ class StudentAttendanceForm(forms.ModelForm):
             'notes': forms.TextInput(attrs={'tabindex':"-1",}),
         }
     status = forms.ModelChoiceField(widget=forms.Select(attrs={'class':'status',}), queryset=AttendanceStatus.objects.filter(teacher_selectable=True))
-    
-    
+
+
 class StudentMultpleAttendanceForm(autocomplete_light.ModelForm):
     """ Form accepts multiple students """
     class Meta:
@@ -29,8 +29,9 @@ class StudentMultpleAttendanceForm(autocomplete_light.ModelForm):
             'time': adminwidgets.AdminTimeWidget(),
         }
         fields = ('date', 'status', 'time', 'notes', 'private_notes')
-    
-    
+    student = autocomplete_light.ModelMultipleChoiceField('StudentUserAutocomplete')
+
+
 class CourseSectionAttendanceForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.all(), widget=forms.HiddenInput())
     status = forms.ModelChoiceField(
@@ -38,16 +39,16 @@ class CourseSectionAttendanceForm(forms.Form):
         queryset=AttendanceStatus.objects.filter(teacher_selectable=True),
         required=False)
     time_in = forms.TimeField(required=False, widget=adminwidgets.AdminTimeWidget(attrs={'tabindex':"-1"}))
-    notes = forms.CharField(required=False, widget=forms.TextInput(attrs={'tabindex':"-1"}))
+    notes = forms.CharField(required=False, widget=forms.TextInput(attrs={'tabindex':"-1", 'style': 'width: 150px'}))
 
-    
+
 class AttendanceReportForm(TimeBasedForm):
     filter_status = forms.ModelChoiceField(required=False, queryset=AttendanceStatus.objects.all())
     filter_count =forms.IntegerField(initial=0, help_text="Minimal number of above needed to show in report")
     filter_total_absences = forms.IntegerField(initial=0, help_text="Minimal number of total absenses needed to show in report")
     filter_total_tardies = forms.IntegerField(initial=0, help_text="Minimal number of total tardies needed to show in report")
-    
-    
+
+
 class AttendanceViewForm(forms.Form):
     all_years = forms.BooleanField(required=False, help_text="If check report will contain all student records. Otherwise it will only show current year.")
     order_by = forms.ChoiceField(initial=0, choices=(('Date','Date'),('Status','Status'),))

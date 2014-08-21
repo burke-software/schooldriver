@@ -4,7 +4,7 @@ from django.test import TestCase
 from models import *
 from ecwsp.sis.sample_data import SisData
 from django.db import connection
-from ecwsp.schedule.models import CourseEnrollment, Course, CourseSection
+from ecwsp.schedule.models import CourseEnrollment, Course, CourseSection, MarkingPeriod
 import datetime
 
 import time
@@ -12,7 +12,7 @@ import unittest
 
 
 class GradeCalculationTests(SisTestMixin, TestCase):
-    def old________setUp(self):
+    def setUp(self):
         try:
             sql = '''CREATE TABLE `sis_studentcohort` (
                 `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -75,9 +75,9 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         for grade in grades:
             grade.save()
         course_enrollments = [
-            CourseEnrollment(user=self.student, course_section=course_sections[0], role='student', grade=grades[0]),
-            CourseEnrollment(user=self.student, course_section=course_sections[1], role='student', grade=grades[1]),
-            CourseEnrollment(user=self.student, course_section=course_sections[2], role='student', grade=grades[2])
+            CourseEnrollment(user=self.student, course_section=course_sections[0], grade=grades[0]),
+            CourseEnrollment(user=self.student, course_section=course_sections[1], grade=grades[1]),
+            CourseEnrollment(user=self.student, course_section=course_sections[2], grade=grades[2])
         ]
         for course_enrollment in course_enrollments:
             course_enrollment.save()
@@ -91,6 +91,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
     """ These test ensure we meet requirements defined by Cristo Rey Baltimore including
     Grade scales, course weights, and letter grades
     Sample data is anonomized real grade data """
+    
     def populate_database(self):
         """ Override, not using traditional test data """
         self.data = SisData()
@@ -138,7 +139,11 @@ class GradeBaltTests(SisTestMixin, TestCase):
             [mp4, 8, 'A'],
         ]
         for x in test_data:
-            grade = Grade.objects.get(marking_period=x[0], course_section_id=x[1])
+            grade = Grade.objects.get(
+                student = self.data.student,
+                marking_period=x[0], 
+                course_section_id=x[1]
+                )
             self.assertEqual(grade.get_grade(letter=True), x[2])
 
     def test_snx_grade(self):
@@ -213,11 +218,11 @@ class GradeBaltTests(SisTestMixin, TestCase):
         ]
         for x in test_data:
             year_grade = self.data.student.studentyeargrade_set.get(year=x[0])
-            average = year_grade.get_grade(numeric_scale=True, rounding=1)
+            average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True)
             self.assertAlmostEqual(average, x[1])
 
     def test_balt_gpa(self):
-        gpa = self.data.student.get_gpa(rounding=1, numeric_scale=True)
+        gpa = self.data.student.calculate_gpa(rounding=1, prescale=True)
         self.assertAlmostEqual(gpa, Decimal(2.2))
 
     def test_final_grade(self):
@@ -254,12 +259,25 @@ class GradeBaltTests(SisTestMixin, TestCase):
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['boosted'])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1, boost=False), x['unboosted'])
 
-    def test_honors_and_ap_final_gpa(self):
+    def test_honors_and_ap_student_year_grade(self):
         """
-        assert that the end of the year GPA is correct
+        assert that the end of the year grade is correct
         """
-        gpa = self.data.honors_student.get_gpa(rounding=1, numeric_scale=True)
-        self.assertAlmostEqual(gpa, Decimal(3.5))
+
+        # try without pre-scaling
+        year_grade = self.data.honors_student.studentyeargrade_set.get(year=1)
+        average = year_grade.get_grade(numeric_scale=True, rounding=1)
+        self.assertAlmostEqual(average, Decimal(3.8))
+
+        # try with pre-scaling
+        year_grade = self.data.honors_student.studentyeargrade_set.get(year=1)
+        average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True)
+        self.assertAlmostEqual(average, Decimal(3.6))
+
+        # try with pre-scaling but without boost
+        year_grade = self.data.honors_student.studentyeargrade_set.get(year=1)
+        average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True, boost=False)
+        self.assertAlmostEqual(average, Decimal(3.3))
 
     def test_honors_and_ap_letter_grades(self):
         """
@@ -299,6 +317,29 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
             self.assertEqual(sm1_grade, x['s1'])
             self.assertEqual(sm2_grade, x['s2'])
+
+    def test_honors_student_gpa(self):
+        """
+        test that the student's gpa after 1 year is correct!
+        """
+        gpa = self.data.honors_student.calculate_gpa(rounding=1, prescale=True)
+        self.assertAlmostEqual(gpa, Decimal(3.6))
+
+
+class GradeCacheTests(SisTestMixin, TestCase):
+    def setUp(self):
+        super(GradeCacheTests, self).setUp()
+        self.build_grade_cache()
+
+    def test_passing_letter_grade(self):
+        student = self.data.student
+        section = self.data.course_section
+        grades = student.grade_set.filter(course_section=section)
+        for grade in grades:
+            grade.set_grade('HP')
+            grade.save()
+        ce = student.courseenrollment_set.filter(course_section=section).first()
+        self.assertEqual(ce.grade, 'P')
 
 
 class GradeScaleTests(SisTestMixin, TestCase):
