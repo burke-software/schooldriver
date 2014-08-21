@@ -714,7 +714,7 @@ class CourseSectionAttendanceButton(ReportButton):
                         for teacher in course_section.teachers.all():
                             row_3.append(str(teacher))
                         data.append(row_3)
-                        titles = ["Last Name", "First Name", "First Period", "Course Section",
+                        titles = ["Last Name", "First Name", "First Period", "Notes", "Course Section", "Notes",
                         "Time In", "Total Absences", "Total Excused Absences", "Total Tardies"
                         "Total Excused Tardies"]
                         data.append(titles)
@@ -732,13 +732,18 @@ class CourseSectionAttendanceButton(ReportButton):
                                 row.append(student.last_name)
                                 row.append(student.first_name)
                                 try:
-                                    row.append(str(self.daily_attendance(date, student).status))
+                                    daily_attendance = self.daily_attendance(date, student)
+                                    row.append(str(daily_attendance.status))
+                                    row.append(daily_attendance.notes)
                                 except:
+                                    row.append("")
                                     row.append("")
                                 try:
                                     attendance = self.daily_course_attendance(student, course_section, class_period, date)
                                     row.append(str(attendance.status))
+                                    row.append(attendance.notes)
                                 except:
+                                    row.append("")
                                     row.append("")
                                 row.append(course_attendance.time_in)
                                 row.append(self.total_absences(student, course_section))
