@@ -665,7 +665,7 @@ class CourseSectionAttendanceButton(ReportButton):
         return StudentAttendance.objects.get(student=student, date=date)
 
     def daily_course_attendance(self, student, course_section, period, date):
-        return CourseSectionAttendance.objects.get(course_section=course_section, period=period, date=date, student=student)
+        return CourseSectionAttendance.objects.get(course_section=course_section, course_period=period, date=date, student=student)
 
     def total_absences(self, student, course_section):
         status = AttendanceStatus.objects.get(name='Absent')
