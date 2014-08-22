@@ -333,7 +333,7 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                         course_attendance.time_in = data['time_in']
                         course_attendance.save()
                     except CourseSectionAttendance.DoesNotExist:
-                        CourseSectionAttendance.objects.create(
+                        course_attendance = CourseSectionAttendance.objects.create(
                             student=data['student'],
                             course_section=course_section,
                             date=for_date,
@@ -341,6 +341,8 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                             notes = data['notes'],
                             time_in = data['time_in'],
                         )
+                        course_attendance.period = course_attendance.course_period()
+                        course_attendance.save()
             if number_created:
                 messages.success(request, 'Attendance recorded for %s students' % number_created)
     else:
