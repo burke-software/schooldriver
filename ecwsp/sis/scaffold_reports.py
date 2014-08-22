@@ -1,4 +1,5 @@
 from scaffold_report.report import ScaffoldReport, scaffold_reports, ReportButton
+from scaffold_report.views import ScaffoldReportView
 from scaffold_report.fields import SimpleCompareField
 from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter, ModelChoiceFilter
 from django import forms
@@ -651,6 +652,10 @@ class AspReportButton(ReportButton):
         return report_view.list_to_xlsx_response(data, 'ASP_Report', header)
 
 
+class ReportView(ScaffoldReportView):
+    template_name = 'sis/scaffold/CourseAttendance.html'
+
+
 class CourseSectionAttendanceButton(ReportButton):
 
     name = "course_section_attendance"
@@ -695,6 +700,7 @@ class CourseSectionAttendanceButton(ReportButton):
             return total
 
     def get_report(self, report_view, context):
+
 
         # Get filter info
         data = []
