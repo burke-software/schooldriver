@@ -1,4 +1,7 @@
+from __future__ import absolute_import
 import os, sys, logging
+from celery.schedules import crontab
+from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = (
@@ -89,6 +92,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'ecwsp.sis.context_processors.global_stuff',
     'django.core.context_processors.static',
+    'constance.context_processors.config',
 )
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -330,19 +334,50 @@ COMPRESS_PRECOMPILERS = (
 )
 
 CACHES = {
-    'default': {
+    'memory': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
 
 REDIS_ADDR = os.environ.get('REDIS_1_PORT_6379_TCP_ADDR', 'localhost')
 REDIS_PORT = os.environ.get('REDIS_1_PORT_6379_TCP_PORT', '6379')
-BROKER_URL = os.environ.get('REDISCLOUD_URL') or 'redis://{}:{}/0'.format(REDIS_ADDR, REDIS_PORT)
+REDIS_URL = os.environ.get('REDISCLOUD_URL') or 'redis://{}:{}/0'.format(REDIS_ADDR, REDIS_PORT)
+
+from redisify import redisify
+CACHES = redisify(default=REDIS_URL)
+
+BROKER_URL = REDIS_URL
 BROKER_TRANSPORT_OPTIONS = {
     'fanout_prefix': True,
     'fanout_patterns': True,
 }
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+CELERYBEAT_SCHEDULE = {
+    'cache-grades-nightly': {
+        'task': 'ecwsp.sis.tasks.build_grade_cache',
+        'schedule': crontab(hour=23, minute=1),
+    },
+    'sent-admissions-email': {
+        'task': 'ecwsp.admissions.tasks.email_admissions_new_inquiries',
+        'schedule': crontab(hour=23, minute=16),
+    },
+    'naviance-create-students': {
+        'task': 'ecwsp.naviance_sso.tasks.create_new_naviance_students',
+        'schedule': crontab(hour=23, minute=31),
+    },
+    'volunteer-emails': {
+        'task': 'ecwsp.volunteer_track.tasks.handle',
+        'schedule': crontab(hour=23, minute=46),
+    },
+    'email_cra_nightly': {
+        'task': 'email_cra_nightly',
+        'schedule': crontab(hour=0, minute=1),
+    },
+    'update_contacts_from_sugarcrm': {
+        'task': 'ecwsp.work_study.update_contacts_from_sugarcrm',
+        'schedule': timedelta(minutes=30),
+    },
+}
 
 # this will load additional settings from the file settings_local.py
 try:
@@ -365,6 +400,8 @@ DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 SHARED_APPS = (
     'tenant_schemas',
+    'constance',
+    'constance.backends.database',
     'ecwsp.customers',
     'ecwsp.administration',
     'south',
@@ -381,6 +418,7 @@ TENANT_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.admin',
+    'constance.backends.database',
     'autocomplete_light',
     'ecwsp.sis',
     'ecwsp.administration',
@@ -426,6 +464,12 @@ TENANT_MODEL = "customers.Client"
 SOUTH_DATABASE_ADAPTERS = {
     'default': 'south.db.postgresql_psycopg2',
 }
+
+CONSTANCE_CONFIG = {
+        'A': ('woop', 'some'),
+}
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+#CONSTANCE_DATABASE_CACHE_BACKEND = 'default'
 
 import django
 if django.get_version()[:3] != '1.7':

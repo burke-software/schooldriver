@@ -80,4 +80,9 @@ Werkzeug
 ipython
 ipdb
 redis==2.10.3
+hiredis
+django-heroku-redisify
 django-tenant-schemas==1.4.7
+tenant-schemas-celery
+django-constance-updated
+django-picklefield
