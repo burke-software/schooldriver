@@ -503,6 +503,7 @@ if 'ON_HEROKU' in os.environ:
     import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
     DATABASES['default'] = dj_database_url.config()
+    DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
 
 
 # Keep this *LAST* to avoid overwriting production DBs with test data
