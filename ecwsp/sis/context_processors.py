@@ -5,7 +5,11 @@ from .models import MessageToStudent
 from .forms import StudentLookupForm
 from ecwsp.administration.models import Configuration
 
+
 def global_stuff(request):
+    """ Please consider not using this ever. 
+    Constance can be used for configurations
+    """
     header_image = Configuration.objects.filter(name="Header Logo").first()
     
     # Only show messages if user just logged in
