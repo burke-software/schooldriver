@@ -425,7 +425,11 @@ import django
 if django.get_version()[:3] != '1.7':
     INSTALLED_APPS += ('south',)
 
-if DEBUG:
+ON_HEROKU = False
+if 'ON_HEROKU' in os.environ:
+    ON_HEROKU = True
+
+if DEBUG and not ON_HEROKU:
     INSTALLED_APPS += ('django_extensions',)
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
@@ -434,8 +438,7 @@ if 'social.apps.django_app.default' in INSTALLED_APPS:
         'social.apps.django_app.context_processors.login_redirect',
     )
 
-if 'ON_HEROKU' in os.environ:
-    ON_HEROKU = True
+if ON_HEROKU:
     # Use S3
     INSTALLED_APPS += ('storages', 'collectfast')
     AWS_PRELOAD_METADATA = True
