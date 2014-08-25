@@ -6,7 +6,7 @@
   {{ block.super }}
   <link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css" media="screen" />
   <style>
-    .masthead { width: 550px; height: 70px; background: url('{{ header_image }}') no-repeat left; float: left; background-size:contain; }
+    .masthead { width: 550px; height: 70px; background: url('{% static 'header_image' %}') no-repeat left; float: left; background-size:contain; }
     .school-color { background: {{ config.SCHOOL_COLOR|default_if_none:"#FCB034" }}; }
   </style>
 {% endblock %}

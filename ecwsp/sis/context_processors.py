@@ -6,11 +6,7 @@ from .forms import StudentLookupForm
 from ecwsp.administration.models import Configuration
 
 def global_stuff(request):
-    try:
-        header_image = Configuration.objects.get_or_create(name="Header Logo")[0].file.url
-    except:
-        header_image = None
-    lookup_student_form = StudentLookupForm()
+    header_image = Configuration.objects.filter(name="Header Logo").first()
     
     # Only show messages if user just logged in
     user_messages = None
@@ -25,7 +21,6 @@ def global_stuff(request):
 
     return {
         "header_image": header_image,
-        'lookup_student_form': lookup_student_form,
         "settings": settings,
         'user_messages':user_messages,
     }
