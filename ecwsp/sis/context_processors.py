@@ -7,11 +7,13 @@ from ecwsp.administration.models import Configuration
 
 
 def global_stuff(request):
-    """ Please consider not using this ever. 
+    """ Please consider not using this ever.
     Constance can be used for configurations
     """
     header_image = Configuration.objects.filter(name="Header Logo").first()
-    
+    if header_image:
+        header_image = header_image.file
+
     # Only show messages if user just logged in
     user_messages = None
     if not request.session.get('has_seen_message', False) and request.user.is_authenticated():
