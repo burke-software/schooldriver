@@ -80,3 +80,6 @@ Werkzeug
 ipython
 ipdb
 redis==2.10.3
+django-constance-updated
+django-debug-toolbar
+django-picklefield

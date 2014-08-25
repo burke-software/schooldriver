@@ -10,9 +10,6 @@ def global_stuff(request):
         header_image = Configuration.objects.get_or_create(name="Header Logo")[0].file.url
     except:
         header_image = None
-    school_name = Configuration.get_or_default('School Name', default="Unnamed School")
-    school_color = Configuration.get_or_default('School Color', default="").value
-    google_analytics_code = Configuration.get_or_default('Google Analytics').value
     lookup_student_form = StudentLookupForm()
     
     # Only show messages if user just logged in
@@ -28,10 +25,7 @@ def global_stuff(request):
 
     return {
         "header_image": header_image,
-        "school_name": school_name,
         'lookup_student_form': lookup_student_form,
         "settings": settings,
-        "school_color": school_color,
         'user_messages':user_messages,
-        'google_analytics_code': google_analytics_code,
     }

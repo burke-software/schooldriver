@@ -8,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.conf import settings
 from django.db.models import Count, Q, DateField, Max
+from constance import config
 from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty, Cohort
 from ecwsp.attendance.models import CourseSectionAttendance, StudentAttendance, AttendanceStatus
@@ -1065,7 +1066,7 @@ class SisReport(ScaffoldReport):
             context['date_of_report'] = self.date_end
             context['long_date'] = unicode(datetime.date.today().strftime('%B %d, %Y'))
             context['school_year'] = self.report_context['school_year']
-            context['school_name'] = Configuration.get_or_default(name="School Name")
+            context['school_name'] = config.SCHOOL_NAME
 
             if template.transcript:
                 self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
