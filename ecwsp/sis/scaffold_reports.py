@@ -718,13 +718,20 @@ class CourseSectionAttendanceButton(ReportButton):
         if course_sections:
 
             for course_section in course_sections:
+                course_meets = []
                 data.append([""])
                 class_periods = report_view.report.report_context.get('class_periods')
                 # If user did not use the class_periods filter
                 if not class_periods:
                     class_periods = course_section.periods.all()
                 for class_period in class_periods:
-                    if class_period in course_section.periods.all():
+                    try:
+                        course_meet = CourseMeet.objects.get(period=class_period, course_section=course_section,
+                                                                   day=date.weekday() + 1)
+                    except:
+                        break
+                    if class_period in course_section.periods.all() and course_meet not in course_meets:
+                        course_meets.append(course_meet)
                         # Add course section information
                         row_1 = [course_section.name]
                         data.append(row_1)
