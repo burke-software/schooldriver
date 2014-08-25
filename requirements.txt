@@ -23,6 +23,7 @@ django-custom-field==2.2
 django-dajax-ng==0.9.4
 django-dajaxice-ng==0.6.0.0
 django-daterange-filter==1.0.0
+django-extensions
 django-filter==0.7
 django-floppy-gumby==0.1
 django-floppyforms==1.2.0
