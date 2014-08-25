@@ -38,11 +38,11 @@
   
   <title>Django School Information System</title>
 
-  {% if google_analytics_code %}
+  {% if config.GOOGLE_ANALYTICS %}
   <script type="text/javascript">
 
     var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', '{{ google_analytics_code }}']);
+    _gaq.push(['_setAccount', '{{ config.GOOGLE_ANALYTICS }}']);
     _gaq.push(['_trackPageview']);
 
     (function() {

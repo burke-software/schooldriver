@@ -1,21 +1,3 @@
-#   Copyright 2011 David M Burke
-#   Author David M Burke <david@burkesoftware.com>
-#   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 3 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
@@ -79,9 +61,6 @@ def discipline_report(request, student_id):
     template = template.get_template_path(request)
     report = TemplateReport(request.user)
     report.filename = 'disc_report'
-    
-    school_name, created = Configuration.objects.get_or_create(name="School Name")
-    school_name = school_name.value
     
     student = Student.objects.get(id=student_id)
     disc = StudentDiscipline.objects.filter(students=student)

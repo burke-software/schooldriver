@@ -148,6 +148,7 @@ class CustomIndexDashboard(Dashboard):
             models=(
                 'django.contrib.*',
                 'ecwsp.administration.*',
+                'constance.*',
                 'ecwsp.engrade_sync.*',
                 'ldap_groups.*',
                 'google_auth.*',

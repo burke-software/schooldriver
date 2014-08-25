@@ -56,7 +56,7 @@ LANGUAGES = (
   ('en', 'English'),
 )
 SITE_ID = 1
-INTERNAL_IPS = ('127.0.0.1',)
+INTERNAL_IPS = ('172.17.42.1',)
 USE_I18N = True
 SECRET_KEY = '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y'
 TEMPLATE_LOADERS = (
@@ -88,6 +88,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'ecwsp.sis.context_processors.global_stuff',
     'django.core.context_processors.static',
+    'constance.context_processors.config',
 )
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -409,7 +410,17 @@ INSTALLED_APPS = (
     'rest_framework',
     'api',
     'compressor',
+    'constance',
+    'constance.backends.database',
 ) + INSTALLED_APPS
+
+CONSTANCE_CONFIG = {
+    'SCHOOL_NAME': ('Unnamed School', 'School name'),
+    'SCHOOL_COLOR': ('', 'hex color code. Ex: $1122FF'),
+    'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX')
+}
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+
 import django
 if django.get_version()[:3] != '1.7':
     INSTALLED_APPS += ('south',)
@@ -428,6 +439,7 @@ if 'ON_HEROKU' in os.environ:
     # Use S3
     INSTALLED_APPS += ('storages', 'collectfast')
     AWS_PRELOAD_METADATA = True
+    AWS_QUERYSTRING_AUTH = False
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     for environment_variable in (

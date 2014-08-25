@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models import Sum
 from django.db import connection
 from django.db.models.signals import post_save, m2m_changed
+from django.dispatch import receiver
 from localflavor.us.models import USStateField, PhoneNumberField  #, USSocialSecurityNumberField
 from django.contrib.auth.models import User, Group
 from django.conf import settings
@@ -218,14 +219,15 @@ class Cohort(models.Model):
     def __unicode__(self):
         return self.name
 
-def after_cohort_m2m(sender, instance, action, reverse, model, pk_set, **kwargs):
+
+@receiver(post_save, sender=Cohort)
+def after_cohort_m2m(sender, instance, **kwargs):
     if instance.primary:
         for student in instance.students.all():
             student_cohort = student.studentcohort_set.filter(cohort__id=instance.id).first()
             student_cohort.primary = True
             student_cohort.save()
 
-m2m_changed.connect(after_cohort_m2m, sender='sis.Cohort')
 
 class PerCourseSectionCohort(Cohort):
     course_section = models.ForeignKey('schedule.CourseSection')
@@ -385,14 +387,14 @@ class Student(User, CustomFieldModel):
         if date_report:
             grade_years = grade_years.filter(year__start_date__lt=date_report)
         for grade_year in grade_years.distinct():
-            
+
             # grade = grade_year.calculate_grade(date_report=date_report, prescale=prescale)
-            
+
             grade = grade_year.get_grade(
                 date_report = date_report,
-                numeric_scale = True, 
-                rounding = rounding, 
-                prescale = prescale, 
+                numeric_scale = True,
+                rounding = rounding,
+                prescale = prescale,
                 boost = boost
                 )
             if grade:

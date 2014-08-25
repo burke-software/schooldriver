@@ -3,6 +3,7 @@ python:
 - '2.7'
 install:
 - pip install -r requirements.txt
+- pip install -r dev-equirements.txt
 - pip install -q -e . --use-mirrors
 before_deploy:
 # Less efficient but required due to https://github.com/travis-ci/travis-ci/issues/2272
