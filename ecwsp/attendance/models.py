@@ -42,8 +42,22 @@ class CourseSectionAttendance(models.Model):
         return unicode(self.student) + " " + unicode(self.date) + " " + unicode(self.status)
     
     def course_period(self):
-        if self.course_section.coursemeet_set.filter(day=self.date.isoweekday()):
-            return self.course_section.coursemeet_set.filter(day=self.date.isoweekday())[0].period
+        d = datetime.datetime.now().strftime('%w')
+        try:
+            period = self.course_section.coursemeet_set.get(day=d).period
+            return period
+        except:
+            time = datetime.datetime.now().strftime('%H')
+            difference = 24
+            course_meets = self.course_section.coursemeet_set.filter(day=d)
+            if course_meets:
+                closest = course_meets[0]
+                for course_meet in course_meets:
+                    diff = int(time) - int(course_meet.period.start_time.strftime('%H'))
+                    if abs(diff) < difference:
+                        difference = diff
+                        closest = course_meet.period
+                return closest
 
 
 class StudentAttendance(models.Model):
