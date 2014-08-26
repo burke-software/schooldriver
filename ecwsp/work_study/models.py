@@ -14,6 +14,7 @@ from django.utils.html import strip_tags
 import re
 
 import datetime
+import time
 from datetime import timedelta
 import hashlib
 import sys
@@ -336,20 +337,33 @@ class CompContract(models.Model, CustomFieldModel):
         ie: Is the browser a piece of shit? Defaults to False
         response: When true returns an http response when false returns a django File()"""
         if self.contract_file:
-            if response:
-                document = uno_open(self.contract_file.path)
-                response = save_to_response(document, self.contract_file.name.split('.')[0], "pdf")
-                if ie:
-                    response['Pragma'] = 'public'
-                    response['Expires'] = '0'
-                    response['Cache-Control'] = 'must-revalidate, post-check=0, pre-check=0'
-                    response['Content-type'] = 'application-download'
-                    response['Content-Disposition'] = 'attachment; filename="contract.pdf"'
-                    response['Content-Transfer-Encoding'] = 'binary'
-                return response
-            else:
-                document = uno_open(self.contract_file.path)
-                return File(save_as(document,self.contract_file.name.split('.')[0], "pdf"))
+            # Code lifted from ecwsp/grades/views.py
+            # Libreoffice crashes sometimes, maybe 5% of the time. So try it some more!
+            for x in range(0, 3):
+                try:
+                    if response:
+                        document = uno_open(self.contract_file.path)
+                        response = save_to_response(document, self.contract_file.name.split('.')[0], "pdf")
+                        if ie:
+                            response['Pragma'] = 'public'
+                            response['Expires'] = '0'
+                            response['Cache-Control'] = 'must-revalidate, post-check=0, pre-check=0'
+                            response['Content-type'] = 'application-download'
+                            response['Content-Disposition'] = 'attachment; filename="contract.pdf"'
+                            response['Content-Transfer-Encoding'] = 'binary'
+                        return response
+                    else:
+                        document = uno_open(self.contract_file.path)
+                        return File(save_as(document,self.contract_file.name.split('.')[0], "pdf"))
+                except:
+                    # It would be better to catch only known exceptions,
+                    # but we don't know all of them, and it's a real pain
+                    # to import those we do.
+                    logging.warning(
+                            'LibreOffice crashed?',
+                            exc_info=True
+                    )
+                    time.sleep(3)
         else:
             raise Http404
 

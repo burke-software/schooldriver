@@ -2,6 +2,7 @@ from ecwsp.work_study.models import (StudentWorker, TimeSheet, Contact,
         TimeSheetPerformanceChoice, ClientVisit, WorkTeam, CompContract,
         Attendance)
 from ecwsp.sis.forms import StudentReportWriterForm
+from ecwsp.administration.models import Configuration
 
 from django import forms
 from django.contrib.admin import widgets as adminwidgets
@@ -19,7 +20,7 @@ from itertools import chain
 
 class CustomCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
     items_per_row = 2 # Number of items per row
-    
+
     def render(self, name, value, attrs=None, choices=()):
         if value is None: value = []
         has_id = attrs and 'id' in attrs
@@ -35,7 +36,7 @@ class CustomCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
                 label_for = ' for="%s"' % final_attrs['id']
             else:
                 label_for = ''
-    
+
             cb = forms.CheckboxInput(final_attrs, check_test=lambda value: value in str_values)
             option_value = force_unicode(option_value)
             rendered_cb = cb.render(name, option_value)
@@ -58,7 +59,7 @@ class HorizRadioRenderer(forms.RadioSelect.renderer):
 
 
 class TdRadioRenderer(forms.RadioSelect.renderer):
-    """ 
+    """
     this overrides widget method to put radio buttons in td's
     """
     def render(self):
@@ -67,7 +68,7 @@ class TdRadioRenderer(forms.RadioSelect.renderer):
         return mark_safe(u'\n'.join([u'<td class="border " style="padding"> %s </td>\n' % w for w in self]))
 
 class TdNoTextRadioRenderer(forms.RadioSelect.renderer):
-    """ 
+    """
     this overrides widget method to put radio buttons in td's
     """
     def render(self):
@@ -81,7 +82,7 @@ class TimeSheetForm(forms.ModelForm):
         model = TimeSheet
 
     my_supervisor = forms.ModelChoiceField(queryset=Contact.objects.all(), required=False)
-    date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS, validators=settings.DATE_VALIDATORS) 
+    date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS, validators=settings.DATE_VALIDATORS)
     time_in = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
     time_lunch = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
     time_lunch_return = forms.TimeField(widget=forms.TextInput(attrs={'class': 'timecard-datefield'}))
@@ -91,14 +92,14 @@ class TimeSheetForm(forms.ModelForm):
 
     def set_supers(self, qs):
         self.fields["my_supervisor"].queryset = qs
-        
+
     def clean(self):
         cleaned_data = self.cleaned_data
         time_in = cleaned_data.get("time_in")
         time_lunch = cleaned_data.get("time_lunch")
         time_lunch_return = cleaned_data.get("time_lunch_return")
         time_out = cleaned_data.get("time_out")
-        
+
         # validate max hours
         try:
             hours = time_lunch.hour - time_in.hour
@@ -112,17 +113,17 @@ class TimeSheetForm(forms.ModelForm):
             raise forms.ValidationError("Only " + unicode(settings.MAX_HOURS_DAY) + " hours are allowed in one day.")
         elif hours <= 0:
             raise forms.ValidationError("You cannot have negative hours!")
-            
-        
+
+
         # validate time in and out
         if time_lunch_return < time_lunch:
             raise forms.ValidationError("Cannot return from lunch before leaving for lunch.")
         if time_in > time_out:
             raise forms.ValidationError("Cannot leave before starting. Check your times.")
-        
+
         #Don't allow two in the same day.
         ts = TimeSheet.objects.filter(date=cleaned_data.get('date'), student=cleaned_data.get('student'))
-        
+
         if ts.count() > 0 and not cleaned_data.get('edit'):
             conf, created = Configuration.objects.get_or_create(name="Allow multiple time sheets in one day")
             if created:
@@ -135,22 +136,22 @@ class TimeSheetForm(forms.ModelForm):
         # Always return the full collection of cleaned data.
         return cleaned_data
 
-class ChangeSupervisorForm(forms.ModelForm):    
+class ChangeSupervisorForm(forms.ModelForm):
     class Meta:
         model = StudentWorker
         fields = ('primary_contact',)
-        
+
     def __init__(self, *args, **kwargs):
         comp = kwargs.pop('company')
         super(ChangeSupervisorForm, self).__init__(*args, **kwargs)
         self.fields["primary_contact"].queryset = Contact.objects.filter(workteam=comp)
 
-        
+
 class AddSupervisor(forms.ModelForm):
     class Meta:
         model = Contact
         fields = ('fname', 'lname', 'phone', 'phone_cell', 'email',)
-    
+
 class ReportBuilderForm(forms.Form):
     custom_billing_begin = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
     custom_billing_end = forms.DateField(widget=adminwidgets.AdminDateWidget(), required=False, validators=settings.DATE_VALIDATORS)
@@ -159,7 +160,7 @@ class ReportTemplateForm(StudentReportWriterForm):
     date_begin = None
     date_end = None
     student = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
-    
+
     def clean(self):
         data = self.cleaned_data
         if not data.get('student') and not data.get('all_students'):
@@ -185,7 +186,7 @@ class DolForm(forms.ModelForm):
             'organizational_skills': forms.RadioSelect(renderer=TdNoTextRadioRenderer),
         }
     dol = forms.BooleanField(initial=True, required=False, widget=forms.CheckboxInput(attrs={'style':'visibility: hidden;'}))
-    
+
     def save(self, *args, **kwargs):
         commit = kwargs.pop('commit', True)
         instance = super(DolForm, self).save(*args, commit = False, **kwargs)
@@ -243,7 +244,7 @@ class CompanyContactForm3(forms.ModelForm):
         )
     email = forms.EmailField()
     i_agree = forms.BooleanField()
-    
+
 class QuickAttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
