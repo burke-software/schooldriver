@@ -2,6 +2,7 @@ from django import forms
 from django.http import HttpResponseRedirect
 from django.contrib import admin
 from django.utils.encoding import smart_unicode
+from django.utils.safestring import mark_safe
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
@@ -97,7 +98,7 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
         # only show login in group company    
         compUsers = User.objects.filter(Q(groups__name='company'))
         context['adminform'].form.fields['login'].queryset = compUsers
-        try:
+        if 'original' in context:
             students = StudentWorker.objects.filter(placement=context['original'].id)
             txt = "<h5>Students working here</h5>"
             for stu in students:
@@ -107,8 +108,6 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
             txt += "<br/><a href=\"/admin/work_study/survey/?q=%s\" target=\"_blank\">Surveys for this company</a>" % \
                 (context['original'].team_name)
             context['adminform'].form.fields['team_name'].help_text = txt
-        except:
-            print >> sys.stderr, "KeyError at /admin/work_study/company/add/  original"
         return super(WorkTeamAdmin, self).render_change_form(request, context, args, kwargs)
     
     def save_model(self, request, obj, form, change):
