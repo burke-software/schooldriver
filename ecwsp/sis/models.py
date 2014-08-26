@@ -169,7 +169,7 @@ class EmergencyContactNumber(PhoneNumber):
     primary = models.BooleanField(default=False, )
 
     class Meta:
-        verbose_name = "Student Contact"
+        verbose_name = "Student Contact Number"
 
     def save(self, *args, **kwargs):
         if self.primary:

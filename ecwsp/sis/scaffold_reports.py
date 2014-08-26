@@ -22,7 +22,6 @@ from decimal import Decimal
 from openpyxl.cell import get_column_letter
 from django.core.exceptions import ValidationError
 
-
 def reverse_compare(compare):
     """ Get the opposite comparison
     greater than becomes less than equals """
@@ -152,7 +151,6 @@ class CourseSectionsFilter(ModelMultipleChoiceFilter):
     verbose_name = "Course Sections"
     add_fields = ['course_section']
     model = CourseSection
-    default = True
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         report_context['course_sections'] = self.cleaned_data['field_0']
@@ -859,7 +857,7 @@ class SisReport(ScaffoldReport):
             grades = course_section.grade_set.filter(student=student).filter(
                 marking_period__isnull=False,
                 marking_period__show_reports=True).order_by('marking_period__start_date')
-
+            
             section_mp_grades = {}
             for i, marking_period in enumerate(self.marking_periods.order_by('start_date')):
                 for grade in grades:
@@ -879,7 +877,7 @@ class SisReport(ScaffoldReport):
                 if marking_period.name not in section_mp_grades:
                     # populate the dict with blank grade
                     section_mp_grades[marking_period.name] = self.blank_grade
-
+            
                 # set the mp_grades dict to the course_section object
                 setattr(course_section, 'mp_grade', section_mp_grades)
             course_section.final = course_enrollment.grade
@@ -1052,7 +1050,7 @@ class SisReport(ScaffoldReport):
                     student.highest_tests.append(test)
 
     def get_appy_template(self):
-        return self.report_context.get('template').file
+        return self.report_context.get('template').file.path
 
     def get_appy_context(self):
         context = super(SisReport, self).get_appy_context()

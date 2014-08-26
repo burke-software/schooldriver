@@ -56,7 +56,7 @@ LANGUAGES = (
   ('en', 'English'),
 )
 SITE_ID = 1
-INTERNAL_IPS = ('172.17.42.1',)
+INTERNAL_IPS = ('127.0.0.1',)
 USE_I18N = True
 SECRET_KEY = '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y'
 TEMPLATE_LOADERS = (
@@ -360,6 +360,10 @@ try:  # prefix cache based on school name to avoid collisions.
         CACHES['default']['KEY_PREFIX'] = SCHOOL_NAME
 except NameError:
     pass # Not using cache
+
+if DEBUG:
+    CELERY_ALWAYS_EAGER = True
+CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 
 STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
