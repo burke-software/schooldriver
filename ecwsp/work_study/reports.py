@@ -80,6 +80,8 @@ def gen_attendance_report_day(day, is_pickup=False):
             break
     
     pickups = PickupLocation.objects.all()
+    if not pickups:
+        ws = wb.add_sheet('No pickups found!')
     for pickup in pickups:
         ws = wb.add_sheet(pickup.location)
         ws.portrait = False
