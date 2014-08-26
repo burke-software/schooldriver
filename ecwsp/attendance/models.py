@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 
 from ecwsp.sis.models import Student, SchoolYear
 from ecwsp.administration.models import Configuration
+from django.core.exceptions import MultipleObjectsReturned
 
 import datetime
 import sys
@@ -46,7 +47,7 @@ class CourseSectionAttendance(models.Model):
         try:
             period = self.course_section.coursemeet_set.get(day=d).period
             return period
-        except:
+        except MultipleObjectsReturned:
             time = datetime.datetime.now().strftime('%H')
             difference = 24
             course_meets = self.course_section.coursemeet_set.filter(day=d)
