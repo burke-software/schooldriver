@@ -72,7 +72,6 @@ ROOT_URLCONF = 'django_sis.urls'
 WSGI_APPLICATION = 'ecwsp.wsgi.application'
 
 MIDDLEWARE_CLASSES = (
-    'tenant_schemas.middleware.TenantMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -100,8 +99,6 @@ STATICFILES_FINDERS = (
     'djangobower.finders.BowerFinder',
     'compressor.finders.CompressorFinder',
 )
-#STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
-#STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage'
 
 DEBUG = True
 TEMPLATE_DEBUG = True
@@ -311,10 +308,8 @@ INSTALLED_APPS = (
     'rosetta',
     # These can be enabled if desired but the default is off
     #'ldap_groups',
-    #'raven.contrib.django',
     #'ecwsp.integrations.schoolreach',
     #'social.apps.django_app.default',
-    #'ecwsp.omr',
     #'ecwsp.integrations.canvas_sync',
     #'google_auth',
     #'ldap_groups',
@@ -474,6 +469,7 @@ if django.get_version()[:3] != '1.7':
 
 if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
+    MIDDLEWARE_CLASSES += ('tenant_schemas.middleware.TenantMiddleware',)
 
 ON_HEROKU = False
 if 'ON_HEROKU' in os.environ:
