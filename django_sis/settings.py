@@ -20,6 +20,8 @@ BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components/')
 
 LOGIN_REDIRECT_URL = "/"
 MULTI_TENANT = False
+if 'MULTI_TENANT' in os.environ:
+    MULTI_TENANT = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -467,13 +469,10 @@ if django.get_version()[:3] != '1.7':
             'default': 'south.db.postgresql_psycopg2',
         }
 
-if MULTI_TENANT:
-    DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
-    MIDDLEWARE_CLASSES += ('tenant_schemas.middleware.TenantMiddleware',)
 
 ON_HEROKU = False
-if 'ON_HEROKU' in os.environ:
-    ON_HEROKU = True
+if 'on_heroku' in os.environ:
+    on_heroku = true
 
 if DEBUG and not ON_HEROKU:
     INSTALLED_APPS += ('django_extensions',)
@@ -503,8 +502,10 @@ if ON_HEROKU:
     import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
     DATABASES['default'] = dj_database_url.config()
-    DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
 
+if MULTI_TENANT:
+    DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
+    MIDDLEWARE_CLASSES += ('tenant_schemas.middleware.TenantMiddleware',)
 
 # Keep this *LAST* to avoid overwriting production DBs with test data
 if 'test' in sys.argv:
