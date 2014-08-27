@@ -461,7 +461,7 @@ CONSTANCE_CONFIG = {
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
-import django:
+import django
 if django.get_version()[:3] != '1.7':
     INSTALLED_APPS += ('south',)
     if MULTI_TENANT:  # Would happen automatically otherwise
