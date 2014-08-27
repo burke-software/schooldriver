@@ -461,7 +461,7 @@ CONSTANCE_CONFIG = {
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
-import django
+import django:
 if django.get_version()[:3] != '1.7':
     INSTALLED_APPS += ('south',)
     if MULTI_TENANT:  # Would happen automatically otherwise
@@ -471,8 +471,8 @@ if django.get_version()[:3] != '1.7':
 
 
 ON_HEROKU = False
-if 'on_heroku' in os.environ:
-    on_heroku = true
+if 'ON_HEROKU' in os.environ:
+    ON_HEROKU = True
 
 if DEBUG and not ON_HEROKU:
     INSTALLED_APPS += ('django_extensions',)
