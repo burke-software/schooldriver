@@ -371,11 +371,11 @@ CELERYBEAT_SCHEDULE = {
 
 # this will load additional settings from the file settings_local.py
 try:
-    from settings_server import *
+    from .settings_server import *
 except ImportError:
     print("Warning: Could not import settings_server.py")
 try:
-    from settings_local import *
+    from .settings_local import *
 except ImportError:
     print("Warning: Could not import settings_local.py")
 
