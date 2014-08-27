@@ -3,6 +3,7 @@ from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse
 from ecwsp.administration.models import Configuration
 from ecwsp.sis.models import SchoolYear, UserPreference
+from constance import config
 import datetime
 import tempfile
 import os
@@ -22,8 +23,7 @@ class TemplateReport(object):
         """ This data should be available to all templates
         """
         data={}
-        school_name, created = Configuration.objects.get_or_create(name="School Name")
-        data['school_name'] = unicode(school_name.value)
+        data['school_name'] = config.SCHOOL_NAME
         try:
             data['school_year'] = unicode(SchoolYear.objects.get(active_year=True))
         except SchoolYear.DoesNotExist:

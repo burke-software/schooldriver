@@ -364,10 +364,6 @@ class GradeScaleTests(SisTestMixin, TestCase):
         self.assertEqual(scale.to_letter(1000), None)
         self.assertEqual(scale.to_numeric(50), 1)
 
-        # Now for some student grades
-        student = self.data.student
-        self.assertEqual(scale.to_letter(student.gpa), 'D')  # 69.55
-
         grade = self.data.grade
         self.assertEqual(grade.get_grade(letter=True), 'F')  # 50
 

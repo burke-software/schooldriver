@@ -18,11 +18,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 CKEDITOR_UPLOAD_PATH = os.path.join(BASE_DIR, 'media/uploads')
 BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components/')
 
-# Django stuff
 LOGIN_REDIRECT_URL = "/"
+MULTI_TENANT = False
 DATABASES = {
     'default': {
-        'ENGINE': 'tenant_schemas.postgresql_backend',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'docker',
         'USER': 'docker',
         'PASSWORD': 'docker',
@@ -288,14 +288,6 @@ CRND_ROUTES = False
 ATTENDANCE_COURSE_BASED = False
 
 
-#OMR
-QUEXF_URL = ""
-QUEXF_DB_NAME = 'quexf'
-QUEXF_DB_PASS = ''
-QUEXF_DB_USER = ''
-QUEXF_DB_HOST = ''
-
-
 #Canvas LMS
 # oauth token, you must make this in Canvas.
 # https://canvas.instructure.com/doc/api/file.oauth.html
@@ -333,18 +325,19 @@ COMPRESS_PRECOMPILERS = (
    ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 
-CACHES = {
-    'memory': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
-
 REDIS_ADDR = os.environ.get('REDIS_1_PORT_6379_TCP_ADDR', 'localhost')
 REDIS_PORT = os.environ.get('REDIS_1_PORT_6379_TCP_PORT', '6379')
 REDIS_URL = os.environ.get('REDISCLOUD_URL') or 'redis://{}:{}/0'.format(REDIS_ADDR, REDIS_PORT)
 
 from redisify import redisify
-CACHES = redisify(default=REDIS_URL)
+if REDIS_URL:
+    CACHES = redisify(default=REDIS_URL)
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 BROKER_URL = REDIS_URL
 BROKER_TRANSPORT_OPTIONS = {
@@ -398,6 +391,7 @@ except NameError:
 STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
+# These are required add ons that we always want to have
 SHARED_APPS = (
     'tenant_schemas',
     'constance',
@@ -413,7 +407,6 @@ SHARED_APPS = (
     'django.contrib.auth',
     'django.contrib.sessions',
 )
-# These are required add ons that we always want to have
 TENANT_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
@@ -457,25 +450,36 @@ TENANT_APPS = (
     'rest_framework',
     'api',
     'compressor',
+    'constance',
+    'constance.backends.database',
 ) + INSTALLED_APPS
 
 INSTALLED_APPS = SHARED_APPS + TENANT_APPS
 TENANT_MODEL = "customers.Client"
-SOUTH_DATABASE_ADAPTERS = {
-    'default': 'south.db.postgresql_psycopg2',
-}
 
 CONSTANCE_CONFIG = {
-        'A': ('woop', 'some'),
+    'SCHOOL_NAME': ('Unnamed School', 'School name'),
+    'SCHOOL_COLOR': ('', 'hex color code. Ex: $1122FF'),
+    'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX')
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
-#CONSTANCE_DATABASE_CACHE_BACKEND = 'default'
 
 import django
 if django.get_version()[:3] != '1.7':
     INSTALLED_APPS += ('south',)
+    if MULTI_TENANT:  # Would happen automatically otherwise
+        SOUTH_DATABASE_ADAPTERS = {
+            'default': 'south.db.postgresql_psycopg2',
+        }
 
-if DEBUG:
+if MULTI_TENANT:
+    DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
+
+ON_HEROKU = False
+if 'ON_HEROKU' in os.environ:
+    ON_HEROKU = True
+
+if DEBUG and not ON_HEROKU:
     INSTALLED_APPS += ('django_extensions',)
 
 if 'social.apps.django_app.default' in INSTALLED_APPS:
@@ -484,11 +488,11 @@ if 'social.apps.django_app.default' in INSTALLED_APPS:
         'social.apps.django_app.context_processors.login_redirect',
     )
 
-if 'ON_HEROKU' in os.environ:
-    ON_HEROKU = True
+if ON_HEROKU:
     # Use S3
     INSTALLED_APPS += ('storages', 'collectfast')
     AWS_PRELOAD_METADATA = True
+    AWS_QUERYSTRING_AUTH = False
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     for environment_variable in (

@@ -1,16 +1,12 @@
 db:
   image: orchardup/postgresql
-redis:
-  image: dockerfile/redis
 web:
   build: .
-  command: ./run.sh
+  command: python manage.py runserver_plus 0.0.0.0:8000
   volumes:
     - .:/code
       #- /home/david/Dropbox/Projects/django-report-builder/report_builder:/usr/local/lib/python2.7/dist-packages/report_builder
-    - /home/david/Dropbox/Projects/django-autocomplete-light/autocomplete_light:/usr/local/lib/python2.7/site-packages/autocomplete_light
   ports:
     - "8000:8000"
   links:
     - db
-    - redis

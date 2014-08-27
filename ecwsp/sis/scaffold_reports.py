@@ -1,4 +1,5 @@
 from scaffold_report.report import ScaffoldReport, scaffold_reports, ReportButton
+from scaffold_report.views import ScaffoldReportView
 from scaffold_report.fields import SimpleCompareField
 from scaffold_report.filters import Filter, DecimalCompareFilter, IntCompareFilter, ModelMultipleChoiceFilter, ModelChoiceFilter
 from django import forms
@@ -7,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.conf import settings
 from django.db.models import Count, Q, DateField, Max
+from constance import config
 from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty, Cohort
 from ecwsp.attendance.models import CourseSectionAttendance, StudentAttendance, AttendanceStatus
@@ -19,7 +21,6 @@ import datetime
 from decimal import Decimal
 from openpyxl.cell import get_column_letter
 from django.core.exceptions import ValidationError
-
 
 def reverse_compare(compare):
     """ Get the opposite comparison
@@ -150,7 +151,6 @@ class CourseSectionsFilter(ModelMultipleChoiceFilter):
     verbose_name = "Course Sections"
     add_fields = ['course_section']
     model = CourseSection
-    default = True
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         report_context['course_sections'] = self.cleaned_data['field_0']
@@ -651,6 +651,10 @@ class AspReportButton(ReportButton):
         return report_view.list_to_xlsx_response(data, 'ASP_Report', header)
 
 
+class ReportView(ScaffoldReportView):
+    template_name = 'sis/scaffold/CourseAttendance.html'
+
+
 class CourseSectionAttendanceButton(ReportButton):
 
     name = "course_section_attendance"
@@ -664,21 +668,38 @@ class CourseSectionAttendanceButton(ReportButton):
 
     def total_absences(self, student, course_section):
         status = AttendanceStatus.objects.get(name='Absent')
-        return student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+        total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+        if total == 0:
+            return ""
+        else:
+            return total
 
     def total_tardies(self, student, course_section):
         status = AttendanceStatus.objects.get(name='Tardy')
-        return student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+        total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+        if total == 0:
+            return ""
+        else:
+            return total
 
     def total_excused_absences(self, student, course_section):
         status = AttendanceStatus.objects.get(name='Absent Excused')
-        return student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+        total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+        if total == 0:
+            return ""
+        else:
+            return total
 
     def total_excused_tardies(self, student, course_section):
         status = AttendanceStatus.objects.get(name='Tardy Excused')
-        return student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+        total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+        if total == 0:
+            return ""
+        else:
+            return total
 
     def get_report(self, report_view, context):
+
 
         # Get filter info
         data = []
@@ -692,19 +713,24 @@ class CourseSectionAttendanceButton(ReportButton):
 
         # Add document name to report
         document_name = 'CourseAttendanceReport_{}.xlsx'.format(date)
-        row_0 = [document_name]
-        data.append(row_0)
 
         if course_sections:
 
             for course_section in course_sections:
+                course_meets = []
                 data.append([""])
                 class_periods = report_view.report.report_context.get('class_periods')
                 # If user did not use the class_periods filter
                 if not class_periods:
                     class_periods = course_section.periods.all()
                 for class_period in class_periods:
-                    if class_period in course_section.periods.all():
+                    try:
+                        course_meet = CourseMeet.objects.get(period=class_period, course_section=course_section,
+                                                                   day=date.weekday() + 1)
+                    except:
+                        break
+                    if class_period in course_section.periods.all() and course_meet not in course_meets:
+                        course_meets.append(course_meet)
                         # Add course section information
                         row_1 = [course_section.name]
                         data.append(row_1)
@@ -714,9 +740,8 @@ class CourseSectionAttendanceButton(ReportButton):
                         for teacher in course_section.teachers.all():
                             row_3.append(str(teacher))
                         data.append(row_3)
-                        titles = ["Last Name", "First Name", "First Period", "Course Section",
-                        "Time In", "Total Absences", "Total Excused Absences", "Total Tardies"
-                        "Total Excused Tardies"]
+                        titles = ["Last Name", "First Name", "First Period", "Notes", "Course Sec.", "Notes",
+                        "Time In", "Absences", "Excused Abs.", "Tardies", "Excused Tardies"]
                         data.append(titles)
 
                         course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section,
@@ -732,13 +757,18 @@ class CourseSectionAttendanceButton(ReportButton):
                                 row.append(student.last_name)
                                 row.append(student.first_name)
                                 try:
-                                    row.append(str(self.daily_attendance(date, student).status))
+                                    daily_attendance = self.daily_attendance(date, student)
+                                    row.append(str(daily_attendance.status))
+                                    row.append(daily_attendance.notes)
                                 except:
+                                    row.append("")
                                     row.append("")
                                 try:
                                     attendance = self.daily_course_attendance(student, course_section, class_period, date)
                                     row.append(str(attendance.status))
+                                    row.append(attendance.notes)
                                 except:
+                                    row.append("")
                                     row.append("")
                                 row.append(course_attendance.time_in)
                                 row.append(self.total_absences(student, course_section))
@@ -827,7 +857,7 @@ class SisReport(ScaffoldReport):
             grades = course_section.grade_set.filter(student=student).filter(
                 marking_period__isnull=False,
                 marking_period__show_reports=True).order_by('marking_period__start_date')
-
+            
             section_mp_grades = {}
             for i, marking_period in enumerate(self.marking_periods.order_by('start_date')):
                 for grade in grades:
@@ -847,7 +877,7 @@ class SisReport(ScaffoldReport):
                 if marking_period.name not in section_mp_grades:
                     # populate the dict with blank grade
                     section_mp_grades[marking_period.name] = self.blank_grade
-
+            
                 # set the mp_grades dict to the course_section object
                 setattr(course_section, 'mp_grade', section_mp_grades)
             course_section.final = course_enrollment.grade
@@ -1020,7 +1050,7 @@ class SisReport(ScaffoldReport):
                     student.highest_tests.append(test)
 
     def get_appy_template(self):
-        return self.report_context.get('template').file
+        return self.report_context.get('template').file.path
 
     def get_appy_context(self):
         context = super(SisReport, self).get_appy_context()
@@ -1041,7 +1071,7 @@ class SisReport(ScaffoldReport):
             context['date_of_report'] = self.date_end
             context['long_date'] = unicode(datetime.date.today().strftime('%B %d, %Y'))
             context['school_year'] = self.report_context['school_year']
-            context['school_name'] = Configuration.get_or_default(name="School Name")
+            context['school_name'] = config.SCHOOL_NAME
 
             if template.transcript:
                 self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
