@@ -3,9 +3,8 @@
 {% block dashlet_header %}
   <form id="form_view_student_dashlet" class="view_student" action="/sis/view_student/" method="post">
     {% if perms.sis.change_student %}
-       <a href="{% url 'admin:sis_student_changelist' %}">Student Flashcard</a>
+       <a href="{% url 'admin:sis_student_changelist' %}">Student Information</a>
     {% else %}
-      Student Flashcard
     {% endif %}
 <!-- Below this comment is the fancy auto-complete search function - Jeff -->
     <!--br tag to separate search from student? see mockup-->
@@ -41,7 +40,7 @@
             $('#student-deck-year').text("Year: " + choice.find(".student-year").text());
             $('#student-deck-cohort').text("Cohort: " + choice.attr("data-cohort"));
             if (choice.find("#student-pic")) {
-              $('#student-deck-year')  
+              $('#student-deck-year')
             }
             $('#student-deck-link').attr("href",choice.attr("href"));
         });
@@ -52,21 +51,20 @@
 {% block dashlet_body %}
   <!-- Something to try: span the entire width w/ "Search for a student..." then split into parts when student has been searched.
       Make it look clean, like the mockup -->
-  <div><em>Search for a student to get a photo and&nbsp;info</em></div>
   <div id="student-deck" style="display: none;">
-    <div style="width: 55%; float:left;">
-      <img style="width: 100%; max-width: 530px; visibility: hidden;" src="{{ student.pic.url_530x400 }}"/>
-    </div>
-    <div style="width:45%; float:left; text-align: left;">
-      <div id="student-deck-name"></div>
+    <div style="width:45%; float:left; text-align: left; margin-left:10px">
+      <div id="student-deck-name"></div><div>
+</div>
+
       <div id="student-deck-year"></div>
       <div id="student-deck-cohort"></div>
-      <div class="primary btn">
+    </div>
+     <div class="primary btn" style="float:right;  margin-right:15px; margin-top:15px;">
         <a id="student-deck-link" href="">View Info</a>
       </div>
-    </div>
   </div>
-{% endblock %}
+  <div style="clear:both;">
+<a href="/sis/flashcard">Learn Student Names with Flashcards!</a>
+</div>
 
-{% block dashlet_footer %}
 {% endblock %}
