@@ -354,10 +354,10 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                 initial_row['status'] = current_attendance.status
                 initial_row['time_in'] = current_attendance.time_in
                 initial_row['notes'] = current_attendance.notes
-            elif student.student_attn.filter(date=for_date, status__absent=True):
-                initial_row['status'] = AttendanceStatus.objects.get(name="Absent")
-            elif student.student_attn.filter(date=for_date, status__excused=True):
-                initial_row['status'] = AttendanceStatus.objects.get(name="Absent Excused")
+            else:
+                daily_attendance = student.student_attn.filter(date=for_date)[0]
+                if daily_attendance.status.name == 'Absent' or daily_attendance.status.name == 'Absent Excused':
+                    initial_row['status'] = daily_attendance.status
             initial_data.append(initial_row)
         formset = CourseSectionAttendanceFormSet(initial=initial_data)
 
