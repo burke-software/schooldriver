@@ -354,7 +354,7 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                 initial_row['status'] = current_attendance.status
                 initial_row['time_in'] = current_attendance.time_in
                 initial_row['notes'] = current_attendance.notes
-            else:
+            elif student.student_attn.filter(date=for_date):
                 daily_attendance = student.student_attn.filter(date=for_date)[0]
                 if daily_attendance.status.name == 'Absent' or daily_attendance.status.name == 'Absent Excused':
                     initial_row['status'] = daily_attendance.status
