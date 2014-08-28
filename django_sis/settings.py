@@ -318,7 +318,7 @@ INSTALLED_APPS = (
     #'ldap_groups',
     #'raven.contrib.django',
     #'ecwsp.integrations.schoolreach',
-    #'social.apps.django_app.default',
+    'social.apps.django_app.default',
     #'ecwsp.omr',
     #'ecwsp.integrations.canvas_sync',
     #'google_auth',
@@ -440,6 +440,19 @@ if 'social.apps.django_app.default' in INSTALLED_APPS:
     TEMPLATE_CONTEXT_PROCESSORS += (
         'social.apps.django_app.context_processors.backends',
         'social.apps.django_app.context_processors.login_redirect',
+    )
+    AUTHENTICATION_BACKENDS += ('social.backends.google.GoogleOAuth2',)
+    SOCIAL_AUTH_PIPELINE = (
+        'social.pipeline.social_auth.social_details',
+        'social.pipeline.social_auth.social_uid',
+        'social.pipeline.social_auth.auth_allowed',
+        'social.pipeline.social_auth.social_user',
+        'ecwsp.sis.auth.associate_by_email',
+        'social.pipeline.user.get_username',
+        'social.pipeline.user.create_user',
+        'social.pipeline.social_auth.associate_user',
+        'social.pipeline.social_auth.load_extra_data',
+        'social.pipeline.user.user_details',
     )
 
 if ON_HEROKU:
