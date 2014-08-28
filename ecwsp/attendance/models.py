@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 
 from ecwsp.sis.models import Student, SchoolYear
 from ecwsp.administration.models import Configuration
-from django.core.exceptions import MultipleObjectsReturned
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 
 import datetime
 import sys
@@ -59,6 +59,8 @@ class CourseSectionAttendance(models.Model):
                         difference = diff
                         closest = course_meet.period
                 return closest
+        except ObjectDoesNotExist:
+            return None
 
 
 class StudentAttendance(models.Model):
