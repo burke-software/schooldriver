@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 import os, sys, logging
-from celery.schedules import crontab
 from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -311,7 +310,6 @@ INSTALLED_APPS = (
     # These can be enabled if desired but the default is off
     #'ldap_groups',
     #'ecwsp.integrations.schoolreach',
-    #'social.apps.django_app.default',
     #'ecwsp.integrations.canvas_sync',
     #'google_auth',
     #'ldap_groups',
@@ -341,7 +339,9 @@ BROKER_TRANSPORT_OPTIONS = {
     'fanout_prefix': True,
     'fanout_patterns': True,
 }
+
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+from celery.schedules import crontab
 CELERYBEAT_SCHEDULE = {
     'cache-grades-nightly': {
         'task': 'ecwsp.sis.tasks.build_grade_cache',
@@ -368,6 +368,9 @@ CELERYBEAT_SCHEDULE = {
         'schedule': timedelta(minutes=30),
     },
 }
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH2_KEY')
 
 # this will load additional settings from the file settings_local.py
 try:
@@ -416,6 +419,7 @@ TENANT_APPS = (
     'django.contrib.admin',
     'constance.backends.database',
     'autocomplete_light',
+    'social.apps.django_app.default',
     'ecwsp.sis',
     'ecwsp.administration',
     'ecwsp.schedule',
@@ -463,7 +467,8 @@ TENANT_MODEL = "customers.Client"
 CONSTANCE_CONFIG = {
     'SCHOOL_NAME': ('Unnamed School', 'School name'),
     'SCHOOL_COLOR': ('', 'hex color code. Ex: $1122FF'),
-    'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX')
+    'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX'),
+    'ALLOW_GOOGLE_AUTH': (False, 'Allow users to log in with Google Apps. This requires setting the email field in student and staff.'),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
@@ -483,11 +488,26 @@ if 'ON_HEROKU' in os.environ:
 if DEBUG and not ON_HEROKU:
     INSTALLED_APPS += ('django_extensions',)
 
-if 'social.apps.django_app.default' in INSTALLED_APPS:
-    TEMPLATE_CONTEXT_PROCESSORS += (
-        'social.apps.django_app.context_processors.backends',
-        'social.apps.django_app.context_processors.login_redirect',
-    )
+TEMPLATE_CONTEXT_PROCESSORS += (
+    'social.apps.django_app.context_processors.backends',
+    'social.apps.django_app.context_processors.login_redirect',
+)
+AUTHENTICATION_BACKENDS += ('social.backends.google.GoogleOAuth2',)
+SOCIAL_AUTH_PIPELINE = (
+    'social.pipeline.social_auth.social_details',
+    'social.pipeline.social_auth.social_uid',
+    'social.pipeline.social_auth.auth_allowed',
+    'social.pipeline.social_auth.social_user',
+    'ecwsp.sis.auth.associate_by_email',
+    'social.pipeline.user.get_username',
+    'social.pipeline.user.create_user',
+    'social.pipeline.social_auth.associate_user',
+    'social.pipeline.social_auth.load_extra_data',
+    'social.pipeline.user.user_details',
+)
+SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
+    'social.backends.google.GoogleOAuth2',
+)
 
 if ON_HEROKU:
     # Use S3

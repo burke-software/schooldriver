@@ -302,7 +302,7 @@ WHERE (grades_grade.course_section_id = %s
                                (self.course_section_id, self.user_id, date_report))
 
         else:
-            if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+            if settings.DATABASES['default']['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'tenant_schemas.postgresql_backend']:
                 cursor.execute(sql_string.format(
                     postgres_type_cast='::int', over='over ()', extra_where=''),
                                (self.course_section_id, self.user_id))

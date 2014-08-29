@@ -151,6 +151,7 @@ class CourseSectionsFilter(ModelMultipleChoiceFilter):
     verbose_name = "Course Sections"
     add_fields = ['course_section']
     model = CourseSection
+    default = True
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         report_context['course_sections'] = self.cleaned_data['field_0']
