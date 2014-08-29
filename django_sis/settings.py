@@ -345,7 +345,7 @@ BROKER_TRANSPORT_OPTIONS = {
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH2_KEY')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH2_SECRET')
 
 # this will load additional settings from the file settings_local.py
 try:
