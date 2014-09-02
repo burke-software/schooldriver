@@ -16,6 +16,16 @@ import decimal
 from decimal import Decimal, ROUND_HALF_UP
 import copy
 
+ISOWEEKDAY_TO_VERBOSE = (
+    ("1", 'Monday'),
+    ("2", 'Tuesday'),
+    ("3", 'Wednesday'),
+    ("4", 'Thursday'),
+    ("5", 'Friday'),
+    ("6", 'Saturday'),
+    ("7", 'Sunday'),
+)
+
 def duplicate(obj, changes=None):
     """ Duplicates any object including m2m fields
     changes: any changes that should occur, example
@@ -128,17 +138,9 @@ class Period(models.Model):
 class CourseMeet(models.Model):
     period = models.ForeignKey(Period)
     course_section = models.ForeignKey('CourseSection')
-    day_choice = (   # ISOWEEKDAY
-        ('1', 'Monday'),
-        ('2', 'Tuesday'),
-        ('3', 'Wednesday'),
-        ('4', 'Thursday'),
-        ('5', 'Friday'),
-        ('6', 'Saturday'),
-        ('7', 'Sunday'),
-    )
-    day = models.CharField(max_length=1, choices=day_choice)
+    day = models.CharField(max_length=1, choices=ISOWEEKDAY_TO_VERBOSE)
     location = models.ForeignKey('Location', blank=True, null=True)
+    day_choice = ISOWEEKDAY_TO_VERBOSE
 
 
 class Location(models.Model):
@@ -152,11 +154,12 @@ class CourseEnrollment(models.Model):
     course_section = models.ForeignKey('CourseSection')
     user = models.ForeignKey('sis.Student')
     attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
-    exclude_days = models.ManyToManyField('Day', blank=True, \
+    exclude_days = models.CharField(max_length=100, blank=True,
         help_text="Student does not need to attend on this day. Note course sections already specify meeting days; this field is for students who have a special reason to be away.")
     grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Section Grade", editable=False)
     numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     is_active = models.BooleanField(default=True)
+
 
     class Meta:
         unique_together = (("course_section", "user"),)
@@ -356,22 +359,6 @@ WHERE (grades_grade.course_section_id = %s
                         return "F"
         return None
 
-
-class Day(models.Model):
-    dayOfWeek = (
-        ("1", 'Monday'),
-        ("2", 'Tuesday'),
-        ("3", 'Wednesday'),
-        ("4", 'Thursday'),
-        ("5", 'Friday'),
-        ("6", 'Saturday'),
-        ("7", 'Sunday'),
-    )
-    day = models.CharField(max_length=1, choices=dayOfWeek)
-    def __unicode__(self):
-        return self.get_day_display()
-    class Meta:
-        ordering = ('day',)
 
 class Department(models.Model):
     name = models.CharField(max_length=255, unique=True, verbose_name="Department Name")

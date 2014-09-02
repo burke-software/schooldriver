@@ -88,6 +88,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'ecwsp.sis.context_processors.global_stuff',
     'django.core.context_processors.static',
+    'constance.context_processors.config',
 )
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -302,6 +303,7 @@ CANVAS_BASE_URL = ''
 
 # django-report-builder
 REPORT_BUILDER_GLOBAL_EXPORT = True
+REPORT_BUILDER_ASYNC_REPORT = True
 
 
 # Default apps, settings_local.py will override them.
@@ -316,7 +318,6 @@ INSTALLED_APPS = (
     #'ldap_groups',
     #'raven.contrib.django',
     #'ecwsp.integrations.schoolreach',
-    #'social.apps.django_app.default',
     #'ecwsp.omr',
     #'ecwsp.integrations.canvas_sync',
     #'google_auth',
@@ -333,6 +334,18 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
+
+REDIS_ADDR = os.environ.get('REDIS_1_PORT_6379_TCP_ADDR', 'localhost')
+REDIS_PORT = os.environ.get('REDIS_1_PORT_6379_TCP_PORT', '6379')
+BROKER_URL = os.environ.get('REDISCLOUD_URL') or 'redis://{}:{}/0'.format(REDIS_ADDR, REDIS_PORT)
+BROKER_TRANSPORT_OPTIONS = {
+    'fanout_prefix': True,
+    'fanout_patterns': True,
+}
+CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH2_SECRET')
 
 # this will load additional settings from the file settings_local.py
 try:
@@ -372,6 +385,7 @@ INSTALLED_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
+    'social.apps.django_app.default',
     'reversion',
     'djcelery',
     'django.contrib.admin',
@@ -403,25 +417,55 @@ INSTALLED_APPS = (
     'rest_framework',
     'api',
     'compressor',
+    'constance',
+    'constance.backends.database',
 ) + INSTALLED_APPS
+
+CONSTANCE_CONFIG = {
+    'SCHOOL_NAME': ('Unnamed School', 'School name'),
+    'SCHOOL_COLOR': ('', 'hex color code. Ex: $1122FF'),
+    'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX'),
+    'ALLOW_GOOGLE_AUTH': (False, 'Allow users to log in with Google Apps. This requires setting the email field in student and staff.'),
+}
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+
 import django
 if django.get_version()[:3] != '1.7':
     INSTALLED_APPS += ('south',)
 
-if DEBUG:
-    INSTALLED_APPS += ('django_extensions',)
-
-if 'social.apps.django_app.default' in INSTALLED_APPS:
-    TEMPLATE_CONTEXT_PROCESSORS += (
-        'social.apps.django_app.context_processors.backends',
-        'social.apps.django_app.context_processors.login_redirect',
-    )
-
+ON_HEROKU = False
 if 'ON_HEROKU' in os.environ:
     ON_HEROKU = True
+
+if DEBUG and not ON_HEROKU:
+    INSTALLED_APPS += ('django_extensions',)
+
+TEMPLATE_CONTEXT_PROCESSORS += (
+    'social.apps.django_app.context_processors.backends',
+    'social.apps.django_app.context_processors.login_redirect',
+)
+AUTHENTICATION_BACKENDS += ('social.backends.google.GoogleOAuth2',)
+SOCIAL_AUTH_PIPELINE = (
+    'social.pipeline.social_auth.social_details',
+    'social.pipeline.social_auth.social_uid',
+    'social.pipeline.social_auth.auth_allowed',
+    'social.pipeline.social_auth.social_user',
+    'ecwsp.sis.auth.associate_by_email',
+    'social.pipeline.user.get_username',
+    'social.pipeline.user.create_user',
+    'social.pipeline.social_auth.associate_user',
+    'social.pipeline.social_auth.load_extra_data',
+    'social.pipeline.user.user_details',
+)
+SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
+    'social.backends.google.GoogleOAuth2',
+)
+
+if ON_HEROKU:
     # Use S3
     INSTALLED_APPS += ('storages', 'collectfast')
     AWS_PRELOAD_METADATA = True
+    AWS_QUERYSTRING_AUTH = False
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     for environment_variable in (
@@ -445,6 +489,7 @@ if 'test' in sys.argv:
         'NAME': 'test',
         'ATOMIC_REQUESTS': True,
     }
+    CELERY_ALWAYS_EAGER = True
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',

@@ -14,7 +14,7 @@ from django.template import RequestContext
 from .models import StudentAttendance, CourseSectionAttendance, AttendanceStatus, AttendanceLog
 from .forms import CourseSectionAttendanceForm, AttendanceReportForm, AttendanceDailyForm, AttendanceViewForm
 from .forms import StudentAttendanceForm, StudentMultpleAttendanceForm
-from ecwsp.schedule.models import Course, CourseSection, Day, MarkingPeriod
+from ecwsp.schedule.models import Course, CourseSection, MarkingPeriod
 from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
@@ -93,7 +93,7 @@ def teacher_attendance(request, course_section=None):
                     "the course section is not set to the current marking period.")
             return HttpResponseRedirect(reverse('admin:index'))
         course_section = course_sections[0]
-    today, created = Day.objects.get_or_create(day=str(today.isoweekday()))
+    today = today.isoweekday()
     all = Student.objects.filter(courseenrollment__course_section=course_section, is_active=True)
     exclude = Student.objects.filter(courseenrollment__course_section=course_section, is_active=True, courseenrollment__exclude_days=today)
     ids = []
@@ -333,7 +333,7 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                         course_attendance.time_in = data['time_in']
                         course_attendance.save()
                     except CourseSectionAttendance.DoesNotExist:
-                        CourseSectionAttendance.objects.create(
+                        course_attendance = CourseSectionAttendance.objects.create(
                             student=data['student'],
                             course_section=course_section,
                             date=for_date,
@@ -341,6 +341,8 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                             notes = data['notes'],
                             time_in = data['time_in'],
                         )
+                        course_attendance.period = course_attendance.course_period()
+                        course_attendance.save()
             if number_created:
                 messages.success(request, 'Attendance recorded for %s students' % number_created)
     else:
@@ -352,8 +354,10 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                 initial_row['status'] = current_attendance.status
                 initial_row['time_in'] = current_attendance.time_in
                 initial_row['notes'] = current_attendance.notes
-            elif student.student_attn.filter(date=for_date, status__absent=True):
-                initial_row['status'] = AttendanceStatus.objects.get(name="Absent")
+            elif student.student_attn.filter(date=for_date):
+                daily_attendance = student.student_attn.filter(date=for_date)[0]
+                if daily_attendance.status.name == 'Absent' or daily_attendance.status.name == 'Absent Excused':
+                    initial_row['status'] = daily_attendance.status
             initial_data.append(initial_row)
         formset = CourseSectionAttendanceFormSet(initial=initial_data)
 
