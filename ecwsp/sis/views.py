@@ -22,6 +22,7 @@ from .template_report import TemplateReport
 from ecwsp.administration.models import Template
 from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Course, CourseSection, CourseEnrollment
+from ecwsp.attendance.models import CourseSectionAttendance
 
 import sys
 import httpagentparser
@@ -146,8 +147,18 @@ def paper_attendance(request, day):
         messages.error(request, 'Problem making paper attendance, does the template exist?')
         return HttpResponseRedirect('/')
 
-from scaffold_report.views import DownloadReportView
-from .scaffold_reports import SisReport
+from scaffold_report.views import DownloadReportView, ScaffoldReportView
+from .scaffold_reports import SisReport, AttendanceReport
+
+
+class AttendanceReportView(ScaffoldReportView):
+    template_name = 'sis/scaffold/CourseAttendance.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AttendanceReportView, self).get_context_data(**kwargs)
+        context['report'] = AttendanceReport
+        context['filters'] = AttendanceReport.filters
+        return context
 
 @user_passes_test(lambda u: u.has_perm("sis.view_student"))
 def transcript_nonofficial(request, student_id):

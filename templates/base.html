@@ -6,8 +6,8 @@
   {{ block.super }}
   <link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css" media="screen" />
   <style>
-    .masthead { width: 550px; height: 70px; background: url('{{ header_image }}') no-repeat left; float: left; background-size:contain; }
-    .school-color { background: {{ school_color|default_if_none:"#FCB034" }}; }
+.masthead { width: 550px; height: 70px; background: url('{% if header_image %}{{ header_image.url }}{% endif %}') no-repeat left; float: left; background-size:contain; }
+    .school-color { background: {{ config.SCHOOL_COLOR|default_if_none:"#FCB034" }}; }
   </style>
 {% endblock %}
 
@@ -93,7 +93,7 @@
 <div class="spacer-3"></div>
 
 <div class="footer">
-Copyright 2010-2013 <a href="http://burkesoftware.com">Burke Software and Consulting LLC</a>.<br />
+Copyright 2010-2014 <a href="http://burkesoftware.com">Burke Software and Consulting LLC</a>.<br />
 This site is for authorized use only.<br />
 Powered by <a href="https://github.com/burke-software/django-sis">django-sis</a>.
 </div>

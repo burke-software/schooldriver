@@ -55,7 +55,9 @@
 <p>&nbsp;</p>
 <![endif]-->
 
+{% if config.ALLOW_GOOGLE_AUTH %}
 <div class="subhead-text">
-Switch to <a href="/admin/">Admin Interface</a>.
+    Log in with <a href="{% url 'social:begin' "google-oauth2" %}">Google Apps</a>. Note you must log in with your school's Google Apps domain. Gmail will not work.
 </div>
+{% endif %}
 {% endblock %}

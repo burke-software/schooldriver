@@ -59,6 +59,11 @@ class GradeAPIGetTest(APITest):
         response = self.client.get('/api/grades/', filters)
         self.assertEqual(len(response.data), 3)
 
+    def test_num_queries(self):
+        self.teacher_login()
+        with self.assertNumQueries(3):
+            self.client.get('/api/grades/')
+
     def test_ungraded_courses(self):
         """
         grades should not appear from courses that are "ungraded"

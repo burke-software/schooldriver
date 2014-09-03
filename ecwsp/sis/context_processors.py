@@ -5,16 +5,15 @@ from .models import MessageToStudent
 from .forms import StudentLookupForm
 from ecwsp.administration.models import Configuration
 
+
 def global_stuff(request):
-    try:
-        header_image = Configuration.objects.get_or_create(name="Header Logo")[0].file.url
-    except:
-        header_image = None
-    school_name = Configuration.get_or_default('School Name', default="Unnamed School")
-    school_color = Configuration.get_or_default('School Color', default="").value
-    google_analytics_code = Configuration.get_or_default('Google Analytics').value
-    lookup_student_form = StudentLookupForm()
-    
+    """ Please consider not using this ever.
+    Constance can be used for configurations
+    """
+    header_image = Configuration.objects.filter(name="Header Logo").first()
+    if header_image:
+        header_image = header_image.file
+
     # Only show messages if user just logged in
     user_messages = None
     if not request.session.get('has_seen_message', False) and request.user.is_authenticated():
@@ -28,10 +27,6 @@ def global_stuff(request):
 
     return {
         "header_image": header_image,
-        "school_name": school_name,
-        'lookup_student_form': lookup_student_form,
         "settings": settings,
-        "school_color": school_color,
         'user_messages':user_messages,
-        'google_analytics_code': google_analytics_code,
     }

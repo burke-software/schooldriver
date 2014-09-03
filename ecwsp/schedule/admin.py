@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -8,9 +9,9 @@ from django.http import HttpResponseRedirect
 from daterange_filter.filter import DateRangeFilter
 
 from ecwsp.sis.models import Faculty, Student
-from ecwsp.schedule.models import CourseMeet, Course, Department, CourseEnrollment, MarkingPeriod
-from ecwsp.schedule.models import Period, Location, OmitCourseGPA, OmitYearGPA, Award, CourseSectionTeacher
-from ecwsp.schedule.models import DepartmentGraduationCredits, DaysOff, Day, CourseSection, CourseType
+from ecwsp.schedule.models import (CourseMeet, Course, Department, CourseEnrollment, MarkingPeriod,
+    Period, Location, OmitCourseGPA, OmitYearGPA, Award, CourseSectionTeacher,
+    DepartmentGraduationCredits, DaysOff, CourseSection, CourseType, ISOWEEKDAY_TO_VERBOSE)
 
 def copy(modeladmin, request, queryset):
     for object in queryset:
@@ -88,9 +89,14 @@ class DaysOffInline(admin.TabularInline):
     model = DaysOff
     extra = 1
 
-admin.site.register(Day)
+
+class CourseEnrollmentForm(forms.ModelForm):
+    model = CourseEnrollment
+    exclude_days = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple(), choices=ISOWEEKDAY_TO_VERBOSE)
+
 
 class CourseEnrollmentAdmin(admin.ModelAdmin):
+    form = CourseEnrollmentForm
     search_fields = ['user__username', 'user__first_name',]
     list_display = ['user', 'attendance_note']
 admin.site.register(CourseEnrollment, CourseEnrollmentAdmin)
