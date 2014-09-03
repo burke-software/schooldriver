@@ -4,13 +4,14 @@ from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
+from django_sis.celery import app
 
 import csv
 import requests
 import tempfile
 
 if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_KEY:
-    @periodic_task(run_every=crontab(hour=22, minute=26))
+    @app.task
     def create_new_naviance_students():
         """ Naviance has no update or create. So this must be seperate.
         We just run each one and half will always fail.
