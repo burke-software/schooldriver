@@ -82,7 +82,10 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                     if students:
                         msg += "The following students were present but did not submit time sheets:\n"
                         for student in students:
-                            msg += "{0}, ".format(student)
+                            try:
+                                msg += "{0}, ".format(student)
+                            except UnicodeDecodeError:
+                                msg += "{0}, ".format(student.id)
                         msg = msg[:-2]
 
                     try:
