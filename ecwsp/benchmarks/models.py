@@ -12,24 +12,24 @@ from django.conf import settings
 
 class Benchmark(models.Model):
     measurement_topics = models.ManyToManyField('MeasurementTopic')
-    number = models.CharField(max_length=10, blank=True, null=True)
+    number = models.CharField(max_length=20, blank=True, null=True)
     name = models.CharField(max_length=700)
     year = models.ForeignKey('sis.GradeLevel', blank=True, null=True)
-    
+
     def display_measurement_topics(self):
         txt = ""
         for topic in self.measurement_topics.all():
             txt += unicode(topic) + ", "
         if txt:
             return txt[:-2]
-    
+
     def __unicode__(self):
-        return unicode('%s %s' % (self.number, self.name)) 
-        
+        return unicode('%s %s' % (self.number, self.name))
+
     class Meta:
         ordering = ('number', 'name',)
-        
-        
+
+
 class Department(models.Model):
     name = models.CharField(max_length=255, unique=True)
     def __unicode__(self):
@@ -48,4 +48,4 @@ class MeasurementTopic(models.Model):
     class Meta:
         unique_together = ('name', 'department')
         ordering  = ('department','name')
-        
+
