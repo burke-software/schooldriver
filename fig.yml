@@ -7,8 +7,7 @@ web:
   command: ./run.sh
   volumes:
     - .:/code
-    - /home/david/Dropbox/Projects/django-cached-field/django_cached_field:/usr/local/lib/python2.7/site-packages/django_cached_field
-    - /home/david/Dropbox/Projects/django-cached-field/django_cached_field:/usr/local/lib/python2.7/dist-packages/django_cached_field
+    - /home/david/Dropbox/Projects/django-ldapper/ldap_groups:/usr/local/lib/python2.7/dist-packages/ldap_groups
   ports:
     - "8000:8000"
   links:

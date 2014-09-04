@@ -132,16 +132,14 @@ AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
 #LDAP
 LDAP = False
-if LDAP:
-    LDAP_SERVER = 'admin.example.org'
-    NT4_DOMAIN = 'ADMIN'
-    LDAP_PORT = 389
-    LDAP_URL = 'ldap://%s:%s' % (LDAP_SERVER, LDAP_PORT)
-    SEARCH_DN = 'DC=admin,DC=example,DC=org'
-    SEARCH_FIELDS = ['mail','givenName','sn','sAMAccountName','memberOf', 'cn']
-    BIND_USER = 'ldap'
-    BIND_PASSWORD = ''
-    AUTHENTICATION_BACKENDS += ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend',)
+LDAP_SERVER = 'admin.example.org'
+NT4_DOMAIN = 'ADMIN'
+LDAP_PORT = 389
+LDAP_URL = 'ldap://%s:%s' % (LDAP_SERVER, LDAP_PORT)
+SEARCH_DN = 'DC=admin,DC=example,DC=org'
+SEARCH_FIELDS = ['mail','givenName','sn','sAMAccountName','memberOf', 'cn']
+BIND_USER = 'ldap'
+BIND_PASSWORD = ''
 
 #Google Apps
 GAPPS = False
@@ -308,11 +306,8 @@ INSTALLED_APPS = (
     'ecwsp.naviance_sso',
     'rosetta',
     # These can be enabled if desired but the default is off
-    #'ldap_groups',
     #'ecwsp.integrations.schoolreach',
     #'ecwsp.integrations.canvas_sync',
-    #'google_auth',
-    #'ldap_groups',
 )
 
 COMPRESS_PRECOMPILERS = (
@@ -420,6 +415,7 @@ TENANT_APPS = (
     'constance.backends.database',
     'autocomplete_light',
     'social.apps.django_app.default',
+    'ldap_groups',
     'ecwsp.sis',
     'ecwsp.administration',
     'ecwsp.schedule',
@@ -487,6 +483,9 @@ if 'ON_HEROKU' in os.environ:
 
 if DEBUG and not ON_HEROKU:
     INSTALLED_APPS += ('django_extensions',)
+
+if LDAP:
+    AUTHENTICATION_BACKENDS += ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend',)
 
 TEMPLATE_CONTEXT_PROCESSORS += (
     'social.apps.django_app.context_processors.backends',
