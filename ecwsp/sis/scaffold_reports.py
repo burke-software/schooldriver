@@ -668,36 +668,49 @@ class CourseSectionAttendanceButton(ReportButton):
         return CourseSectionAttendance.objects.get(course_section=course_section, period=period, date=date, student=student)
 
     def total_absences(self, student, course_section):
-        status = AttendanceStatus.objects.get(name='Absent')
-        total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
-        if total == 0:
+        try:
+            status = AttendanceStatus.objects.get(name='Absent')
+            total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+            if total == 0:
+                return ""
+            else:
+                return total
+        except ObjectDoesNotExist:
             return ""
-        else:
-            return total
 
     def total_tardies(self, student, course_section):
-        status = AttendanceStatus.objects.get(name='Tardy')
-        total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
-        if total == 0:
+        try:
+            status = AttendanceStatus.objects.get(name='Tardy')
+            total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+            if total == 0:
+                return ""
+            else:
+                return total
+        except ObjectDoesNotExist:
             return ""
-        else:
-            return total
-
+            
     def total_excused_absences(self, student, course_section):
-        status = AttendanceStatus.objects.get(name='Absent Excused')
-        total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
-        if total == 0:
+        try:
+            status = AttendanceStatus.objects.get(name='Absent Excused')
+            total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+            if total == 0:
+                return ""
+            else:
+                return total
+        except ObjectDoesNotExist:
             return ""
-        else:
-            return total
 
     def total_excused_tardies(self, student, course_section):
-        status = AttendanceStatus.objects.get(name='Tardy Excused')
-        total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
-        if total == 0:
+        try:
+            status = AttendanceStatus.objects.get(name='Tardy Excused')
+            total = student.coursesectionattendance_set.filter(course_section=course_section, status=status).count()
+            if total == 0:
+                return ""
+            else:
+                return total
+        except ObjectDoesNotExist:
             return ""
-        else:
-            return total
+
 
     def get_report(self, report_view, context):
 
