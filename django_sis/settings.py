@@ -426,6 +426,7 @@ CONSTANCE_CONFIG = {
     'SCHOOL_COLOR': ('', 'hex color code. Ex: $1122FF'),
     'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX'),
     'ALLOW_GOOGLE_AUTH': (False, 'Allow users to log in with Google Apps. This requires setting the email field in student and staff.'),
+    'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"')
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
