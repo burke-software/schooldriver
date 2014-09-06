@@ -311,7 +311,6 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
     check_attendance_permission(course_section, request.user)
 
     students = Student.objects.filter(courseenrollment__course_section=course_section)
-    daily_attendance = StudentAttendance.objects.filter(student__in=students,date=for_date).distinct()
     CourseSectionAttendanceFormSet = formset_factory(CourseSectionAttendanceForm, extra=0)
 
     if request.POST:
@@ -380,7 +379,6 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
             'for_date': for_date,
         },
         RequestContext(request, {}))
-
 
 @permission_required('sis.reports')
 def attendance_report(request):
