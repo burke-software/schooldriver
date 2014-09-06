@@ -467,7 +467,7 @@ CONSTANCE_CONFIG = {
     'ALLOW_GOOGLE_AUTH': (False, 'Allow users to log in with Google Apps. This requires setting the email field in student and staff.'),
     'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"')
     'GOOGLE_APPS_DOMAIN': ('', 'Used with ALLOW_GOOGLE_AUTH. Google Apps domain to authenticate against. Probably the part after @ on your email address. Example: myschool.com'),
-}
+    'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"')}
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
 import django

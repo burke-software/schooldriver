@@ -303,7 +303,6 @@ def select_course_section_for_attendance(request):
         },
         RequestContext(request, {}))
 
-
 @permission_required('attendance.take_studentattendance')
 def course_section_attendance(request, course_section_id, for_date=datetime.date.today):
     """ View for a teacher to take course section attendance
@@ -387,7 +386,6 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
             'for_date': for_date,
         },
         RequestContext(request, {}))
-
 
 @permission_required('sis.reports')
 def attendance_report(request):
