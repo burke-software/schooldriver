@@ -1,10 +1,10 @@
 from celery.decorators import periodic_task
-from celery.task.schedules import crontab
 from .models import StudentMarkingPeriodGrade, StudentYearGrade
 from ecwsp.sis.models import Student
 from ecwsp.schedule.models import CourseEnrollment
+from django_sis.celery import app
 
-@periodic_task(run_every=crontab(hour=1, minute=21))
+@app.task
 def build_grade_cache():
     """ Rebuild all grade related cache in the world """
     StudentMarkingPeriodGrade.build_all_cache()
