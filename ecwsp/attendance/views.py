@@ -19,6 +19,8 @@ from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
 from ecwsp.administration.models import Template
+from constance import config
+from django.core.exceptions import ObjectDoesNotExist
 
 import datetime
 
@@ -341,8 +343,8 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                             notes = data['notes'],
                             time_in = data['time_in'],
                         )
-                        course_attendance.period = course_attendance.course_period()
-                        course_attendance.save()
+                    course_attendance.period = course_attendance.course_period()
+                    course_attendance.save()
             if number_created:
                 messages.success(request, 'Attendance recorded for %s students' % number_created)
     else:
@@ -354,6 +356,11 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                 initial_row['status'] = current_attendance.status
                 initial_row['time_in'] = current_attendance.time_in
                 initial_row['notes'] = current_attendance.notes
+            elif config.SET_ALL_TO_PRESENT:
+                try:
+                    initial_row['status'] = AttendanceStatus.objects.get(name='Present')
+                except ObjectDoesNotExist:
+                    initial_row['status'] = ""
             elif student.student_attn.filter(date=for_date):
                 daily_attendance = student.student_attn.filter(date=for_date)[0]
                 if daily_attendance.status.name == 'Absent' or daily_attendance.status.name == 'Absent Excused':
