@@ -19,6 +19,8 @@ from ecwsp.sis.models import Student, UserPreference, Faculty, SchoolYear
 from ecwsp.sis.helper_functions import Struct
 from ecwsp.sis.template_report import TemplateReport
 from ecwsp.administration.models import Template
+from constance import config
+from django.core.exceptions import ObjectDoesNotExist
 
 import datetime
 
@@ -301,7 +303,6 @@ def select_course_section_for_attendance(request):
         },
         RequestContext(request, {}))
 
-
 @permission_required('attendance.take_studentattendance')
 def course_section_attendance(request, course_section_id, for_date=datetime.date.today):
     """ View for a teacher to take course section attendance
@@ -311,6 +312,7 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
     check_attendance_permission(course_section, request.user)
 
     students = Student.objects.filter(courseenrollment__course_section=course_section)
+    daily_attendance = StudentAttendance.objects.filter(student__in=students,date=for_date).distinct()
     CourseSectionAttendanceFormSet = formset_factory(CourseSectionAttendanceForm, extra=0)
 
     if request.POST:
@@ -340,8 +342,8 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                             notes = data['notes'],
                             time_in = data['time_in'],
                         )
-                        course_attendance.period = course_attendance.course_period()
-                        course_attendance.save()
+                    course_attendance.period = course_attendance.course_period()
+                    course_attendance.save()
             if number_created:
                 messages.success(request, 'Attendance recorded for %s students' % number_created)
     else:
@@ -353,10 +355,15 @@ def course_section_attendance(request, course_section_id, for_date=datetime.date
                 initial_row['status'] = current_attendance.status
                 initial_row['time_in'] = current_attendance.time_in
                 initial_row['notes'] = current_attendance.notes
-            elif student.student_attn.filter(date=for_date, status__absent=True):
-                initial_row['status'] = AttendanceStatus.objects.get(name="Absent")
-            elif student.student_attn.filter(date=for_date, status__excused=True):
-                initial_row['status'] = AttendanceStatus.objects.get(name="Absent Excused")
+            elif config.SET_ALL_TO_PRESENT:
+                try:
+                    initial_row['status'] = AttendanceStatus.objects.get(name='Present')
+                except ObjectDoesNotExist:
+                    initial_row['status'] = ""
+            elif student.student_attn.filter(date=for_date):
+                daily_attendance = student.student_attn.filter(date=for_date)[0]
+                if daily_attendance.status.name == 'Absent' or daily_attendance.status.name == 'Absent Excused':
+                    initial_row['status'] = daily_attendance.status
             initial_data.append(initial_row)
         formset = CourseSectionAttendanceFormSet(initial=initial_data)
 
