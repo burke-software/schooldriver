@@ -617,3 +617,7 @@ def attendance_student(request, id, all_years=False, order_by="Date", include_pr
     template = template.get_template_path(request)
     report.filename = unicode(student) + "_Attendance"
     return report.pod_save(template)
+
+
+
+
