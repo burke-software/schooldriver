@@ -18,17 +18,15 @@ CKEDITOR_UPLOAD_PATH = os.path.join(BASE_DIR, 'media/uploads')
 BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components/')
 
 LOGIN_REDIRECT_URL = "/"
-MULTI_TENANT = False
-if 'MULTI_TENANT' in os.environ:
-    MULTI_TENANT = True
+MULTI_TENANT = os.getenv('MULTI_TENANT', False)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'docker',
-        'USER': 'docker',
-        'PASSWORD': 'docker',
-        'HOST': os.environ.get('DB_1_PORT_5432_TCP_ADDR'),
-        'PORT': os.environ.get('DB_1_PORT_5432_TCP_PORT'),
+        'NAME': os.getenv('DATABASE_NAME', 'postgres'),
+        'USER': os.getenv('DATABASE_USER', 'postgres'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_ADDR', 'db_1'),
+        'PORT': 5432,
     }
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
