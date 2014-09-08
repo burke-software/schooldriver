@@ -754,13 +754,8 @@ class CourseSectionAttendanceButton(ReportButton):
                         for teacher in course_section.teachers.all():
                             row_3.append(str(teacher))
                         data.append(row_3)
-                        if AttendanceStatus.objects.filter(name='Absent Excused') and AttendanceStatus.objects.filter\
-                        (name='Tardy Excused'):
-                            titles = ["Last Name", "First Name", "First Period", "Notes", "Course Sec.", "Notes",
-                            "Time In", "Absences", "Excused Abs.", "Tardies", "Excused Tardies"]
-                        else:
-                            titles = ["Last Name", "First Name", "First Period", "Notes", "Course Sec.", "Notes",
-                            "Time In", "Absences", "", "Tardies", ""]
+                        titles = ["Last Name", "First Name", "First Period", "Notes", "Course Sec.", "Notes",
+                        "Time In", "Absences", "Excused Abs.", "Tardies", "Excused Tardies"]
                         data.append(titles)
 
                         course_attendances = CourseSectionAttendance.objects.filter(course_section=course_section,
