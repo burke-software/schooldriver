@@ -145,7 +145,7 @@ class CanvasSync:
         """ Create csv string for courses
         """
         result = u"course_id,short_name,long_name,account_id,term_id,status,start_date,end_date\n"
-        for course in Course.objects.filter(coursesection__marking_period__school_year__active_year=True).distinct():
+        for course in Course.objects.filter(is_active=True).distinct():
             if course.department:
                 department_id = course.department_id
             else:
