@@ -466,6 +466,12 @@ CONSTANCE_CONFIG = {
     'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX'),
     'ALLOW_GOOGLE_AUTH': (False, 'Allow users to log in with Google Apps. This requires setting the email field in student and staff.'),
     'GOOGLE_APPS_DOMAIN': ('', 'Used with ALLOW_GOOGLE_AUTH. Google Apps domain to authenticate against. Probably the part after @ on your email address. Example: myschool.com'),
+    'LDAP_URL': ('', 'Ex: ldap://admin.example.com:389'),
+    'LDAP_NT4_DOMAIN': ('', 'Ex: ADMIN'),
+    'LDAP_BIND_USER': ('', 'Ex: ldap_user'),
+    'LDAP_BIND_PASSWORD': ('', 'Bind user\'s password'),
+    'LDAP_SEARCH_DN': ('', 'DC=admin,DC=example,DC=com'),
+
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
