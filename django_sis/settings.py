@@ -471,6 +471,7 @@ CONSTANCE_CONFIG = {
     'LDAP_BIND_USER': ('', 'Ex: ldap_user'),
     'LDAP_BIND_PASSWORD': ('', 'Bind user\'s password'),
     'LDAP_SEARCH_DN': ('', 'DC=admin,DC=example,DC=com'),
+	'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"')
 
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
