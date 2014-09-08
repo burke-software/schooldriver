@@ -12,7 +12,6 @@ def uno_open(file):
     returns an uno document
     """
     import uno
-    from com.sun.star.beans import PropertyValue
     local = uno.getComponentContext()
     resolver = local.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", local)
     context = resolver.resolve("uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")

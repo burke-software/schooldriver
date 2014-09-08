@@ -18,17 +18,15 @@ CKEDITOR_UPLOAD_PATH = os.path.join(BASE_DIR, 'media/uploads')
 BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components/')
 
 LOGIN_REDIRECT_URL = "/"
-MULTI_TENANT = False
-if 'MULTI_TENANT' in os.environ:
-    MULTI_TENANT = True
+MULTI_TENANT = os.getenv('MULTI_TENANT', False)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'docker',
-        'USER': 'docker',
-        'PASSWORD': 'docker',
-        'HOST': os.environ.get('DB_1_PORT_5432_TCP_ADDR'),
-        'PORT': os.environ.get('DB_1_PORT_5432_TCP_PORT'),
+        'NAME': os.getenv('DATABASE_NAME', 'postgres'),
+        'USER': os.getenv('DATABASE_USER', 'postgres'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_ADDR', 'db_1'),
+        'PORT': 5432,
     }
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
@@ -466,7 +464,13 @@ CONSTANCE_CONFIG = {
     'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX'),
     'ALLOW_GOOGLE_AUTH': (False, 'Allow users to log in with Google Apps. This requires setting the email field in student and staff.'),
     'GOOGLE_APPS_DOMAIN': ('', 'Used with ALLOW_GOOGLE_AUTH. Google Apps domain to authenticate against. Probably the part after @ on your email address. Example: myschool.com'),
-    'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"')
+    'LDAP_URL': ('', 'Ex: ldap://admin.example.com:389'),
+    'LDAP_NT4_DOMAIN': ('', 'Ex: ADMIN'),
+    'LDAP_BIND_USER': ('', 'Ex: ldap_user'),
+    'LDAP_BIND_PASSWORD': ('', 'Bind user\'s password'),
+    'LDAP_SEARCH_DN': ('', 'DC=admin,DC=example,DC=com'),
+	'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"')
+
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
