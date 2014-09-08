@@ -6,6 +6,7 @@ from django.contrib import admin
 from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 from api.routers import api_urls
 from responsive_dashboard import views as dashboard_views
+from ecwsp.sis.views import AttendanceReportView
 
 dajaxice_autodiscover()
 admin.autodiscover()
@@ -30,6 +31,7 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls) ),
     url(r'^autocomplete/', include('autocomplete_light.urls')),
     url(dajaxice_config.dajaxice_url, include('ecwsp.dajaxice_urls')),
+    (r'^reports/(?P<name>attendance_report)/$', AttendanceReportView.as_view()),
     (r'^reports/', include('scaffold_report.urls')),
     url(r"^su/", include("django_su.urls")),
     url(r'^api/', include(api_urls)),

@@ -1,9 +1,9 @@
-import celery
+from django_sis.celery import app
 from models import AggregateTask
 from django.db import IntegrityError
 import logging
 
-@celery.task
+@app.task
 def benchmark_aggregate_task(functions_and_arguments): #, affected_aggregates=()):
     # flag aggregates that are being recalculated
     #for aggregate in affected_aggregates:

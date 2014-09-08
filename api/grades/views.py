@@ -13,7 +13,7 @@ class GradeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
     queryset = Grade.objects.filter(
         course_section__course__graded = True,
-        ) 
+        ).select_related('student', 'marking_period', 'course_section', 'course_section__course')
 
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     serializer_class = GradeSerializer

@@ -99,7 +99,7 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
         # only show login in group company
         compUsers = User.objects.filter(Q(groups__name='company'))
         context['adminform'].form.fields['login'].queryset = compUsers
-        try:
+        if 'original' in context:
             students = StudentWorker.objects.filter(placement=context['original'].id)
             txt = "<h5>Students working here</h5>"
             for stu in students:
@@ -109,8 +109,6 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
             txt += "<br/><a href=\"/admin/work_study/survey/?q=%s\" target=\"_blank\">Surveys for this company</a>" % \
                 (context['original'].team_name)
             context['adminform'].form.fields['team_name'].help_text = txt
-        except:
-            print >> sys.stderr, "KeyError at /admin/work_study/company/add/  original"
         return super(WorkTeamAdmin, self).render_change_form(request, context, args, kwargs)
 
     def save_model(self, request, obj, form, change):
@@ -236,8 +234,9 @@ class StudentAdmin(admin.ModelAdmin):
         return super(StudentAdmin, self).render_change_form(request, context, *args, **kwargs)
 
     fieldsets = [
-        (None, {'fields': ['is_active', ('first_name', 'last_name'), 'mname', 'sex', 'bday', 'day', 'transport_exception',
-                           'pic', 'unique_id', 'adp_number', 'ssn', 'username', 'work_permit_no',
+        (None, {'fields': [('first_name', 'last_name'), ('mname', 'is_active',), ('username', 'email'),
+                           'sex', 'bday', 'day', 'transport_exception',
+                           'pic', 'unique_id', 'adp_number', 'ssn', 'work_permit_no',
                            'year', 'placement', ('school_pay_rate', 'student_pay_rate'),
                            ('am_route','pm_route'), 'primary_contact']}),
         ('Parent and address', {'fields': ['parent_guardian', 'emergency_contacts', 'street',
@@ -256,7 +255,7 @@ class StudentAdmin(admin.ModelAdmin):
     list_filter = ['day', 'year', 'is_active','placement__cras']
     list_display = ('first_name', 'last_name', 'day', 'company', 'pickUp', 'cra', 'contact')
     search_fields = ['first_name', 'last_name', 'unique_id', 'placement__team_name', 'username', 'id']
-    readonly_fields = ['is_active', 'first_name', 'last_name', 'mname', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']
+    readonly_fields = ['is_active', 'first_name', 'last_name', 'mname', 'email', 'sex', 'bday', 'username', 'year', 'parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']
 admin.site.register(StudentWorker, StudentAdmin)
 admin.site.register(StudentWorkerRoute)
 admin.site.register(PresetComment)

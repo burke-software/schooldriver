@@ -1,0 +1,76 @@
+{% extends "scaffold_report/base.html" %}
+
+{% block content %}
+  <h2>{{ report.get_name|title }}</h2>
+
+  <div class="row">
+    <div class="twelve columns">
+      <div id="scaffold">
+        <div id="scaffold_filters">
+          <div id="scaffold_inert_filters" class="scaffold_active_filters">
+            {% for filter in filters %}
+              {% if filter.default %}
+                {% if not filter.can_remove %}
+                  {% include "scaffold_report/filter.html" %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+        </div>
+
+<section class="tabs">
+          <ul class="tab-nav">
+            <li class="active"><a href="#">Filters</a></li>
+          </ul>
+
+        <div class="tab-content active">
+          <div class="scaffold_active_filters" id="scaffold_active_filters">
+            {% for filter in filters %}
+              {% if filter.default %}
+                {% if filter.can_remove %}
+                  {% include "scaffold_report/filter.html" %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+
+        <div class="row" id="add-new-rule-block">
+          <div class="three columns">
+            <h3 class="filter-subheads">Add Another Filter</h3>
+          </div>
+          <div class="nine columns">
+            <div class="field picker">
+              <select id="add_new_filter" onchange="add_filter(this)">
+                <option value="">Select the rule you want to add</option>
+                {% for filter in filters %}
+                  {% if filter.can_add %}
+                    <option value="{{ filter.get_name }}">{{ filter.get_verbose_name }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        </div>
+
+</section>
+
+        <div id="filter_copy_area" style="display:none;">
+          {% for filter in filters %}
+            {% if filter.can_add %}
+              {% include "scaffold_report/filter.html" %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+        {% for report_button in report.report_buttons %}
+          <div class="medium btn secondary">
+            <button type="submit" onclick="view_results('{{ report_button.name }}')" name="{{ report_button.name }}">{{ report_button.get_name }}</button>
+          </div>
+        {% endfor %}
+
+
+    </div>
+  </div>
+
+{% endblock %}

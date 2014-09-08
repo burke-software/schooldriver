@@ -176,8 +176,8 @@ class StudentAdmin(VersionAdmin, CustomFieldAdmin):
                 'fields': (
                     ('last_name', 'first_name'),
                     ('mname', 'is_active'),
+                    ('username', 'email'),
                     ('date_dismissed', 'reason_left'),
-                    'username',
                     'grad_date',
                     'pic',
                     'alert',

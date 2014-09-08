@@ -13,7 +13,7 @@ from celery import task
 import sys
 
 if 'ecwsp.work_study' in settings.INSTALLED_APPS:
-    
+
     if settings.SYNC_SUGAR:
         from ecwsp.work_study.sugar_sync import SugarSync
         modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
@@ -21,12 +21,12 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
         def update_contacts_from_sugarcrm():
             sugar_sync = SugarSync()
             sugar_sync.update_contacts_from_sugarcrm()
-        
+
         @task()
         def update_contact_to_sugarcrm(contact):
             sugar_sync = SugarSync()
             sugar_sync.update_contact(contact)
-    
+
     @periodic_task(run_every=crontab(hour=20, minute=27))
     def email_cra_nightly():
         """ Email CRA nightly time sheet and student interaction information
@@ -53,7 +53,7 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                             'exception': sys.exc_info()[0],
                             'exception2': sys.exc_info()[1],
                         })
-        
+
         cras = CraContact.objects.filter(email=True).filter(email_all=False)
         for cra in cras:
             msg = ""
@@ -76,15 +76,18 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                             msg += "Timesheet approved by supervisor\n\n"
                         else:
                             msg += "Timesheet not yet approved by supervisor\n\n"
-                            
+
                 # Now get students who are present but did not submit a time card
                 students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P",timesheet__company__cras=cra).exclude(timesheet__date=date.today()).distinct()
                 if students:
                     msg += "The following students were present but did not submit time sheets:\n"
                     for student in students:
-                        msg += "{0}, ".format(student)
+                        try:
+                            msg += "{0}, ".format(student)
+                        except UnicodeDecodeError:
+                            msg += "{0}, ".format(student.id)
                     msg = msg[:-2]
-                
+
                 try:
                     send_mail(subject, msg, from_email, [unicode(cra.name.email)])
                 except:
@@ -109,7 +112,7 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                             msg += "Timesheet approved by supervisor\n\n"
                         else:
                             msg += "Timesheet not yet approved by supervisor\n\n"
-                
+
                 # Now get students who are present but did not submit a time card
                 students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
                 if students:
@@ -117,7 +120,7 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                     for student in students:
                         msg += smart_unicode(student) + ", "
                     msg = msg[:-2]
-                
+
                 try:
                     send_mail(subject, msg, from_email, [unicode(cra.name.email)])
                 except:
@@ -125,13 +128,13 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
                         'exception': sys.exc_info()[0],
                         'exception2': sys.exc_info()[1],
                     })
-        
+
         # Check off time sheets that were processed today (so they aren't processed tomorrow)
         timesheets = TimeSheet.objects.filter(creation_date__month=date.today().month, cra_email_sent=False)
         for timesheet in timesheets:
             timesheet.cra_email_sent = True
             timesheet.save()
-        
+
         # Remind students to submit time sheets
         students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
         subject = "Timesheet not submitted"

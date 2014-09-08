@@ -61,8 +61,6 @@ class Configuration(models.Model):
         'email': ('@change.me', ''),
         'Clear Placement for Inactive Students': ('False', ''),
         'Benchmark-based grading': ('False', ''),
-        'School Name': ('Unnamed School', ''),
-        'School Color': ('', ''),
         'Volunteer Track Required Hours': ('20', ''),
         'Volunteer Track Manager Emails': ('', ''),
         'attendance_disc_tardies_before_disc': ('1', ''),
@@ -77,7 +75,6 @@ class Configuration(models.Model):
         'admissions_inquiry_form_css': ('', 'CSS for Inquiry Form'),
         'admissions_notify_email': ('', 'Send admissions notifications to this email. Comma separated are ok.'),
         'admissions_hide_inquiry_grade': ('', 'IDs of grade (fresh, soph, etc) to exclude on inquiry form. Comma separated are ok.'),
-        'Google Analytics': ('', 'Google Analytics Code'),
         'grades_allow_spreadsheet_import': ('True', 'Allow users to import a spreadsheet to submit grades'),
         'Grade comment length limit': ('500', 'Maximum number of characters allowed in grade comments; values above 500 ignored'),
         'Gradebook extra information': ('averages', "Set to 'averages' to see the class average for each assignment. \
@@ -134,7 +131,7 @@ class Template(models.Model):
     def get_template_path(self, request):
         """ Get template file path, or return False with error message. """
         if self.file:
-            return self.file.path
+            return self.file
         messages.error(request, 'Template %s not found!' % (self.name,))
         return False
 
