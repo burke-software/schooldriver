@@ -6,7 +6,6 @@ import os
 import string
 import tempfile
 import uno
-from com.sun.star.beans import PropertyValue
 
 from ecwsp.sis.template_report import TemplateReport
 
@@ -33,6 +32,7 @@ def uno_save(document, filename, type):
     filename: filename of output without ext
     type: extension, example odt
     """
+    from com.sun.star.beans import PropertyValue
     tmp = tempfile.NamedTemporaryFile()
     if type == "doc":
         properties = (
