@@ -14,7 +14,7 @@ import logging
 
 @permission_required('engrade_sync.change_coursesync')
 def setup(request):
-    course_section_count = CourseSectionSync.objects.count()
+    course_sections_count = CourseSectionSync.objects.count()
     teacher_count = TeacherSync.objects.count()
     school_id = settings.ENGRADE_SCHOOLID
     try:
