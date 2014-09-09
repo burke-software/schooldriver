@@ -1,9 +1,14 @@
+from django.conf import settings
 from django.http import HttpResponse
 from django.core.servers.basehttp import FileWrapper
 
 import os
 import string
 import tempfile
+import uno
+from com.sun.star.beans import PropertyValue
+
+from ecwsp.sis.template_report import TemplateReport
 
 
 def uno_open(file):
@@ -11,13 +16,15 @@ def uno_open(file):
     file -- Location of the file to open
     returns an uno document
     """
-    import uno
-    from com.sun.star.beans import PropertyValue
     local = uno.getComponentContext()
     resolver = local.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", local)
     context = resolver.resolve("uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
     desktop = context.ServiceManager.createInstanceWithContext("com.sun.star.frame.Desktop", context)
-    return desktop.loadComponentFromURL("file://" + str(file) ,"_blank", 0, ())
+    if 'amazonaws' in settings.STATIC_URL:
+        file_url = file.url
+    else:
+        file_url = "file://" + str(file.file)
+    return desktop.loadComponentFromURL(file_url ,"_blank", 0, ())
 
 
 def uno_save(document, filename, type):
@@ -26,27 +33,25 @@ def uno_save(document, filename, type):
     filename: filename of output without ext
     type: extension, example odt
     """
-    import uno
-    from com.sun.star.beans import PropertyValue
     tmp = tempfile.NamedTemporaryFile()
     if type == "doc":
-        properties = ( 
+        properties = (
             PropertyValue("Overwrite",0,True,0),
-            PropertyValue("FilterName",0,"MS Word 97",0)) 
+            PropertyValue("FilterName",0,"MS Word 97",0))
         document.storeToURL("file://" + str(tmp.name), properties)
         content = "application/msword"
         filename += ".doc"
     if type == "docx":
-        properties = ( 
+        properties = (
             PropertyValue("Overwrite",0,True,0),
-            PropertyValue("FilterName",0,"MS Word 2007 XML",0)) 
+            PropertyValue("FilterName",0,"MS Word 2007 XML",0))
         document.storeToURL("file://" + str(tmp.name), properties)
         content = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         filename += ".docx"
     elif type == "pdf":
-        properties = ( 
+        properties = (
             PropertyValue("Overwrite",0,True,0),
-            PropertyValue("FilterName",0,"writer_pdf_Export",0)) 
+            PropertyValue("FilterName",0,"writer_pdf_Export",0))
         document.storeToURL("file://" + str(tmp.name), properties)
         content = "application/pdf"
         filename += ".pdf"
@@ -55,16 +60,16 @@ def uno_save(document, filename, type):
         content = "application/vnd.oasis.opendocument.spreadsheet"
         filename += ".ods"
     elif type == "xlsx":
-        properties = ( 
+        properties = (
             PropertyValue("Overwrite",0,True,0),
-            PropertyValue("FilterName",0,"Calc MS Excel 2007 XML",0)) 
+            PropertyValue("FilterName",0,"Calc MS Excel 2007 XML",0))
         document.storeToURL("file://" + str(tmp.name), properties)
         content = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         filename += ".xlsx"
     elif type == "xls":
-        properties = ( 
+        properties = (
             PropertyValue("Overwrite",0,True,0),
-            PropertyValue("FilterName",0,"MS Excel 97",0)) 
+            PropertyValue("FilterName",0,"MS Excel 97",0))
         document.storeToURL("file://" + str(tmp.name), properties)
         content = "application/vnd.ms-excel"
         filename += ".xls"
@@ -94,7 +99,7 @@ def save_to_response(document, filename, type):
     response = HttpResponse(wrapper, content_type=content)
     response['Content-Length'] = os.path.getsize(tmp.name)
     response['Content-Disposition'] = 'attachment; filename=' + filename
-    
+
     return response
 
 
@@ -104,18 +109,16 @@ def is_number(x):
         return True
     except ValueError:
         return False
-        
+
 
 def new_replace_spreadsheet(infile, outfile, data, type="ods", sheets=False):
     """ An appy pod implimentation, appy is too buggy though """
-    from ecwsp.sis.template_report import TemplateReport
-    
     report = TemplateReport()
     report.data = data
     report.filename = outfile
     return report.pod_save(infile, ext=".ods")
 
-    
+
 def replace_spreadsheet(infile, outfile, data, type="ods", sheets=False):
     """replaces variables with an array or single entry
     data={}
@@ -127,7 +130,7 @@ def replace_spreadsheet(infile, outfile, data, type="ods", sheets=False):
     """
     document = uno_open(infile)
     sheets = document.getSheets()
-    
+
     i = 0
     while i < sheets.getCount():
         sheet = sheets.getByIndex(i)
@@ -159,5 +162,5 @@ def replace_spreadsheet(infile, outfile, data, type="ods", sheets=False):
                 else:
                     found.String = string.replace( found.String, unicode(find),unicode(replace))
                 found = sheet.findNext(found.End, search)
-    
+
     return save_to_response(document, outfile, type)

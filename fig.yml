@@ -1,12 +1,15 @@
 db:
-  image: orchardup/postgresql
+  image: postgres
+redis:
+  image: dockerfile/redis
 web:
   build: .
-  command: python manage.py runserver_plus 0.0.0.0:8000
+  command: ./run.sh
   volumes:
     - .:/code
-    - /home/david/Dropbox/Projects/django-simple-import/simple_import:/usr/local/lib/python2.7/site-packages/simple_import
+      #- /home/david/Dropbox/Projects/django-ldap-groups/ldap_groups:/usr/local/lib/python2.7/dist-packages/ldap_groups
   ports:
     - "8000:8000"
   links:
     - db
+    - redis

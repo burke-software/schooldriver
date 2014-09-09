@@ -1,6 +1,7 @@
 from django_sis.celery import app
 from models import AggregateTask
 from django.db import IntegrityError
+from django_sis.celery import app
 import logging
 
 @app.task

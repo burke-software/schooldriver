@@ -6,9 +6,8 @@ from datetime import date
 import logging
 from django.conf import settings
 
-from celery.task.schedules import crontab
-from celery.decorators import periodic_task
 from celery import task
+from django_sis.celery import app
 
 import sys
 
@@ -17,17 +16,17 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
     if settings.SYNC_SUGAR:
         from ecwsp.work_study.sugar_sync import SugarSync
         modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
-        @periodic_task(run_every=crontab(minute='*/%s' % (modify_date_minutes,)))
+        @app.task
         def update_contacts_from_sugarcrm():
             sugar_sync = SugarSync()
             sugar_sync.update_contacts_from_sugarcrm()
 
-        @task()
+        @app.task
         def update_contact_to_sugarcrm(contact):
             sugar_sync = SugarSync()
             sugar_sync.update_contact(contact)
-
-    @periodic_task(run_every=crontab(hour=20, minute=27))
+    
+    @app.task
     def email_cra_nightly():
         """ Email CRA nightly time sheet and student interaction information
         """

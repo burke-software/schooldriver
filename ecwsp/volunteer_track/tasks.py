@@ -6,9 +6,10 @@ from datetime import date
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
+from django_sis.celery import app
 
 if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS:
-    @periodic_task(run_every=crontab(hour=20, minute=29))
+    @app.task
     def handle():
         """ Emails subscribed volunteer managers daily site submissions
         """

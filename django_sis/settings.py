@@ -1,4 +1,6 @@
+from __future__ import absolute_import
 import os, sys, logging
+from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = (
@@ -15,16 +17,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 CKEDITOR_UPLOAD_PATH = os.path.join(BASE_DIR, 'media/uploads')
 BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components/')
 
-# Django stuff
 LOGIN_REDIRECT_URL = "/"
+MULTI_TENANT = os.getenv('MULTI_TENANT', False)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'docker',
-        'USER': 'docker',
-        'PASSWORD': 'docker',
-        'HOST': os.environ.get('DB_1_PORT_5432_TCP_ADDR'),
-        'PORT': os.environ.get('DB_1_PORT_5432_TCP_PORT'),
+        'NAME': os.getenv('DATABASE_NAME', 'postgres'),
+        'USER': os.getenv('DATABASE_USER', 'postgres'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_ADDR', 'db_1'),
+        'PORT': 5432,
     }
 }
 EMAIL_HOST = 'daphne.cristoreyny.org'
@@ -96,8 +98,6 @@ STATICFILES_FINDERS = (
     'djangobower.finders.BowerFinder',
     'compressor.finders.CompressorFinder',
 )
-#STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
-#STATICFILES_STORAGE = 'ecwsp.storage.LessObnoxiousCachedStaticFilesStorage'
 
 DEBUG = True
 TEMPLATE_DEBUG = True
@@ -126,21 +126,18 @@ ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
 GRAPPELLI_INDEX_DASHBOARD = 'ecwsp.dashboard.CustomIndexDashboard'
 GRAPPELLI_ADMIN_TITLE = '<img src="/static/images/logo.png"/ style="height: 30px; margin-left: -10px; margin-top: -8px; margin-bottom: -11px;">'
 
-
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
 #LDAP
 LDAP = False
-if LDAP:
-    LDAP_SERVER = 'admin.example.org'
-    NT4_DOMAIN = 'ADMIN'
-    LDAP_PORT = 389
-    LDAP_URL = 'ldap://%s:%s' % (LDAP_SERVER, LDAP_PORT)
-    SEARCH_DN = 'DC=admin,DC=example,DC=org'
-    SEARCH_FIELDS = ['mail','givenName','sn','sAMAccountName','memberOf', 'cn']
-    BIND_USER = 'ldap'
-    BIND_PASSWORD = ''
-    AUTHENTICATION_BACKENDS += ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend',)
+LDAP_SERVER = 'admin.example.org'
+NT4_DOMAIN = 'ADMIN'
+LDAP_PORT = 389
+LDAP_URL = 'ldap://%s:%s' % (LDAP_SERVER, LDAP_PORT)
+SEARCH_DN = 'DC=admin,DC=example,DC=org'
+SEARCH_FIELDS = ['mail','givenName','sn','sAMAccountName','memberOf', 'cn']
+BIND_USER = 'ldap'
+BIND_PASSWORD = ''
 
 #Google Apps
 GAPPS = False
@@ -285,14 +282,6 @@ CRND_ROUTES = False
 ATTENDANCE_COURSE_BASED = False
 
 
-#OMR
-QUEXF_URL = ""
-QUEXF_DB_NAME = 'quexf'
-QUEXF_DB_PASS = ''
-QUEXF_DB_USER = ''
-QUEXF_DB_HOST = ''
-
-
 #Canvas LMS
 # oauth token, you must make this in Canvas.
 # https://canvas.instructure.com/doc/api/file.oauth.html
@@ -315,13 +304,8 @@ INSTALLED_APPS = (
     'ecwsp.naviance_sso',
     'rosetta',
     # These can be enabled if desired but the default is off
-    #'ldap_groups',
-    #'raven.contrib.django',
     #'ecwsp.integrations.schoolreach',
-    #'ecwsp.omr',
     #'ecwsp.integrations.canvas_sync',
-    #'google_auth',
-    #'ldap_groups',
 )
 
 COMPRESS_PRECOMPILERS = (
@@ -329,31 +313,65 @@ COMPRESS_PRECOMPILERS = (
    ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
-
 REDIS_ADDR = os.environ.get('REDIS_1_PORT_6379_TCP_ADDR', 'localhost')
 REDIS_PORT = os.environ.get('REDIS_1_PORT_6379_TCP_PORT', '6379')
-BROKER_URL = os.environ.get('REDISCLOUD_URL') or 'redis://{}:{}/0'.format(REDIS_ADDR, REDIS_PORT)
+REDIS_URL = os.environ.get('REDISCLOUD_URL') or 'redis://{}:{}/0'.format(REDIS_ADDR, REDIS_PORT)
+
+from redisify import redisify
+if REDIS_URL:
+    CACHES = redisify(default=REDIS_URL)
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
+
+BROKER_URL = REDIS_URL
 BROKER_TRANSPORT_OPTIONS = {
     'fanout_prefix': True,
     'fanout_patterns': True,
 }
+
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+from celery.schedules import crontab
+CELERYBEAT_SCHEDULE = {
+    'cache-grades-nightly': {
+        'task': 'ecwsp.sis.tasks.build_grade_cache',
+        'schedule': crontab(hour=23, minute=1),
+    },
+    'sent-admissions-email': {
+        'task': 'ecwsp.admissions.tasks.email_admissions_new_inquiries',
+        'schedule': crontab(hour=23, minute=16),
+    },
+    'naviance-create-students': {
+        'task': 'ecwsp.naviance_sso.tasks.create_new_naviance_students',
+        'schedule': crontab(hour=23, minute=31),
+    },
+    'volunteer-emails': {
+        'task': 'ecwsp.volunteer_track.tasks.handle',
+        'schedule': crontab(hour=23, minute=46),
+    },
+    'email_cra_nightly': {
+        'task': 'email_cra_nightly',
+        'schedule': crontab(hour=0, minute=1),
+    },
+    'update_contacts_from_sugarcrm': {
+        'task': 'ecwsp.work_study.update_contacts_from_sugarcrm',
+        'schedule': timedelta(minutes=30),
+    },
+}
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH2_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH2_SECRET')
 
 # this will load additional settings from the file settings_local.py
 try:
-    from settings_server import *
+    from .settings_server import *
 except ImportError:
     print("Warning: Could not import settings_server.py")
 try:
-    from settings_local import *
+    from .settings_local import *
 except ImportError:
     print("Warning: Could not import settings_local.py")
 
@@ -363,18 +381,39 @@ try:  # prefix cache based on school name to avoid collisions.
 except NameError:
     pass # Not using cache
 
-if DEBUG:
-    CELERY_ALWAYS_EAGER = True
-CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
-
 STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 # These are required add ons that we always want to have
-INSTALLED_APPS = (
-    'autocomplete_light',
+if MULTI_TENANT:
+    SHARED_APPS = (
+        'tenant_schemas',
+    )
+else:
+    SHARED_APPS = ()
+
+SHARED_APPS = SHARED_APPS + (
+    'constance',
+    'constance.backends.database',
+    'ecwsp.customers',
+    'ecwsp.administration',
+    'south',
+    'django.contrib.contenttypes',
     'grappelli.dashboard',
     'grappelli',
+    'django.contrib.admin',
+    'django.contrib.staticfiles',
+    'django.contrib.auth',
+    'django.contrib.sessions',
+)
+TENANT_APPS = (
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.admin',
+    'constance.backends.database',
+    'autocomplete_light',
+    'social.apps.django_app.default',
+    'ldap_groups',
     'ecwsp.sis',
     'ecwsp.administration',
     'ecwsp.schedule',
@@ -385,14 +424,9 @@ INSTALLED_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
-    'social.apps.django_app.default',
+    'south',
     'reversion',
     'djcelery',
-    'django.contrib.admin',
-    'django.contrib.staticfiles',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'localflavor',
     'dajax',
     'dajaxice',
@@ -421,17 +455,33 @@ INSTALLED_APPS = (
     'constance.backends.database',
 ) + INSTALLED_APPS
 
+INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+TENANT_MODEL = "customers.Client"
+
 CONSTANCE_CONFIG = {
     'SCHOOL_NAME': ('Unnamed School', 'School name'),
     'SCHOOL_COLOR': ('', 'hex color code. Ex: $1122FF'),
     'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX'),
     'ALLOW_GOOGLE_AUTH': (False, 'Allow users to log in with Google Apps. This requires setting the email field in student and staff.'),
+    'GOOGLE_APPS_DOMAIN': ('', 'Used with ALLOW_GOOGLE_AUTH. Google Apps domain to authenticate against. Probably the part after @ on your email address. Example: myschool.com'),
+    'LDAP_URL': ('', 'Ex: ldap://admin.example.com:389'),
+    'LDAP_NT4_DOMAIN': ('', 'Ex: ADMIN'),
+    'LDAP_BIND_USER': ('', 'Ex: ldap_user'),
+    'LDAP_BIND_PASSWORD': ('', 'Bind user\'s password'),
+    'LDAP_SEARCH_DN': ('', 'DC=admin,DC=example,DC=com'),
+	'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"')
+
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
 import django
 if django.get_version()[:3] != '1.7':
     INSTALLED_APPS += ('south',)
+    if MULTI_TENANT:  # Would happen automatically otherwise
+        SOUTH_DATABASE_ADAPTERS = {
+            'default': 'south.db.postgresql_psycopg2',
+        }
+
 
 ON_HEROKU = False
 if 'ON_HEROKU' in os.environ:
@@ -439,6 +489,9 @@ if 'ON_HEROKU' in os.environ:
 
 if DEBUG and not ON_HEROKU:
     INSTALLED_APPS += ('django_extensions',)
+
+if LDAP:
+    AUTHENTICATION_BACKENDS += ('ldap_groups.accounts.backends.ActiveDirectoryGroupMembershipSSLBackend',)
 
 TEMPLATE_CONTEXT_PROCESSORS += (
     'social.apps.django_app.context_processors.backends',
@@ -481,6 +534,9 @@ if ON_HEROKU:
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
     DATABASES['default'] = dj_database_url.config()
 
+if MULTI_TENANT:
+    DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
+    MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
 
 # Keep this *LAST* to avoid overwriting production DBs with test data
 if 'test' in sys.argv:
