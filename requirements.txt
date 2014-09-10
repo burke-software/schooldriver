@@ -29,7 +29,7 @@ django-floppy-gumby==0.1
 django-floppyforms==1.2.0
 django-grappelli==2.5.3
 python-ldap
-django-ldap-groups-bsc
+django-ldap-groups-bsc==0.1.5
 django-libsass==0.2
 django-localflavor==1.0
 django-mass-edit==2.2
