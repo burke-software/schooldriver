@@ -276,6 +276,27 @@ class Mark(models.Model):
     mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     normalized_mark = models.FloatField(blank=True, null=True)
     letter_grade = models.CharField(max_length=3, blank=True, null=True, help_text="Overrides numerical mark.")
+
+    # This controls how individual Marks with letter grades are used in averages
+    letter_grade_behavior = {
+        # dict key is letter grade
+        # dict value is tuple of *normalized* value for calculations and
+        # whether to dominate any average, e.g. an I on one Mark makes any
+        # average that includes it also I.
+        "I": (None, True),
+        "P": (1, False),
+        "F": (0, False),
+        # Should A be 90 or 100? A-D aren't used in calculations yet, so just omit them.
+        "HP": (1, False),
+        "LP": (1, False),
+        "M": (0, False),
+        # Baltimore
+        "MI": (0, False),
+        "INC": (0, False),
+        "SUB": (None, False),
+        "EXC": (None, False),
+    }
+
     class Meta:
         unique_together = ('item', 'demonstration', 'student',)
 
@@ -323,7 +344,7 @@ class Mark(models.Model):
             try:
                 if self.item.points_possible is None:
                     raise Exception("Cannot assign a letter grade to a mark whose item does not have a points possible value.")
-                self.mark = Grade.letter_grade_behavior[self.letter_grade][0]
+                self.mark = self.letter_grade_behavior[self.letter_grade][0]
                 if self.mark is not None:
                     # numerical equivalents for letter grade are given as normalized values
                     self.mark *= self.item.points_possible
