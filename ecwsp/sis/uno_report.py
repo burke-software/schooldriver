@@ -22,7 +22,7 @@ def uno_open(file):
     if 'amazonaws' in settings.STATIC_URL:
         file_url = file.url
     else:
-        file_url = "file://" + str(file.file)
+        file_url = "file://" + str(file)
     return desktop.loadComponentFromURL(file_url ,"_blank", 0, ())
 
 
