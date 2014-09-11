@@ -150,15 +150,23 @@ class CanvasSync:
                 department_id = course.department_id
             else:
                 department_id = ""
+            try:
+                term_id = MarkingPeriod.objects.filter(coursesection__course=course).first().school_year_id
+                start_date = course.start_date.strftime('%Y-%m-%d')
+                end_date = course.end_date.strftime('%Y-%m-%d')
+            except AttributeError:
+                term_id = ""
+                start_date = ""
+                end_date = ""
             line = u'"%s","%s","%s","%s","%s","%s","%s","%s"' % (
                 course.id,
                 course.shortname,
                 course.fullname,
                 department_id,
-                MarkingPeriod.objects.filter(coursesection__course=course).first().school_year_id,
+                term_id,
                 'active',
-                course.start_date.strftime('%Y-%m-%d'),
-                course.end_date.strftime('%Y-%m-%d'),
+                start_date,
+                end_date,
             )
             result += line + u'\n'
         return result
