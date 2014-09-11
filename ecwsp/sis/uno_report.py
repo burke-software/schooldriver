@@ -1,3 +1,4 @@
+from django.db.models.fields.files import FieldFile
 from django.conf import settings
 from django.http import HttpResponse
 from django.core.servers.basehttp import FileWrapper
@@ -6,14 +7,13 @@ import os
 import string
 import tempfile
 import uno
-from com.sun.star.beans import PropertyValue
 
 from ecwsp.sis.template_report import TemplateReport
 
 
 def uno_open(file):
     """This function should really just be in uno
-    file -- Location of the file to open
+    file -- Location of the file to open - must be a FieldFile
     returns an uno document
     """
     local = uno.getComponentContext()
@@ -23,7 +23,10 @@ def uno_open(file):
     if 'amazonaws' in settings.STATIC_URL:
         file_url = file.url
     else:
-        file_url = "file://" + str(file.file)
+        if isinstance(file, FieldFile):
+            # We want the File then
+            file = file.file
+        file_url = "file://" + str(file)
     return desktop.loadComponentFromURL(file_url ,"_blank", 0, ())
 
 
@@ -33,6 +36,7 @@ def uno_save(document, filename, type):
     filename: filename of output without ext
     type: extension, example odt
     """
+    from com.sun.star.beans import PropertyValue
     tmp = tempfile.NamedTemporaryFile()
     if type == "doc":
         properties = (

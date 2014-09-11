@@ -145,20 +145,28 @@ class CanvasSync:
         """ Create csv string for courses
         """
         result = u"course_id,short_name,long_name,account_id,term_id,status,start_date,end_date\n"
-        for course in Course.objects.filter(coursesection__marking_period__school_year__active_year=True).distinct():
+        for course in Course.objects.filter(is_active=True).distinct():
             if course.department:
                 department_id = course.department_id
             else:
                 department_id = ""
+            try:
+                term_id = MarkingPeriod.objects.filter(coursesection__course=course).first().school_year_id
+                start_date = course.start_date.strftime('%Y-%m-%d')
+                end_date = course.end_date.strftime('%Y-%m-%d')
+            except AttributeError:
+                term_id = ""
+                start_date = ""
+                end_date = ""
             line = u'"%s","%s","%s","%s","%s","%s","%s","%s"' % (
                 course.id,
                 course.shortname,
                 course.fullname,
                 department_id,
-                MarkingPeriod.objects.filter(coursesection__course=course).first().school_year_id,
+                term_id,
                 'active',
-                course.start_date.strftime('%Y-%m-%d'),
-                course.end_date.strftime('%Y-%m-%d'),
+                start_date,
+                end_date,
             )
             result += line + u'\n'
         return result

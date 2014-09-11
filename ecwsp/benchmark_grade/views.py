@@ -18,7 +18,6 @@ from ecwsp.benchmark_grade.forms import GradebookFilterForm, ItemForm, Demonstra
 from ecwsp.benchmarks.models import Benchmark
 from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_get_average_and_pk, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
 from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule
-from ecwsp.benchmark_grade.tasks import benchmark_aggregate_task
 
 from decimal import Decimal
 import logging

@@ -47,17 +47,17 @@ def select_grade_method(request):
     if request.user.has_perm('grades.change_own_grade') or request.user.has_pem('grades.change_grade'):
         options += ['M']
         allow_manual = True
-    
+
     if not pref.gradebook_preference and len(options) == 1:
         pref.gradebook_preference = options[0]
         pref.save()
-    
+
     if pref.gradebook_preference and (not 'override' in request.GET or request.POST):
         if 'next' in request.GET:
             next_page = request.GET['next']
             if next_page == "teacher_grade":
                 return redirect('ecwsp.grades.views.teacher_grade')
-    
+
     return render_to_response(
         'grades/select_grade_method.html',
         {'request': request, 'allow_spreadsheet': allow_spreadsheet, 'allow_manual': allow_manual},
@@ -75,7 +75,7 @@ def teacher_grade(request):
             marking_period__school_year__active_year=True,
         ).filter(teachers=teacher).distinct()
     pref = UserPreference.objects.get_or_create(user=request.user)[0].gradebook_preference
-    
+
     if "ecwsp.engrade_sync" in settings.INSTALLED_APPS:
         if request.method == 'POST':
             form = EngradeSyncForm(request.POST)
@@ -108,7 +108,7 @@ def teacher_grade(request):
         {'request': request, 'course_sections': course_sections, 'form': form, 'pref': pref},
         RequestContext(request, {}),
         )
-    
+
 
 @permission_required('grades.change_grade')
 def teacher_grade_submissions(request):
@@ -121,10 +121,10 @@ def teacher_grade_submissions(request):
     except:
         marking_period = None
     course_sections = CourseSection.objects.filter(marking_period=marking_period)
-    
+
     for teacher in teachers:
-        teacher.course_sections = course_sections.filter(teacher=teacher)
-    
+        teacher.course_sections = course_sections.filter(coursesectionteacher=teacher)
+
     return render_to_response(
         'grades/teacher_grade_submissions.html',
         {'teachers':teachers, 'marking_period':marking_period},
@@ -142,32 +142,32 @@ def view_comment_codes(request):
 class StudentGradesheet(DetailView):
     model = Student
     template_name = "grades/student_grades.html"
-    
+
     @method_decorator(permission_required('grades.change_grade'))
     def dispatch(self, *args, **kwargs):
         return super(StudentGradesheet, self).dispatch(*args, **kwargs)
-    
+
     def get_context_data(self, **kwargs):
         context = super(StudentGradesheet, self).get_context_data(**kwargs)
         context['letter_grade_required_for_pass'] = Configuration.get_or_default('letter_grade_required_for_pass', '60').value
         context['school_years'] = SchoolYear.objects.filter(markingperiod__coursesection__enrollments=self.object).distinct()
         context['default_school_year'] = context['school_years'].first()
         return context
-    
+
 
 class CourseSectionGrades(FormMixin, DetailView):
     """ This view is for inputing grades. It supports manual entry or uploading a spreadsheet """
     model = CourseSection
     template_name = "grades/course_grades.html"
     form_class = GradeUpload
-    
+
     def get_success_url(self):
         return reverse('course-section-grades', kwargs={'pk': self.object.pk})
-    
+
     @method_decorator(user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade')))
     def dispatch(self, *args, **kwargs):
         return super(CourseSectionGrades, self).dispatch(*args, **kwargs)
-    
+
     def get_context_data(self, **kwargs):
         context = super(CourseSectionGrades, self).get_context_data(**kwargs)
         form_class = self.get_form_class()
@@ -188,7 +188,7 @@ class CourseSectionGrades(FormMixin, DetailView):
             context['edit'] = False
         context['letter_grade_required_for_pass'] = Configuration.get_or_default('letter_grade_required_for_pass', '60').value
         return context
-    
+
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         form_class = self.get_form_class()
@@ -197,7 +197,7 @@ class CourseSectionGrades(FormMixin, DetailView):
             return self.form_valid(form)
         else:
             return self.form_invalid(form)
-    
+
     def form_valid(self, form):
         from ecwsp.sis.importer import Importer
         course_section = self.object
@@ -211,9 +211,9 @@ class CourseSectionGrades(FormMixin, DetailView):
         return super(CourseSectionGrades, self).form_valid(form)
 
 
-@user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade'))   
+@user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade'))
 def teacher_grade_download(request, id, type=None):
-    """ Download grading spreadsheet of requested class 
+    """ Download grading spreadsheet of requested class
     id: course section id
     type: filetype (ods or xls)"""
     if not type:
@@ -225,11 +225,11 @@ def teacher_grade_download(request, id, type=None):
     data={}
     data['$students'] = []
     data['$username'] = []
-    
+
     for student in Student.objects.filter(courseenrollment__course_section=course_section):
         data['$students'].append(unicode(student))
         data['$username'].append(unicode(student.username))
-    
+
     if True:
         # Libreoffice crashes sometimes, maybe 5% of the time. So try it some more!
         for x in range(0,3):

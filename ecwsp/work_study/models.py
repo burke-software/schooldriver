@@ -264,7 +264,7 @@ class CompContract(models.Model, CustomFieldModel):
     school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True)
     number_students = models.IntegerField(blank=True, null=True)
     
-    payment = models.ForeignKey(PaymentOption, default=9999, blank=True, null=True)
+    payment = models.ForeignKey(PaymentOption, blank=True, null=True)
     student_functional_responsibilities = models.ManyToManyField(StudentFunctionalResponsibility, blank=True, null=True)
     student_functional_responsibilities_other = models.TextField(blank=True)
     student_desired_skills = models.ManyToManyField(StudentDesiredSkill, blank=True, null=True)

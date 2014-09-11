@@ -8,6 +8,10 @@ from ecwsp.administration.models import Configuration
 
 class Migration(DataMigration):
 
+    depends_on = (
+        ("constance.backends.database", "0002_auto__chg_field_constance_key__add_unique_constance_key"),
+    )
+
     def forwards(self, orm):
         "Write your forwards methods here."
         # Note: Don't use "from appname.models import ModelName". 

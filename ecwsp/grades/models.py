@@ -232,16 +232,6 @@ class Grade(models.Model):
     override_final = models.BooleanField(default=False, help_text="Override final grade for marking period instead of calculating it.")
     comment = models.CharField(max_length=500, blank=True, validators=[grade_comment_length_validator])
     letter_grade = models.CharField(max_length=2, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
-    letter_grade_behavior = {
-        # Letter grade: (*normalized* value for calculations, dominate any average)
-        "I": (None, True),
-        "P": (1, False),
-        "F": (0, False),
-        # Should A be 90 or 100? A-D aren't used in calculations yet, so just omit them.
-        "HP": (1, False),
-        "LP": (1, False),
-        "M": (0, False),
-    }
     letter_grade_choices = letter_grade_choices
 
     class Meta:
