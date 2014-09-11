@@ -486,11 +486,11 @@ if django.get_version()[:3] != '1.7':
         }
 
 
-ON_HEROKU = False
-if 'ON_HEROKU' in os.environ:
-    ON_HEROKU = True
+USE_S3 = False
+if 'USE_S3' in os.environ:
+    USE_S3 = True
 
-if DEBUG and not ON_HEROKU:
+if DEBUG and not USE_S3:
     INSTALLED_APPS += ('django_extensions',)
 
 if LDAP:
@@ -517,7 +517,7 @@ SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
     'social.backends.google.GoogleOAuth2',
 )
 
-if ON_HEROKU:
+if USE_S3:
     # Use S3
     INSTALLED_APPS += ('storages', 'collectfast')
     AWS_PRELOAD_METADATA = True
@@ -533,9 +533,9 @@ if ON_HEROKU:
         globals()[environment_variable] = os.environ[environment_variable]
     COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
     # Use Heroku's DB
-    import dj_database_url
+    #import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
-    DATABASES['default'] = dj_database_url.config()
+    #DATABASES['default'] = dj_database_url.config()
 
 if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
