@@ -21,6 +21,7 @@ from ecwsp.benchmark_grade.models import benchmark_get_or_flush, benchmark_get_c
 from ecwsp.schedule.models import MarkingPeriod, Department, CourseSection
 from ecwsp.sis.models import Student
 from ecwsp.benchmark_grade.tasks import benchmark_aggregate_task
+from ecwsp.grades.models import Grade
 from django.db.models import Avg, Sum, Min, Max
 import logging
 from decimal import Decimal, ROUND_HALF_UP
@@ -262,6 +263,20 @@ def gradebook_recalculate_on_item_change(item, students=None, old_item=None):
         # recalculate aggregates for affected marking periods
         for marking_period in marking_periods:
             if affects_overall_course_section:
+                # Emergency fix: clear out the old Grades.grade value.
+                # If we don't, the custom Aggregate.__getattribute__ won't
+                # ever replace a valid grade with None, even when the user
+                # erases all grades from the gradebook.
+                try:
+                    g = Grade.objects.get(
+                        student=student,
+                        course_section=course_section,
+                        marking_period=marking_period
+                    )
+                    g.set_grade(None)
+                    g.save()
+                except Grade.DoesNotExist:
+                    pass
                 funcs_and_args.append((benchmark_calculate_course_aggregate, (student, course_section, marking_period)))
                 aggregates += Aggregate.objects.filter(student=student, course_section=course_section, marking_period=marking_period, category=None)
             for category_as_course in affected_categories_as_courses:
