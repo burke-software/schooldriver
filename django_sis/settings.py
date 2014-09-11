@@ -311,6 +311,12 @@ INSTALLED_APPS = (
     #'ecwsp.integrations.canvas_sync',
 )
 
+if os.getenv('RAVEN_DSN'):
+    INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
+    RAVEN_CONFIG = {
+        'dsn': os.getenv('RAVEN_DSN'),
+    }
+
 COMPRESS_PRECOMPILERS = (
    ('text/coffeescript', 'coffee --compile --stdio'),
    ('text/x-scss', 'django_libsass.SassCompiler'),
