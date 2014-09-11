@@ -57,7 +57,6 @@ LANGUAGES = (
   ('es', 'Spanish'),
   ('en', 'English'),
 )
-SITE_ID = 1
 INTERNAL_IPS = ('127.0.0.1',)
 USE_I18N = True
 SECRET_KEY = '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y'
@@ -99,8 +98,12 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-DEBUG = True
-TEMPLATE_DEBUG = True
+IS_PRODUCTION = os.getenv('IS_PRODUCTION', False)
+if IS_PRODUCTION:
+    DEBUG = False
+else:
+    DEBUG = True
+TEMPLATE_DEBUG = DEBUG
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
 #BOWER
