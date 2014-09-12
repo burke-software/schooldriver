@@ -6,6 +6,7 @@ from ecwsp.administration.models import Configuration
 
 from django import forms
 from django.contrib.admin import widgets as adminwidgets
+from django.db.utils import ProgrammingError
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
@@ -159,7 +160,10 @@ class ReportBuilderForm(forms.Form):
 class ReportTemplateForm(StudentReportWriterForm):
     date_begin = None
     date_end = None
-    student = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+    try:
+        student = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+    except ProgrammingError:
+        pass
 
     def clean(self):
         data = self.cleaned_data

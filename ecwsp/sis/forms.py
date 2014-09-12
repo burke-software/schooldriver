@@ -2,6 +2,7 @@ import floppyforms as forms
 from django.contrib.admin import widgets as adminwidgets
 from django.contrib import messages
 from django.conf import settings
+from django.db.utils import ProgrammingError
 
 from tempfile import mkstemp
 
@@ -28,11 +29,18 @@ class UserPreferenceForm(forms.ModelForm):
 
 
 class DeletedStudentLookupForm(forms.Form):
-    student = autocomplete_light.ChoiceField('StudentUserAutocomplete')
+    # See https://github.com/yourlabs/django-autocomplete-light/issues/315 
+    try:
+        student = autocomplete_light.ChoiceField('StudentUserAutocomplete')
+    except ProgrammingError:
+        pass
 
 
 class StudentLookupForm(forms.Form):
-    student = autocomplete_light.ChoiceField('StudentActiveStudentAutocomplete')
+    try:
+        student = autocomplete_light.ChoiceField('StudentActiveStudentAutocomplete')
+    except ProgrammingError:
+        pass
 
 
 class UploadFileForm(forms.Form):
@@ -90,7 +98,10 @@ class YearSelectForm(forms.Form):
 class StudentSelectForm(TimeBasedForm):
     """ Generic student selection form."""
     all_students = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':''}))
-    student = autocomplete_light.ChoiceField('StudentActiveStudentAutocomplete')
+    try:
+        student = autocomplete_light.ChoiceField('StudentActiveStudentAutocomplete')
+    except ProgrammingError:
+        pass
     sort_by = forms.ChoiceField(choices=(('last_name', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
     filter_year = forms.ModelMultipleChoiceField(required=False, queryset=GradeLevel.objects.all())
     filter_cohort = forms.ModelMultipleChoiceField(required=False, queryset=Cohort.objects.all())

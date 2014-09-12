@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.admin import widgets as adminwidgets
 from django.conf import settings
+from django.db.utils import ProgrammingError
 
 from models import StudentAttendance, AttendanceStatus
 from ecwsp.sis.models import Student
@@ -53,7 +54,10 @@ class AttendanceViewForm(forms.Form):
     all_years = forms.BooleanField(required=False, help_text="If check report will contain all student records. Otherwise it will only show current year.")
     order_by = forms.ChoiceField(initial=0, choices=(('Date','Date'),('Status','Status'),))
     include_private_notes = forms.BooleanField(required=False)
-    student = autocomplete_light.ChoiceField('StudentUserAutocomplete')
+    try:
+        student = autocomplete_light.ChoiceField('StudentUserAutocomplete')
+    except ProgrammingError:
+        pass
 
 
 class AttendanceDailyForm(forms.Form):
