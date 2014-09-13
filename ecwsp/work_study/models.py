@@ -11,6 +11,7 @@ from django.dispatch import dispatcher
 from django.db.models import signals
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils.html import strip_tags
+from constance import config
 import re
 
 import datetime
@@ -318,7 +319,7 @@ class CompContract(models.Model, CustomFieldModel):
         report = TemplateReport()
         report.data['contract'] = self
         report.filename = unicode(self.company) + "_contract"
-        if settings.PREFERED_FORMAT == "m":
+        if config.PREFERED_FORMAT == "m":
             report.file_format = "doc"
         else:
             report.file_format = "odt"

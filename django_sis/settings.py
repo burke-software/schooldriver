@@ -29,13 +29,19 @@ DATABASES = {
         'PORT': 5432,
     }
 }
-EMAIL_HOST = 'daphne.cristoreyny.org'
-# Prefered file format, may be changed in user preferences.
-# Default o
-# o = Open Document
-# m = Microsoft Binary
-# x = Microsoft XML
-PREFERED_FORMAT = 'o'
+
+for environment_variable in (
+    'EMAIL_HOST',
+    'EMAIL_HOST_USER',
+    'EMAIL_HOST_PASSWORD',
+    'EMAIL_PORT',
+    'EMAIL_USE_TLS',
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+    'AWS_STORAGE_BUCKET_NAME',
+):
+    globals()[environment_variable] = os.getenv(environment_variable)
+
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
@@ -478,7 +484,8 @@ CONSTANCE_CONFIG = {
     'LDAP_BIND_USER': ('', 'Ex: ldap_user'),
     'LDAP_BIND_PASSWORD': ('', 'Bind user\'s password'),
     'LDAP_SEARCH_DN': ('', 'DC=admin,DC=example,DC=com'),
-	'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"')
+    'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"'),
+    'PREFERED_FORMAT': ('o', 'Prefered file format, may be changed in user preferences. o = Open Document Format (odt), m = Microsoft Binary (doc), x = Office Open XML (docx)'),
 
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
@@ -530,13 +537,6 @@ if USE_S3:
     AWS_QUERYSTRING_AUTH = False
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-    for environment_variable in (
-        'AWS_ACCESS_KEY_ID',
-        'AWS_SECRET_ACCESS_KEY',
-        'AWS_STORAGE_BUCKET_NAME',
-    ):
-        # Cower, all ye Stack Overflow pedants!
-        globals()[environment_variable] = os.environ[environment_variable]
     COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
     # Use Heroku's DB
     #import dj_database_url
