@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
+from ecwsp.sis.helper_functions import get_base_url
 from django_sis.celery import app
 
 import sys
@@ -44,7 +45,7 @@ def email_admissions_new_inquiries():
         msg = "The following inquiries were submitted today\n"
         for inquiry in new_inquiries:
             msg += '\n<a href="{0}{1}">{2} {3}</a>\n'.format(
-                settings.BASE_URL,
+                get_base_url(),
                 reverse('admin:admissions_applicant_change', args=(inquiry.id,)),
                 inquiry.fname,
                 inquiry.lname)

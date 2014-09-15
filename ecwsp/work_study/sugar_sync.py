@@ -1,4 +1,4 @@
-from django.conf import settings
+from constance import config
 from django.core.exceptions import SuspiciousOperation
 from ecwsp.administration.models import Configuration
 from ecwsp.work_study.models import Contact
@@ -8,11 +8,11 @@ import md5
 import datetime
 
 class SugarSync:
-    if settings.SYNC_SUGAR:
-        username = settings.SUGAR_USERNAME
-        password = md5.md5(settings.SUGAR_PASSWORD).hexdigest()
+    if config.SUGAR_SYNC:
+        username = config.SUGAR_USERNAME
+        password = md5.md5(config.SUGAR_PASSWORD).hexdigest()
         session = ''
-        client = suds.client.Client(settings.SUGAR_URL + '/service/v2/soap.php?wsdl', location=settings.SUGAR_URL + '/service/v2/soap.php')
+        client = suds.client.Client(config.SUGAR_URL + '/service/v2/soap.php?wsdl', location=config.SUGAR_URL + '/service/v2/soap.php')
         
         def __init__(self):
             self.login()

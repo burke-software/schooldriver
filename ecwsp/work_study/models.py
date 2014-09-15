@@ -32,7 +32,7 @@ from celery.contrib.methods import task
 
 from ecwsp.administration.models import Configuration, Template
 from ecwsp.sis.models import Student
-from ecwsp.sis.helper_functions import CharNullField
+from ecwsp.sis.helper_functions import CharNullField, get_base_url
 from ecwsp.sis.template_report import TemplateReport
 
 class CraContact(models.Model):
@@ -76,7 +76,7 @@ class Contact(models.Model):
         
     def save(self, sync_sugar=True, *args, **kwargs):
         super(Contact, self).save(*args, **kwargs)
-        if settings.SYNC_SUGAR and sync_sugar:
+        if config.SUGAR_SYNC and sync_sugar:
             from ecwsp.work_study.tasks import update_contact_to_sugarcrm
             update_contact_to_sugarcrm.delay(self)
     
@@ -767,7 +767,7 @@ class TimeSheet(models.Model):
                 sendTo = self.student.primary_contact.email
                 subject = "Time Sheet for " + str(self.student)
                 msg = "Hello " + unicode(self.student.primary_contact.fname) + ",\nPlease click on the link below to approve the time sheet.\n" + \
-                    settings.BASE_URL + "/work_study/approve?key=" + str(self.supervisor_key)
+                    get_base_url() + "/work_study/approve?key=" + str(self.supervisor_key)
                 from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 send_mail(subject, msg, from_addr, [sendTo])
             except:

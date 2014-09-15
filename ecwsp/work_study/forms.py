@@ -12,6 +12,7 @@ from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
 
 from django.conf import settings
+from constance import config
 
 import autocomplete_light
 from decimal import Decimal
@@ -110,8 +111,8 @@ class TimeSheetForm(forms.ModelForm):
             hours += mins/Decimal(60)
         except:
             raise forms.ValidationError("You must fill out time in and time out.")
-        if hours > settings.MAX_HOURS_DAY:
-            raise forms.ValidationError("Only " + unicode(settings.MAX_HOURS_DAY) + " hours are allowed in one day.")
+        if hours > config.WORK_STUDY_MAX_HOURS_DAY:
+            raise forms.ValidationError("Only " + unicode(config.WORK_STUDY_MAX_HOURS_DAY) + " hours are allowed in one day.")
         elif hours <= 0:
             raise forms.ValidationError("You cannot have negative hours!")
 

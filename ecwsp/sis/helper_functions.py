@@ -1,15 +1,35 @@
 from django.db.models import AutoField
-from django.db import models
+from django.db import models, connection
 from django.core.exceptions import PermissionDenied
 from django.contrib import admin
 from django.conf import settings
 from django.utils.encoding import smart_unicode
 import unicodedata
 from decimal import Decimal, ROUND_HALF_UP, getcontext
+from tenant_schemas.utils import get_tenant_model
 
 class Callable:
     def __init__(self, anycallable):
         self.__call__ = anycallable
+
+def get_current_tenant():
+    """ Return current tenant
+    Determine based on connection schema_name """
+    schema_name = connection.schema_name
+    connection.set_schema_to_public()
+    tenant = get_tenant_model().objects.get(schema_name=schema_name)
+    connection.set_tenant(tenant)
+    return tenant
+
+def get_base_url():
+    """ Get base url like http://www.example.com.
+    Will determine if system is multi tenanted and return 
+    appropriate url. 
+    """
+    if settings.MULTI_TENANT:
+        tenant = get_current_tenant()
+        return 'http://{}'.format(tenant.domain_url)
+    return settings.BASE_URL
 
 def round_as_decimal(num, decimal_places=2):
     """Round a number to a given precision and return as a Decimal

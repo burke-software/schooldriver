@@ -39,8 +39,26 @@ for environment_variable in (
     'AWS_ACCESS_KEY_ID',
     'AWS_SECRET_ACCESS_KEY',
     'AWS_STORAGE_BUCKET_NAME',
+    'ENGRADE_APIKEY',
+    'ENGRADE_APIKEY',
+    'ENGRADE_LOGIN',
+    'ENGRADE_PASSWORD',
+    # School UID (admin must be connected to school)
+    'ENGRADE_SCHOOLID',
+    'NAVIANCE_ACCOUNT,'
+    'NAVIANCE_IMPORT_USERNAME',
+    'NAVIANCE_USERNAME',
+    'NAVIANCE_PASSWORD',
+    'NAVIANCE_IMPORT_KEY',
+    'NAVIANCE_EMAILS',
+    'SCHOOLREACH_USERID',
+    'SCHOOLREACH_PIN',
+    # The id of the list we want to integrate, don't edit this list by hand in SR
+    'SCHOOLREACH_LIST_ID',
 ):
     globals()[environment_variable] = os.getenv(environment_variable)
+# username, id, or unique_id
+NAVIANCE_SWORD_ID = os.getenv('NAVIANCE_SWORD_ID', 'username')
 
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
@@ -65,7 +83,7 @@ LANGUAGES = (
 )
 INTERNAL_IPS = ('127.0.0.1',)
 USE_I18N = True
-SECRET_KEY = '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y'
+SECRET_KEY = os.getenv('SECRET_KEY', '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y')
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
@@ -243,60 +261,6 @@ LOGGING = {
         },
     },
 }
-
-
-#Engrade
-# http://ww7.engrade.com/api/key.php
-ENGRADE_APIKEY = ''
-ENGRADE_LOGIN = ''
-ENGRADE_PASSWORD = ''
-# School UID (admin must be connected to school)
-ENGRADE_SCHOOLID = ''
-
-
-#Naviance
-NAVIANCE_ACCOUNT = ''
-NAVIANCE_IMPORT_USERNAME = ''
-NAVIANCE_USERNAME = ''
-NAVIANCE_PASSWORD = ''
-# username, id, or unique_id
-NAVIANCE_SWORD_ID = 'username'
-NAVIANCE_IMPORT_KEY = ''
-NAVIANCE_EMAILS = ''
-
-#SchoolReach
-SCHOOLREACH_USERID = ''
-SCHOOLREACH_PIN = ''
-# The id of the list we want to integrate, don't edit this list by hand in SR
-SCHOOLREACH_LIST_ID = ''
-
-#Admissions
-ADMISSIONS_DEFAULT_COUNTRY = "United States"
-
-
-#Work Study
-MAX_HOURS_DAY = 10
-# Sync data to SugarCRM
-SYNC_SUGAR = False
-SUGAR_URL = ''
-SUGAR_USERNAME = ''
-SUGAR_PASSWORD = ''
-# Strange way of storing routes that Notre Dame High School wanted, default disabled
-CRND_ROUTES = False
-
-
-#Attendance
-# Enables option to do course based attendance
-# where teacher takes attendance at each course, not just once a day
-ATTENDANCE_COURSE_BASED = False
-
-
-#Canvas LMS
-# oauth token, you must make this in Canvas.
-# https://canvas.instructure.com/doc/api/file.oauth.html
-CANVAS_TOKEN = ''
-CANVAS_ACCOUNT_ID = ''
-CANVAS_BASE_URL = ''
 
 
 # django-report-builder
@@ -486,9 +450,20 @@ CONSTANCE_CONFIG = {
     'LDAP_SEARCH_DN': ('', 'DC=admin,DC=example,DC=com'),
     'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"'),
     'PREFERED_FORMAT': ('o', 'Prefered file format, may be changed in user preferences. o = Open Document Format (odt), m = Microsoft Binary (doc), x = Office Open XML (docx)'),
-
+    'ADMISSIONS_DEFAULT_COUNTRY': ("United States", ''),
+    'WORK_STUDY_MAX_HOURS_DAY': (10, 'Number of hours per day a student is able to work'),
+    'SUGAR_SYNC': (False, 'Sync with SugarCRM'),
+    'SUGAR_URL': ('', 'SugarCRM Domain'),
+    'SUGAR_USERNAME': ('', 'SugarCRM Username'),
+    'SUGAR_PASSWORD': ('', 'SugarCRM Password'),
+    'CRND_ROUTES': (False, 'Alternative way of storing routes that Notre Dame High School uses. Not recommended.')
+    'CANVAS_TOKEN': ('', 'https://canvas.instructure.com/doc/api/file.oauth.html
+'),
+    'CANVAS_ACCOUNT_ID': ('', ''), 
+    'CANVAS_BASE_URL': ('', ''),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+# DONT FORGET TO MIGRATE
 
 import django
 if django.get_version()[:3] != '1.7':

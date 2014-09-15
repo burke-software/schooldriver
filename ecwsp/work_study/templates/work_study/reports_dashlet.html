@@ -78,7 +78,7 @@
             <input class="preport" type="submit" name="attnPFriday" value="Friday" />
           </div>
         </form>
-        {% if perms.sis.reports and settings.CRND_ROUTES %}
+        {% if perms.sis.reports and config.CRND_ROUTES %}
             <a href="{% url "ecwsp.work_study.views.routes" %}">{% trans 'Route Reports' %}</a>
         {% endif %}
       </div>
