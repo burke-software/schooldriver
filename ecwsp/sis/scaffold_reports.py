@@ -866,6 +866,20 @@ class SisReport(ScaffoldReport):
         # for example: student.mp_grade['1st'] or ...['S1X']
         student.mp_grade = mp_grade
 
+        # the tuples of semester 1 marking periods and semester 2 marking
+        # periods are useful for certain calculations
+        num_mps = len(student.mps)
+        semester_1_mps = student.mps[:num_mps/2]
+        student.semester_1_mps = tuple([int(x.id) for x in semester_1_mps])
+
+        semester_2_mps = student.mps[num_mps/2:]
+        student.semester_2_mps = tuple([int(x.id) for x in semester_2_mps])
+
+        # inject this function for use by reports that specifically request it
+        # not calculating here as it may create errors for schools that don't
+        # actually need this function...
+        student.semester_average = Grade.get_scaled_multiple_mp_average
+
         for course_section in course_sections:
             course_enrollment = course_section.courseenrollment_set.get(user=student)
             grades = course_section.grade_set.filter(student=student).filter(
@@ -963,9 +977,11 @@ class SisReport(ScaffoldReport):
             else:
                 year.course_sections = year.course_sections.order_by('course__department')
             year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_end'])
+            year.year_grade = student.studentyeargrade_set.filter(year=year).first()
             # course section grades
             for course_section in year.course_sections:
                 course_enrollment = course_section.courseenrollment_set.get(user=student)
+                course_section.ce = course_enrollment
                 # Grades
                 course_section_grades = year_grades.filter(course_section=course_section).distinct()
                 course_section_aggregates = None
