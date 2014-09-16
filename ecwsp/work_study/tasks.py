@@ -138,7 +138,7 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
         students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
         subject = "Timesheet not submitted"
         for student in students:
-            msg = "Hello {0},\n"
+            msg = u"Hello {0},\n".format(student.first_name)
             conf_msg = Configuration.get_or_default(
                 "work_study message to student missing time sheet",
                 default="You did not submit a time card today. Please remember to do so. This is an automated message, please do not reply.")
