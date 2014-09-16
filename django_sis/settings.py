@@ -456,14 +456,12 @@ CONSTANCE_CONFIG = {
     'SUGAR_URL': ('', 'SugarCRM Domain'),
     'SUGAR_USERNAME': ('', 'SugarCRM Username'),
     'SUGAR_PASSWORD': ('', 'SugarCRM Password'),
-    'CRND_ROUTES': (False, 'Alternative way of storing routes that Notre Dame High School uses. Not recommended.')
-    'CANVAS_TOKEN': ('', 'https://canvas.instructure.com/doc/api/file.oauth.html
-'),
-    'CANVAS_ACCOUNT_ID': ('', ''), 
+    'CRND_ROUTES': (False, 'Alternative way of storing routes that Notre Dame High School uses. Not recommended.'),
+    'CANVAS_TOKEN': ('', 'https://canvas.instructure.com/doc/api/file.oauth.html'),
+    'CANVAS_ACCOUNT_ID': ('', ''),
     'CANVAS_BASE_URL': ('', ''),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
-# DONT FORGET TO MIGRATE
 
 import django
 if django.get_version()[:3] != '1.7':
