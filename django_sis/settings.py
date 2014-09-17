@@ -316,7 +316,7 @@ CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 from celery.schedules import crontab
 CELERYBEAT_SCHEDULE = {
     'cache-grades-nightly': {
-        'task': 'ecwsp.sis.tasks.build_grade_cache',
+        'task': 'ecwsp.grades.tasks.build_grade_cache_task',
         'schedule': crontab(hour=23, minute=1),
     },
     'sent-admissions-email': {
@@ -336,7 +336,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(hour=0, minute=1),
     },
     'update_contacts_from_sugarcrm': {
-        'task': 'ecwsp.work_study.update_contacts_from_sugarcrm',
+        'task': 'ecwsp.work_study.tasks.update_contacts_from_sugarcrm',
         'schedule': timedelta(minutes=30),
     },
 }
@@ -377,6 +377,7 @@ SHARED_APPS = SHARED_APPS + (
     'ecwsp.customers',
     'ecwsp.administration',
     'south',
+    'djcelery',
     'django.contrib.contenttypes',
     'grappelli.dashboard',
     'grappelli',

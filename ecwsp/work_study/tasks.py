@@ -1,5 +1,6 @@
 from ecwsp.work_study.models import StudentInteraction, CraContact, TimeSheet, StudentWorker
 from ecwsp.administration.models import Configuration
+from ecwsp.sis.helper_functions import all_tenants
 from django.core.mail import send_mail
 from django.utils.encoding import smart_unicode
 from datetime import date
@@ -14,7 +15,9 @@ import sys
 
 from ecwsp.work_study.sugar_sync import SugarSync
 modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
+
 @app.task
+@all_tenants
 def update_contacts_from_sugarcrm():
     if config.SUGAR_SYNC:
         sugar_sync = SugarSync()
@@ -27,6 +30,7 @@ def update_contact_to_sugarcrm(contact):
         sugar_sync.update_contact(contact)
 
 @app.task
+@all_tenants
 def email_cra_nightly():
     """ Email CRA nightly time sheet and student interaction information
     """

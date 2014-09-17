@@ -4,13 +4,15 @@ from django.core.exceptions import PermissionDenied
 from django.contrib import admin
 from django.conf import settings
 from django.utils.encoding import smart_unicode
+from functools import wraps
 import unicodedata
 from decimal import Decimal, ROUND_HALF_UP, getcontext
-from tenant_schemas.utils import get_tenant_model
+from tenant_schemas.utils import get_tenant_model, tenant_context
 
 class Callable:
     def __init__(self, anycallable):
         self.__call__ = anycallable
+
 
 def get_current_tenant():
     """ Return current tenant
@@ -21,10 +23,26 @@ def get_current_tenant():
     connection.set_tenant(tenant)
     return tenant
 
+
+def all_tenants(f):
+    """ Decorator. Check if multi tenant is enabled. If so
+    run function f on each tenant
+    """
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if settings.MULTI_TENANT:
+            for tenant in get_tenant_model().objects.exclude(schema_name="public"):
+                with tenant_context(tenant):
+                    f(*args, **kwargs)
+        else:
+            f(*args, **kwargs)
+    return wrapper
+
+
 def get_base_url():
     """ Get base url like http://www.example.com.
-    Will determine if system is multi tenanted and return 
-    appropriate url. 
+    Will determine if system is multi tenanted and return
+    appropriate url.
     """
     if settings.MULTI_TENANT:
         tenant = get_current_tenant()

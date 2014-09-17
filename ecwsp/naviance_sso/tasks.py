@@ -1,6 +1,6 @@
 from django.conf import settings
 from ecwsp.sis.models import Student
-from ecwsp.sis.helper_functions import strip_unicode_to_ascii
+from ecwsp.sis.helper_functions import strip_unicode_to_ascii, all_tenants
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
@@ -10,14 +10,15 @@ import csv
 import requests
 import tempfile
 
-if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_KEY:
-    @app.task
-    def create_new_naviance_students():
-        """ Naviance has no update or create. So this must be seperate.
-        We just run each one and half will always fail.
-        """
+@app.task
+@all_tenants
+def create_new_naviance_students():
+    """ Naviance has no update or create. So this must be seperate.
+    We just run each one and half will always fail.
+    """
+    if settings.NAVIANCE_IMPORT_KEY:
         data = [['Student_ID','Class_Year','Last Name','First Name','Middle Name','Gender','Birthdate','GPA']]
-    
+
         for student in Student.objects.filter(is_active=True):
             row = []
             if settings.NAVIANCE_SWORD_ID == "username":
@@ -42,12 +43,12 @@ if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_
                 row += ['']
             row += [student.gpa]
             data += [row]
-            
+
         temp = tempfile.TemporaryFile()
         wr = csv.writer(temp,quoting=csv.QUOTE_ALL)
         wr.writerows(data)
         temp.seek(0)
-        
+
         params = {
             'account':settings.NAVIANCE_ACCOUNT,
             'username':settings.NAVIANCE_IMPORT_USERNAME,
@@ -62,7 +63,7 @@ if "ecwsp.naviance_sso" in settings.INSTALLED_APPS and settings.NAVIANCE_IMPORT_
         response = requests.post('https://services.naviance.com/school_import.php',data=params,files=files)
         if response.text != 'Success.\n':
             raise Exception("Error in Naviance Data create import: %s" % (response.text,))
-        
+
         temp.seek(0)
         files = {'datafile': ('import.csv',temp)}
         params = {
