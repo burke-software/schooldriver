@@ -25,6 +25,19 @@ class Migration(DataMigration):
             'CANVAS_TOKEN',
             'CANVAS_ACCOUNT_ID',
             'CANVAS_BASE_URL',
+            'ENGRADE_APIKEY',
+            'ENGRADE_LOGIN',
+            'ENGRADE_PASSWORD',
+            'ENGRADE_SCHOOLID',
+            'NAVIANCE_ACCOUNT,'
+            'NAVIANCE_IMPORT_USERNAME',
+            'NAVIANCE_USERNAME',
+            'NAVIANCE_PASSWORD',
+            'NAVIANCE_IMPORT_KEY',
+            'NAVIANCE_EMAILS',
+            'SCHOOLREACH_USERID',
+            'SCHOOLREACH_PIN',
+            'SCHOOLREACH_LIST_ID',
         ]
         for data in settings_data:
             value = getattr(settings, data, None)

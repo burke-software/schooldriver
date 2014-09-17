@@ -1,4 +1,4 @@
-from django.conf import settings
+from constance import config
 from ecwsp.sis.models import Student
 from ecwsp.sis.helper_functions import strip_unicode_to_ascii, all_tenants
 
@@ -16,14 +16,14 @@ def create_new_naviance_students():
     """ Naviance has no update or create. So this must be seperate.
     We just run each one and half will always fail.
     """
-    if settings.NAVIANCE_IMPORT_KEY:
+    if config.NAVIANCE_IMPORT_KEY:
         data = [['Student_ID','Class_Year','Last Name','First Name','Middle Name','Gender','Birthdate','GPA']]
 
         for student in Student.objects.filter(is_active=True):
             row = []
-            if settings.NAVIANCE_SWORD_ID == "username":
+            if config.NAVIANCE_SWORD_ID == "username":
                 row += [student.username]
-            elif settings.NAVIANCE_SWORD_ID == "unique_id":
+            elif config.NAVIANCE_SWORD_ID == "unique_id":
                 row += [student.unique_id]
             else:
                 row += [student.id]
@@ -50,13 +50,13 @@ def create_new_naviance_students():
         temp.seek(0)
 
         params = {
-            'account':settings.NAVIANCE_ACCOUNT,
-            'username':settings.NAVIANCE_IMPORT_USERNAME,
-            'key':settings.NAVIANCE_IMPORT_KEY,
+            'account':config.NAVIANCE_ACCOUNT,
+            'username':config.NAVIANCE_IMPORT_USERNAME,
+            'key':config.NAVIANCE_IMPORT_KEY,
             'type':'1',
             'format':'CSV',
             'header':'Yes',
-            'email':settings.NAVIANCE_EMAILS,
+            'email':config.NAVIANCE_EMAILS,
             'description':'django-sis import',
             }
         files = {'datafile': ('import.csv',temp)}
@@ -67,13 +67,13 @@ def create_new_naviance_students():
         temp.seek(0)
         files = {'datafile': ('import.csv',temp)}
         params = {
-            'account':settings.NAVIANCE_ACCOUNT,
-            'username':settings.NAVIANCE_IMPORT_USERNAME,
-            'key':settings.NAVIANCE_IMPORT_KEY,
+            'account':config.NAVIANCE_ACCOUNT,
+            'username':config.NAVIANCE_IMPORT_USERNAME,
+            'key':config.NAVIANCE_IMPORT_KEY,
             'type':'11',
             'format':'CSV',
             'header':'Yes',
-            'email':settings.NAVIANCE_EMAILS,
+            'email':config.NAVIANCE_EMAILS,
             'description':'django-sis import',
             }
         response = requests.post('https://services.naviance.com/school_import.php',data=params,files=files)

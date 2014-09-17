@@ -10,6 +10,7 @@ web:
       #- /home/david/Dropbox/Projects/django-ldap-groups/ldap_groups:/usr/local/lib/python2.7/dist-packages/ldap_groups
   ports:
     - "8000:8000"
+    - "5555:5555"
   links:
     - db
     - redis

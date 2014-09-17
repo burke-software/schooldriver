@@ -1,4 +1,4 @@
-from django.conf import settings
+from constance import config
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404
@@ -88,7 +88,7 @@ class SchoolReach:
                         m3s += ['']
                     m4s += [student]
                     m5s += [number.type]
-        
+
         # Make data arrays into xml strings
         xml_numbers = ''
         for data_string in numbers:
@@ -122,12 +122,12 @@ class SchoolReach:
         xml_m5s = ''
         for data_string in m5s:
             xml_m5s += '<mField5>%s</mField5>' % strip_unicode_to_ascii(data_string)
-        
+
         url = 'https://app.groupcast.com/WARP/GroupcastWARP.asmx?op=SetList&wsdl'
         xml_dict = {
-            'userid': settings.SCHOOLREACH_USERID,
-            'pin': settings.SCHOOLREACH_PIN,
-            'list_id': settings.SCHOOLREACH_LIST_ID,
+            'userid': config.SCHOOLREACH_USERID,
+            'pin': config.SCHOOLREACH_PIN,
+            'list_id': config.SCHOOLREACH_LIST_ID,
             'xml_numbers': xml_numbers.replace("-", ""),
             'xml_exts': xml_exts,
             'xml_fnames': xml_fnames,

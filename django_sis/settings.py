@@ -39,22 +39,6 @@ for environment_variable in (
     'AWS_ACCESS_KEY_ID',
     'AWS_SECRET_ACCESS_KEY',
     'AWS_STORAGE_BUCKET_NAME',
-    'ENGRADE_APIKEY',
-    'ENGRADE_APIKEY',
-    'ENGRADE_LOGIN',
-    'ENGRADE_PASSWORD',
-    # School UID (admin must be connected to school)
-    'ENGRADE_SCHOOLID',
-    'NAVIANCE_ACCOUNT,'
-    'NAVIANCE_IMPORT_USERNAME',
-    'NAVIANCE_USERNAME',
-    'NAVIANCE_PASSWORD',
-    'NAVIANCE_IMPORT_KEY',
-    'NAVIANCE_EMAILS',
-    'SCHOOLREACH_USERID',
-    'SCHOOLREACH_PIN',
-    # The id of the list we want to integrate, don't edit this list by hand in SR
-    'SCHOOLREACH_LIST_ID',
 ):
     globals()[environment_variable] = os.getenv(environment_variable)
 # username, id, or unique_id
@@ -331,6 +315,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'ecwsp.volunteer_track.tasks.handle',
         'schedule': crontab(hour=23, minute=46),
     },
+    'sync_schoolreach': {
+        'task': 'ecwsp.integrations.schoolreach.tasks.sync_schoolreach_lists',
+        'schedule': crontab(hour=1, minute=0),
+    },
     'email_cra_nightly': {
         'task': 'email_cra_nightly',
         'schedule': crontab(hour=0, minute=1),
@@ -461,6 +449,20 @@ CONSTANCE_CONFIG = {
     'CANVAS_TOKEN': ('', 'https://canvas.instructure.com/doc/api/file.oauth.html'),
     'CANVAS_ACCOUNT_ID': ('', ''),
     'CANVAS_BASE_URL': ('', ''),
+    'ENGRADE_APIKEY': ('', 'Engrade API key'),
+    'ENGRADE_LOGIN': ('', 'Engrade log in'),
+    'ENGRADE_PASSWORD': ('', 'Engrade password'),
+    'ENGRADE_SCHOOLID': ('', 'School UID (admin must be connected to school)'),
+    'NAVIANCE_ACCOUNT': ('', ''),
+    'NAVIANCE_IMPORT_USERNAME': ('', ''),
+    'NAVIANCE_USERNAME': ('', ''),
+    'NAVIANCE_PASSWORD': ('', ''),
+    'NAVIANCE_IMPORT_KEY': ('', ''),
+    'NAVIANCE_EMAILS': ('', ''),
+    'SCHOOLREACH_USERID': ('', ''),
+    'SCHOOLREACH_PIN': ('', ''),
+    'SCHOOLREACH_LIST_ID': ('',
+        "The id of the list we want to integrate, don't edit this list by hand in SR"),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import permission_required
-from django.conf import settings
+from constance import config
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
@@ -16,17 +16,17 @@ import logging
 def setup(request):
     course_sections_count = CourseSectionSync.objects.count()
     teacher_count = TeacherSync.objects.count()
-    school_id = settings.ENGRADE_SCHOOLID
+    school_id = config.ENGRADE_SCHOOLID
     try:
         engrade_sync = EngradeSync()
     except:
         engrade_sync = None
         print >> sys.stderr, 'Can\'t connect to Engrade ' + str(sys.exc_info()[0])
     msg = ''
-    
+
     course_form = SetupCourseForm(prefix="course")
     grade_sync_form = GradeSyncForm()
-    
+
     if request.POST and engrade_sync:
         if 'generate_course' in request.POST:
             course_form = SetupCourseSectionsForm(request.POST,prefix="course")
@@ -69,7 +69,7 @@ def setup(request):
                         'request': request,
                         'exception':sys.exc_info(),
                     })
-    
+
     return render_to_response('engrade_sync/setup.html', {
         'course_sections_count': course_sections_count,
         'teacher_count': teacher_count,
