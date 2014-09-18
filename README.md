@@ -126,7 +126,7 @@ curl -L https://github.com/orchardup/fig/releases/download/0.5.1/darwin > /usr/l
 ```
 chmod +x /usr/local/bin/fig
 ```
-#### Syndb & Migrate
+#### Syncdb & Migrate
 *Note: this will change slightly when we move to 1.7*
 
 ```
