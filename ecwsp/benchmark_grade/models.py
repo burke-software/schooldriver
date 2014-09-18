@@ -586,6 +586,8 @@ class Aggregate(models.Model):
             # FIDDLESTICKS... INC does not fit in the column
             letter_grade_max_length = Grade._meta.get_field_by_name('letter_grade')[0].max_length
             g.letter_grade = self.cached_substitution[:letter_grade_max_length]
+        else:
+            g.letter_grade = None
         # always set the numeric grade
         grade_max_value = Grade._meta.get_field_by_name('grade')[0]
         # whee...
