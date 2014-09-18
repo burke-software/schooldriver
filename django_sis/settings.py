@@ -397,7 +397,6 @@ SHARED_APPS = SHARED_APPS + (
     'constance.backends.database',
     'ecwsp.customers',
     'ecwsp.administration',
-    'south',
     'django.contrib.contenttypes',
     'grappelli.dashboard',
     'grappelli',
@@ -407,15 +406,10 @@ SHARED_APPS = SHARED_APPS + (
     'django.contrib.sessions',
 )
 TENANT_APPS = (
-    'django.contrib.contenttypes',
-    'django.contrib.auth',
-    'django.contrib.admin',
-    'constance.backends.database',
     'autocomplete_light',
     'social.apps.django_app.default',
     'ldap_groups',
     'ecwsp.sis',
-    'ecwsp.administration',
     'ecwsp.schedule',
     'ecwsp.admissions',
     'ecwsp.alumni',
@@ -424,7 +418,6 @@ TENANT_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
-    'south',
     'reversion',
     'djcelery',
     'localflavor',
@@ -451,8 +444,6 @@ TENANT_APPS = (
     'rest_framework',
     'api',
     'compressor',
-    'constance',
-    'constance.backends.database',
 ) + INSTALLED_APPS
 
 INSTALLED_APPS = SHARED_APPS + TENANT_APPS
