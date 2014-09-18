@@ -7,8 +7,10 @@ import os
 import string
 import tempfile
 import uno
+import re
 
 from ecwsp.sis.template_report import TemplateReport
+from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
 
 def uno_open(file):
@@ -38,6 +40,13 @@ def uno_save(document, filename, type):
     """
     from com.sun.star.beans import PropertyValue
     tmp = tempfile.NamedTemporaryFile()
+
+    # Strictly sanitize filename since Content-Disposition is really fussy
+    filename = re.sub(
+        '[^A-Za-z0-9]+',
+        '_',
+        strip_unicode_to_ascii(filename)
+    )
     if type == "doc":
         properties = (
             PropertyValue("Overwrite",0,True,0),
