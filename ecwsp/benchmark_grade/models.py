@@ -396,6 +396,10 @@ class Aggregate(models.Model):
                 pass
         return super(Aggregate, self).__getattribute__(name)
 
+    def _really_get(self, name):
+        ''' Bypass awful __getattribute__ hack '''
+        return super(Aggregate, self).__getattribute__(name)
+
     @property
     def calculation_rule(self):
         ''' Find the CalculationRule that applies to this Aggregate '''
@@ -576,29 +580,33 @@ class Aggregate(models.Model):
             return None, display_as
 
     def _copy_to_grade(self):
+        # Bypass awful __getattribute__ hack. If we're here, we're the
+        # authority, and grades.Grade must defer to us.
+        this_cached_value = self._really_get('cached_value')
+        this_cached_substitution = self._really_get('cached_substitution')
         # temporary(?) integration with the rest of sword
         g, g_created = Grade.objects.get_or_create(student=self.student,
             course_section=self.course_section,
             marking_period=self.marking_period,
             override_final=False)
         # set the letter grade if it exists
-        if self.cached_substitution is not None:
+        if this_cached_substitution is not None:
             # FIDDLESTICKS... INC does not fit in the column
             letter_grade_max_length = Grade._meta.get_field_by_name('letter_grade')[0].max_length
-            g.letter_grade = self.cached_substitution[:letter_grade_max_length]
+            g.letter_grade = this_cached_substitution[:letter_grade_max_length]
         else:
             g.letter_grade = None
         # always set the numeric grade
         grade_max_value = Grade._meta.get_field_by_name('grade')[0]
         # whee...
         grade_max_value = 10 ** (grade_max_value.max_digits - grade_max_value.decimal_places) - 10 ** (-1 * grade_max_value.decimal_places)
-        if self.cached_value > grade_max_value:
+        if this_cached_value > grade_max_value:
             # people abuse points_possible (set marks way above it),
             # either to give out extra credit or because they are just screwing around.
             # don't attempt to set a Grade larger than the maximum permissable value
             g.grade = grade_max_value
         else:
-            g.grade = self.cached_value
+            g.grade = this_cached_value
         g.save()
         return g, g_created
 
