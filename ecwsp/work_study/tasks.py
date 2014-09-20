@@ -116,43 +116,21 @@ def email_cra_nightly():
                     else:
                         msg += "Timesheet not yet approved by supervisor\n\n"
 
-            # Now get students who are present but did not submit a time card
-            students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
-            if students:
-                msg += "The following students were present but did not submit time sheets:\n"
-                for student in students:
-                    msg += smart_unicode(student) + ", "
-                msg = msg[:-2]
-
-            try:
-                send_mail(subject, msg, from_email, [unicode(cra.name.email)])
-            except:
-                logging.warning('Could not email CRA all comments', exc_info=True, extra={
-                    'exception': sys.exc_info()[0],
-                    'exception2': sys.exc_info()[1],
-                })
-
-    # Check off time sheets that were processed today (so they aren't processed tomorrow)
-    timesheets = TimeSheet.objects.filter(creation_date__month=date.today().month, cra_email_sent=False)
-    for timesheet in timesheets:
-        timesheet.cra_email_sent = True
-        timesheet.save()
-
-    # Remind students to submit time sheets
-    students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
-    subject = "Timesheet not submitted"
-    for student in students:
-        msg = "Hello {0},\n"
-        conf_msg = Configuration.get_or_default(
-            "work_study message to student missing time sheet",
-            default="You did not submit a time card today. Please remember to do so. This is an automated message, please do not reply.")
-        msg += conf_msg.value
-        email = student.get_email
-        if email and email[-9:] != "change.me":
-            try:
-                send_mail(subject, msg, from_email, [unicode(email)])
-            except:
-                logging.warning('Could not email student about missing time card', exc_info=True, extra={
-                    'exception': sys.exc_info()[0],
-                    'exception2': sys.exc_info()[1],
-                })
+        # Remind students to submit time sheets
+        students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
+        subject = "Timesheet not submitted"
+        for student in students:
+            msg = u"Hello {0},\n".format(student.first_name)
+            conf_msg = Configuration.get_or_default(
+                "work_study message to student missing time sheet",
+                default="You did not submit a time card today. Please remember to do so. This is an automated message, please do not reply.")
+            msg += conf_msg.value
+            email = student.get_email
+            if email and email[-9:] != "change.me":
+                try:
+                    send_mail(subject, msg, from_email, [unicode(email)])
+                except:
+                    logging.warning('Could not email student about missing time card', exc_info=True, extra={
+                        'exception': sys.exc_info()[0],
+                        'exception2': sys.exc_info()[1],
+                    })

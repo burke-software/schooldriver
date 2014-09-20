@@ -29,7 +29,7 @@ def setup(request):
 
     if request.POST and engrade_sync:
         if 'generate_course' in request.POST:
-            course_form = SetupCourseSectionsForm(request.POST,prefix="course")
+            course_form = SetupCourseForm(request.POST,prefix="course")
             if course_form.is_valid():
                 ids = engrade_sync.generate_courses(course_form.cleaned_data['marking_period'])
                 msg += "Success. Engrade course ids are " + unicode(ids)

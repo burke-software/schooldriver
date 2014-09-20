@@ -218,10 +218,11 @@ WHERE grades_grade.course_section_id = %s
             grade = result[0]
         else:
             return None
-        if letter:
-            grade = self.optimized_grade_to_scale(grade, letter=True)
-        elif numeric:
-            grade = self.optimized_grade_to_scale(grade, letter=False)
+        if grade is not None:
+            if letter:
+                grade = self.optimized_grade_to_scale(grade, letter=True)
+            elif numeric:
+                grade = self.optimized_grade_to_scale(grade, letter=False)
         return grade
 
     def optimized_grade_to_scale(self, grade, letter=True):
