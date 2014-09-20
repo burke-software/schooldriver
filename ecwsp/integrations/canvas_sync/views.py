@@ -1,9 +1,9 @@
 from django.shortcuts import render_to_response, get_object_or_404
-from django.conf import settings
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 
+from constance import config
 from ecwsp.sis.models import Student, Faculty, Cohort, SchoolYear
 from ecwsp.schedule.models import Department, MarkingPeriod, Course, CourseSection
 
@@ -26,9 +26,9 @@ def setup(request):
     }, RequestContext(request, {}),)
 
 class CanvasSync:
-    token = settings.CANVAS_TOKEN
-    account_id = settings.CANVAS_ACCOUNT_ID
-    base_url = settings.CANVAS_BASE_URL
+    token = config.CANVAS_TOKEN
+    account_id = config.CANVAS_ACCOUNT_ID
+    base_url = config.CANVAS_BASE_URL
 
     def run_sync(self):
         #buf = StringIO()
