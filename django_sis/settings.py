@@ -41,6 +41,9 @@ for environment_variable in (
     'AWS_STORAGE_BUCKET_NAME',
 ):
     globals()[environment_variable] = os.getenv(environment_variable)
+allowed_hosts = os.getenv('ALLOWED_HOSTS')
+if allowed_hosts:
+    ALLOWED_HOSTS = allowed_hosts.split(',')
 # username, id, or unique_id
 NAVIANCE_SWORD_ID = os.getenv('NAVIANCE_SWORD_ID', 'username')
 
