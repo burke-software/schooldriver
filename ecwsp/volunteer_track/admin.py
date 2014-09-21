@@ -67,7 +67,7 @@ class VolunteerAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Volunteer)
     list_display = ('student','hours_required','hours_completed')
     list_filter = ['sites', 'student',]
-    search_fields = ['student__fname', 'student__lname',]
+    search_fields = ['student__first_name', 'student__last_name',]
     inlines = [VolunteerSiteInline]
 admin.site.register(Volunteer,VolunteerAdmin)
 
