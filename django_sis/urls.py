@@ -10,6 +10,7 @@ from ecwsp.sis.views import AttendanceReportView
 
 dajaxice_autodiscover()
 admin.autodiscover()
+admin.site.login = login_required(admin.site.login)
 
 urlpatterns = patterns('',
     (r'^admin/', include("massadmin.urls")),
