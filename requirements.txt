@@ -14,7 +14,7 @@ django-appconf==0.6
 django-apptemplates==0.0.1
 django-autocomplete-light==2.0.0a18
 django-bower==5.0.1
-django-cached-field==1.2.6
+django-cached-field==1.2.7
 django-celery==3.1.10
 django-ckeditor-updated==4.4.0
 django-compressor==1.4
@@ -47,7 +47,7 @@ django-storages==1.1.8
 django-su==0.4.7
 django-toolbelt==0.0.1
 django-widget-tweaks==1.3
-Django==1.6.6
+Django==1.6.7
 djangorestframework-bulk==0.1.3
 djangorestframework==2.3.14
 gunicorn==19.1.1
