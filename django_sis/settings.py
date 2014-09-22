@@ -460,6 +460,7 @@ CONSTANCE_CONFIG = {
     'NAVIANCE_IMPORT_USERNAME': ('', ''),
     'NAVIANCE_USERNAME': ('', ''),
     'NAVIANCE_PASSWORD': ('', ''),
+    'NAVIANCE_SWORD_ID': ('username', 'Username, id, or unique_id'),
     'NAVIANCE_IMPORT_KEY': ('', ''),
     'NAVIANCE_EMAILS': ('', ''),
     'SCHOOLREACH_USERID': ('', ''),
