@@ -9,4 +9,5 @@ urlpatterns = patterns('',
     (r'^reports/$', views.reports),
     (r'^reports/funnel/$', views.funnel),
     (r'^inquiry_form/$', views.inquiry_form),
+    (r'^application', views.studentApplication),
 )

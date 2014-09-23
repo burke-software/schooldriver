@@ -278,3 +278,13 @@ def applicants_to_students(request, year_id):
     return render_to_response('admissions/applicants_to_students.html',
                               {'msg': msg},
                               RequestContext(request, {}),) 
+
+def studentApplication(request):
+    """
+    the student application for admission
+    """
+    return render_to_response(
+        'admissions/student_application.html',
+        RequestContext(request, {}),
+        )
+

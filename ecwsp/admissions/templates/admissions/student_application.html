@@ -1,0 +1,38 @@
+{% extends 'base_next.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Application for Admission</h1>
+    <div class="panel-group" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                        Personal Information
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse">
+                <div class="panel-body">
+                    something
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+                        Personal Stuff
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse">
+                <div class="panel-body">
+                    something else
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
