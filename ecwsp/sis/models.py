@@ -554,10 +554,10 @@ class Student(User, CustomFieldModel):
         or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "T"):
             try:
                 self.studentworker.placement = None
+                self.studentworker.save()
             except: pass
         # Check year
         self.determine_year()
-
         super(Student, self).save(*args, **kwargs)
 
         # Create student worker if the app is installed.
