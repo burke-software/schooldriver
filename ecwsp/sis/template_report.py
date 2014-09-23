@@ -3,10 +3,12 @@ from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse
 from ecwsp.administration.models import Configuration
 from ecwsp.sis.models import SchoolYear, UserPreference
+from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 from constance import config
 import datetime
 import tempfile
 import os
+import re
 
 
 class TemplateReport(object):
@@ -47,8 +49,12 @@ class TemplateReport(object):
             #ext = "." + self.file_format
             ext = ".odt"
         
-        # strip comma's from filename
-        filename = self.filename.replace(",", "")
+        # Strictly sanitize filename since Content-Disposition is really fussy
+        filename = re.sub(
+            '[^A-Za-z0-9]+',
+            '_',
+            strip_unicode_to_ascii(self.filename)
+        )
         
         file_name = tempfile.gettempdir() + '/appy' + str(time.time()) + ext
         renderer = Renderer(template, self.data, file_name)

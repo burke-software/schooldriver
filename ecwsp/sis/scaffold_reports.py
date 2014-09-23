@@ -6,6 +6,7 @@ from django import forms
 from django.forms.extras.widgets import SelectDateWidget
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.utils import ProgrammingError
 from django.conf import settings
 from django.db.models import Count, Q, DateField, Max
 from constance import config
@@ -354,7 +355,10 @@ class CohortFilter(ModelMultipleChoiceFilter):
 
 
 class SelectSpecificStudentsForm(forms.Form):
-    select_students = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+    try:
+        select_students = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+    except ProgrammingError:
+        pass
 
 
 class SelectSpecificStudents(ModelMultipleChoiceFilter):

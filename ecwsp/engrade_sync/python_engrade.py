@@ -1,20 +1,4 @@
-#       Copyright 2011 David M Burke <david@davidmburke.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-from django.conf import settings
+from constance import config
 
 import urllib
 from xml.etree import ElementTree as ET
@@ -22,16 +6,16 @@ from xml.etree import ElementTree as ET
 class PythonEngrade:
     ### Configurations #########################################################
     # http://ww7.engrade.com/api/key.php
-    apikey = settings.ENGRADE_APIKEY
+    apikey = config.ENGRADE_APIKEY
     # Admin user login
-    login = settings.ENGRADE_LOGIN
+    login = config.ENGRADE_LOGIN
     # Engrade password
-    password = settings.ENGRADE_PASSWORD
+    password = config.ENGRADE_PASSWORD
     # School UID (admin must be connected to school)
-    schoolid = settings.ENGRADE_SCHOOLID
+    schoolid = config.ENGRADE_SCHOOLID
     ############################################################################
     url = 'https://api.engrade.com/api/'
-    
+
     def __dict_to_element(self, values, debug=False):
         try:
             params = urllib.urlencode(values, True)
@@ -42,7 +26,7 @@ class PythonEngrade:
             return ET.parse(feed)
         except:
             raise Exception("Unknown error: Engrade API did not return a result.")
-    
+
     def __check_error(self, element):
         if element.find('success').text != 'true':
             error_elements = element.findall('errors')
@@ -51,7 +35,7 @@ class PythonEngrade:
                 for error in error_tag.getchildren():
                     error_msg += "%s: %s \n" % (error.tag, error.text)
             raise Exception(error_msg,)
-     
+
     def __init__(self):
         """ Login and get session from Engrade """
         values = {
@@ -63,7 +47,7 @@ class PythonEngrade:
         element = self.__dict_to_element(values)
         self.__check_error(element)
         self.ses = element.find('values/ses').text
-        
+
     def school_class_new(self, name, syr, gp, students, priteach, code=None):
         """
         name = Name of the class
@@ -91,10 +75,10 @@ class PythonEngrade:
         element = self.__dict_to_element(values)
         self.__check_error(element)
         return element.find('values/clid').text
-        
+
     def class_students_edit(self, clid, students):
         """
-        
+
         clid = Engrade Class ID
         students = list of students, one per line in format FirstName LastName IDNumber
         """
@@ -109,7 +93,7 @@ class PythonEngrade:
             values['code'] = code
         element = self.__dict_to_element(values)
         self.__check_error(element)
-        
+
     def school_teacher_new(self, teachers):
         """
         teachers = [['name1', 'email1'],['name2','email2']]
@@ -125,7 +109,7 @@ class PythonEngrade:
         for teacher in teachers:
             values['name' + str(i)] = teacher[0]
             values['email' + str(i)] = teacher[1]
-            i += 1 
+            i += 1
         element = self.__dict_to_element(values)
         self.__check_error(element)
         en_teachers = []
@@ -138,7 +122,7 @@ class PythonEngrade:
             en_teachers.append(en_teacher)
             i += 1
         return en_teachers
-        
+
     def school_teacher_email(self, emails):
         """
         emails = A list of teacher emails separated by whitespaces
@@ -158,22 +142,22 @@ class PythonEngrade:
         self.__check_error(element)
         # Currently returns nothing, doesn't work.
         #return element.find('values/tid').text
-    
+
     def school_students_register(self, syr, gp, emails):
         """
         syr = The school year in which students have classes
         gp = The grading period in which students have classes
-        email = 
+        email =
         email_STUID1 = The email address of the student with the student id STUID1
         email_STUID2 = The email address of the student with the student id STUID2
         ...
-        
+
         Return Fields
         uid_STUID1 = The Engrade User ID for the student with the student id STUID1
         usr_STUID1 = The username for the student with the student id STUID1
         pwd_STUID1 = The password for the student with the student id STUID1
         ...
-        
+
         This API call will create accounts for ALL students who DO have a class
         in the given grading period, but who do NOT yet have an account. Sending
         this call will create accounts for ALL such students whether you specify
@@ -190,12 +174,12 @@ class PythonEngrade:
         }
         element = self.__dict_to_element(values)
         self.__check_error(element)
-        
-        
+
+
     def gradebook(self, clid):
         """
         clid = Engrade Class ID
-        
+
         Returns:
         students = array of students ['stuid': student id, 'percent': grade percent', 'grade': Final grade (either percent or letter)]
         """
@@ -215,11 +199,11 @@ class PythonEngrade:
             student['grade'] = elem_student.find('grade').text
             students.append(student)
         return students
-    
+
     def class_comments(self, clid):
         """ Get comments for one class
         clid = Engrade Class ID
-        
+
         Returns:
         students = array of students ['stuid': student id, 'percent': grade percent, 'comment': comment]
         """
@@ -242,7 +226,7 @@ class PythonEngrade:
             except:
                 pass
         return students
-    
+
     def school_students_register(self, syr, gp, students):
         """ This API call will create accounts for ALL students who DO have a class in the given grading period,
         but who do NOT yet have an account. Sending this call will create accounts for ALL such students whether

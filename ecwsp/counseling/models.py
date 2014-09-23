@@ -1,27 +1,10 @@
-#   Copyright 2012 Burke Software and Consulting LLC
-#   Author David M Burke <david@burkesoftware.com>
-#   
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 3 of the License, or
-#   (at your option) any later version.
-#     
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#      
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#   MA 02110-1301, USA.
-
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 from django.db import models
 from ckeditor.fields import RichTextField
+from ecwsp.sis.helper_functions import get_base_url
 from ecwsp.sis.models import Student
 from ecwsp.administration.models import Configuration
 import datetime
@@ -93,7 +76,7 @@ class ReferralForm(models.Model):
             try:
                 subject = 'New counseling referral for %s.' % (self.student,)
                 msg = '%s has submitted a counseling referral form for %s. Click this link to view \n%s%s' % \
-                (self.referred_by,self.student,settings.BASE_URL,reverse('admin:counseling_referralform_change',args=(self.id,)),)
+                (self.referred_by, self.student, get_base_url(), reverse('admin:counseling_referralform_change',args=(self.id,)),)
                 from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
                 to_addr = Configuration.get_or_default("counseling_referral_notice_email_to", "").value.split(',')
                 if to_addr and to_addr != ['']:

@@ -6,11 +6,13 @@ from ecwsp.administration.models import Configuration
 
 from django import forms
 from django.contrib.admin import widgets as adminwidgets
+from django.db.utils import ProgrammingError
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
 
 from django.conf import settings
+from constance import config
 
 import autocomplete_light
 from decimal import Decimal
@@ -109,8 +111,8 @@ class TimeSheetForm(forms.ModelForm):
             hours += mins/Decimal(60)
         except:
             raise forms.ValidationError("You must fill out time in and time out.")
-        if hours > settings.MAX_HOURS_DAY:
-            raise forms.ValidationError("Only " + unicode(settings.MAX_HOURS_DAY) + " hours are allowed in one day.")
+        if hours > config.WORK_STUDY_MAX_HOURS_DAY:
+            raise forms.ValidationError("Only " + unicode(config.WORK_STUDY_MAX_HOURS_DAY) + " hours are allowed in one day.")
         elif hours <= 0:
             raise forms.ValidationError("You cannot have negative hours!")
 
@@ -159,7 +161,10 @@ class ReportBuilderForm(forms.Form):
 class ReportTemplateForm(StudentReportWriterForm):
     date_begin = None
     date_end = None
-    student = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+    try:
+        student = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+    except ProgrammingError:
+        pass
 
     def clean(self):
         data = self.cleaned_data

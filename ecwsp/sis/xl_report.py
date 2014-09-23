@@ -6,6 +6,7 @@ from openpyxl.workbook import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from openpyxl.cell import get_column_letter
 import re
+from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
 class XlReport:
     """ Wrapper for openpyxl
@@ -100,6 +101,12 @@ class XlReport:
         response = HttpResponse(
             myfile.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename=%s.xlsx' % self.file_name
+
+        safe_filename = re.sub(
+            '[^A-Za-z0-9]+',
+            '_',
+            strip_unicode_to_ascii(self.file_name)
+        )
+        response['Content-Disposition'] = 'attachment; filename=%s.xlsx' % safe_filename
         response['Content-Length'] = myfile.tell()
         return response

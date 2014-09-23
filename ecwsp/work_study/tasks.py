@@ -1,138 +1,120 @@
 from ecwsp.work_study.models import StudentInteraction, CraContact, TimeSheet, StudentWorker
 from ecwsp.administration.models import Configuration
+from ecwsp.sis.helper_functions import all_tenants
 from django.core.mail import send_mail
 from django.utils.encoding import smart_unicode
 from datetime import date
 import logging
 from django.conf import settings
+from constance import config
 
 from celery import task
 from django_sis.celery import app
 
 import sys
 
-if 'ecwsp.work_study' in settings.INSTALLED_APPS:
+from ecwsp.work_study.sugar_sync import SugarSync
+modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
 
-    if settings.SYNC_SUGAR:
-        from ecwsp.work_study.sugar_sync import SugarSync
-        modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
-        @app.task
-        def update_contacts_from_sugarcrm():
-            sugar_sync = SugarSync()
-            sugar_sync.update_contacts_from_sugarcrm()
+@app.task
+@all_tenants
+def update_contacts_from_sugarcrm():
+    if config.SUGAR_SYNC:
+        sugar_sync = SugarSync()
+        sugar_sync.update_contacts_from_sugarcrm()
 
-        @app.task
-        def update_contact_to_sugarcrm(contact):
-            sugar_sync = SugarSync()
-            sugar_sync.update_contact(contact)
-    
-    @app.task
-    def email_cra_nightly():
-        """ Email CRA nightly time sheet and student interaction information
-        """
-        from_email = Configuration.objects.get_or_create(name="From Email Address")[0].value
-        cras = CraContact.objects.filter(email=True)
-        for cra in cras:
-            msg = "Student(s): "
-            subject = "SWORD student interactions"
-            interactions = StudentInteraction.objects.filter(date__year=date.today().year, date__day=date.today().day, date__month=date.today().month).filter(student__placement__cras=cra)
-            if interactions.count() > 0:
-                for interaction in interactions:
-                    for student in interaction.student.all():
-                        msg += unicode(student) + " "
-                    msg += "\n"
-                    msg += interaction.comments
-                    msg += "\n"
-                    for preset in interaction.preset_comment.all():
-                        msg += unicode(preset) + "\n"
+@app.task
+def update_contact_to_sugarcrm(contact):
+    if config.SUGAR_SYNC:
+        sugar_sync = SugarSync()
+        sugar_sync.update_contact(contact)
+
+@app.task
+@all_tenants
+def email_cra_nightly():
+    """ Email CRA nightly time sheet and student interaction information
+    """
+    from_email = Configuration.objects.get_or_create(name="From Email Address")[0].value
+    cras = CraContact.objects.filter(email=True)
+    for cra in cras:
+        msg = "Student(s): "
+        subject = "SWORD student interactions"
+        interactions = StudentInteraction.objects.filter(date__year=date.today().year, date__day=date.today().day, date__month=date.today().month).filter(student__placement__cras=cra)
+        if interactions.count() > 0:
+            for interaction in interactions:
+                for student in interaction.student.all():
+                    msg += unicode(student) + " "
+                msg += "\n"
+                msg += interaction.comments
+                msg += "\n"
+                for preset in interaction.preset_comment.all():
+                    msg += unicode(preset) + "\n"
+                try:
+                    send_mail(subject, msg, from_email, [unicode(cra.name.email)])
+                except:
+                    logging.warning('Could not email interactions', exc_info=True, extra={
+                        'exception': sys.exc_info()[0],
+                        'exception2': sys.exc_info()[1],
+                    })
+
+    cras = CraContact.objects.filter(email=True).filter(email_all=False)
+    for cra in cras:
+        msg = ""
+        subject = "SWORD comments"
+        send = False
+        timesheets = TimeSheet.objects.filter(company__cras=cra).filter(cra_email_sent=False, creation_date__month=date.today().month).order_by('company__team_name')
+        if timesheets.count():
+            for timesheet in timesheets:
+                if timesheet.supervisor_comment or timesheet.performance or timesheet.student_accomplishment:
+                    send = True
+                    if timesheet.show_student_comments:
+                        showtxt = "Student was able to view comments"
+                    else:
+                        showtxt = "Student was not allowed to view comments"
+                    msg += unicode(timesheet.student) + ": " + unicode(timesheet.performance) + "\nsupervisor: " + \
+                        unicode(timesheet.company) + " - " + unicode(timesheet.student.primary_contact) + "\n" + \
+                        unicode(timesheet.supervisor_comment) + "\nstudent: " + unicode(timesheet.student_accomplishment) + \
+                        showtxt + "\n"
+                    if timesheet.approved:
+                        msg += "Timesheet approved by supervisor\n\n"
+                    else:
+                        msg += "Timesheet not yet approved by supervisor\n\n"
+
+            # Now get students who are present but did not submit a time card
+            students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P",timesheet__company__cras=cra).exclude(timesheet__date=date.today()).distinct()
+            if students:
+                msg += "The following students were present but did not submit time sheets:\n"
+                for student in students:
                     try:
-                        send_mail(subject, msg, from_email, [unicode(cra.name.email)])
-                    except:
-                        logging.warning('Could not email interactions', exc_info=True, extra={
-                            'exception': sys.exc_info()[0],
-                            'exception2': sys.exc_info()[1],
-                        })
+                        msg += "{0}, ".format(student)
+                    except UnicodeDecodeError:
+                        msg += "{0}, ".format(student.id)
+                msg = msg[:-2]
 
-        cras = CraContact.objects.filter(email=True).filter(email_all=False)
-        for cra in cras:
-            msg = ""
-            subject = "SWORD comments"
-            send = False
-            timesheets = TimeSheet.objects.filter(company__cras=cra).filter(cra_email_sent=False, creation_date__month=date.today().month).order_by('company__team_name')
-            if timesheets.count():
-                for timesheet in timesheets:
-                    if timesheet.supervisor_comment or timesheet.performance or timesheet.student_accomplishment:
-                        send = True
-                        if timesheet.show_student_comments:
-                            showtxt = "Student was able to view comments"
-                        else:
-                            showtxt = "Student was not allowed to view comments"
-                        msg += unicode(timesheet.student) + ": " + unicode(timesheet.performance) + "\nsupervisor: " + \
-                            unicode(timesheet.company) + " - " + unicode(timesheet.student.primary_contact) + "\n" + \
-                            unicode(timesheet.supervisor_comment) + "\nstudent: " + unicode(timesheet.student_accomplishment) + \
-                            showtxt + "\n"
-                        if timesheet.approved:
-                            msg += "Timesheet approved by supervisor\n\n"
-                        else:
-                            msg += "Timesheet not yet approved by supervisor\n\n"
-
-                # Now get students who are present but did not submit a time card
-                students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P",timesheet__company__cras=cra).exclude(timesheet__date=date.today()).distinct()
-                if students:
-                    msg += "The following students were present but did not submit time sheets:\n"
-                    for student in students:
-                        try:
-                            msg += "{0}, ".format(student)
-                        except UnicodeDecodeError:
-                            msg += "{0}, ".format(student.id)
-                    msg = msg[:-2]
-
-                try:
-                    send_mail(subject, msg, from_email, [unicode(cra.name.email)])
-                except:
-                    logging.warning('Could not email CRA', exc_info=True, extra={
-                        'exception': sys.exc_info()[0],
-                        'exception2': sys.exc_info()[1],
-                    })
-        cras = CraContact.objects.filter(email_all=True)
-        for cra in cras:
-            msg = ""
-            subject = "SWORD comments"
-            send = False
-            timesheets = TimeSheet.objects.filter(cra_email_sent=False, creation_date__month=date.today().month).order_by('company__cras','company__team_name')
-            if timesheets.count() > 0:
-                for timesheet in timesheets:
-                    if timesheet.supervisor_comment or timesheet.performance or timesheet.student_accomplishment:
-                        send = True
-                        msg += unicode(timesheet.student) + ": " + unicode(timesheet.performance) + "\nsupervisor: " + \
-                            unicode(timesheet.company) + " - " + unicode(timesheet.student.primary_contact) + "\n" + \
-                            unicode(timesheet.supervisor_comment) + "\nstudent: " + unicode(timesheet.student_accomplishment) + "\n"
-                        if timesheet.approved:
-                            msg += "Timesheet approved by supervisor\n\n"
-                        else:
-                            msg += "Timesheet not yet approved by supervisor\n\n"
-
-                # Now get students who are present but did not submit a time card
-                students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
-                if students:
-                    msg += "The following students were present but did not submit time sheets:\n"
-                    for student in students:
-                        msg += smart_unicode(student) + ", "
-                    msg = msg[:-2]
-
-                try:
-                    send_mail(subject, msg, from_email, [unicode(cra.name.email)])
-                except:
-                    logging.warning('Could not email CRA all comments', exc_info=True, extra={
-                        'exception': sys.exc_info()[0],
-                        'exception2': sys.exc_info()[1],
-                    })
-
-        # Check off time sheets that were processed today (so they aren't processed tomorrow)
-        timesheets = TimeSheet.objects.filter(creation_date__month=date.today().month, cra_email_sent=False)
-        for timesheet in timesheets:
-            timesheet.cra_email_sent = True
-            timesheet.save()
+            try:
+                send_mail(subject, msg, from_email, [unicode(cra.name.email)])
+            except:
+                logging.warning('Could not email CRA', exc_info=True, extra={
+                    'exception': sys.exc_info()[0],
+                    'exception2': sys.exc_info()[1],
+                })
+    cras = CraContact.objects.filter(email_all=True)
+    for cra in cras:
+        msg = ""
+        subject = "SWORD comments"
+        send = False
+        timesheets = TimeSheet.objects.filter(cra_email_sent=False, creation_date__month=date.today().month).order_by('company__cras','company__team_name')
+        if timesheets.count() > 0:
+            for timesheet in timesheets:
+                if timesheet.supervisor_comment or timesheet.performance or timesheet.student_accomplishment:
+                    send = True
+                    msg += unicode(timesheet.student) + ": " + unicode(timesheet.performance) + "\nsupervisor: " + \
+                        unicode(timesheet.company) + " - " + unicode(timesheet.student.primary_contact) + "\n" + \
+                        unicode(timesheet.supervisor_comment) + "\nstudent: " + unicode(timesheet.student_accomplishment) + "\n"
+                    if timesheet.approved:
+                        msg += "Timesheet approved by supervisor\n\n"
+                    else:
+                        msg += "Timesheet not yet approved by supervisor\n\n"
 
         # Remind students to submit time sheets
         students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
