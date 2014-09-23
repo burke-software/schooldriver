@@ -303,6 +303,7 @@ INSTALLED_APPS = (
     'ecwsp.benchmark_grade',
     'ecwsp.naviance_sso',
     'rosetta',
+    'jsonfield',
     # These can be enabled if desired but the default is off
     #'ecwsp.integrations.schoolreach',
     #'ecwsp.integrations.canvas_sync',

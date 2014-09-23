@@ -85,3 +85,4 @@ hiredis
 django-heroku-redisify
 django-tenant-schemas==1.4.7
 tenant-schemas-celery
+jsonfield
