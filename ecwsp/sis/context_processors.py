@@ -16,7 +16,7 @@ def global_stuff(request):
 
     # Only show messages if user just logged in
     user_messages = None
-    if not request.session.get('has_seen_message', False) and request.user.is_authenticated():
+    if hasattr(request, 'session') and not request.session.get('has_seen_message', False) and request.user.is_authenticated():
         today = datetime.date.today()
         if request.user.groups.filter(name='students'):
             user_messages = MessageToStudent.objects.filter(start_date__lte=today, end_date__gte=today)
