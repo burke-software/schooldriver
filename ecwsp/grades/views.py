@@ -110,7 +110,7 @@ def teacher_grade(request):
         form = None
     return render_to_response(
         'grades/teacher_grade.html',
-        {'request': request, 'all_sections': all_sections 'course_sections': course_sections, 'form': form, 'pref': pref},
+        {'request': request, 'all_sections': all_sections, 'course_sections': course_sections, 'form': form, 'pref': pref},
         RequestContext(request, {}),
         )
 
