@@ -1086,7 +1086,7 @@ class SisReport(ScaffoldReport):
                     student.highest_tests.append(test)
 
     def get_appy_template(self):
-        return self.report_context.get('template').file.path
+        return self.report_context.get('template').file
 
     def get_appy_context(self):
         context = super(SisReport, self).get_appy_context()
