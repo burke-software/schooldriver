@@ -12,7 +12,7 @@ import decimal
 from decimal import Decimal
 import datetime
 import ecwsp
-
+import sys
 import logging
 
 class GradeComment(models.Model):
@@ -48,23 +48,23 @@ class StudentMarkingPeriodGrade(models.Model):
         """ Convert to scaled grade first, then average
         Burke Software does not endorse this as a precise way to calculate averages """
         grade_total = 0.0
-        course_count = 0
+        total_credits = 0.0
         grades = self.student.grade_set.filter(
             marking_period=self.marking_period,
             grade__isnull=False,
             course_section__course__course_type__weight__gt=0,
         )
-        boost_sum = grades.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
 
         for grade in grades:
-            grade_value = grade.optimized_grade_to_scale(letter=False)
-            grade_total += float(grade_value)
-            course_count += 1
-        if course_count:
-            average = grade_total / course_count
-            if boost:
-                boost_factor = boost_sum / course_count
-                average += float(boost_factor)
+            grade_value = float(grade.optimized_grade_to_scale(letter=False))
+            if grade_value > 0 and boost:
+                # only add boost for non-failing grades
+                grade_value += float(grade.course_section.course.course_type.boost)
+            num_credits = float(grade.course_section.course.credits)
+            grade_total += grade_value * num_credits
+            total_credits += num_credits
+        if total_credits > 0:
+            average = grade_total / total_credits
             return round_as_decimal(average, rounding)
         else:
             return None
@@ -196,7 +196,14 @@ class StudentYearGrade(models.Model):
                     course_section__marking_period__school_year=self.year,
                     course_section__course__credits__isnull=False,
                     course_section__course__course_type__weight__gt=0,)
-                boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+                boost_sum = 0
+                for enrollment in enrollments:
+                    course_boost = enrollment.course_section.course.course_type.boost
+                    if enrollment.grade:
+                        course_grade = Decimal(enrollment.grade)
+                        if grade_scale.to_numeric(course_grade) > 0:
+                            # only add boost to grades that are not failing...
+                            boost_sum += course_boost
                 if enrollments.count() > 0 and boost_sum:
                     boost_factor = boost_sum / enrollments.count()
                     if grade and boost_factor:
@@ -386,18 +393,22 @@ class Grade(models.Model):
                 user=student,
                 course_section__course__course_type__weight__gt=0,
                 course_section__marking_period__in=marking_periods)
+        total_credits = 0.0
         num_courses = 0
-        total_grade = 0
-        boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+        total_grade = 0.0
         for enrollment in enrollments.distinct():
             grade = enrollment.get_average_for_marking_periods(marking_periods, numeric=True)
             if grade != None:
-                total_grade += grade
+                grade = float(grade)
+                num_credits = float(enrollment.course_section.course.credits)
+                if grade > 0:
+                    # only add boost for non-failing grades
+                    grade += float(enrollment.course_section.course.course_type.boost)
+                total_grade += grade * num_credits
+                total_credits += num_credits
                 num_courses += 1
         if num_courses > 0:
-            average = total_grade / num_courses
-            boost_factor = boost_sum /  enrollments.count()
-            average += boost_factor
+            average = total_grade / total_credits
             return round_as_decimal(average, rounding)
         else:
             return None
