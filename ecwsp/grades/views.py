@@ -65,7 +65,7 @@ def select_grade_method(request):
 
 @permission_required('grades.change_own_grade')
 def teacher_grade(request):
-    teacher = Faculty.objects.first(username=request.user.username)
+    teacher = Faculty.objects.filter(username=request.user.username).first()
     all_sections = None
     if request.user.has_perm('grades.change_grade'):
         all_sections = CourseSection.objects.filter(
