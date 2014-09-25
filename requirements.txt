@@ -87,3 +87,5 @@ django-tenant-schemas==1.4.7
 tenant-schemas-celery
 flower
 newrelic
+futures
+trollius
