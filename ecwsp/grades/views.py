@@ -71,7 +71,7 @@ def teacher_grade(request):
         all_sections = CourseSection.objects.filter(
                 course__graded=True,
                 marking_period__school_year__active_year=True,
-            ).order_by('coursesectionteacher').distinct()
+            ).order_by('coursesectionteacher__teacher__last_name').distinct()
     elif not teacher:
         messages.info(request, 'You do not have any course sections.')
         return HttpResponseRedirect(reverse('admin:index'))
