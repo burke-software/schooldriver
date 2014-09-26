@@ -350,7 +350,7 @@ WHERE (grades_grade.course_section_id = %s
                         if grade.marking_period:
                             total_weight += grade.marking_period.weight
                     elif get_grade:
-                        final += get_grade
+                        final += float(get_grade)
                 if total_weight:
                     final /= float(total_weight)
                     final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
