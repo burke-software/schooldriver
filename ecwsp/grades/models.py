@@ -196,14 +196,17 @@ class StudentYearGrade(models.Model):
                     course_section__marking_period__school_year=self.year,
                     course_section__course__credits__isnull=False,
                     course_section__course__course_type__weight__gt=0,)
-                boost_sum = 0
-                for enrollment in enrollments:
-                    course_boost = enrollment.course_section.course.course_type.boost
-                    if enrollment.grade:
-                        course_grade = Decimal(enrollment.grade)
-                        if grade_scale.to_numeric(course_grade) > 0:
-                            # only add boost to grades that are not failing...
-                            boost_sum += course_boost
+                if not grade_scale:
+                    boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+                else:
+                    boost_sum = 0
+                    for enrollment in enrollments:
+                        course_boost = enrollment.course_section.course.course_type.boost
+                        if enrollment.grade:
+                            course_grade = Decimal(enrollment.grade)
+                            if grade_scale.to_numeric(course_grade) > 0:
+                                # only add boost to grades that are not failing...
+                                boost_sum += course_boost
                 if enrollments.count() > 0 and boost_sum:
                     boost_factor = boost_sum / enrollments.count()
                     if grade and boost_factor:
