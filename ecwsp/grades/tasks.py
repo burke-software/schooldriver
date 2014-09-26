@@ -6,7 +6,7 @@ from ecwsp.schedule.models import CourseEnrollment
 from django_sis.celery import app
 from django.conf import settings
 
-
+@app.task
 def build_grade_cache():
     """ Rebuild all grade related cache in the world """
     StudentMarkingPeriodGrade.build_all_cache()
