@@ -26,7 +26,6 @@ django-daterange-filter==1.0.0
 django-extensions
 django-filter==0.7
 django-floppy-gumby==0.1
-django-floppyforms==1.2.0
 django-grappelli==2.5.3
 python-ldap
 django-ldap-groups-bsc==0.1.5
@@ -89,3 +88,4 @@ flower
 newrelic
 futures
 trollius
+git+https://github.com/gregmuellegger/django-floppyforms.git@636c7ec516d50a298164ee324b5c697b6676cbc6
