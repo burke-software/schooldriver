@@ -87,6 +87,8 @@ if 'rosetta' in settings.INSTALLED_APPS:
     )
 if 'social.apps.django_app.default' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', url('', include('social.apps.django_app.urls', namespace='social')),)
+if 'file_import' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',(r'^file_import/', include('file_import.urls')),)
 
 urlpatterns += patterns('', (r'^administration/', include('ecwsp.administration.urls')), )
 urlpatterns += patterns('', (r'^', include('responsive_dashboard.urls')), )
