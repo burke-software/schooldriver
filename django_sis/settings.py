@@ -324,7 +324,8 @@ CELERYBEAT_SCHEDULE = {
     },
     'email_cra_nightly': {
         'task': 'ecwsp.work_study.tasks.email_cra_nightly',
-        'schedule': crontab(hour=0, minute=1),
+        # MUST complete before midnight! Could be an issue with multiple timezones.
+        'schedule': crontab(hour=20, minute=27),
     },
     'update_contacts_from_sugarcrm': {
         'task': 'ecwsp.work_study.tasks.update_contacts_from_sugarcrm',
