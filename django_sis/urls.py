@@ -7,12 +7,23 @@ from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 from api.routers import api_urls
 from responsive_dashboard import views as dashboard_views
 from ecwsp.sis.views import AttendanceReportView
+from django.http import HttpResponse
 
 dajaxice_autodiscover()
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
 
+def robots(request):
+    ''' Try to prevent search engines from indexing
+    uploaded media. Make sure your web server is
+    configured to deny directory listings. '''
+    return HttpResponse(
+        'User-agent: *\r\nDisallow: /media/\r\n',
+        content_type='text/plain'
+    )
+
 urlpatterns = patterns('',
+    (r'^robots.txt', robots),
     (r'^admin/', include("massadmin.urls")),
     (r'^admin_export/', include("admin_export.urls")),
     (r'^ckeditor/', include('ecwsp.ckeditor_urls')),#include('ckeditor.urls')),
