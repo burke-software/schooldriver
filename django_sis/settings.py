@@ -323,7 +323,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(hour=1, minute=0),
     },
     'email_cra_nightly': {
-        'task': 'email_cra_nightly',
+        'task': 'ecwsp.work_study.tasks.email_cra_nightly',
         'schedule': crontab(hour=0, minute=1),
     },
     'update_contacts_from_sugarcrm': {
