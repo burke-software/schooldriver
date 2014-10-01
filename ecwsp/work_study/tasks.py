@@ -74,21 +74,18 @@ def email_cra_nightly():
                     msg += unicode(timesheet.student) + ": " + unicode(timesheet.performance) + "\nsupervisor: " + \
                         unicode(timesheet.company) + " - " + unicode(timesheet.student.primary_contact) + "\n" + \
                         unicode(timesheet.supervisor_comment) + "\nstudent: " + unicode(timesheet.student_accomplishment) + \
-                        showtxt + "\n"
+                        "\n" + showtxt + "\n"
                     if timesheet.approved:
                         msg += "Timesheet approved by supervisor\n\n"
                     else:
                         msg += "Timesheet not yet approved by supervisor\n\n"
 
             # Now get students who are present but did not submit a time card
-            students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P",timesheet__company__cras=cra).exclude(timesheet__date=date.today()).distinct()
+            students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
             if students:
                 msg += "The following students were present but did not submit time sheets:\n"
                 for student in students:
-                    try:
-                        msg += "{0}, ".format(student)
-                    except UnicodeDecodeError:
-                        msg += "{0}, ".format(student.id)
+                    msg += smart_unicode(student) + ", "
                 msg = msg[:-2]
 
             try:
@@ -142,7 +139,7 @@ def email_cra_nightly():
     students = StudentWorker.objects.filter(attendance__absence_date=date.today(),attendance__tardy="P").exclude(timesheet__date=date.today())
     subject = "Timesheet not submitted"
     for student in students:
-        msg = "Hello {0},\n"
+        msg = u"Hello {0},\n".format(student.first_name)
         conf_msg = Configuration.get_or_default(
             "work_study message to student missing time sheet",
             default="You did not submit a time card today. Please remember to do so. This is an automated message, please do not reply.")
