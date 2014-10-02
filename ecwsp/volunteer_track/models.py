@@ -54,7 +54,7 @@ class VolunteerSite(models.Model):
     secret_key = models.CharField(max_length=20, blank=True, editable=False)
     
     def __unicode__(self):
-        return '%s at %s' % (self.volunteer,self.site)
+        return u'%s at %s' % (self.volunteer,self.site)
     
     def genKey(self):
         key = ''
