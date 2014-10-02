@@ -153,7 +153,9 @@ class StudentYearGrade(models.Model):
                 num_credits = course_enrollment.course_section.course.credits
                 if prescale:
                     # scale the grades before averaging them if requested
-                    prescaled_grade += grade_scale.to_numeric(grade) * num_credits
+                    if grade_scale:
+                        grade = grade_scale.to_numeric(grade)
+                    prescaled_grade += grade * num_credits
                 total += grade * num_credits
                 credits += num_credits
         if credits > 0:
@@ -199,19 +201,23 @@ class StudentYearGrade(models.Model):
                     course_section__course__course_type__weight__gt=0,)
                 if not grade_scale:
                     boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+                    boost_factor = boost_sum / enrollments.count()
                 else:
-                    boost_sum = 0
+                    boost_sum = 0.0
+                    total_credits = 0.0
                     for enrollment in enrollments:
+                        course_credits = enrollment.course_section.course.credits
                         course_boost = enrollment.course_section.course.course_type.boost
                         if enrollment.grade:
                             course_grade = Decimal(enrollment.grade)
+                            total_credits += float(course_credits)
                             if grade_scale.to_numeric(course_grade) > 0:
                                 # only add boost to grades that are not failing...
-                                boost_sum += course_boost
-                if enrollments.count() > 0 and boost_sum:
-                    boost_factor = boost_sum / enrollments.count()
-                    if grade and boost_factor:
-                        grade += boost_factor
+                                boost_sum += float(course_boost*course_credits)
+
+                    boost_factor = boost_sum / total_credits
+                if enrollments.count() > 0 and boost_factor and grade:
+                    grade = float(grade) + float(boost_factor)
         if rounding:
             grade = round_as_decimal(grade, rounding)
         return grade
