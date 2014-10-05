@@ -63,6 +63,7 @@ class StudentMarkingPeriodGrade(models.Model):
             marking_period=self.marking_period,
             grade__isnull=False,
             course_section__course__course_type__weight__gt=0,
+            enrollment__is_active=True,
         )
 
         for grade in grades:

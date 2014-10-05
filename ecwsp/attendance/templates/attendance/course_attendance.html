@@ -3,6 +3,20 @@
 
 {% block extrahead %}
     {{ formset.media }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('.student_select').attr('disabled', 'disabled');
+
+            {% if readonly %}
+                $(".status").attr('disabled', 'disabled');
+            {% endif %}
+        })
+
+        function set_to_present() {
+	        var value = $('.status option:contains("Present")').val();
+            $('.status').val(value);
+        }
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -10,6 +24,7 @@
     <form method="post" action="" id="myform">
         {{ formset.management_form }}
         {{ formset.non_form_errors }}
+        <a href="#" onclick="set_to_present()">Set all to Present</a>
 	{{ msg|safe }}
         <div class='table'>
             <table>

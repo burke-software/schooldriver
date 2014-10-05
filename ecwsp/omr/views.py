@@ -34,7 +34,7 @@ class QuestionBankFilter(django_filters.FilterSet):
             if isinstance(field, django_filters.ChoiceFilter):
                 # Add "Any" entry to choice fields.
                 field.extra['choices'] = tuple([("", "Any"), ] + list(field.extra['choices']))
-    
+
     class Meta:
         model = QuestionBank
         fields = ['question', 'type', 'benchmarks', 'theme']
@@ -43,7 +43,7 @@ class QuestionBankFilter(django_filters.FilterSet):
 class QuestionBankListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(QuestionBankListView, self).get_context_data(**kwargs)
-        
+
         questions = QuestionBank.objects.all()
         if self.request.session['omr_test_id']:
             test = Test.objects.get(id=self.request.session['omr_test_id'])
@@ -51,13 +51,13 @@ class QuestionBankListView(ListView):
             if test.department:
                 questions = questions.filter(benchmarks__measurement_topics__department=test.department)
         f = QuestionBankFilter(self.request.GET, queryset=questions)
-        
+
         context['is_popup'] = True
         context['filter'] = f
         context['tip'] = ['Hover over truncated information to view all.', 'Images and formatting are not shown here. They will appear when you select a question.']
         return context
-    
-    
+
+
 class BenchmarkFilter(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
         super(BenchmarkFilter, self).__init__(*args, **kwargs)
@@ -65,18 +65,18 @@ class BenchmarkFilter(django_filters.FilterSet):
             if isinstance(field, django_filters.ChoiceFilter):
                 # Add "Any" entry to choice fields.
                 field.extra['choices'] = tuple([("", "Any"), ] + list(field.extra['choices']))
-    
+
     class Meta:
         model = Benchmark
         fields = ['measurement_topics']
-    
+
     number = django_filters.CharFilter(name='number', lookup_type='icontains', widget=TextInput(attrs={'class':'search',}))
     benchmark = django_filters.CharFilter(name='name', lookup_type='icontains', widget=TextInput(attrs={'class':'search',}))
 
 class BenchmarkListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(BenchmarkListView, self).get_context_data(**kwargs)
-        
+
         benchmarks = Benchmark.objects.all()
         if self.request.session['omr_test_id']:
             test = Test.objects.get(id=self.request.session['omr_test_id'])
@@ -84,7 +84,7 @@ class BenchmarkListView(ListView):
             if test.department:
                 benchmarks = benchmarks.filter(measurement_topics__department=test.department)
         f = BenchmarkFilter(self.request.GET, queryset=benchmarks)
-        
+
         context['is_popup'] = True
         context['filter'] = f
         context['tip'] = ['Hover over truncated information to view all.']
@@ -167,7 +167,7 @@ def edit_test(request, id=None):
         test_form = TestForm()
         test_form.fields['teachers'].initial = [teacher.id]
         test_form.fields['teachers'].widget.attrs['placeholder'] = 'Type to search for teacher'
-    
+
     if request.method == 'POST':
         if '_delete' in request.POST and id:
             test.delete()
@@ -182,7 +182,7 @@ def edit_test(request, id=None):
             instance.enroll_students(
                 Student.objects.filter(cohort__in=enroll_cohorts))
             messages.success(request, 'Test %s saved!' % (instance,))
-            
+
             # Quick test creation
             quick_number_questions = test_form.cleaned_data['quick_number_questions']
             quick_number_answers = test_form.cleaned_data['quick_number_answers']
@@ -204,21 +204,21 @@ def edit_test(request, id=None):
                             question = question,
                             answer = chr(answer_i + 64),
                         )
-            
+
             if '_continue' in request.POST:
                 return HttpResponseRedirect(reverse(my_tests) + str(instance.id))
             elif '_save' in request.POST:
                 return HttpResponseRedirect(reverse(my_tests))
             elif '_next' in request.POST:
                 return HttpResponseRedirect(reverse(edit_test_questions, args=[instance.id]))
-                
-    test_form.fields['course_sections'].queryset = teacher_courses
+
+    test_form.fields['course_sections'].queryset = teacher_course_sections
     return render_to_response('omr/edit_test.html', {
         'test_form': test_form,
         'test': test,
         'add': add,
     }, RequestContext(request, {}),)
-    
+
 
 @permission_required('omr.teacher_test')
 def ajax_mark_as_answer(request, test_id, answer_id):
@@ -228,7 +228,7 @@ def ajax_mark_as_answer(request, test_id, answer_id):
     answer.save()
     return HttpResponse(question_points);
 
-    
+
 @permission_required('omr.teacher_test')
 def edit_test_questions(request, id):
     test = get_object_or_404(Test, id=id)
@@ -236,7 +236,7 @@ def edit_test_questions(request, id):
 
     # Ugly way to see which test is on, currently only used for filtering benchmarks
     request.session['omr_test_id'] = str(id)
-    
+
     return render_to_response('omr/edit_test_questions.html', {
         'test': test,
         'questions': questions,
@@ -290,7 +290,7 @@ def ajax_new_question_form(request, test_id):
         point_value = profile.omr_default_point_value,
         type = request.POST['question_type']
     )
-    
+
     if new_question.type == "True/False":
         new_question.answer_set.create(
             answer="True",
@@ -312,7 +312,7 @@ def ajax_new_question_form(request, test_id):
 		order=None,
 	    )
 	    i += 1
-     
+
     return render_to_response('omr/one_test_question.html', {
         'question': new_question,
     }, RequestContext(request, {}),)
@@ -400,7 +400,7 @@ def save_answer(request, answer_id):
 def ajax_question_form(request, test_id, question_id):
     question = Question.objects.get(id=question_id)
     test = Test.objects.get(id=test_id)
-     
+
     return render_to_response('omr/ajax_question_form.html', {
         'question': question,
         'new': False,
@@ -433,12 +433,12 @@ def test_result(request, test_id):
     students = test.students.all()
     cohorts = Cohort.objects.filter(students=students).distinct()
     cohort_form.fields['cohorts'].queryset = cohorts
-    
+
     for test_instance in test.testinstance_set.filter(results_received=False):
         if test_instance.answerinstance_set.all().count():
             test_instance.results_received = True
             test_instance.save()
-    
+
     return render_to_response('omr/test_result.html', {
         'test': test,
         'cohort_form': cohort_form,
@@ -448,7 +448,7 @@ def test_result(request, test_id):
 def download_test_results(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     return report.download_results(test)
-    
+
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
 def download_student_results(request, test_id):
     test = get_object_or_404(Test, id=test_id)
@@ -477,12 +477,12 @@ def download_teacher_results(request, test_id):
     if not template:
         return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
     return report.download_teacher_results(test, format, template, cohorts=cohorts)
-    
-    
+
+
 @user_passes_test(lambda u: u.has_perm("omr.teacher_test") or u.has_perm("omr.view_test") or u.has_perm("omr.change_test"))
 def download_answer_sheets(request, test_id):
     test = get_object_or_404(Test, id=test_id)
-    
+
     response = HttpResponse(test.answer_sheet_pdf, mimetype="application/pdf")
     filename = "Answer_Sheets.pdf"
     response['Content-Disposition'] = "filename=" + str(filename)
@@ -529,12 +529,12 @@ def manual_edit(request, test_id):
     return render_to_response('omr/manually_edit.html', {
         'test': test, 'letter':letter, 'q':question
     }, RequestContext(request, {}),)
-    
+
 @permission_required('omr.teacher_test')
 def student_unknown(request, test_id):
     #open files from quexf
     test = get_object_or_404(TestInstance, id = test_id)
-    
+
     return render_to_response('omr/student_unknown', {
-        
+
     }, RequestContext(request, {}),)

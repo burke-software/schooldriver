@@ -41,6 +41,9 @@ for environment_variable in (
     'AWS_STORAGE_BUCKET_NAME',
 ):
     globals()[environment_variable] = os.getenv(environment_variable)
+allowed_hosts = os.getenv('ALLOWED_HOSTS')
+if allowed_hosts:
+    ALLOWED_HOSTS = allowed_hosts.split(',')
 # username, id, or unique_id
 NAVIANCE_SWORD_ID = os.getenv('NAVIANCE_SWORD_ID', 'username')
 
@@ -320,8 +323,9 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(hour=1, minute=0),
     },
     'email_cra_nightly': {
-        'task': 'email_cra_nightly',
-        'schedule': crontab(hour=0, minute=1),
+        'task': 'ecwsp.work_study.tasks.email_cra_nightly',
+        # MUST complete before midnight! Could be an issue with multiple timezones.
+        'schedule': crontab(hour=20, minute=27),
     },
     'update_contacts_from_sugarcrm': {
         'task': 'ecwsp.work_study.tasks.update_contacts_from_sugarcrm',
@@ -457,6 +461,7 @@ CONSTANCE_CONFIG = {
     'NAVIANCE_IMPORT_USERNAME': ('', ''),
     'NAVIANCE_USERNAME': ('', ''),
     'NAVIANCE_PASSWORD': ('', ''),
+    'NAVIANCE_SWORD_ID': ('username', 'Username, id, or unique_id'),
     'NAVIANCE_IMPORT_KEY': ('', ''),
     'NAVIANCE_EMAILS': ('', ''),
     'SCHOOLREACH_USERID': ('', ''),

@@ -295,11 +295,11 @@ WHERE (grades_grade.course_section_id = %s
         if date_report:
             if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
                 cursor.execute(sql_string.format(
-                    postgres_type_cast='::int', over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = 1)'),
+                    postgres_type_cast='::int', over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = true)'),
                                (self.course_section_id, self.user_id, date_report))
             else:
                 cursor.execute(sql_string.format(
-                    postgres_type_cast='', over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
+                    postgres_type_cast='', over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = true)'),
                                (self.course_section_id, self.user_id, date_report))
 
         else:
@@ -350,7 +350,7 @@ WHERE (grades_grade.course_section_id = %s
                         if grade.marking_period:
                             total_weight += grade.marking_period.weight
                     elif get_grade:
-                        final += get_grade
+                        final += float(get_grade)
                 if total_weight:
                     final /= float(total_weight)
                     final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)

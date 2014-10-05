@@ -65,9 +65,14 @@ def select_grade_method(request):
 
 @permission_required('grades.change_own_grade')
 def teacher_grade(request):
-    if Faculty.objects.filter(username=request.user.username):
-        teacher = Faculty.objects.get(username=request.user.username)
-    else:
+    teacher = Faculty.objects.filter(username=request.user.username).first()
+    all_sections = None
+    if request.user.has_perm('grades.change_grade'):
+        all_sections = CourseSection.objects.filter(
+                course__graded=True,
+                marking_period__school_year__active_year=True,
+            ).order_by('coursesectionteacher__teacher__last_name').distinct()
+    elif not teacher:
         messages.info(request, 'You do not have any course sections.')
         return HttpResponseRedirect(reverse('admin:index'))
     course_sections = CourseSection.objects.filter(
@@ -105,7 +110,7 @@ def teacher_grade(request):
         form = None
     return render_to_response(
         'grades/teacher_grade.html',
-        {'request': request, 'course_sections': course_sections, 'form': form, 'pref': pref},
+        {'request': request, 'all_sections': all_sections, 'course_sections': course_sections, 'form': form, 'pref': pref},
         RequestContext(request, {}),
         )
 

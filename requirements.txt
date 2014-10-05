@@ -12,9 +12,9 @@ dj-static==0.0.6
 django-admin-export==2.0
 django-appconf==0.6
 django-apptemplates==0.0.1
-django-autocomplete-light==2.0.0a18
+django-autocomplete-light-bsc==2.0.0a18
 django-bower==5.0.1
-django-cached-field==1.2.6
+django-cached-field==1.2.7
 django-celery==3.1.10
 django-ckeditor-updated==4.4.0
 django-compressor==1.4
@@ -26,7 +26,6 @@ django-daterange-filter==1.0.0
 django-extensions
 django-filter==0.7
 django-floppy-gumby==0.1
-django-floppyforms==1.2.0
 django-grappelli==2.5.3
 python-ldap
 django-ldap-groups-bsc==0.1.5
@@ -47,7 +46,7 @@ django-storages==1.1.8
 django-su==0.4.7
 django-toolbelt==0.0.1
 django-widget-tweaks==1.3
-Django==1.6.6
+Django==1.6.7
 djangorestframework-bulk==0.1.3
 djangorestframework==2.3.14
 gunicorn==19.1.1
@@ -86,3 +85,8 @@ django-heroku-redisify
 django-tenant-schemas==1.4.7
 tenant-schemas-celery
 flower
+newrelic
+futures
+trollius
+git+https://github.com/gregmuellegger/django-floppyforms.git@636c7ec516d50a298164ee324b5c697b6676cbc6
+git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99

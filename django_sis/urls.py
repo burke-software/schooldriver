@@ -7,11 +7,23 @@ from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 from api.routers import api_urls
 from responsive_dashboard import views as dashboard_views
 from ecwsp.sis.views import AttendanceReportView
+from django.http import HttpResponse
 
 dajaxice_autodiscover()
 admin.autodiscover()
+admin.site.login = login_required(admin.site.login)
+
+def robots(request):
+    ''' Try to prevent search engines from indexing
+    uploaded media. Make sure your web server is
+    configured to deny directory listings. '''
+    return HttpResponse(
+        'User-agent: *\r\nDisallow: /media/\r\n',
+        content_type='text/plain'
+    )
 
 urlpatterns = patterns('',
+    (r'^robots.txt', robots),
     (r'^admin/', include("massadmin.urls")),
     (r'^admin_export/', include("admin_export.urls")),
     (r'^ckeditor/', include('ecwsp.ckeditor_urls')),#include('ckeditor.urls')),
@@ -86,6 +98,8 @@ if 'rosetta' in settings.INSTALLED_APPS:
     )
 if 'social.apps.django_app.default' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', url('', include('social.apps.django_app.urls', namespace='social')),)
+if 'file_import' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',(r'^file_import/', include('file_import.urls')),)
 
 urlpatterns += patterns('', (r'^administration/', include('ecwsp.administration.urls')), )
 urlpatterns += patterns('', (r'^', include('responsive_dashboard.urls')), )
