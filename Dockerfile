@@ -1,9 +1,14 @@
 FROM ubuntu:12.04
 ENV PYTHONUNBUFFERED 1
 
+# Basics
 RUN apt-get update -qq && apt-get install -y python-psycopg2 libldap2-dev libsasl2-dev libpq-dev postgresql-client git-core coffeescript python-pip python-dev g++
+# Libreoffice
 RUN apt-get install -y libreoffice-base-core libreoffice-calc libreoffice-common libreoffice-core libreoffice-emailmerge libreoffice-math libreoffice-style-human libreoffice-writer python-uno
+# Supervisor for libreoffice
 RUN apt-get install -y supervisor
+# OMR Specific
+RUN apt-get install -y libmysqlclient-dev
 
 RUN mkdir -p /tmp/django-sis_libreoffice
 ENV HOME /tmp/django-sis_libreoffice
@@ -13,6 +18,8 @@ RUN mkdir /code
 WORKDIR /code
 ADD requirements.txt /code/
 ADD dev-requirements.txt /code/
+ADD omr-requirements.txt /code/
 RUN pip install -r requirements.txt
 RUN pip install -r dev-requirements.txt
+RUN pip install -r omr-requirements.txt
 ADD . /code/
