@@ -134,7 +134,7 @@ class StudentYearGrade(models.Model):
 
     def calculate_grade_and_credits(self, date_report=None, prescale=False):
         """ Just recalculate them both at once
-        returns (grade, credits) 
+        returns (grade, credits)
 
         if "prescale=True" grades are scaled (i.e. 4.0) before averaged
         """
@@ -209,7 +209,10 @@ class StudentYearGrade(models.Model):
                                 # only add boost to grades that are not failing...
                                 boost_sum += course_boost
                 if enrollments.count() > 0 and boost_sum:
-                    boost_factor = boost_sum / enrollments.count()
+                    try:
+                        boost_factor = boost_sum / enrollments.count()
+                    except ZeroDivisionError:
+                        boost_factor = None
                     if grade and boost_factor:
                         grade += boost_factor
         if rounding:
