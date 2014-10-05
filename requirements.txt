@@ -41,7 +41,7 @@ django-report-utils==0.2.6
 django-responsive-dashboard==1.1
 django-reversion==1.8.2
 django-rosetta==0.7.4
-django-simple-import==1.16
+django-simple-import==1.17
 django-storages==1.1.8
 django-su==0.4.7
 django-toolbelt==0.0.1
@@ -82,7 +82,7 @@ xlwt==0.7.5
 python-social-auth
 hiredis
 django-heroku-redisify
-django-tenant-schemas==1.4.7
+django-tenant-schemas==1.4.8
 tenant-schemas-celery
 flower
 newrelic
