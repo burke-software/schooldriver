@@ -207,7 +207,7 @@ WHERE grades_grade.course_section_id = %s
     AND grades_grade.student_id = %s
     AND schedule_markingperiod.id in {marking_periods}
     AND ( grade IS NOT NULL OR letter_grade IS NOT NULL )'''
-        if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+        if settings.DATABASES['default']['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'tenant_schemas.postgresql_backend']:
             sql_string = sql_string.format(over='over ()', marking_periods=marking_periods)
         else:
             sql_string = sql_string.format(over='', marking_periods=marking_periods)
@@ -293,7 +293,7 @@ WHERE (grades_grade.course_section_id = %s
     OR letter_grade IS NOT NULL )'''
 
         if date_report:
-            if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+            if settings.DATABASES['default']['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'tenant_schemas.postgresql_backend']:
                 cursor.execute(sql_string.format(
                     postgres_type_cast='::int', over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = true)'),
                                (self.course_section_id, self.user_id, date_report))
