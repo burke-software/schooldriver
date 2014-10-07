@@ -21,12 +21,11 @@ LOGIN_REDIRECT_URL = "/"
 MULTI_TENANT = os.getenv('MULTI_TENANT', False)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('DATABASE_NAME', 'postgres'),
-        'USER': os.getenv('DATABASE_USER', 'postgres'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
-        'HOST': os.getenv('DATABASE_ADDR', 'db_1'),
-        'PORT': 5432,
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_1_ENV_MYSQL_DATABASE'),
+        'USER': os.getenv('DB_1_ENV_MYSQL_USER'),
+        'PASSWORD': os.getenv('DB_1_ENV_MYSQL_PASSWORD'),
+        'HOST': 'db_1',
     }
 }
 

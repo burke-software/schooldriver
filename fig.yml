@@ -1,7 +1,10 @@
 db:
-  image: postgres
-  ports:
-    - "5432:5432"
+  image: mysql
+  environment:
+    MYSQL_ROOT_PASSWORD: docker
+    MYSQL_DATABASE: djangosis
+    MYSQL_USER: djangosis
+    MYSQL_PASSWORD: djangosis
 redis:
   image: dockerfile/redis
 web:
@@ -9,7 +12,6 @@ web:
   command: ./run.sh
   volumes:
     - .:/code
-      #- /home/david/Dropbox/Projects/django-ldap-groups/ldap_groups:/usr/local/lib/python2.7/dist-packages/ldap_groups
   ports:
     - "8000:8000"
     - "5555:5555"
