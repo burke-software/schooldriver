@@ -817,7 +817,7 @@ class SisReport(ScaffoldReport):
     name = "student_report"
     model = Student
     preview_fields = ['first_name', 'last_name']
-    permissions_required = ['sis_reports']
+    permissions_required = ['sis.reports']
     filters = (
         SortCourses(),
         SchoolDateFilter(),
