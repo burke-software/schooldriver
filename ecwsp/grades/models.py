@@ -201,6 +201,8 @@ class StudentYearGrade(models.Model):
                     course_section__course__course_type__weight__gt=0,)
                 if not grade_scale:
                     boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
+                    if not boost_sum:
+                        boost_sum = 0.0
                     boost_factor = boost_sum / enrollments.count()
                 else:
                     boost_sum = 0.0
