@@ -35,7 +35,7 @@ app.factory 'RestfulModel', (Restangular) ->
                         form_field.$setValidity "server", true
                         form_field.isSaving = false
                         form_field.isSaved = true
-                    ), (response) ->
+                    , (response) ->
                         _.each response.data, (errors, key) ->
                             form_field.isSaving = false
                             #form[key].$dirty = true
