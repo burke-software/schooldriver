@@ -203,7 +203,10 @@ class StudentYearGrade(models.Model):
                     boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
                     if not boost_sum:
                         boost_sum = 0.0
-                    boost_factor = boost_sum / enrollments.count()
+                    try:
+                        boost_factor = boost_sum / enrollments.count()
+                    except ZeroDivisionError:
+                        boost_factor = 0.0
                 else:
                     boost_sum = 0.0
                     total_credits = 0.0
