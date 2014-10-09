@@ -358,12 +358,7 @@ STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 # These are required add ons that we always want to have
-if MULTI_TENANT:
-    SHARED_APPS = (
-        'tenant_schemas',
-    )
-else:
-    SHARED_APPS = ()
+SHARED_APPS = ()
 
 SHARED_APPS = SHARED_APPS + (
     'constance',
@@ -429,7 +424,7 @@ TENANT_APPS = (
     'constance.backends.database',
 ) + INSTALLED_APPS
 
-INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+INSTALLED_APPS = TENANT_APPS + SHARED_APPS
 TENANT_MODEL = "customers.Client"
 
 if DEBUG_TOOLBAR == True:
@@ -533,6 +528,7 @@ if USE_S3:
 if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
+    INSTALLED_APPS = INSTALLED_APPS + ('tenant_schemas',)
 
 # Keep this *LAST* to avoid overwriting production DBs with test data
 if 'test' in sys.argv:

@@ -5,20 +5,31 @@ app.controller 'CourseController', ($scope, $routeParams, $route, RestfulModel) 
     $scope.status =
         isFirstOpen: true
         isFirstDisabled: false
+    courseModel = new RestfulModel.Instance("courses")
+    sectionModel = new RestfulModel.Instance("sections")
+    $scope.courses = courseModel.getList()
+    console.log('heyyyyyyyyyyyyy')
 
     $scope.$on '$routeChangeSuccess', ->
-        courseModel = new RestfulModel.Instance("courses")
-        $scope.courses = courseModel.getList()
-        courseModel.getOptions().then (options) ->
-            $scope.courseOptions = options
-        courseModel.getOne($routeParams.course_id, $scope.form).then (course) ->
-            $scope.course = course
-            $scope.saveCourse = course.saveForm
+        if $routeParams.section_id
+            sectionModel.getOptions().then (options) ->
+                $scope.sectionOptions = options
+            sectionModel.getOne($routeParams.section_id, $scope.sectionForm).then (obj) ->
+                $scope.section = obj
+                $scope.saveSection = obj.saveForm
+        else 
+            courseModel.getOptions().then (options) ->
+                $scope.courseOptions = options
+            courseModel.getOne($routeParams.course_id, $scope.form).then (obj) ->
+                $scope.course = obj
+                $scope.saveCourse = obj.saveForm
 
-    $scope.loadSections = () ->
-        sectionModel = new RestfulModel.Instance("sections")
-        $scope.sections = sectionModel.getList({"course": $scope.course.id})
-
+    $scope.resultsNext = (previous) ->
+        if previous == true
+            page_num = $scope.courses.meta.previous.match(/\d+$/);
+        else
+            page_num = $scope.courses.meta.next.match(/\d+$/);
+        $scope.courses = courseModel.getList({page: page_num})
 
 
 app.factory 'RestfulModel', (Restangular) ->

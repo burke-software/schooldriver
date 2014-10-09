@@ -10,23 +10,24 @@
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!--
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular.min.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.4.0/restangular.min.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-route.min.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.4.0/restangular.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-route.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
     -->
-    <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
     <!--
     -->
-    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'underscore/underscore.js' %}"></script>
-    <script type="text/javascript" src="{% static 'restangular/dist/restangular.js' %}"></script>
-    <script type="text/javascript" src="{% static 'angular-route/angular-route.js' %}"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
-    <script type="text/javascript" src="{% static 'bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js' %}"></script>
+    <script src="{% static 'angular/angular.min.js' %}"></script>
+    <script src="{% static 'underscore/underscore.js' %}"></script>
+    <script src="{% static 'restangular/dist/restangular.js' %}"></script>
+    <script src="{% static 'angular-route/angular-route.js' %}"></script>
+    <script src="{% static 'angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js' %}"></script>
+    <script src="{% static 'bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js' %}"></script>
 
     {% include 'autocomplete_light/static.html' %}
     <script type="text/javascript">
@@ -39,6 +40,9 @@
     
     {% block extra_head %}{% endblock %}
     
+    {% compress js %}
+    <script type="text/coffeescript" charset="utf-8" src="{% static "app/restfulModel.coffee" %}"></script>
+    {% endcompress %}
     {% compress js %}
     <script type="text/coffeescript" charset="utf-8" src="{% static "app/angular_sis.coffee" %}"></script>
     {% endcompress %}

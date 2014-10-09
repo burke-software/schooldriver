@@ -7,17 +7,44 @@
   </h3>
   <ul class="nav nav-pills nav-stacked">
     {{ courses.meta.count }} Results
-    {{ courses.meta.next }}
+    <a href="#" ng-click="resultsNext(previous=false)">{{ courses.meta.next }}</a>
+    <a href="#" ng-click="resultsNext(previous=true)"> {{ courses.meta.previous }}</a>
     <li ng-repeat="course in courses">
-      <a href="/schedule/course/{{ course.id }}">{{ course.fullname }}</a>
+      <a href="/schedule/course/{{ course.id }}/">{{ course.fullname }}</a>
       <ul class="nav nav-pills nav-stacked" ng-if="course.sections.length > 0">
-          <li ng-repeat="section in course.sections"><a href=""> - {{ section.name }} ({{ section.teachers[0].last_name }})</a></li>
+          <li ng-repeat="section in course.sections"><a href="/schedule/course/{{ course.id }}/section/{{ section.id }}/"> - {{ section.name }} ({{ section.teachers[0].last_name }})</a></li>
       </ul>
     </li>
     
   </ul>
 </div>
-<div class="col-sm-8 col-md-9">
+
+
+<div ng-show="section" class="col-sm-8 col-md-9">
+  <div class="well">
+    <h1>{{ section.name }}</h1>
+  </div>
+  <form name="sectionForm" class="form-horizontal">
+    <div>
+        <div bsc-field field-options="sectionOptions.name" field-form="sectionForm.name">
+          <input class="form-control" name="name" ng-required="sectionOptions.name.required" type="text" ng-model="section.name" ng-blur="saveSection('name')" />
+        </div>
+        <div bsc-field field-options="sectionOptions.is_active" field-form="sectionForm.is_active">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" name="is_active" ng-model="section.is_active" ng-change="saveSection('is_active')" />
+            </label>
+          </div>
+        </div>
+        <div bsc-field field-options="sectionOptions.marking_period" field-form="sectionForm.marking_period">
+          <select multiple="multiple" class="form-control" name="marking_period" ng-required="sectionOptions.marking_period.required" ng-model="section.marking_period" ng-blur="saveSection('marking_period')" />
+        </div>
+    </div>
+  </form>
+</div>
+
+
+<div ng-show="course" class="col-sm-8 col-md-9">
   <div class="well">
     <h1>{{ course.fullname }}<br /><small>{{ course.description }}</small></h1>
     <ul>

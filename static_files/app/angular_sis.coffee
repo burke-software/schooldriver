@@ -33,5 +33,8 @@ app.config ($routeProvider, $locationProvider) ->
   $routeProvider.when "/schedule/course/:course_id/",
     templateUrl: '/static/app/partials/course_detail.html',
     controller: "CourseController"
+  $routeProvider.when "/schedule/course/:course_id/section/:section_id/",
+    templateUrl: '/static/app/partials/course_detail.html',
+    controller: "CourseController"
 
   $locationProvider.html5Mode true
