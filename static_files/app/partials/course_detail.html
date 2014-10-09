@@ -1,9 +1,9 @@
 <div class="col-sm-4 col-md-3">
   <h1>Courses</h1>
   <h3>
-    <a href="/schedule/course/{{ course.id }}"><i class="fa fa-fw fa-list"></i></a>
-    <a href="/admin/report_builder/report/"><i class="fa fa-fw fa-file-text"></i></a>
-    <a href="/admin/schedule/course/{{ course.id }}/"><i class="fa fa-fw fa-sitemap"></i></a>
+    <a target="_self" href="/schedule/course/{{ course.id }}"><i class="fa fa-fw fa-list"></i></a>
+    <a target="_self" href="/admin/report_builder/report/"><i class="fa fa-fw fa-file-text"></i></a>
+    <a target="_self" href="/admin/schedule/course/{{ course.id }}/"><i class="fa fa-fw fa-sitemap"></i></a>
   </h3>
   <ul class="nav nav-pills nav-stacked">
     {{ courses.meta.count }} Results
