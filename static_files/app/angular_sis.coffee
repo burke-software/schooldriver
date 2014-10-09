@@ -30,11 +30,9 @@ app.config ($routeProvider, $locationProvider) ->
   $routeProvider.when "/course/student_grades/:student_id/:year_id/",
     templateUrl: '/static/app/partials/student_grades.html',
     controller: "StudentGradesController"
-  $routeProvider.when "/schedule/course/:course_id/",
+  $routeProvider.when "/schedule/course/",
     templateUrl: '/static/app/partials/course_detail.html',
-    controller: "CourseController"
-  $routeProvider.when "/schedule/course/:course_id/section/:section_id/",
-    templateUrl: '/static/app/partials/course_detail.html',
-    controller: "CourseController"
+    controller: "CourseController",
+    reloadOnSearch: false
 
   $locationProvider.html5Mode true

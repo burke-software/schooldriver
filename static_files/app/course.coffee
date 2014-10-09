@@ -8,9 +8,13 @@ app.controller 'CourseController', ($scope, $routeParams, $route, RestfulModel) 
     courseModel = new RestfulModel.Instance("courses")
     sectionModel = new RestfulModel.Instance("sections")
     $scope.courses = courseModel.getList()
-    console.log('heyyyyyyyyyyyyy')
 
-    $scope.$on '$routeChangeSuccess', ->
+    $scope.$on '$routeUpdate', ->
+        updateDetail()
+
+    updateDetail = () ->
+        $scope.section = null
+        $scope.course = null
         if $routeParams.section_id
             sectionModel.getOptions().then (options) ->
                 $scope.sectionOptions = options
@@ -23,6 +27,7 @@ app.controller 'CourseController', ($scope, $routeParams, $route, RestfulModel) 
             courseModel.getOne($routeParams.course_id, $scope.form).then (obj) ->
                 $scope.course = obj
                 $scope.saveCourse = obj.saveForm
+    updateDetail()
 
     $scope.resultsNext = (previous) ->
         if previous == true

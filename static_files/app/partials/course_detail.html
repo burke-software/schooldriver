@@ -10,9 +10,9 @@
     <a href="#" ng-click="resultsNext(previous=false)">{{ courses.meta.next }}</a>
     <a href="#" ng-click="resultsNext(previous=true)"> {{ courses.meta.previous }}</a>
     <li ng-repeat="course in courses">
-      <a href="/schedule/course/{{ course.id }}/">{{ course.fullname }}</a>
+      <a href="/schedule/course/?course_id={{ course.id }}">{{ course.fullname }}</a>
       <ul class="nav nav-pills nav-stacked" ng-if="course.sections.length > 0">
-          <li ng-repeat="section in course.sections"><a href="/schedule/course/{{ course.id }}/section/{{ section.id }}/"> - {{ section.name }} ({{ section.teachers[0].last_name }})</a></li>
+          <li ng-repeat="section in course.sections"><a href="/schedule/course/?course_id={{ course.id }}&section_id={{ section.id }}"> - {{ section.name }} ({{ section.teachers[0].last_name }})</a></li>
       </ul>
     </li>
     
