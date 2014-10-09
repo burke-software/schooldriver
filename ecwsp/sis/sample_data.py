@@ -5,6 +5,8 @@ from ecwsp.grades.models import *
 from ecwsp.schedule.models import *
 from ecwsp.grades.tasks import *
 
+import random
+import string
 import logging
 
 class SisData(object):
@@ -154,6 +156,12 @@ class SisData(object):
 
         self.grade = Grade.objects.get(pk=1)
         build_grade_cache()
+
+    def create_100_courses(self):
+        for i in xrange(100):
+            random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+            course = Course.objects.create(fullname="Math 101 " + random_string, shortname="Alg " + random_string, credits=1, graded=True)
+            section = CourseSection.objects.create(name=course.shortname, course_id=course.id)
 
     def create_grade_scale_data(self):
         self.create_required()

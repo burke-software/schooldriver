@@ -9,8 +9,8 @@ web:
   command: ./run.sh
   volumes:
     - .:/code
-      #- /home/david/Dropbox/Projects/django-ldap-groups/ldap_groups:/usr/local/lib/python2.7/dist-packages/ldap_groups
   ports:
+      ##- /home/david/Dropbox/Projects/django-tenant-schemas/tenant_schemas:/usr/local/lib/python2.7/dist-packages/tenant_schemas
     - "8000:8000"
     - "5555:5555"
   links:

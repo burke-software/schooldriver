@@ -114,6 +114,8 @@ if IS_PRODUCTION:
     DEBUG = False
 else:
     DEBUG = True
+
+DEBUG_TOOLBAR = False  # Set true to enable debug toolbar
 TEMPLATE_DEBUG = DEBUG
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
@@ -430,6 +432,10 @@ TENANT_APPS = (
 INSTALLED_APPS = SHARED_APPS + TENANT_APPS
 TENANT_MODEL = "customers.Client"
 
+if DEBUG_TOOLBAR == True:
+    INSTALLED_APPS += ('debug_toolbar',)
+    INTERNAL_IPS = ['127.0.0.1', '172.17.42.1', '172.17.42.1', '10.0.1.21',]
+
 CONSTANCE_CONFIG = {
     'SCHOOL_NAME': ('Unnamed School', 'School name'),
     'SCHOOL_COLOR': ('', 'hex color code. Ex: $1122FF'),
@@ -539,5 +545,6 @@ if 'test' in sys.argv:
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    'PAGINATE_BY_PARAM': 'page_size',
 }

@@ -6,12 +6,15 @@
     <a href="/admin/schedule/course/{{ course.id }}/"><i class="fa fa-fw fa-sitemap"></i></a>
   </h3>
   <ul class="nav nav-pills nav-stacked">
+    {{ courses.meta.count }} Results
+    {{ courses.meta.next }}
     <li ng-repeat="course in courses">
       <a href="/schedule/course/{{ course.id }}">{{ course.fullname }}</a>
       <ul class="nav nav-pills nav-stacked" ng-if="course.sections.length > 0">
-        <li ng-repeat="section in course.sections"><a href="">{{ section }}</a></li>
+          <li ng-repeat="section in course.sections"><a href=""> - {{ section.name }} ({{ section.teachers[0].last_name }})</a></li>
       </ul>
     </li>
+    
   </ul>
 </div>
 <div class="col-sm-8 col-md-9">
@@ -37,7 +40,11 @@
       <accordion-heading>
         <i class="fa fa-fw fa-caret-right" ng-class="{'fa-caret-down': status.isOpen2, 'fa-caret-right': !status.isOpen2}"></i>Course Sections
       </accordion-heading>
-      <p>I plan on putting the course sections in the nav to the left. But perhaps it'd be good to put them in a block here? That menu on the left might not make it to mobile, so if it's not hard or burdensome it might be nice to give someone another way to get 'em.</p>
+      <p>
+        <div ng-repeat="section in course.sections">
+            {{ section.name }} ({{ section.teachers[0].last_name }})
+        </div>
+      </p>
     </accordion-group>
     <accordion-group is-open="status.isFirstOpen">
       <accordion-heading>

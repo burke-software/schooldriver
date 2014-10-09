@@ -15,6 +15,11 @@ app.controller 'CourseController', ($scope, $routeParams, $route, RestfulModel) 
             $scope.course = course
             $scope.saveCourse = course.saveForm
 
+    $scope.loadSections = () ->
+        sectionModel = new RestfulModel.Instance("sections")
+        $scope.sections = sectionModel.getList({"course": $scope.course.id})
+
+
 
 app.factory 'RestfulModel', (Restangular) ->
     Instance = (name) ->
@@ -35,15 +40,15 @@ app.factory 'RestfulModel', (Restangular) ->
                         form_field.$setValidity "server", true
                         form_field.isSaving = false
                         form_field.isSaved = true
-                    ), (response) ->
+                    , (response) ->
                         _.each response.data, (errors, key) ->
                             form_field.isSaving = false
                             #form[key].$dirty = true
                             form[key].$setValidity('server', false)
                             form[key].errors = errors
                 obj
-        @getList = ->
-            Restangular.all(@modelName).getList().$object
+        @getList = (query) ->
+            Restangular.all(@modelName).getList(query).$object
 
         return
 
