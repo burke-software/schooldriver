@@ -45,7 +45,7 @@ urlpatterns = patterns('',
     url(dajaxice_config.dajaxice_url, include('ecwsp.dajaxice_urls')),
     (r'^reports/(?P<name>attendance_report)/$', AttendanceReportView.as_view()),
     (r'^reports/', include('scaffold_report.urls')),
-    url(r"^su/", include("django_su.urls")),
+    url(r'^impersonate/', include('impersonate.urls')),
     url(r'^api/', include(api_urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 )
