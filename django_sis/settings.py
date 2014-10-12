@@ -90,6 +90,7 @@ MIDDLEWARE_CLASSES = (
     'pagination.middleware.PaginationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'ecwsp.sis.disable.DisableCSRF',
+    'ecwsp.sis.middleware.SocialAuthExceptionMiddleware',
     )
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
