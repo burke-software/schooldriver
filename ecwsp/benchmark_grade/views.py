@@ -230,8 +230,12 @@ def gradebook(request, course_section_id, for_export=False):
                 if item.category != standards_category:
                     item.marks_counts = 'N/A'
                     continue
-                marks_count_passing = item.mark_set.filter(mark__gte=PASSING_GRADE).count()
-                marks_count_total = item.mark_set.exclude(mark=None).count()
+                if item.category.allow_multiple_demonstrations:
+                    mark_set = item.mark_set.exclude(demonstration=None)
+                else:
+                    mark_set = item.mark_set.filter(demonstration=None)
+                marks_count_passing = mark_set.filter(mark__gte=PASSING_GRADE).count()
+                marks_count_total = mark_set.exclude(mark=None).count()
                 if marks_count_total:
                     item.marks_counts = '{} / {} ({:.0f}%)'.format(marks_count_passing, marks_count_total, 100.0 * marks_count_passing / marks_count_total)
                 else:
