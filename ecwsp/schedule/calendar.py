@@ -25,9 +25,9 @@ class Calendar:
         if not date:
             date = datetime.now()
         mps = MarkingPeriod.objects.filter(start_date__lte=date, end_date__gte=date)
-        periods = Period.objects.filter(start_time__lte=date, end_time__gte=date)
+        periods = Period.objects.filter(start_time__lte=datetime.now(), end_time__gte=datetime.now())
         day = date.isoweekday()
-        course_sections = CourseSection.objects.filter(marking_period__in=mps, periods__in=periods, enrollments__student=student)
+        course_sections = student.coursesection_set.filter(marking_period__in=mps)
         course_meet = CourseMeet.objects.filter(course_section__in=course_sections, day=day, period__in=periods)
         return course_meet[0].location
     
