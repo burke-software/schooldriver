@@ -800,6 +800,7 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
         # summary report for all course sections
         PASSING_GRADE = 3 # TODO: pull config value. Roche has it set to something crazy now and I don't want to deal with it
         school_year = SchoolYear.objects.get(active_year=True)
+        calculation_rule = benchmark_find_calculation_rule(school_year)
         all_mps = MarkingPeriod.objects.filter(school_year=school_year, start_date__lte=datetime.date.today()).order_by('-start_date')
         if marking_period_pk is None:
             if all_mps.count():
@@ -810,7 +811,6 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
             mps = all_mps.filter(pk=marking_period_pk)
         mp_pks = [x.pk for x in mps]
         other_mps = all_mps.exclude(pk__in=mp_pks)
-        calculation_rule = benchmark_find_calculation_rule(school_year)
         for mp in mps:
             mp.course_sections = CourseSection.objects.filter(courseenrollment__user=student, course__graded=True, marking_period=mp).order_by('name')
             for course_section in mp.course_sections:
@@ -853,14 +853,6 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
         # detail report for a single course section
         course_section = get_object_or_404(CourseSection, pk=course_section_pk)
 
-        # TODO: move into CalculationRule?
-        CATEGORY_NAME_TO_FLAG_CRITERIA = {
-            'Standards': {'best_mark__lt': 3},
-            'Engagement': {'best_mark__lt': 3},
-            'Organization': {'best_mark__lt': 3},
-            'Daily Practice': {'best_mark__lte': 0},
-        }
-
         # be careful of empty string in POST, as int('') raises ValueError
         if 'item_pks' in request.POST and len(request.POST['item_pks']):
             item_pks = request.POST['item_pks'].split(',')
@@ -894,6 +886,7 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
         #    mps = MarkingPeriod.objects.filter(item__in=items).distinct().order_by('-start_date')
 
         for mp in mps:
+            calculation_rule = benchmark_find_calculation_rule(mp.school_year)
             mp_items = items.filter(marking_period=mp)
             mp.categories = Category.objects.filter(item__in=mp_items).distinct()
             for category in mp.categories:
@@ -909,8 +902,12 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
                 else:
                     category.average = gradebook_get_average(student, course_section, category, mp, None)
                 category.flagged_item_pks = []
-                if category.name in CATEGORY_NAME_TO_FLAG_CRITERIA:
-                    category.flagged_item_pks = category_items.filter(**CATEGORY_NAME_TO_FLAG_CRITERIA[category.name]).values_list('pk', flat=True)
+                for substitution in calculation_rule.substitution_set.filter(
+                        apply_to_categories=category
+                ):
+                    category.flagged_item_pks.extend(category_items.filter(
+                        **substitution.as_filter('best_mark')
+                    ).values_list('pk', flat=True))
 
         return render_to_response('benchmark_grade/student_grade_course_detail.html', {
             'student': student,
