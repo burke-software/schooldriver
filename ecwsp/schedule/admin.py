@@ -71,6 +71,13 @@ class CourseSectionAdmin(admin.ModelAdmin):
         change_url = urlresolvers.reverse('admin:schedule_course_change', args=(obj.course.id,))
         return mark_safe('<a href="%s">%s</a>' % (change_url, obj.course))
     course_link.short_description = 'Course Link'
+
+    def save_related(self, request, form, formsets, change):
+        super(CourseSectionAdmin, self).save_related(
+            request, form, formsets, change
+        )
+        form.instance.populate_all_grades()
+
 admin.site.register(CourseSection, CourseSectionAdmin)
 
 
