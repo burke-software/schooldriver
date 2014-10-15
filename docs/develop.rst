@@ -16,7 +16,7 @@ Discussion Doc https://docs.google.com/document/d/1lZAiPqKpZe_Ah9nCL5iBb5z3dpvjq
 School specific features
 -------------------------
 
-.. QUESTION:: A school wants some odd feature but it should be off by default. What do I do?
+.. admonition:: A school wants some odd feature but it should be off by default. What do I do?
 
 Settings should go in constance-config_. Help text and a sane default is required. 
 
