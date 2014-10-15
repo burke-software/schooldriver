@@ -359,4 +359,6 @@ class StudentApplicationTemplate(models.Model):
     store application templates in JSON format
     """
     name = models.CharField(max_length=255)
-    template = JSONField()
+    # need a way to assert "unique boolean field" for True case, pending...
+    is_default = models.BooleanField(default=False)
+    json_template = JSONField()
