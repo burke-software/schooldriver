@@ -6,6 +6,7 @@ from django import forms
 from django.forms.extras.widgets import SelectDateWidget
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.utils import ProgrammingError
 from django.conf import settings
 from django.db.models import Count, Q, DateField, Max
 from constance import config
@@ -354,7 +355,10 @@ class CohortFilter(ModelMultipleChoiceFilter):
 
 
 class SelectSpecificStudentsForm(forms.Form):
-    select_students = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+    try:
+        select_students = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+    except ProgrammingError:
+        pass
 
 
 class SelectSpecificStudents(ModelMultipleChoiceFilter):
@@ -367,6 +371,8 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
     def build_form(self):
         self.form = SelectSpecificStudentsForm()
         self.form.fields['filter_number'] = forms.IntegerField(widget=forms.HiddenInput())
+        # This is a hack to force it to accept these choices, otherwise choices gets set to [] 
+        self.form.fields['select_students'] = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         selected = self.cleaned_data['select_students']
@@ -811,7 +817,7 @@ class SisReport(ScaffoldReport):
     name = "student_report"
     model = Student
     preview_fields = ['first_name', 'last_name']
-    permissions_required = ['sis_reports']
+    permissions_required = ['sis.reports']
     filters = (
         SortCourses(),
         SchoolDateFilter(),
@@ -1080,7 +1086,7 @@ class SisReport(ScaffoldReport):
                     student.highest_tests.append(test)
 
     def get_appy_template(self):
-        return self.report_context.get('template').file.path
+        return self.report_context.get('template').file
 
     def get_appy_context(self):
         context = super(SisReport, self).get_appy_context()

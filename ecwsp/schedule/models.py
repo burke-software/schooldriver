@@ -207,7 +207,7 @@ WHERE grades_grade.course_section_id = %s
     AND grades_grade.student_id = %s
     AND schedule_markingperiod.id in {marking_periods}
     AND ( grade IS NOT NULL OR letter_grade IS NOT NULL )'''
-        if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+        if settings.DATABASES['default']['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'tenant_schemas.postgresql_backend']:
             sql_string = sql_string.format(over='over ()', marking_periods=marking_periods)
         else:
             sql_string = sql_string.format(over='', marking_periods=marking_periods)
@@ -293,13 +293,13 @@ WHERE (grades_grade.course_section_id = %s
     OR letter_grade IS NOT NULL )'''
 
         if date_report:
-            if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+            if settings.DATABASES['default']['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'tenant_schemas.postgresql_backend']:
                 cursor.execute(sql_string.format(
-                    postgres_type_cast='::int', over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = 1)'),
+                    postgres_type_cast='::int', over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = true)'),
                                (self.course_section_id, self.user_id, date_report))
             else:
                 cursor.execute(sql_string.format(
-                    postgres_type_cast='', over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = 1)'),
+                    postgres_type_cast='', over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = true)'),
                                (self.course_section_id, self.user_id, date_report))
 
         else:
@@ -350,7 +350,7 @@ WHERE (grades_grade.course_section_id = %s
                         if grade.marking_period:
                             total_weight += grade.marking_period.weight
                     elif get_grade:
-                        final += get_grade
+                        final += float(get_grade)
                 if total_weight:
                     final /= float(total_weight)
                     final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
@@ -560,6 +560,12 @@ class CourseSection(models.Model):
 
     def save(self, *args, **kwargs):
         super(CourseSection, self).save(*args, **kwargs)
+        ''' HEY, YOU! This save() method can't see any M2M changes!
+        Read http://stackoverflow.com/a/1925784. To handle users changing the
+        selected MarkingPeriods, I'm writing CourseSectionAdmin.save_model(),
+        which will also call populate_all_grades(). You may need additional
+        handling if you implement another edit interface outside of Django
+        admin. '''
         self.populate_all_grades()
 
     def copy_instance(self, request):

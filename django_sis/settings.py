@@ -29,13 +29,24 @@ DATABASES = {
         'PORT': 5432,
     }
 }
-EMAIL_HOST = 'daphne.cristoreyny.org'
-# Prefered file format, may be changed in user preferences.
-# Default o
-# o = Open Document
-# m = Microsoft Binary
-# x = Microsoft XML
-PREFERED_FORMAT = 'o'
+
+for environment_variable in (
+    'EMAIL_HOST',
+    'EMAIL_HOST_USER',
+    'EMAIL_HOST_PASSWORD',
+    'EMAIL_PORT',
+    'EMAIL_USE_TLS',
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+    'AWS_STORAGE_BUCKET_NAME',
+):
+    globals()[environment_variable] = os.getenv(environment_variable)
+allowed_hosts = os.getenv('ALLOWED_HOSTS')
+if allowed_hosts:
+    ALLOWED_HOSTS = allowed_hosts.split(',')
+# username, id, or unique_id
+NAVIANCE_SWORD_ID = os.getenv('NAVIANCE_SWORD_ID', 'username')
+
 TIME_ZONE = 'America/New_York'
 TIME_INPUT_FORMATS = ('%I:%M %p', '%I:%M%p', '%H:%M:%S', '%H:%M')
 TIME_FORMAT = 'h:i A'
@@ -57,10 +68,9 @@ LANGUAGES = (
   ('es', 'Spanish'),
   ('en', 'English'),
 )
-SITE_ID = 1
 INTERNAL_IPS = ('127.0.0.1',)
 USE_I18N = True
-SECRET_KEY = '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y'
+SECRET_KEY = os.getenv('SECRET_KEY', '4@=mqjpx*f$3m(1-wl6&02p#cx@*dz4_t26lu@@pmd^2%+)**y')
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
@@ -79,7 +89,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pagination.middleware.PaginationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'impersonate.middleware.ImpersonateMiddleware',
     'ecwsp.sis.disable.DisableCSRF',
+    'ecwsp.sis.middleware.SocialAuthExceptionMiddleware',
     )
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
@@ -99,8 +111,12 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-DEBUG = True
-TEMPLATE_DEBUG = True
+IS_PRODUCTION = os.getenv('IS_PRODUCTION', False)
+if IS_PRODUCTION:
+    DEBUG = False
+else:
+    DEBUG = True
+TEMPLATE_DEBUG = DEBUG
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
 #BOWER
@@ -126,7 +142,12 @@ ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
 GRAPPELLI_INDEX_DASHBOARD = 'ecwsp.dashboard.CustomIndexDashboard'
 GRAPPELLI_ADMIN_TITLE = '<img src="/static/images/logo.png"/ style="height: 30px; margin-left: -10px; margin-top: -8px; margin-bottom: -11px;">'
 
-AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
+IMPERSONATE_ALLOW_SUPERUSER = True
+IMPERSONATE_REQUIRE_SUPERUSER = True
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 #LDAP
 LDAP = False
@@ -148,7 +169,6 @@ if GAPPS:
     GAPPS_ALWAY_ADD_GROUPS = False
     AUTHENTICATION_BACKENDS += ('ecwsp.google_auth.backends.GoogleAppsBackend',)
 
-AUTHENTICATION_BACKENDS += ('django_su.backends.SuBackend',)
 
 #CKEDITOR
 CKEDITOR_MEDIA_PREFIX = "/static/ckeditor/"
@@ -236,60 +256,6 @@ LOGGING = {
 }
 
 
-#Engrade
-# http://ww7.engrade.com/api/key.php
-ENGRADE_APIKEY = ''
-ENGRADE_LOGIN = ''
-ENGRADE_PASSWORD = ''
-# School UID (admin must be connected to school)
-ENGRADE_SCHOOLID = ''
-
-
-#Naviance
-NAVIANCE_ACCOUNT = ''
-NAVIANCE_IMPORT_USERNAME = ''
-NAVIANCE_USERNAME = ''
-NAVIANCE_PASSWORD = ''
-# username, id, or unique_id
-NAVIANCE_SWORD_ID = 'username'
-NAVIANCE_IMPORT_KEY = ''
-NAVIANCE_EMAILS = ''
-
-#SchoolReach
-SCHOOLREACH_USERID = ''
-SCHOOLREACH_PIN = ''
-# The id of the list we want to integrate, don't edit this list by hand in SR
-SCHOOLREACH_LIST_ID = ''
-
-#Admissions
-ADMISSIONS_DEFAULT_COUNTRY = "United States"
-
-
-#Work Study
-MAX_HOURS_DAY = 10
-# Sync data to SugarCRM
-SYNC_SUGAR = False
-SUGAR_URL = ''
-SUGAR_USERNAME = ''
-SUGAR_PASSWORD = ''
-# Strange way of storing routes that Notre Dame High School wanted, default disabled
-CRND_ROUTES = False
-
-
-#Attendance
-# Enables option to do course based attendance
-# where teacher takes attendance at each course, not just once a day
-ATTENDANCE_COURSE_BASED = False
-
-
-#Canvas LMS
-# oauth token, you must make this in Canvas.
-# https://canvas.instructure.com/doc/api/file.oauth.html
-CANVAS_TOKEN = ''
-CANVAS_ACCOUNT_ID = ''
-CANVAS_BASE_URL = ''
-
-
 # django-report-builder
 REPORT_BUILDER_GLOBAL_EXPORT = True
 REPORT_BUILDER_ASYNC_REPORT = True
@@ -303,11 +269,16 @@ INSTALLED_APPS = (
     'ecwsp.benchmark_grade',
     'ecwsp.naviance_sso',
     'rosetta',
-    'jsonfield',
     # These can be enabled if desired but the default is off
     #'ecwsp.integrations.schoolreach',
     #'ecwsp.integrations.canvas_sync',
 )
+
+if os.getenv('RAVEN_DSN'):
+    INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
+    RAVEN_CONFIG = {
+        'dsn': os.getenv('RAVEN_DSN'),
+    }
 
 COMPRESS_PRECOMPILERS = (
    ('text/coffeescript', 'coffee --compile --stdio'),
@@ -338,7 +309,7 @@ CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 from celery.schedules import crontab
 CELERYBEAT_SCHEDULE = {
     'cache-grades-nightly': {
-        'task': 'ecwsp.sis.tasks.build_grade_cache',
+        'task': 'ecwsp.grades.tasks.build_grade_cache_task',
         'schedule': crontab(hour=23, minute=1),
     },
     'sent-admissions-email': {
@@ -353,12 +324,17 @@ CELERYBEAT_SCHEDULE = {
         'task': 'ecwsp.volunteer_track.tasks.handle',
         'schedule': crontab(hour=23, minute=46),
     },
+    'sync_schoolreach': {
+        'task': 'ecwsp.integrations.schoolreach.tasks.sync_schoolreach_lists',
+        'schedule': crontab(hour=1, minute=0),
+    },
     'email_cra_nightly': {
-        'task': 'email_cra_nightly',
-        'schedule': crontab(hour=0, minute=1),
+        'task': 'ecwsp.work_study.tasks.email_cra_nightly',
+        # MUST complete before midnight! Could be an issue with multiple timezones.
+        'schedule': crontab(hour=20, minute=27),
     },
     'update_contacts_from_sugarcrm': {
-        'task': 'ecwsp.work_study.update_contacts_from_sugarcrm',
+        'task': 'ecwsp.work_study.tasks.update_contacts_from_sugarcrm',
         'schedule': timedelta(minutes=30),
     },
 }
@@ -398,6 +374,8 @@ SHARED_APPS = SHARED_APPS + (
     'constance.backends.database',
     'ecwsp.customers',
     'ecwsp.administration',
+    'south',
+    'djcelery',
     'django.contrib.contenttypes',
     'grappelli.dashboard',
     'grappelli',
@@ -407,10 +385,15 @@ SHARED_APPS = SHARED_APPS + (
     'django.contrib.sessions',
 )
 TENANT_APPS = (
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.admin',
+    'constance.backends.database',
     'autocomplete_light',
     'social.apps.django_app.default',
     'ldap_groups',
     'ecwsp.sis',
+    'ecwsp.administration',
     'ecwsp.schedule',
     'ecwsp.admissions',
     'ecwsp.alumni',
@@ -419,6 +402,7 @@ TENANT_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
+    'south',
     'reversion',
     'djcelery',
     'localflavor',
@@ -437,7 +421,6 @@ TENANT_APPS = (
     'simple_import',
     'djangobower',
     'scaffold_report',
-    'django_su',
     'floppy_gumby_forms',
     'floppyforms',
     'widget_tweaks',
@@ -445,6 +428,9 @@ TENANT_APPS = (
     'rest_framework',
     'api',
     'compressor',
+    'constance',
+    'constance.backends.database',
+    'impersonate',
 ) + INSTALLED_APPS
 
 INSTALLED_APPS = SHARED_APPS + TENANT_APPS
@@ -461,8 +447,33 @@ CONSTANCE_CONFIG = {
     'LDAP_BIND_USER': ('', 'Ex: ldap_user'),
     'LDAP_BIND_PASSWORD': ('', 'Bind user\'s password'),
     'LDAP_SEARCH_DN': ('', 'DC=admin,DC=example,DC=com'),
-	'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"')
-
+    'SET_ALL_TO_PRESENT': (False, 'If set to True, the default course attendance setting will be "present"'),
+    'PREFERED_FORMAT': ('o', 'Prefered file format, may be changed in user preferences. o = Open Document Format (odt), m = Microsoft Binary (doc), x = Office Open XML (docx)'),
+    'ADMISSIONS_DEFAULT_COUNTRY': ("United States", ''),
+    'WORK_STUDY_MAX_HOURS_DAY': (10, 'Number of hours per day a student is able to work'),
+    'SUGAR_SYNC': (False, 'Sync with SugarCRM'),
+    'SUGAR_URL': ('', 'SugarCRM Domain'),
+    'SUGAR_USERNAME': ('', 'SugarCRM Username'),
+    'SUGAR_PASSWORD': ('', 'SugarCRM Password'),
+    'CRND_ROUTES': (False, 'Alternative way of storing routes that Notre Dame High School uses. Not recommended.'),
+    'CANVAS_TOKEN': ('', 'https://canvas.instructure.com/doc/api/file.oauth.html'),
+    'CANVAS_ACCOUNT_ID': ('', ''),
+    'CANVAS_BASE_URL': ('', ''),
+    'ENGRADE_APIKEY': ('', 'Engrade API key'),
+    'ENGRADE_LOGIN': ('', 'Engrade log in'),
+    'ENGRADE_PASSWORD': ('', 'Engrade password'),
+    'ENGRADE_SCHOOLID': ('', 'School UID (admin must be connected to school)'),
+    'NAVIANCE_ACCOUNT': ('', ''),
+    'NAVIANCE_IMPORT_USERNAME': ('', ''),
+    'NAVIANCE_USERNAME': ('', ''),
+    'NAVIANCE_PASSWORD': ('', ''),
+    'NAVIANCE_SWORD_ID': ('username', 'Username, id, or unique_id'),
+    'NAVIANCE_IMPORT_KEY': ('', ''),
+    'NAVIANCE_EMAILS': ('', ''),
+    'SCHOOLREACH_USERID': ('', ''),
+    'SCHOOLREACH_PIN': ('', ''),
+    'SCHOOLREACH_LIST_ID': ('',
+        "The id of the list we want to integrate, don't edit this list by hand in SR"),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
@@ -475,11 +486,11 @@ if django.get_version()[:3] != '1.7':
         }
 
 
-ON_HEROKU = False
-if 'ON_HEROKU' in os.environ:
-    ON_HEROKU = True
+USE_S3 = False
+if 'USE_S3' in os.environ:
+    USE_S3 = True
 
-if DEBUG and not ON_HEROKU:
+if DEBUG and not USE_S3:
     INSTALLED_APPS += ('django_extensions',)
 
 if LDAP:
@@ -506,25 +517,18 @@ SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
     'social.backends.google.GoogleOAuth2',
 )
 
-if ON_HEROKU:
+if USE_S3:
     # Use S3
     INSTALLED_APPS += ('storages', 'collectfast')
     AWS_PRELOAD_METADATA = True
     AWS_QUERYSTRING_AUTH = False
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-    for environment_variable in (
-        'AWS_ACCESS_KEY_ID',
-        'AWS_SECRET_ACCESS_KEY',
-        'AWS_STORAGE_BUCKET_NAME',
-    ):
-        # Cower, all ye Stack Overflow pedants!
-        globals()[environment_variable] = os.environ[environment_variable]
     COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
     # Use Heroku's DB
-    import dj_database_url
+    #import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally
-    DATABASES['default'] = dj_database_url.config()
+    #DATABASES['default'] = dj_database_url.config()
 
 if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'

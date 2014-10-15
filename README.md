@@ -126,10 +126,12 @@ curl -L https://github.com/orchardup/fig/releases/download/0.5.1/darwin > /usr/l
 ```
 chmod +x /usr/local/bin/fig
 ```
-#### Migrate
+#### Syncdb & Migrate
+*Note: this will change slightly when we move to 1.7*
 
 ```
-fig run web python manage.py migrate
+fig run web python manage.py syncdb --all
+fig run web python manage.py migrate --fake
 ```
 #### Run
 
@@ -158,10 +160,12 @@ curl -L https://github.com/orchardup/fig/releases/download/0.5.1/linux > /usr/lo
 ```
 chmod +x /usr/local/bin/fig
 ```
-#### Migrate
+#### Syncdb & Migrate
+*Note: this will change slightly when we move to 1.7*
 
 ```
-fig run web python manage.py migrate
+fig run web python manage.py syncdb --all
+fig run web python manage.py migrate --fake
 ```
 #### Run
 

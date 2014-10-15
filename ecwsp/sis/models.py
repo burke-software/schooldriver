@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from localflavor.us.models import USStateField, PhoneNumberField  #, USSocialSecurityNumberField
 from django.contrib.auth.models import User, Group
 from django.conf import settings
+from constance import config
 
 import logging
 from thumbs import ImageWithThumbsField
@@ -57,6 +58,8 @@ def create_faculty_profile_m2m(sender, instance, action, reverse, model, pk_set,
 post_save.connect(create_faculty_profile, sender=User)
 m2m_changed.connect(create_faculty_profile_m2m, sender=User.groups.through)
 
+def get_prefered_format():
+    return config.PREFERED_FORMAT
 class UserPreference(models.Model):
     """ User Preferences """
     file_format_choices = (
@@ -64,7 +67,7 @@ class UserPreference(models.Model):
         ('m', 'Microsoft Binary (.doc, .xls)'),
         ('x', 'Microsoft Office Open XML (.docx, .xlsx)'),
     )
-    prefered_file_format = models.CharField(default=settings.PREFERED_FORMAT, max_length="1", choices=file_format_choices, help_text="Open Document recommened.")
+    prefered_file_format = models.CharField(default=get_prefered_format, max_length="1", choices=file_format_choices, help_text="Open Document recommened.")
     include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
     omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
     omr_default_save_question_to_bank = models.BooleanField(default=False)
@@ -554,10 +557,10 @@ class Student(User, CustomFieldModel):
         or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "T"):
             try:
                 self.studentworker.placement = None
+                self.studentworker.save()
             except: pass
         # Check year
         self.determine_year()
-
         super(Student, self).save(*args, **kwargs)
 
         # Create student worker if the app is installed.

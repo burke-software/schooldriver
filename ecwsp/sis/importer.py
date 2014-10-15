@@ -1,22 +1,3 @@
-#       import.py
-#       
-#       Copyright 2010-2012 Burke Software and Consulting
-#       Author David M Burke <david@burkesoftware.com>
-#       
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
@@ -62,33 +43,10 @@ class Importer:
             self.errors = 0
             self.user = user
     
-    def do_mysql_backup(self, database='default'):
-        args = []
-        database = settings.DATABASES[database]
-        if 'USER' in database:
-            args += ["--user='%s'" % database['USER']]
-        if 'PASSWORD' in database:
-            args += ["--password='%s'" % database['PASSWORD']]
-        if 'HOST' in database and database['HOST']:
-            args += ["--host='%s'" % database['HOST']]
-        if 'PORT' in database and database['PORT']:
-            args += ["--port='%s'" % database['PORT']]
-        args += ["'%s'" % database['NAME']]
-
-
-        new_version = (2,7)
-        current_version = sys.version_info
-        if current_version >= new_version:
-            mysql_as_string = subprocess.check_output('mysqldump %s' % (' '.join(args),),shell=True)
-        else:
-            mysql_as_string = subprocess.Popen('mysqldump %s' % (' '.join(args),),shell=True).communicate()[0]
-        return ContentFile(mysql_as_string)
         
     def make_log_entry(self, user_note=""):
         self.log = ImportLog(user=self.user, user_note=user_note, import_file=self.file)
         file_name = datetime.datetime.now().strftime("%Y%m%d%H%M") + ".sql"
-        if (hasattr(settings, 'BASE_URL') and settings.BASE_URL != 'http://localhost:8000') or not hasattr(settings, 'BASE_URL'):
-            self.log.sql_backup.save(file_name, self.do_mysql_backup())
         self.log.save()
         # Clean up old log files
         for import_log in ImportLog.objects.filter(date__lt=datetime.datetime.now() - datetime.timedelta(60)):

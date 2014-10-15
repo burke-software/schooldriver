@@ -9,6 +9,7 @@ import random
 import sys
 import logging
 
+from ecwsp.sis.helper_functions import get_base_url
 from ecwsp.administration.models import Configuration
 
 class Hours(models.Model):
@@ -53,7 +54,7 @@ class VolunteerSite(models.Model):
     secret_key = models.CharField(max_length=20, blank=True, editable=False)
     
     def __unicode__(self):
-        return '%s at %s' % (self.volunteer,self.site)
+        return u'%s at %s' % (self.volunteer,self.site)
     
     def genKey(self):
         key = ''
@@ -101,7 +102,7 @@ class VolunteerSite(models.Model):
             sendTo = self.site_supervisor.email
             subject = "Volunteer hours approval for " + unicode(self.student)
             msg = "Hello " + unicode(self.site_supervisor.name) + ",\nPlease click on the link below to approve the time sheet\n" + \
-                settings.BASE_URL + "/volunteer_tracker/approve?key=" + str(self.secret_key)
+                get_base_url() + "/volunteer_tracker/approve?key=" + str(self.secret_key)
             from_addr = Configuration.get_or_default("From Email Address", "donotreply@example.org").value
             send_mail(subject, msg, from_addr, [sendTo])
         except:

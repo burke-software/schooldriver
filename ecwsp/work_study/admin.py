@@ -15,6 +15,7 @@ from .models import (CompContract, CompanyHistory, Company, WorkTeam, CraContact
         AttendanceFee, AttendanceReason, Personality, ClientVisit, Survey, PaymentOption,
         StudentDesiredSkill, StudentFunctionalResponsibility, MessageToSupervisor)
 from ecwsp.sis.models import StudentNumber
+from ecwsp.sis.helper_functions import get_base_url
 from ecwsp.sis.admin import StudentFileInline
 from reversion.admin import VersionAdmin
 from ecwsp.administration.models import Configuration
@@ -59,7 +60,7 @@ class CompanyAdmin(admin.ModelAdmin):
             for history in histories:
                 txt += '%s </br>' % (unicode(history),)
             txt += "<h5>Eletronic contract link:</h5>"
-            txt += '<a href="{0}">{0}</a>'.format(settings.BASE_URL + reverse('ecwsp.work_study.views.company_contract1', args=(context['original'].id,)))
+            txt += '<a href="{0}">{0}</a>'.format(reverse('ecwsp.work_study.views.company_contract1', args=(context['original'].id,)))
             context['adminform'].form.fields['name'].help_text = txt
         return super(CompanyAdmin, self).render_change_form(request, context, args, kwargs)
     search_fields = ('workteam__studentworker__first_name', 'workteam__studentworker__last_name', 'workteam__team_name')
@@ -323,7 +324,7 @@ class TimeSheetAdmin(admin.ModelAdmin):
             from django.conf import settings
             from django.core.urlresolvers import reverse
             from ecwsp.work_study.views import approve
-            url = settings.BASE_URL + reverse(approve) + '?key=' + context['original'].supervisor_key
+            url = get_base_url() + reverse(approve) + '?key=' + context['original'].supervisor_key
             context['adminform'].form.fields['approved'].help_text = 'Supervisor Approve Link <a href="%s">%s</a>' % (url,url)
         return super(TimeSheetAdmin, self).render_change_form(request, context, args, kwargs)
 

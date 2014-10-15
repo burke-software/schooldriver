@@ -12,6 +12,7 @@
     <h2> Select course section to submit or check grades. </h2>
     <table style="text-align: center;">
         <tr>
+
             {% if pref == 'S' %}
                 <th>Verify and Upload Grades</th>
                 <th>Download Blank Grade Spreadsheet</th>
@@ -42,6 +43,48 @@
             </tr>
         {% endfor %}
     </table>
+
+
+    {% if all_sections %}
+    <h2> All sections </h2>
+    <table style="text-align: center;">
+        <tr>
+            <th>Teacher</th>
+            {% if pref == 'S' %}
+                <th>Verify and Upload Grades</th>
+                <th>Download Blank Grade Spreadsheet</th>
+            {% elif pref == 'O' %}
+                <th>Online Gradebook</th>
+            {% elif pref == 'M' %}
+                <th>Manual Grade Entry</th>
+            {% elif pref == 'E' %}
+                <th>Verify Grades Already Synced</th>
+            {% endif %}
+        </tr>
+        {% for course_section in all_sections %}
+            <tr>
+                <td>
+                    {{ course_section.teacher }}
+                </td>
+                <td style="text-align: left;">
+                    {% if pref in 'SME' %}
+                        <a href="{% url 'course-section-grades' course_section.id %}">
+                            {{ course_section }}
+                        </a>
+                    {% elif pref == 'O' %}
+                        <a href="{% url "ecwsp.benchmark_grade.views.gradebook" course_section.id %}">
+                            {{ course_section }}
+                        </a>
+                    {% endif %}
+                </td>
+                {% if pref == 'S' %}
+                    <td><a href="download/{{ course_section.id }}/"> Download XLS </a></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
 
     {% if pref == "E" %}
         <div class="modal" id="engrade_sync_form">
