@@ -8,6 +8,7 @@ from custom_field.custom_field import CustomFieldModel
 from ecwsp.sis.models import get_default_language, GradeLevel, SchoolYear, Faculty
 from constance import config
 
+from jsonfield import JSONField
 import datetime
 
 if not 'ecwsp.standard_test' in settings.INSTALLED_APPS:
@@ -354,3 +355,12 @@ class ApplicantStandardCategoryGrade(models.Model):
     category = models.ForeignKey('standard_test.StandardCategory')
     result = models.ForeignKey(ApplicantStandardTestResult)
     grade = models.DecimalField(max_digits=6,decimal_places=2)
+
+class StudentApplicationTemplate(models.Model):
+    """
+    store application templates in JSON format
+    """
+    name = models.CharField(max_length=255)
+    # need a way to assert "unique boolean field" for True case, pending...
+    is_default = models.BooleanField(default=False)
+    json_template = JSONField()
