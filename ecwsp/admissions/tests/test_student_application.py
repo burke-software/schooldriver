@@ -17,13 +17,13 @@ class TestStudentApplicationTemplateModel(TestCase):
         }
         new_application = StudentApplicationTemplate()
         new_application.name = 'Simple1'
-        new_application.template = simple_template
+        new_application.json_template = simple_template
         new_application.save()
 
     def test_creation_of_simple_template(self):
         self.create_simple_application_template()
         application = StudentApplicationTemplate.objects.get(name='Simple1')
-        json_template = application.template
+        json_template = application.json_template
         sections = json_template['sections']
         self.assertEqual(len(sections), 2)
         self.assertEqual(sections[0]['name'], 'Personal Information')
