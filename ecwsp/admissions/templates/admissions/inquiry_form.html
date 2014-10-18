@@ -24,7 +24,7 @@
 
 <h2 class="line_above">Applicant Information</h2>
 
-<p>
+<p id="name_area">
     <span class="half">
         <label for="lname">Last Name: </label>
         {{ form.lname }}
@@ -40,28 +40,36 @@
     </span>
     Sex:{{ form.sex }}
 </p>
-<p>
+<p id="school_area">
     <span class="half">
         Current School Name: {{ form.present_school_typed }}
     </span>
-    Current School Type: {{ form.present_school_type_typed }}
+    <span id="current_school_type_area">
+        Current School Type: {{ form.present_school_type_typed }}
+    </span>
 </p>
 <p>
     <span class="half">
         Date Of Birth:{{ form.bday }}
     </span>
-    Place of Birth: {{ form.country_of_birth }}
+    <span id="place_of_birth_area">
+        Place of Birth: {{ form.country_of_birth }}
+    </span>
 </p>
 <p>
-    <span class="half"> Ethnicity:{{ form.ethnicity}} </span>
-    Other, please specify:{{ form.ethnicity_other }}
+    <span id="ethnicity_area">
+        <span class="half"> Ethnicity:{{ form.ethnicity}} </span>
+        Other, please specify:{{ form.ethnicity_other }}
     <br/>
+    </span>
     <span class="half"> Primary Language Spoken at Home:{{ form.family_preferred_language }} </span>
     Other, please specify: {{ form.language_other }}
     <br/>
-    <span class="half"> Religious Affiliation: {{ form.religion }} </span>
-    Other, please specify: {{ form.religion_other }}
+    <span id="religion_area">
+        <span class="half"> Religious Affiliation: {{ form.religion }} </span>
+        Other, please specify: {{ form.religion_other }}
     <br/>
+    </span>
 </p>
  
 <h2 class="line_above">Parent/Guardian Information</h2>
