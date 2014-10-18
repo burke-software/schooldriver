@@ -164,9 +164,14 @@ class CourseEnrollment(models.Model):
     class Meta:
         unique_together = (("course_section", "user"),)
 
-    def save(self, *args, **kwargs):
+    def save(self, populate_all_grades=True, *args, **kwargs):
+        """ populate_all_grades (default True) is intended to
+        recalculate any related grades to this enrollment.
+        It can be disabled to stop a recursive save.
+        """
         super(CourseEnrollment, self).save(*args, **kwargs)
-        self.course_section.populate_all_grades()
+        if populate_all_grades is True:
+            self.course_section.populate_all_grades()
 
     def cache_grades(self):
         """ Set cache on both grade and numeric_grade """
@@ -181,7 +186,7 @@ class CourseEnrollment(models.Model):
         self.grade = grade
         self.grade_recalculation_needed = False
         self.numeric_grade_recalculation_needed = False
-        self.save()
+        self.save(populate_all_grades=False)  # Causes recursion otherwise.
         return grade
 
     def get_average_for_marking_periods(self, marking_periods, letter=False, numeric=False):
