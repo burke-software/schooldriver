@@ -52,8 +52,6 @@ class ReportTest(SisTestMixin, TestCase):
         self.assertTrue(student.years[0].hide_grades)
 
 
-
-
 class AttendanceTest(SisTestMixin, TestCase):
     def test_attendance(self):
         """

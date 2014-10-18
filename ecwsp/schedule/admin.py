@@ -12,6 +12,7 @@ from ecwsp.sis.models import Faculty, Student
 from ecwsp.schedule.models import (CourseMeet, Course, Department, CourseEnrollment, MarkingPeriod,
     Period, Location, OmitCourseGPA, OmitYearGPA, Award, CourseSectionTeacher,
     DepartmentGraduationCredits, DaysOff, CourseSection, CourseType, ISOWEEKDAY_TO_VERBOSE)
+import reversion
 
 def copy(modeladmin, request, queryset):
     for object in queryset:
@@ -32,7 +33,7 @@ class CourseSectionInline(admin.StackedInline):
         return mark_safe('<a href="%s">%s</a>' % (change_url, obj))
     course_section_link.short_description = 'Course Section Link'
 
-class CourseAdmin(admin.ModelAdmin):
+class CourseAdmin(reversion.VersionAdmin):
     list_display = ['fullname', 'department', 'credits', 'graded', 'is_active']
     search_fields = ['fullname', 'shortname', 'description', 'sections__teachers__username']
     list_filter = ['level', 'is_active', 'graded', 'homeroom', 'department']
@@ -58,7 +59,7 @@ class CourseSectionTeacherInline(admin.TabularInline):
     model = CourseSectionTeacher
     extra = 0
 
-class CourseSectionAdmin(admin.ModelAdmin):
+class CourseSectionAdmin(reversion.VersionAdmin):
     inlines = [CourseMeetInline, CourseSectionTeacherInline, CourseEnrollmentInline]
     list_display = ['name', 'grades_link', 'course', 'is_active']
     list_filter = ['course__level', 'course__department', 'teachers']
