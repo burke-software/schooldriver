@@ -474,6 +474,9 @@ CONSTANCE_CONFIG = {
     'SCHOOLREACH_PIN': ('', ''),
     'SCHOOLREACH_LIST_ID': ('',
         "The id of the list we want to integrate, don't edit this list by hand in SR"),
+    'TRANSCRIPT_SHOW_INCOMPLETE_COURSES_WITHOUT_GRADE': (False,
+        'Normally a incomplete course would not show on a transcript. When this is enabled '\
+        'such courses will show - however grades will be blank.'),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
@@ -534,14 +537,7 @@ if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
 
-# Keep this *LAST* to avoid overwriting production DBs with test data
-if 'test' in sys.argv:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'test',
-        'ATOMIC_REQUESTS': True,
-    }
-    CELERY_ALWAYS_EAGER = True
+SOUTH_TESTS_MIGRATE = False
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',

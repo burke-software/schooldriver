@@ -6,6 +6,7 @@ from ecwsp.schedule.models import *
 from ecwsp.grades.tasks import *
 
 import logging
+import datetime
 
 class SisData(object):
     """ Put data creation code here. sample data code not here is punishible by death .
@@ -15,8 +16,9 @@ class SisData(object):
         self.create_basics()
 
     def stupid_hacks(self):
-        """ Gross stuff goes here, this ideally delete this all """
+        """ Gross stuff goes here, ideally delete this all """
         # No clue why this is needed. Won't get created in test env
+        return # Don't run any of this ever
         try:
             sql = '''CREATE TABLE `sis_studentcohort` (
                 `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -42,9 +44,9 @@ class SisData(object):
 
         # Use bulk create a few so it looks good in demo
         SchoolYear.objects.bulk_create([
-            SchoolYear(name="2013-2014", start_date=date(2013,7,1), end_date=date(2014,5,1)),
-            SchoolYear(name="2014-long time", start_date=date(2014,7,1), end_date=date(2050,5,1), active_year=True),
-            SchoolYear(name="2015-16", start_date=date(2015,7,1), end_date=date(2016,5,1)),
+            SchoolYear(name="2013-2014", start_date=datetime.date(2013,7,1), end_date=datetime.date(2014,5,1)),
+            SchoolYear(name="2014-long time", start_date=datetime.date(2014,7,1), end_date=datetime.date(2050,5,1), active_year=True),
+            SchoolYear(name="2015-16", start_date=datetime.date(2015,7,1), end_date=datetime.date(2016,5,1)),
         ])
         # Set one archetypal object. If I want a year I will use this
         self.school_year = SchoolYear.objects.get(active_year=True)
@@ -54,15 +56,17 @@ class SisData(object):
         # Don't change the order, other objects depend on the id being in this order
         self.student = Student.objects.create(first_name="Joe", last_name="Student", username="jstudent")
         self.student2 = Student.objects.create(first_name="Jane", last_name="Student", username="jastudent")
-        Student.objects.create(first_name="Tim", last_name="Duck", username="tduck")
+        self.student3 = Student.objects.create(first_name="Tim", last_name="Duck", username="tduck")
         Student.objects.create(first_name="Molly", last_name="Maltov", username="mmaltov")
 
         MarkingPeriod.objects.bulk_create([
-            MarkingPeriod(name="tri1 2014", start_date=date(2014,7,1), end_date=date(2014,9,1), school_year_id=2, monday=True, friday=True),
-            MarkingPeriod(name="tri2 2014", start_date=date(2014,9,2), end_date=date(2015,3,1), school_year_id=2, monday=True, friday=True),
-            MarkingPeriod(name="tri3 2014", start_date=date(2015,3,2), end_date=date(2050,5,1), school_year_id=2, monday=True, friday=True),
+            MarkingPeriod(name="tri1 2014", start_date=datetime.date(2014,7,1), end_date=datetime.date(2014,9,1), school_year=self.school_year, monday=True, friday=True),
+            MarkingPeriod(name="tri2 2014", start_date=datetime.date(2014,9,2), end_date=datetime.date(2015,3,1), school_year=self.school_year, monday=True, friday=True),
+            MarkingPeriod(name="tri3 2014", start_date=datetime.date(2015,3,2), end_date=datetime.date(2050,5,1), school_year=self.school_year, monday=True, friday=True),
         ])
-        self.marking_period = MarkingPeriod.objects.get(pk=1)
+        self.marking_period = MarkingPeriod.objects.get(name="tri1 2014")
+        self.marking_period2 = MarkingPeriod.objects.get(name="tri2 2014")
+        self.marking_period3 = MarkingPeriod.objects.get(name="tri3 2014")
 
         self.teacher1 = self.faculty = Faculty.objects.create(username="dburke", first_name="david", last_name="burke", teacher=True)
         self.teacher2 = Faculty.objects.create(username="jbayes", first_name="jeff", last_name="bayes", teacher=True)
@@ -79,53 +83,53 @@ class SisData(object):
             Course(fullname="Homeroom FX 2011", shortname="FX1", homeroom=True, credits=1),
             Course(fullname="Homeroom FX 2012", shortname="FX2", homeroom=True, credits=1),
         ])
-        self.course = Course.objects.get(id=1)
+        self.course = Course.objects.get(fullname="Math 101")
+        self.course2 = Course.objects.get(fullname="History 101")
 
         CourseSection.objects.bulk_create([
-            CourseSection(course_id=1, name="Math A"),
-            CourseSection(course_id=1, name="Math B"),
-            CourseSection(course_id=2, name="History A"),
-            CourseSection(course_id=2, name="History 1 MP only"),
+            CourseSection(course_id=self.course.id, name="Math A"),
+            CourseSection(course_id=self.course.id, name="Math B"),
+            CourseSection(course_id=self.course2.id, name="History A"),
+            CourseSection(course_id=self.course2.id, name="History 1 MP only"),
         ])
-        self.course_section = CourseSection.objects.get(pk=1)
+        self.course_section = self.course_section1 = CourseSection.objects.get(name="Math A")
+        self.course_section2 = CourseSection.objects.get(name="Math B")
+        self.course_section3 = CourseSection.objects.get(name="History A")
+        self.course_section4 = CourseSection.objects.get(name="History 1 MP only")
 
         Period.objects.bulk_create([
             Period(name="Homeroom (M)", start_time=datetime.time(8), end_time=datetime.time(8, 50)),
             Period(name="First Period", start_time=datetime.time(9), end_time=datetime.time(9, 50)),
             Period(name="Second Period", start_time=datetime.time(10), end_time=datetime.time(10, 50)),
         ])
-        self.period = Period.objects.get(id=1)
+        self.period = Period.objects.get(name="Homeroom (M)")
 
         CourseMeet.objects.bulk_create([
-            CourseMeet(course_section_id=1, period=self.period, day="1"),
-            CourseMeet(course_section_id=3, period=self.period, day="2"),
+            CourseMeet(course_section_id=self.course_section.id, period=self.period, day="1"),
+            CourseMeet(course_section_id=self.course_section3.id, period=self.period, day="2"),
         ])
 
-        self.course_section1 = CourseSection.objects.get(id=1)
-        self.course_section2 = CourseSection.objects.get(id=2)
-        self.course_section3 = CourseSection.objects.get(id=3)
-        self.course_section4 = CourseSection.objects.get(id=4)
-        self.course_section1.marking_period.add(1)
-        self.course_section1.marking_period.add(2)
-        self.course_section1.marking_period.add(3)
-        self.course_section2.marking_period.add(1)
-        self.course_section2.marking_period.add(2)
-        self.course_section2.marking_period.add(3)
-        self.course_section4.marking_period.add(1)
+        self.course_section1.marking_period.add(self.marking_period)
+        self.course_section1.marking_period.add(self.marking_period2)
+        self.course_section1.marking_period.add(self.marking_period3)
+        self.course_section2.marking_period.add(self.marking_period)
+        self.course_section2.marking_period.add(self.marking_period2)
+        self.course_section2.marking_period.add(self.marking_period3)
+        self.course_section4.marking_period.add(self.marking_period)
 
-        self.enroll1 = CourseSectionTeacher.objects.create(course_section_id=1, teacher=self.teacher1)
-        self.enroll2 = CourseSectionTeacher.objects.create(course_section_id=3, teacher=self.teacher2)
+        self.enroll1 = CourseSectionTeacher.objects.create(course_section=self.course_section, teacher=self.teacher1)
+        self.enroll2 = CourseSectionTeacher.objects.create(course_section=self.course_section3, teacher=self.teacher2)
         self.present = AttendanceStatus.objects.create(name="Present", code="P", teacher_selectable=True)
         self.absent = AttendanceStatus.objects.create(name="Absent", code="A", teacher_selectable=True, absent=True)
         self.excused = AttendanceStatus.objects.create(name="Absent Excused", code="AX", absent=True, excused=True)
 
         CourseEnrollment.objects.bulk_create([
-            CourseEnrollment(user=self.student, course_section_id=1),
-            CourseEnrollment(user=self.student, course_section_id=2),
-            CourseEnrollment(user=self.student, course_section_id=4),
-            CourseEnrollment(user=self.student2, course_section_id=1),
+            CourseEnrollment(user=self.student, course_section=self.course_section),
+            CourseEnrollment(user=self.student, course_section=self.course_section2),
+            CourseEnrollment(user=self.student, course_section=self.course_section4),
+            CourseEnrollment(user=self.student2, course_section=self.course_section),
         ])
-        self.course_enrollment = CourseEnrollment.objects.get(pk=1)
+        self.course_enrollment = CourseEnrollment.objects.all().first()
 
         '''
         Grade.objects.bulk_create([
@@ -137,22 +141,22 @@ class SisData(object):
         ])
         '''
         grade_data = [
-            { 'student' : 1, 'section' : 2, 'mp' : 1, 'grade' : 50 },
-            { 'student' : 1, 'section' : 2, 'mp' : 2, 'grade' : 89.09 },
-            { 'student' : 2, 'section' : 2, 'mp' : 1, 'grade' : 75 },
-            { 'student' : 2, 'section' : 1, 'mp' : 2, 'grade' : 100 },
-            { 'student' : 3, 'section' : 1, 'mp' : 2, 'grade' : 88 },
+            { 'student' : self.student, 'section' : self.course_section2, 'mp' : self.marking_period, 'grade' : 50 },
+            { 'student' : self.student, 'section' : self.course_section2, 'mp' : self.marking_period2, 'grade' : 89.09 },
+            { 'student' : self.student2, 'section' : self.course_section2, 'mp' : self.marking_period, 'grade' : 75 },
+            { 'student' : self.student2, 'section' : self.course_section, 'mp' : self.marking_period2, 'grade' : 100 },
+            { 'student' : self.student3, 'section' : self.course_section, 'mp' : self.marking_period2, 'grade' : 88 },
         ]
         for x in grade_data:
             grade_object, created = Grade.objects.get_or_create(
-                student_id = x['student'],
-                course_section_id = x['section'],
-                marking_period_id = x['mp']
+                student = x['student'],
+                course_section = x['section'],
+                marking_period = x['mp']
                 )
             grade_object.grade = x['grade']
             grade_object.save()
 
-        self.grade = Grade.objects.get(pk=1)
+        self.grade = Grade.objects.all().first()
         build_grade_cache()
 
     def create_grade_scale_data(self):
@@ -169,31 +173,34 @@ class SisData(object):
         CourseType.objects.create(name="Honors", weight = 1, boost = 0.5)
         self.honors = CourseType.objects.get(name="Honors")
 
-        courses = Course.objects.bulk_create([
-            Course(fullname="English", shortname="English", credits=1, course_type=self.ap, graded=True),
-            Course(fullname="Precalculus", shortname="Precalc", credits=1, graded=True),
-            Course(fullname="Physics", shortname="Phys", credits=1, graded=True),
-            Course(fullname="Modern World History", shortname="Hist", credits=1, graded=True),
-            Course(fullname="Spanish III", shortname="Span", credits=1, graded=True),
-            Course(fullname="Photojournalism", shortname="Photo", credits=1, course_type=self.non_core, graded=True),
-            Course(fullname="Faith & Justice", shortname="Faith", credits=1, graded=True),
-            Course(fullname="Writing Lab 12", shortname="Wrt Lab", credits=1, course_type=self.non_core, graded=True),
-            Course(fullname="English Honors", shortname="English-H", credits=1, course_type=self.honors, graded=True),
-            Course(fullname="Precalculus Honors", shortname="Precalc-H", credits=1, course_type=self.honors, graded=True),
-            Course(fullname="AP Modern World History", shortname="Hist-AP", credits=1, course_type=self.ap, graded=True),
-            Course(fullname="Spanish III AP", shortname="Span-H", credits=1, graded=True, course_type=self.ap),
-            Course(fullname="Faith & Justice Honors", shortname="Faith-H", credits=1, graded=True, course_type=self.honors),
-        ])
-        self.year = year = SchoolYear.objects.create(name="balt year", start_date=date(2014,7,1), end_date=date(2050,5,1), active_year=True)
-        self.mp1 = mp1 = MarkingPeriod.objects.create(name="1st", weight=0.4, start_date=date(2014,7,1), end_date=date(2014,9,1), school_year=year)
-        self.mp2 = mp2 = MarkingPeriod.objects.create(name="2nd", weight=0.4, start_date=date(2014,7,2), end_date=date(2014,9,2), school_year=year)
-        self.mps1x = mps1x = MarkingPeriod.objects.create(name="S1X", weight=0.2, start_date=date(2014,7,2), end_date=date(2014,9,2), school_year=year)
-        self.mp3 = mp3 = MarkingPeriod.objects.create(name="3rd", weight=0.4, start_date=date(2014,7,3), end_date=date(2014,9,3), school_year=year)
-        self.mp4 = mp4 = MarkingPeriod.objects.create(name="4th", weight=0.4, start_date=date(2014,7,4), end_date=date(2014,9,4), school_year=year)
-        self.mps2x = mps2x = MarkingPeriod.objects.create(name="S2X", weight=0.2, start_date=date(2014,7,4), end_date=date(2014,9,4), school_year=year)
+        self.course1 = Course.objects.create(fullname="English", shortname="English", credits=1, course_type=self.ap, graded=True)
+        self.course2 = Course.objects.create(fullname="Precalculus", shortname="Precalc", credits=1, graded=True)
+        self.course3 = Course.objects.create(fullname="Physics", shortname="Phys", credits=1, graded=True)
+        self.course4 = Course.objects.create(fullname="Modern World History", shortname="Hist", credits=1, graded=True)
+        self.course5 = Course.objects.create(fullname="Spanish III", shortname="Span", credits=1, graded=True)
+        self.course6 = Course.objects.create(fullname="Photojournalism", shortname="Photo", credits=1, course_type=self.non_core, graded=True)
+        self.course7 = Course.objects.create(fullname="Faith & Justice", shortname="Faith", credits=1, graded=True)
+        self.course8 = Course.objects.create(fullname="Writing Lab 12", shortname="Wrt Lab", credits=1, course_type=self.non_core, graded=True)
+        self.course9 = Course.objects.create(fullname="English Honors", shortname="English-H", credits=1, course_type=self.honors, graded=True)
+        self.course10 = Course.objects.create(fullname="Precalculus Honors", shortname="Precalc-H", credits=1, course_type=self.honors, graded=True)
+        self.course11 = Course.objects.create(fullname="AP Modern World History", shortname="Hist-AP", credits=1, course_type=self.ap, graded=True)
+        self.course12 = Course.objects.create(fullname="Spanish III AP", shortname="Span-H", credits=1, graded=True, course_type=self.ap)
+        self.course13 = Course.objects.create(fullname="Faith & Justice Honors", shortname="Faith-H", credits=1, graded=True, course_type=self.honors)
+
+        self.year = year = SchoolYear.objects.create(name="balt year", start_date=datetime.date(2014,7,1), end_date=datetime.date(2050,5,1), active_year=True)
+        self.mp1 = mp1 = MarkingPeriod.objects.create(name="1st", weight=0.4, start_date=datetime.date(2014,7,1), end_date=datetime.date(2014,9,1), school_year=year)
+        self.mp2 = mp2 = MarkingPeriod.objects.create(name="2nd", weight=0.4, start_date=datetime.date(2014,7,2), end_date=datetime.date(2014,9,2), school_year=year)
+        self.mps1x = mps1x = MarkingPeriod.objects.create(name="S1X", weight=0.2, start_date=datetime.date(2014,7,2), end_date=datetime.date(2014,9,2), school_year=year)
+        self.mp3 = mp3 = MarkingPeriod.objects.create(name="3rd", weight=0.4, start_date=datetime.date(2014,7,3), end_date=datetime.date(2014,9,3), school_year=year)
+        self.mp4 = mp4 = MarkingPeriod.objects.create(name="4th", weight=0.4, start_date=datetime.date(2014,7,4), end_date=datetime.date(2014,9,4), school_year=year)
+        self.mps2x = mps2x = MarkingPeriod.objects.create(name="S2X", weight=0.2, start_date=datetime.date(2014,7,4), end_date=datetime.date(2014,9,4), school_year=year)
+
+        courses = Course.objects.all()
+        i = 0
         for course in courses:
-            course = Course.objects.get(fullname=course.fullname)
-            section = CourseSection.objects.create(name=course.shortname, course_id=course.id)
+            i += 1
+            section = CourseSection.objects.create(name=course.shortname, course=course)
+            setattr(self, 'course_section' + str(i), section)
             section.marking_period.add(mp1)
             section.marking_period.add(mp2)
             if course.credits > 0:
@@ -204,7 +211,7 @@ class SisData(object):
                 section.marking_period.add(mps2x)
 
             if course.shortname in ['English','Precalc','Phys','Hist','Span','Photo','Faith', 'Wrt Lab']:
-                # only enroll self.student in these particular classes, 
+                # only enroll self.student in these particular classes,
                 # the other ones will be used for other students later on
                 CourseEnrollment.objects.create(user=student, course_section=section)
         grade_data = [
@@ -253,9 +260,9 @@ class SisData(object):
             [8,mp3,100],
             [8,mp4,100],
         ]
-        Grade.objects.create(student=student, course_section_id=3, override_final=True, grade=70)
+        Grade.objects.create(student=student, course_section=self.course_section3, override_final=True, grade=70)
         for x in grade_data:
-            grade = Grade.objects.get(student=student, course_section_id=x[0], marking_period=x[1])
+            grade = Grade.objects.get(student=student, course_section=getattr(self, 'course_section' + str(x[0])), marking_period=x[1])
             grade.grade = x[2]
             grade.save()
         scale = self.scale = GradeScale.objects.create(name="Balt Test Scale")
@@ -322,7 +329,7 @@ class SisData(object):
             {'section': 'Faith-H',  'grades': [78, 88, 88,   98, 92, 90 ]},
             {'section': 'Wrt Lab',  'grades': [100,  100,  100, 100,  100, 100]},
         ]
-        
+
         self.populate_student_grades(self.sample_student1, known_grades)
 
     def enroll_student_in_sections(self, student, shortname_list):
@@ -349,6 +356,6 @@ class SisData(object):
                     marking_period=marking_periods[i]
                     )
                 grade.grade = grd['grades'][i]
-                grade.save() 
+                grade.save()
 
 
