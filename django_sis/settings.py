@@ -27,6 +27,10 @@ DATABASES = {
         'PASSWORD': os.getenv('DATABASE_PASSWORD'),
         'HOST': os.getenv('DATABASE_ADDR', 'db_1'),
         'PORT': 5432,
+        # If a timeout is not specified, psycopg2 will wait forever, and the
+        # executing thread will get stuck indefinitely. A bunch of requests
+        # during a Postgres disruption would paralyze the server completely.
+        'OPTIONS': {'connect_timeout': 15},
     }
 }
 

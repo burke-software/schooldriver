@@ -91,3 +91,4 @@ trollius
 git+https://github.com/gregmuellegger/django-floppyforms.git@636c7ec516d50a298164ee324b5c697b6676cbc6
 git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99
 waitress
+faulthandler
