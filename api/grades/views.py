@@ -5,6 +5,7 @@ from ecwsp.grades.models import Grade
 from ecwsp.schedule.models import CourseSection
 from api.grades.serializers import GradeSerializer
 from rest_framework import mixins
+from django.db.models import F
 
 class GradeViewSet(viewsets.ModelViewSet):
     """
@@ -12,8 +13,10 @@ class GradeViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAdminUser,)
     queryset = Grade.objects.filter(
+        # Exclude orphans from MPs no longer assigned to the CourseSection
+        course_section__marking_period=F('marking_period'),
         course_section__course__graded = True,
-        ).select_related('student', 'marking_period', 'course_section', 'course_section__course')
+    ).select_related('student', 'marking_period', 'course_section', 'course_section__course')
 
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     serializer_class = GradeSerializer
