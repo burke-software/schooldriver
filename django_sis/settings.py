@@ -144,7 +144,6 @@ BOWER_INSTALLED_APPS = (
 ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
 ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
 GRAPPELLI_INDEX_DASHBOARD = 'ecwsp.dashboard.CustomIndexDashboard'
-GRAPPELLI_ADMIN_TITLE = '<img src="/static/images/logo.png"/ style="height: 30px; margin-left: -10px; margin-top: -8px; margin-bottom: -11px;">'
 
 IMPERSONATE_ALLOW_SUPERUSER = True
 IMPERSONATE_REQUIRE_SUPERUSER = True
