@@ -411,7 +411,7 @@ def attendance_report(request):
                 type = UserPreference.objects.get_or_create(user=request.user)[0].get_format(type="document")
                 return attendance_student(
                     request,
-                    lookup_form.cleaned_data['student'].id,
+                    lookup_form.cleaned_data['student'],
                     all_years=lookup_form.cleaned_data['all_years'],
                     order_by=lookup_form.cleaned_data['order_by'],
                     include_private_notes=lookup_form.cleaned_data['include_private_notes'])
@@ -611,6 +611,7 @@ def attendance_student(request, id, all_years=False, order_by="Date", include_pr
 
    # data['attendances'] = attendances
     report.data['student'] = student
+    report.data['students'] = [student]
     report.data['student_year'] = student.year
 
     template = Template.objects.get_or_create(name="Student Attendance Report")[0]

@@ -27,6 +27,10 @@ DATABASES = {
         'PASSWORD': os.getenv('DATABASE_PASSWORD'),
         'HOST': os.getenv('DATABASE_ADDR', 'db_1'),
         'PORT': 5432,
+        # If a timeout is not specified, psycopg2 will wait forever, and the
+        # executing thread will get stuck indefinitely. A bunch of requests
+        # during a Postgres disruption would paralyze the server completely.
+        'OPTIONS': {'connect_timeout': 15},
     }
 }
 
@@ -140,7 +144,6 @@ BOWER_INSTALLED_APPS = (
 ADMIN_TOOLS_MENU = 'ecwsp.menu.CustomMenu'
 ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
 GRAPPELLI_INDEX_DASHBOARD = 'ecwsp.dashboard.CustomIndexDashboard'
-GRAPPELLI_ADMIN_TITLE = '<img src="/static/images/logo.png"/ style="height: 30px; margin-left: -10px; margin-top: -8px; margin-bottom: -11px;">'
 
 IMPERSONATE_ALLOW_SUPERUSER = True
 IMPERSONATE_REQUIRE_SUPERUSER = True
@@ -474,6 +477,9 @@ CONSTANCE_CONFIG = {
     'SCHOOLREACH_PIN': ('', ''),
     'SCHOOLREACH_LIST_ID': ('',
         "The id of the list we want to integrate, don't edit this list by hand in SR"),
+    'TRANSCRIPT_SHOW_INCOMPLETE_COURSES_WITHOUT_GRADE': (False,
+        'Normally a incomplete course would not show on a transcript. When this is enabled '\
+        'such courses will show - however grades will be blank.'),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
@@ -534,14 +540,7 @@ if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
 
-# Keep this *LAST* to avoid overwriting production DBs with test data
-if 'test' in sys.argv:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'test',
-        'ATOMIC_REQUESTS': True,
-    }
-    CELERY_ALWAYS_EAGER = True
+SOUTH_TESTS_MIGRATE = False
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
