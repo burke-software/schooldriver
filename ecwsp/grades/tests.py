@@ -91,7 +91,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
     """ These test ensure we meet requirements defined by Cristo Rey Baltimore including
     Grade scales, course weights, and letter grades
     Sample data is anonomized real grade data """
-    
+
     def populate_database(self):
         """ Override, not using traditional test data """
         self.data = SisData()
@@ -141,8 +141,8 @@ class GradeBaltTests(SisTestMixin, TestCase):
         for x in test_data:
             grade = Grade.objects.get(
                 student = self.data.student,
-                marking_period=x[0], 
-                course_section_id=x[1]
+                marking_period=x[0],
+                course_section=getattr(self.data, 'course_section' + str(x[1]))
                 )
             self.assertEqual(grade.get_grade(letter=True), x[2])
 
@@ -150,15 +150,15 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """ Really just a normal run of the mill Marking Period grade
         Balt uses s1x, s2x as tests that affect final grades
         """
-        grade = Grade.objects.get(marking_period=self.data.mps1x, course_section_id=1)
+        grade = Grade.objects.get(marking_period=self.data.mps1x, course_section=self.data.course_section1)
         self.assertEqual(grade.get_grade(), 90)
-        grade = Grade.objects.get(marking_period=self.data.mps2x, course_section_id=1)
+        grade = Grade.objects.get(marking_period=self.data.mps2x, course_section=self.data.course_section1)
         self.assertEqual(grade.get_grade(), 79)
 
     def test_partial_course_average_grade(self):
         """ Tests getting the average of some but not all marking period averages """
-        s1_ids = [1,2,3]
-        s2_ids = [4,5,6]
+        s1_ids = [self.data.mp1.id ,self.data.mp2.id ,self.data.mps1x.id]
+        s2_ids = [self.data.mp3.id ,self.data.mp4.id ,self.data.mps2x.id]
         test_data = [
             [1, s1_ids, 78.08, 'C+'],
             [1, s2_ids, 71.96, 'D'],
@@ -178,17 +178,17 @@ class GradeBaltTests(SisTestMixin, TestCase):
             [8, s2_ids, 100, 'A'],
         ]
         for x in test_data:
-            ce = CourseEnrollment.objects.get(user=self.data.student, course_section=x[0])
-            self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), x[2])
+            ce = CourseEnrollment.objects.get(user=self.data.student, course_section=getattr(self.data, 'course_section' + str(x[0])))
+            self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), Decimal(x[2]))
             self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
 
     def test_scaled_average(self):
         """ Tests an asinine method for averages by converting to non linear scale first """
         test_data = [
-            [1, Decimal(2.0)],
-            [2, Decimal(2.4)],
-            [4, Decimal(1.9)],
-            [5, Decimal(2.8)],
+            [self.data.mp1, Decimal(2.0)],
+            [self.data.mp2, Decimal(2.4)],
+            [self.data.mp3, Decimal(1.9)],
+            [self.data.mp4, Decimal(2.8)],
         ]
         for x in test_data:
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
@@ -196,8 +196,8 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
     def test_average(self):
         test_data = [
-            [3, 72.7],
-            [6, 71.8],
+            [self.data.mps1x, 72.7],
+            [self.data.mps2x, 71.8],
         ]
         for x in test_data:
             smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
@@ -205,8 +205,8 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
     def test_scaled_multiple_mp_average(self):
         test_data = [
-            [[1, 2, 3], Decimal(1.9)],
-            [[4, 5, 6], Decimal(2.1)],
+            [[self.data.mp1.id, self.data.mp2.id, self.data.mps1x.id], Decimal(1.9)],
+            [[self.data.mp3.id, self.data.mp4.id, self.data.mps2x.id], Decimal(2.1)],
         ]
         for x in test_data:
             average = Grade.get_scaled_multiple_mp_average(self.data.student, x[0], rounding=1)
@@ -214,7 +214,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
     def test_scaled_final_year_average(self):
         test_data = [
-            [1, Decimal(2.2)],
+            [self.data.year, Decimal(2.2)],
         ]
         for x in test_data:
             year_grade = self.data.student.studentyeargrade_set.get(year=x[0])
@@ -237,25 +237,27 @@ class GradeBaltTests(SisTestMixin, TestCase):
             [8, 'A'],
         ]
         for x in test_data:
-            ce = CourseEnrollment.objects.get(user=self.data.student, course_section=x[0])
+            ce = CourseEnrollment.objects.get(
+                user=self.data.student,
+                course_section=getattr(self.data, 'course_section' + str(x[0])))
             with self.assertNumQueries(1):
                 self.assertEqual(ce.get_grade(letter=True), x[1])
 
     def test_honors_and_ap_scaled_grades(self):
         """
-        assert that the honors and ap grades receive correct boost by 
+        assert that the honors and ap grades receive correct boost by
         replicating the grades in our manual spreadsheet
         """
 
         # Now, test that the scaled averages are correct
         test_data = [
-            {'mp_id': 1, 'boosted': Decimal(4.0), 'unboosted': Decimal(3.7)},
-            {'mp_id': 2, 'boosted': Decimal(3.6), 'unboosted': Decimal(3.3)},
-            {'mp_id': 4, 'boosted': Decimal(3.7), 'unboosted': Decimal(3.4)},
-            {'mp_id': 5, 'boosted': Decimal(3.5), 'unboosted': Decimal(3.2)}
+            {'mp': self.data.mp1, 'boosted': Decimal(4.0), 'unboosted': Decimal(3.7)},
+            {'mp': self.data.mp2, 'boosted': Decimal(3.6), 'unboosted': Decimal(3.3)},
+            {'mp': self.data.mp3, 'boosted': Decimal(3.7), 'unboosted': Decimal(3.4)},
+            {'mp': self.data.mp4, 'boosted': Decimal(3.5), 'unboosted': Decimal(3.2)}
         ]
         for x in test_data:
-            smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.honors_student, marking_period=x['mp_id'])
+            smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.honors_student, marking_period=x['mp'])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['boosted'])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1, boost=False), x['unboosted'])
 
@@ -265,17 +267,17 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """
 
         # try without pre-scaling
-        year_grade = self.data.honors_student.studentyeargrade_set.get(year=1)
+        year_grade = self.data.honors_student.studentyeargrade_set.get(year=self.data.year)
         average = year_grade.get_grade(numeric_scale=True, rounding=1)
         self.assertAlmostEqual(average, Decimal(3.8))
 
         # try with pre-scaling
-        year_grade = self.data.honors_student.studentyeargrade_set.get(year=1)
+        year_grade = self.data.honors_student.studentyeargrade_set.get(year=self.data.year)
         average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True)
         self.assertAlmostEqual(average, Decimal(3.6))
 
         # try with pre-scaling but without boost
-        year_grade = self.data.honors_student.studentyeargrade_set.get(year=1)
+        year_grade = self.data.honors_student.studentyeargrade_set.get(year=self.data.year)
         average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True, boost=False)
         self.assertAlmostEqual(average, Decimal(3.3))
 
@@ -300,18 +302,18 @@ class GradeBaltTests(SisTestMixin, TestCase):
         for x in expected_grades:
             section = CourseSection.objects.get(name = x['section'])
             ce = CourseEnrollment.objects.get(
-                user = self.data.honors_student, 
+                user = self.data.honors_student,
                 course_section = section,
                 )
             with self.assertNumQueries(1):
                 self.assertEqual(ce.get_grade(letter=True), x['final'])
 
             sm1_grade = ce.get_average_for_marking_periods(
-                marking_periods = [1,2,3],
+                marking_periods = [self.data.mp1.id, self.data.mp2.id, self.data.mps1x.id],
                 letter = True,
                 )
             sm2_grade = ce.get_average_for_marking_periods(
-                marking_periods = [4,5,6],
+                marking_periods = [self.data.mp3.id, self.data.mp4.id, self.data.mps2x.id],
                 letter = True,
                 )
 
@@ -356,7 +358,6 @@ class GradeScaleTests(SisTestMixin, TestCase):
         self.data.school_year.save()
 
     def test_grade_scale(self):
-
         scale = self.scale
         self.assertEqual(scale.to_letter(50), 'F')
         self.assertEqual(scale.to_letter(59.99), 'F')

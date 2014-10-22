@@ -13,6 +13,8 @@ from ecwsp.admissions.reports import *
 from ecwsp.admissions.models import *
 from ecwsp.admissions.forms import InquiryForm, ReportForm, ApplicantForm, TemplateReportForm
 from ecwsp.administration.models import Configuration
+import zipfile
+
 
 import datetime
 
@@ -109,7 +111,7 @@ def reports(request):
             if form.is_valid():
                 data = form.cleaned_data
                 template = data['template'].file
-                # Use students variable for consistency in template 
+                # Use students variable for consistency in template
                 students = Applicant.objects.all()
                 if data['school_year']:
                     students = students.filter(school_year__in=data['school_year'])
@@ -119,8 +121,11 @@ def reports(request):
                     students = students.filter(ready_for_export=data['ready_for_export'])
                 report = AdmissionsTemplateReport(user=request.user)
                 report.data['students'] = students
-                return report.pod_save(template)
-                
+                try:
+                    return report.pod_save(template)
+                except zipfile.BadZipfile:
+                    return HttpResponse('Invalid template file')
+
         else:
             report_form = ReportForm(request.POST)
             if report_form.is_valid():
@@ -135,7 +140,8 @@ def reports(request):
                         year_ids = year_ids[:-1]
                     return HttpResponseRedirect(reverse(funnel) + '?year_ids=%s' % (year_ids))
                 return report_process_statistics(year)
-    
+
+
     return render_to_response('admissions/report.html', {
             'report_form': report_form,
             'template_form': template_form,

@@ -17,6 +17,12 @@ import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_sis.settings")
 
+# Catch the USR1 signal and dump a traceback of all running threads.
+# Useful for debugging mysterious server deadlocks.
+import faulthandler, signal
+faulthandler.register(signal.SIGUSR1)
+faulthandler.enable()
+
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
