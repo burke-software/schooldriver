@@ -16,7 +16,7 @@ from ecwsp.attendance.models import CourseSectionAttendance, StudentAttendance, 
 from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet, Period, CourseSection, Course
 from ecwsp.grades.models import Grade
-from ecwsp.discipline.models import DisciplineAction
+from ecwsp.discipline.models import DisciplineAction, DisciplineActionInstance
 import autocomplete_light
 import datetime
 from decimal import Decimal
@@ -1104,7 +1104,8 @@ class SisReport(ScaffoldReport):
             self.date_end = self.report_context['date_end']
 
             # backwards compatibility for templates
-            context['date_of_report'] = self.date_end
+            context['date_begin'] = self.for_date
+            context['date_end'] = self.date_end
             context['long_date'] = unicode(datetime.date.today().strftime('%B %d, %Y'))
             context['school_year'] = self.report_context['school_year']
             context['school_name'] = config.SCHOOL_NAME
@@ -1136,16 +1137,22 @@ class SisReport(ScaffoldReport):
                     end_date__lte=self.report_context['date_end']).order_by('start_date')
                 if not marking_periods.count():
                     marking_periods = MarkingPeriod.objects.filter(start_date__gte=self.report_context['date_begin']).order_by('start_date')
+                context['marking_periods'] = ', '.join(marking_periods.values_list('shortname',flat=True))
+                context['school_year'] = marking_periods[0].school_year
+
                 current_mp = marking_periods.first()
+                students = []
                 for student in students:
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
                             schedule_days=schedule_days)
-                    #student.discipline_records = student.studentdiscipline_set.filter(date__gte=begin_end_dates[0],
-                    #    date__lte=begin_end_dates[1])
-                    #for d in student.discipline_records:
-                    #    d.date = d.date.strftime('%b %d, %Y')
-
+                    student.discipline_records = student.studentdiscipline_set.filter(date__gte=self.for_date,
+                                                                                     date__lte=self.date_end)
+                    records = student.discipline_records
+                    for record in records:
+                        record.actions = '; '.join(record.action.values_list('name', flat=True))
+                    context['records'] = records
+                    students.append(student)
         context['students'] = students
         return context
 
