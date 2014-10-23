@@ -1154,18 +1154,14 @@ class SisReport(ScaffoldReport):
                 context['school_year'] = marking_periods[0].school_year
 
                 current_mp = marking_periods.first()
-                students = []
                 for student in students:
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
                             schedule_days=schedule_days)
-                    student.discipline_records = student.studentdiscipline_set.filter(date__gte=self.for_date,
-                                                                                     date__lte=self.date_end)
+                    student.discipline_records = student.studentdiscipline_set.filter(date__gte=self.for_date,                                                                 date__lte=self.date_end)
                     records = student.discipline_records
                     for record in records:
                         record.actions = '; '.join(record.action.values_list('name', flat=True))
-                    context['records'] = records
-                    students.append(student)
         context['students'] = students
         return context
 
