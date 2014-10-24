@@ -285,12 +285,34 @@ def applicants_to_students(request, year_id):
                               {'msg': msg},
                               RequestContext(request, {}),) 
 
-def studentApplication(request):
+def student_application(request):
     """
     the student application for admission
     """
-    return render_to_response(
-        'admissions/student_application.html',
-        RequestContext(request, {}),
-        )
+    if request.method == "GET":
+        return render_to_response(
+            'admissions/student_application.html',
+            RequestContext(request, {}),
+            )
+
+def application_custom_field_editor(request):
+    if request.method == "GET":
+        return render_to_response(
+            'admissions/application_custom_field_editor.html', {
+                'custom_fields' : ApplicantCustomField.objects.all()
+            },
+            RequestContext(request, {}),
+            )
+
+def custom_application_editor(request):
+    if request.method == "GET":
+        return render_to_response(
+            'admissions/custom_application_editor.html',
+            RequestContext(request, {}),
+            )
+
+        
+
+
+
 
