@@ -357,10 +357,38 @@ class ApplicantStandardCategoryGrade(models.Model):
     grade = models.DecimalField(max_digits=6,decimal_places=2)
 
 class StudentApplicationTemplate(models.Model):
-    """
-    store application templates in JSON format
-    """
+    """store application templates in JSON format"""
     name = models.CharField(max_length=255)
     # need a way to assert "unique boolean field" for True case, pending...
     is_default = models.BooleanField(default=False)
     json_template = JSONField()
+
+class ApplicantCustomField(models.Model):
+    field_type_choices = (
+            ('input', 'Small Text Field'),
+            ('textarea', 'Large Text Field'),
+            ('multiple', 'Dropdown Choices'),
+            ('radio', 'Multiple Choices'),
+            ('checkbox', 'Checkboxes'),
+        )
+    field_type = models.CharField(
+        blank = True,
+        null = True,
+        max_length=50, 
+        choices = field_type_choices,
+        help_text = "Choose the type of field"
+        )
+    field_name = models.CharField(
+        blank = True, 
+        null = True,
+        max_length = 255,
+        help_text = "Give this field a recognizable name"
+        )
+    field_choices = models.TextField(
+        blank = True,
+        null= True,
+        help_text="""List the choices you want displayed, 
+seperated by commas. This is only valid for Dropdown, 
+Multiple, and Checkbox field types"""
+        )
+
