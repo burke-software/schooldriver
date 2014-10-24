@@ -9,5 +9,7 @@ urlpatterns = patterns('',
     (r'^reports/$', views.reports),
     (r'^reports/funnel/$', views.funnel),
     (r'^inquiry_form/$', views.inquiry_form),
-    (r'^application', views.studentApplication),
+    url(r'^application', views.student_application, name="student-application"),
+    url(r'^custom-field-editor', views.application_custom_field_editor, name="application-custom-fields"),
+    url(r'^custom-application-editor', views.custom_application_editor, name="custom-application-editor"),
 )
