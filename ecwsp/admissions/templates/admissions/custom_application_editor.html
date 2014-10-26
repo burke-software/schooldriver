@@ -27,10 +27,10 @@
       <div class="panel panel-default" ng-repeat="section in application_template.sections">
         <div class="panel-heading">
           <div class="btn-group pull-right">
-            <button class="btn btn-default" ng-click="moveSectionUp(section)">
+            <button class="btn btn-default" ng-click="moveUp(application_template.sections, section)">
               <i class="fa fa-chevron-up"></i>
             </button>
-            <button class="btn btn-default" ng-click="moveSectionDown(section)">
+            <button class="btn btn-default" ng-click="moveDown(application_template.sections, section)">
               <i class="fa fa-chevron-down"></i>
             </button>
           </div>
@@ -66,7 +66,7 @@
                 </button>
                 <ul class="dropdown-menu scrollable-menu" role="menu">
                   <li ng-repeat="field in applicant_field_options">
-                    <a href="#" ng-click="addSectionField(section, field)">{{ field.field_name }}</a>
+                    <a href="#" ng-click="addSectionField(section, field)">{{ field.field_label }}</a>
                   </li>
                 </ul>
               </div>
@@ -77,22 +77,30 @@
             </div>
             <div class="section-fields col-sm-12">
               <form class="form-horizontal">
-                <div ng-repeat="field in section.fields">
-                  <div ng-if="isFieldInput(field)">
+                <div ng-repeat="section_field in section.fields">
+                  <div>
                     <div class="form-group">
-                      <label class="control-label col-sm-2">{{field.label}}</label>
-                      <div class="col-sm-8">
-                          <input name="{{field.name}}" type="text" class="form-control">
+                      <label class="control-label col-sm-2">
+                        {{ fetchCustomFieldById(section_field.id).field_label }}
+                      </label>
+                      <div class="col-sm-7">
+                          <input name="{{ fetchCustomFieldById(section_field.id).field_name }}" type="text" class="form-control">
+                          <span class="help-block">
+                            {{ fetchCustomFieldById(section_field.id).helptext }}
+                          </span>
                       </div>
 
-                      <div class="btn-group col-sm-2">
-                        <button class="btn btn-default" ng-click="moveFieldUp(field)">
+                      <div class="btn-group col-sm-3">
+                        <button class="btn btn-default" ng-click="moveUp(section.fields, section_field)">
                           <i class="fa fa-chevron-up"></i>
                         </button>
-                        <button class="btn btn-default" ng-click="moveFieldDown(field)">
+                        <button class="btn btn-default" ng-click="moveDown(section.fields, section_field)">
                           <i class="fa fa-chevron-down"></i>
                         </button>
-                        <button class="btn btn-danger" ng-click="removeSectionField(section, field)">
+                        <button class="btn btn-info" ng-click="editCustomField(field)">
+                          <i class="fa fa-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger" ng-click="removeSectionField(section, section_field)">
                           <i class="fa fa-times"></i>
                         </button>
                       </div>
@@ -111,7 +119,7 @@
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
           <h4 class="modal-title" id="editModalTitle">
-            Custom Application Field
+            Custom Application Field Editor
           </h4>
         </div>
         <div class="modal-body">
@@ -151,7 +159,7 @@
                       Name
                   </label>
                   <div class="col-sm-10">
-                      <input type="text" class="form-control" id="field-name-input" ng-model="customField.name">
+                      <input type="text" class="form-control" id="field-name-input" ng-model="customField.field_label">
                   </div>
               </div>
                 <div class="form-group">
@@ -161,31 +169,31 @@
                     <div class="col-sm-10">
                         <div class="radio">
                               <label>
-                                <input type="radio" name="fieldTypeOptions" id="fieldTypeInput" value="input" checked ng-model="customField.type">
+                                <input type="radio" name="fieldTypeOptions" id="fieldTypeInput" value="input" checked ng-model="customField.field_type">
                                 Simple text box
                               </label>
                         </div>
                         <div class="radio">
                           <label>
-                            <input type="radio" name="fieldTypeOptions" id="fieldTypeTextarea" value="textarea" ng-model="customField.type">
+                            <input type="radio" name="fieldTypeOptions" id="fieldTypeTextarea" value="textarea" ng-model="customField.field_type">
                             Large text box
                           </label>
                         </div>
                         <div class="radio">
                           <label>
-                            <input type="radio" name="fieldTypeOptions" id="fieldTypeDropdown" value="multiple" ng-model="customField.type">
+                            <input type="radio" name="fieldTypeOptions" id="fieldTypeDropdown" value="multiple" ng-model="customField.field_type">
                             Drop-down list of options
                           </label>
                         </div>
                         <div class="radio">
                           <label>
-                            <input type="radio" name="fieldTypeOptions" id="fieldTypeRadio" value="radio" ng-model="customField.type">
+                            <input type="radio" name="fieldTypeOptions" id="fieldTypeRadio" value="radio" ng-model="customField.field_type">
                             A multiple choice list of options
                           </label>
                         </div>
                         <div class="radio">
                           <label>
-                            <input type="radio" name="fieldTypeOptions" id="fieldTypeCheckbox" value="checkbox" ng-model="customField.type">
+                            <input type="radio" name="fieldTypeOptions" id="fieldTypeCheckbox" value="checkbox" ng-model="customField.field_type">
                             A checkbox list of options (applicant can select multiple)
                           </label>
                         </div>
@@ -196,7 +204,7 @@
                         Choices
                     </label>
                     <div class="col-sm-10">
-                        <textarea class="form-control" rows="3" id="field-choices-text-area" ng-model="customField.choices"></textarea>
+                        <textarea class="form-control" rows="3" id="field-choices-text-area" ng-model="customField.field_choices"></textarea>
                         <span class="help-block">Separate individual options with a comma, for example: New York, New Jersey, New Hampshire</span>
                     </div>
                 </div>
@@ -216,7 +224,7 @@
                         Help Text (Alternate Language)
                     </label>
                     <div class="col-sm-10">
-                        <input class="form-control" name="help-text" ng-model="customField.helptext_altlang">
+                        <input class="form-control" name="help-text" ng-model="customField.helptext_alt_lang">
                         <span class="help-block">Provide an explanation of this field in the alternate language</span>
                     </div>
                 </div>
