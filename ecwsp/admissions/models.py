@@ -358,7 +358,7 @@ class ApplicantStandardCategoryGrade(models.Model):
 
 class StudentApplicationTemplate(models.Model):
     """store application templates in JSON format"""
-    name = models.CharField(max_length=255)xw
+    name = models.CharField(max_length=255)
     is_default = models.BooleanField(default=False)
     json_template = JSONField()
 
@@ -392,4 +392,7 @@ class ApplicantCustomField(models.Model):
 seperated by commas. This is only valid for Dropdown, 
 Multiple, and Checkbox field types"""
         )
+    helptext = models.CharField(blank=True, null=True, max_length=500)
+    helptext_alt_lang = models.CharField(blank=True, null=True, max_length=500)
+
 
