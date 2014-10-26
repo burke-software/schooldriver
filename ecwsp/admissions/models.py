@@ -358,8 +358,7 @@ class ApplicantStandardCategoryGrade(models.Model):
 
 class StudentApplicationTemplate(models.Model):
     """store application templates in JSON format"""
-    name = models.CharField(max_length=255)
-    # need a way to assert "unique boolean field" for True case, pending...
+    name = models.CharField(max_length=255)xw
     is_default = models.BooleanField(default=False)
     json_template = JSONField()
 
@@ -371,6 +370,8 @@ class ApplicantCustomField(models.Model):
             ('radio', 'Multiple Choices'),
             ('checkbox', 'Checkboxes'),
         )
+    field_name = models.CharField(blank=True, null=True, max_length=50)
+    is_field_integrated_with_applicant = models.BooleanField(default=False) 
     field_type = models.CharField(
         blank = True,
         null = True,
@@ -378,7 +379,7 @@ class ApplicantCustomField(models.Model):
         choices = field_type_choices,
         help_text = "Choose the type of field"
         )
-    field_name = models.CharField(
+    field_label = models.CharField(
         blank = True, 
         null = True,
         max_length = 255,
