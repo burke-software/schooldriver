@@ -16,8 +16,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         "field_type" : "",
         "field_name" : "",
         "field_label": "",
-        "helptext" : "",
-        "helptext_alt_lang": "",
+        "helptext" : ""
     };
 
     $scope.isNewFieldIntegrated = function() {

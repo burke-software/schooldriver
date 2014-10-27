@@ -393,6 +393,5 @@ seperated by commas. This is only valid for Dropdown,
 Multiple, and Checkbox field types"""
         )
     helptext = models.CharField(blank=True, null=True, max_length=500)
-    helptext_alt_lang = models.CharField(blank=True, null=True, max_length=500)
 
 
