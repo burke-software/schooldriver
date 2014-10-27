@@ -394,4 +394,8 @@ Multiple, and Checkbox field types"""
         )
     helptext = models.CharField(blank=True, null=True, max_length=500)
 
+class ApplicantAdditionalInformation(models.Model):
+    applicant = models.ForeignKey(Applicant, related_name='additionals')
+    question = models.CharField(blank=True, null=True, max_length=255)
+    answer = models.TextField(blank=True, null=True)
 
