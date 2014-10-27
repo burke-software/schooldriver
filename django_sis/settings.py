@@ -426,6 +426,7 @@ TENANT_APPS = (
     'widget_tweaks',
     'django_cached_field',
     'rest_framework',
+    'rest_framework_bulk',
     'api',
     'compressor',
     'constance',
