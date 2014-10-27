@@ -66,7 +66,7 @@
                 </button>
                 <ul class="dropdown-menu scrollable-menu" role="menu">
                   <li ng-repeat="field in applicant_field_options">
-                    <a href="#" ng-click="addSectionField(section, field)">{{ field.field_label }}</a>
+                    <a ng-click="addSectionField(section, field)">{{ field.field_label }}</a>
                   </li>
                 </ul>
               </div>
@@ -77,16 +77,20 @@
             </div>
             <div class="section-fields col-sm-12">
               <form class="form-horizontal">
-                <div ng-repeat="section_field in section.fields">
+                <div ng-repeat="section_field in section.fields track by $index">
                   <div>
                     <div class="form-group">
                       <label class="control-label col-sm-2">
-                        {{ fetchCustomFieldById(section_field.id).field_label }}
+                        {{ getCustomFieldById(section_field.id).field_label }}
                       </label>
-                      <div class="col-sm-7">
-                          <input name="{{ fetchCustomFieldById(section_field.id).field_name }}" type="text" class="form-control">
+                      <div class="col-sm-7" >
+                          <input ng-if="getCustomFieldById(section_field.id).field_type == 'input'" name="{{ getCustomFieldById(section_field.id).field_name }}" type="text" class="form-control">
+                          <textarea ng-if="getCustomFieldById(section_field.id).field_type == 'textarea'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" rows="5"></textarea>
                           <span class="help-block">
-                            {{ fetchCustomFieldById(section_field.id).helptext }}
+                            {{ getCustomFieldById(section_field.id).helptext }}
+                          </span>
+                          <span class="help-block">
+                            {{ getCustomFieldById(section_field.id).helptext_alt_lang }}
                           </span>
                       </div>
 
@@ -97,7 +101,7 @@
                         <button class="btn btn-default" ng-click="moveDown(section.fields, section_field)">
                           <i class="fa fa-chevron-down"></i>
                         </button>
-                        <button class="btn btn-info" ng-click="editCustomField(field)">
+                        <button class="btn btn-info" ng-click="editCustomField(section_field)">
                           <i class="fa fa-pencil"></i>
                         </button>
                         <button class="btn btn-danger" ng-click="removeSectionField(section, section_field)">
@@ -183,18 +187,6 @@
                           <label>
                             <input type="radio" name="fieldTypeOptions" id="fieldTypeDropdown" value="multiple" ng-model="customField.field_type">
                             Drop-down list of options
-                          </label>
-                        </div>
-                        <div class="radio">
-                          <label>
-                            <input type="radio" name="fieldTypeOptions" id="fieldTypeRadio" value="radio" ng-model="customField.field_type">
-                            A multiple choice list of options
-                          </label>
-                        </div>
-                        <div class="radio">
-                          <label>
-                            <input type="radio" name="fieldTypeOptions" id="fieldTypeCheckbox" value="checkbox" ng-model="customField.field_type">
-                            A checkbox list of options (applicant can select multiple)
                           </label>
                         </div>
                     </div>
