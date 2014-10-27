@@ -38,8 +38,8 @@
                         {{ getCustomFieldById(section_field.id).field_label }}
                       </label>
                       <div class="col-sm-7" >
-                          <input ng-if="getCustomFieldById(section_field.id).field_type == 'input'" name="{{ getCustomFieldById(section_field.id).field_name }}" type="text" class="form-control">
-                          <textarea ng-if="getCustomFieldById(section_field.id).field_type == 'textarea'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" rows="5"></textarea>
+                          <input ng-if="getCustomFieldById(section_field.id).field_type == 'input'" name="{{ getCustomFieldById(section_field.id).field_name }}" type="text" class="form-control" ng-model="section_field.value">
+                          <textarea ng-if="getCustomFieldById(section_field.id).field_type == 'textarea'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" rows="5" ng-model="section_field.value"></textarea>
                           <span class="help-block">
                             {{ getCustomFieldById(section_field.id).helptext }}
                           </span>
@@ -53,6 +53,7 @@
         </div>
       </div>
     </div>
+    <button class="btn btn-success btn-lg" ng-click="submitApplication()">Submit Application</button>
   {% endverbatim %}
-
+</div>
 {% endblock %}
