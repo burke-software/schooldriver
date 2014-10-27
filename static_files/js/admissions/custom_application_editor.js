@@ -210,14 +210,6 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         });
     };
 
-    $scope.isFieldInput = function(field) {
-        if (field.type === "input") {
-            return true;
-        } else {
-            return false;
-        }
-    };
-
     $scope.removeSectionField = function(section, field) {
         var index_of_field = section.fields.indexOf(field);
         section.fields.splice(index_of_field, 1);
