@@ -6,18 +6,9 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
     $scope.applicant_field_options = [];
     $scope.applicant_integrated_fields = [];
     $scope.integratedField={};
-    $scope.is_custom_field_new = true;
-    $scope.custom_field_current_id = null;
 
-    $scope.customField = {
-        "custom_option" : "custom",
-        "is_field_integrated_with_applicant" : false,
-        "field_choices" : "",
-        "field_type" : "",
-        "field_name" : "",
-        "field_label": "",
-        "helptext" : ""
-    };
+    $scope.applicant_data = {};
+    $scope.applicant_additional_information = [];
 
     $scope.getCustomFieldById = function(field_id) {
         for (var i=0; i < $scope.applicant_field_options.length; i ++ ) {
@@ -85,6 +76,52 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
                     "max_length" : field.max_length,
                 });
             };  
+        });
+    };
+
+    $scope.submitApplication = function() {
+        // first collect all the values from the template:
+        var sections = $scope.application_template.sections;
+        for (section_id in sections) {
+            var section = sections[section_id];
+            for (i in section.fields) {
+                var section_field = section.fields[i];
+                field = $scope.getCustomFieldById(section_field.id)
+                if (field.is_field_integrated_with_applicant === true) {
+                    $scope.applicant_data[field.field_name] = section_field.value;
+                } else if (field.is_field_integrated_with_applicant === false) {
+                    $scope.applicant_additional_information.push({
+                        "question" : field.field_label,
+                        "answer" : section_field.value,
+                    });
+                }  
+            }
+        }
+        
+        // now, let's post the applicant data, and use the response to
+        // post the additional information in separate requests...
+        $http({
+            method: "POST",
+            url: "/api/applicant/",
+            data: $scope.applicant_data
+        }).success(function(data, status, headers, config){
+            // generate a list of fields from the Applicant Django model
+            var applicant_id = data.id
+            for (i in $scope.applicant_additional_information) {
+                // inject the applicant_id into the data 
+                $scope.applicant_additional_information[i].applicant = applicant_id;
+            }
+            $http({
+                method: "POST",
+                url: "/api/applicant-additional-information/",
+                data : $scope.applicant_additional_information,
+            }).success(function(data, status, headers, config){
+                //something on success
+            });
+        }).error(function(data, status, headers, config) {
+            // called asynchronously if an error occurs
+            // or server returns response with an error status.
+            console.log(data);
         });
     };
 
