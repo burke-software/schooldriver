@@ -1,5 +1,5 @@
 from api.tests.api_test_base import APITest
-from ecwsp.admissions.models import Applicant
+from ecwsp.admissions.models import Applicant, ApplicantAdditionalInformation
 
 class ApplicantAPIPostTest(APITest):
 
