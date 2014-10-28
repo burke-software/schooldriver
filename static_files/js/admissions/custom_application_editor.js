@@ -8,6 +8,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
     $scope.integratedField={};
     $scope.is_custom_field_new = true;
     $scope.custom_field_current_id = null;
+    $scope.custom_field_checked = false;
 
     $scope.customField = {
         "custom_option" : "custom",
@@ -16,8 +17,11 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         "field_type" : "",
         "field_name" : "",
         "field_label": "",
-        "helptext" : ""
+        "helptext" : "",
+        "required" : false,
     };
+
+    
 
     $scope.isNewFieldIntegrated = function() {
         if ( $scope.customField.custom_option == 'integrated' ) {
@@ -40,6 +44,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         $scope.customField.is_field_integrated_with_applicant = true;
         $scope.customField.custom_option = 'integrated';
         $scope.customField.field_choices = integrated_field.choices;
+        $scope.customField.required = integrated_field.required;
     };
 
     $scope.getCustomFieldById = function(field_id) {
@@ -51,7 +56,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
             }
         }
     };
-
+    
     $scope.getCustomFieldChoices = function(field_id) {
         var custom_field = $scope.getCustomFieldById(field_id);
         if ( custom_field.is_field_integrated_with_applicant === true) {
@@ -121,7 +126,8 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
             "field_type" : "",
             "field_name" : "",
             "field_label": "",
-            "helptext" : ""
+            "helptext" : "",
+            "required" : false,
         };
     };
 
@@ -187,7 +193,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
                     "label" : field.label,
                     "type" : field.type,
                     "choices" : field.choices,
-                    "max_length" : field.max_length,
+                    "max_length" : field.max_length
                 });
             };  
         });
