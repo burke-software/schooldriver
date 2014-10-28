@@ -396,6 +396,6 @@ Multiple, and Checkbox field types"""
 
 class ApplicantAdditionalInformation(models.Model):
     applicant = models.ForeignKey(Applicant, related_name='additionals')
-    question = models.CharField(blank=True, null=True, max_length=255)
+    custom_field = models.ForeignKey(ApplicantCustomField, null=True)
     answer = models.TextField(blank=True, null=True)
 
