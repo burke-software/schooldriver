@@ -11,15 +11,15 @@ urlpatterns = patterns('',
     (r'^reports/funnel/$', views.funnel),
     (r'^inquiry_form/$', views.inquiry_form),
     url(r'^custom-application-editor/', 
-        TemplateView.as_view(template_name='custom_application_editor.html'), 
+        TemplateView.as_view(template_name='admissions/custom_application_editor.html'), 
         name="custom-application-editor"
         ),
     url(r'^application/', 
-        TemplateView.as_view(template_name='student_application.html'), 
+        TemplateView.as_view(template_name='admissions/student_application.html'), 
         name="student-application"
         ),
     url(r'^review-applications/', 
-        TemplateView.as_view(template_name='review_applications.html'), 
+        TemplateView.as_view(template_name='admissions/review_applications.html'), 
         name="review-applications"
         ),
 )
