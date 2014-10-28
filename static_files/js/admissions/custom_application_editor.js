@@ -27,13 +27,11 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         }
     };
 
-    
-
     $scope.isNewFieldCustom = function() {
         return !$scope.isNewFieldIntegrated();
     };
 
-    $scope.updateIntegratedFieldChoice = function(field) {
+    $scope.updateIntegratedFieldChoice = function() {
         var integrated_field = $scope.integratedField.data;
         $scope.customField.field_name = integrated_field.name;
         var field_type = $scope.get_html_input_type(integrated_field.type);
@@ -41,6 +39,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         $scope.customField.field_label = integrated_field.label;
         $scope.customField.is_field_integrated_with_applicant = true;
         $scope.customField.custom_option = 'integrated';
+        $scope.customField.field_choices = integrated_field.choices;
     };
 
     $scope.getCustomFieldById = function(field_id) {
@@ -51,6 +50,27 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
                 break;
             }
         }
+    };
+
+    $scope.getCustomFieldChoices = function(field_id) {
+        var custom_field = $scope.getCustomFieldById(field_id);
+        if ( custom_field.is_field_integrated_with_applicant === true) {
+            var integrated_field = $scope.getApplicantFieldByFieldName(custom_field.field_name);
+            return integrated_field.choices;
+        } else if (custom_field.is_field_integrated_with_applicant === false ) {
+            if (custom_field.field_choices != "") {
+                var choices = []
+                var choice_array = custom_field.field_choices.split(',');
+                for (i in choice_array) {
+                    choices.push({
+                        "display_name" : choice_array[i],
+                        "value" : choice_array[i]
+                    });
+                }
+                return choices;
+            }
+        }
+        
     };
 
     $scope.getApplicantFieldByFieldName = function(field_name) {
@@ -94,6 +114,15 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
 
     $scope.newCustomFieldButtonClicked = function() {
         $scope.is_custom_field_new = true;
+        $scope.customField = {
+            "custom_option" : "custom",
+            "is_field_integrated_with_applicant" : false,
+            "field_choices" : "",
+            "field_type" : "",
+            "field_name" : "",
+            "field_label": "",
+            "helptext" : ""
+        };
     };
 
     $scope.saveNewCustomField = function() {
@@ -156,7 +185,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
                     "name" : field_name, 
                     "required" : field.required,
                     "label" : field.label,
-                    "type" : field.field_type,
+                    "type" : field.type,
                     "choices" : field.choices,
                     "max_length" : field.max_length,
                 });

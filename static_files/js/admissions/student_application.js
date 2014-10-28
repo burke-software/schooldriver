@@ -6,9 +6,13 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
     $scope.applicant_field_options = [];
     $scope.applicant_integrated_fields = [];
     $scope.integratedField={};
-
     $scope.applicant_data = {};
     $scope.applicant_additional_information = [];
+    $scope.applicationComplete = false;
+
+    $scope.applicationNotComplete = function() {
+        return !$scope.applicationComplete;
+    }
 
     $scope.getCustomFieldById = function(field_id) {
         for (var i=0; i < $scope.applicant_field_options.length; i ++ ) {
@@ -18,6 +22,27 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
                 break;
             }
         }
+    };
+
+    $scope.getCustomFieldChoices = function(field_id) {
+        var custom_field = $scope.getCustomFieldById(field_id);
+        if ( custom_field.is_field_integrated_with_applicant === true) {
+            var integrated_field = $scope.getApplicantFieldByFieldName(custom_field.field_name);
+            return integrated_field.choices;
+        } else if (custom_field.is_field_integrated_with_applicant === false ) {
+            if (custom_field.choices != "") {
+                var choices = []
+                var choice_array = custom_field.choices.split(',');
+                for (i in choice_array) {
+                    choices.push({
+                        "display_name" : choice_array[i],
+                        "value" : choice_array[i]
+                    });
+                }
+                return choices;
+            }
+        }
+        
     };
 
     $scope.getApplicantFieldByFieldName = function(field_name) {
@@ -79,6 +104,8 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
         });
     };
 
+
+
     $scope.submitApplication = function() {
         // first collect all the values from the template:
         var sections = $scope.application_template.sections;
@@ -86,12 +113,12 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
             var section = sections[section_id];
             for (i in section.fields) {
                 var section_field = section.fields[i];
-                field = $scope.getCustomFieldById(section_field.id)
+                var field = $scope.getCustomFieldById(section_field.id)
                 if (field.is_field_integrated_with_applicant === true) {
                     $scope.applicant_data[field.field_name] = section_field.value;
                 } else if (field.is_field_integrated_with_applicant === false) {
                     $scope.applicant_additional_information.push({
-                        "question" : field.field_label,
+                        "custom_field" : section_field.id,
                         "answer" : section_field.value,
                     });
                 }  
@@ -116,7 +143,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
                 url: "/api/applicant-additional-information/",
                 data : $scope.applicant_additional_information,
             }).success(function(data, status, headers, config){
-                //something on success
+                $scope.applicationComplete = true;
             });
         }).error(function(data, status, headers, config) {
             // called asynchronously if an error occurs
