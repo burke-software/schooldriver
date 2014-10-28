@@ -12,7 +12,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
 
     $scope.applicationNotComplete = function() {
         return !$scope.applicationComplete;
-    }
+    };
 
     $scope.getCustomFieldById = function(field_id) {
         for (var i=0; i < $scope.applicant_field_options.length; i ++ ) {
@@ -30,9 +30,9 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
             var integrated_field = $scope.getApplicantFieldByFieldName(custom_field.field_name);
             return integrated_field.choices;
         } else if (custom_field.is_field_integrated_with_applicant === false ) {
-            if (custom_field.choices != "") {
+            if (custom_field.field_choices != "") {
                 var choices = []
-                var choice_array = custom_field.choices.split(',');
+                var choice_array = custom_field.field_choices.split(',');
                 for (i in choice_array) {
                     choices.push({
                         "display_name" : choice_array[i],
