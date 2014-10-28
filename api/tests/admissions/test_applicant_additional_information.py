@@ -1,5 +1,8 @@
 from api.tests.api_test_base import APITest
-from ecwsp.admissions.models import ApplicantAdditionalInformation, Applicant
+from ecwsp.admissions.models import ApplicantAdditionalInformation
+from ecwsp.admissions.models import Applicant
+from ecwsp.admissions.models import ApplicantCustomField
+
 
 class ApplicantAdditionalInformationAPIGetTest(APITest):
 
@@ -10,12 +13,14 @@ class ApplicantAdditionalInformationAPIGetTest(APITest):
             "lname" : "Student",
             "sex" : "M"
         }
+        new_custom_field = ApplicantCustomField()
+        new_custom_field.save()
         previous_count = ApplicantAdditionalInformation.objects.count()
         response = self.client.post('/api/applicant/', data = applicant)
         applicant_id = response.data["id"]
         data = {
             "applicant": applicant_id,
-            "question" : "hello", 
+            "custom_field" : new_custom_field.id, 
             "answer" : "world"
         }
         
@@ -25,17 +30,20 @@ class ApplicantAdditionalInformationAPIGetTest(APITest):
 
     def test_bulm_create_additional_information(self):
         self.teacher_login()
+
         applicant = {
             "fname" : "Timmy",
             "lname" : "Student",
             "sex" : "M"
         }
+        new_custom_field = ApplicantCustomField()
+        new_custom_field.save()
         previous_count = ApplicantAdditionalInformation.objects.count()
         response = self.client.post('/api/applicant/', data = applicant)
         applicant_id = response.data["id"]
         data = [
-            {"applicant": applicant_id, "question" : "hello", "answer" : "world"},
-            {"applicant": applicant_id, "question" : "hello-again", "answer" : "still world"}
+            {"applicant": applicant_id, "custom_field" : new_custom_field.id, "answer" : "world"},
+            {"applicant": applicant_id, "custom_field" : new_custom_field.id, "answer" : "still world"}
         ]
         response = self.client.post('/api/applicant-additional-information/', data)
         print(response)
