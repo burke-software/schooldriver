@@ -179,6 +179,21 @@ class CalculationRuleSubstitution(models.Model):
         if self.operator == '==':
             return value == self.match_value
         raise Exception('CalculationRuleSubstitution with id={} has invalid operator.'.format(self.pk))
+    def as_filter(self, field):
+        # TODO: Compare normalized values?
+        if self.operator == '>':
+            return {u'{}__gt'.format(field): self.match_value}
+        if self.operator == '>='.format(field):
+            return {u'{}__gte'.format(field): self.match_value}
+        if self.operator == '<='.format(field):
+            return {u'{}__lte'.format(field): self.match_value}
+        if self.operator == '<'.format(field):
+            return {u'{}__lt'.format(field): self.match_value}
+        if self.operator == '!='.format(field):
+            return {u'{}__ne'.format(field): self.match_value}
+        if self.operator == '=='.format(field):
+            return {u'{}__exact'.format(field): self.match_value}
+        raise Exception('CalculationRuleSubstitution with id={} has invalid operator.'.format(self.pk))
 
 class Category(models.Model):
     name = models.CharField(max_length=255)

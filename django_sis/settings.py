@@ -89,7 +89,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pagination.middleware.PaginationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'impersonate.middleware.ImpersonateMiddleware',
     'ecwsp.sis.disable.DisableCSRF',
+    'ecwsp.sis.middleware.SocialAuthExceptionMiddleware',
     )
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
@@ -142,7 +144,12 @@ ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
 GRAPPELLI_INDEX_DASHBOARD = 'ecwsp.dashboard.CustomIndexDashboard'
 GRAPPELLI_ADMIN_TITLE = '<img src="/static/images/logo.png"/ style="height: 30px; margin-left: -10px; margin-top: -8px; margin-bottom: -11px;">'
 
-AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
+IMPERSONATE_ALLOW_SUPERUSER = True
+IMPERSONATE_REQUIRE_SUPERUSER = True
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 #LDAP
 LDAP = False
@@ -164,7 +171,6 @@ if GAPPS:
     GAPPS_ALWAY_ADD_GROUPS = False
     AUTHENTICATION_BACKENDS += ('ecwsp.google_auth.backends.GoogleAppsBackend',)
 
-AUTHENTICATION_BACKENDS += ('django_su.backends.SuBackend',)
 
 #CKEDITOR
 CKEDITOR_MEDIA_PREFIX = "/static/ckeditor/"
@@ -412,16 +418,17 @@ TENANT_APPS = (
     'simple_import',
     'djangobower',
     'scaffold_report',
-    'django_su',
     'floppy_gumby_forms',
     'floppyforms',
     'widget_tweaks',
     'django_cached_field',
     'rest_framework',
+    'rest_framework_bulk',
     'api',
     'compressor',
     'constance',
     'constance.backends.database',
+    'impersonate',
 ) + INSTALLED_APPS
 
 INSTALLED_APPS = TENANT_APPS + SHARED_APPS

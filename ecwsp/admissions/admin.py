@@ -13,6 +13,7 @@ from ecwsp.admissions.models import PlaceOfWorship, ApplicationDecisionOption, W
 from ecwsp.admissions.models import BoroughOption, CountryOption, ImmigrationOption, AdmissionLevel
 from ecwsp.admissions.models import Applicant, ApplicantStandardTestResult, ApplicantStandardCategoryGrade
 from ecwsp.admissions.models import ApplicantFile
+from ecwsp.admissions.models import StudentApplicationTemplate
 from ecwsp.admissions.forms import ApplicantForm
 from ecwsp.sis.models import SchoolYear
 
@@ -255,3 +256,7 @@ class ApplicantStandardTestResultAdmin(admin.ModelAdmin):
     search_fields = ['applicant__fname', 'applicant__lname', 'test__name']
 admin.site.register(ApplicantStandardTestResult, ApplicantStandardTestResultAdmin)
 
+class StudentApplicationTemplateAdmin(admin.ModelAdmin):
+    model = StudentApplicationTemplate
+    extra = 0 
+admin.site.register(StudentApplicationTemplate, StudentApplicationTemplateAdmin)

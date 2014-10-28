@@ -179,7 +179,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         ]
         for x in test_data:
             ce = CourseEnrollment.objects.get(user=self.data.student, course_section=x[0])
-            self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), x[2])
+            self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), Decimal(x[2]))
             self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
 
     def test_scaled_average(self):
