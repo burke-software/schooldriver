@@ -19,10 +19,17 @@
 from django.db import models
 from django.db.models import Avg, Count, Max, Min, StdDev, Sum, Variance
 from django.conf import settings
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from datetime import datetime
 from ecwsp.grades.models import Grade
 import logging
+
+from django.contrib.contenttypes.models import ContentType
+try:
+    from django.contrib.contenttypes.generic import GenericForeignKey
+except ImportError:
+    # Changed in Django 1.7
+    from django.contrib.contenttypes.fields import GenericForeignKey
 
 from django.core.exceptions import ImproperlyConfigured
 if not 'ecwsp.benchmarks' in settings.INSTALLED_APPS:
@@ -54,47 +61,6 @@ def benchmark_find_calculation_rule(school_year):
     return rule
 ######################################
 
-# Manage the DB better and get rid of these #
-def benchmark_get_create_or_flush(model_base_or_set, **kwargs):
-    ''' make sure there is one and only one object matching our criteria '''
-
-    # How does it quack?
-    try:
-        manager = model_base_or_set.objects
-    except AttributeError:
-        manager = model_base_or_set
-
-    try:
-        model, created = manager.get_or_create(**kwargs)
-    except manager.model.MultipleObjectsReturned:
-        # unsure why this happens, but it does
-        bad = manager.filter(**kwargs)
-        logging.error('Expected 0 or 1 {} but found {}; flushing them all!'.format(str(manager.model).split("'")[1], bad.count()), exc_info=True)
-        bad.delete()
-        model, created = manager.get_or_create(**kwargs)
-    return model, created
-
-def benchmark_get_or_flush(model_base_or_set, **kwargs):
-    ''' make sure there is at most one object matching our criteria
-    if there are two or more, don't try to guess at the correct one; just delete them '''
-
-    # How does it quack?
-    try:
-        manager = model_base_or_set.objects
-    except AttributeError:
-        manager = model_base_or_set
-
-    try:
-        model = manager.get(**kwargs)
-    except manager.model.MultipleObjectsReturned:
-        # unsure why this happens, but it does
-        bad = manager.filter(**kwargs)
-        logging.error('Expected 1 {} but found {}; flushing them all!'.format(str(manager.model).split("'")[1], bad.count()), exc_info=True)
-        bad.delete()
-        raise manager.model.DoesNotExist
-    return model
-#############################################
-
 OPERATOR_CHOICES = (
     (u'>', u'Greater than'),
     (u'>=', u'Greater than or equal to'),
@@ -124,7 +90,7 @@ class CalculationRule(models.Model):
     def substitute(self, item_or_aggregate, value):
         calculate_as = value
         display_as = None
-        for s in self.substitution_set.filter(apply_to_departments=item_or_aggregate.course_section.department, apply_to_categories=item_or_aggregate.category):
+        for s in self.substitution_set.filter(apply_to_departments=item_or_aggregate.course_section.course.department, apply_to_categories=item_or_aggregate.category):
             if s.applies_to(value):
                 if s.calculate_as is not None:
                     calculate_as = s.calculate_as
@@ -326,7 +292,7 @@ class Mark(models.Model):
         # mark (attribute) in the Mark (model) that's linked to an Item but not
         # to any Demonstration.
         # This way, reports can be run using `demonstration=None` as a filter
-        # to include only one mark per Student per Assignment.
+        # to include only one mark per Student per Item (assignment).
         if self.demonstration is not None and \
         self.item.category.allow_multiple_demonstrations:
             Method = self.item.category.aggregation_method
@@ -335,8 +301,8 @@ class Mark(models.Model):
             ).exclude(
                 demonstration=None
             ).aggregate(Method('mark')).popitem()[1]
-            aggregated_model, created = benchmark_get_create_or_flush(
-                Mark, student=self.student, item=self.item, demonstration=None
+            aggregated_model, created = Mark.objects.get_or_create(
+                student=self.student, item=self.item, demonstration=None
             )
             aggregated_model.mark = aggregated_mark
             aggregated_model.save()
@@ -376,86 +342,78 @@ class Mark(models.Model):
         return unicode(self.mark) + u' - ' + unicode(self.student) + u'; ' + unicode(self.item)
     
 class Aggregate(models.Model):
+    ''' An abstract base class. Please instantiate one of the descendents. '''
     name = models.CharField(max_length=255)
-    manual_mark = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     cached_value = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     cached_substitution = models.CharField(max_length=16, blank=True, null=True)
-    student = models.ForeignKey('sis.Student', blank=True, null=True)
-    course_section = models.ForeignKey('schedule.CourseSection', blank=True, null=True)
-    category = models.ForeignKey('Category', blank=True, null=True)
-    marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
+    # The old single-model Aggregate system allowed for multi-student averages,
+    # but that capability was unused and has been removed for simplicity.
+    student = models.ForeignKey('sis.Student')
     points_possible = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+
     class Meta:
-        unique_together = ('student', 'course_section', 'category', 'marking_period')
-
-    def __getattribute__(self, name):
-        ''' Sometimes people use the gradebook for one marking period, but
-        something else for another. This is a fairly awful way to display the
-        correct course section average in those circumstances. Eventually, we will stop
-        calculating course section averages altogether and leave that work to
-        ecwsp.grades. '''
-        get_ = lambda x: super(Aggregate, self).__getattribute__(x)
-        if name == 'cached_value' and \
-            get_('cached_value') is None and \
-            get_('category_id') is None and \
-            get_('course_section_id') is not None and \
-            get_('marking_period_id') is not None and \
-            get_('student_id') is not None:
-            try:
-                grade = Grade.objects.get(
-                    marking_period_id=get_('marking_period_id'),
-                    course_section_id=get_('course_section_id'),
-                    student_id=get_('student_id'))
-                return grade.grade
-            except Grade.DoesNotExist:
-                pass
-        return super(Aggregate, self).__getattribute__(name)
-
-    def _really_get(self, name):
-        ''' Bypass awful __getattribute__ hack '''
-        return super(Aggregate, self).__getattribute__(name)
+        abstract = True
 
     @property
     def calculation_rule(self):
         ''' Find the CalculationRule that applies to this Aggregate '''
-        if self.marking_period is not None:
+        # We are an abstract class. Anyone here must be an instance of our
+        # descendent. The descendent may or may not have certain attributes.
+        try:
             return benchmark_find_calculation_rule(self.marking_period.school_year)
-        if self.course_section is not None:
+        except AttributeError:
+            pass
+        try:
             return benchmark_find_calculation_rule(
-                self.course_section.marking_period.all()[0].school_year)
+                self.course_section.marking_period.first().school_year)
+        except AttributeError:
+            pass
         # implicit return None
 
-    @property
-    def mark_set(self):
-        ''' All the marks needed to calculate this aggregate '''
+    def mark_set(self, items=None):
+        ''' All the Marks needed to calculate this Aggregate. Set items to
+        consider only Marks belonging to those Items. '''
         item_fields = ('course_section', 'category', 'marking_period')
         criteria = {'student_id': self.student.pk}
         for field in item_fields:
             field += '_id'
-            criterium = getattr(self, field)
-            if criterium is not None:
+            try:
+                criterium = getattr(self, field)
                 criteria['item__' + field] = criterium
-        return Mark.objects.filter(**criteria).exclude(mark=None)
+            except AttributeError:
+                pass
+        marks = Mark.objects.filter(**criteria).exclude(mark=None)
+        if items is not None:
+            marks = marks.filter(item__in=items)
+        return marks
 
-    def mark_values_list(self, normalize=False):
-        ''' A list of tuples of (mark, display_as, points_possible) for all the marks
-        needed to calculate this aggregate '''
+    def mark_values_list(self, normalize=False, items=None):
+        ''' A list of tuples of (mark, display_as, points_possible) for all the
+        Marks needed to calculate this aggregate. Set normalize=True to return
+        mark / points_possible instead of just mark. Set items to return only
+        data for Marks belonging to the specified Items. '''
         rule = self.calculation_rule
-        if self.category is not None and self.category.allow_multiple_demonstrations:
-            if normalize:
-                mark_list = self.mark_set.values('item')\
-                        .annotate(self.category.aggregation_method('normalized_mark'))\
-                        .values_list('normalized_mark__max')
-            else:
-                mark_list = self.mark_set.values('item')\
-                        .annotate(self.category.aggregation_method('mark'))\
-                        .values_list('mark__max', 'item__points_possible')
-        else:
-            if normalize:
-                mark_list = self.mark_set.values_list('normalized_mark')
-            else:
-                mark_list = self.mark_set.values_list('mark', 'item__points_possible')
         if normalize:
+            mark_field = 'normalized_mark'
+            # Normalization implies one point possible. We don't need to read
+            # from the database what we already know.
+            points_possible_field = ()
+        else:
+            mark_field = 'mark'
+            points_possible_field = ('item__points_possible',)
+        try:
+            allow_multiple_demonstrations = self.category.allow_multiple_demonstrations
+        except AttributeError:
+            allow_multiple_demonstrations = False
+        if allow_multiple_demonstrations:
+            mark_list = self.mark_set(items).values('item').annotate(
+                aggregated_mark=self.category.aggregation_method(mark_field)
+            ).values_list('aggregated_mark', *points_possible_field)
+        else:
+            mark_list = self.mark_set(items).values_list(mark_field,
+                *points_possible_field)
+        if normalize:
+            # Normalization implies one point possible.
             # TODO: handle substitutions
             return [(x[0], 'TODO!', 1) for x in mark_list]
         else:
@@ -465,67 +423,26 @@ class Aggregate(models.Model):
                 final_list.append((calculate_as, display_as, points_possible))
             return final_list
 
-    def depends_on(self):
-        ''' Returns all Aggregates, in the form of [(Aggregate, created, weight),], immediately required to calculate
-        this Aggregate. Not recursive; multiple levels of dependency are NOT considered. '''
-        aggregate_tuples = []
-        ours = [self.student_id, self.course_section_id,
-                self.category_id, self.marking_period_id]
-        ours = [x is not None for x in ours]
-        if ours == [True, True, True, True]:
-            ''' As specific as it gets. Average for one category
-            in one course section during one marking period. '''
-            return aggregate_tuples
-        if ours == [True, True, True, False]:
-            ''' Average for one category across the entire duration of the course section. ''' 
-            # Not currently used? Gets created by gradebook_recalculate_on_item_change()
-            marking_periods = self.course_section.marking_period.all()
-            for marking_period in marking_periods:
-                aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
-                    course_section_id=self.course_section_id, category_id=self.category_id, marking_period_id=marking_period.pk) + (marking_period.weight,))
-            return aggregate_tuples
-        if ours == [True, True, False, True]:
-            ''' Course section grade for one marking period. '''
-            rule = self.calculation_rule
-            per_course_categories = rule.per_course_category_set.filter(apply_to_departments=self.course_section.department)
-            for per_course_category in per_course_categories:
-                aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
-                    course_section_id=self.course_section_id, category_id=per_course_category.category_id,
-                    marking_period_id=self.marking_period_id) + (per_course_category.weight,))
-            return aggregate_tuples
-        if ours == [True, True, False, False]:
-            ''' Overall course section grade, for the entire duration of the course section. '''
-            marking_periods = self.course_section.marking_period.all()
-            for marking_period in marking_periods:
-                aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
-                    course_section_id=self.course_section_id, category_id=None, marking_period_id=marking_period.pk) + (marking_period.weight,))
-            return aggregate_tuples
-        if ours == [True, False, True, True]:
-            ''' Average of a category across all course sections for one marking period.
-            Some schools count it in GPAs as if it were a course section. '''
-            rule = self.calculation_rule
-            departments = rule.category_as_course_set.get(category_id=self.category_id).include_departments.all()
-            course_sections = self.student.coursesection_set.filter(marking_period=self.marking_period_id,
-                course__department__in=departments, course__graded=True, course__course_type__award_credits=True)
-            for course_section in course_sections:
-                weight = Decimal(course_section.credits) / course_section.marking_period.count()
-                aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
-                    course_section_id=course_section.pk, category_id=self.category_id, marking_period_id=self.marking_period_id) + (weight,))
-            return aggregate_tuples
-        raise Exception("Aggregate type unrecognized.")
-
-    def calculate(self, recalculate_all=False):
+    def calculate(self, recalculate_all=False, items=None):
+        ''' Calculate the Aggregate. Will not recursively recalculate the
+        Aggregates returned by depends_on() unless recalculate_all=True.
+        Specifying items causes a one-off calculation restricted to the
+        specified items. One-off calculations are NOT saved. Otherwise, the
+        calculation result is saved automatically. '''
+        if items is not None:
+            # Cannot rely on anything pre-calculated when doing a one-off
+            recalculate_all = True
         numerator = denominator = Decimal(0)
         aggregate_tuples = self.depends_on()
         self.cached_substitution = None
         if not len(aggregate_tuples):
             # Base case: I depend on no Aggregate; calculate from Marks
-            self.cached_value, self.cached_substitution = self.mean()
+            self.cached_value, self.cached_substitution = self.mean(items=items)
         else:
             for aggregate, created, weight in aggregate_tuples:
                 # I depend on other Aggregates
                 if created or recalculate_all:
-                    aggregate.calculate(recalculate_all)
+                    aggregate.calculate(recalculate_all, items)
                 if aggregate.cached_value is not None:
                     numerator += weight * aggregate.cached_value
                     denominator += weight
@@ -537,53 +454,46 @@ class Aggregate(models.Model):
                 self.cached_value = numerator / denominator
             else:
                 self.cached_value = None
-        self.save()
+        # Do NOT save one-off calculation results
+        if items is None:
+            self.save()
 
     def _e_pluribus_unum(self, plures):
-        ''' Return one from many (display_as substitutions), provided the many have only one unique value
-        after excluding None and the empty string '''
+        ''' Return one from many (display_as substitutions), provided the many
+        have only one unique value after excluding None and the empty string '''
         plures = set(plures).difference(set((None, '')))
         if len(plures) == 1:
             unus = plures.pop()
         elif len(plures) == 0:
             unus = None
         else:
-            raise Exception('Contradictory display_as substitutions for Aggregate {}: {}'.format(self.pk, plures))
+            raise Exception(
+                'Contradictory display_as substitutions for {} {}: {}'.format(
+                    type(self).__name__,
+                    self.pk,
+                    plures
+                )
+            )
         return unus
 
     def _fallback_points_possible(self):
         if self.points_possible is not None:
             return self.points_possible
-        if self.category is not None and self.category.fixed_points_possible is not None:
-            return self.category.fixed_points_possible
+        try:
+            if self.category.fixed_points_possible is not None:
+                return self.category.fixed_points_possible
+        except AttributeError:
+            pass
         rule = self.calculation_rule
         if rule is not None and rule.points_possible is not None:
             return rule.points_possible
 
-    def max(self):
-        mark_values_list = self.mark_values_list(normalize=True)
-        if not len(mark_values_list):
-            return None, None
-        mark, display_as, item_points_possible = zip(*mark_values_list)
-        display_as = self._e_pluribus_unum(display_as)
-        if len(mark):
-            return (Decimal(max(mark)) * self._fallback_points_possible(), display_as)
-        else:
-            return None, display_as
-
-    def min(self):
-        mark_values_list = self.mark_values_list(normalize=True)
-        if not len(mark_values_list):
-            return None, None
-        mark, display_as, item_points_possible = zip(*mark_values_list)
-        display_as = self._e_pluribus_unum(display_as)
-        if len(mark):
-            return Decimal(min(mark)) * self._fallback_points_possible()
-        else:
-            return None, display_as
-
-    def mean(self, normalize=False):
-        mark_values_list = self.mark_values_list(normalize)
+    def mean(self, normalize=False, items=None):
+        ''' Calculate the mean of constituent Marks. Only valid for Aggregates
+        that do not depend on other Aggregates. Set normalize=True to treat all
+        Marks equally, regardless of points_possible. Set items to consider only
+        Marks belonging to the specified subset of Items. '''
+        mark_values_list = self.mark_values_list(normalize, items)
         if not len(mark_values_list):
             return None, None
         mark, display_as, item_points_possible = zip(*mark_values_list)
@@ -594,36 +504,277 @@ class Aggregate(models.Model):
         else:
             return None, display_as
 
+    # Aggregate.calculate() always uses mean(). Perhaps someone would like to
+    # use max() or min() in the future. Do not confuse these with
+    # Category.demonstration_aggregation_method, which can be set by the user
+    # already. If you implement max() or min(), make sure it calls
+    # mark_values_list() with normalize=True.
+
+    def pretty(self, omit_substitutions=False):
+        ''' Return a presentable representation. A cached_substitution overrides
+        a cached_value unless omit_substitutions=True. '''
+        if not omit_substitutions and self.cached_substitution is not None:
+            return self.cached_substitution
+        elif self.cached_value is not None:
+            try:
+                category = self.category
+            except AttributeError:
+                category = None
+            if category is not None and category.display_scale is not None:
+                output = (
+                    self.cached_value / self._fallback_points_possible() *
+                    category.display_scale
+                )
+                output = '{}{}'.format(output.quantize(
+                    Decimal(10) ** (-1 * self.calculation_rule.decimal_places),
+                    ROUND_HALF_UP
+                ), category.display_symbol)
+            else:
+                output = self.cached_value.quantize(
+                    Decimal(10) ** (-1 * self.calculation_rule.decimal_places),
+                    ROUND_HALF_UP
+                )
+            return output
+        # implicit return None
+
+class CourseSectionAggregate(Aggregate):
+    ''' Overall course section grade, for the entire duration of the
+    course section. '''
+    course_section = models.ForeignKey('schedule.CourseSection')
+
+    class Meta:
+        unique_together = ('student', 'course_section')
+
+    def depends_on(self):
+        ''' Returns all Aggregates, in the form of 
+        [(Aggregate, created, weight),], immediately required to calculate
+        this Aggregate. Not recursive; multiple levels of dependency are NOT
+        considered. '''
+        aggregate_tuples = []
+        marking_periods = self.course_section.marking_period.all()
+        for marking_period in marking_periods:
+            aggregate_tuples.append(
+                CourseSectionMarkingPeriodAggregate.objects.get_or_create(
+                    student_id=self.student_id,
+                    course_section_id=self.course_section_id,
+                    marking_period_id=marking_period.pk
+                ) + (marking_period.weight,)
+            )
+        return aggregate_tuples
+
+    def __unicode__(self):
+        return u'{} - {}: {}'.format(
+            self.student,
+            self.course_section,
+            self.pretty()
+        )
+
+class CourseSectionCategoryAggregate(Aggregate):
+    ''' Average for one category across the entire duration of the course section. ''' 
+    course_section = models.ForeignKey('schedule.CourseSection')
+    category = models.ForeignKey('Category')
+
+    class Meta:
+        unique_together = ('student', 'course_section', 'category')
+        
+    def depends_on(self):
+        ''' Returns all Aggregates, in the form of 
+        [(Aggregate, created, weight),], immediately required to calculate
+        this Aggregate. Not recursive; multiple levels of dependency are NOT
+        considered. '''
+        aggregate_tuples = []
+        marking_periods = self.course_section.marking_period.all()
+        for marking_period in marking_periods:
+            aggregate_tuples.append(
+                CourseSectionCategoryMPAggregate.objects.get_or_create(
+                    student_id=self.student_id,
+                    course_section_id=self.course_section_id,
+                    category_id=self.category_id,
+                    marking_period_id=marking_period.pk
+                ) + (marking_period.weight,)
+            )
+        return aggregate_tuples
+
+    def __unicode__(self):
+        return u'{} - {} - {}: {}'.format(
+            self.student,
+            self.course_section,
+            self.category,
+            self.pretty()
+        )
+
+class CourseSectionCategoryMPAggregate(Aggregate):
+    ''' As specific as it gets. Average for one category in one course section
+    during one marking period. Name mangled because of six-year-old Django bug:
+    https://code.djangoproject.com/ticket/8162 '''
+    course_section = models.ForeignKey('schedule.CourseSection')
+    category = models.ForeignKey('Category')
+    marking_period = models.ForeignKey('schedule.MarkingPeriod')
+
+    class Meta:
+        unique_together = ('student', 'course_section', 'category', 'marking_period')
+
+    def depends_on(self):
+        ''' Returns all Aggregates, in the form of 
+        [(Aggregate, created, weight),], immediately required to calculate
+        this Aggregate. Not recursive; multiple levels of dependency are NOT
+        considered. '''
+        return []
+
+    def __unicode__(self):
+        return u'{} - {} - {} - {}: {}'.format(
+            self.student,
+            self.course_section,
+            self.category,
+            self.marking_period,
+            self.pretty()
+        )
+
+class CourseSectionMarkingPeriodAggregate(Aggregate):
+    ''' Course section grade for one marking period. '''
+    course_section = models.ForeignKey('schedule.CourseSection')
+    marking_period = models.ForeignKey('schedule.MarkingPeriod')
+
+    class Meta:
+        unique_together = ('student', 'course_section', 'marking_period')
+
+    def depends_on(self):
+        ''' Returns all Aggregates, in the form of 
+        [(Aggregate, created, weight),], immediately required to calculate
+        this Aggregate. Not recursive; multiple levels of dependency are NOT
+        considered. '''
+        aggregate_tuples = []
+        rule = self.calculation_rule
+        per_course_categories = rule.per_course_category_set.filter(
+                apply_to_departments=self.course_section.course.department)
+        for per_course_category in per_course_categories:
+            aggregate_tuples.append(
+                CourseSectionCategoryMPAggregate.objects.get_or_create(
+                    student_id=self.student_id,
+                    course_section_id=self.course_section_id,
+                    category_id=per_course_category.category_id,
+                    marking_period_id=self.marking_period_id
+                ) + (per_course_category.weight,)
+            )
+        return aggregate_tuples
+
+    def _really_get(self, name):
+        ''' Bypass awful __getattribute__ hack '''
+        return super(Aggregate, self).__getattribute__(name)
+
+    def __getattribute__(self, name):
+        ''' Sometimes people use the gradebook for one marking period, but
+        something else for another. This is a fairly awful way to display the
+        correct course section average in those circumstances. Eventually, we will stop
+        calculating course section averages altogether and leave that work to
+        ecwsp.grades. '''
+        if name == 'cached_value' and self._really_get('cached_value') is None:
+            try:
+                grade = Grade.objects.get(
+                    marking_period_id=self._really_get('marking_period_id'),
+                    course_section_id=self._really_get('course_section_id'),
+                    student_id=self._really_get('student_id'))
+                return grade.grade
+            except Grade.DoesNotExist:
+                pass
+        return super(Aggregate, self).__getattribute__(name)
+
     def _copy_to_grade(self):
+        ''' Copy this average to grades.Grade '''
         # Bypass awful __getattribute__ hack. If we're here, we're the
         # authority, and grades.Grade must defer to us.
         this_cached_value = self._really_get('cached_value')
         this_cached_substitution = self._really_get('cached_substitution')
-        # temporary(?) integration with the rest of sword
+        # If the gradebook will never be decoupled from the rest of Schooldriver,
+        # CourseSectionMarkingPeriodAggregate should be removed entirely.
+        # The per-marking-period course section averages then be stored directly
+        # in grades.Grade instead of being copied from here.
         g, g_created = Grade.objects.get_or_create(student=self.student,
             course_section=self.course_section,
             marking_period=self.marking_period,
             override_final=False)
-        # set the letter grade if it exists
+        # Set the letter grade if it exists
         if this_cached_substitution is not None:
-            # FIDDLESTICKS... INC does not fit in the column
-            letter_grade_max_length = Grade._meta.get_field_by_name('letter_grade')[0].max_length
+            # Truncate the substitution so it fits into the letter_grade column
+            letter_grade_max_length = Grade._meta.get_field_by_name(
+                'letter_grade')[0].max_length
             g.letter_grade = this_cached_substitution[:letter_grade_max_length]
         else:
             g.letter_grade = None
-        # always set the numeric grade
+        # Always set the numeric grade
         grade_max_value = Grade._meta.get_field_by_name('grade')[0]
         # whee...
-        grade_max_value = 10 ** (grade_max_value.max_digits - grade_max_value.decimal_places) - 10 ** (-1 * grade_max_value.decimal_places)
+        grade_max_value = 10 ** (
+            grade_max_value.max_digits - grade_max_value.decimal_places
+        ) - 10 ** (-1 * grade_max_value.decimal_places)
         if this_cached_value > grade_max_value:
-            # people abuse points_possible (set marks way above it),
+            # People abuse points_possible by setting marks way beyond it,
             # either to give out extra credit or because they are just screwing around.
-            # don't attempt to set a Grade larger than the maximum permissable value
+            # Don't attempt to set a grade larger than the maximum permissable value
             g.grade = grade_max_value
         else:
             g.grade = this_cached_value
         g.save()
         return g, g_created
+
+    def calculate(self, *args, **kwargs):
+        try:
+            copy_to_grade = kwargs.pop('copy_to_grade')
+        except KeyError:
+            copy_to_grade = False
+        super(CourseSectionMarkingPeriodAggregate, self).calculate(
+            *args, **kwargs)
+        # Make sure to NOT overwrite grades in the special course sections that
+        # hold category-as-course averages
+        if copy_to_grade and not CalculationRuleCategoryAsCourse.objects.filter(
+            special_course_section=self.course_section
+        ).exists():
+            self._copy_to_grade()
+
+    def __unicode__(self):
+        return u'{} - {} - {}: {}'.format(
+            self.student,
+            self.course_section,
+            self.marking_period,
+            self.pretty()
+        )
+
+class CategoryMarkingPeriodAggregate(Aggregate):
+    ''' Average of a category across all course sections for one marking period.
+    Some schools count it in GPAs as if it were a course section. '''
+    category = models.ForeignKey('Category')
+    marking_period = models.ForeignKey('schedule.MarkingPeriod')
+
+    class Meta:
+        unique_together = ('student', 'category', 'marking_period')
+
+    def depends_on(self):
+        ''' Returns all Aggregates, in the form of 
+        [(Aggregate, created, weight),], immediately required to calculate
+        this Aggregate. Not recursive; multiple levels of dependency are NOT
+        considered. '''
+        aggregate_tuples = []
+        rule = self.calculation_rule
+        departments = rule.category_as_course_set.get(
+            category_id=self.category_id
+        ).include_departments.all()
+        course_sections = self.student.coursesection_set.filter(
+            marking_period=self.marking_period_id,
+            course__department__in=departments,
+            course__graded=True,
+            course__course_type__award_credits=True
+        )
+        for course_section in course_sections:
+            weight = Decimal(course_section.credits) / course_section.marking_period.count()
+            aggregate_tuples.append(
+                CourseSectionCategoryMPAggregate.objects.get_or_create(
+                    student_id=self.student_id,
+                    course_section_id=course_section.pk,
+                    category_id=self.category_id,
+                    marking_period_id=self.marking_period_id
+                ) + (weight,)
+            )
+        return aggregate_tuples
 
     def _copy_to_special_course_section(self):
         special_course_section = self.calculation_rule.category_as_course_set.get(
@@ -641,29 +792,27 @@ class Aggregate(models.Model):
         return g, g_created
 
     def save(self, *args, **kwargs):
-        ours = [self.student_id, self.course_section_id,
-                self.category_id, self.marking_period_id]
-        ours = [x is not None for x in ours]
-        if ours == [True, True, False, True]:
-            ''' CourseSection grade for one marking period. '''
-            if not CalculationRuleCategoryAsCourse.objects.filter(
-                special_course_section=self.course_section
-            ).exists():
-                # Don't overwite the category-as-course grades!
-                self._copy_to_grade()
-        if ours == [True, False, True, True]:
-            ''' Average of a category across all course sections for one marking period.
-            Some schools count it in GPAs as if it were a course section. '''
-            self._copy_to_special_course_section()
+        self._copy_to_special_course_section()
         super(Aggregate, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return self.name # not useful
+        return u'{} - {} - {}: {}'.format(
+            self.student,
+            self.category,
+            self.marking_period,
+            self.pretty()
+        )
 
 class AggregateTask(models.Model):
     ''' A Celery task in the process of recalculating an Aggregate '''
-    aggregate = models.ForeignKey('Aggregate')
+    # https://docs.djangoproject.com/en/dev/ref/contrib/contenttypes/#generic-relations
+    # Don't mess with the next two fields directly. Use content_object instead.
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    # content_object is our instantiated descendent of the abstract Aggregate
+    # class. Have at it.
+    content_object = GenericForeignKey('content_type', 'object_id')
     task_id = models.CharField(max_length=36)
     timestamp = models.DateTimeField(default=datetime.now)
     class Meta:
-        unique_together = ('aggregate', 'task_id')
+        unique_together = ('content_type', 'object_id', 'task_id')

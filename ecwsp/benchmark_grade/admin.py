@@ -1,15 +1,30 @@
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
-
-from ecwsp.benchmark_grade.models import Category, Item, Demonstration, Mark, Aggregate
-from ecwsp.benchmark_grade.models import CalculationRulePerCourseCategory, CalculationRuleCategoryAsCourse, CalculationRuleSubstitution, CalculationRule, AssignmentType 
-
+from ecwsp.benchmark_grade.models import Category, Item, Demonstration, Mark
+from ecwsp.benchmark_grade.models import (
+    CourseSectionAggregate,
+    CourseSectionCategoryAggregate,
+    CourseSectionCategoryMPAggregate,
+    CourseSectionMarkingPeriodAggregate,
+    CategoryMarkingPeriodAggregate
+)
+from ecwsp.benchmark_grade.models import (
+    CalculationRulePerCourseCategory,
+    CalculationRuleCategoryAsCourse,
+    CalculationRuleSubstitution,
+    CalculationRule,
+    AssignmentType
+)
 import reversion
 
 admin.site.register(Category)
 admin.site.register(Item, reversion.VersionAdmin)
 admin.site.register(Demonstration)
-admin.site.register(Aggregate)
+admin.site.register(CourseSectionAggregate)
+admin.site.register(CourseSectionCategoryAggregate)
+admin.site.register(CourseSectionCategoryMPAggregate)
+admin.site.register(CourseSectionMarkingPeriodAggregate)
+admin.site.register(CategoryMarkingPeriodAggregate)
 admin.site.register(AssignmentType)
 
 class MarkAdmin(reversion.VersionAdmin):

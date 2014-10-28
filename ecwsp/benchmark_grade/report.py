@@ -10,8 +10,12 @@ from ecwsp.work_study.models import StudentWorker
 from ecwsp.sis.uno_report import uno_save
 from ecwsp.schedule.models import MarkingPeriod, CourseSection
 from ecwsp.grades.models import StudentMarkingPeriodGrade
-from ecwsp.benchmark_grade.models import Category, Item, Aggregate, Demonstration
-from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule, gradebook_get_average
+from ecwsp.benchmark_grade.models import Category, Item, Demonstration
+from ecwsp.benchmark_grade.models import (
+    CourseSectionCategoryMPAggregate,
+    CourseSectionMarkingPeriodAggregate
+)
+from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule
 from ecwsp.benchmark_grade.views import gradebook
 
 import tempfile
@@ -64,7 +68,14 @@ def get_benchmark_report_card_data(report_context, appy_context, students):
         student.count_missing_by_category_name = {}
         student.count_passing_by_category_name = {}
         for course_section in student.year_course_sections:
-            course_section.average = gradebook_get_average(student, course_section, None, marking_period, None, omit_substitutions = omit_substitutions)
+            agg, created = CourseSectionMarkingPeriodAggregate.objects.get_or_create(
+                student=student,
+                course_section=course_section,
+                marking_period=marking_period
+            )
+            if created:
+                agg.calculate()
+            course_section.average = agg.pretty(omit_substitutions)
             course_section.current_marking_periods = course_section.marking_period.filter(start_date__lt=for_date).order_by('start_date')
             course_section.categories = Category.objects.filter(item__course_section=course_section, item__mark__student=student).distinct()
             course_section.category_by_name = {}
@@ -79,7 +90,16 @@ def get_benchmark_report_card_data(report_context, appy_context, students):
                 category.overall_count_passing = 0
                 for course_section_marking_period in course_section.current_marking_periods:
                     course_section_marking_period.category = category
-                    course_section_marking_period.category.average = gradebook_get_average(student, course_section, category, course_section_marking_period, None, omit_substitutions = omit_substitutions)
+                    agg, created = CourseSectionCategoryMPAggregate.objects.get_or_create(
+                        student=student,
+                        course_section=course_section,
+                        category=category,
+                        marking_period=course_section_marking_period
+                    )
+                    if created:
+                        agg.calculate()
+                    course_section_marking_period.category.average = agg.pretty(
+                        omit_substitutions)
                     items = Item.objects.filter(course_section=course_section, marking_period=course_section_marking_period, category=category, mark__student=student).annotate(best_mark=Max('mark__mark')).exclude(best_mark=None)
                     course_section_marking_period.category.count_total = items.exclude(best_mark=None).distinct().count()
                     course_section_marking_period.category.count_missing = items.filter(best_mark__lt=PASSING_GRADE).distinct().count()
@@ -178,22 +198,18 @@ def student_incomplete_course_sections(request):
     from ecwsp.work_study.models import StudentWorker
 
     AGGREGATE_CRITERIA = {'category__name': 'Standards', 'cached_substitution': 'INC'}
+    AGGREGATE_MODEL = CourseSectionCategoryMPAggregate
 
-    #school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
     school_year = SchoolYear.objects.get(active_year=True)
-    '''
-    if inverse:
-        method = Student.objects.exclude
-    else:
-        method = Student.objects.filter
-    students = method(aggregate__in=Aggregate.objects.filter(course__marking_period__school_year=school_year, **AGGREGATE_CRITERIA).distinct()).distinct()
-    students = students.filter(inactive=False).order_by('year', 'lname', 'fname')
-    '''
     students = Student.objects.filter(is_active=True).order_by('year', 'last_name', 'first_name')
     data = []
     titles = ['Last Name', 'First Name', 'Year', 'Work Day', 'Incomplete Course Sections']
     for student in students:
-        aggs = Aggregate.objects.filter(student=student, marking_period__school_year=school_year, **AGGREGATE_CRITERIA).distinct().order_by('marking_period__start_date')
+        aggs = AGGREGATE_MODEL.objects.filter(
+            student=student,
+            marking_period__school_year=school_year,
+            **AGGREGATE_CRITERIA
+        ).distinct().order_by('marking_period__start_date')
         # make sure the student is actually enrolled in these course sections
         aggs = aggs.filter(course_section__courseenrollment__user=student)
         if inverse and aggs.count():
@@ -251,7 +267,6 @@ def count_items_by_category_across_course_sections(year_category_names, current_
     if not inverse:
         titles.append('Course Section')
         for c in all_categories: titles.append(category_heading_format.format(c.name))
-    #school_year = SchoolYear.objects.filter(start_date__lt=date.today()).order_by('-start_date')[0]
     school_year = SchoolYear.objects.get(active_year=True)
     marking_period = school_year.markingperiod_set.filter(show_reports=True, start_date__lt=date.today()).order_by('-start_date')[0]
 

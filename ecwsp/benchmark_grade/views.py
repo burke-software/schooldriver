@@ -7,17 +7,40 @@ from django.db.models import Q, Max, Count, Avg
 from django.db import transaction
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
+from django.contrib.contenttypes.models import ContentType
 
 from ecwsp.sis.models import SchoolYear, Student, Faculty
 from ecwsp.schedule.models import CourseSection, MarkingPeriod
 from ecwsp.grades.models import Grade
 from ecwsp.grades.forms import GradeUpload
 from ecwsp.administration.models import Configuration
-from ecwsp.benchmark_grade.models import Category, Mark, Aggregate, Item, Demonstration, CalculationRule, AggregateTask, CalculationRulePerCourseCategory
-from ecwsp.benchmark_grade.forms import GradebookFilterForm, ItemForm, DemonstrationForm, FillAllForm
+from ecwsp.benchmark_grade.models import (
+    Category,
+    Mark,
+    Item,
+    Demonstration,
+    CalculationRule,
+    AggregateTask,
+    CalculationRulePerCourseCategory
+)
+from ecwsp.benchmark_grade.models import (
+    CourseSectionAggregate,
+    CourseSectionCategoryAggregate,
+    CourseSectionMarkingPeriodAggregate,
+    CourseSectionCategoryMPAggregate
+)
+from ecwsp.benchmark_grade.forms import (
+    GradebookFilterForm,
+    ItemForm,
+    DemonstrationForm,
+    FillAllForm
+)
 from ecwsp.benchmarks.models import Benchmark
-from ecwsp.benchmark_grade.utility import gradebook_get_average, gradebook_get_average_and_pk, gradebook_recalculate_on_item_change, gradebook_recalculate_on_mark_change
-from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule
+from ecwsp.benchmark_grade.utility import (
+    gradebook_recalculate_on_item_change,
+    gradebook_recalculate_on_mark_change,
+    benchmark_find_calculation_rule
+)
 
 from decimal import Decimal
 import logging
@@ -90,6 +113,8 @@ def gradebook(request, course_section_id, for_export=False):
     students = Student.objects.filter(is_active=True, coursesection=course_section)
     items = Item.objects.filter(course_section=course_section)
     filtered = False
+    # Some filters can take advantage of cached Aggregate values. Others have
+    # no relation to normal calculations and must be made as temporary one-offs.
     temporary_aggregate = False
     totals = {
         'filtered_average': Decimal(0),
@@ -149,7 +174,13 @@ def gradebook(request, course_section_id, for_export=False):
         filter_form.update_querysets(course_section)
         
     # make a note of any aggregates pending recalculation
-    pending_aggregate_pks = Aggregate.objects.filter(course_section=course_section, aggregatetask__in=AggregateTask.objects.all()).values_list('pk', flat=True).distinct()
+    content_type = ContentType.objects.get_for_model(CourseSectionAggregate)
+    pending_aggregate_pks = CourseSectionAggregate.objects.filter(
+        course_section=course_section,
+        pk__in=AggregateTask.objects.filter(
+            content_type=content_type
+        ).values_list('object_id', flat=True)
+    ).values_list('pk', flat=True)
     
     # Freeze these now in case someone else gets in here!
     # TODO: something that actually works. all() does not evaluate a QuerySet.
@@ -185,19 +216,52 @@ def gradebook(request, course_section_id, for_export=False):
             mark.category_id = mark.item.category_id
         
         student.marks = student_marks
-        student.average, student.average_pk = gradebook_get_average_and_pk(student, course_section, None, None, None)
+        agg, created = CourseSectionAggregate.objects.get_or_create(
+            student=student,
+            course_section=course_section
+        )
+        if created:
+            agg.calculate()
+        student.average = agg.pretty()
+        student.average_pk = agg.pk
         if student.average is not None:
-            totals['course_section_average'] += Aggregate.objects.get(pk=student.average_pk).cached_value # can't use a substitution
+            totals['course_section_average'] += agg.cached_value # can't use a substitution
             totals['course_section_average_count'] += 1
         if filtered:
             cleaned_or_initial = getattr(filter_form, 'cleaned_data', filter_form.initial)
             filter_category = cleaned_or_initial.get('category', None)
             filter_marking_period = cleaned_or_initial.get('marking_period', None)
             filter_items = items if temporary_aggregate else None
-            student.filtered_average, student.filtered_average_pk = gradebook_get_average_and_pk(
-                student, course_section, filter_category, filter_marking_period, filter_items)
+            # What kind of Aggregate are we dealing with?
+            if filter_category is None and filter_marking_period is None:
+                agg, created = CourseSectionAggregate.objects.get_or_create(
+                    student=student,
+                    course_section=course_section
+                )
+            elif filter_category is not None and filter_marking_period is None:
+                agg, created = CourseSectionCategoryAggregate.objects.get_or_create(
+                    student=student,
+                    course_section=course_section,
+                    category=filter_category
+                )
+            elif filter_category is None and filter_marking_period is not None:
+                agg, created = CourseSectionMarkingPeriodAggregate.objects.get_or_create(
+                    student=student,
+                    course_section=course_section,
+                    marking_period=filter_marking_period
+                )
+            elif filter_category is not None and filter_marking_period is not None:
+                agg, created = CourseSectionCategoryMPAggregate.objects.get_or_create(
+                    student=student,
+                    course_section=course_section,
+                    category=filter_category,
+                    marking_period=filter_marking_period
+                )
+            if created or temporary_aggregate:
+                agg.calculate(items=filter_items)
+            student.filtered_average = agg.pretty()
             if student.filtered_average is not None:
-                totals['filtered_average'] += Aggregate.objects.get(pk=student.filtered_average_pk).cached_value # can't use a substitution
+                totals['filtered_average'] += agg.cached_value # can't use a substitution
                 totals['filtered_average_count'] += 1
         if school_year.benchmark_grade and extra_info == 'demonstrations':
             # TC's column of counts
@@ -531,7 +595,9 @@ def ajax_delete_demonstration_form(request, course_section_id, demonstration_id)
     demonstration.delete()
     # TODO: degrossify
     if not Demonstration.objects.filter(item=item):
-        if Mark.objects.filter(item=item):
+        # All the Demonstrations are gone. The only remaining Marks should be
+        # the aggregated marks whose demonstration=None.
+        if Mark.objects.filter(item=item).exclude(demonstration=None):
             raise Exception('Stray marks found after attempting to delete last demonstration.')
         else:
             # the last demonstration is dead. kill the item.
@@ -726,34 +792,50 @@ def ajax_save_grade(request):
         except Exception as e:
             return HttpResponse(e, status=400)
         try:
-            affected_agg_pks = [x.pk for x in gradebook_recalculate_on_mark_change(mark)]
+            # The client only cares about pending CourseSectionAggregates for
+            # now. If you want to do something fancier, you'll have to pass some
+            # representation of the type as well as the primary key.
+            affected_agg_pks = [
+                x.pk for x in gradebook_recalculate_on_mark_change(mark)
+                    if type(x) is CourseSectionAggregate
+            ]
         except:
             # BAD BAD BAD... stale Aggregates ahead!
             logging.error("Mark {} saved successfully but Aggregate calculation failed".format(mark.pk), exc_info=True)
             affected_agg_pks = None
         # just the whole course section average for now
         # TODO: update filtered average
-        #average = gradebook_get_average(mark.student, mark.item.course, None, None, None) 
-        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': 'Please clear your browser\'s cache.', 'affected_aggregates': affected_agg_pks}))
+        return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'affected_aggregates': affected_agg_pks}))
     else:
         return HttpResponse('POST DATA INCOMPLETE', status=400) 
 
 @staff_member_required
 def ajax_task_poll(request, course_section_pk=None):
+    # The client only cares about pending CourseSectionAggregates for
+    # now. If you want to do something fancier, you'll have to pass some
+    # representation of the type as well as the primary key.
+    content_type = ContentType.objects.get_for_model(CourseSectionAggregate)
     if 'aggregate_pks' not in request.POST:
         # no aggregates specified; just return the number of active tasks for this course section
         course_section = get_object_or_404(CourseSection, pk=course_section_pk)
-        count = AggregateTask.objects.values('task_id').distinct().count()
+        count = AggregateTask.objects.filter(
+            content_type=content_type,
+            object_id__in=course_section.coursesectionaggregate_set.values_list(
+                'pk', flat=True)
+        ).values('task_id').distinct().count()
         return HttpResponse(json.dumps({'outstanding_tasks': count}))
     agg_pks = request.POST.getlist('aggregate_pks')
-    aggs = Aggregate.objects.filter(pk__in=agg_pks)
-    count = AggregateTask.objects.filter(aggregate__in=aggs).values('task_id').distinct().count()
+    count = AggregateTask.objects.filter(
+        content_type=content_type,
+        object_id__in=agg_pks
+    ).values('task_id').distinct().count()
     if count:
         # thank you, come again
         return HttpResponse(json.dumps({'outstanding_tasks': count}), status=202)
     else:
         # no outstanding tasks! return actual values!
         results = {}
+        aggs = CourseSectionAggregate.objects.filter(pk__in=agg_pks)
         for agg in aggs:
             if agg.cached_substitution is not None:
                 results[agg.pk] = str(agg.cached_substitution)
@@ -825,7 +907,15 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
                         # sometimes a course section has items belonging to categories that don't count in the course section average
                         # but we want to display them anyway
                         category.percentage = 0
-                    category.average = gradebook_get_average(student, course_section, category, mp, None)
+                    agg, created = CourseSectionCategoryMPAverage.objects.get_or_create(
+                        student=student,
+                        course_section=course_section,
+                        category=category,
+                        marking_period=mp
+                    )
+                    if created:
+                        agg.calculate()
+                    category.average = agg.pretty()
                     items = Item.objects.filter(course_section=course_section, category=category, marking_period=mp, mark__student=student).annotate(best_mark=Max('mark__mark'))
                     counts = {}
                     counts['total'] = items.exclude(best_mark=None).distinct().count()
@@ -834,7 +924,14 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
                     if counts['total']:
                         counts['percentage'] = (Decimal(counts['passing']) / counts['total'] * 100).quantize(Decimal('0'))
                     course_section.category_by_name[category.name] = counts
-                course_section.average = gradebook_get_average(student, course_section, None, mp, None)
+                agg, created = CourseSectionMarkingPeriodAverage.objects.get_or_create(
+                    student=student,
+                    course_section=course_section,
+                    marking_period=mp
+                )
+                if created:
+                    agg.calculate()
+                course_section.average = agg.pretty()
                 try:
                     course_section.legacy_grade = course_section.grade_set.get(student=student, marking_period=mp).get_grade()
                     if course_section.legacy_grade == '':
@@ -896,11 +993,16 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
                 for item_name_tuple in item_names:
                     item_name = item_name_tuple[0]
                     category.item_groups[item_name] = category_items.filter(name=item_name).distinct() 
-                if specific_items:
-                    # get a disposable average for these specific items
-                    category.average = gradebook_get_average(student, course_section, category, mp, category_items)
-                else:
-                    category.average = gradebook_get_average(student, course_section, category, mp, None)
+                filter_items = category_items if specific_items else None
+                agg, created = CourseSectionCategoryMPAggregate.objects.get_or_create(
+                    student=student,
+                    course_section=course_section,
+                    category=category,
+                    marking_period=mp
+                )
+                if created or specific_items:
+                    agg.calculate(items=filter_items)
+                category.average = agg.pretty()
                 category.flagged_item_pks = []
                 for substitution in calculation_rule.substitution_set.filter(
                         apply_to_categories=category
