@@ -15,9 +15,16 @@
       <p class="lead">Click on each section title and fill out all fields for each section</p>
     </h1>
     <hr>
+    <form name="applicationForm" novalidate class="form-horizontal">
       <div class="panel-group" id="accordion">
-        <div class="panel panel-default" ng-repeat="section in application_template.sections">
+        <div class="panel panel-default" ng-repeat="section in application_template.sections" ng-form="nestedForm">
           <div class="panel-heading">
+            <div class="pull-right">
+              <div ng-if="nestedForm.$invalid" class="text-right text-danger">
+                <i class="fa fa-exclamation-triangle fa-2x"></i>
+                <p><em>Required fields empty!</em></p>
+              </div>
+            </div>
             <h4>
               <a data-toggle="collapse" data-parent="#accordion" href="#section-{{section.id}}">
                 {{ section.name }}
@@ -26,37 +33,36 @@
           </div>
           <div id="section-{{section.id}}" class="panel-collapse collapse">
             <div class="panel-body">
-              <p class="lead">
-                {{ section.help_text }}
-              </p>
-              <div class="section-fields col-sm-12">
-                <form class="form-horizontal">
-                  <div ng-repeat="section_field in section.fields track by $index">
-                    <div>
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">
-                          {{ getCustomFieldById(section_field.id).field_label }}
-                        </label>
-                        <div class="col-sm-7" >
-                            <input ng-if="getCustomFieldById(section_field.id).field_type == 'input'" name="{{ getCustomFieldById(section_field.id).field_name }}" type="text" class="form-control" ng-model="section_field.value">
-                            <textarea ng-if="getCustomFieldById(section_field.id).field_type == 'textarea'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" rows="5" ng-model="section_field.value"></textarea>
-                            <select ng-if="getCustomFieldById(section_field.id).field_type == 'multiple'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" ng-model="section_field.value">
-                              <option ng-repeat="choice in getCustomFieldChoices(section_field.id) track by $index" value="{{ choice.value }}">{{ choice.display_name }}</option>
-                            </select>
-                            <span class="help-block">
-                              {{ getCustomFieldById(section_field.id).helptext }}
-                            </span>
-                        </div>
-                      </div>
+              <p>{{ section.help_text }}</p>
+              <div >
+                <div ng-repeat="section_field in section.fields track by $index" ng-form="nestedField">
+                  <div class="form-group col-sm-12" ng-class="{'has-error' : nestedField.$invalid}">
+                    <label class="control-label col-sm-2">
+                      {{ getCustomFieldById(section_field.id).field_label }}
+                    </label>
+                    <div class="col-sm-10" >
+                        <input ng-if="getCustomFieldById(section_field.id).field_type == 'input'" name="{{ getCustomFieldById(section_field.id).field_name }}" type="text" class="form-control" ng-model="section_field.value" ng-required="getCustomFieldById(section_field.id).required" >
+                        <textarea ng-if="getCustomFieldById(section_field.id).field_type == 'textarea'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" rows="5" ng-model="section_field.value" ng-required="getCustomFieldById(section_field.id).required"></textarea>
+                        <select ng-if="getCustomFieldById(section_field.id).field_type == 'multiple'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" ng-model="section_field.value" ng-required="getCustomFieldById(section_field.id).required">
+                          <option ng-repeat="choice in getCustomFieldChoices(section_field.id) track by $index" value="{{ choice.value }}">{{ choice.display_name }}</option>
+                        </select>
+                        <span ng-if="nestedField.$invalid"  class="text-danger"><em>This field is required</em></span>
+                        <span class="help-block">
+                          {{ getCustomFieldById(section_field.id).helptext }}
+                        </span>
                     </div>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <button class="btn btn-success btn-lg" ng-click="submitApplication()">Submit Application</button>
+      <div ng-if="applicationForm.$invalid" class="text-danger">
+        <p>You will not be able to submit this application until all required fields have been completed</p>
+      </div>
+      <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid">Submit Application</button>
+    </form>
   </div>
   <div ng-if="applicationComplete">
     <button onclick="window.print()" class="hidden-print pull-right btn btn-lg btn-primary">
@@ -78,5 +84,6 @@
     </div>
   </div>
 </div>
+
 {% endverbatim %}
 {% endblock %}
