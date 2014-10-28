@@ -9,7 +9,7 @@
 {% verbatim %}
 
 <div class="container custom-application" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
-  <div ng-if="applicationNotComplete">
+  <div ng-if="applicationNotComplete()">
     <h1>
       Application For Admission
       <p class="lead">Click on each section title and fill out all fields for each section</p>
