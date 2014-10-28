@@ -84,8 +84,11 @@
                         {{ getCustomFieldById(section_field.id).field_label }}
                       </label>
                       <div class="col-sm-7" >
-                          <input ng-if="getCustomFieldById(section_field.id).field_type == 'input'" name="{{ getCustomFieldById(section_field.id).field_name }}" type="text" class="form-control">
-                          <textarea ng-if="getCustomFieldById(section_field.id).field_type == 'textarea'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" rows="5"></textarea>
+                          <input ng-if="getCustomFieldById(section_field.id).field_type == 'input'" name="{{ getCustomFieldById(section_field.id).field_name }}" type="text" class="form-control" disabled>
+                          <textarea ng-if="getCustomFieldById(section_field.id).field_type == 'textarea'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" rows="5" disabled></textarea>
+                          <select ng-if="getCustomFieldById(section_field.id).field_type == 'multiple'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control"disabled>
+                            <option ng-repeat="choice in getCustomFieldChoices(section_field.id) track by $index" value="{{ choice.value }}">{{ choice.display_name }}</option>
+                          </select>
                           <span class="help-block">
                             {{ getCustomFieldById(section_field.id).helptext }}
                           </span>
