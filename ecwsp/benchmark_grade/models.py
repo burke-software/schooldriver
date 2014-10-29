@@ -506,7 +506,7 @@ class Aggregate(models.Model):
             rule = self.calculation_rule
             departments = rule.category_as_course_set.get(category_id=self.category_id).include_departments.all()
             course_sections = self.student.coursesection_set.filter(marking_period=self.marking_period_id,
-                department__in=departments, graded=True, course__course_type__award_credits=True)
+                course__department__in=departments, course__graded=True, course__course_type__award_credits=True)
             for course_section in course_sections:
                 weight = Decimal(course_section.credits) / course_section.marking_period.count()
                 aggregate_tuples.append(benchmark_get_create_or_flush(Aggregate, student_id=self.student_id,
