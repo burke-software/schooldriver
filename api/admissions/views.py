@@ -25,6 +25,7 @@ class ApplicationTemplateViewSet(viewsets.ModelViewSet):
 
     queryset = StudentApplicationTemplate.objects.all()
     serializer_class = StudentApplicationTemplateSerializer
+    filter_fields = ('is_default',)
 
 class ApplicantAdditionalInformationViewSet(viewsets.ModelViewSet, BulkCreateModelMixin):
 
