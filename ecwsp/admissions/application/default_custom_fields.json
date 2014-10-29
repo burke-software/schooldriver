@@ -1,0 +1,252 @@
+[
+    {
+        "id": 1,
+        "field_name": "fname",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "First Name",
+        "field_choices": null,
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 2,
+        "field_name": "mname",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Middle Name",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 3,
+        "field_name": "lname",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Last Name",
+        "field_choices": null,
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 4,
+        "field_name": "bday",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Birth Date",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 5,
+        "field_name": "street",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "street",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 6,
+        "field_name": "state",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "multiple",
+        "field_label": "state",
+        "field_choices": "[{u'display_name': u'---------', u'value': u''}, {u'display_name': u'Alabama', u'value': u'AL'}, {u'display_name': u'Alaska', u'value': u'AK'}, {u'display_name': u'American Samoa', u'value': u'AS'}, {u'display_name': u'Arizona', u'value': u'AZ'}, {u'display_name': u'Arkansas', u'value': u'AR'}, {u'display_name': u'Armed Forces Americas', u'value': u'AA'}, {u'display_name': u'Armed Forces Europe', u'value': u'AE'}, {u'display_name': u'Armed Forces Pacific', u'value': u'AP'}, {u'display_name': u'California', u'value': u'CA'}, {u'display_name': u'Colorado', u'value': u'CO'}, {u'display_name': u'Connecticut', u'value': u'CT'}, {u'display_name': u'Delaware', u'value': u'DE'}, {u'display_name': u'District of Columbia', u'value': u'DC'}, {u'display_name': u'Florida', u'value': u'FL'}, {u'display_name': u'Georgia', u'value': u'GA'}, {u'display_name': u'Guam', u'value': u'GU'}, {u'display_name': u'Hawaii', u'value': u'HI'}, {u'display_name': u'Idaho', u'value': u'ID'}, {u'display_name': u'Illinois', u'value': u'IL'}, {u'display_name': u'Indiana', u'value': u'IN'}, {u'display_name': u'Iowa', u'value': u'IA'}, {u'display_name': u'Kansas', u'value': u'KS'}, {u'display_name': u'Kentucky', u'value': u'KY'}, {u'display_name': u'Louisiana', u'value': u'LA'}, {u'display_name': u'Maine', u'value': u'ME'}, {u'display_name': u'Maryland', u'value': u'MD'}, {u'display_name': u'Massachusetts', u'value': u'MA'}, {u'display_name': u'Michigan', u'value': u'MI'}, {u'display_name': u'Minnesota', u'value': u'MN'}, {u'display_name': u'Mississippi', u'value': u'MS'}, {u'display_name': u'Missouri', u'value': u'MO'}, {u'display_name': u'Montana', u'value': u'MT'}, {u'display_name': u'Nebraska', u'value': u'NE'}, {u'display_name': u'Nevada', u'value': u'NV'}, {u'display_name': u'New Hampshire', u'value': u'NH'}, {u'display_name': u'New Jersey', u'value': u'NJ'}, {u'display_name': u'New Mexico', u'value': u'NM'}, {u'display_name': u'New York', u'value': u'NY'}, {u'display_name': u'North Carolina', u'value': u'NC'}, {u'display_name': u'North Dakota', u'value': u'ND'}, {u'display_name': u'Northern Mariana Islands', u'value': u'MP'}, {u'display_name': u'Ohio', u'value': u'OH'}, {u'display_name': u'Oklahoma', u'value': u'OK'}, {u'display_name': u'Oregon', u'value': u'OR'}, {u'display_name': u'Pennsylvania', u'value': u'PA'}, {u'display_name': u'Puerto Rico', u'value': u'PR'}, {u'display_name': u'Rhode Island', u'value': u'RI'}, {u'display_name': u'South Carolina', u'value': u'SC'}, {u'display_name': u'South Dakota', u'value': u'SD'}, {u'display_name': u'Tennessee', u'value': u'TN'}, {u'display_name': u'Texas', u'value': u'TX'}, {u'display_name': u'Utah', u'value': u'UT'}, {u'display_name': u'Vermont', u'value': u'VT'}, {u'display_name': u'Virgin Islands', u'value': u'VI'}, {u'display_name': u'Virginia', u'value': u'VA'}, {u'display_name': u'Washington', u'value': u'WA'}, {u'display_name': u'West Virginia', u'value': u'WV'}, {u'display_name': u'Wisconsin', u'value': u'WI'}, {u'display_name': u'Wyoming', u'value': u'WY'}]",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 7,
+        "field_name": "zip",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "zip",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 8,
+        "field_name": "city",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "city",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 9,
+        "field_name": "ssn",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "SSN",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 10,
+        "field_name": "parent_email",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "parent email",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 11,
+        "field_name": "email",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "email",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 12,
+        "field_name": "family_preferred_language",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "family preferred language",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 13,
+        "field_name": "ethnicity",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "ethnicity",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 14,
+        "field_name": "elem_grad_yr",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "elem grad yr",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 15,
+        "field_name": "present_school",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "present school",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 16,
+        "field_name": "religion",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "religion",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 17,
+        "field_name": "place_of_worship",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "place of worship",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 18,
+        "field_name": "parent_guardian_first_name",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "parent guardian first name",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 19,
+        "field_name": "parent_guardian_last_name",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "parent guardian last name",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 20,
+        "field_name": "relationship_to_student",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "relationship to student",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 21,
+        "field_name": "heard_about_us",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "heard about us",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 22,
+        "field_name": "country_of_birth",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "country of birth",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 23,
+        "field_name": "total_income",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "total income",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 24,
+        "field_name": "adjusted_available_income",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "adjusted available income",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 25,
+        "field_name": "siblings",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "siblings",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    }
+]
