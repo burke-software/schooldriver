@@ -24,6 +24,23 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
         }
     };
 
+    $scope.formatApplicationTemplate = function() {
+        // the application template contains a list of sections; each section
+        // contains a list of field-id's. We should fetch the actual fields
+        // and replace the list of field-id's with a list of actual fields
+        // to save time in the DOM when interating through the sections
+        var template_sections = $scope.application_template.sections;
+        for (section_id in template_sections) {
+            var section = template_sections[section_id];
+            for (field_id in section.fields) {
+                var section_field = section.fields[field_id];
+                var custom_field = $scope.getCustomFieldById(section_field.id);
+                custom_field.choices = $scope.getCustomFieldChoices(section_field.id);
+                section.fields[field_id] = custom_field;
+            }
+        }
+    };
+
     $scope.getCustomFieldChoices = function(field_id) {
         var custom_field = $scope.getCustomFieldById(field_id);
         if ( custom_field.is_field_integrated_with_applicant === true) {
@@ -68,19 +85,23 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
         $http.get("/api/applicant-custom-field")
             .success(function(data, status, headers, config) {
                 $scope.applicant_field_options = data;
+                $scope.formatApplicationTemplate();
         });
     };
 
     $scope.init = function() {
-        $http.get("/api/application-template/1/")
+        $http.get("/api/application-template/?is_default=True")
             .success(function(data, status, headers, config) {
-                json_template = JSON.parse(data.json_template)
+                // data[0] returns the first default template,
+                // theoretically there should only be one, but this is
+                // just a failsafe incase there happens to be more than 1
+                json_template = JSON.parse(data[0].json_template)
                 if (!json_template.sections) {
                     $scope.application_template = {"sections" : []};
                 } else {
                     $scope.application_template = json_template;
                 }
-        });
+        })
 
         $scope.refreshCustomFieldList();
 
@@ -112,14 +133,13 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
         for (section_id in sections) {
             var section = sections[section_id];
             for (i in section.fields) {
-                var section_field = section.fields[i];
-                var field = $scope.getCustomFieldById(section_field.id)
+                var field = section.fields[i];
                 if (field.is_field_integrated_with_applicant === true) {
-                    $scope.applicant_data[field.field_name] = section_field.value;
+                    $scope.applicant_data[field.field_name] = field.value;
                 } else if (field.is_field_integrated_with_applicant === false) {
                     $scope.applicant_additional_information.push({
-                        "custom_field" : section_field.id,
-                        "answer" : section_field.value,
+                        "custom_field" : field.id,
+                        "answer" : field.value,
                     });
                 }  
             }
