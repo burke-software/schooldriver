@@ -362,6 +362,13 @@ class StudentApplicationTemplate(models.Model):
     is_default = models.BooleanField(default=False)
     json_template = JSONField()
 
+    def save(self, *args, **kwargs):
+        # Need to make sure that there is only one default template
+        # reference: http://stackoverflow.com/questions/1455126/
+        if self.is_default:
+            StudentApplicationTemplate.objects.filter(is_default=True).update(is_default=False)
+        super(StudentApplicationTemplate, self).save(*args, **kwargs)
+
 class ApplicantCustomField(models.Model):
     field_type_choices = (
             ('input', 'Small Text Field'),
