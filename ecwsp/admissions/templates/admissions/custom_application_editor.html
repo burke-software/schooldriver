@@ -6,10 +6,38 @@
 {% endblock %}
 
 {% block content %}
-
+{% verbatim %}
 
 <div class="container custom-application" ng-app="admissions" ng-controller="CustomApplicationEditorController" ng-init="init()">
   <h1>
+    Custom Application Editor
+  </h1>
+  <form class="form-horizontal">
+    <div class="form-group">
+      <label class="control-label col-sm-2">Choose Template</label>
+      <div class="col-sm-6">
+        <select ng-model="currentApplication" ng-change="refreshCurrentApplication()" ng-options="application.name for application in applications" class="form-control">
+        </select>
+      </div>
+    </div>
+  </form>
+  <hr>
+  <form class="form-horizontal well col-sm-12">
+    <div class="form-group">
+      <label class="control-label col-sm-2">Application Name</label>
+      <div class="col-sm-6">
+        <input type="text" ng-model="currentApplication.name" class="form-control">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-6 col-sm-offset-2">
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" ng-model="currentApplication.is_default"> default application
+          </label>
+        </div>
+      </div>
+    </div>
     <span class="pull-right">
       <button class="btn btn-success" ng-click="newSection()">
         <i class="fa fa-plus"></i>
@@ -19,18 +47,15 @@
         Save Application
       </button>
     </span>
-    Custom Application Editor
-  </h1>
-  <hr>
-  {% verbatim %}
+  </form>
     <div class="panel-group" id="accordion">
-      <div class="panel panel-default" ng-repeat="section in application_template.sections">
+      <div class="panel panel-default" ng-repeat="section in currentApplication.json_template.sections">
         <div class="panel-heading">
           <div class="btn-group pull-right">
-            <button class="btn btn-default" ng-click="moveUp(application_template.sections, section)">
+            <button class="btn btn-default" ng-click="moveUp(currentApplication.json_template.sections, section)">
               <i class="fa fa-chevron-up"></i>
             </button>
-            <button class="btn btn-default" ng-click="moveDown(application_template.sections, section)">
+            <button class="btn btn-default" ng-click="moveDown(currentApplication.json_template.sections, section)">
               <i class="fa fa-chevron-down"></i>
             </button>
           </div>
@@ -81,16 +106,16 @@
                   <div>
                     <div class="form-group">
                       <label class="control-label col-sm-2">
-                        {{ getCustomFieldById(section_field.id).field_label }}
+                        {{ section_field.field_label }}
                       </label>
                       <div class="col-sm-7" >
-                          <input ng-if="getCustomFieldById(section_field.id).field_type == 'input'" name="{{ getCustomFieldById(section_field.id).field_name }}" type="text" class="form-control" disabled>
-                          <textarea ng-if="getCustomFieldById(section_field.id).field_type == 'textarea'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control" rows="5" disabled></textarea>
-                          <select ng-if="getCustomFieldById(section_field.id).field_type == 'multiple'" name="{{ getCustomFieldById(section_field.id).field_name }}" class="form-control"disabled>
+                          <input ng-if="section_field.field_type == 'input'" name="{{ section_field.field_name }}" type="text" class="form-control" disabled>
+                          <textarea ng-if="section_field.field_type == 'textarea'" name="{{ section_field.field_name }}" class="form-control" rows="5" disabled></textarea>
+                          <select ng-if="section_field.field_type == 'multiple'" name="{{ section_field.field_name }}" class="form-control"disabled>
                             <option ng-repeat="choice in getCustomFieldChoices(section_field.id) track by $index" value="{{ choice.value }}">{{ choice.display_name }}</option>
                           </select>
                           <span class="help-block">
-                            {{ getCustomFieldById(section_field.id).helptext }}
+                            {{ section_field.helptext }}
                           </span>
                       </div>
 
@@ -233,6 +258,5 @@
   </div>
 </div>
 
-  {% endverbatim %}
-
+{% endverbatim %}
 {% endblock %}
