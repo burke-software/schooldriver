@@ -1,7 +1,7 @@
 from api.tests.api_test_base import APITest
 from ecwsp.admissions.models import Applicant
 
-class ApplicantAPIGetTest(APITest):
+class ApplicantAPIPermissionsTest(APITest):
 
     def test_applicant_get_request_as_non_user(self):
         response = self.client.get('/api/applicant/')
@@ -11,7 +11,7 @@ class ApplicantAPIGetTest(APITest):
         response = self.client.options('/api/applicant/')
         self.assertEqual(response.status_code, 200)
 
-    def test_applicatn_post_request_as_non_user(self):
+    def test_applicant_post_request_as_non_user(self):
         data = {"fname":"Hello", "lname":"World"}
         response = self.client.post('/api/applicant/', data=data)
         self.assertEqual(response.status_code, 201)
@@ -26,7 +26,7 @@ class ApplicantAPIGetTest(APITest):
         response = self.client.options('/api/applicant/')
         self.assertEqual(response.status_code, 200)
 
-    def test_applicatn_post_request_as_non_admin_user(self):
+    def test_applicant_post_request_as_non_admin_user(self):
         self.student_login()
         data = {"fname":"Hello", "lname":"World"}
         response = self.client.post('/api/applicant/', data=data)
@@ -42,7 +42,7 @@ class ApplicantAPIGetTest(APITest):
         response = self.client.options('/api/applicant/')
         self.assertEqual(response.status_code, 200)
 
-    def test_applicatn_post_request_as_admin_user(self):
+    def test_applicant_post_request_as_admin_user(self):
         self.teacher_login()
         data = {"fname":"Hello", "lname":"World"}
         response = self.client.post('/api/applicant/', data=data)

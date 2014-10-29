@@ -46,7 +46,6 @@ class ApplicantAdditionalInformationAPIGetTest(APITest):
             {"applicant": applicant_id, "custom_field" : new_custom_field.id, "answer" : "still world"}
         ]
         response = self.client.post('/api/applicant-additional-information/', data)
-        print(response)
         new_count = ApplicantAdditionalInformation.objects.count()
         self.assertEqual(new_count, previous_count + 2)
         
