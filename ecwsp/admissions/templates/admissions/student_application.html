@@ -3,22 +3,12 @@
 {% load static from staticfiles %}
 {% block extra_head %}
 <script type="text/javascript" src="{% static 'js/admissions/student_application.js' %}"></script>
-<meta name="google-translate-customization" content="4fb1cbd631816baf-43c584abf92afefd-gea6ed023e41edd40-28"></meta>
 {% endblock %}
 
 {% block content %}
 {% verbatim %}
 
 <div class="container custom-application" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
-  <div class="pull-right">
-    <!-- Google Translate -->
-    <div id="google_translate_element"></div><script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
-    }
-    </script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <!-- End Google Translate -->
-  </div>
   <div ng-if="applicationNotComplete()">
     <h1>
       Application For Admission
