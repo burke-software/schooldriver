@@ -2,13 +2,41 @@ var admissionsApp = angular.module('admissions',[]);
 
 admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http', function($scope, $http) {
     
-    $scope.application_template = {};
     $scope.applicant_field_options = [];
     $scope.applicant_integrated_fields = [];
     $scope.integratedField={};
     $scope.is_custom_field_new = true;
     $scope.custom_field_current_id = null;
     $scope.custom_field_checked = false;
+
+    $scope.applications = [];
+    $scope.currentApplication = {};
+
+    $scope.currentApplicationApiUrl = function() {
+        return "/api/application-template/" + $scope.currentApplication.id + "/";
+    };
+
+    $scope.refreshCurrentApplication = function() {
+        $scope.currentApplication = $scope.formatApplication($scope.currentApplication);
+    };
+
+    $scope.formatApplication = function(application) {
+        // the application template contains a list of sections; each section
+        // contains a list of field-id's. We should fetch the actual fields
+        // and replace the list of field-id's with a list of actual fields
+        // to save time in the DOM when interating through the sections
+        var sections = application.json_template.sections;
+        for (section_id in sections) {
+            var section = sections[section_id];
+            for (field_id in section.fields) {
+                var section_field = section.fields[field_id];
+                var custom_field = $scope.getCustomFieldById(section_field.id);
+                custom_field.choices = $scope.getCustomFieldChoices(section_field.id);
+                section.fields[field_id] = custom_field;
+            }
+        }
+        return application;
+    };
 
     $scope.customField = {
         "custom_option" : "custom",
@@ -21,7 +49,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         "required" : false,
     };
 
-    
+
 
     $scope.isNewFieldIntegrated = function() {
         if ( $scope.customField.custom_option == 'integrated' ) {
@@ -166,17 +194,24 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         });
     };
 
-    $scope.init = function() {
-        $http.get("/api/application-template/1/")
+    $scope.getApplicationTemplateList = function() {
+        $http.get("/api/application-template/")
             .success(function(data, status, headers, config) {
-                json_template = JSON.parse(data.json_template)
-                if (!json_template.sections) {
-                    $scope.application_template = {"sections" : []};
-                } else {
-                    $scope.application_template = json_template;
-                }
+                for (i in data) {
+                    var application = data[i];
+                    if (application.json_template) {
+                        // the .json_template attribute is actually a JSON 
+                        // string which we need to parse before adding it
+                        // to our application list
+                        application.json_template = JSON.parse(application.json_template);
+                    }
+                    $scope.applications.push(application);
+                }  
         });
+    };
 
+    $scope.init = function() {
+        $scope.getApplicationTemplateList();
         $scope.refreshCustomFieldList();
 
         $http({
@@ -226,7 +261,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
 
     $scope.generateUniqueSectionId = function() {
         var list_of_current_section_ids = [];
-        var sections = $scope.application_template.sections;
+        var sections = $scope.currentApplication.json_template.sections;
         for (var i = 0; i < sections.length; i++) {
             list_of_current_section_ids.push(sections[i].id);
         }
@@ -238,7 +273,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
     };
 
     $scope.newSection = function() {
-        $scope.application_template.sections.push({
+        $scope.currentApplication.json_template.sections.push({
             "name": "New Section",
             "id" : $scope.generateUniqueSectionId(),
             "fields" : [],
@@ -268,14 +303,15 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
                 "id" : field.id
             });
         }
+        $scope.refreshCurrentApplication();
     };  
 
     $scope.saveApplicationTemplate = function() {
-        var url = '/api/application-template/1/';
+        var url =  $scope.currentApplicationApiUrl()
         var data = {
-            "name" : "default application",
-            "is_default" : true,
-            "json_template" : JSON.stringify($scope.application_template)
+            "name" : $scope.currentApplication.name,
+            "is_default" : $scope.currentApplication.is_default,
+            "json_template" : JSON.stringify($scope.currentApplication.json_template)
         };
         $.ajax({
             type: "PUT",
