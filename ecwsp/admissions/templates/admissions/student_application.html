@@ -35,9 +35,13 @@
                 <div>
                   <div ng-repeat="section_field in section.fields track by $index" ng-form="nestedField">
                     <div class="form-group col-sm-12" ng-class="{'has-error' : nestedField.$invalid}">
-                      <label class="control-label col-sm-2">
+                      <label class="control-label col-sm-2" ng-if="section_field.field_label.length < 50">
                         {{ section_field.field_label }}
                       </label>
+                      <label class="control-label col-sm-10 col-sm-offset-2" ng-if="section_field.field_label.length > 50">
+                        <p class="text-left">{{ section_field.field_label }}</p>
+                      </label>
+                      <div class="col-sm-2" ng-if="section_field.field_label.length > 50"></div>
                       <div class="col-sm-10" >
                         <input 
                           ng-if="section_field.field_type == 'input'" 
@@ -77,6 +81,12 @@
       </div>
       <div ng-if="applicationForm.$invalid" class="text-danger">
         <p>You will not be able to submit this application until all required fields have been completed</p>
+      </div>
+      <div ng-if="submissionError.status == true" >
+        <h3>Please correct the following errors and submit your application again</h3>
+        <p ng-repeat="error in submissionError.errors">
+          <strong>{{ error.field_label }}</strong>: <em class="text-danger">{{ error.error_msg }}</em>
+        </p>
       </div>
       <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid">Submit Application</button>
     </form>
