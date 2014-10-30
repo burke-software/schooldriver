@@ -26,9 +26,9 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         // and replace the list of field-id's with a list of actual fields
         // to save time in the DOM when interating through the sections
         var sections = application.json_template.sections;
-        for (section_id in sections) {
+        for (var section_id in sections) {
             var section = sections[section_id];
-            for (field_id in section.fields) {
+            for (var field_id in section.fields) {
                 var section_field = section.fields[field_id];
                 var custom_field = $scope.getCustomFieldById(section_field.id);
                 custom_field.choices = $scope.getCustomFieldChoices(section_field.id);
@@ -93,14 +93,16 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
         } else if (custom_field.is_field_integrated_with_applicant === false ) {
             if (custom_field.field_choices != "") {
                 var choices = []
-                var choice_array = custom_field.field_choices.split(',');
-                for (i in choice_array) {
-                    choices.push({
-                        "display_name" : choice_array[i],
-                        "value" : choice_array[i]
-                    });
+                if (custom_field.field_choices) {
+                    var choice_array = custom_field.field_choices.split(',');
+                    for (var i in choice_array) {
+                        choices.push({
+                            "display_name" : choice_array[i],
+                            "value" : choice_array[i]
+                        });
+                    }
+                    return choices;
                 }
-                return choices;
             }
         }
         
@@ -117,7 +119,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
     };
 
     $scope.populateEditorWithExistingCustomField = function(field) {
-        $scope.customField = $scope.getCustomFieldById(field.id);
+        $scope.customField = field;
         if ( $scope.customField.is_field_integrated_with_applicant ) {
             $scope.customField.custom_option = 'integrated';
             // we need to make sure the select-list on the modal form
@@ -176,7 +178,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
                 $scope.refreshCustomFieldList();
               });
         } else if ( $scope.is_custom_field_new === false ) {
-            var url = '/api/applicant-custom-field/' + $scope.custom_field_current_id;
+            var url = '/api/applicant-custom-field/' + $scope.custom_field_current_id + "/";
             $http.put(url, data).
               success(function(data, status, headers, config) {
                 $scope.refreshCustomFieldList();
@@ -188,7 +190,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
     };
 
     $scope.refreshCustomFieldList = function() {
-        $http.get("/api/applicant-custom-field")
+        $http.get("/api/applicant-custom-field/")
             .success(function(data, status, headers, config) {
                 $scope.applicant_field_options = data;
         });
@@ -287,7 +289,7 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
 
     $scope.isFieldAlreadyInSection = function(section, field) {
         var status = false;
-        for (i in section.fields) {
+        for (var i in section.fields) {
             var existing_field = section.fields[i];
             if (existing_field.id == field.id) {
                 status = true;
