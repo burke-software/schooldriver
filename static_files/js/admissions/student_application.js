@@ -3,21 +3,35 @@ var admissionsApp = angular.module('admissions',[]);
 admissionsApp.controller('StudentApplicationController', ['$scope', '$http', function($scope, $http) {
     
     $scope.application_template = {};
-    $scope.applicant_field_options = [];
-    $scope.applicant_integrated_fields = [];
+    $scope.applicationFields = [];
+    $scope.applicantIntegratedFields = [];
     $scope.integratedField={};
     $scope.applicant_data = {};
     $scope.applicant_additional_information = [];
     $scope.applicationComplete = false;
+    $scope.submissionError = {
+        "status" : false,
+        "errors" : []
+    }
 
     $scope.applicationNotComplete = function() {
         return !$scope.applicationComplete;
     };
 
-    $scope.getCustomFieldById = function(field_id) {
-        for (var i=0; i < $scope.applicant_field_options.length; i ++ ) {
-            var field = $scope.applicant_field_options[i];
+    $scope.getApplicationFieldById = function(field_id) {
+        for ( var i in $scope.applicationFields ) {
+            var field = $scope.applicationFields[i];
             if ( field.id == field_id ) {
+                return field;
+                break;
+            }
+        }
+    };
+
+    $scope.getApplicationFieldByFieldName = function(field_name) {
+        for ( var i in $scope.applicationFields ) {
+            var field = $scope.applicationFields[i];
+            if ( field.field_name == field_name ) {
                 return field;
                 break;
             }
@@ -30,19 +44,19 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
         // and replace the list of field-id's with a list of actual fields
         // to save time in the DOM when interating through the sections
         var template_sections = $scope.application_template.sections;
-        for (section_id in template_sections) {
+        for (var section_id in template_sections) {
             var section = template_sections[section_id];
-            for (field_id in section.fields) {
+            for (var field_id in section.fields) {
                 var section_field = section.fields[field_id];
-                var custom_field = $scope.getCustomFieldById(section_field.id);
-                custom_field.choices = $scope.getCustomFieldChoices(section_field.id);
+                var custom_field = $scope.getApplicationFieldById(section_field.id);
+                custom_field.choices = $scope.getApplicationFieldChoices(section_field.id);
                 section.fields[field_id] = custom_field;
             }
         }
     };
 
-    $scope.getCustomFieldChoices = function(field_id) {
-        var custom_field = $scope.getCustomFieldById(field_id);
+    $scope.getApplicationFieldChoices = function(field_id) {
+        var custom_field = $scope.getApplicationFieldById(field_id);
         if ( custom_field.is_field_integrated_with_applicant === true) {
             var integrated_field = $scope.getApplicantFieldByFieldName(custom_field.field_name);
             return integrated_field.choices;
@@ -50,7 +64,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
             if (custom_field.field_choices != "") {
                 var choices = []
                 var choice_array = custom_field.field_choices.split(',');
-                for (i in choice_array) {
+                for (var i in choice_array) {
                     choices.push({
                         "display_name" : choice_array[i],
                         "value" : choice_array[i]
@@ -63,8 +77,8 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
     };
 
     $scope.getApplicantFieldByFieldName = function(field_name) {
-        for (var i=0; i < $scope.applicant_integrated_fields.length; i ++ ) {
-            var field = $scope.applicant_integrated_fields[i];
+        for (var i=0; i < $scope.applicantIntegratedFields.length; i ++ ) {
+            var field = $scope.applicantIntegratedFields[i];
             if ( field.name == field_name ) {
                 return field;
                 break;
@@ -84,12 +98,15 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
     $scope.refreshCustomFieldList = function() {
         $http.get("/api/applicant-custom-field")
             .success(function(data, status, headers, config) {
-                $scope.applicant_field_options = data;
+                $scope.applicationFields = data;
                 $scope.formatApplicationTemplate();
         });
     };
 
     $scope.init = function() {
+        // clean the submission errors for now
+        $scope.submissionError.errors = [];
+
         $http.get("/api/application-template/?is_default=True")
             .success(function(data, status, headers, config) {
                 // data[0] returns the first default template,
@@ -113,7 +130,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
             var integrated_fields = data.actions.POST;
             for (var field_name in integrated_fields) {
                 var field = integrated_fields[field_name];
-                $scope.applicant_integrated_fields.push({
+                $scope.applicantIntegratedFields.push({
                     "name" : field_name, 
                     "required" : field.required,
                     "label" : field.label,
@@ -126,13 +143,17 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
     };
 
 
+    $scope.customErrorMessages = {
+        "bday" : "Data has wrong format. Please use a valid date in the format YYYY-MM-DD",
+    }
+
 
     $scope.submitApplication = function() {
         // first collect all the values from the template:
         var sections = $scope.application_template.sections;
-        for (section_id in sections) {
+        for (var section_id in sections) {
             var section = sections[section_id];
-            for (i in section.fields) {
+            for (var i in section.fields) {
                 var field = section.fields[i];
                 if (field.is_field_integrated_with_applicant === true) {
                     $scope.applicant_data[field.field_name] = field.value;
@@ -168,7 +189,22 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
         }).error(function(data, status, headers, config) {
             // called asynchronously if an error occurs
             // or server returns response with an error status.
-            console.log(data);
+            $scope.submissionError.status = true;
+            for ( var i in data ) {
+                var field = $scope.getApplicationFieldByFieldName(i);
+                if ( field && data[i] ) {
+                    var error_msg = data[i][0]
+                    if ( field.field_name in $scope.customErrorMessages) {
+                        error_msg = $scope.customErrorMessages[field.field_name];
+                    }
+                    var error = {
+                        "field_label" : field.field_label,
+                        "error_msg" : error_msg
+                    };
+                    $scope.submissionError.errors.push(error);
+                }
+            };
+
         });
     };
 
