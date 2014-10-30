@@ -91,7 +91,15 @@
                 </button>
                 <ul class="dropdown-menu scrollable-menu" role="menu">
                   <li ng-repeat="field in applicant_field_options">
-                    <a ng-click="addSectionField(section, field)">{{ field.field_label }}</a>
+                    <a ng-click="addSectionField(section, field)">
+                      <span ng-if="field.field_label.length > 50">
+                        {{ field.field_label.slice(0,50)}}...
+                      </span>
+                      <span ng-if="field.field_label.length < 50">
+                        {{ field.field_label}}
+                      </span>
+
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -105,9 +113,13 @@
                 <div ng-repeat="section_field in section.fields track by $index">
                   <div>
                     <div class="form-group">
-                      <label class="control-label col-sm-2">
+                      <label class="control-label col-sm-2" ng-if="section_field.field_label.length < 50">
                         {{ section_field.field_label }}
                       </label>
+                      <label class="control-label col-sm-10 col-sm-offset-2" ng-if="section_field.field_label.length > 50">
+                        <p class="text-left">{{ section_field.field_label }}</p>
+                      </label>
+                      <div class="col-sm-2" ng-if="section_field.field_label.length > 50"></div>
                       <div class="col-sm-7" >
                           <input ng-if="section_field.field_type == 'input'" name="{{ section_field.field_name }}" type="text" class="form-control" disabled>
                           <textarea ng-if="section_field.field_type == 'textarea'" name="{{ section_field.field_name }}" class="form-control" rows="5" disabled></textarea>
