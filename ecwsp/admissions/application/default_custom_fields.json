@@ -30,56 +30,6 @@
         "required": true
     },
     {
-        "id": 4,
-        "field_name": "bday",
-        "is_field_integrated_with_applicant": true,
-        "field_type": "input",
-        "field_label": "Birth Date",
-        "field_choices": null,
-        "helptext": "",
-        "required": false
-    },
-    {
-        "id": 5,
-        "field_name": "street",
-        "is_field_integrated_with_applicant": true,
-        "field_type": "input",
-        "field_label": "street",
-        "field_choices": null,
-        "helptext": "",
-        "required": false
-    },
-    {
-        "id": 6,
-        "field_name": "state",
-        "is_field_integrated_with_applicant": true,
-        "field_type": "multiple",
-        "field_label": "state",
-        "field_choices": "[{u'display_name': u'---------', u'value': u''}, {u'display_name': u'Alabama', u'value': u'AL'}, {u'display_name': u'Alaska', u'value': u'AK'}, {u'display_name': u'American Samoa', u'value': u'AS'}, {u'display_name': u'Arizona', u'value': u'AZ'}, {u'display_name': u'Arkansas', u'value': u'AR'}, {u'display_name': u'Armed Forces Americas', u'value': u'AA'}, {u'display_name': u'Armed Forces Europe', u'value': u'AE'}, {u'display_name': u'Armed Forces Pacific', u'value': u'AP'}, {u'display_name': u'California', u'value': u'CA'}, {u'display_name': u'Colorado', u'value': u'CO'}, {u'display_name': u'Connecticut', u'value': u'CT'}, {u'display_name': u'Delaware', u'value': u'DE'}, {u'display_name': u'District of Columbia', u'value': u'DC'}, {u'display_name': u'Florida', u'value': u'FL'}, {u'display_name': u'Georgia', u'value': u'GA'}, {u'display_name': u'Guam', u'value': u'GU'}, {u'display_name': u'Hawaii', u'value': u'HI'}, {u'display_name': u'Idaho', u'value': u'ID'}, {u'display_name': u'Illinois', u'value': u'IL'}, {u'display_name': u'Indiana', u'value': u'IN'}, {u'display_name': u'Iowa', u'value': u'IA'}, {u'display_name': u'Kansas', u'value': u'KS'}, {u'display_name': u'Kentucky', u'value': u'KY'}, {u'display_name': u'Louisiana', u'value': u'LA'}, {u'display_name': u'Maine', u'value': u'ME'}, {u'display_name': u'Maryland', u'value': u'MD'}, {u'display_name': u'Massachusetts', u'value': u'MA'}, {u'display_name': u'Michigan', u'value': u'MI'}, {u'display_name': u'Minnesota', u'value': u'MN'}, {u'display_name': u'Mississippi', u'value': u'MS'}, {u'display_name': u'Missouri', u'value': u'MO'}, {u'display_name': u'Montana', u'value': u'MT'}, {u'display_name': u'Nebraska', u'value': u'NE'}, {u'display_name': u'Nevada', u'value': u'NV'}, {u'display_name': u'New Hampshire', u'value': u'NH'}, {u'display_name': u'New Jersey', u'value': u'NJ'}, {u'display_name': u'New Mexico', u'value': u'NM'}, {u'display_name': u'New York', u'value': u'NY'}, {u'display_name': u'North Carolina', u'value': u'NC'}, {u'display_name': u'North Dakota', u'value': u'ND'}, {u'display_name': u'Northern Mariana Islands', u'value': u'MP'}, {u'display_name': u'Ohio', u'value': u'OH'}, {u'display_name': u'Oklahoma', u'value': u'OK'}, {u'display_name': u'Oregon', u'value': u'OR'}, {u'display_name': u'Pennsylvania', u'value': u'PA'}, {u'display_name': u'Puerto Rico', u'value': u'PR'}, {u'display_name': u'Rhode Island', u'value': u'RI'}, {u'display_name': u'South Carolina', u'value': u'SC'}, {u'display_name': u'South Dakota', u'value': u'SD'}, {u'display_name': u'Tennessee', u'value': u'TN'}, {u'display_name': u'Texas', u'value': u'TX'}, {u'display_name': u'Utah', u'value': u'UT'}, {u'display_name': u'Vermont', u'value': u'VT'}, {u'display_name': u'Virgin Islands', u'value': u'VI'}, {u'display_name': u'Virginia', u'value': u'VA'}, {u'display_name': u'Washington', u'value': u'WA'}, {u'display_name': u'West Virginia', u'value': u'WV'}, {u'display_name': u'Wisconsin', u'value': u'WI'}, {u'display_name': u'Wyoming', u'value': u'WY'}]",
-        "helptext": "",
-        "required": false
-    },
-    {
-        "id": 7,
-        "field_name": "zip",
-        "is_field_integrated_with_applicant": true,
-        "field_type": "input",
-        "field_label": "zip",
-        "field_choices": null,
-        "helptext": "",
-        "required": false
-    },
-    {
-        "id": 8,
-        "field_name": "city",
-        "is_field_integrated_with_applicant": true,
-        "field_type": "input",
-        "field_label": "city",
-        "field_choices": null,
-        "helptext": "",
-        "required": false
-    },
-    {
         "id": 9,
         "field_name": "ssn",
         "is_field_integrated_with_applicant": true,
@@ -100,26 +50,6 @@
         "required": false
     },
     {
-        "id": 11,
-        "field_name": "email",
-        "is_field_integrated_with_applicant": true,
-        "field_type": "input",
-        "field_label": "email",
-        "field_choices": null,
-        "helptext": "",
-        "required": false
-    },
-    {
-        "id": 12,
-        "field_name": "family_preferred_language",
-        "is_field_integrated_with_applicant": true,
-        "field_type": "input",
-        "field_label": "family preferred language",
-        "field_choices": null,
-        "helptext": "",
-        "required": false
-    },
-    {
         "id": 13,
         "field_name": "ethnicity",
         "is_field_integrated_with_applicant": true,
@@ -130,31 +60,11 @@
         "required": false
     },
     {
-        "id": 14,
-        "field_name": "elem_grad_yr",
-        "is_field_integrated_with_applicant": true,
-        "field_type": "input",
-        "field_label": "elem grad yr",
-        "field_choices": null,
-        "helptext": "",
-        "required": false
-    },
-    {
         "id": 15,
         "field_name": "present_school",
         "is_field_integrated_with_applicant": true,
         "field_type": "input",
         "field_label": "present school",
-        "field_choices": null,
-        "helptext": "",
-        "required": false
-    },
-    {
-        "id": 16,
-        "field_name": "religion",
-        "is_field_integrated_with_applicant": true,
-        "field_type": "input",
-        "field_label": "religion",
         "field_choices": null,
         "helptext": "",
         "required": false
@@ -248,5 +158,785 @@
         "field_choices": null,
         "helptext": "",
         "required": false
+    },
+    {
+        "id": 62,
+        "field_name": "bday",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Birth Date",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 63,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Create a custom field: informatation gathered from this field will be attached to the Applicant's file as \"additional information\"",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 67,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Ethnicity",
+        "field_choices": "Hispanic/Latino, Non-Hispanic/Latino",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 64,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Gender",
+        "field_choices": "Male, Female",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 14,
+        "field_name": "elem_grad_yr",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Elementary Graduation Year",
+        "field_choices": null,
+        "helptext": "Please enter a valid number",
+        "required": false
+    },
+    {
+        "id": 11,
+        "field_name": "email",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Student Email",
+        "field_choices": null,
+        "helptext": "Please enter student email here",
+        "required": false
+    },
+    {
+        "id": 81,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Has the applicant now or ever been enrolled in special education classes?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 82,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Does the applicant currently have, or ever had, an Individual Education Plan (IEP) or 504 plan?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 16,
+        "field_name": "religion",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "religion",
+        "field_choices": null,
+        "helptext": "Students of all faith traditions are welcome to apply",
+        "required": false
+    },
+    {
+        "id": 5,
+        "field_name": "street",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Street",
+        "field_choices": null,
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 8,
+        "field_name": "city",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "City",
+        "field_choices": null,
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 6,
+        "field_name": "state",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "multiple",
+        "field_label": "State",
+        "field_choices": "[{u'display_name': u'---------', u'value': u''}, {u'display_name': u'Alabama', u'value': u'AL'}, {u'display_name': u'Alaska', u'value': u'AK'}, {u'display_name': u'American Samoa', u'value': u'AS'}, {u'display_name': u'Arizona', u'value': u'AZ'}, {u'display_name': u'Arkansas', u'value': u'AR'}, {u'display_name': u'Armed Forces Americas', u'value': u'AA'}, {u'display_name': u'Armed Forces Europe', u'value': u'AE'}, {u'display_name': u'Armed Forces Pacific', u'value': u'AP'}, {u'display_name': u'California', u'value': u'CA'}, {u'display_name': u'Colorado', u'value': u'CO'}, {u'display_name': u'Connecticut', u'value': u'CT'}, {u'display_name': u'Delaware', u'value': u'DE'}, {u'display_name': u'District of Columbia', u'value': u'DC'}, {u'display_name': u'Florida', u'value': u'FL'}, {u'display_name': u'Georgia', u'value': u'GA'}, {u'display_name': u'Guam', u'value': u'GU'}, {u'display_name': u'Hawaii', u'value': u'HI'}, {u'display_name': u'Idaho', u'value': u'ID'}, {u'display_name': u'Illinois', u'value': u'IL'}, {u'display_name': u'Indiana', u'value': u'IN'}, {u'display_name': u'Iowa', u'value': u'IA'}, {u'display_name': u'Kansas', u'value': u'KS'}, {u'display_name': u'Kentucky', u'value': u'KY'}, {u'display_name': u'Louisiana', u'value': u'LA'}, {u'display_name': u'Maine', u'value': u'ME'}, {u'display_name': u'Maryland', u'value': u'MD'}, {u'display_name': u'Massachusetts', u'value': u'MA'}, {u'display_name': u'Michigan', u'value': u'MI'}, {u'display_name': u'Minnesota', u'value': u'MN'}, {u'display_name': u'Mississippi', u'value': u'MS'}, {u'display_name': u'Missouri', u'value': u'MO'}, {u'display_name': u'Montana', u'value': u'MT'}, {u'display_name': u'Nebraska', u'value': u'NE'}, {u'display_name': u'Nevada', u'value': u'NV'}, {u'display_name': u'New Hampshire', u'value': u'NH'}, {u'display_name': u'New Jersey', u'value': u'NJ'}, {u'display_name': u'New Mexico', u'value': u'NM'}, {u'display_name': u'New York', u'value': u'NY'}, {u'display_name': u'North Carolina', u'value': u'NC'}, {u'display_name': u'North Dakota', u'value': u'ND'}, {u'display_name': u'Northern Mariana Islands', u'value': u'MP'}, {u'display_name': u'Ohio', u'value': u'OH'}, {u'display_name': u'Oklahoma', u'value': u'OK'}, {u'display_name': u'Oregon', u'value': u'OR'}, {u'display_name': u'Pennsylvania', u'value': u'PA'}, {u'display_name': u'Puerto Rico', u'value': u'PR'}, {u'display_name': u'Rhode Island', u'value': u'RI'}, {u'display_name': u'South Carolina', u'value': u'SC'}, {u'display_name': u'South Dakota', u'value': u'SD'}, {u'display_name': u'Tennessee', u'value': u'TN'}, {u'display_name': u'Texas', u'value': u'TX'}, {u'display_name': u'Utah', u'value': u'UT'}, {u'display_name': u'Vermont', u'value': u'VT'}, {u'display_name': u'Virgin Islands', u'value': u'VI'}, {u'display_name': u'Virginia', u'value': u'VA'}, {u'display_name': u'Washington', u'value': u'WA'}, {u'display_name': u'West Virginia', u'value': u'WV'}, {u'display_name': u'Wisconsin', u'value': u'WI'}, {u'display_name': u'Wyoming', u'value': u'WY'}]",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 7,
+        "field_name": "zip",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Zip Code",
+        "field_choices": null,
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 83,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "If you answered YES to any of the questions above, please explain",
+        "field_choices": "",
+        "helptext": "Copies of Evaluations, IEP’s and 504’s must be provided to the school after submitting application.",
+        "required": false
+    },
+    {
+        "id": 68,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "How did you hear about Cristo Rey Atlanta Jesuit High School?",
+        "field_choices": "Friend, Current School, Church, Television, Radio, Other",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 69,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Other: Please Explain",
+        "field_choices": "",
+        "helptext": "If you chose other above, please explain here",
+        "required": false
+    },
+    {
+        "id": 70,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Will the applicant be authorized to work in the U.S. by the first day of the work study program?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 71,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Student Lives With",
+        "field_choices": "Mother Only, Father Only, Both Parents, Grandparents, Guardian/Tutor, Other-Relationship",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 85,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Number of Children Living in Household",
+        "field_choices": "",
+        "helptext": "Please enter a valid number",
+        "required": true
+    },
+    {
+        "id": 12,
+        "field_name": "family_preferred_language",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Language Spoken at Home",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 65,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Other Languages Spoken",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 66,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Race",
+        "field_choices": "Black/African-American, Caucasian, Asian, Native American Indian/Alaskan, Pacific Islander/Native Hawaiian, Multi-racial",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 72,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Parents' Current Marital Status",
+        "field_choices": "Single Parent, Married, Divorced, Separated, Mother Deceased, Father Deceased",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 73,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "List all schools the student has attended in the last three years",
+        "field_choices": "",
+        "helptext": "Please list the school name, school City/State, and years attended.",
+        "required": true
+    },
+    {
+        "id": 74,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "Describe the applicant’s personal strengths and weaknesses",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 75,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "Has the applicant experienced any behavioral issues or demonstrated any violent, disruptive or disrespectful behavior in school?  Please explain",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 76,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "Does the applicant suffer from any serious illness, physical or emotional limitation, depression, or other mental illness? Please explain",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 77,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Has the applicant ever been arrested or convicted of a crime?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 78,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Has the applicant ever had a psycho-educational evaluation?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 79,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Has the applicant been tested for, or diagnosed with, a learning disability?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 80,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Has the applicant been tested for, or diagnosed with, ADD or ADHD?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 84,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Number of Adults Living In Household",
+        "field_choices": "",
+        "helptext": "please enter a valid number",
+        "required": true
+    },
+    {
+        "id": 86,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "Please list all dependents living in your home (please include name and age)",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 92,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 1 Phone",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 88,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Is Parent/Guardian 1 a Legal Guardian?",
+        "field_choices": "Yes, No",
+        "helptext": "Legal Guardians must provide documentation with the application",
+        "required": true
+    },
+    {
+        "id": 93,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 1 Email",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 91,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 1 Home Address",
+        "field_choices": "",
+        "helptext": "Street (Apt #), City, State, and Zip Code",
+        "required": true
+    },
+    {
+        "id": 4,
+        "field_name": "bday",
+        "is_field_integrated_with_applicant": true,
+        "field_type": "input",
+        "field_label": "Birth Date",
+        "field_choices": null,
+        "helptext": "Please use the format: YYYY-MM-DD",
+        "required": true
+    },
+    {
+        "id": 90,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 1 Relationship to Student",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 87,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 1 Full Name",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 94,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent Guardian 1 Occupation",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 96,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 1 Work Phone",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 95,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 1 Employer",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 98,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 2 Full Name",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 99,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Is Parent/Guardian 2 A Legal Guardian?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 100,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Parent/Guardian 2 Gender",
+        "field_choices": "Male, Female",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 89,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Parent/Guardian 1 Gender",
+        "field_choices": "Male, Female",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 101,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 2 Relationship To Student",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 103,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 2 Phone",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 104,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 2 Email",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 106,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 2 Employer",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 107,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 2 Work Phone",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 102,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent/Guardian 2 Home Address",
+        "field_choices": "",
+        "helptext": "Street (Apt #), City, State, Zip Code",
+        "required": false
+    },
+    {
+        "id": 105,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "Parent Guardian 2 Occupation",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 108,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Parent Guardian 2 Work Status",
+        "field_choices": "Employed, Unemployed, Retired, Self-Employed, Homemaker, Disabled, Student",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 97,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Parent Guardian 1 Work Status",
+        "field_choices": "Employed, Unemployed, Retired, Self-Employed, Homemaker, Disabled, Student",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 109,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Did you file your IRS Income Tax?",
+        "field_choices": "Yes, No",
+        "helptext": "If no, please explain below",
+        "required": true
+    },
+    {
+        "id": 110,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "If you answered \"No\" to \"Did you file your IRS Income TAX\" above, please explain here",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 111,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Tax Reporting Filing Status",
+        "field_choices": "Married, Married Filing Separate, Head of Household, Single, Widow(er)",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 112,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "A. If applicable, please describe any special circumstances that affect the family’s financial situation in the text box below",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 113,
+        "field_name": "total_income",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "B.  What is the “Adjusted Gross Income” of the household’s most recent federal tax returns?",
+        "field_choices": null,
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 114,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "C.  If filing separately, what is the second custodial parent’s “Adjusted Gross Income”?",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 115,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "D. What is the total household monthly amount received for: Social Security Benefits (SSI, etc.)",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 116,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "D. What is the total household monthly amount received for: Pension Income?",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 117,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "D. What Is The Total Household Monthly Amount Received For: Welfar/TANF?",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 118,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "D. What Is The Total Household Monthly Amount Received For: Child Support?",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 119,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "D. What Is The Total Household Monthly Amount Received For: Food Stamps?",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 120,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "D. What Is The Total Household Monthly Amount Received For: Worker's Compensation?",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 121,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "D. What Is The Total Household Monthly Amount Received For: Disability Income?",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 122,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "D. What Is The Total Household Monthly Amount Received For: Housing Assistance?",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 123,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Do you rent or own your home?",
+        "field_choices": "Rent, Own",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 124,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "What is your monthly rent or mortgage payment?",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 125,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "Are you paying tuition for any other children?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 126,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "E. Is your child currently receiving or does he or she qualify for a free or reduced lunch?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 127,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "multiple",
+        "field_label": "F. Does your child receive any scholarship assistance in middle school that will continue in high school?",
+        "field_choices": "Yes, No",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 128,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "input",
+        "field_label": "If you answered yes to \"Does your child receive any scholarship assistance in middle school that will continue in high school?\", please list scholarship name and amount",
+        "field_choices": "",
+        "helptext": "",
+        "required": false
+    },
+    {
+        "id": 129,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "Why do you want your son or daughter to attend Cristo Rey Atlanta Jesuit High School?",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
+    },
+    {
+        "id": 130,
+        "field_name": "",
+        "is_field_integrated_with_applicant": false,
+        "field_type": "textarea",
+        "field_label": "Why do you believe he or she would do well here?",
+        "field_choices": "",
+        "helptext": "",
+        "required": true
     }
 ]
