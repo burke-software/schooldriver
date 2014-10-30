@@ -43,3 +43,11 @@ class Command(BaseCommand):
                 f.id = field['id']
                 f.save()
 
+        default_application = self.load_default_application_template()
+        new_application_template = StudentApplicationTemplate(
+                name = default_application['name'],
+                is_default = default_application['is_default'],
+                json_template = default_application['json_template']
+            )
+        new_application_template.save()
+
