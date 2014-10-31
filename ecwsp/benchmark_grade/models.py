@@ -646,7 +646,11 @@ class Aggregate(models.Model):
         ours = [x is not None for x in ours]
         if ours == [True, True, False, True]:
             ''' CourseSection grade for one marking period. '''
-            self._copy_to_grade()
+            if not CalculationRuleCategoryAsCourse.objects.filter(
+                special_course_section=self.course_section
+            ).exists():
+                # Don't overwite the category-as-course grades!
+                self._copy_to_grade()
         if ours == [True, False, True, True]:
             ''' Average of a category across all course sections for one marking period.
             Some schools count it in GPAs as if it were a course section. '''
