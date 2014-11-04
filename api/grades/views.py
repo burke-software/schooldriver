@@ -6,7 +6,6 @@ from ecwsp.schedule.models import CourseSection
 from api.grades.serializers import GradeSerializer
 from rest_framework import mixins
 from django.db.models import F, Q
-from rest_framework.response import Response
 
 class GradeViewSet(viewsets.ModelViewSet):
     """
