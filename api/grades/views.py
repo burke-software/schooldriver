@@ -5,8 +5,7 @@ from ecwsp.grades.models import Grade
 from ecwsp.schedule.models import CourseSection
 from api.grades.serializers import GradeSerializer
 from rest_framework import mixins
-from django.db.models import F, Q
-from rest_framework.response import Response
+from django.db.models import F
 
 class GradeViewSet(viewsets.ModelViewSet):
     """
@@ -14,15 +13,13 @@ class GradeViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAdminUser,)
     queryset = Grade.objects.filter(
-        # Exclude orphans from MPs no longer assigned to the CourseSection 
-        # except for grade objects with an explicit null marking period
-        # and override_final flag since those grade objects are used to 
-        # override the final grade in their associated course section
-        Q(course_section__marking_period=F('marking_period')) | ( Q(marking_period=None) & Q(override_final=True) ),
+        # Exclude orphans from MPs no longer assigned to the CourseSection
+        course_section__marking_period=F('marking_period'),
         course_section__course__graded = True,
-    ).select_related('student', 'marking_period', 'course_section', 'course_section__course').distinct()
+    ).select_related('student', 'marking_period', 'course_section', 'course_section__course')
 
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     serializer_class = GradeSerializer
     filter_fields = ('student', 'course_section', 'course_section__marking_period__school_year')
     ordering_fields = ('marking_period__start_date',)
+
