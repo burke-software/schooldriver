@@ -16,7 +16,7 @@ from ecwsp.attendance.models import CourseSectionAttendance, StudentAttendance, 
 from ecwsp.schedule.calendar import Calendar
 from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet, Period, CourseSection, Course
 from ecwsp.grades.models import Grade
-from ecwsp.discipline.models import DisciplineAction
+from ecwsp.discipline.models import DisciplineAction, DisciplineActionInstance
 import autocomplete_light
 import datetime
 from decimal import Decimal
@@ -371,7 +371,7 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
     def build_form(self):
         self.form = SelectSpecificStudentsForm()
         self.form.fields['filter_number'] = forms.IntegerField(widget=forms.HiddenInput())
-        # This is a hack to force it to accept these choices, otherwise choices gets set to [] 
+        # This is a hack to force it to accept these choices, otherwise choices gets set to []
         self.form.fields['select_students'] = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
@@ -694,7 +694,7 @@ class CourseSectionAttendanceButton(ReportButton):
                 return total
         except ObjectDoesNotExist:
             return ""
-            
+
     def total_excused_absences(self, student, course_section):
         try:
             status = AttendanceStatus.objects.get(name='Absent Excused')
@@ -891,7 +891,7 @@ class SisReport(ScaffoldReport):
             grades = course_section.grade_set.filter(student=student).filter(
                 marking_period__isnull=False,
                 marking_period__show_reports=True).order_by('marking_period__start_date')
-            
+
             section_mp_grades = {}
             for i, marking_period in enumerate(self.marking_periods.order_by('start_date')):
                 for grade in grades:
@@ -911,7 +911,7 @@ class SisReport(ScaffoldReport):
                 if marking_period.name not in section_mp_grades:
                     # populate the dict with blank grade
                     section_mp_grades[marking_period.name] = self.blank_grade
-            
+
                 # set the mp_grades dict to the course_section object
                 setattr(course_section, 'mp_grade', section_mp_grades)
             course_section.final = course_enrollment.grade
@@ -955,12 +955,20 @@ class SisReport(ScaffoldReport):
             i += 1
 
     def get_student_transcript_data(self, student):
+        show_incomplete_without_grade = config.TRANSCRIPT_SHOW_INCOMPLETE_COURSES_WITHOUT_GRADE
+        def fake_method(*args, **kargs): return ''
         student.years = SchoolYear.objects.filter(
             markingperiod__show_reports=True,
-            start_date__lt=self.date_end,
             markingperiod__coursesection__courseenrollment__user=student,
             ).exclude(omityeargpa__student=student).distinct().order_by('start_date')
+        if show_incomplete_without_grade is False:
+            # The school doesn't want to show all grades (default)
+            student.years = student.years.filter(start_date__lt=self.date_end)
         for year in student.years:
+            if show_incomplete_without_grade is True and year.start_date > self.date_end:
+                year.hide_grades = True
+            else:
+                year.hide_grades = False
             year.credits = 0
             year.possible_credits = 0
             year.mps = MarkingPeriod.objects.filter(coursesection__courseenrollment__user=student, school_year=year, show_reports=True).distinct().order_by("start_date")
@@ -984,29 +992,34 @@ class SisReport(ScaffoldReport):
                 year.course_sections = year.course_sections.order_by('course__department')
             year_grades = student.grade_set.filter(marking_period__show_reports=True, marking_period__end_date__lte=self.report_context['date_end'])
             year.year_grade = student.studentyeargrade_set.filter(year=year).first()
+            if year.hide_grades is True:
+                year.year_grade.get_grade = fake_method
             # course section grades
             for course_section in year.course_sections:
                 course_enrollment = course_section.courseenrollment_set.get(user=student)
+                if year.hide_grades is True:
+                    # Hide the grades for the transcript.
+                    course_enrollment.get_grade = fake_method
                 course_section.ce = course_enrollment
                 # Grades
                 course_section_grades = year_grades.filter(course_section=course_section).distinct()
-                course_section_aggregates = None
                 i = 1
-                for mp in year.mps:
-                    if mp not in course_section.marking_period.all():
-                        # Obey the registrar! Don't include grades from marking periods when the course section didn't meet.
-                        setattr(course_section, "grade" + str(i), "")
+                if year.hide_grades is False:
+                    for mp in year.mps:
+                        if mp not in course_section.marking_period.all():
+                            # Obey the registrar! Don't include grades from marking periods when the course section didn't meet.
+                            setattr(course_section, "grade" + str(i), "")
+                            i += 1
+                            continue
+                        # We can't overwrite cells, so we have to get seperate variables for each mp grade.
+                        try:
+                            grade = course_section_grades.get(marking_period=mp).get_grade(
+                                number=self.report_context.get('omit_substitutions'))
+                            grade = " " + str(grade) + " "
+                        except:
+                            grade = ""
+                        setattr(course_section, "grade" + str(i), grade)
                         i += 1
-                        continue
-                    # We can't overwrite cells, so we have to get seperate variables for each mp grade.
-                    try:
-                        grade = course_section_grades.get(marking_period=mp).get_grade(
-                            number=self.report_context.get('omit_substitutions'))
-                        grade = " " + str(grade) + " "
-                    except:
-                        grade = ""
-                    setattr(course_section, "grade" + str(i), grade)
-                    i += 1
                 while i <= 6:
                     setattr(course_section, "grade" + str(i), "")
                     i += 1
@@ -1104,7 +1117,8 @@ class SisReport(ScaffoldReport):
             self.date_end = self.report_context['date_end']
 
             # backwards compatibility for templates
-            context['date_of_report'] = self.date_end
+            context['date_begin'] = self.for_date
+            context['date_end'] = self.date_end
             context['long_date'] = unicode(datetime.date.today().strftime('%B %d, %Y'))
             context['school_year'] = self.report_context['school_year']
             context['school_name'] = config.SCHOOL_NAME
@@ -1136,16 +1150,18 @@ class SisReport(ScaffoldReport):
                     end_date__lte=self.report_context['date_end']).order_by('start_date')
                 if not marking_periods.count():
                     marking_periods = MarkingPeriod.objects.filter(start_date__gte=self.report_context['date_begin']).order_by('start_date')
+                context['marking_periods'] = ', '.join(marking_periods.values_list('shortname',flat=True))
+                context['school_year'] = marking_periods[0].school_year
+
                 current_mp = marking_periods.first()
                 for student in students:
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
                             schedule_days=schedule_days)
-                    #student.discipline_records = student.studentdiscipline_set.filter(date__gte=begin_end_dates[0],
-                    #    date__lte=begin_end_dates[1])
-                    #for d in student.discipline_records:
-                    #    d.date = d.date.strftime('%b %d, %Y')
-
+                    student.discipline_records = student.studentdiscipline_set.filter(date__gte=self.for_date,                                                                 date__lte=self.date_end)
+                    records = student.discipline_records
+                    for record in records:
+                        record.actions = '; '.join(record.action.values_list('name', flat=True))
         context['students'] = students
         return context
 

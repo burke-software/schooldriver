@@ -195,7 +195,7 @@ def student_incomplete_course_sections(request):
     for student in students:
         aggs = Aggregate.objects.filter(student=student, marking_period__school_year=school_year, **AGGREGATE_CRITERIA).distinct().order_by('marking_period__start_date')
         # make sure the student is actually enrolled in these course sections
-        aggs = aggs.filter(course_section__in=student.courseenrollment_set.values_list('course_section'))
+        aggs = aggs.filter(course_section__courseenrollment__user=student)
         if inverse and aggs.count():
             continue
         if not inverse and not aggs.count():
