@@ -118,7 +118,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
                 } else {
                     $scope.application_template = json_template;
                 }
-        })
+        });
 
         $scope.refreshCustomFieldList();
 
