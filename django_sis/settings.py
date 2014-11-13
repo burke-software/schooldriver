@@ -426,6 +426,7 @@ TENANT_APPS = (
     'widget_tweaks',
     'django_cached_field',
     'rest_framework',
+    'rest_framework_bulk',
     'api',
     'compressor',
     'constance',
@@ -433,7 +434,7 @@ TENANT_APPS = (
     'impersonate',
 ) + INSTALLED_APPS
 
-INSTALLED_APPS = TENANT_APPS + SHARED_APPS
+INSTALLED_APPS = SHARED_APPS + TENANT_APPS
 TENANT_MODEL = "customers.Client"
 
 if DEBUG_TOOLBAR == True:

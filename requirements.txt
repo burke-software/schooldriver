@@ -39,7 +39,7 @@ django-report-builder==2.0.1
 django-report-scaffold==0.1.4
 django-report-utils==0.2.6
 django-responsive-dashboard==1.1
-django-reversion==1.8.3
+django-reversion==1.8.4
 django-rosetta==0.7.4
 django-simple-import==1.17
 django-storages==1.1.8
@@ -91,4 +91,6 @@ trollius
 git+https://github.com/gregmuellegger/django-floppyforms.git@636c7ec516d50a298164ee324b5c697b6676cbc6
 git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99
 waitress
-faulthandler
+jsonfield
+faulthandler==2.4
+uWSGI==2.0.7

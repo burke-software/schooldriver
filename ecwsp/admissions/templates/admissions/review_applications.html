@@ -1,0 +1,53 @@
+{% extends 'base_next.html' %}
+{% load staticfiles %}
+{% load static from staticfiles %}
+{% block extra_head %}
+<script type="text/javascript" src="{% static 'js/admissions/review_applications.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+{% verbatim %}
+
+<div class="container custom-application" ng-app="admissions" ng-controller="ReviewApplicationsController" ng-init="init()">
+  <div ng-if="viewAllApplicants">
+    <h1>Review Applications</h1>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Application Decision</th>
+          <th>Application Link</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="applicant in allApplicants">
+          <td>{{ applicant.fname }}</td>
+          <td>{{ applicant.lname }}</td>
+          <td> ... </td>
+          <td><a href="#" ng-click="loadStudentApplication(applicant)">click to view</a></td>
+        </tr>
+      </tbody>
+    </table>  
+  </div>
+  <div ng-if="!viewAllApplicants">
+    <button ng-click="showAllApplicantsAgain()" class="pull-right btn btn-lg btn-primary">
+      <i class="fa fa-reply"></i> View All Applicants
+    </button>
+    <h1>Review Application</h1>
+    <p class="lead">Student Name</p> 
+    <div ng-repeat="section in currentlyLoadedStudentApplication.sections">
+      <h3>{{ section.name }}</h3>
+      <table class="table table-condensed table-striped">
+        <tbody>
+          <tr ng-repeat="field in section.fields">
+            <td class="col-sm-6">{{ field.field_label }}</td>
+            <td class="col-sm-6">{{ field.value }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </table>
+  </div>
+</div>
+{% endverbatim %}
+{% endblock %}

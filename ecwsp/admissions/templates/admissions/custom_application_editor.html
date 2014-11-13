@@ -1,0 +1,274 @@
+{% extends 'base_next.html' %}
+{% load staticfiles %}
+{% load static from staticfiles %}
+{% block extra_head %}
+<script type="text/javascript" src="{% static 'js/admissions/custom_application_editor.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+{% verbatim %}
+
+<div class="container custom-application" ng-app="admissions" ng-controller="CustomApplicationEditorController" ng-init="init()">
+  <h1>
+    Custom Application Editor
+  </h1>
+  <form class="form-horizontal">
+    <div class="form-group">
+      <label class="control-label col-sm-2">Choose Template</label>
+      <div class="col-sm-6">
+        <select ng-model="currentApplication" ng-change="refreshCurrentApplication()" ng-options="application.name for application in applications" class="form-control">
+        </select>
+      </div>
+    </div>
+  </form>
+  <hr>
+  <form class="form-horizontal well col-sm-12">
+    <div class="form-group">
+      <label class="control-label col-sm-2">Application Name</label>
+      <div class="col-sm-6">
+        <input type="text" ng-model="currentApplication.name" class="form-control">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-6 col-sm-offset-2">
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" ng-model="currentApplication.is_default"> default application
+          </label>
+        </div>
+      </div>
+    </div>
+    <span class="pull-right">
+      <button class="btn btn-success" ng-click="newSection()">
+        <i class="fa fa-plus"></i>
+        New Section
+      </button>
+      <button class="btn btn-primary" ng-click="saveApplicationTemplate()">
+        Save Application
+      </button>
+    </span>
+  </form>
+    <div class="panel-group" id="accordion">
+      <div class="panel panel-default" ng-repeat="section in currentApplication.json_template.sections">
+        <div class="panel-heading">
+          <div class="btn-group pull-right">
+            <button class="btn btn-default" ng-click="moveUp(currentApplication.json_template.sections, section)">
+              <i class="fa fa-chevron-up"></i>
+            </button>
+            <button class="btn btn-default" ng-click="moveDown(currentApplication.json_template.sections, section)">
+              <i class="fa fa-chevron-down"></i>
+            </button>
+          </div>
+          <h4>
+            <a data-toggle="collapse" data-parent="#accordion" href="#section-{{section.id}}">
+              {{ section.name }}
+            </a>
+          </h4>
+            <p class="text-muted">Click on title to expand and edit section</p>
+        </div>
+        <div id="section-{{section.id}}" class="panel-collapse collapse">
+          <div class="panel-body">
+            <form class="form-horizontal well">
+              <div class="form-group">
+                <label class="control-label col-sm-2">Section Title</label>
+                <div class="col-sm-10">
+                  <input type="text" ng-model="section.name" class="form-control" >
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-sm-2">Section Help Text</label>
+                <div class="col-sm-10">
+                  <textarea ng-model="section.help_text" class="form-control" ></textarea>
+                  <span class="help-block">You might want to write some instructions which may be useful to the student as they complete this section of the application</span>
+                </div>
+              </div>
+            </form>
+
+            <div class="col-sm-12 text-center">
+              <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+                  Insert Existing Field <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu scrollable-menu" role="menu">
+                  <li ng-repeat="field in applicant_field_options">
+                    <a ng-click="addSectionField(section, field)">
+                      <span ng-if="field.field_label.length > 50">
+                        {{ field.field_label.slice(0,50)}}...
+                      </span>
+                      <span ng-if="field.field_label.length < 50">
+                        {{ field.field_label}}
+                      </span>
+
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <button type="button" class="btn btn-success" data-toggle="modal" data-target="#editFieldModal" ng-click="newCustomFieldButtonClicked()">
+                Create New Custom Field
+              </button>
+              <hr>
+            </div>
+            <div class="section-fields col-sm-12">
+              <form class="form-horizontal">
+                <div ng-repeat="section_field in section.fields track by $index">
+                  <div>
+                    <div class="form-group">
+                      <label class="control-label col-sm-2" ng-if="section_field.field_label.length < 50">
+                        {{ section_field.field_label }}
+                      </label>
+                      <label class="control-label col-sm-10 col-sm-offset-2" ng-if="section_field.field_label.length > 50">
+                        <p class="text-left">{{ section_field.field_label }}</p>
+                      </label>
+                      <div class="col-sm-2" ng-if="section_field.field_label.length > 50"></div>
+                      <div class="col-sm-7" >
+                          <input ng-if="section_field.field_type == 'input'" name="{{ section_field.field_name }}" type="text" class="form-control" disabled>
+                          <textarea ng-if="section_field.field_type == 'textarea'" name="{{ section_field.field_name }}" class="form-control" rows="5" disabled></textarea>
+                          <select ng-if="section_field.field_type == 'multiple'" name="{{ section_field.field_name }}" class="form-control"disabled>
+                            <option>Choices will appear on application</option>
+                          </select>
+                          <span class="help-block">
+                            {{ section_field.help_text }}
+                          </span>
+                      </div>
+
+                      <div class="btn-group col-sm-3">
+                        <button class="btn btn-default" ng-click="moveUp(section.fields, section_field)">
+                          <i class="fa fa-chevron-up"></i>
+                        </button>
+                        <button class="btn btn-default" ng-click="moveDown(section.fields, section_field)">
+                          <i class="fa fa-chevron-down"></i>
+                        </button>
+                        <button class="btn btn-info" ng-click="editCustomField(section_field)">
+                          <i class="fa fa-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger" ng-click="removeSectionField(section, section_field)">
+                          <i class="fa fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <div class="modal fade" id="editFieldModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title" id="editModalTitle">
+            Custom Application Field Editor
+          </h4>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-12 well">
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="integratedOrCustom" id="integratedFieldOption" value="integrated" checked ng-model="customField.custom_option">
+                      <strong>Integrated Field</strong> <span class="text-muted">Integrate this field with an existing Applicant property</span>
+                  </label>
+                </div>
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="integratedOrCustom" id="customFieldOption" value="custom" ng-model="customField.custom_option">
+                      <strong>Custom Field</strong> <span class="text-muted">Create a custom field: informatation gathered from this field will be attached to the Applicant's file as "additional information"<span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div ng-if="isNewFieldIntegrated()">
+              <div class="form-group">
+                  <label for="field-name-input" class="col-sm-2 control-label">
+                      Integrate Field
+                  </label>
+                  <div class="col-sm-10">
+                      <select class="form-control" ng-model="integratedField.data" ng-options="field.label for field in applicant_integrated_fields" ng-change="updateIntegratedFieldChoice()">
+                      </select>
+                      <span class="help-block">We'll automatically determine the input properties based on the field with which you choose to integrate</span>
+                  </div>
+              </div>
+            </div>
+            <div class="form-group">
+                <label for="field-name-input" class="col-sm-2 control-label">
+                    Prompt
+                </label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="field-name-input" ng-model="customField.field_label">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">
+                    Required
+                </label>
+                <div class="col-sm-10">
+                    <input type="checkbox" ng-model="customField.required"><br/>
+                    <span class="help-block">Make this a required question</span>
+                </div>
+            </div>
+            <div ng-if="isNewFieldCustom()">
+              
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">
+                        Type
+                    </label>
+                    <div class="col-sm-10">
+                        <div class="radio">
+                              <label>
+                                <input type="radio" name="fieldTypeOptions" id="fieldTypeInput" value="input" checked ng-model="customField.field_type">
+                                Simple text box
+                              </label>
+                        </div>
+                        <div class="radio">
+                          <label>
+                            <input type="radio" name="fieldTypeOptions" id="fieldTypeTextarea" value="textarea" ng-model="customField.field_type">
+                            Large text box
+                          </label>
+                        </div>
+                        <div class="radio">
+                          <label>
+                            <input type="radio" name="fieldTypeOptions" id="fieldTypeDropdown" value="multiple" ng-model="customField.field_type">
+                            Drop-down list of options
+                          </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" id="optional-field-choices">
+                    <label class="col-sm-2 control-label">
+                        Choices
+                    </label>
+                    <div class="col-sm-10">
+                        <textarea class="form-control" rows="3" id="field-choices-text-area" ng-model="customField.field_choices"></textarea>
+                        <span class="help-block">Separate individual options with a comma, for example: New York, New Jersey, New Hampshire</span>
+                    </div>
+                </div>
+              </div>
+              <div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">
+                        Help Text
+                    </label>
+                    <div class="col-sm-10">
+                        <input class="form-control" name="help-text" ng-model="customField.helptext">
+                        <span class="help-block">You may wish to provide an explanation for this field</span>
+                    </div>
+                </div>
+
+              </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="save-change-button" ng-click="saveNewCustomField()">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endverbatim %}
+{% endblock %}
