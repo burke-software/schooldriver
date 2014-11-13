@@ -14,6 +14,7 @@ from ecwsp.admissions.models import BoroughOption, CountryOption, ImmigrationOpt
 from ecwsp.admissions.models import Applicant, ApplicantStandardTestResult, ApplicantStandardCategoryGrade
 from ecwsp.admissions.models import ApplicantFile
 from ecwsp.admissions.models import StudentApplicationTemplate
+from ecwsp.admissions.models import ApplicantCustomField
 from ecwsp.admissions.forms import ApplicantForm
 from ecwsp.sis.models import SchoolYear
 
@@ -260,3 +261,9 @@ class StudentApplicationTemplateAdmin(admin.ModelAdmin):
     model = StudentApplicationTemplate
     extra = 0 
 admin.site.register(StudentApplicationTemplate, StudentApplicationTemplateAdmin)
+
+class ApplicantCustomFieldAdmin(admin.ModelAdmin):
+    model = ApplicantCustomField
+    list_display = ['field_name', 'field_label', 'is_field_integrated_with_applicant']
+    extra = 0 
+admin.site.register(ApplicantCustomField, ApplicantCustomFieldAdmin)
