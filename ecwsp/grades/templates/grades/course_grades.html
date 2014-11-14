@@ -3,9 +3,7 @@
 {% load compress %}
 
 {% block extra_head %}
-    {% compress js %}
-    <script type="text/coffeescript" charset="utf-8" src="{% static "app/grades.coffee" %}"></script>
-    {% endcompress %}
+    <script src="{% static "app/grades.js" %}"></script>
     <script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
     <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
     <script type="text/javascript">
