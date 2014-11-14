@@ -69,6 +69,9 @@ class UserPreference(models.Model):
     )
     prefered_file_format = models.CharField(default=get_prefered_format, max_length="1", choices=file_format_choices, help_text="Open Document recommened.")
     include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
+    omr_default_point_value = models.IntegerField(default=1, blank=True, help_text="How many points a new question is worth by default")
+    omr_default_save_question_to_bank = models.BooleanField(default=False)
+    omr_default_number_answers = models.IntegerField(default=2, blank=True, )
     gradebook_preference = models.CharField(max_length=10, blank=True, choices=(
          ('O', 'Online Gradebook'), ('S','Spreadsheet'), ('E', 'Engrade'), ('M', 'Manual')))
     user = models.ForeignKey(User, unique=True, editable=False)

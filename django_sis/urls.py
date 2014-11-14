@@ -72,6 +72,8 @@ if 'ecwsp.work_study' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^work_study/', include('ecwsp.work_study.urls')), )
 if 'ecwsp.admissions' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^admissions/', include('ecwsp.admissions.urls')), )
+if 'ecwsp.omr' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('', (r'^omr/', include('ecwsp.omr.urls')), )
 if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^volunteer_track/', include('ecwsp.volunteer_track.urls')), )
 if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:

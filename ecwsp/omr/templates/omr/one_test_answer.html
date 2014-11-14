@@ -1,0 +1,20 @@
+ <div class="row" id="answer_{{ answer.id }}_div">
+   <div class="eight columns">
+      <span class="answer_order" style="float: left; width: 2em;">{{ answer.letter }})</span>
+      <div id="answer_{{ answer.id }}_answer" onChange="save_inline_answer(this, {{ answer.id }}, 'answer')" contenteditable="true">
+        {{ answer.answer|safe }}
+      </div>
+   </div>
+   <div class="four columns" style="text-align: right;">
+     {% if not question.answer_total %}
+       <div class="mark_button_{{ question.id }} small default btn">
+         <a href="javascript:void(0)" onclick="mark_as_answer({{ question.id }}, {{ answer.id }});">Mark Correct</a>
+       </div>
+     {% endif %}
+     <span id="point_value_{{ answer.id }}" contenteditable="true" onkeyup="this.innerText=this.innerText.replace(/[^0-9]/g,'')" onclick="selectElementContents(this)" onChange="save_inline_answer(this, {{ answer.id }}, 'point_value')" style="width: 1.8em;">
+       {{ answer.point_value }}
+     </span>
+     <span onclick="$(this).prev('span').click();">Point(s)</span>
+     <i class="icon-cancel-circled" onclick="delete_answer({{ answer.id }});"></i>
+   </div>
+ </div>

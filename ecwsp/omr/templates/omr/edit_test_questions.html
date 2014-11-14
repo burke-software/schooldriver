@@ -1,0 +1,77 @@
+{% extends "admin_base.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+    <div id="breadcrumbs" class="pull_left">
+      <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
+      &rsaquo; <a href="{% url "ecwsp.omr.views.my_tests" %}">{% trans 'My Tests' %}</a>
+      &rsaquo; <a href="{% url "ecwsp.omr.views.edit_test" test.id %}">{{ test }}</a>  
+      &rsaquo; {{ test }} Questions
+    </div>
+    <div id="save_status" class="pull_right alert"></div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  {% load static from staticfiles %}
+  <script type="text/javascript" src="{% static "blockui/jquery.blockUI.js" %}"></script>
+  <script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
+  <script type="text/javascript" src="{% static "ckeditor/ckeditor/config.js" %}"></script>
+  <script type="text/javascript" src="{% static "omr/omr_questions.js" %}"></script>
+{% endblock %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <style>
+  p {
+    line-height: 1em;
+    margin-bottom: 2px;
+  }
+  div.question_area {
+    max-width: 900px;
+  }
+  .question_draggable {
+    margin-bottom: 12px;
+  }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <h1>Open Metric Recognition</h1>
+  <h2>{{ test }} Questions </h2>
+  <div id="question_sortable" class="question_area">
+    {% for question in questions %}
+      {% include "omr/one_test_question.html" with question=question %}
+    {% endfor %}
+    <div id="new_question_div"></div>
+  </div>
+ 
+  {% if not test.finalized %}
+  <div class="row" style="padding-top: 1em;">
+    <div class="medium primary btn pill-left">
+      <a href="javascript:void(0)" onclick="add_question('Multiple Choice');" >Add Multiple Choice</a>
+    </div>
+    <div class="medium primary btn">
+      <a href="javascript:void(0)" onclick="add_question('True/False');">Add True/False</a>
+    </div>
+    <div class="medium primary btn pill-right">
+      <a href="javascript:void(0)" onclick="alert('Not Implimented'); dd_question('Essay');">Add Essay Question</a>
+    </div>
+  </div>
+  {% endif %}
+  
+  <br/>
+  <a href="/sis/preferences?refer={{ request.get_full_path }}">Remember you can change defaults in your preferences.</a>
+  <br/><br/><br/>
+  
+  <footer class="grp-module grp-submit-row grp-fixed-footer">
+    <ul>
+      <li class="grp-float-left">
+        <a href="download_test" target="_blank" class="grp-button"> View Test </a>
+      </li>
+      <li>
+        <button onclick="finalize_test({{ test.id }});" class="grp-button">Finalize</button>
+      </li>
+    </ul>
+  </footer>
+{% endblock %}

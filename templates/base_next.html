@@ -97,6 +97,11 @@
             {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
               <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
             {% endif %}
+            {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
+            {% if perms.omr.change_test or perms.omr.teacher_test %}
+              <li><a href="/omr/dashboard"> OMR </a></li>
+            {% endif %}
+            {% endif %}
             </ul>
           </li>
           {% endif %}

@@ -136,6 +136,12 @@ class CustomIndexDashboard(Dashboard):
             models=('ecwsp.alumni.*',),
         ))
 
+        self.children.append(modules.ModelList(
+            title='OpenMetricRecognition',
+            column=1,
+            models=('ecwsp.omr.*',),
+        ))
+
         self.children.append(modules.AppList(
             title='Administration',
             column=2,

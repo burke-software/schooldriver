@@ -1080,6 +1080,78 @@
   }
 },
 {
+  "pk": 121, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "test", 
+    "name": "test", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 122, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "questionbank", 
+    "name": "question bank", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 123, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "networkquestionbank", 
+    "name": "network question bank", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 124, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "question", 
+    "name": "question", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 125, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "answerbank", 
+    "name": "answer bank", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 126, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "answer", 
+    "name": "answer", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 127, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "testinstance", 
+    "name": "test instance", 
+    "app_label": "omr"
+  }
+},
+{
+  "pk": 128, 
+  "model": "contenttypes.contenttype", 
+  "fields": {
+    "model": "answerinstance", 
+    "name": "answer instance", 
+    "app_label": "omr"
+  }
+},
+{
   "pk": 129, 
   "model": "contenttypes.contenttype", 
   "fields": {
