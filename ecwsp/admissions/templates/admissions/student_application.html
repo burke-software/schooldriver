@@ -9,7 +9,7 @@
 {% verbatim %}
 
 <div class="container custom-application" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
-  <div ng-if="applicationNotComplete()">
+  <div ng-if="applicationNotComplete()" class="hidden-print">
     <h1>
       Application For Admission
       <p class="lead">Click on each section title and fill out all fields for each section</p>
@@ -97,17 +97,16 @@
     </button>
     <h1 class="hidden-print">Application Complete!</h1>
     <p class="lead hidden-print">Please review and print out your completed application for your own records</p>
-    <div ng-repeat="section in application_template.sections" class="col-xs-12">
-      <h4>{{ section.name }}</h4>
-      <hr>
-      <div ng-repeat="section_field in section.fields track by $index" class="col-xs-12">
-        <div class="col-xs-3">
-          <strong>{{ section_field.field_label }}</strong>
-        </div>
-        <div class="col-xs-9">
-          {{ section_field.value }}
-        </div>
-      </div>
+    <div ng-repeat="section in application_template.sections">
+      <h3>{{ section.name }}</h3>
+      <table class="table table-condensed table-striped">
+        <tbody>
+          <tr ng-repeat="field in section.fields">
+            <td class="col-sm-6">{{ field.field_label }}</td>
+            <td class="col-sm-6">{{ field.value }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
