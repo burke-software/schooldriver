@@ -2,6 +2,8 @@
 {% load staticfiles %}
 {% load static from staticfiles %}
 {% block extra_head %}
+<script type="text/javascript" src="{% static 'js/angular-translate.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/angular-translate-loader-url.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/admissions/student_application.js' %}"></script>
 {% endblock %}
 
@@ -10,10 +12,19 @@
 
 <div class="container custom-application" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
   <div ng-if="applicationNotComplete()" class="hidden-print">
+    <div class="btn-group pull-right">
+      <button class="btn btn-default" ng-click="changeLanguage('en')">
+        English
+      </button>
+      <button class="btn btn-default" ng-click="changeLanguage('es')">
+        Spanish
+      </button>
+    </div>
     <h1>
       Application For Admission
       <p class="lead">Click on each section title and fill out all fields for each section</p>
     </h1>
+    
     <hr>
     <form name="applicationForm" novalidate class="form-horizontal">
       <div class="panel-group" id="accordion">
@@ -21,7 +32,7 @@
           <div class="panel-heading">
               <h4 style="display: inline-block;">
                 <a data-toggle="collapse" data-parent="#accordion" href="#section-{{section.id}}">
-                  {{ section.name }}
+                  {{ section.name | translate }}
                 </a>
               </h4>
             <div class="pull-right text-right">
@@ -36,19 +47,19 @@
           </div>
           <div id="section-{{section.id}}" class="panel-collapse collapse" ng-class="{'in' : $index == 0}">
             <div class="panel-body">
-              <p>{{ section.help_text }}</p>
+              <p>{{ section.help_text | translate }}</p>
               <div class="col-sm-12">
                 <div>
                   <div ng-repeat="section_field in section.fields track by $index" ng-form="nestedField">
                     <div class="form-group col-sm-12" ng-class="{'has-error' : nestedField.$invalid && nestedField.$dirty}">
                       <label class="control-label col-sm-2" ng-if="section_field.field_label.length < 50">
                         <span ng-if="section_field.required">*</span>
-                        {{ section_field.field_label }}
+                        {{ section_field.field_label | translate }}
                       </label>
                       <label class="control-label col-sm-10 col-sm-offset-2" ng-if="section_field.field_label.length > 50">
                         <p class="text-left">
                           <span ng-if="section_field.required">*</span>
-                          {{ section_field.field_label }}
+                          {{ section_field.field_label | translate }}
                         </p>
                       </label>
                       <div class="col-sm-2" ng-if="section_field.field_label.length > 50"></div>
@@ -78,7 +89,7 @@
                         </select>
                         <span ng-if="nestedField.$invalid && nestedField.$dirty" class="text-danger"><em>This field is required</em></span>
                         <span class="help-block">
-                          {{ section_field.helptext }}
+                          {{ section_field.helptext | translate }}
                         </span>
                       </div>
                     </div>

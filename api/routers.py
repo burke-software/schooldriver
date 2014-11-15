@@ -5,10 +5,14 @@ from api.admissions.views import ApplicantViewSet
 from api.admissions.views import ApplicantCustomFieldViewSet
 from api.admissions.views import ApplicationTemplateViewSet
 from api.admissions.views import ApplicantAdditionalInformationViewSet
+from api.translations.views import AdmissionsTranslationViewSet
+from api.translations.views import AdmissionsTranslationSync
 
 router = routers.DefaultRouter()
 router.register(r'grades', GradeViewSet)
 router.register(r'courses', CourseViewSet)
+router.register(r'translations/admissions', AdmissionsTranslationViewSet, base_name='admissions-translations')
+router.register(r'translations/admissions/sync', AdmissionsTranslationSync, base_name='admissions-translations-sync')
 router.register(r'sections', SectionViewSet)
 router.register(r'applicant', ApplicantViewSet)
 router.register(r'applicant-custom-field', ApplicantCustomFieldViewSet)

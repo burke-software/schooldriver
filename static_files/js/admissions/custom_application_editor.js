@@ -12,6 +12,13 @@ admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http'
     $scope.applications = [];
     $scope.currentApplication = {};
 
+    $scope.syncApplicationTranslations = function() {
+        $http.get("/api/translations/admissions/sync/")
+            .success(function(data, status, headers, config) {
+                // do something on success? 
+        });
+    };
+
     $scope.currentApplicationApiUrl = function() {
         return "/api/application-template/" + $scope.currentApplication.id + "/";
     };
