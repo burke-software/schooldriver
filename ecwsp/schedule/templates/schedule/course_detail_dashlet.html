@@ -1,0 +1,14 @@
+{% extends "responsive_dashboard/dashlet.html" %}
+
+{% block content %}
+    <header>{{ title }}</header>
+    {% if change_course %}
+        This school year has {{ courses.count }} courses.
+    {% else %}
+        {{ courses.count }}
+    {% endif %}
+    <a href="/schedule/course/">View all Courses</a>
+    {% for course in courses %}
+        {{ course }} 
+    {% endfor %}
+{% endblock %}

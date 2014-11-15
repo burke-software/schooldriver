@@ -119,6 +119,8 @@ if IS_PRODUCTION:
     DEBUG = False
 else:
     DEBUG = True
+
+DEBUG_TOOLBAR = False  # Set true to enable debug toolbar
 TEMPLATE_DEBUG = DEBUG
 AUTH_PROFILE_MODULE = 'sis.UserPreference'
 
@@ -364,12 +366,7 @@ STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 # These are required add ons that we always want to have
-if MULTI_TENANT:
-    SHARED_APPS = (
-        'tenant_schemas',
-    )
-else:
-    SHARED_APPS = ()
+SHARED_APPS = ()
 
 SHARED_APPS = SHARED_APPS + (
     'constance',
@@ -428,6 +425,7 @@ TENANT_APPS = (
     'widget_tweaks',
     'django_cached_field',
     'rest_framework',
+    'rest_framework_bulk',
     'api',
     'compressor',
     'constance',
@@ -437,6 +435,10 @@ TENANT_APPS = (
 
 INSTALLED_APPS = SHARED_APPS + TENANT_APPS
 TENANT_MODEL = "customers.Client"
+
+if DEBUG_TOOLBAR == True:
+    INSTALLED_APPS += ('debug_toolbar',)
+    INTERNAL_IPS = ['127.0.0.1', '172.17.42.1', '172.17.42.1', '10.0.1.21',]
 
 CONSTANCE_CONFIG = {
     'SCHOOL_NAME': ('Unnamed School', 'School name'),
@@ -538,10 +540,12 @@ if USE_S3:
 if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
+    INSTALLED_APPS = INSTALLED_APPS + ('tenant_schemas',)
 
 SOUTH_TESTS_MIGRATE = False
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    'PAGINATE_BY_PARAM': 'page_size',
 }

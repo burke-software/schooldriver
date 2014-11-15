@@ -1,8 +1,11 @@
 FROM ubuntu:12.04
 ENV PYTHONUNBUFFERED 1
 
+# Basics
 RUN apt-get update -qq && apt-get install -y python-psycopg2 libldap2-dev libsasl2-dev libpq-dev postgresql-client git-core coffeescript python-pip python-dev g++
+# Libreoffice
 RUN apt-get install -y libreoffice-base-core libreoffice-calc libreoffice-common libreoffice-core libreoffice-emailmerge libreoffice-math libreoffice-style-human libreoffice-writer python-uno
+# Supervisor for libreoffice
 RUN apt-get install -y supervisor
 
 RUN mkdir -p /tmp/django-sis_libreoffice

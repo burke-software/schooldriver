@@ -1,0 +1,136 @@
+{% extends 'application_base.html' %}
+{% load staticfiles %}
+{% load static from staticfiles %}
+{% block extra_head %}
+<script type="text/javascript" src="{% static 'js/angular-translate.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/angular-translate-loader-url.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/admissions/student_application.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+{% verbatim %}
+
+<div class="container custom-application" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
+  <div ng-if="applicationNotComplete()" class="hidden-print">
+    <div class="btn-group pull-right">
+      <button class="btn btn-default" ng-click="changeLanguage('en')">
+        English
+      </button>
+      <button class="btn btn-default" ng-click="changeLanguage('es')">
+        Spanish
+      </button>
+    </div>
+    <h1>
+      Application For Admission
+      <p class="lead">Click on each section title and fill out all fields for each section</p>
+    </h1>
+    
+    <hr>
+    <form name="applicationForm" novalidate class="form-horizontal">
+      <div class="panel-group" id="accordion">
+        <div class="panel panel-default" ng-repeat="section in application_template.sections" ng-form="nestedForm">
+          <div class="panel-heading">
+              <h4 style="display: inline-block;">
+                <a data-toggle="collapse" data-parent="#accordion" href="#section-{{section.id}}">
+                  {{ section.name | translate }}
+                </a>
+              </h4>
+            <div class="pull-right text-right">
+                <em>Section {{ $index + 1 }} of {{ application_template.sections.length }}</em><br />
+              <span ng-if="nestedForm.$invalid" class="text-info">
+                <i class="fa fa-info-circle"></i> This section contains required fields
+              </span>
+              <span ng-if="nestedForm.$valid && nestedForm.$dirty" class="text-success">
+                <i class="fa fa-check-circle"></i> All required fields completed!
+              </span>
+            </div>
+          </div>
+          <div id="section-{{section.id}}" class="panel-collapse collapse" ng-class="{'in' : $index == 0}">
+            <div class="panel-body">
+              <p>{{ section.help_text | translate }}</p>
+              <div class="col-sm-12">
+                <div>
+                  <div ng-repeat="section_field in section.fields track by $index" ng-form="nestedField">
+                    <div class="form-group col-sm-12" ng-class="{'has-error' : nestedField.$invalid && nestedField.$dirty}">
+                      <label class="control-label col-sm-2" ng-if="section_field.field_label.length < 50">
+                        <span ng-if="section_field.required">*</span>
+                        {{ section_field.field_label | translate }}
+                      </label>
+                      <label class="control-label col-sm-10 col-sm-offset-2" ng-if="section_field.field_label.length > 50">
+                        <p class="text-left">
+                          <span ng-if="section_field.required">*</span>
+                          {{ section_field.field_label | translate }}
+                        </p>
+                      </label>
+                      <div class="col-sm-2" ng-if="section_field.field_label.length > 50"></div>
+                      <div class="col-sm-10" >
+                        <input 
+                          ng-if="section_field.field_type == 'input'" 
+                          name="{{ section_field.field_name }}" 
+                          type="text" 
+                          class="form-control" 
+                          ng-model="section_field.value" 
+                          ng-required="section_field.required" >
+                        <textarea 
+                          ng-if="section_field.field_type == 'textarea'" 
+                          name="{{ section_field.field_name }}" 
+                          class="form-control" 
+                          rows="5" 
+                          ng-model="section_field.value" 
+                          ng-required="section_field.required">
+                        </textarea>
+                        <select 
+                          ng-if="section_field.field_type == 'multiple'" 
+                          name="{{ section_field.field_name }}" 
+                          class="form-control" 
+                          ng-model="section_field.value" 
+                          ng-required="section_field.required">
+                            <option ng-repeat="choice in section_field.choices track by $index" value="{{ choice.value }}">{{ choice.display_name }}</option>
+                        </select>
+                        <span ng-if="nestedField.$invalid && nestedField.$dirty" class="text-danger"><em>This field is required</em></span>
+                        <span class="help-block">
+                          {{ section_field.helptext | translate }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div ng-if="applicationForm.$invalid" class="text-danger">
+        <p>You will not be able to submit this application until all required fields have been completed</p>
+      </div>
+      <div ng-if="submissionError.status == true" >
+        <h3>Please correct the following errors and submit your application again</h3>
+        <p ng-repeat="error in submissionError.errors">
+          <strong>{{ error.field_label }}</strong>: <em class="text-danger">{{ error.error_msg }}</em>
+        </p>
+      </div>
+      <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid">Submit Application</button>
+    </form>
+  </div>
+  <div ng-if="applicationComplete">
+    <button onclick="window.print()" class="hidden-print pull-right btn btn-lg btn-primary">
+      <i class="fa fa-print"></i> Print
+    </button>
+    <h1 class="hidden-print">Application Complete!</h1>
+    <p class="lead hidden-print">Please review and print out your completed application for your own records</p>
+    <div ng-repeat="section in application_template.sections">
+      <h3>{{ section.name }}</h3>
+      <table class="table table-condensed table-striped">
+        <tbody>
+          <tr ng-repeat="field in section.fields">
+            <td class="col-sm-6">{{ field.field_label }}</td>
+            <td class="col-sm-6">{{ field.value }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endverbatim %}
+{% endblock %}

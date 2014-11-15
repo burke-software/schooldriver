@@ -1,20 +1,50 @@
 <div class="col-sm-4 col-md-3">
   <h1>Courses</h1>
   <h3>
-    <a href="/schedule/course/{{ course.id }}"><i class="fa fa-fw fa-list"></i></a>
-    <a href="/admin/report_builder/report/"><i class="fa fa-fw fa-file-text"></i></a>
-    <a href="/admin/schedule/course/{{ course.id }}/"><i class="fa fa-fw fa-sitemap"></i></a>
+    <a target="_self" href="/schedule/course/{{ course.id }}"><i class="fa fa-fw fa-list"></i></a>
+    <a target="_self" href="/admin/report_builder/report/"><i class="fa fa-fw fa-file-text"></i></a>
+    <a target="_self" href="/admin/schedule/course/{{ course.id }}/"><i class="fa fa-fw fa-sitemap"></i></a>
   </h3>
   <ul class="nav nav-pills nav-stacked">
+    {{ courses.meta.count }} Results
+    <a href="#" ng-click="resultsNext(previous=false)">{{ courses.meta.next }}</a>
+    <a href="#" ng-click="resultsNext(previous=true)"> {{ courses.meta.previous }}</a>
     <li ng-repeat="course in courses">
-      <a href="/schedule/course/{{ course.id }}">{{ course.fullname }}</a>
+      <a href="/schedule/course/?course_id={{ course.id }}">{{ course.fullname }}</a>
       <ul class="nav nav-pills nav-stacked" ng-if="course.sections.length > 0">
-        <li ng-repeat="section in course.sections"><a href="">{{ section }}</a></li>
+          <li ng-repeat="section in course.sections"><a href="/schedule/course/?course_id={{ course.id }}&section_id={{ section.id }}"> - {{ section.name }} ({{ section.teachers[0].last_name }})</a></li>
       </ul>
     </li>
+    
   </ul>
 </div>
-<div class="col-sm-8 col-md-9">
+
+
+<div ng-show="section" class="col-sm-8 col-md-9">
+  <div class="well">
+    <h1>{{ section.name }}</h1>
+  </div>
+  <form name="sectionForm" class="form-horizontal">
+    <div>
+        <div bsc-field field-options="sectionOptions.name" field-form="sectionForm.name">
+          <input class="form-control" name="name" ng-required="sectionOptions.name.required" type="text" ng-model="section.name" ng-blur="saveSection('name')" />
+        </div>
+        <div bsc-field field-options="sectionOptions.is_active" field-form="sectionForm.is_active">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" name="is_active" ng-model="section.is_active" ng-change="saveSection('is_active')" />
+            </label>
+          </div>
+        </div>
+        <div bsc-field field-options="sectionOptions.marking_period" field-form="sectionForm.marking_period">
+          <select multiple="multiple" class="form-control" name="marking_period" ng-required="sectionOptions.marking_period.required" ng-model="section.marking_period" ng-blur="saveSection('marking_period')" />
+        </div>
+    </div>
+  </form>
+</div>
+
+
+<div ng-show="course" class="col-sm-8 col-md-9">
   <div class="well">
     <h1>{{ course.fullname }}<br /><small>{{ course.description }}</small></h1>
     <ul>
@@ -37,7 +67,11 @@
       <accordion-heading>
         <i class="fa fa-fw fa-caret-right" ng-class="{'fa-caret-down': status.isOpen2, 'fa-caret-right': !status.isOpen2}"></i>Course Sections
       </accordion-heading>
-      <p>I plan on putting the course sections in the nav to the left. But perhaps it'd be good to put them in a block here? That menu on the left might not make it to mobile, so if it's not hard or burdensome it might be nice to give someone another way to get 'em.</p>
+      <p>
+        <div ng-repeat="section in course.sections">
+            {{ section.name }} ({{ section.teachers[0].last_name }})
+        </div>
+      </p>
     </accordion-group>
     <accordion-group is-open="status.isFirstOpen">
       <accordion-heading>
