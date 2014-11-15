@@ -19,10 +19,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Translated-Using: django-rosetta 0.7.4\n"
 
-#: application_custom_field:1
-msgid "First Name"
-msgstr "Primer Nombre"
-
 #: application_custom_field:2
 msgid "Middle Name"
 msgstr ""
@@ -97,21 +93,53 @@ msgstr ""
 msgid "Ethnicity"
 msgstr ""
 
+#: application_custom_field_choice:67
+msgid "Hispanic/Latino"
+msgstr ""
+
+#: application_custom_field_choice:67
+msgid " Non-Hispanic/Latino"
+msgstr ""
+
 #: application_custom_field:64
 msgid "Gender"
+msgstr ""
+
+#: application_custom_field_choice:64
+msgid "Male"
+msgstr ""
+
+#: application_custom_field_choice:64
+msgid " Female"
 msgstr ""
 
 #: application_custom_field:14
 msgid "Elementary Graduation Year"
 msgstr ""
 
+#: application_custom_field_helptext:14
+msgid "Please enter a valid number"
+msgstr ""
+
 #: application_custom_field:11
 msgid "Student Email"
+msgstr ""
+
+#: application_custom_field_helptext:11
+msgid "Please enter student email here"
 msgstr ""
 
 #: application_custom_field:81
 msgid ""
 "Has the applicant now or ever been enrolled in special education classes?"
+msgstr ""
+
+#: application_custom_field_choice:81
+msgid "Yes"
+msgstr ""
+
+#: application_custom_field_choice:81
+msgid " No"
 msgstr ""
 
 #: application_custom_field:82
@@ -122,6 +150,10 @@ msgstr ""
 
 #: application_custom_field:16
 msgid "religion"
+msgstr ""
+
+#: application_custom_field_helptext:16
+msgid "Students of all faith traditions are welcome to apply"
 msgstr ""
 
 #: application_custom_field:5
@@ -144,12 +176,46 @@ msgstr ""
 msgid "If you answered YES to any of the questions above, please explain"
 msgstr ""
 
+#: application_custom_field_helptext:83
+msgid ""
+"Copies of Evaluations, IEP’s and 504’s must be provided to the school after "
+"submitting application."
+msgstr ""
+
 #: application_custom_field:68
 msgid "How did you hear about Cristo Rey Atlanta Jesuit High School?"
 msgstr ""
 
+#: application_custom_field_choice:68
+msgid "Friend"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Current School"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Church"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Television"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Radio"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Other"
+msgstr ""
+
 #: application_custom_field:69
 msgid "Other: Please Explain"
+msgstr ""
+
+#: application_custom_field_helptext:69
+msgid "If you chose other above, please explain here"
 msgstr ""
 
 #: application_custom_field:70
@@ -160,6 +226,30 @@ msgstr ""
 
 #: application_custom_field:71
 msgid "Student Lives With"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid "Mother Only"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Father Only"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Both Parents"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Grandparents"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Guardian/Tutor"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Other-Relationship"
 msgstr ""
 
 #: application_custom_field:85
@@ -178,12 +268,64 @@ msgstr ""
 msgid "Race"
 msgstr ""
 
+#: application_custom_field_choice:66
+msgid "Black/African-American"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Caucasian"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Asian"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Native American Indian/Alaskan"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Pacific Islander/Native Hawaiian"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Multi-racial"
+msgstr ""
+
 #: application_custom_field:72
 msgid "Parents' Current Marital Status"
 msgstr ""
 
+#: application_custom_field_choice:72
+msgid "Single Parent"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Married"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Divorced"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Separated"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Mother Deceased"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Father Deceased"
+msgstr ""
+
 #: application_custom_field:73
 msgid "List all schools the student has attended in the last three years"
+msgstr ""
+
+#: application_custom_field_helptext:73
+msgid "Please list the school name, school City/State, and years attended."
 msgstr ""
 
 #: application_custom_field:74
@@ -223,6 +365,10 @@ msgstr ""
 msgid "Number of Adults Living In Household"
 msgstr ""
 
+#: application_custom_field_helptext:84
+msgid "please enter a valid number"
+msgstr ""
+
 #: application_custom_field:86
 msgid ""
 "Please list all dependents living in your home (please include name and age)"
@@ -236,6 +382,10 @@ msgstr ""
 msgid "Is Parent/Guardian 1 a Legal Guardian?"
 msgstr ""
 
+#: application_custom_field_helptext:88
+msgid "Legal Guardians must provide documentation with the application"
+msgstr ""
+
 #: application_custom_field:93
 msgid "Parent/Guardian 1 Email"
 msgstr ""
@@ -244,8 +394,12 @@ msgstr ""
 msgid "Parent/Guardian 1 Home Address"
 msgstr ""
 
-#: application_custom_field:4
-msgid "Birth Date"
+#: application_custom_field_helptext:91
+msgid "Street (Apt #), City, State, and Zip Code"
+msgstr ""
+
+#: application_custom_field_helptext:4
+msgid "Please use the format: YYYY-MM-DD"
 msgstr ""
 
 #: application_custom_field:90
@@ -308,12 +462,48 @@ msgstr ""
 msgid "Parent/Guardian 2 Home Address"
 msgstr ""
 
+#: application_custom_field_helptext:102
+msgid "Street (Apt #), City, State, Zip Code"
+msgstr ""
+
 #: application_custom_field:105
 msgid "Parent Guardian 2 Occupation"
 msgstr ""
 
 #: application_custom_field:108
 msgid "Parent Guardian 2 Work Status"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid "Employed"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Unemployed"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Retired"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Self-Employed"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Homemaker"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Disabled"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Student"
+msgstr ""
+
+#: application_custom_field:1
+msgid "First Name"
 msgstr ""
 
 #: application_custom_field:97
@@ -324,6 +514,10 @@ msgstr ""
 msgid "Did you file your IRS Income Tax?"
 msgstr ""
 
+#: application_custom_field_helptext:109
+msgid "If no, please explain below"
+msgstr ""
+
 #: application_custom_field:110
 msgid ""
 "If you answered \"No\" to \"Did you file your IRS Income TAX\" above, please"
@@ -332,6 +526,26 @@ msgstr ""
 
 #: application_custom_field:111
 msgid "Tax Reporting Filing Status"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid "Married"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid " Married Filing Separate"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid " Head of Household"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid " Single"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid " Widow(er)"
 msgstr ""
 
 #: application_custom_field:112
@@ -400,6 +614,14 @@ msgstr ""
 msgid "Do you rent or own your home?"
 msgstr ""
 
+#: application_custom_field_choice:123
+msgid "Rent"
+msgstr ""
+
+#: application_custom_field_choice:123
+msgid " Own"
+msgstr ""
+
 #: application_custom_field:124
 msgid "What is your monthly rent or mortgage payment?"
 msgstr ""
@@ -439,7 +661,7 @@ msgstr ""
 
 #: application_section_name:0
 msgid "Student's Personal Data"
-msgstr "HELLO WORLD"
+msgstr ""
 
 #: application_section_name:1
 msgid "Student Backgound"
@@ -467,58 +689,4 @@ msgstr ""
 
 #: application_section_name:4
 msgid "Parent/Guardian Questionnaire"
-msgstr ""
-
-#: application_custom_field_helptext:14
-msgid "Please enter a valid number"
-msgstr ""
-
-#: application_custom_field_helptext:11
-msgid "Please enter student email here"
-msgstr ""
-
-#: application_custom_field_helptext:16
-msgid "Students of all faith traditions are welcome to apply"
-msgstr ""
-
-#: application_custom_field_helptext:83
-msgid ""
-"Copies of Evaluations, IEP’s and 504’s must be provided to the school after "
-"submitting application."
-msgstr ""
-
-#: application_custom_field_helptext:69
-msgid "If you chose other above, please explain here"
-msgstr ""
-
-#: application_custom_field_helptext:85
-msgid "Please enter a valid number"
-msgstr ""
-
-#: application_custom_field_helptext:73
-msgid "Please list the school name, school City/State, and years attended."
-msgstr ""
-
-#: application_custom_field_helptext:84
-msgid "please enter a valid number"
-msgstr ""
-
-#: application_custom_field_helptext:88
-msgid "Legal Guardians must provide documentation with the application"
-msgstr ""
-
-#: application_custom_field_helptext:91
-msgid "Street (Apt #), City, State, and Zip Code"
-msgstr ""
-
-#: application_custom_field_helptext:4
-msgid "Please use the format: YYYY-MM-DD"
-msgstr ""
-
-#: application_custom_field_helptext:102
-msgid "Street (Apt #), City, State, Zip Code"
-msgstr ""
-
-#: application_custom_field_helptext:109
-msgid "If no, please explain below"
 msgstr ""
