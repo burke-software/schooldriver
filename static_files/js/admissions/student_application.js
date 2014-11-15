@@ -1,7 +1,16 @@
-var admissionsApp = angular.module('admissions',[]);
+var admissionsApp = angular.module('admissions',['pascalprecht.translate']);
 
-admissionsApp.controller('StudentApplicationController', ['$scope', '$http', function($scope, $http) {
+admissionsApp.config(['$translateProvider', function ($translateProvider) {
+    $translateProvider.useUrlLoader('/api/translations/admissions');
+    $translateProvider.preferredLanguage('en');
+}]);
+
+admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$translate', function($scope, $http, $translate) {
     
+    $scope.changeLanguage = function(key) {
+        $translate.use(key);
+      };
+
     $scope.application_template = {};
     $scope.applicationFields = [];
     $scope.applicantIntegratedFields = [];
@@ -140,6 +149,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', fun
                 });
             };  
         });
+
     };
 
 
