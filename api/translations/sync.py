@@ -5,9 +5,9 @@ from ecwsp.admissions.models import ApplicantCustomField, StudentApplicationTemp
 class SyncApplicationTranslationFile:
     """ sync the admissions .po file to reflect changes in application
     templates or custom fields that the user has modified """
-
-    po_file_path = "ecwsp/admissions/locale/es/LC_MESSAGES/django.po"
-    translation_entries = polib.pofile(po_file_path)
+    def __init__(self):
+        self.po_file_path = "ecwsp/admissions/locale/es/LC_MESSAGES/django.po"
+        self.translation_entries = polib.pofile(self.po_file_path)
 
     def sync(self):
         self.update_custom_field_translations()
@@ -84,7 +84,7 @@ class SyncApplicationTranslationFile:
         """create a blank entry, translate it yourself using Rosetta"""
         new_entry = polib.POEntry(
             msgid = unicode(entry_text),
-            msgstr = "",
+            msgstr = unicode(entry_text),
             occurrences = [(unicode(entry_type), unicode(entry_id))]
         )
         self.translation_entries.append(new_entry)
