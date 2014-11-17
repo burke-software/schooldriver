@@ -1153,8 +1153,11 @@ class SisReport(ScaffoldReport):
                 context['marking_periods'] = ', '.join(marking_periods.values_list('shortname',flat=True))
                 context['school_year'] = marking_periods[0].school_year
 
+
                 current_mp = marking_periods.first()
                 for student in students:
+                    # TC requested option for special formatting for student grad date
+                    context['long_grad_date'] = student.grad_date.strftime('%B %d, %Y')
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
                             schedule_days=schedule_days)
