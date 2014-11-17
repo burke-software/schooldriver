@@ -20,17 +20,6 @@ Preferences
         {% formrow form.include_deleted_students %}
         {% formrow form.course_sort %}
         {% formrow form.gradebook_preference %}
-        {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
-          <h3> OMR </h3>
-          {% formrow form.omr_default_point_value %}
-          {% formrow form.omr_default_number_answers %}
-        {% else %}
-            <span style="visibility:hidden">
-                {{ form.omr_default_point_value }}
-                {{ form.omr_default_number_answers }}
-                {{ form.omr_default_save_question_to_bank }}
-            </span>
-        {% endif %}
         <input type="submit"/>
       {% endform %}
     </form>
