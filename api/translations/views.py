@@ -13,7 +13,11 @@ class AdmissionsTranslationViewSet(viewsets.ViewSet):
                 po = polib.pofile(po_file_path)
                 data = {}
                 for entry in po:
-                    data[entry.msgid] = entry.msgstr
+                    if entry.msgstr != '':
+                        # only populate data with non-blank translations,
+                        # this will help our angular app negotiate missing
+                        # translations by detecting missing keys
+                        data[entry.msgid] = entry.msgstr
                 return Response(data)
             except Exception as e:
                 return Response({"error": str(e)}, 500)
