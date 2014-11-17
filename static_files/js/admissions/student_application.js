@@ -3,9 +3,18 @@ var admissionsApp = angular.module('admissions',['pascalprecht.translate']);
 admissionsApp.config(['$translateProvider', function ($translateProvider) {
     $translateProvider.useUrlLoader('/api/translations/admissions');
     $translateProvider.preferredLanguage('en');
+    $translateProvider.useMissingTranslationHandler('customTranslationHandler');
 }]);
 
-admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$translate', function($scope, $http, $translate) {
+admissionsApp.factory('customTranslationHandler', function () {
+  return function (translationID, uses) {
+    // return the following text as a translation 'result' - this will be
+    // displayed instead of the language key.
+    return translationID;
+  };
+});
+
+admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$translate', '$rootScope', function($scope, $http, $translate, $rootScope) {
     
     $scope.changeLanguage = function(key) {
         $translate.use(key);

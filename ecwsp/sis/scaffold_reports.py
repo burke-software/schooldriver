@@ -1118,6 +1118,7 @@ class SisReport(ScaffoldReport):
 
             # backwards compatibility for templates
             context['date_begin'] = self.for_date
+            context['date_of_report'] = self.date_end
             context['date_end'] = self.date_end
             context['long_date'] = unicode(datetime.date.today().strftime('%B %d, %Y'))
             context['school_year'] = self.report_context['school_year']
@@ -1152,6 +1153,7 @@ class SisReport(ScaffoldReport):
                     marking_periods = MarkingPeriod.objects.filter(start_date__gte=self.report_context['date_begin']).order_by('start_date')
                 context['marking_periods'] = ', '.join(marking_periods.values_list('shortname',flat=True))
                 context['school_year'] = marking_periods[0].school_year
+
 
                 current_mp = marking_periods.first()
                 for student in students:
