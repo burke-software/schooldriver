@@ -41,10 +41,8 @@
     {% block extra_head %}{% endblock %}
     
     {% compress js %}
-    <script type="text/coffeescript" charset="utf-8" src="{% static "app/restfulModel.coffee" %}"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script type="text/coffeescript" charset="utf-8" src="{% static "app/angular_sis.coffee" %}"></script>
+    <script src="{% static "app/restfulModel.js" %}"></script>
+    <script src="{% static "app/angular_sis.js" %}"></script>
     {% endcompress %}
 </head>
 
