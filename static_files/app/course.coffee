@@ -5,15 +5,36 @@ app.controller 'CourseController', ($scope, $routeParams, $route, RestfulModel) 
     $scope.status =
         isFirstOpen: true
         isFirstDisabled: false
+    courseModel = new RestfulModel.Instance("courses")
+    sectionModel = new RestfulModel.Instance("sections")
+    $scope.courses = courseModel.getList()
 
-    $scope.$on '$routeChangeSuccess', ->
-        courseModel = new RestfulModel.Instance("courses")
-        $scope.courses = courseModel.getList()
-        courseModel.getOptions().then (options) ->
-            $scope.courseOptions = options
-        courseModel.getOne($routeParams.course_id, $scope.form).then (course) ->
-            $scope.course = course
-            $scope.saveCourse = course.saveForm
+    $scope.$on '$routeUpdate', ->
+        updateDetail()
+
+    updateDetail = () ->
+        $scope.section = null
+        $scope.course = null
+        if $routeParams.section_id
+            sectionModel.getOptions().then (options) ->
+                $scope.sectionOptions = options
+            sectionModel.getOne($routeParams.section_id, $scope.sectionForm).then (obj) ->
+                $scope.section = obj
+                $scope.saveSection = obj.saveForm
+        else 
+            courseModel.getOptions().then (options) ->
+                $scope.courseOptions = options
+            courseModel.getOne($routeParams.course_id, $scope.form).then (obj) ->
+                $scope.course = obj
+                $scope.saveCourse = obj.saveForm
+    updateDetail()
+
+    $scope.resultsNext = (previous) ->
+        if previous == true
+            page_num = $scope.courses.meta.previous.match(/\d+$/);
+        else
+            page_num = $scope.courses.meta.next.match(/\d+$/);
+        $scope.courses = courseModel.getList({page: page_num})
 
 
 app.factory 'RestfulModel', (Restangular) ->
@@ -35,15 +56,15 @@ app.factory 'RestfulModel', (Restangular) ->
                         form_field.$setValidity "server", true
                         form_field.isSaving = false
                         form_field.isSaved = true
-                    ), (response) ->
+                    , (response) ->
                         _.each response.data, (errors, key) ->
                             form_field.isSaving = false
                             #form[key].$dirty = true
                             form[key].$setValidity('server', false)
                             form[key].errors = errors
                 obj
-        @getList = ->
-            Restangular.all(@modelName).getList().$object
+        @getList = (query) ->
+            Restangular.all(@modelName).getList(query).$object
 
         return
 

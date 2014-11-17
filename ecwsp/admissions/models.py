@@ -8,6 +8,7 @@ from custom_field.custom_field import CustomFieldModel
 from ecwsp.sis.models import get_default_language, GradeLevel, SchoolYear, Faculty
 from constance import config
 
+from jsonfield import JSONField
 import datetime
 
 if not 'ecwsp.standard_test' in settings.INSTALLED_APPS:
@@ -354,3 +355,58 @@ class ApplicantStandardCategoryGrade(models.Model):
     category = models.ForeignKey('standard_test.StandardCategory')
     result = models.ForeignKey(ApplicantStandardTestResult)
     grade = models.DecimalField(max_digits=6,decimal_places=2)
+
+class StudentApplicationTemplate(models.Model):
+    """store application templates in JSON format"""
+    name = models.CharField(max_length=255)
+    is_default = models.BooleanField(default=False)
+    json_template = JSONField()
+
+    def save(self, *args, **kwargs):
+        # Need to make sure that there is only one default template
+        # reference: http://stackoverflow.com/questions/1455126/
+        if self.is_default:
+            StudentApplicationTemplate.objects.filter(is_default=True).update(is_default=False)
+        super(StudentApplicationTemplate, self).save(*args, **kwargs)
+
+class ApplicantCustomField(models.Model):
+    field_type_choices = (
+            ('input', 'Small Text Field'),
+            ('textarea', 'Large Text Field'),
+            ('multiple', 'Dropdown Choices'),
+            ('radio', 'Multiple Choices'),
+            ('checkbox', 'Checkboxes'),
+        )
+    field_name = models.CharField(blank=True, null=True, max_length=50)
+    is_field_integrated_with_applicant = models.BooleanField(default=False) 
+    field_type = models.CharField(
+        blank = True,
+        null = True,
+        max_length=50, 
+        choices = field_type_choices,
+        help_text = "Choose the type of field"
+        )
+    field_label = models.CharField(
+        blank = True, 
+        null = True,
+        max_length = 255,
+        help_text = "Give this field a recognizable name"
+        )
+    field_choices = models.TextField(
+        blank = True,
+        null= True,
+        help_text="""List the choices you want displayed, 
+seperated by commas. This is only valid for Dropdown, 
+Multiple, and Checkbox field types"""
+        )
+    helptext = models.CharField(blank=True, null=True, max_length=500)
+    required = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return self.field_label
+
+class ApplicantAdditionalInformation(models.Model):
+    applicant = models.ForeignKey(Applicant, related_name='additionals')
+    custom_field = models.ForeignKey(ApplicantCustomField, null=True)
+    answer = models.TextField(blank=True, null=True)
+

@@ -33,11 +33,30 @@ class AttendanceDashlet(Dashlet):
     require_apps = ('ecwsp.attendance',)
 
 
+class CourseDetailDashlet(Dashlet):
+    template_name = 'schedule/course_detail_dashlet.html'
+    require_permissions_or = ('grades.check_own_grade', 'schedule.change_course',)
+
+    def get_context_data(self, **kwargs):
+        context = super(CourseDetailDashlet, self).get_context_data(**kwargs)
+        courses = Course.objects.filter(
+            sections__marking_period__school_year__active_year=True)
+        if self.request.user.has_perm('schedule.change_course'):
+            context['change_course'] = True
+        else:
+            context['change_course'] = False
+            courses = courses.filter(sections__teachers=self.request.user)
+        context['courses'] = courses
+
+        return context
+
+
 
 class CourseDashboard(Dashboard):
     app = 'schedule'
     dashlets = [
         CourseSectionDashlet(title="Course Sections"),
+        CourseDetailDashlet(title="Courses"),
         GradesDashlet(title="Grades"),
         AdminListDashlet(title="Schedule", app_label="schedule"),
         AdminListDashlet(title="GradesList", verbose_name="Grades", app_label="grades"),

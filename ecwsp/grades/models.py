@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models, connection
-from django.db.models import Count, signals, Sum
+from django.db.models import Count, Sum
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from ecwsp.sis.models import Student, GradeScaleRule
@@ -12,10 +12,14 @@ import decimal
 from decimal import Decimal
 import datetime
 import ecwsp
-import sys
 import logging
 
+
 class GradeComment(models.Model):
+    """ Optional pre defined comment
+    Used when free thought on report cards is discouraged
+    """
+    # Allow users to set the id, instead of auto inc
     id = models.IntegerField(primary_key=True)
     comment = models.CharField(max_length=500)
 
@@ -27,15 +31,20 @@ class GradeComment(models.Model):
 
 
 def grade_comment_length_validator(value):
-    max_length = int(Configuration.get_or_default('Grade comment length limit').value)
+    max_length = int(Configuration.get_or_default(
+        'Grade comment length limit').value)
     validator = MaxLengthValidator(max_length)
     return validator(value)
+
 
 class StudentMarkingPeriodGrade(models.Model):
     """ Stores marking period grades for students, only used for cache """
     student = models.ForeignKey('sis.Student')
-    marking_period = models.ForeignKey('schedule.MarkingPeriod', blank=True, null=True)
-    grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="MP Average")
+    marking_period = models.ForeignKey(
+        'schedule.MarkingPeriod', blank=True, null=True)
+    grade = CachedDecimalField(
+        max_digits=5, decimal_places=2, blank=True, null=True,
+        verbose_name="MP Average")
 
     class Meta:
         unique_together = ('student', 'marking_period')
@@ -46,7 +55,8 @@ class StudentMarkingPeriodGrade(models.Model):
 
     def get_scaled_average(self, rounding=2, boost=True):
         """ Convert to scaled grade first, then average
-        Burke Software does not endorse this as a precise way to calculate averages """
+        Burke Software does not endorse this as a precise way to calculate
+        averages """
         grade_total = 0.0
         total_credits = 0.0
         grades = self.student.grade_set.filter(
@@ -74,10 +84,13 @@ class StudentMarkingPeriodGrade(models.Model):
     def build_all_cache():
         """ Create object for each student * possible marking periods """
         for student in Student.objects.all():
-            marking_periods = student.courseenrollment_set.values('course_section__marking_period').annotate(Count('course_section__marking_period'))
+            marking_periods = student.courseenrollment_set.values(
+                'course_section__marking_period').annotate(
+                    Count('course_section__marking_period'))
             for marking_period in marking_periods:
                 StudentMarkingPeriodGrade.objects.get_or_create(
-                    student=student, marking_period_id=marking_period['course_section__marking_period'])
+                    student=student,
+                    marking_period_id=marking_period['course_section__marking_period'])
 
     def calculate_grade(self):
         cursor = connection.cursor()
@@ -233,20 +246,20 @@ class StudentYearGrade(models.Model):
 #signals.post_save.connect(StudentYearGrade.build_all_cache, sender=Student)
 
 
-
-
 letter_grade_choices = (
-        ("I", "Incomplete"),
-        ("P", "Pass"),
-        ("F", "Fail"),
-        ("A", "A"),
-        ("B", "B"),
-        ("C", "C"),
-        ("D", "D"),
-        ("HP", "High Pass"),
-        ("LP", "Low Pass"),
-        ("M", "Missing"),
-    )
+    ("I", "Incomplete"),
+    ("P", "Pass"),
+    ("F", "Fail"),
+    ("A", "A"),
+    ("B", "B"),
+    ("C", "C"),
+    ("D", "D"),
+    ("HP", "High Pass"),
+    ("LP", "Low Pass"),
+    ("M", "Missing"),
+)
+
+
 class Grade(models.Model):
     student = models.ForeignKey('sis.Student')
     course_section = models.ForeignKey('schedule.CourseSection')

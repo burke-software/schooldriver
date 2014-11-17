@@ -1,0 +1,678 @@
+# 
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2014-11-14 07:28-0456\n"
+"Last-Translator: <aa@aa.com>\n"
+"X-Translated-Using: django-rosetta 0.7.4\n"
+
+#: application_custom_field:2
+msgid "Middle Name"
+msgstr ""
+
+#: application_custom_field:3
+msgid "Last Name"
+msgstr ""
+
+#: application_custom_field:9
+msgid "SSN"
+msgstr ""
+
+#: application_custom_field:10
+msgid "parent email"
+msgstr ""
+
+#: application_custom_field:13
+msgid "ethnicity"
+msgstr ""
+
+#: application_custom_field:15
+msgid "present school"
+msgstr ""
+
+#: application_custom_field:17
+msgid "place of worship"
+msgstr ""
+
+#: application_custom_field:18
+msgid "parent guardian first name"
+msgstr ""
+
+#: application_custom_field:19
+msgid "parent guardian last name"
+msgstr ""
+
+#: application_custom_field:20
+msgid "relationship to student"
+msgstr ""
+
+#: application_custom_field:21
+msgid "heard about us"
+msgstr ""
+
+#: application_custom_field:22
+msgid "country of birth"
+msgstr ""
+
+#: application_custom_field:23
+msgid "total income"
+msgstr ""
+
+#: application_custom_field:24
+msgid "adjusted available income"
+msgstr ""
+
+#: application_custom_field:25
+msgid "siblings"
+msgstr ""
+
+#: application_custom_field:62
+msgid "Birth Date"
+msgstr ""
+
+#: application_custom_field:63
+msgid ""
+"Create a custom field: informatation gathered from this field will be "
+"attached to the Applicant's file as \"additional information\""
+msgstr ""
+
+#: application_custom_field:67
+msgid "Ethnicity"
+msgstr ""
+
+#: application_custom_field_choice:67
+msgid "Hispanic/Latino"
+msgstr ""
+
+#: application_custom_field_choice:67
+msgid " Non-Hispanic/Latino"
+msgstr ""
+
+#: application_custom_field:64
+msgid "Gender"
+msgstr ""
+
+#: application_custom_field_choice:64
+msgid "Male"
+msgstr ""
+
+#: application_custom_field_choice:64
+msgid " Female"
+msgstr ""
+
+#: application_custom_field:14
+msgid "Elementary Graduation Year"
+msgstr ""
+
+#: application_custom_field_helptext:14
+msgid "Please enter a valid number"
+msgstr ""
+
+#: application_custom_field:11
+msgid "Student Email"
+msgstr ""
+
+#: application_custom_field_helptext:11
+msgid "Please enter student email here"
+msgstr ""
+
+#: application_custom_field:81
+msgid ""
+"Has the applicant now or ever been enrolled in special education classes?"
+msgstr ""
+
+#: application_custom_field_choice:81
+msgid "Yes"
+msgstr ""
+
+#: application_custom_field_choice:81
+msgid " No"
+msgstr ""
+
+#: application_custom_field:82
+msgid ""
+"Does the applicant currently have, or ever had, an Individual Education Plan"
+" (IEP) or 504 plan?"
+msgstr ""
+
+#: application_custom_field:16
+msgid "religion"
+msgstr ""
+
+#: application_custom_field_helptext:16
+msgid "Students of all faith traditions are welcome to apply"
+msgstr ""
+
+#: application_custom_field:5
+msgid "Street"
+msgstr ""
+
+#: application_custom_field:8
+msgid "City"
+msgstr ""
+
+#: application_custom_field:6
+msgid "State"
+msgstr ""
+
+#: application_custom_field:7
+msgid "Zip Code"
+msgstr ""
+
+#: application_custom_field:83
+msgid "If you answered YES to any of the questions above, please explain"
+msgstr ""
+
+#: application_custom_field_helptext:83
+msgid ""
+"Copies of Evaluations, IEP’s and 504’s must be provided to the school after "
+"submitting application."
+msgstr ""
+
+#: application_custom_field:68
+msgid "How did you hear about Cristo Rey Atlanta Jesuit High School?"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid "Friend"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Current School"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Church"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Television"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Radio"
+msgstr ""
+
+#: application_custom_field_choice:68
+msgid " Other"
+msgstr ""
+
+#: application_custom_field:69
+msgid "Other: Please Explain"
+msgstr ""
+
+#: application_custom_field_helptext:69
+msgid "If you chose other above, please explain here"
+msgstr ""
+
+#: application_custom_field:70
+msgid ""
+"Will the applicant be authorized to work in the U.S. by the first day of the"
+" work study program?"
+msgstr ""
+
+#: application_custom_field:71
+msgid "Student Lives With"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid "Mother Only"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Father Only"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Both Parents"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Grandparents"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Guardian/Tutor"
+msgstr ""
+
+#: application_custom_field_choice:71
+msgid " Other-Relationship"
+msgstr ""
+
+#: application_custom_field:85
+msgid "Number of Children Living in Household"
+msgstr ""
+
+#: application_custom_field:12
+msgid "Language Spoken at Home"
+msgstr ""
+
+#: application_custom_field:65
+msgid "Other Languages Spoken"
+msgstr ""
+
+#: application_custom_field:66
+msgid "Race"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid "Black/African-American"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Caucasian"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Asian"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Native American Indian/Alaskan"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Pacific Islander/Native Hawaiian"
+msgstr ""
+
+#: application_custom_field_choice:66
+msgid " Multi-racial"
+msgstr ""
+
+#: application_custom_field:72
+msgid "Parents' Current Marital Status"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid "Single Parent"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Married"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Divorced"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Separated"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Mother Deceased"
+msgstr ""
+
+#: application_custom_field_choice:72
+msgid " Father Deceased"
+msgstr ""
+
+#: application_custom_field:73
+msgid "List all schools the student has attended in the last three years"
+msgstr ""
+
+#: application_custom_field_helptext:73
+msgid "Please list the school name, school City/State, and years attended."
+msgstr ""
+
+#: application_custom_field:74
+msgid "Describe the applicant’s personal strengths and weaknesses"
+msgstr ""
+
+#: application_custom_field:75
+msgid ""
+"Has the applicant experienced any behavioral issues or demonstrated any "
+"violent, disruptive or disrespectful behavior in school?  Please explain"
+msgstr ""
+
+#: application_custom_field:76
+msgid ""
+"Does the applicant suffer from any serious illness, physical or emotional "
+"limitation, depression, or other mental illness? Please explain"
+msgstr ""
+
+#: application_custom_field:77
+msgid "Has the applicant ever been arrested or convicted of a crime?"
+msgstr ""
+
+#: application_custom_field:78
+msgid "Has the applicant ever had a psycho-educational evaluation?"
+msgstr ""
+
+#: application_custom_field:79
+msgid ""
+"Has the applicant been tested for, or diagnosed with, a learning disability?"
+msgstr ""
+
+#: application_custom_field:80
+msgid "Has the applicant been tested for, or diagnosed with, ADD or ADHD?"
+msgstr ""
+
+#: application_custom_field:84
+msgid "Number of Adults Living In Household"
+msgstr ""
+
+#: application_custom_field_helptext:84
+msgid "please enter a valid number"
+msgstr ""
+
+#: application_custom_field:86
+msgid ""
+"Please list all dependents living in your home (please include name and age)"
+msgstr ""
+
+#: application_custom_field:92
+msgid "Parent/Guardian 1 Phone"
+msgstr ""
+
+#: application_custom_field:88
+msgid "Is Parent/Guardian 1 a Legal Guardian?"
+msgstr ""
+
+#: application_custom_field_helptext:88
+msgid "Legal Guardians must provide documentation with the application"
+msgstr ""
+
+#: application_custom_field:93
+msgid "Parent/Guardian 1 Email"
+msgstr ""
+
+#: application_custom_field:91
+msgid "Parent/Guardian 1 Home Address"
+msgstr ""
+
+#: application_custom_field_helptext:91
+msgid "Street (Apt #), City, State, and Zip Code"
+msgstr ""
+
+#: application_custom_field_helptext:4
+msgid "Please use the format: YYYY-MM-DD"
+msgstr ""
+
+#: application_custom_field:90
+msgid "Parent/Guardian 1 Relationship to Student"
+msgstr ""
+
+#: application_custom_field:87
+msgid "Parent/Guardian 1 Full Name"
+msgstr ""
+
+#: application_custom_field:94
+msgid "Parent Guardian 1 Occupation"
+msgstr ""
+
+#: application_custom_field:96
+msgid "Parent/Guardian 1 Work Phone"
+msgstr ""
+
+#: application_custom_field:95
+msgid "Parent/Guardian 1 Employer"
+msgstr ""
+
+#: application_custom_field:98
+msgid "Parent/Guardian 2 Full Name"
+msgstr ""
+
+#: application_custom_field:99
+msgid "Is Parent/Guardian 2 A Legal Guardian?"
+msgstr ""
+
+#: application_custom_field:100
+msgid "Parent/Guardian 2 Gender"
+msgstr ""
+
+#: application_custom_field:89
+msgid "Parent/Guardian 1 Gender"
+msgstr ""
+
+#: application_custom_field:101
+msgid "Parent/Guardian 2 Relationship To Student"
+msgstr ""
+
+#: application_custom_field:103
+msgid "Parent/Guardian 2 Phone"
+msgstr ""
+
+#: application_custom_field:104
+msgid "Parent/Guardian 2 Email"
+msgstr ""
+
+#: application_custom_field:106
+msgid "Parent/Guardian 2 Employer"
+msgstr ""
+
+#: application_custom_field:107
+msgid "Parent/Guardian 2 Work Phone"
+msgstr ""
+
+#: application_custom_field:102
+msgid "Parent/Guardian 2 Home Address"
+msgstr ""
+
+#: application_custom_field_helptext:102
+msgid "Street (Apt #), City, State, Zip Code"
+msgstr ""
+
+#: application_custom_field:105
+msgid "Parent Guardian 2 Occupation"
+msgstr ""
+
+#: application_custom_field:108
+msgid "Parent Guardian 2 Work Status"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid "Employed"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Unemployed"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Retired"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Self-Employed"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Homemaker"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Disabled"
+msgstr ""
+
+#: application_custom_field_choice:108
+msgid " Student"
+msgstr ""
+
+#: application_custom_field:1
+msgid "First Name"
+msgstr ""
+
+#: application_custom_field:97
+msgid "Parent Guardian 1 Work Status"
+msgstr ""
+
+#: application_custom_field:109
+msgid "Did you file your IRS Income Tax?"
+msgstr ""
+
+#: application_custom_field_helptext:109
+msgid "If no, please explain below"
+msgstr ""
+
+#: application_custom_field:110
+msgid ""
+"If you answered \"No\" to \"Did you file your IRS Income TAX\" above, please"
+" explain here"
+msgstr ""
+
+#: application_custom_field:111
+msgid "Tax Reporting Filing Status"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid "Married"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid " Married Filing Separate"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid " Head of Household"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid " Single"
+msgstr ""
+
+#: application_custom_field_choice:111
+msgid " Widow(er)"
+msgstr ""
+
+#: application_custom_field:112
+msgid ""
+"A. If applicable, please describe any special circumstances that affect the "
+"family’s financial situation in the text box below"
+msgstr ""
+
+#: application_custom_field:113
+msgid ""
+"B.  What is the “Adjusted Gross Income” of the household’s most recent "
+"federal tax returns?"
+msgstr ""
+
+#: application_custom_field:114
+msgid ""
+"C.  If filing separately, what is the second custodial parent’s “Adjusted "
+"Gross Income”?"
+msgstr ""
+
+#: application_custom_field:115
+msgid ""
+"D. What is the total household monthly amount received for: Social Security "
+"Benefits (SSI, etc.)"
+msgstr ""
+
+#: application_custom_field:116
+msgid ""
+"D. What is the total household monthly amount received for: Pension Income?"
+msgstr ""
+
+#: application_custom_field:117
+msgid ""
+"D. What Is The Total Household Monthly Amount Received For: Welfar/TANF?"
+msgstr ""
+
+#: application_custom_field:118
+msgid ""
+"D. What Is The Total Household Monthly Amount Received For: Child Support?"
+msgstr ""
+
+#: application_custom_field:119
+msgid ""
+"D. What Is The Total Household Monthly Amount Received For: Food Stamps?"
+msgstr ""
+
+#: application_custom_field:120
+msgid ""
+"D. What Is The Total Household Monthly Amount Received For: Worker's "
+"Compensation?"
+msgstr ""
+
+#: application_custom_field:121
+msgid ""
+"D. What Is The Total Household Monthly Amount Received For: Disability "
+"Income?"
+msgstr ""
+
+#: application_custom_field:122
+msgid ""
+"D. What Is The Total Household Monthly Amount Received For: Housing "
+"Assistance?"
+msgstr ""
+
+#: application_custom_field:123
+msgid "Do you rent or own your home?"
+msgstr ""
+
+#: application_custom_field_choice:123
+msgid "Rent"
+msgstr ""
+
+#: application_custom_field_choice:123
+msgid " Own"
+msgstr ""
+
+#: application_custom_field:124
+msgid "What is your monthly rent or mortgage payment?"
+msgstr ""
+
+#: application_custom_field:125
+msgid "Are you paying tuition for any other children?"
+msgstr ""
+
+#: application_custom_field:126
+msgid ""
+"E. Is your child currently receiving or does he or she qualify for a free or"
+" reduced lunch?"
+msgstr ""
+
+#: application_custom_field:127
+msgid ""
+"F. Does your child receive any scholarship assistance in middle school that "
+"will continue in high school?"
+msgstr ""
+
+#: application_custom_field:128
+msgid ""
+"If you answered yes to \"Does your child receive any scholarship assistance "
+"in middle school that will continue in high school?\", please list "
+"scholarship name and amount"
+msgstr ""
+
+#: application_custom_field:129
+msgid ""
+"Why do you want your son or daughter to attend Cristo Rey Atlanta Jesuit "
+"High School?"
+msgstr ""
+
+#: application_custom_field:130
+msgid "Why do you believe he or she would do well here?"
+msgstr ""
+
+#: application_section_name:0
+msgid "Student's Personal Data"
+msgstr ""
+
+#: application_section_name:1
+msgid "Student Backgound"
+msgstr ""
+
+#: application_section_help_text:1
+msgid ""
+"Learning and Medical Profile (the information you provide is confidential)"
+msgstr ""
+
+#: application_section_name:2
+msgid "Family Information"
+msgstr ""
+
+#: application_section_name:3
+msgid "Preliminary Financial Aid Form"
+msgstr ""
+
+#: application_section_help_text:3
+msgid ""
+"To be completed by custodial parent or guardian who is financially responsible for the student, please include a copy of your W-2, Most recent Income Taxes (1040 form with all its schedules –no state taxes information), and award letters, if you receive state aid.\n"
+"\n"
+"Using the information from your previous year’s federal income tax forms, please complete the following"
+msgstr ""
+
+#: application_section_name:4
+msgid "Parent/Guardian Questionnaire"
+msgstr ""

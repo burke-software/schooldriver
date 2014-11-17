@@ -13,6 +13,9 @@ from ecwsp.admissions.models import PlaceOfWorship, ApplicationDecisionOption, W
 from ecwsp.admissions.models import BoroughOption, CountryOption, ImmigrationOption, AdmissionLevel
 from ecwsp.admissions.models import Applicant, ApplicantStandardTestResult, ApplicantStandardCategoryGrade
 from ecwsp.admissions.models import ApplicantFile
+from ecwsp.admissions.models import StudentApplicationTemplate
+from ecwsp.admissions.models import ApplicantCustomField
+from ecwsp.admissions.models import ApplicantAdditionalInformation
 from ecwsp.admissions.forms import ApplicantForm
 from ecwsp.sis.models import SchoolYear
 
@@ -63,6 +66,12 @@ class ContactLogInline(admin.TabularInline):
     extra = 1
     readonly_fields = ('user',)
 
+class ApplicantAdditionalInformationInline(admin.TabularInline):
+    model = ApplicantAdditionalInformation
+    extra = 0
+    readonly_fields = ['custom_field', 'answer']
+    ordering = ['custom_field']
+
 class ApplicantAdmin(CustomFieldAdmin):
     form = ApplicantForm
     list_display = ('lname', 'fname', 'present_school', 'city', 'level', 'application_decision',
@@ -70,7 +79,7 @@ class ApplicantAdmin(CustomFieldAdmin):
     list_filter = ['from_online_inquiry', 'school_year', 'level', 'checklist', 'ready_for_export',
                    'application_decision','present_school','ethnicity', 'heard_about_us', 'first_contact', 'year']
     search_fields = ['lname', 'fname', 'present_school__name']
-    inlines = [ContactLogInline, ApplicantFileInline]
+    inlines = [ContactLogInline, ApplicantFileInline, ApplicantAdditionalInformationInline]
     ordering = ('-id',)
     fieldsets = [
         (
@@ -255,3 +264,15 @@ class ApplicantStandardTestResultAdmin(admin.ModelAdmin):
     search_fields = ['applicant__fname', 'applicant__lname', 'test__name']
 admin.site.register(ApplicantStandardTestResult, ApplicantStandardTestResultAdmin)
 
+class StudentApplicationTemplateAdmin(admin.ModelAdmin):
+    model = StudentApplicationTemplate
+    extra = 0 
+admin.site.register(StudentApplicationTemplate, StudentApplicationTemplateAdmin)
+
+
+
+class ApplicantCustomFieldAdmin(admin.ModelAdmin):
+    model = ApplicantCustomField
+    list_display = ['field_name', 'field_label', 'is_field_integrated_with_applicant']
+    extra = 0 
+admin.site.register(ApplicantCustomField, ApplicantCustomFieldAdmin)
