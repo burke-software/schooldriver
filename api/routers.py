@@ -5,6 +5,7 @@ from api.admissions.views import ApplicantViewSet
 from api.admissions.views import ApplicantCustomFieldViewSet
 from api.admissions.views import ApplicationTemplateViewSet
 from api.admissions.views import ApplicantAdditionalInformationViewSet
+from api.admissions.views import ApplicantForeignKeyRelatedFieldChoicesViewSet
 from api.translations.views import AdmissionsTranslationViewSet
 from api.translations.views import AdmissionsTranslationSync
 
@@ -18,4 +19,8 @@ router.register(r'applicant', ApplicantViewSet)
 router.register(r'applicant-custom-field', ApplicantCustomFieldViewSet)
 router.register(r'application-template', ApplicationTemplateViewSet )
 router.register(r'applicant-additional-information', ApplicantAdditionalInformationViewSet )
+router.register(r'applicant-foreign-key-field-choices', 
+    ApplicantForeignKeyRelatedFieldChoicesViewSet, 
+    base_name='applicant-foreign-key-field-choices'
+    )
 api_urls = router.urls
