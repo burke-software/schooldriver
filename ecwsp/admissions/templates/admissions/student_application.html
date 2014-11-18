@@ -53,7 +53,7 @@
               <div class="col-sm-12">
                 <div>
                   <div ng-repeat="section_field in section.fields track by $index" ng-form="nestedField">
-                    <div class="form-group col-sm-12" ng-class="{'has-error' : nestedField.$invalid && nestedField.$dirty}">
+                    <div class="form-group col-sm-12" ng-class="{'has-error' : nestedField.$invalid && nestedField.$dirty, 'has-info' : nestedField.$invalid && nestedField.$pristine }">
                       <label class="control-label col-sm-2" ng-if="section_field.field_label.length < 50">
                         <span ng-if="section_field.required">*</span>
                         {{ section_field.field_label | translate }}
