@@ -1118,6 +1118,7 @@ class SisReport(ScaffoldReport):
 
             # backwards compatibility for templates
             context['date_begin'] = self.for_date
+            context['date_of_report'] = self.date_end
             context['date_end'] = self.date_end
             context['long_date'] = unicode(datetime.date.today().strftime('%B %d, %Y'))
             context['school_year'] = self.report_context['school_year']
@@ -1156,8 +1157,6 @@ class SisReport(ScaffoldReport):
 
                 current_mp = marking_periods.first()
                 for student in students:
-                    # TC requested option for special formatting for student grad date
-                    context['long_grad_date'] = student.grad_date.strftime('%B %d, %Y')
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
                             schedule_days=schedule_days)
