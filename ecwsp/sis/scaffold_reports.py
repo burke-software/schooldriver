@@ -1118,6 +1118,7 @@ class SisReport(ScaffoldReport):
 
             # backwards compatibility for templates
             context['date_begin'] = self.for_date
+            context['date_of_report'] = self.date_end
             context['date_end'] = self.date_end
             context['long_date'] = unicode(datetime.date.today().strftime('%B %d, %Y'))
             context['school_year'] = self.report_context['school_year']
