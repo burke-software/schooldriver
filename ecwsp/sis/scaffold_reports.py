@@ -1159,7 +1159,6 @@ class SisReport(ScaffoldReport):
                 for student in students:
                     # TC requested option for special formatting for student grad date
                     student.grad_date = student.grad_date.strftime('%B %d, %Y')
-                    print student.grad_date
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
                             schedule_days=schedule_days)
