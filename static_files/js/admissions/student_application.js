@@ -1,4 +1,4 @@
-var admissionsApp = angular.module('admissions',['pascalprecht.translate']);
+var admissionsApp = angular.module('admissions',['pascalprecht.translate', 'ui.bootstrap']);
 
 admissionsApp.config(['$translateProvider', function ($translateProvider) {
     $translateProvider.useUrlLoader('/api/translations/admissions');
@@ -19,8 +19,6 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
     $scope.changeLanguage = function(key) {
         $translate.use(key);
       };
-
-    
 
     $scope.application_template = {};
     $scope.applicationFields = [];
@@ -195,11 +193,6 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                 });
             };  
         });
-
-        $('.datepicker').datepicker({
-            format: 'mm/dd/yyyy',
-        });
-
     };
 
 
