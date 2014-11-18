@@ -48,7 +48,7 @@ django-reversion==1.8.5
 django-rosetta==0.7.4
 django-simple-import==1.18
 django-storages==1.1.8
-django-tenant-schemas==1.4.8
+#django-tenant-schemas==1.4.8
 django-toolbelt==0.0.1
 django-widget-tweaks==1.3
 Django==1.6.8
@@ -100,4 +100,5 @@ uWSGI==2.0.8
 wsgiref==0.1.2
 xlrd==0.9.3
 xlwt==0.7.5
+-e git://github.com/bernardopires/django-tenant-schemas.git#egg=django-tenant-schemas
 git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99
