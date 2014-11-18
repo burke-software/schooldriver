@@ -5,6 +5,7 @@
 <script type="text/javascript" src="{% static 'js/angular-translate.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/angular-translate-loader-url.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/admissions/student_application.js' %}"></script>
+
 {% endblock %}
 
 {% block content %}
@@ -23,6 +24,7 @@
     <h1>
       Application For Admission
       <p class="lead">Click on each section title and fill out all fields for each section</p>
+      
     </h1>
     
     <hr>
@@ -51,7 +53,7 @@
               <div class="col-sm-12">
                 <div>
                   <div ng-repeat="section_field in section.fields track by $index" ng-form="nestedField">
-                    <div class="form-group col-sm-12" ng-class="{'has-error' : nestedField.$invalid && nestedField.$dirty}">
+                    <div class="form-group col-sm-12" ng-class="{'has-error' : nestedField.$invalid && nestedField.$dirty, 'has-info' : nestedField.$invalid && nestedField.$pristine }">
                       <label class="control-label col-sm-2" ng-if="section_field.field_label.length < 50">
                         <span ng-if="section_field.required">*</span>
                         {{ section_field.field_label | translate }}
@@ -79,6 +81,17 @@
                           ng-model="section_field.value" 
                           ng-required="section_field.required">
                         </textarea>
+                        <input 
+                          ng-if="section_field.field_type == 'date'"
+                          type="text" 
+                          class="form-control" 
+                          datepicker-popup="yyyy-MM-dd" 
+                          ng-model="section_field.value"
+                          is-open="opened" 
+                          show-weeks="false"
+                          show-button-bar="false"
+                          ng-required="section_field.required" 
+                          close-text="Close" />
                         <select 
                           ng-if="section_field.field_type == 'multiple'" 
                           name="{{ section_field.field_name }}" 
@@ -87,6 +100,7 @@
                           ng-required="section_field.required">
                             <option ng-repeat="choice in section_field.choices track by $index" value="{{ choice.value }}">{{ choice.display_name }}</option>
                         </select>
+                        
                         <span ng-if="nestedField.$invalid && nestedField.$dirty" class="text-danger"><em>This field is required</em></span>
                         <span class="help-block">
                           {{ section_field.helptext | translate }}
@@ -131,6 +145,7 @@
     </div>
   </div>
 </div>
+
 
 {% endverbatim %}
 {% endblock %}

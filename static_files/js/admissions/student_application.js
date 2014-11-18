@@ -1,4 +1,4 @@
-var admissionsApp = angular.module('admissions',['pascalprecht.translate']);
+var admissionsApp = angular.module('admissions',['pascalprecht.translate', 'ui.bootstrap']);
 
 admissionsApp.config(['$translateProvider', function ($translateProvider) {
     $translateProvider.useUrlLoader('/api/translations/admissions');
@@ -27,6 +27,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
     $scope.applicant_data = {};
     $scope.applicant_additional_information = [];
     $scope.applicationComplete = false;
+    $scope.applicantForeignKeyFieldChoices = {};
     $scope.submissionError = {
         "status" : false,
         "errors" : []
@@ -68,18 +69,43 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                 var section_field = section.fields[field_id];
                 var custom_field = $scope.getApplicationFieldById(section_field.id);
                 custom_field.choices = $scope.getApplicationFieldChoices(section_field.id);
+                custom_field.field_type = $scope.getCorrectFieldType(custom_field)
                 section.fields[field_id] = custom_field;
             }
         }
     };
 
+    $scope.getCorrectFieldType = function(custom_field) {
+        // the field type is assumed to be "input"; if it is an integrated 
+        // field, check the related field type and return 'data' or 'multiple'
+        // if it is a date or choice type applicant field. 
+        var fieldType = 'input';
+        if (custom_field.is_field_integrated_with_applicant == true) {
+            var relatedField = $scope.getApplicantFieldByFieldName(custom_field.field_name)
+            if ( relatedField.type == 'date' ) {
+                fieldType = 'date';
+            } else if ( relatedField.type in ['choice', 'field']) {
+                fieldType = 'multiple';
+            } else if (custom_field.choices && custom_field.choices.length > 0 ) {
+                fieldType = 'multiple';
+            }
+        } else {
+            fieldType = custom_field.field_type;
+        }
+        return fieldType;
+    }
+
     $scope.getApplicationFieldChoices = function(field_id) {
         var custom_field = $scope.getApplicationFieldById(field_id);
         if ( custom_field.is_field_integrated_with_applicant === true) {
             var integrated_field = $scope.getApplicantFieldByFieldName(custom_field.field_name);
-            return integrated_field.choices;
+            if (integrated_field.name in $scope.applicantForeignKeyFieldChoices) {
+                return $scope.applicantForeignKeyFieldChoices[integrated_field.name];
+            } else {
+                return integrated_field.choices;
+            }
         } else if (custom_field.is_field_integrated_with_applicant === false ) {
-            if (custom_field.field_choices != "") {
+            if (custom_field.field_choices) {
                 var choices = []
                 var choice_array = custom_field.field_choices.split(',');
                 for (var i in choice_array) {
@@ -114,14 +140,22 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
     };
 
     $scope.refreshCustomFieldList = function() {
-        $http.get("/api/applicant-custom-field")
+        $http.get("/api/applicant-custom-field/")
             .success(function(data, status, headers, config) {
                 $scope.applicationFields = data;
                 $scope.formatApplicationTemplate();
         });
     };
 
+    $scope.getApplicantForeignKeyFieldChoices = function() {
+        $http.get("/api/applicant-foreign-key-field-choices/")
+            .success(function(data, status, headers, config) {
+                $scope.applicantForeignKeyFieldChoices = data;
+        });
+    }
+
     $scope.init = function() {
+        $scope.getApplicantForeignKeyFieldChoices();
         // clean the submission errors for now
         $scope.submissionError.errors = [];
 
@@ -139,6 +173,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
         });
 
         $scope.refreshCustomFieldList();
+        
 
         $http({
             method: "OPTIONS",
@@ -152,13 +187,12 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                     "name" : field_name, 
                     "required" : field.required,
                     "label" : field.label,
-                    "type" : field.field_type,
+                    "type" : field.type,
                     "choices" : field.choices,
                     "max_length" : field.max_length,
                 });
             };  
         });
-
     };
 
 
