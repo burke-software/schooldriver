@@ -402,6 +402,9 @@ Multiple, and Checkbox field types"""
     helptext = models.CharField(blank=True, null=True, max_length=500)
     required = models.BooleanField(default=False)
 
+    def __unicode__(self):
+        return self.field_label
+
 class ApplicantAdditionalInformation(models.Model):
     applicant = models.ForeignKey(Applicant, related_name='additionals')
     custom_field = models.ForeignKey(ApplicantCustomField, null=True)

@@ -1,4 +1,4 @@
-import floppyforms as forms
+from django import forms
 from django.contrib.admin import widgets as adminwidgets
 from django.contrib import messages
 from django.conf import settings

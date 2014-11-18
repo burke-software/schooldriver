@@ -84,7 +84,7 @@ class SyncApplicationTranslationFile:
         """create a blank entry, translate it yourself using Rosetta"""
         new_entry = polib.POEntry(
             msgid = unicode(entry_text),
-            msgstr = unicode(entry_text),
+            msgstr = "",
             occurrences = [(unicode(entry_type), unicode(entry_id))]
         )
         self.translation_entries.append(new_entry)

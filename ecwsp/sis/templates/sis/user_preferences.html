@@ -1,5 +1,4 @@
-{% extends "admin_base.html" %}
-{% load floppyforms %}
+{% extends "base_next.html" %}
 {% load i18n %}
 
 {% block breadcrumbs %}
@@ -11,16 +10,6 @@ Preferences
     <h2>User Preferences</h2>
     
     <form action="" method="post">
-      {% for hidden in form.hidden_fields %}
-        {{ hidden }}
-      {% endfor %}
-      {% form form using %}
-        {% formconfig row using "floppy_gumby_forms/rows/gumby.html" %}
-        {% formrow form.prefered_file_format %}
-        {% formrow form.include_deleted_students %}
-        {% formrow form.course_sort %}
-        {% formrow form.gradebook_preference %}
-        <input type="submit"/>
-      {% endform %}
+        {{ form.as_p }}
     </form>
 {% endblock %}
