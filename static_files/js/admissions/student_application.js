@@ -86,11 +86,13 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
             var relatedField = $scope.getApplicantFieldByFieldName(custom_field.field_name)
             if ( relatedField.type == 'date' ) {
                 fieldType = 'date';
-            } else if ( relatedField.type == 'choice') {
+            } else if ( relatedField.type in ['choice', 'field']) {
                 fieldType = 'multiple';
             } else if (custom_field.choices && custom_field.choices.length > 0 ) {
                 fieldType = 'multiple';
             }
+        } else {
+            fieldType = custom_field.field_type;
         }
         return fieldType;
     }
@@ -192,6 +194,10 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                     "max_length" : field.max_length,
                 });
             };  
+        });
+
+        $('.datepicker').datepicker({
+            format: 'mm/dd/yyyy',
         });
 
     };
