@@ -14,12 +14,12 @@ urlpatterns = patterns('',
         TemplateView.as_view(template_name='admissions/custom_application_editor.html'), 
         name="custom-application-editor"
         ),
+    url(r'^application/(?P<pk>\d+)/$', 
+        TemplateView.as_view(template_name='admissions/review_student_application.html'), 
+        name="review-student-application",
+        ),
     url(r'^application/', 
         TemplateView.as_view(template_name='admissions/student_application.html'), 
         name="student-application"
-        ),
-    url(r'^review-applications/', 
-        TemplateView.as_view(template_name='admissions/review_applications.html'), 
-        name="review-applications"
         ),
 )
