@@ -195,11 +195,13 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
         });
     };
 
-
-    $scope.customErrorMessages = {
-        "bday" : "Data has wrong format. Please use a valid date in the format YYYY-MM-DD",
+    $scope.convertDateToString = function(date) {
+        // returns a string in the format YYYY-MM-DD
+        var day = date.getDate();
+        var month = date.getMonth() + 1; //Months are zero based
+        var year = date.getFullYear();
+        return year + "-" + month + "-" + day;
     }
-
 
     $scope.submitApplication = function() {
         // first collect all the values from the template:
@@ -209,6 +211,10 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
             for (var i in section.fields) {
                 var field = section.fields[i];
                 if (field.is_field_integrated_with_applicant === true) {
+                    if (field.field_type == 'date' ) {
+                        var date_string = $scope.convertDateToString(field.value);
+                        field.value = date_string;
+                    }
                     $scope.applicant_data[field.field_name] = field.value;
                 } else if (field.is_field_integrated_with_applicant === false) {
                     $scope.applicant_additional_information.push({
@@ -247,9 +253,6 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                 var field = $scope.getApplicationFieldByFieldName(i);
                 if ( field && data[i] ) {
                     var error_msg = data[i][0]
-                    if ( field.field_name in $scope.customErrorMessages) {
-                        error_msg = $scope.customErrorMessages[field.field_name];
-                    }
                     var error = {
                         "field_label" : field.field_label,
                         "error_msg" : error_msg
