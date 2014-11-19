@@ -357,6 +357,10 @@ class Student(User, CustomFieldModel):
     def get_absolute_url():
         pass
 
+    # TC requested this for transcript template
+    def get_long_grad_date(self):
+        return self.grad_date.strftime('%B %d, %Y')
+
     def get_gpa(self, rounding=2, numeric_scale=False, boost=True):
         """ Get cached gpa but with rounding and scale options """
         gpa = self.gpa
