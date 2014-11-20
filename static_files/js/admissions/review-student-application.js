@@ -25,23 +25,14 @@ admissionsApp.controller('ReviewStudentApplicationController', [
             $http.get(url)
                 .success(function(data, status, headers, config) {
                     $scope.applicantData = data;
+                    $scope.populateApplicationTemplateWithStudentResponses(data);
             });
         });
 
         $scope.init = function() {
             $scope.getDefaultApplicationTemplate();
             $scope.refreshCustomFieldList();
-            $scope.$watch('applicantData', function() {
-                $scope.populateApplicationTemplateWithStudentResponses();
-
-                // the date Django saves has no time data, so JS thinks
-                // that time is 00:00:00 GMT - any timezone offet could give
-                // the user a day that is -1 what is expected. The code below
-                // attempts to correct for this behavior 
-                var dateAdded = new Date($scope.applicantData.date_added);
-                var dateNormalized = new Date(dateAdded.getTime() + dateAdded.getTimezoneOffset()*60000)
-                $scope.submissionDate = dateNormalized;
-            });
+            
         };
 
         $scope.getDefaultApplicationTemplate = function() {
@@ -88,9 +79,9 @@ admissionsApp.controller('ReviewStudentApplicationController', [
             }
         };
 
-        $scope.populateApplicationTemplateWithStudentResponses = function() {
+        $scope.populateApplicationTemplateWithStudentResponses = function(applicantData) {
             var template = $scope.applicationTemplate;
-            var studentResponses = $scope.applicantData;
+            var studentResponses = applicantData;
             for (var section_id in template.sections) {
                 var section = template.sections[section_id];
                 for (var field_id in section.fields) {

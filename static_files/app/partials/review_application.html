@@ -6,7 +6,7 @@
     <h1>Review Submitted Application</h1>
     <div class="well">
       <p>Student Name: <strong>{{ applicantData.lname }}, {{ applicantData.fname }}</strong></p>
-      <p>Date Submitted: <strong>{{ submissionDate | date : 'longDate' }}</strong></p>
+      <p>Date Submitted: <strong>{{ applicantData.date_added }}</strong></p>
     </div>
     <div class="panel-group" id="accordion">
       <div class="panel panel-default" ng-repeat="section in applicationTemplate.sections">
