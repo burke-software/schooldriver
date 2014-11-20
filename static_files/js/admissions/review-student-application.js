@@ -35,7 +35,7 @@ admissionsApp.controller('ReviewStudentApplicationController', [
             $scope.$watch('applicantData', function() {
                 $scope.populateApplicationTemplateWithStudentResponses();
 
-                // the date Django has saves has no time data, so JS thinks
+                // the date Django saves has no time data, so JS thinks
                 // that time is 00:00:00 GMT - any timezone offet could give
                 // the user a day that is -1 what is expected. The code below
                 // attempts to correct for this behavior 
