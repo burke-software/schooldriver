@@ -3,10 +3,13 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import m2m_changed, post_save
 from custom_field.custom_field import CustomFieldModel
 from ecwsp.sis.models import get_default_language, GradeLevel, SchoolYear, Faculty
 from constance import config
+from django.core.mail import EmailMultiAlternatives
+from django.template import Context
+from django.template.loader import render_to_string
 
 from jsonfield import JSONField
 import datetime
@@ -293,6 +296,26 @@ def cache_applicant_m2m(sender, instance, action, reverse, model, pk_set, **kwar
 
 m2m_changed.connect(cache_applicant_m2m, sender=Applicant.parent_guardians.through)
 
+def email_alert_for_submitted_applicant(sender, instance, created, **kwargs):
+    """send email alert on applicant creation"""
+    if created and config.APPLICANT_EMAIL_ALERT:
+        for to_address in config.APPLICANT_EMAIL_ALERT_ADDRESSES.split('\n'):
+            subject = "New Application Submitted"
+            from_address = settings.EMAIL_HOST_USER
+            c = Context({
+                'applicant_id': instance.id, 
+                'school_name' : config.SCHOOL_NAME,
+                'base_url' : settings.BASE_URL,
+                })    
+            text_content = render_to_string('admissions/email/applicant_alert.txt', c)
+            html_content = render_to_string('admissions/email/applicant_alert.html', c)
+            msg = EmailMultiAlternatives(subject, text_content, from_address, [to_address,])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+
+        
+
+post_save.connect(email_alert_for_submitted_applicant, sender=Applicant)
 
 class ApplicantFile(models.Model):
     applicant_file = models.FileField(upload_to="applicant_files")
