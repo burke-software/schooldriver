@@ -15,7 +15,6 @@ admissionsApp.controller('ReviewStudentApplicationController', [
     '$scope', '$route', '$routeParams', '$http',
     function($scope, $route, $routeParams, $http) {
         $scope.$routeParams = $routeParams;
-        $scope.applicantData = {};
         $scope.applicationTemplate = {};
         $scope.applicationFields = [];
         $scope.submissionDate = "";
