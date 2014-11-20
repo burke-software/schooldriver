@@ -18,21 +18,10 @@ admissionsApp.controller('ReviewStudentApplicationController', [
         $scope.applicationTemplate = {};
         $scope.applicationFields = [];
         $scope.submissionDate = "";
-
-        $scope.$watch('$routeParams', function() {
-            var applicantId = $scope.$routeParams.applicantId;
-            var url = "/api/applicant/" + applicantId + "/";
-            $http.get(url)
-                .success(function(data, status, headers, config) {
-                    $scope.applicantData = data;
-                    $scope.populateApplicationTemplateWithStudentResponses(data);
-            });
-        });
+        
 
         $scope.init = function() {
             $scope.getDefaultApplicationTemplate();
-            $scope.refreshCustomFieldList();
-            
         };
 
         $scope.getDefaultApplicationTemplate = function() {
@@ -42,6 +31,7 @@ admissionsApp.controller('ReviewStudentApplicationController', [
                     // theoretically there should only be one
                     var jsonTemplate = JSON.parse(data[0].json_template)
                     $scope.applicationTemplate = jsonTemplate;
+                    $scope.refreshCustomFieldList();
             });
         };
 
@@ -50,6 +40,13 @@ admissionsApp.controller('ReviewStudentApplicationController', [
                 .success(function(data, status, headers, config) {
                     $scope.applicationFields = data;
                     $scope.formatApplicationTemplate();
+                    var applicantId = $scope.$routeParams.applicantId;
+                    var url = "/api/applicant/" + applicantId + "/";
+                    $http.get(url)
+                        .success(function(data, status, headers, config) {
+                            $scope.applicantData = data;
+                            $scope.populateApplicationTemplateWithStudentResponses(data);
+                    });
             });
         };
 
