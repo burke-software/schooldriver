@@ -483,6 +483,9 @@ CONSTANCE_CONFIG = {
     'TRANSCRIPT_SHOW_INCOMPLETE_COURSES_WITHOUT_GRADE': (False,
         'Normally a incomplete course would not show on a transcript. When this is enabled '\
         'such courses will show - however grades will be blank.'),
+    'APPLICANT_EMAIL_ALERT' : (False, "Send email alert on applicant submission"),
+    'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('', 
+        "Email addresses to send alert to; only one email address per line")
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

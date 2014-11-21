@@ -164,7 +164,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                 // data[0] returns the first default template,
                 // theoretically there should only be one, but this is
                 // just a failsafe incase there happens to be more than 1
-                json_template = JSON.parse(data[0].json_template)
+                var json_template = JSON.parse(data[0].json_template)
                 if (!json_template.sections) {
                     $scope.application_template = {"sections" : []};
                 } else {
