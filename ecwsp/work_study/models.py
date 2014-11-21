@@ -326,7 +326,7 @@ class CompContract(models.Model, CustomFieldModel):
         if self.company and self.company.alternative_contract_template:
             template = self.company.alternative_contract_template.file
         else:
-            template = Template.get_or_make_blank(name="Work Study Contract").file.path
+            template = Template.get_or_make_blank(name="Work Study Contract").file
         if template :
             report_file = report.pod_save(template, get_tmp_file=True)
             self.contract_file.save(unicode(self.company) + "." + unicode(report.file_format), File(open(report_file)))
