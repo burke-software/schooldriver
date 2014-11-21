@@ -459,6 +459,8 @@ CONSTANCE_CONFIG = {
     'SUGAR_URL': ('', 'SugarCRM Domain'),
     'SUGAR_USERNAME': ('', 'SugarCRM Username'),
     'SUGAR_PASSWORD': ('', 'SugarCRM Password'),
+    'SUGAR_SYNC_MINUTES': (30, 'SugarCRM sync every X minutes'),
+    'LETTER_GRADE_REQUIRED_FOR_PASS': (60, 'Minimum grade required to be considered "passing"'),
     'CRND_ROUTES': (False, 'Alternative way of storing routes that Notre Dame High School uses. Not recommended.'),
     'CANVAS_TOKEN': ('', 'https://canvas.instructure.com/doc/api/file.oauth.html'),
     'CANVAS_ACCOUNT_ID': ('', ''),
@@ -532,6 +534,7 @@ if USE_S3:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
+    MEDIA_URL = STATIC_URL
     # Use Heroku's DB
     #import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally

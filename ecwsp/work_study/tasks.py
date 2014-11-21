@@ -14,7 +14,7 @@ from django_sis.celery import app
 import sys
 
 from ecwsp.work_study.sugar_sync import SugarSync
-modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
+modify_date_minutes = config.SUGAR_SYNC_MINUTES
 
 @app.task
 @all_tenants

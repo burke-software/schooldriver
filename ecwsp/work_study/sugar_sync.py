@@ -13,10 +13,10 @@ class SugarSync:
         password = md5.md5(config.SUGAR_PASSWORD).hexdigest()
         session = ''
         client = suds.client.Client(config.SUGAR_URL + '/service/v2/soap.php?wsdl', location=config.SUGAR_URL + '/service/v2/soap.php')
-        
+
         def __init__(self):
             self.login()
-        
+
         def login(self):
             """ Log in to sugarcrm as a admin user and
             store the session id
@@ -26,7 +26,7 @@ class SugarSync:
                 'password':self.password,
             })
             self.session = result['id']
-        
+
         def update_contact(self,contact):
             """ create or update a contact in sugarcrm
             contact: a django-sis.work_study contact who we want to
@@ -54,16 +54,16 @@ class SugarSync:
             if not contact.guid:
                 contact.guid = result['id']
                 contact.save(sync_sugar=False)
-            
+
         def update_contacts_from_sugarcrm(self):
             """ Query recently changed contacts in SugarCRM and sync them to django-sis
             """
-            modify_date_minutes = int(Configuration.get_or_default("sync sugarcrm minutes",default="30").value)
+            modify_date_minutes = config.SUGAR_SYNC_MINUTES
             modify_date = datetime.datetime.now() - datetime.timedelta(minutes=modify_date_minutes + 1)
             contacts = self.get_recent_sugar_contacts(modify_date)
             for contact in contacts:
                 self.set_django_sis_contact(contact)
-            
+
         def get_recent_sugar_contacts(self, modify_date=None):
             """ Get a list of recently updated sugarcrm contacts
             modify_date: find contacts modified after this datetime
@@ -74,19 +74,19 @@ class SugarSync:
                 modify_date = datetime.datetime.now() - datetime.timedelta(hours=1)
             elif not isinstance(modify_date, datetime.datetime):
                 raise SuspiciousOperation('Date that is not a date. Possible SQL injection attempt?')
-            
+
             result = self.client.service.get_entry_list(
                 session=self.session,
                 module_name='Contacts',
                 query='supervisor_c = 1 and contacts.date_modified > "%s"' % (str(modify_date),)
             )
             return result[2]
-        
+
         def set_django_sis_contact(self, contact):
             """ Set django-sis contact from sugarcrm contact data
             """
             guid = contact[0]
-            
+
             if Contact.objects.filter(guid=guid):
                 sis_contact = Contact.objects.get(guid=guid)
             else:
@@ -110,5 +110,5 @@ class SugarSync:
                         sis_contact.fax = field.value
                     elif field.name == "email1":
                         sis_contact.email = field.value
-                    
+
             sis_contact.save(sync_sugar=False)

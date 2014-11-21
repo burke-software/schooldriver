@@ -37,7 +37,6 @@ class Configuration(models.Model):
     help_text = models.TextField(blank=True)
 
     default_configs = {
-        'letter_grade_required_for_pass': ('60', 'Minimum grade required to be considered "passing"'),
         'school pay rate per hour': ('13.00', ''),
         'From Email Address': ('donotreply@cristoreyny.org', ''),
         'work_study show commment default': ('True', ''),
@@ -47,7 +46,6 @@ class Configuration(models.Model):
         'Students per FTE': ('.2', ''),
         'S': ('5', 'David is an idiot who can not code'),
         'Edit all Student Worker Fields': ('False', ''),
-        'sync sugarcrm minutes': ('30', ''),
         'counseling_referral_notice_email_to': ('', ''),
         'Admissions to student also makes student worker': ('False', ''),
         'admissions_override_year_start': ('', 'Must be ISO date (ex 2012-10-25) or blank'),

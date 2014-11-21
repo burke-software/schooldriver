@@ -40,10 +40,12 @@
     
     {% block extra_head %}{% endblock %}
     
-    {% compress js %}
-    <script src="{% static "app/restfulModel.js" %}"></script>
-    <script src="{% static "app/angular_sis.js" %}"></script>
-    {% endcompress %}
+    {% block angular_app %}
+        {% compress js %}
+        <script src="{% static "app/restfulModel.js" %}"></script>
+        <script src="{% static "app/angular_sis.js" %}"></script>
+        {% endcompress %}
+    {% endblock %}
 </head>
 
 <body>
