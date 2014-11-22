@@ -46,7 +46,7 @@ django-report-utils==0.2.6
 django-responsive-dashboard==1.1
 django-reversion==1.8.5
 django-rosetta==0.7.4
-django-simple-import==1.18
+django-simple-import==1.19
 django-storages==1.1.8
 django-tenant-schemas==1.4.8
 django-toolbelt==0.0.1

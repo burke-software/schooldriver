@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+
+
+{% block extra_head %}
+<title>{% block simple_import_page_title %}{% endblock %}</title>
+{% endblock %}
+
+
+{% block content %}
+    <h1>{% block simple_import_title %}{% endblock %}</h1>
+    {% block simple_import_form %}{% endblock %}
+{% endblock %}
