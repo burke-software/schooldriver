@@ -483,7 +483,8 @@ CONSTANCE_CONFIG = {
         'such courses will show - however grades will be blank.'),
     'APPLICANT_EMAIL_ALERT' : (False, "Send email alert on applicant submission"),
     'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('', 
-        "Email addresses to send alert to; only one email address per line")
+        "Email addresses to send alert to; only one email address per line"),
+    'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail")
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
