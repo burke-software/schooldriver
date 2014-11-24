@@ -91,9 +91,11 @@ admissionsApp.controller('ReviewStudentApplicationController', [
                             if (additional.custom_field == field.id) {
                                 if ( field.field_type == 'emergency_contact' ) {
                                     var pythonUnicodeString = additional.answer;
-                                    var escapedString = pythonUnicodeString.replace(/u'(?=[^:]+')/g, "'");
-                                    escapedString = escapedString.replace(/'/g,'"');
-                                    field.value = JSON.parse(escapedString); 
+                                    if (pythonUnicodeString) {
+                                        var escapedString = pythonUnicodeString.replace(/u'(?=[^:]+')/g, "'");
+                                        escapedString = escapedString.replace(/'/g,'"');
+                                        field.value = JSON.parse(escapedString); 
+                                    }
                                 } else {
                                     field.value = additional.answer;
                                 }
