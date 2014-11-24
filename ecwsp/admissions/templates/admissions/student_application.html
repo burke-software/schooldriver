@@ -151,7 +151,7 @@
                             <label class="control-label">
                               {{ 'Phone Number' | translate }}
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.phone">
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.home_phone">
                           </div>
                           <div class="col-sm-6">
                             <label class="control-label">
@@ -239,8 +239,7 @@
           <strong>{{ error.field_label }}</strong>: <em class="text-danger">{{ error.error_msg }}</em>
         </p>
       </div>
-      <!--<button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid">Submit Application</button>-->
-      <button class="btn btn-success btn-lg" ng-click="submitApplication()">Submit Application</button>
+      <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid">Submit Application</button>Submit Application</button>
     </form>
   </div>
   <div ng-if="applicationComplete">
@@ -255,7 +254,15 @@
         <tbody>
           <tr ng-repeat="field in section.fields">
             <td class="col-sm-6">{{ field.field_label }}</td>
-            <td class="col-sm-6">{{ field.value }}</td>
+            <td class="col-sm-6" ng-if="!field.field_type=='emergency_contact'">{{ field.value }}</td>
+            <td class="col-sm-6" ng-if="field.field_type=='emergency_contact'">
+              {{ field.value.fname }} {{field.value.lname }}, ({{ field.value.relationship_to_student }}) <br />
+              {{ field.value.street }} {{ field.value.city }}, {{ field.value.state }}, {{field.value.zip }} <br />
+              <strong>Home:</strong> {{ field.value.home_phone }} {{ field.value.email }} <br />
+              <strong>Work:</strong> {{ field.value.occupation }} {{ field.value.employer }} {{ field.value.work_phone }}<br />
+              <strong>Employment Status:</strong> {{ field.value.employment_status }}<br />
+              <strong>Legal Guardian:</strong> {{ field.value.legal_guardian }}
+            </td>
           </tr>
         </tbody>
       </table>
