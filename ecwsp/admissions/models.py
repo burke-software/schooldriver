@@ -399,6 +399,7 @@ class ApplicantCustomField(models.Model):
             ('multiple', 'Dropdown Choices'),
             ('radio', 'Multiple Choices'),
             ('checkbox', 'Checkboxes'),
+            ('emergency_contact', 'Emergency Contact'),
         )
     field_name = models.CharField(blank=True, null=True, max_length=50)
     is_field_integrated_with_applicant = models.BooleanField(default=False) 

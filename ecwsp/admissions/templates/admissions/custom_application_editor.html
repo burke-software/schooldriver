@@ -126,9 +126,10 @@
                       <div class="col-sm-7" >
                           <input ng-if="section_field.field_type == 'input'" name="{{ section_field.field_name }}" type="text" class="form-control" disabled>
                           <textarea ng-if="section_field.field_type == 'textarea'" name="{{ section_field.field_name }}" class="form-control" rows="5" disabled></textarea>
-                          <select ng-if="section_field.field_type == 'multiple'" name="{{ section_field.field_name }}" class="form-control"disabled>
+                          <select ng-if="section_field.field_type == 'multiple'" name="{{ section_field.field_name }}" class="form-control" disabled>
                             <option>Choices will appear on application</option>
                           </select>
+                          <input ng-if="section_field.field_type == 'emergency_contact'" type="text" placeholder="Emergency Contact fields will show on the actual application" disabled class="form-control">
                           <span class="help-block">
                             {{ section_field.help_text }}
                           </span>
@@ -238,7 +239,14 @@
                             Drop-down list of options
                           </label>
                         </div>
-                    </div>
+                        <div class="radio">
+                          <label>
+                            <input type="radio" name="fieldTypeOptions" id="fieldTypeEmergency" value="emergency_contact" ng-model="customField.field_type">
+                            Emergency Contact <span class="help-block">a custom field which is integrated with the Applicant's emergency contact list.</span>
+                          </label>
+
+                        </div>
+                    </div>`
                 </div>
                 <div class="form-group" id="optional-field-choices">
                     <label class="col-sm-2 control-label">
