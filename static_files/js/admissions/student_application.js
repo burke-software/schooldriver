@@ -32,6 +32,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
         "status" : false,
         "errors" : []
     }
+    $scope.stateOptions = [];
 
     $scope.applicationNotComplete = function() {
         return !$scope.applicationComplete;
@@ -191,6 +192,9 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                     "choices" : field.choices,
                     "max_length" : field.max_length,
                 });
+                if (field_name == 'state') {
+                    $scope.stateOptions = field.choices;
+                }
             };  
         });
     };
@@ -206,6 +210,8 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
     $scope.submitApplication = function() {
         // first collect all the values from the template:
         var sections = $scope.application_template.sections;
+        // need to initialize an empty contacts array
+        $scope.applicant_data.emergency_contacts = [];
         for (var section_id in sections) {
             var section = sections[section_id];
             for (var i in section.fields) {
@@ -222,6 +228,9 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                         "answer" : field.value,
                     });
                 }  
+                if (field.field_type == 'emergency_contact') {
+                    $scope.applicant_data.emergency_contacts.push(field.value);
+                }
             }
         }
         
