@@ -35,7 +35,16 @@
                     </label>
                     <div class="col-sm-2" ng-if="section_field.field_label.length > 50"></div>
                     <div class="col-sm-10" >
-                      <div class="well well-sm">{{ section_field.value }}</div>
+                      <div class="well well-sm" ng-if="section_field.field_type != 'emergency_contact'">{{ section_field.value }}</div>
+                      <div class="well well-sm" ng-if="section_field.field_type=='emergency_contact'">
+                        <!-- Emergency Contact Block -->
+                          <strong>Name:</strong> {{ section_field.value.fname }} {{section_field.value.lname }}, ({{ fsection_ield.value.relationship_to_student }}) <br />
+                          <strong>Address:</strong> {{ section_field.value.street }} {{ section_field.value.city }}, {{ section_field.value.state }}, {{section_field.value.zip }} <br />
+                          <strong>Home:</strong> {{ section_field.value.home_phone }} {{ section_field.value.email }} <br />
+                          <strong>Work:</strong> {{ section_field.value.occupation }} {{ section_field.value.employer }} {{ section_field.value.work_phone }}<br />
+                          <strong>Employment Status:</strong> {{ section_field.value.employment_status }}<br />
+                          <strong>Legal Guardian:</strong> {{ section_field.value.legal_guardian }}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -50,9 +59,18 @@
     <h3>{{ section.name }}</h3>
     <table class="table table-condensed table-striped">
       <tbody>
-        <tr ng-repeat="field in section.fields">
-          <td class="col-sm-6">{{ field.field_label }}</td>
-          <td class="col-sm-6">{{ field.value }}</td>
+        <tr ng-repeat="section_field in section.fields track by $index">
+          <td class="col-sm-6">{{ section_field.field_label }}</td>
+          <td class="col-sm-6" ng-if="section_field.field_type != 'emergency_contact'">{{ section_field.value }}</td>
+          <td class="col-sm-6" ng-if="section_field.field_type == 'emergency_contact'">
+            <strong>Name:</strong> {{ section_field.value.fname }} {{section_field.value.lname }}, ({{ fsection_ield.value.relationship_to_student }}) <br />
+            <strong>Address:</strong> {{ section_field.value.street }} {{ section_field.value.city }}, {{ section_field.value.state }}, {{section_field.value.zip }} <br />
+            <strong>Home:</strong> {{ section_field.value.home_phone }} {{ section_field.value.email }} <br />
+            <strong>Work:</strong> {{ section_field.value.occupation }} {{ section_field.value.employer }} {{ section_field.value.work_phone }}<br />
+            <strong>Employment Status:</strong> {{ section_field.value.employment_status }}<br />
+            <strong>Legal Guardian:</strong> {{ section_field.value.legal_guardian }}
+          </td>
+
         </tr>
       </tbody>
     </table>
