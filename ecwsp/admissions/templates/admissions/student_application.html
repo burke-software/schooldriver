@@ -92,6 +92,120 @@
                           show-button-bar="false"
                           ng-required="section_field.required" 
                           close-text="Close" />
+
+                        <!-- Emergency Contact Block -->
+
+                        <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
+                          <div class="col-sm-6">
+                            <label class="control-label">
+                              {{ 'First Name' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.fname">
+                          </div>
+                          <div class="col-sm-6">
+                            <label class="control-label">
+                              {{ 'Last Name' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.lname">
+                          </div>
+                        </div>
+                        <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
+                          <div class="col-sm-12">
+                            <label class="control-label">
+                              {{ 'Relationship to Student (Mother, Father, etc.)' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.relationship_to_student">
+                          </div>
+                        </div>
+                        <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
+                          <div class="col-sm-5">
+                            <label class="control-label">
+                              {{ 'Street Address (include Apt. # if applicable)' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.street">
+                          </div>
+                          <div class="col-sm-3">
+                            <label class="control-label">
+                              {{ 'City' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.city">
+                          </div>
+                          <div class="col-sm-2">
+                            <label class="control-label">
+                              {{ 'State' | translate }}
+                            </label>
+                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.state">
+                              <option ng-repeat="state in stateOptions" value="{{ state.value }}">
+                                {{ state.display_name }}</option>
+                            </select>
+                          </div>
+                          <div class="col-sm-2">
+                            <label class="control-label">
+                              {{ 'Zipcode' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.zip">
+                          </div>
+                        </div>
+                        <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
+                          <div class="col-sm-6">
+                            <label class="control-label">
+                              {{ 'Phone Number' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.phone">
+                          </div>
+                          <div class="col-sm-6">
+                            <label class="control-label">
+                              {{ 'Email Address' | translate }}
+                            </label>
+                            <input type="email" class="form-control" ng-required="section_field.required" ng-model="section_field.value.email" name="employer_email">
+                            <span class="text-danger" ng-if="nestedField.employer_email.$error.email">Please enter a valid email address</span>
+                          </div>
+                        </div>
+                        <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
+                          <div class="col-sm-5">
+                            <label class="control-label">
+                              {{ 'Occupation' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.occupation">
+                          </div>
+                          <div class="col-sm-5">
+                            <label class="control-label">
+                              {{ 'Employer' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.employer">
+                          </div>
+                          <div class="col-sm-2">
+                            <label class="control-label">
+                              {{ 'Work Phone' | translate }}
+                            </label>
+                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.work_phone">
+                          </div>
+                        </div>
+                        <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
+                          <label class="col-sm-3 control-label">{{ 'Employment Status' | translate }}</label>
+                          <div class="col-sm-5">
+                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.employment_status">
+                              <option value='employed'>{{ 'Employed' | translate }}</option>
+                              <option value='unemployed'>{{ 'Unemployed' | translate }}</option>
+                              <option value='retired'>{{ 'Retired' | translate }}</option>
+                              <option value='self_employed'>{{ 'Self-Employed' | translate }}</option>
+                              <option value='homemaker'>{{ 'Homemaker' | translate }}</option>
+                              <option value='disabled'>{{ 'Disabled' | translate }}</option>
+                              <option value='student'>{{ 'Student' | translate }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
+                          <label class="col-sm-3 control-label">{{ 'Is this person a Legal Guardian?' | translate }}</label>
+                          <div class="col-sm-5">
+                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.legal_guardian">
+                              <option value='yes'>{{ 'Yes' | translate }}</option>
+                              <option value='no'>{{ 'No' | translate }}</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <!-- End Emergency Contact Block -->
                         <select 
                           ng-if="section_field.field_type == 'multiple'" 
                           name="{{ section_field.field_name }}" 
@@ -101,7 +215,9 @@
                             <option ng-repeat="choice in section_field.choices track by $index" value="{{ choice.value }}">{{ choice.display_name }}</option>
                         </select>
                         
-                        <span ng-if="nestedField.$invalid && nestedField.$dirty" class="text-danger"><em>This field is required</em></span>
+                        <span ng-if="nestedField.$invalid && nestedField.$dirty" class="text-danger">
+                          <em>This field is required</em>
+                        </span>
                         <span class="help-block">
                           {{ section_field.helptext | translate }}
                         </span>
@@ -123,7 +239,8 @@
           <strong>{{ error.field_label }}</strong>: <em class="text-danger">{{ error.error_msg }}</em>
         </p>
       </div>
-      <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid">Submit Application</button>
+      <!--<button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid">Submit Application</button>-->
+      <button class="btn btn-success btn-lg" ng-click="submitApplication()">Submit Application</button>
     </form>
   </div>
   <div ng-if="applicationComplete">
