@@ -31,14 +31,12 @@ class ApplicantViewSet(viewsets.ModelViewSet):
                     try:
                         serializer = EmergencyContactSerializer(data=contact)
                         serializer.is_valid()
-                        print serializer.errors
                         new_contact = serializer.object
                         new_contact.save()
                         obj.parent_guardians.add(new_contact)
                     except Exception as e:
                         # this doens't actually do anything... need to trigger
                         # an API error...
-                        print e
                         return Response({"error":"error saving contact information"})
 
 
