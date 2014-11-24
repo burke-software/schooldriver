@@ -14,8 +14,7 @@ from api.admissions.serializers import EmergencyContactSerializer
 from rest_framework_bulk import BulkCreateModelMixin
 from api.admissions.permissions import ApplicantPermissions
 from api.admissions.permissions import ApplicantTemplatePermissions
-from ecwsp.sis.models import LanguageChoice, EmergencyContact
-import json
+from ecwsp.sis.models import LanguageChoice, EmergencyContact, EmergencyContactNumber
 
 class ApplicantViewSet(viewsets.ModelViewSet):
 
@@ -23,7 +22,7 @@ class ApplicantViewSet(viewsets.ModelViewSet):
     queryset = Applicant.objects.all()
     serializer_class = ApplicantSerializer
 
-    def post_save(self, obj, created):
+    def post_save(self, ApplicantObject, created):
         if created:
             data = self.request.DATA
             if 'emergency_contacts' in data:
@@ -33,12 +32,26 @@ class ApplicantViewSet(viewsets.ModelViewSet):
                         serializer.is_valid()
                         new_contact = serializer.object
                         new_contact.save()
-                        obj.parent_guardians.add(new_contact)
+                        ApplicantObject.parent_guardians.add(new_contact)
+                        self.save_phone_numbers(new_contact, contact)
                     except Exception as e:
                         # this doens't actually do anything... need to trigger
                         # an API error...
                         return Response({"error":"error saving contact information"})
 
+    def save_phone_numbers(self, EmergencyContactObject, contact_data):
+        if 'home_phone' in contact_data:
+            new_phone = EmergencyContactNumber()
+            new_phone.type = 'H'
+            new_phone.number = contact_data['home_phone']
+            new_phone.contact = EmergencyContactObject
+            new_phone.save()
+        if 'work_phone' in contact_data:
+            new_phone = EmergencyContactNumber()
+            new_phone.type = 'W'
+            new_phone.number = contact_data['work_phone']
+            new_phone.contact = EmergencyContactObject
+            new_phone.save()
 
 class EmergencyContactViewSet(viewsets.ModelViewSet):
 
