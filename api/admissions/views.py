@@ -49,6 +49,7 @@ class ApplicantViewSet(viewsets.ModelViewSet):
         if 'work_phone' in contact_data:
             new_phone = EmergencyContactNumber()
             new_phone.type = 'W'
+            new_phone.note = contact_data['employer']
             new_phone.number = contact_data['work_phone']
             new_phone.contact = EmergencyContactObject
             new_phone.save()
