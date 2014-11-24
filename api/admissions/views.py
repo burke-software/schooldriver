@@ -5,21 +5,49 @@ from ecwsp.admissions.models import Applicant
 from ecwsp.admissions.models import ApplicantCustomField
 from ecwsp.admissions.models import StudentApplicationTemplate
 from ecwsp.admissions.models import ApplicantAdditionalInformation
-from ecwsp.admissions.models import ReligionChoice, EthnicityChoice
+from ecwsp.admissions.models import ReligionChoice, EthnicityChoice, HeardAboutUsOption
 from api.admissions.serializers import ApplicantSerializer
 from api.admissions.serializers import ApplicantCustomFieldSerializer
 from api.admissions.serializers import StudentApplicationTemplateSerializer
 from api.admissions.serializers import ApplicantAdditionalInformationSerializer
+from api.admissions.serializers import EmergencyContactSerializer
 from rest_framework_bulk import BulkCreateModelMixin
 from api.admissions.permissions import ApplicantPermissions
 from api.admissions.permissions import ApplicantTemplatePermissions
-from ecwsp.sis.models import LanguageChoice
+from ecwsp.sis.models import LanguageChoice, EmergencyContact
+import json
 
 class ApplicantViewSet(viewsets.ModelViewSet):
 
     permission_classes = (ApplicantPermissions,)
     queryset = Applicant.objects.all()
     serializer_class = ApplicantSerializer
+
+    def post_save(self, obj, created):
+        if created:
+            data = self.request.DATA
+            if 'emergency_contacts' in data:
+                for contact in data['emergency_contacts']:
+                    try:
+                        serializer = EmergencyContactSerializer(data=contact)
+                        serializer.is_valid()
+                        print serializer.errors
+                        new_contact = serializer.object
+                        new_contact.save()
+                        obj.parent_guardians.add(new_contact)
+                    except Exception as e:
+                        # this doens't actually do anything... need to trigger
+                        # an API error...
+                        print e
+                        return Response({"error":"error saving contact information"})
+
+
+class EmergencyContactViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (ApplicantPermissions,)
+    queryset = EmergencyContact.objects.all()
+    serializer_class = EmergencyContactSerializer
+
 
 class ApplicantCustomFieldViewSet(viewsets.ModelViewSet):
 
@@ -46,7 +74,8 @@ class ApplicantForeignKeyRelatedFieldChoicesViewSet(viewsets.ViewSet):
         choiceMap = {
             "religion" : ReligionChoice,
             "family_preferred_language" : LanguageChoice,
-            "ethnicity" : EthnicityChoice
+            "ethnicity" : EthnicityChoice,
+            "heard_about_us" : HeardAboutUsOption,
         }
         data = {}
 
