@@ -84,14 +84,9 @@
                         <input 
                           ng-if="section_field.field_type == 'date'"
                           type="text" 
-                          class="form-control" 
-                          datepicker-popup="yyyy-MM-dd" 
+                          class="form-control"  
                           ng-model="section_field.value"
-                          is-open="opened" 
-                          show-weeks="false"
-                          show-button-bar="false"
-                          ng-required="section_field.required" 
-                          close-text="Close" />
+                          ng-required="section_field.required" />
 
                         <!-- Emergency Contact Block -->
 
@@ -204,7 +199,6 @@
                             </select>
                           </div>
                         </div>
-
                         <!-- End Emergency Contact Block -->
                         <select 
                           ng-if="section_field.field_type == 'multiple'" 
