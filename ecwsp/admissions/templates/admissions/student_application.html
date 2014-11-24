@@ -254,8 +254,8 @@
         <tbody>
           <tr ng-repeat="field in section.fields">
             <td class="col-sm-6">{{ field.field_label }}</td>
-            <td class="col-sm-6" ng-if="!field.field_type=='emergency_contact'">{{ field.value }}</td>
-            <td class="col-sm-6" ng-if="field.field_type=='emergency_contact'">
+            <td class="col-sm-6" ng-if="field.field_type !='emergency_contact'">{{ field.value }}</td>
+            <td class="col-sm-6" ng-if="field.field_type =='emergency_contact'">
               {{ field.value.fname }} {{field.value.lname }}, ({{ field.value.relationship_to_student }}) <br />
               {{ field.value.street }} {{ field.value.city }}, {{ field.value.state }}, {{field.value.zip }} <br />
               <strong>Home:</strong> {{ field.value.home_phone }} {{ field.value.email }} <br />
