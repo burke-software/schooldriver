@@ -222,20 +222,13 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
     },
-    'filters': {
-        'supress_unreadable_post': {
-            '()': 'common.logging.SuppressUnreadablePost',
-         }
-    },
     'handlers': {
         'sentry': {
             'level': 'WARNING',
-            'filters': ['supress_unreadable_post'],
             'class': 'raven.contrib.django.handlers.SentryHandler',
         },
         'console': {
             'level': 'DEBUG',
-            'filters': ['supress_unreadable_post'],
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
@@ -282,6 +275,7 @@ if os.getenv('RAVEN_DSN'):
     INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
     RAVEN_CONFIG = {
         'dsn': os.getenv('RAVEN_DSN'),
+        'IGNORE_EXCEPTIONS': ['django.http.UnreadablePostError'],
     }
 
 COMPRESS_PRECOMPILERS = (
@@ -484,7 +478,7 @@ CONSTANCE_CONFIG = {
         'Normally a incomplete course would not show on a transcript. When this is enabled '\
         'such courses will show - however grades will be blank.'),
     'APPLICANT_EMAIL_ALERT' : (False, "Send email alert on applicant submission"),
-    'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('', 
+    'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('',
         "Email addresses to send alert to; only one email address per line")
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
