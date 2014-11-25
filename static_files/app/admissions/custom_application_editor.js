@@ -1,6 +1,4 @@
-var admissionsApp = angular.module('admissions',[]);
-
-admissionsApp.controller('CustomApplicationEditorController', ['$scope', '$http', function($scope, $http) {
+app.controller('CustomApplicationEditorController', ['$scope', '$http', function($scope, $http) {
     
     $scope.applicant_field_options = [];
     $scope.applicant_integrated_fields = [];

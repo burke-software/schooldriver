@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
+from django.contrib.auth.decorators import (
+    login_required, user_passes_test, permission_required)
 from django.contrib.auth import logout
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -12,20 +13,21 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from django.utils.decorators import method_decorator
 from django.views import generic
+from django.views.generic.base import TemplateView
 from datetime import date
 
 from .models import Student, UserPreference, GradeLevel, SchoolYear
-from .forms import UserPreferenceForm, UploadFileForm, StudentLookupForm
-from .forms import MarkingPeriodForm, YearSelectForm
+from .forms import UserPreferenceForm, StudentLookupForm
+from .forms import YearSelectForm
 from .pdf_reports import student_thumbnail
 from .template_report import TemplateReport
 from ecwsp.administration.models import Template
 from ecwsp.schedule.calendar import Calendar
-from ecwsp.schedule.models import MarkingPeriod, Course, CourseSection, CourseEnrollment
-from ecwsp.attendance.models import CourseSectionAttendance
+from ecwsp.schedule.models import (
+    MarkingPeriod, CourseSection, CourseEnrollment)
 
 import sys
-import httpagentparser
+
 
 @login_required
 def user_preferences(request):
@@ -55,17 +57,6 @@ def index(request):
     if 'next' in request.GET and request.GET['next'] != "/":
         return HttpResponseRedirect(request.GET['next'])
     if request.user.is_staff:
-        try:
-            # Warn users of IE and Firefox < 4.0 they are not supported
-            ua = request.META['HTTP_USER_AGENT']
-            browser_name = httpagentparser.detect(ua)['browser']['name']
-            browser_version = httpagentparser.detect(ua)['browser']['version']
-            if browser_name == "Microsoft Internet Explorer":
-                messages.warning(request,
-                    mark_safe('Warning Internet Explorer is not supported on the admin site. If you ' \
-                              'have any trouble, try using a standards compliant browser such as Firefox, Chrome, Opera, or Safari.'))
-        except:
-            pass
         return HttpResponseRedirect('/sis/dashboard')
     elif request.user.groups.filter(Q(name='students')).count() > 0:
         return student_redirect(request)
@@ -75,10 +66,15 @@ def index(request):
         from ecwsp.work_study.views import supervisor_dash
         return supervisor_dash(request)
     else:
-        return render_to_response('base.html', {'msg': "Not authorized", 'request': request,}, RequestContext(request, {}))
+        return render_to_response(
+            'base.html',
+            {'msg': "Not authorized", 'request': request},
+            RequestContext(request, {}))
+
 
 def student_redirect(request):
-    """ Redirects student to proper page based on what's installed and if it's possible to display the timesheet
+    """ Redirects student to proper page based on what's installed and if it's
+    possible to display the timesheet
     """
     if 'ecwsp.work_study' in settings.INSTALLED_APPS:
         from ecwsp.work_study.views import student_timesheet
@@ -451,3 +447,11 @@ def increment_year_confirm(request, year_id):
             item_list += [mark_safe(row)]
 
     return render_to_response('sis/list_with_confirm.html', {'subtitle': subtitle, 'item_list':item_list, 'msg':msg}, RequestContext(request, {}),)
+
+
+class SpaView(TemplateView):
+    """ Use this for all Single Page Applications
+    with angular. Shouldn't need to extend it
+    but it could be done.
+    """
+    template_name = "spa.html"

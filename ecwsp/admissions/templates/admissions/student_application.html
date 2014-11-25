@@ -1,17 +1,16 @@
-{% extends 'application_base.html' %}
+{% extends 'spa.html' %}
 {% load staticfiles %}
-{% load static from staticfiles %}
-{% block extra_head %}
-<script type="text/javascript" src="{% static 'js/angular-translate.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/angular-translate-loader-url.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/admissions/student_application.js' %}"></script>
 
+{% block angular_app %}
+    {{ block.super }}
+    <script src="{% static 'app/admissions/student_application.js' %}"></script>
+    <script src="{% static 'app/admissions/custom_application_editor.js' %}"></script>
 {% endblock %}
 
 {% block content %}
 {% verbatim %}
 
-<div class="container custom-application" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
+<div class="container custom-application" ng-app="angular_sis" ng-controller="StudentApplicationController" ng-init="init()">
   <div ng-if="applicationNotComplete()" class="hidden-print">
     <div class="btn-group pull-right">
       <button class="btn btn-default" ng-click="changeLanguage('en')">

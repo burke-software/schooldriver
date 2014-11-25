@@ -1,12 +1,4 @@
-var admissionsApp = angular.module('admissions',['pascalprecht.translate', 'ui.bootstrap']);
-
-admissionsApp.config(['$translateProvider', function ($translateProvider) {
-    $translateProvider.useUrlLoader('/api/translations/admissions');
-    $translateProvider.preferredLanguage('en');
-    $translateProvider.useMissingTranslationHandler('customTranslationHandler');
-}]);
-
-admissionsApp.factory('customTranslationHandler', function () {
+app.factory('customTranslationHandler', function () {
   return function (translationID, uses) {
     // return the following text as a translation 'result' - this will be
     // displayed instead of the language key.
@@ -14,7 +6,7 @@ admissionsApp.factory('customTranslationHandler', function () {
   };
 });
 
-admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$translate', '$rootScope', function($scope, $http, $translate, $rootScope) {
+app.controller('StudentApplicationController', ['$scope', '$http', '$translate', '$rootScope', function($scope, $http, $translate, $rootScope) {
     
     $scope.changeLanguage = function(key) {
         $translate.use(key);
