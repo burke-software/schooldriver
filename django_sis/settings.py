@@ -267,7 +267,6 @@ INSTALLED_APPS = (
     'ecwsp.naviance_sso',
     'rosetta',
     # These can be enabled if desired but the default is off
-    #'ecwsp.integrations.schoolreach',
     #'ecwsp.integrations.canvas_sync',
 )
 
@@ -335,6 +334,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'ecwsp.work_study.tasks.update_contacts_from_sugarcrm',
         'schedule': timedelta(minutes=30),
     },
+    'fuckyoucelery': {
+        'task': 'django_sis.celery.debug_task',
+        'schedule': timedelta(minutes=1),
+    },
 }
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH2_KEY')
@@ -395,6 +398,7 @@ TENANT_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
+    'ecwsp.integrations.schoolreach',
     'south',
     'reversion',
     'djcelery',
@@ -478,7 +482,7 @@ CONSTANCE_CONFIG = {
         'Normally a incomplete course would not show on a transcript. When this is enabled '\
         'such courses will show - however grades will be blank.'),
     'APPLICANT_EMAIL_ALERT' : (False, "Send email alert on applicant submission"),
-    'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('', 
+    'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('',
         "Email addresses to send alert to; only one email address per line"),
     'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail")
 }
