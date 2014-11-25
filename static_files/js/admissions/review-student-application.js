@@ -83,13 +83,22 @@ admissionsApp.controller('ReviewStudentApplicationController', [
                 var section = template.sections[section_id];
                 for (var field_id in section.fields) {
                     var field = section.fields[field_id];
-                    if (field.is_field_integrated_with_applicant == true) {
+                    if ( field.is_field_integrated_with_applicant == true ) {
                         field.value = studentResponses[field.field_name];
                     } else {
                         for (var i in studentResponses.additionals) {
                             var additional = studentResponses.additionals[i];
                             if (additional.custom_field == field.id) {
-                                field.value = additional.answer;
+                                if ( field.field_type == 'emergency_contact' ) {
+                                    var pythonUnicodeString = additional.answer;
+                                    if (pythonUnicodeString) {
+                                        var escapedString = pythonUnicodeString.replace(/u'(?=[^:]+')/g, "'");
+                                        escapedString = escapedString.replace(/'/g,'"');
+                                        field.value = JSON.parse(escapedString); 
+                                    }
+                                } else {
+                                    field.value = additional.answer;
+                                }
                                 break
                             }
                         }

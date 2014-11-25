@@ -32,6 +32,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
         "status" : false,
         "errors" : []
     }
+    $scope.stateOptions = [];
 
     $scope.applicationNotComplete = function() {
         return !$scope.applicationComplete;
@@ -191,37 +192,56 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                     "choices" : field.choices,
                     "max_length" : field.max_length,
                 });
+                if (field_name == 'state') {
+                    $scope.stateOptions = field.choices;
+                }
             };  
         });
     };
 
-    $scope.convertDateToString = function(date) {
-        // returns a string in the format YYYY-MM-DD
-        var day = date.getDate();
-        var month = date.getMonth() + 1; //Months are zero based
-        var year = date.getFullYear();
-        return year + "-" + month + "-" + day;
-    }
+    $scope.reformatDateField = function(dateString) {
+        if ( dateString.length == 10 ) {
+            var dateParts = dateString.split("-");
+            if ( dateParts.length == 3 ) {
+                year = dateParts[2];
+                month = dateParts[0];
+                day = dateParts[1];
+                dateString = year + "-" + month + "-" + day;
+            }
+        }
+        return dateString
+    };
 
     $scope.submitApplication = function() {
+        // turn previous errors off while we attempt to submit the app
+        $scope.submissionError.status = false;
+        $scope.submissionError.errors = [];
         // first collect all the values from the template:
         var sections = $scope.application_template.sections;
+        // need to initialize an empty contacts array
+        $scope.applicant_data.emergency_contacts = [];
         for (var section_id in sections) {
             var section = sections[section_id];
             for (var i in section.fields) {
                 var field = section.fields[i];
                 if (field.is_field_integrated_with_applicant === true) {
-                    if (field.field_type == 'date' ) {
-                        var date_string = $scope.convertDateToString(field.value);
-                        field.value = date_string;
+                    if (field.field_type == 'date') {
+                        var reformattedDate = $scope.reformatDateField(field.value)
+                        $scope.applicant_data[field.field_name] = reformattedDate;
+                    } else {
+                        $scope.applicant_data[field.field_name] = field.value;
                     }
-                    $scope.applicant_data[field.field_name] = field.value;
+                    
+
                 } else if (field.is_field_integrated_with_applicant === false) {
                     $scope.applicant_additional_information.push({
                         "custom_field" : field.id,
                         "answer" : field.value,
                     });
                 }  
+                if (field.field_type == 'emergency_contact') {
+                    $scope.applicant_data.emergency_contacts.push(field.value);
+                }
             }
         }
         
@@ -253,6 +273,13 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
                 var field = $scope.getApplicationFieldByFieldName(i);
                 if ( field && data[i] ) {
                     var error_msg = data[i][0]
+                    if ( error_msg.indexOf("Date has wrong format") > -1 ) {
+                        // let's re-write the error message to conform to the
+                        // front-end setting, instead of the incomprehensible
+                        // "Date has wrong format. Use one of these formats instead: YYYY[-MM[-DD]]"
+                        // which comes from Django validation
+                        error_msg = "Date has wrong format. Use the format MM-DD-YYYY instead";
+                    }
                     var error = {
                         "field_label" : field.field_label,
                         "error_msg" : error_msg

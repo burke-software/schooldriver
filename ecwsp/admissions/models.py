@@ -301,7 +301,7 @@ def email_alert_for_submitted_applicant(sender, instance, created, **kwargs):
     if created and config.APPLICANT_EMAIL_ALERT:
         for to_address in config.APPLICANT_EMAIL_ALERT_ADDRESSES.split('\n'):
             subject = "New Application Submitted"
-            from_address = settings.EMAIL_HOST_USER
+            from_address = config.FROM_EMAIL_ADDRESS
             c = Context({
                 'applicant_id': instance.id, 
                 'school_name' : config.SCHOOL_NAME,
@@ -399,6 +399,7 @@ class ApplicantCustomField(models.Model):
             ('multiple', 'Dropdown Choices'),
             ('radio', 'Multiple Choices'),
             ('checkbox', 'Checkboxes'),
+            ('emergency_contact', 'Emergency Contact'),
         )
     field_name = models.CharField(blank=True, null=True, max_length=50)
     is_field_integrated_with_applicant = models.BooleanField(default=False) 

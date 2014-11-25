@@ -125,6 +125,8 @@ def reports(request):
                     return report.pod_save(template)
                 except zipfile.BadZipfile:
                     return HttpResponse('Invalid template file')
+                except ValueError:
+                    return HttpResponse('Report template does not exist')
 
         else:
             report_form = ReportForm(request.POST)
