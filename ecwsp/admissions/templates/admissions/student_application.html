@@ -81,12 +81,36 @@
                           ng-model="section_field.value" 
                           ng-required="section_field.required">
                         </textarea>
-                        <input 
-                          ng-if="section_field.field_type == 'date'"
-                          type="text" 
-                          class="form-control"  
-                          ng-model="section_field.value"
-                          ng-required="section_field.required" />
+                        <div ng-if="section_field.field_type == 'date'" class="form-group row">
+                          <div class="col-sm-4">
+                            <label class="control-label">
+                              {{ 'Month' | translate }}
+                            </label>
+                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.month">
+                              <option ng-repeat="month in monthOptions" value="{{ month.value }}">
+                                {{ month.display_name }}</option>
+                            </select>
+                          </div>
+                          <div class="col-sm-4">
+                            <label class="control-label">
+                              {{ 'Day' | translate }}
+                            </label>
+                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.day">
+                              <option ng-repeat="day in dayOptions" value="{{ day }}">
+                                {{ day }}</option>
+                            </select>
+                          </div>
+                          <div class="col-sm-4">
+                            <label class="control-label">
+                              {{ 'Year' | translate }}
+                            </label>
+                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.year">
+                              <option ng-repeat="year in yearOptions" value="{{ year }}">
+                                {{ year }}</option>
+                            </select>
+                          </div>
+
+                        </div>
 
                         <!-- Emergency Contact Block -->
 
@@ -233,7 +257,7 @@
           <strong>{{ error.field_label }}</strong>: <em class="text-danger">{{ error.error_msg }}</em>
         </p>
       </div>
-      <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid">Submit Application</button>
+      <button class="btn btn-success btn-lg" ng-click="submitApplication()" >Submit Application</button><!--ng-disabled="applicationForm.$invalid"-->
     </form>
   </div>
   <div ng-if="applicationComplete">
@@ -248,7 +272,14 @@
         <tbody>
           <tr ng-repeat="field in section.fields">
             <td class="col-sm-6">{{ field.field_label }}</td>
-            <td class="col-sm-6" ng-if="field.field_type !='emergency_contact'">{{ field.value }}</td>
+            <td class="col-sm-6" ng-if="field.field_type !='emergency_contact'">
+              <span ng-if="field.field_type == 'date'">
+                {{ userReadableDateField(field.value) }}
+              </span>
+              <span ng-if="field.field_type != 'date'">
+                {{ field.value }}
+              </span>
+            </td>
             <td class="col-sm-6" ng-if="field.field_type =='emergency_contact'">
               {{ field.value.fname }} {{field.value.lname }}, ({{ field.value.relationship_to_student }}) <br />
               {{ field.value.street }} {{ field.value.city }}, {{ field.value.state }}, {{field.value.zip }} <br />

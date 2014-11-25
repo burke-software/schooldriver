@@ -34,6 +34,43 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
     }
     $scope.stateOptions = [];
 
+    $scope.monthOptions = [
+        {value: '01', display_name: "January"},
+        {value: '02', display_name: "February"},
+        {value: '03', display_name: "March"},
+        {value: '04', display_name: "April"},
+        {value: '05', display_name: "May"},
+        {value: '06', display_name: "June"},
+        {value: '07', display_name: "July"},
+        {value: '08', display_name: "August"},
+        {value: '09', display_name: "September"},
+        {value: '10', display_name: "October"},
+        {value: '11', display_name: "November"},
+        {value: '12', display_name: "December"},
+    ];
+
+    $scope.dayOptions = [];
+
+    $scope.populateDayOptions = function() {
+        for (var i=1; i <= 31; i++) {
+            var dayNum = i.toString();
+            if ( i < 10 ) {
+                dayNum = "0" + dayNum;
+            }
+            $scope.dayOptions.push(dayNum);
+        }
+    };
+
+    $scope.yearOptions = [];
+
+    $scope.populateYearOptions = function() {
+        for (var i=1970; i <= 2014; i++) {
+            var yearNum = i.toString();
+            $scope.yearOptions.push(yearNum);
+        }
+    };
+
+
     $scope.applicationNotComplete = function() {
         return !$scope.applicationComplete;
     };
@@ -174,6 +211,10 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
         });
 
         $scope.refreshCustomFieldList();
+        $scope.populateDayOptions();
+        $scope.populateYearOptions();
+
+
         
 
         $http({
@@ -199,17 +240,26 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$t
         });
     };
 
-    $scope.reformatDateField = function(dateString) {
-        if ( dateString.length == 10 ) {
-            var dateParts = dateString.split("-");
-            if ( dateParts.length == 3 ) {
-                year = dateParts[2];
-                month = dateParts[0];
-                day = dateParts[1];
-                dateString = year + "-" + month + "-" + day;
+    $scope.reformatDateField = function(dateDict) {
+        // Accept a dict in the form {year: "YYYY", month: "MM", day: "DD"}
+        // and return a string in the form "YYYY-MM-DD"
+        var dateString = dateDict.year + "-" + dateDict.month + "-" + dateDict.day;
+        return dateString;
+    };
+
+    $scope.userReadableDateField = function(dateDict) {
+        // Accept a dict in the form {year: "YYYY", month: "MM", day: "DD"}
+        // and return a string in the form "January 02, 2012"
+        var monthName = "";
+        for ( var m in $scope.monthOptions ) {
+            var month = $scope.monthOptions[m];
+            if ( month.value == dateDict.month ) {
+                monthName = month.display_name;
+                break;
             }
         }
-        return dateString
+        var dateString = monthName + " " + dateDict.day + ", " + dateDict.year;
+        return dateString;
     };
 
     $scope.submitApplication = function() {
