@@ -2,8 +2,6 @@
 {% load staticfiles %}
 {% load static from staticfiles %}
 {% block extra_head %}
-<script type="text/javascript" src="{% static 'js/angular-translate.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/angular-translate-loader-url.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/admissions/student_application.js' %}"></script>
 
 {% endblock %}
@@ -13,18 +11,9 @@
 
 <div class="container custom-application" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
   <div ng-if="applicationNotComplete()" class="hidden-print">
-    <div class="btn-group pull-right">
-      <button class="btn btn-default" ng-click="changeLanguage('en')">
-        English
-      </button>
-      <button class="btn btn-default" ng-click="changeLanguage('es')">
-        Spanish
-      </button>
-    </div>
     <h1>
       Application For Admission
       <p class="lead">Click on each section title and fill out all fields for each section</p>
-      
     </h1>
     
     <hr>
@@ -34,7 +23,7 @@
           <div class="panel-heading">
               <h4 style="display: inline-block;">
                 <a data-toggle="collapse" data-parent="#accordion" href="#section-{{section.id}}">
-                  {{ section.name | translate }}
+                  {{ section.name }}
                 </a>
               </h4>
             <div class="pull-right text-right">
@@ -49,19 +38,19 @@
           </div>
           <div id="section-{{section.id}}" class="panel-collapse collapse" ng-class="{'in' : $index == 0}">
             <div class="panel-body">
-              <p>{{ section.help_text | translate }}</p>
+              <p>{{ section.help_text }}</p>
               <div class="col-sm-12">
                 <div>
                   <div ng-repeat="section_field in section.fields track by $index" ng-form="nestedField">
                     <div class="form-group col-sm-12" ng-class="{'has-error' : nestedField.$invalid && nestedField.$dirty, 'has-info' : nestedField.$invalid && nestedField.$pristine }">
                       <label class="control-label col-sm-2" ng-if="section_field.field_label.length < 50">
                         <span ng-if="section_field.required">*</span>
-                        {{ section_field.field_label | translate }}
+                        {{ section_field.field_label }}
                       </label>
                       <label class="control-label col-sm-10 col-sm-offset-2" ng-if="section_field.field_label.length > 50">
                         <p class="text-left">
                           <span ng-if="section_field.required">*</span>
-                          {{ section_field.field_label | translate }}
+                          {{ section_field.field_label }}
                         </p>
                       </label>
                       <div class="col-sm-2" ng-if="section_field.field_label.length > 50"></div>
@@ -84,7 +73,7 @@
                         <div ng-if="section_field.field_type == 'date'" class="form-group row">
                           <div class="col-sm-4">
                             <label class="control-label">
-                              {{ 'Month' | translate }}
+                              Month
                             </label>
                             <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.month">
                               <option ng-repeat="month in monthOptions" value="{{ month.value }}">
@@ -93,7 +82,7 @@
                           </div>
                           <div class="col-sm-4">
                             <label class="control-label">
-                              {{ 'Day' | translate }}
+                              Day
                             </label>
                             <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.day">
                               <option ng-repeat="day in dayOptions" value="{{ day }}">
@@ -102,7 +91,7 @@
                           </div>
                           <div class="col-sm-4">
                             <label class="control-label">
-                              {{ 'Year' | translate }}
+                              Year
                             </label>
                             <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.year">
                               <option ng-repeat="year in yearOptions" value="{{ year }}">
@@ -117,13 +106,13 @@
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
                           <div class="col-sm-6">
                             <label class="control-label">
-                              {{ 'First Name' | translate }}
+                              First Name
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.fname">
                           </div>
                           <div class="col-sm-6">
                             <label class="control-label">
-                              {{ 'Last Name' | translate }}
+                              Last Name
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.lname">
                           </div>
@@ -131,7 +120,7 @@
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
                           <div class="col-sm-12">
                             <label class="control-label">
-                              {{ 'Relationship to Student (Mother, Father, etc.)' | translate }}
+                              Relationship to Student (Mother, Father, etc.)
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.relationship_to_student">
                           </div>
@@ -139,19 +128,19 @@
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
                           <div class="col-sm-5">
                             <label class="control-label">
-                              {{ 'Street Address (include Apt. # if applicable)' | translate }}
+                              Street Address (include Apt. # if applicable)
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.street">
                           </div>
                           <div class="col-sm-3">
                             <label class="control-label">
-                              {{ 'City' | translate }}
+                              City
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.city">
                           </div>
                           <div class="col-sm-2">
                             <label class="control-label">
-                              {{ 'State' | translate }}
+                              State
                             </label>
                             <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.state">
                               <option ng-repeat="state in stateOptions" value="{{ state.value }}">
@@ -160,7 +149,7 @@
                           </div>
                           <div class="col-sm-2">
                             <label class="control-label">
-                              {{ 'Zipcode' | translate }}
+                              Zipcode
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.zip">
                           </div>
@@ -168,13 +157,13 @@
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
                           <div class="col-sm-6">
                             <label class="control-label">
-                              {{ 'Phone Number' | translate }}
+                              Phone Number
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.home_phone">
                           </div>
                           <div class="col-sm-6">
                             <label class="control-label">
-                              {{ 'Email Address' | translate }}
+                              Email Address
                             </label>
                             <input type="email" class="form-control" ng-required="section_field.required" ng-model="section_field.value.email" name="employer_email">
                             <span class="text-danger" ng-if="nestedField.employer_email.$error.email">Please enter a valid email address</span>
@@ -183,43 +172,45 @@
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
                           <div class="col-sm-5">
                             <label class="control-label">
-                              {{ 'Occupation' | translate }}
+                              Occupation
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.occupation">
                           </div>
                           <div class="col-sm-5">
                             <label class="control-label">
-                              {{ 'Employer' | translate }}
+                              Employer
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.employer">
                           </div>
                           <div class="col-sm-2">
                             <label class="control-label">
-                              {{ 'Work Phone' | translate }}
+                              Work Phone
                             </label>
                             <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.work_phone">
                           </div>
                         </div>
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
-                          <label class="col-sm-3 control-label">{{ 'Employment Status' | translate }}</label>
+                          <label class="col-sm-3 control-label">
+                            Employment Status
+                          </label>
                           <div class="col-sm-5">
                             <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.employment_status">
-                              <option value='employed'>{{ 'Employed' | translate }}</option>
-                              <option value='unemployed'>{{ 'Unemployed' | translate }}</option>
-                              <option value='retired'>{{ 'Retired' | translate }}</option>
-                              <option value='self_employed'>{{ 'Self-Employed' | translate }}</option>
-                              <option value='homemaker'>{{ 'Homemaker' | translate }}</option>
-                              <option value='disabled'>{{ 'Disabled' | translate }}</option>
-                              <option value='student'>{{ 'Student' | translate }}</option>
+                              <option value='employed'>Employed</option>
+                              <option value='unemployed'>Unemployed</option>
+                              <option value='retired'>Retired</option>
+                              <option value='self_employed'>Self-Employed</option>
+                              <option value='homemaker'>Homemaker</option>
+                              <option value='disabled'>Disabled</option>
+                              <option value='student'>Student</option>
                             </select>
                           </div>
                         </div>
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
-                          <label class="col-sm-3 control-label">{{ 'Is this person a Legal Guardian?' | translate }}</label>
+                          <label class="col-sm-3 control-label">Is this person a Legal Guardian?</label>
                           <div class="col-sm-5">
                             <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.legal_guardian">
-                              <option value='yes'>{{ 'Yes' | translate }}</option>
-                              <option value='no'>{{ 'No' | translate }}</option>
+                              <option value='yes'>Yes</option>
+                              <option value='no'>No</option>
                             </select>
                           </div>
                         </div>
@@ -237,7 +228,7 @@
                           <em>This field is required</em>
                         </span>
                         <span class="help-block">
-                          {{ section_field.helptext | translate }}
+                          {{ section_field.helptext }}
                         </span>
                       </div>
                     </div>
