@@ -3,14 +3,32 @@
 {% load static from staticfiles %}
 {% block extra_head %}
 <script type="text/javascript" src="{% static 'js/admissions/student_application.js' %}"></script>
+<meta name="google-translate-customization" content="37da49fcf8973ccb-756457446a3cca53-g28961e43a5d7f19a-28"></meta>
+
 
 {% endblock %}
 
 {% block content %}
 {% verbatim %}
 
+
+<!-- Google Translate -->
+<div class="container">
+  <div class="pull-right">
+    <div id="google_translate_element"></div><script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'es', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false}, 'google_translate_element');
+    }
+    </script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  </div>
+</div>
+
+<!-- End Google Translate -->
+
 <div class="container custom-application" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
   <div ng-if="applicationNotComplete()" class="hidden-print">
+
+
     <h1>
       Application For Admission
       <p class="lead">Click on each section title and fill out all fields for each section</p>
