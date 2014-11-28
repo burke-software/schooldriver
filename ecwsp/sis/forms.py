@@ -28,14 +28,14 @@ class UserPreferenceForm(forms.ModelForm):
 class DeletedStudentLookupForm(forms.Form):
     # See https://github.com/yourlabs/django-autocomplete-light/issues/315
     try:
-        student = autocomplete_light.ChoiceField('StudentUserAutocomplete')
+        student = autocomplete_light.ModelChoiceField('StudentUserAutocomplete')
     except ProgrammingError:
         pass
 
 
 class StudentLookupForm(forms.Form):
     try:
-        student = autocomplete_light.ChoiceField('StudentActiveStudentAutocomplete')
+        student = autocomplete_light.ModelChoiceField('StudentActiveStudentAutocomplete')
     except ProgrammingError:
         pass
 
@@ -96,7 +96,7 @@ class StudentSelectForm(TimeBasedForm):
     """ Generic student selection form."""
     all_students = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'onclick':''}))
     try:
-        student = autocomplete_light.ChoiceField('StudentActiveStudentAutocomplete')
+        student = autocomplete_light.ModelChoiceField('StudentActiveStudentAutocomplete')
     except ProgrammingError:
         pass
     sort_by = forms.ChoiceField(choices=(('last_name', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)

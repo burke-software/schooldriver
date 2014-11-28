@@ -372,7 +372,7 @@ class SelectSpecificStudents(ModelMultipleChoiceFilter):
         self.form = SelectSpecificStudentsForm()
         self.form.fields['filter_number'] = forms.IntegerField(widget=forms.HiddenInput())
         # This is a hack to force it to accept these choices, otherwise choices gets set to []
-        self.form.fields['select_students'] = autocomplete_light.MultipleChoiceField('StudentUserAutocomplete', required=False)
+        self.form.fields['select_students'] = autocomplete_light.ModelMultipleChoiceField('StudentUserAutocomplete', required=False)
 
     def queryset_filter(self, queryset, report_context=None, **kwargs):
         selected = self.cleaned_data['select_students']

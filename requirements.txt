@@ -14,7 +14,7 @@ dj-static==0.0.6
 django-admin-export==2.0
 django-appconf==0.6
 django-apptemplates==0.0.1
-django-autocomplete-light-bsc==2.0.0a18
+django-autocomplete-light==2.0.3
 django-bower==5.0.1
 django-cached-field==1.2.8
 django-celery==3.1.16
@@ -100,3 +100,4 @@ xlrd==0.9.3
 xlwt==0.7.5
 #-e git://github.com/bernardopires/django-tenant-schemas.git#egg=tenant_schemas
 git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99
+#django-hstore

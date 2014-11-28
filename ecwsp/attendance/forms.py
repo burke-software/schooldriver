@@ -55,7 +55,7 @@ class AttendanceViewForm(forms.Form):
     order_by = forms.ChoiceField(initial=0, choices=(('Date','Date'),('Status','Status'),))
     include_private_notes = forms.BooleanField(required=False)
     try:
-        student = autocomplete_light.ChoiceField('StudentUserAutocomplete')
+        student = autocomplete_light.ModelChoiceField('StudentUserAutocomplete')
     except ProgrammingError:
         pass
 
