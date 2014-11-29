@@ -334,10 +334,6 @@ CELERYBEAT_SCHEDULE = {
         'task': 'ecwsp.work_study.tasks.update_contacts_from_sugarcrm',
         'schedule': timedelta(minutes=30),
     },
-    'fuckyoucelery': {
-        'task': 'django_sis.celery.debug_task',
-        'schedule': timedelta(minutes=1),
-    },
 }
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH2_KEY')
