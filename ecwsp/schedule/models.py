@@ -10,6 +10,7 @@ from ecwsp.sis.models import Student, GradeScaleRule
 from ecwsp.sis.helper_functions import round_as_decimal
 from ecwsp.grades.models import Grade
 from ecwsp.administration.models import Configuration
+from constance import config
 
 import datetime
 import decimal
@@ -362,7 +363,7 @@ WHERE (grades_grade.course_section_id = %s
                 if total_weight:
                     final /= float(total_weight)
                     final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
-                    if final > int(Configuration.get_or_default('letter_grade_required_for_pass').value):
+                    if final > config.LETTER_GRADE_REQUIRED_FOR_PASS:
                         return "P"
                     else:
                         return "F"

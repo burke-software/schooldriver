@@ -3,11 +3,7 @@
 {% load compress %}
 
 {% block extra_head %}
-  {% compress js %}
-  <script type="text/coffeescript" charset="utf-8" src="{% static "app/course.coffee" %}"></script>
-  {% endcompress %}
-  <script type="text/javascript">
-  </script>
+  <script src="{% static "app/course.js" %}"></script>
 {% endblock %}
 
 {% block content %}

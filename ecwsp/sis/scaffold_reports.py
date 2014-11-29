@@ -1154,7 +1154,6 @@ class SisReport(ScaffoldReport):
                 context['marking_periods'] = ', '.join(marking_periods.values_list('shortname',flat=True))
                 context['school_year'] = marking_periods[0].school_year
 
-
                 current_mp = marking_periods.first()
                 for student in students:
                     if current_mp:

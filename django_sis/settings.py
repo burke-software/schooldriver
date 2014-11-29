@@ -222,20 +222,13 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
     },
-    'filters': {
-        'supress_unreadable_post': {
-            '()': 'common.logging.SuppressUnreadablePost',
-         }
-    },
     'handlers': {
         'sentry': {
             'level': 'WARNING',
-            'filters': ['supress_unreadable_post'],
             'class': 'raven.contrib.django.handlers.SentryHandler',
         },
         'console': {
             'level': 'DEBUG',
-            'filters': ['supress_unreadable_post'],
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
@@ -274,7 +267,6 @@ INSTALLED_APPS = (
     'ecwsp.naviance_sso',
     'rosetta',
     # These can be enabled if desired but the default is off
-    #'ecwsp.integrations.schoolreach',
     #'ecwsp.integrations.canvas_sync',
 )
 
@@ -282,6 +274,7 @@ if os.getenv('RAVEN_DSN'):
     INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
     RAVEN_CONFIG = {
         'dsn': os.getenv('RAVEN_DSN'),
+        'IGNORE_EXCEPTIONS': ['django.http.UnreadablePostError'],
     }
 
 COMPRESS_PRECOMPILERS = (
@@ -340,6 +333,10 @@ CELERYBEAT_SCHEDULE = {
     'update_contacts_from_sugarcrm': {
         'task': 'ecwsp.work_study.tasks.update_contacts_from_sugarcrm',
         'schedule': timedelta(minutes=30),
+    },
+    'fuckyoucelery': {
+        'task': 'django_sis.celery.debug_task',
+        'schedule': timedelta(minutes=1),
     },
 }
 
@@ -401,6 +398,7 @@ TENANT_APPS = (
     'ecwsp.grades',
     'ecwsp.counseling',
     'ecwsp.standard_test',
+    'ecwsp.integrations.schoolreach',
     'south',
     'reversion',
     'djcelery',
@@ -459,6 +457,8 @@ CONSTANCE_CONFIG = {
     'SUGAR_URL': ('', 'SugarCRM Domain'),
     'SUGAR_USERNAME': ('', 'SugarCRM Username'),
     'SUGAR_PASSWORD': ('', 'SugarCRM Password'),
+    'SUGAR_SYNC_MINUTES': (30, 'SugarCRM sync every X minutes'),
+    'LETTER_GRADE_REQUIRED_FOR_PASS': (60, 'Minimum grade required to be considered "passing"'),
     'CRND_ROUTES': (False, 'Alternative way of storing routes that Notre Dame High School uses. Not recommended.'),
     'CANVAS_TOKEN': ('', 'https://canvas.instructure.com/doc/api/file.oauth.html'),
     'CANVAS_ACCOUNT_ID': ('', ''),
@@ -482,7 +482,7 @@ CONSTANCE_CONFIG = {
         'Normally a incomplete course would not show on a transcript. When this is enabled '\
         'such courses will show - however grades will be blank.'),
     'APPLICANT_EMAIL_ALERT' : (False, "Send email alert on applicant submission"),
-    'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('', 
+    'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('',
         "Email addresses to send alert to; only one email address per line"),
     'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail")
 }
@@ -536,6 +536,7 @@ if USE_S3:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
+    MEDIA_URL = STATIC_URL
     # Use Heroku's DB
     #import dj_database_url
     # Use 'local_maroon' as a fallback; useful for testing Heroku config locally

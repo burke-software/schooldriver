@@ -40,12 +40,12 @@
     
     {% block extra_head %}{% endblock %}
     
-    {% compress js %}
-    <script type="text/coffeescript" charset="utf-8" src="{% static "app/restfulModel.coffee" %}"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script type="text/coffeescript" charset="utf-8" src="{% static "app/angular_sis.coffee" %}"></script>
-    {% endcompress %}
+    {% block angular_app %}
+        {% compress js %}
+        <script src="{% static "app/restfulModel.js" %}"></script>
+        <script src="{% static "app/angular_sis.js" %}"></script>
+        {% endcompress %}
+    {% endblock %}
 </head>
 
 <body>
@@ -96,11 +96,6 @@
               <li><a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a></li>
             {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
               <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
-            {% endif %}
-            {% if 'ecwsp.omr' in settings.INSTALLED_APPS %}
-            {% if perms.omr.change_test or perms.omr.teacher_test %}
-              <li><a href="/omr/dashboard"> OMR </a></li>
-            {% endif %}
             {% endif %}
             </ul>
           </li>

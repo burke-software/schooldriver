@@ -1,4 +1,4 @@
-import floppyforms as forms
+from django import forms
 from django.contrib.admin import widgets as adminwidgets
 from django.contrib import messages
 from django.conf import settings
@@ -21,15 +21,12 @@ class UserPreferenceForm(forms.ModelForm):
             'prefered_file_format': forms.Select,
             'include_deleted_students': forms.CheckboxInput,
             'course_sort': forms.Select,
-            'omr_default_point_value': forms.NumberInput,
-            'omr_default_save_question_to_bank': forms.CheckboxInput,
-            'omr_default_number_answers': forms.NumberInput,
             'gradebook_preference': forms.Select,
         }
 
 
 class DeletedStudentLookupForm(forms.Form):
-    # See https://github.com/yourlabs/django-autocomplete-light/issues/315 
+    # See https://github.com/yourlabs/django-autocomplete-light/issues/315
     try:
         student = autocomplete_light.ChoiceField('StudentUserAutocomplete')
     except ProgrammingError:
