@@ -134,6 +134,7 @@ BOWER_INSTALLED_APPS = (
     'jquery-color',
     'angular-route',
     'angular-ui-handsontable',
+    'angular-bootstrap',
     'underscore',
     'restangular',
     'bootstrap-sass-official',
