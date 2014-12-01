@@ -190,14 +190,12 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                 } else {
                     $scope.application_template = json_template;
                 }
+                $scope.refreshCustomFieldList();
         });
 
-        $scope.refreshCustomFieldList();
         $scope.populateDayOptions();
         $scope.populateYearOptions();
 
-
-        
 
         $http({
             method: "OPTIONS",
