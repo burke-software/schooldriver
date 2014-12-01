@@ -19,17 +19,16 @@ app.controller('ReviewStudentApplicationController',
                 ApplicationFieldFactory.getList().then( function(fields) {
                     $scope.applicationFields = fields;
                 }).then( function() {
-                    $scope.formatApplicationTemplate();
+                    $scope.populateApplicationTemplateWithApplicationFields();
                 }).then( function() {
                     $scope.populateApplicationTemplateWithStudentResponses();
                 });
             });
 
-        $scope.formatApplicationTemplate = function() {
-            // the application template contains a list of sections; each section
-            // contains a list of field-id's. We should fetch the actual fields
-            // and replace the list of field-id's with a list of actual fields
-            // to save time in the DOM when interating through the sections
+        $scope.populateApplicationTemplateWithApplicationFields = function() {
+            // applicationt template simply contains field IDs - we need to 
+            // match those field id's with the corresponding field and inject
+            // that field into the template
             var template_sections = $scope.applicationTemplate.sections;
             for (var section_id in template_sections) {
                 var section = template_sections[section_id];
