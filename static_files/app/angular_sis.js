@@ -6,7 +6,6 @@ app.config([
     }
 ]);
 
-
 app.config(function(RestangularProvider) {
     RestangularProvider.setBaseUrl("/api");
     RestangularProvider.setRequestSuffix("/");
@@ -47,6 +46,10 @@ app.config(function($routeProvider, $locationProvider) {
       templateUrl: static('app/common/partials/course_detail.html'),
       controller: "CourseController",
       reloadOnSearch: false
+    });
+    $routeProvider.when('/admissions/application/:applicantId/', {
+      templateUrl: static('app/admissions/review_application.html'),
+      controller: 'ReviewStudentApplicationController',
     });
     return $locationProvider.html5Mode(true);
 });
