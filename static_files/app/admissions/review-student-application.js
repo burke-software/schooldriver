@@ -1,24 +1,9 @@
-var admissionsApp = angular.module('admissions',['ngRoute']);
-
-admissionsApp.config([
-    '$routeProvider',  '$locationProvider',
-    function($routeProvider, $locationProvider) {
-        $routeProvider
-            .when('/admissions/application/:applicantId/', {
-                controller: 'ReviewStudentApplicationController',
-                templateUrl: '/static/app/partials/review_application.html',
-            });
-        $locationProvider.html5Mode(true).hashPrefix('!');
-}]);
-
-admissionsApp.controller('ReviewStudentApplicationController', [
-    '$scope', '$route', '$routeParams', '$http',
+app.controller('ReviewStudentApplicationController', 
     function($scope, $route, $routeParams, $http) {
         $scope.$routeParams = $routeParams;
         $scope.applicationTemplate = {};
         $scope.applicationFields = [];
         $scope.submissionDate = "";
-        
 
         $scope.init = function() {
             $scope.getDefaultApplicationTemplate();
@@ -105,7 +90,5 @@ admissionsApp.controller('ReviewStudentApplicationController', [
                     }
                 }
             }
-        };
-        
-        
-}]);
+        };   
+});
