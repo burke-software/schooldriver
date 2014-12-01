@@ -1,39 +1,29 @@
 app.controller('ReviewStudentApplicationController', 
-    function($scope, $route, $routeParams, $http) {
+    function($scope, $route, $routeParams, ApplicationFieldFactory, ApplicationTemplateFactory, Restangular) {
         $scope.$routeParams = $routeParams;
-        $scope.applicationTemplate = {};
-        $scope.applicationFields = [];
         $scope.submissionDate = "";
 
-        $scope.init = function() {
-            $scope.getDefaultApplicationTemplate();
-        };
-
-        $scope.getDefaultApplicationTemplate = function() {
-            $http.get("/api/application-template/?is_default=True")
-                .success(function(data, status, headers, config) {
-                    // data[0] returns the first default template,
-                    // theoretically there should only be one
-                    var jsonTemplate = JSON.parse(data[0].json_template)
-                    $scope.applicationTemplate = jsonTemplate;
-                    $scope.refreshCustomFieldList();
+        // get this applicant's saved data
+        Restangular.one('applicant', $routeParams.applicantId).get()
+            .then( function(applicant) {
+                $scope.applicantData = applicant
             });
-        };
 
-        $scope.refreshCustomFieldList = function() {
-            $http.get("/api/applicant-custom-field/")
-                .success(function(data, status, headers, config) {
-                    $scope.applicationFields = data;
+        // get the default application template and format it
+        ApplicationTemplateFactory.getList({is_default: 'true'})
+            .then( function(templates) {
+                var applicationTemplate = templates[0];
+                var jsonTemplate = JSON.parse(applicationTemplate.json_template)
+                $scope.applicationTemplate = jsonTemplate;
+            }).then( function() {
+                ApplicationFieldFactory.getList().then( function(fields) {
+                    $scope.applicationFields = fields;
+                }).then( function() {
                     $scope.formatApplicationTemplate();
-                    var applicantId = $scope.$routeParams.applicantId;
-                    var url = "/api/applicant/" + applicantId + "/";
-                    $http.get(url)
-                        .success(function(data, status, headers, config) {
-                            $scope.applicantData = data;
-                            $scope.populateApplicationTemplateWithStudentResponses(data);
-                    });
+                }).then( function() {
+                    $scope.populateApplicationTemplateWithStudentResponses();
+                });
             });
-        };
 
         $scope.formatApplicationTemplate = function() {
             // the application template contains a list of sections; each section
@@ -61,9 +51,9 @@ app.controller('ReviewStudentApplicationController',
             }
         };
 
-        $scope.populateApplicationTemplateWithStudentResponses = function(applicantData) {
+        $scope.populateApplicationTemplateWithStudentResponses = function() {
             var template = $scope.applicationTemplate;
-            var studentResponses = applicantData;
+            var studentResponses = $scope.applicantData;
             for (var section_id in template.sections) {
                 var section = template.sections[section_id];
                 for (var field_id in section.fields) {
@@ -92,3 +82,4 @@ app.controller('ReviewStudentApplicationController',
             }
         };   
 });
+
