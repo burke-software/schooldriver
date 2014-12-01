@@ -60,25 +60,40 @@ app.controller('ReviewStudentApplicationController',
                     if ( field.is_field_integrated_with_applicant == true ) {
                         field.value = studentResponses[field.field_name];
                     } else {
-                        for (var i in studentResponses.additionals) {
-                            var additional = studentResponses.additionals[i];
-                            if (additional.custom_field == field.id) {
-                                if ( field.field_type == 'emergency_contact' ) {
-                                    var pythonUnicodeString = additional.answer;
-                                    if (pythonUnicodeString) {
-                                        var escapedString = pythonUnicodeString.replace(/u'(?=[^:]+')/g, "'");
-                                        escapedString = escapedString.replace(/'/g,'"');
-                                        field.value = JSON.parse(escapedString); 
-                                    }
-                                } else {
-                                    field.value = additional.answer;
-                                }
-                                break
-                            }
-                        }
+                        field.value = $scope.getAdditionalFieldValue(field);
                     }
                 }
             }
-        };   
+        }; 
+
+        $scope.getAdditionalFieldValue = function(field) {
+            var additionalData = $scope.getApplicationFieldById(field.id);
+            if ( field.field_type == 'emergency_contact' ) {
+                return $scope.convertPythonUnicodeToJsonObject(additionalData.answer); 
+            } else {
+                return additionalData.answer;
+            }
+
+        }; 
+
+        $scope.getAdditionalDataByFieldId = function(fieldId) {
+            additional = null;
+            for (var i in $scope.applicantData.additionals ) {
+                var candidateAdditional = $scope.applicantData.additionals[i];
+                if ( candidateAdditional.custom_field == fieldId ) {
+                    additional = candidateAdditional;
+                    break;
+                }
+            }
+            return additional;
+        };
+
+        $scope.convertPythonUnicodeToJsonObject = function(pythonUnicodeString) {
+            if (pythonUnicodeString) {
+                var escapedString = pythonUnicodeString.replace(/u'(?=[^:]+')/g, "'");
+                escapedString = escapedString.replace(/'/g,'"');
+                return JSON.parse(escapedString);
+            }
+        }; 
 });
 
