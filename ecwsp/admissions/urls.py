@@ -16,8 +16,5 @@ urlpatterns = patterns('',
         name="custom-application-editor"
         ),
     (r'^application/(?P<pk>\d+)/$', SpaView.as_view()),
-    url(r'^application/', 
-        TemplateView.as_view(template_name='admissions/student_application.html'), 
-        name="student-application"
-        ),
+    (r'^application/$', SpaView.as_view()),
 )
