@@ -51,5 +51,9 @@ app.config(function($routeProvider, $locationProvider) {
       templateUrl: static('app/admissions/review_application.html'),
       controller: 'ReviewStudentApplicationController',
     });
+    $routeProvider.when('/admissions/application', {
+      templateUrl: static('app/admissions/student_application.html'),
+      controller: 'StudentApplicationController',
+    });
     return $locationProvider.html5Mode(true);
 });
