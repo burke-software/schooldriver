@@ -141,7 +141,13 @@ fig run web python manage.py migrate --fake
 fig up
 ```
 
-Enjoy your django-sis instance on **localdocker:8000**, yeah that's right, it's *not localhost*. Whatever. 
+Now, the server is running, it may tell you that it's running at `localhost:8000` or `0.0.0.0:8000` but it's actually running at your docker-ip location, which you can find by running:
+
+```
+boot2docker ip
+```
+
+Let's say this is the docker-ip: `192.123.45.678`, you should then be able to see the server in your browser at `192.123.45.678:8000`
 
 ## Ubuntu
 
