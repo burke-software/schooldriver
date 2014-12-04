@@ -104,21 +104,23 @@ You can easily get Djanog-sis running in an isolated development environment usi
 #### Pre-req's
 Before you begin, make sure you have both [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://www.vagrantup.com/downloads.html) installed. 
 
-#### Install docker-osx  (** Warning: This may take forever **)
+#### Install boot2docker  (** Warning: This may take forever **)
 
-(May want to refer to: [http://orchardup.github.io/fig/install.html]() for up-to-date instrutions)
+Just follow the instructions [on the Docker website](https://docs.docker.com/installation/mac/). This should install the boot2docker application which you will be able to see in your launcher. 
+
+To launch boot2docker, simply click on the boot2docker application icon from the application launcher. 
+
+Alternatively, you can initiate boot2docker from the command line with these three commands:
 
 ```
-curl https://raw.githubusercontent.com/noplay/docker-osx/1.1.1/docker-osx > /usr/local/bin/docker-osx
-```
-```
-chmod +x /usr/local/bin/docker-osx
-```
-```
-docker-osx shell
+boot2docker init
+boot2docker start
+$(boot2docker shellinit)
 ```
 
-#### Install fig (works inside the docker shell, so just continue from the previous step)
+You are now ready to install and use fig using the instructions below.
+
+#### Install fig
 
 ```
 curl -L https://github.com/orchardup/fig/releases/download/0.5.1/darwin > /usr/local/bin/fig
