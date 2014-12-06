@@ -6,6 +6,7 @@ from ecwsp.sis.sample_data import SisData
 from django.db import connection
 from ecwsp.schedule.models import CourseEnrollment, Course, CourseSection, MarkingPeriod
 import datetime
+from .tasks import build_grade_cache
 
 import time
 import unittest
@@ -181,6 +182,40 @@ class GradeBaltTests(SisTestMixin, TestCase):
             ce = CourseEnrollment.objects.get(user=self.data.student, course_section=getattr(self.data, 'course_section' + str(x[0])))
             self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), Decimal(x[2]))
             self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
+
+    def test_average_partial_round_before_letter(self):
+        """
+        Current:
+            ave(75.49, 77.50) = 76.495 = C
+        Proposed:
+            ave(75.49, 77.50) = 76.495 = 76.50 = C+
+        """
+        score1 = 75.49
+        score2 = 77.50
+        s1_ids = [self.data.mp1.id ,self.data.mp2.id]
+        student = self.data.student
+        course = Course.objects.create(
+            fullname="Some", shortname="some", credits=1, graded=True)
+        section = CourseSection.objects.create(
+            name=course.shortname, course=course)
+        ce = CourseEnrollment.objects.create(
+            user=student,
+            course_section=section)
+        build_grade_cache()
+        grade1 = Grade.objects.get_or_create(
+            student=student,
+            course_section=section,
+            marking_period=self.data.mp1)[0]
+        grade2 = Grade.objects.get_or_create(
+            student=student,
+            course_section=section,
+            marking_period=self.data.mp2)[0]
+        grade1.set_grade(score1)
+        grade1.save()
+        grade2.set_grade(score2)
+        grade2.save()
+        self.assertEqual(ce.get_average_for_marking_periods(s1_ids, letter=True), 'C+')
+
 
     def test_scaled_average(self):
         """ Tests an asinine method for averages by converting to non linear scale first """
