@@ -184,11 +184,9 @@ class GradeBaltTests(SisTestMixin, TestCase):
             self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
 
     def test_average_partial_round_before_letter(self):
-        """
-        Current:
-            ave(75.49, 77.50) = 76.495 = C
-        Proposed:
+        """ Example:
             ave(75.49, 77.50) = 76.495 = 76.50 = C+
+            See /docs/specs/grade_scales.md
         """
         score1 = 75.49
         score2 = 77.50
