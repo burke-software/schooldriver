@@ -190,7 +190,14 @@ We have some sample data that might be useful when testing out the development e
 fig run web python manage.py populate_sample_data
 ```
 
+## Multi tenant (optional)
+Set `MULTI_TENANT=True` in settings_local.py. You can create a new tenant with
+```
+from ecwsp.customers.models import Client
 
-
-
-
+tenant = Client(domain_url='localhost',
+                schema_name='tenant1',
+                name='My First Tenant',)
+tenant.save()
+```
+Read more at https://django-tenant-schemas.readthedocs.org/en/latest/
