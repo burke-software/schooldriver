@@ -104,21 +104,23 @@ You can easily get Djanog-sis running in an isolated development environment usi
 #### Pre-req's
 Before you begin, make sure you have both [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://www.vagrantup.com/downloads.html) installed. 
 
-#### Install docker-osx  (** Warning: This may take forever **)
+#### Install boot2docker  (** Warning: This may take forever **)
 
-(May want to refer to: [http://orchardup.github.io/fig/install.html]() for up-to-date instrutions)
+Just follow the instructions [on the Docker website](https://docs.docker.com/installation/mac/). This should install the boot2docker application which you will be able to see in your launcher. 
+
+To launch boot2docker, simply click on the boot2docker application icon from the application launcher. 
+
+Alternatively, you can initiate boot2docker from the command line with these three commands:
 
 ```
-curl https://raw.githubusercontent.com/noplay/docker-osx/1.1.1/docker-osx > /usr/local/bin/docker-osx
-```
-```
-chmod +x /usr/local/bin/docker-osx
-```
-```
-docker-osx shell
+boot2docker init
+boot2docker start
+$(boot2docker shellinit)
 ```
 
-#### Install fig (works inside the docker shell, so just continue from the previous step)
+You are now ready to install and use fig using the instructions below.
+
+#### Install fig
 
 ```
 curl -L https://github.com/orchardup/fig/releases/download/0.5.1/darwin > /usr/local/bin/fig
@@ -139,7 +141,13 @@ fig run web python manage.py migrate --fake
 fig up
 ```
 
-Enjoy your django-sis instance on **localdocker:8000**, yeah that's right, it's *not localhost*. Whatever. 
+Now, the server is running, it may tell you that it's running at `localhost:8000` or `0.0.0.0:8000` but it's actually running at your docker-ip location, which you can find by running:
+
+```
+boot2docker ip
+```
+
+Let's say this is the docker-ip: `192.123.45.678`, you should then be able to see the server in your browser at `192.123.45.678:8000`
 
 ## Ubuntu
 
@@ -182,7 +190,14 @@ We have some sample data that might be useful when testing out the development e
 fig run web python manage.py populate_sample_data
 ```
 
+## Multi tenant (optional)
+Set `MULTI_TENANT=True` in settings_local.py. You can create a new tenant with
+```
+from ecwsp.customers.models import Client
 
-
-
-
+tenant = Client(domain_url='localhost',
+                schema_name='tenant1',
+                name='My First Tenant',)
+tenant.save()
+```
+Read more at https://django-tenant-schemas.readthedocs.org/en/latest/
