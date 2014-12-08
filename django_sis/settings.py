@@ -43,6 +43,7 @@ for environment_variable in (
     'AWS_ACCESS_KEY_ID',
     'AWS_SECRET_ACCESS_KEY',
     'AWS_STORAGE_BUCKET_NAME',
+    'GOOGLE_ANALYTICS',
 ):
     globals()[environment_variable] = os.getenv(environment_variable)
 
@@ -437,7 +438,6 @@ if DEBUG_TOOLBAR == True:
 CONSTANCE_CONFIG = {
     'SCHOOL_NAME': ('Unnamed School', 'School name'),
     'SCHOOL_COLOR': ('', 'hex color code. Ex: $1122FF'),
-    'GOOGLE_ANALYTICS': ('', 'Google Analytics code UA-XXXXXX'),
     'ALLOW_GOOGLE_AUTH': (False, 'Allow users to log in with Google Apps. This requires setting the email field in student and staff.'),
     'GOOGLE_APPS_DOMAIN': ('', 'Used with ALLOW_GOOGLE_AUTH. Google Apps domain to authenticate against. Probably the part after @ on your email address. Example: myschool.com'),
     'LDAP_URL': ('', 'Ex: ldap://admin.example.com:389'),
