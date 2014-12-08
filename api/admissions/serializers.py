@@ -18,6 +18,7 @@ class ApplicantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Applicant
+        depth = 1
 
 class ApplicantCustomFieldSerializer(serializers.ModelSerializer):
     class Meta:
