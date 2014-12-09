@@ -3,28 +3,53 @@ from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
 from models import *
 from ecwsp.sis.sample_data import SisData
-from django.db import connection
-from ecwsp.schedule.models import CourseEnrollment, Course, CourseSection, MarkingPeriod
+from ecwsp.schedule.models import (
+    CourseEnrollment, Course, CourseSection, MarkingPeriod)
 import datetime
 from .tasks import build_grade_cache
 
 import time
-import unittest
+import datetime
 
 
 class GradeCalculationTests(SisTestMixin, TestCase):
     def setUp(self):
-        try:
-            sql = '''CREATE TABLE `sis_studentcohort` (
-                `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
-                `student_id` integer NOT NULL,
-                `cohort_id` integer NOT NULL,
-                `primary` bool NOT NULL);'''
-            cursor = connection.cursor()
-            cursor.execute(sql)
-        except:
-            pass
+        self.data = SisData()
+        self.data.create_basics()
+        self.build_grade_cache()
 
+    def test_course_average_respect_time(self):
+        """ See /docs/specs/course_grades.md#Time and averages
+        mp1 start_date=`2014-07-1` and end_date=`2014-9-1`
+        mp2 start_date=`2014-9-2` and end_date=`2015-3-1`
+        """
+        mark1 = 50
+        mark2 = 100
+        student = self.data.student
+        mp1 = self.data.marking_period
+        mp2 = self.data.marking_period2
+        section = self.data.course_section1
+        enroll = self.data.course_enrollment
+        grade1, created = Grade.objects.get_or_create(
+            student=student,
+            course_section=section,
+            marking_period=mp1,
+            grade=mark1,)
+        grade2, created = Grade.objects.get_or_create(
+            student=student,
+            course_section=section,
+            marking_period=mp2,
+            grade=mark2,)
+        self.assertEquals(
+            enroll.get_grade(date_report=datetime.date(2099, 1, 1)),
+            75)
+        self.assertEquals(
+            enroll.get_grade(date_report=datetime.date(2014, 10, 1)),
+            50)
+
+    # Test compares two ways of calling calculate_grade()
+    # There shouldn't be a discrepancy
+    def test_current_vs_older(self):
         self.student = Student(first_name='Billy', last_name='Bob', username='BillyB', id=12345)
         self.student.save()
         self.year = SchoolYear(name='2011-2012', start_date='2011-09-10', end_date='2012-06-15', grad_date='2012-06-17',
@@ -36,10 +61,6 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         self.mp2.save()
         self.mp3 = MarkingPeriod(name="tri3 2012", start_date='2011-09-10', end_date='2012-06-15', school_year=self.year, monday=True, friday=True)
         self.mp3.save()
-
-    # Test compares two ways of calling calculate_grade()
-    # There shouldn't be a discrepancy
-    def test_current_vs_older(self):
         courses = [Course(fullname='Algebra', shortname='alg', id=12, credits=4),
                    Course(fullname='English', shortname='eng', id=13, credits=4),
                    Course(fullname='History', shortname='hist', id=14, credits=4)]
@@ -87,6 +108,7 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         current = syg.calculate_grade_and_credits(date_report=datetime.date.today())
         older = syg.calculate_grade_and_credits()
         self.assertEqual(current, older)
+
 
 class GradeBaltTests(SisTestMixin, TestCase):
     """ These test ensure we meet requirements defined by Cristo Rey Baltimore including

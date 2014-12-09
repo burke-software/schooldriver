@@ -17,25 +17,9 @@ class SisData(object):
         """ This will populate all sample data """
         self.create_basics()
 
-    def stupid_hacks(self):
-        """ Gross stuff goes here, ideally delete this all """
-        # No clue why this is needed. Won't get created in test env
-        return # Don't run any of this ever
-        try:
-            sql = '''CREATE TABLE `sis_studentcohort` (
-                `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
-                `student_id` integer NOT NULL,
-                `cohort_id` integer NOT NULL,
-                `primary` bool NOT NULL);'''
-            cursor = connection.cursor()
-            cursor.execute(sql)
-        except:
-            pass
-
     def create_required(self):
         """ A place for 100% required data """
         self.normal_type = CourseType.build_default()
-        self.stupid_hacks()
 
     def create_basics(self):
         """ A very simple school, probably want this in mosts tests
@@ -133,18 +117,7 @@ class SisData(object):
         ])
         self.course_enrollment = CourseEnrollment.objects.all().first()
 
-        '''
-        Grade.objects.bulk_create([
-            Grade(student_id=1, course_section_id=2, marking_period_id=1, grade=50),
-            Grade(student_id=1, course_section_id=2, marking_period_id=2, grade=89.09),
-            Grade(student_id=2, course_section_id=2, marking_period_id=1, grade=75),
-            Grade(student_id=2, course_section_id=1, marking_period_id=2, grade=100),
-            Grade(student_id=3, course_section_id=1, marking_period_id=2, grade=88)
-        ])
-        '''
         grade_data = [
-            { 'student' : self.student, 'section' : self.course_section2, 'mp' : self.marking_period, 'grade' : 50 },
-            { 'student' : self.student, 'section' : self.course_section2, 'mp' : self.marking_period2, 'grade' : 89.09 },
             { 'student' : self.student2, 'section' : self.course_section2, 'mp' : self.marking_period, 'grade' : 75 },
             { 'student' : self.student2, 'section' : self.course_section, 'mp' : self.marking_period2, 'grade' : 100 },
             { 'student' : self.student3, 'section' : self.course_section, 'mp' : self.marking_period2, 'grade' : 88 },
