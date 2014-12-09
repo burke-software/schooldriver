@@ -122,6 +122,12 @@ class GradeBaltTests(SisTestMixin, TestCase):
         self.data.create_sample_honors_and_ap_data()
         self.build_grade_cache()
 
+    def test_grade_get_grade(self):
+        grade = self.data.grade
+        self.assertAlmostEquals(grade.get_grade(), Decimal(73.9))
+        self.assertEquals(grade.get_grade(letter=True), 'C')
+        self.assertEquals(grade.get_grade(letter_and_number=True), '73.90 (C)')
+
     def test_letter_grade(self):
         mp1 = self.data.mp1
         mp2 = self.data.mp2

@@ -246,6 +246,7 @@ class SisData(object):
             grade = Grade.objects.get(student=student, course_section=getattr(self, 'course_section' + str(x[0])), marking_period=x[1])
             grade.grade = x[2]
             grade.save()
+        self.grade = Grade.objects.all().first()
         scale = self.scale = GradeScale.objects.create(name="Balt Test Scale")
         GradeScaleRule.objects.create(min_grade=0, max_grade=69.49, letter_grade='F', numeric_scale=0, grade_scale=scale)
         GradeScaleRule.objects.create(min_grade=69.50, max_grade=72.49, letter_grade='D', numeric_scale=1, grade_scale=scale)
