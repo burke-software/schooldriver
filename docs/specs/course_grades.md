@@ -21,4 +21,4 @@ For date 2014-10-1 the grade should be 50 because mp2 has not ended yet and cred
 
 
 [Student Reports]: https://github.com/burke-software/django-sis/blob/master/ecwsp/sis/scaffold_reports.py
-[test_course_average_respect_time]: 
+[test_course_average_respect_time]: https://github.com/burke-software/django-sis/blob/5d24e855284374997da9772d43589d554977be54/ecwsp/grades/tests.py#L21
