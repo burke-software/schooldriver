@@ -3,6 +3,7 @@ from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
 from .models import *
 from ecwsp.sis.sample_data import SisData
+from ecwsp.sis.sample_tc_data import SampleTCData
 from ecwsp.schedule.models import (
     CourseEnrollment, Course, CourseSection, MarkingPeriod)
 import datetime
@@ -440,3 +441,12 @@ class GradeScaleTests(SisTestMixin, TestCase):
         print '{} scale lookups took {} seconds'.format(i, run_time)
         with self.assertNumQueries(1):
             grade.get_grade(letter=True)
+
+class GradeTestTCSampleData(TestCase):
+    def setUp(self):
+        data = SampleTCData()
+        data.create_sample_tc_data()
+
+    def test_that_sample_data_was_loaded_correctly(self):
+        year = SchoolYear.objects.get(name="TC 2014-2015")
+        self.assertIsNotNone(year)
