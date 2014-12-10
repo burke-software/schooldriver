@@ -15,17 +15,18 @@ class GradeCalculationTests(SisTestMixin, TestCase):
 
     def test_rule_substitution(self):
         course = self.data.course_section1
+        course.save()
         item = Item.objects.create(
             name="A", marking_period=self.data.marking_period, points_possible=3,
             course_section=course,
             category=Category.objects.get(name="Standards"),
         )
-        mark = Mark.objects.create(
+        demonstration = Demonstration.objects.create(name="1", item=item)
+        mark = Mark.objects.create(demonstration=demonstration,
             item=item, student=self.data.student, mark=2.0)
         grade = self.data.student.grade_set.get(
             marking_period=self.data.marking_period,
             course_section=course)
-        self.build_grade_cache()
         self.assertEquals(grade.get_grade(), 'INC')
         mark.mark = 4.0
         mark.save()
