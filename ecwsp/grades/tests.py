@@ -444,9 +444,29 @@ class GradeScaleTests(SisTestMixin, TestCase):
 
 class GradeTestTCSampleData(TestCase):
     def setUp(self):
-        data = SampleTCData()
-        data.create_sample_tc_data()
+        self.data = SampleTCData()
+        self.data.create_sample_tc_data()
+        build_grade_cache()
 
-    def test_that_sample_data_was_loaded_correctly(self):
-        year = SchoolYear.objects.get(name="TC 2014-2015")
-        self.assertIsNotNone(year)
+    def test_course_section_final_grades(self):
+        student = self.data.tc_student1
+        expected_data = [
+            {"section": "bus2-section1",    "grade":3.85},
+            {"section": "span-section1",    "grade":3.42},
+            {"section": "wlit-section1",    "grade":3.36},
+            {"section": "geom10-section1",  "grade":1.75},
+            {"section": "phys10-section1",  "grade":3.33},
+            {"section": "mchrist-section1", "grade":3.45},
+            {"section": "whist-section1",   "grade":3.51}
+        ]
+        for expected_data in expected_data:
+            section = CourseSection.objects.get(name=expected_data["section"])
+            expected_grade = expected_data["grade"]
+            actual_grade = section.calculate_final_grade(student)
+            self.assertEqual(round(actual_grade, 2), expected_grade)
+
+    def test_calculate_gpa_after_third_marking_period(self):
+        report_date = datetime.date(2015,1,23)
+        student = self.data.tc_student1
+        gpa = student.calculate_gpa(date_report=report_date)
+        self.assertEqual(round(gpa, 2), 3.24)
