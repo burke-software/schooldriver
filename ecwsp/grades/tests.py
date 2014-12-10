@@ -465,8 +465,10 @@ class GradeTestTCSampleData(TestCase):
             actual_grade = section.calculate_final_grade(student)
             self.assertEqual(round(actual_grade, 2), expected_grade)
 
-    def test_calculate_gpa_after_third_marking_period(self):
-        report_date = datetime.date(2015,1,23)
+    def test_calculate_gpa_after_each_marking_period(self):
+        end_dates = [datetime.date(2014,10,3),datetime.date(2014,11,14),datetime.date(2015,1,23)]
+        expected_gpas = [3.31, 3.27, 3.24]
         student = self.data.tc_student1
-        gpa = student.calculate_gpa(date_report=report_date)
-        self.assertEqual(round(gpa, 2), 3.24)
+        for i in range(3):
+            gpa = student.calculate_gpa(date_report=end_dates[i])
+            self.assertEqual(round(gpa, 2), expected_gpas[i])
