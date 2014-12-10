@@ -3,6 +3,7 @@ from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
 from .models import *
 from ecwsp.sis.sample_data import SisData
+from ecwsp.sis.sample_tc_data import SampleTCData
 from ecwsp.schedule.models import (
     CourseEnrollment, Course, CourseSection, MarkingPeriod)
 import datetime
@@ -440,3 +441,34 @@ class GradeScaleTests(SisTestMixin, TestCase):
         print '{} scale lookups took {} seconds'.format(i, run_time)
         with self.assertNumQueries(1):
             grade.get_grade(letter=True)
+
+class GradeTestTCSampleData(TestCase):
+    def setUp(self):
+        self.data = SampleTCData()
+        self.data.create_sample_tc_data()
+        build_grade_cache()
+
+    def test_course_section_final_grades(self):
+        student = self.data.tc_student1
+        expected_data = [
+            {"section": "bus2-section1",    "grade":3.85},
+            {"section": "span-section1",    "grade":3.42},
+            {"section": "wlit-section1",    "grade":3.36},
+            {"section": "geom10-section1",  "grade":1.75},
+            {"section": "phys10-section1",  "grade":3.33},
+            {"section": "mchrist-section1", "grade":3.45},
+            {"section": "whist-section1",   "grade":3.51}
+        ]
+        for expected_data in expected_data:
+            section = CourseSection.objects.get(name=expected_data["section"])
+            expected_grade = expected_data["grade"]
+            actual_grade = section.calculate_final_grade(student)
+            self.assertEqual(round(actual_grade, 2), expected_grade)
+
+    def test_calculate_gpa_after_each_marking_period(self):
+        end_dates = [datetime.date(2014,10,3),datetime.date(2014,11,14),datetime.date(2015,1,23)]
+        expected_gpas = [3.31, 3.27, 3.24]
+        student = self.data.tc_student1
+        for i in range(3):
+            gpa = student.calculate_gpa(date_report=end_dates[i])
+            self.assertEqual(round(gpa, 2), expected_gpas[i])
