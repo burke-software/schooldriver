@@ -18,7 +18,7 @@ class SampleTCData(SisData):
         self.create_sample_tc_student_grades()
 
     def create_sample_tc_school_years_and_marking_periods(self):
-        year = SchoolYear.objects.create(name="TC 2014-2015", start_date=datetime.date(2014,8,25), end_date=datetime.date(2015,6,19), active_year=True)
+        self.year = year =  SchoolYear.objects.create(name="TC 2014-2015", start_date=datetime.date(2014,8,25), end_date=datetime.date(2015,6,19), active_year=True)
         marking_periods = [
             ["S1-TC", datetime.date(2014,8,25), datetime.date(2014,10,3)],
             ["S2-TC", datetime.date(2014,10,6), datetime.date(2014,11,14)],
@@ -80,11 +80,11 @@ class SampleTCData(SisData):
         student = self.tc_student1
         section_grade_data = [
             {"name": "bus2-section1",    "grades":[3.67, 3.89, 4.00, None, None, None]},
-            {"name": "span-section1",    "grades":[3.63, 3.65, "IN", None, None, None]},
+            {"name": "span-section1",    "grades":[3.63, 3.65, 2.98, None, None, None]},
             {"name": "wlit-section1",    "grades":[3.48, 3.60, 3.00, None, None, None]},
-            {"name": "geom10-section1",  "grades":["IN", "IN", "IN", None, None, None]},
+            {"name": "geom10-section1",  "grades":[2.46, 1.52, 1.28, None, None, None]},
             {"name": "phys10-section1",  "grades":[3.28, 3.28, 3.42, None, None, None]},
-            {"name": "mchrist-section1", "grades":[3.23, "IN", 3.97, None, None, None]},
+            {"name": "mchrist-section1", "grades":[3.23, 3.14, 3.97, None, None, None]},
             {"name": "whist-section1",   "grades":[3.39, 3.51, 3.63, None, None, None]}
         ]
         for section_data in section_grade_data:
@@ -97,16 +97,16 @@ class SampleTCData(SisData):
     def save_section_marking_period_grades(self, student, section_name, grades):
         marking_periods = self.get_marking_period_list()
         section = CourseSection.objects.get(name=section_name)
-        for grade in grades:
+        for i in range(6):
+            grade = grades[i]
             if grade is not None:
-                i = grades.index(grade)
-                grade = Grade.objects.get(
+                grade_object = Grade.objects.get(
                     student=student,
                     course_section=section,
                     marking_period=marking_periods[i]
                     )
-                grade.grade = grade
-                grade.save()
+                grade_object.grade = Decimal(grade)
+                grade_object.save()
 
     def get_marking_period_list(self):
         marking_period_names = ["S1-TC", "S2-TC", "S3-TC", "S4-TC", "S5-TC", "S6-TC"]
