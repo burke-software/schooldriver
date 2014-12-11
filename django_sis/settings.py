@@ -394,6 +394,7 @@ TENANT_APPS = (
     'ecwsp.discipline',
     'ecwsp.attendance',
     'ecwsp.grades',
+    'ecwsp.gradebook',
     'ecwsp.counseling',
     'ecwsp.standard_test',
     'ecwsp.integrations.schoolreach',
