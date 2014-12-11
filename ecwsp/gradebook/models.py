@@ -60,6 +60,16 @@ class CalculationRule(models.Model):
         blank=False, null=False)
     decimal_places = models.IntegerField(default=2)
 
+    @staticmethod
+    def find_calculation_rule(school_year):
+        CalculationRule.objects.filter(
+            first_year_effective__active_year=True,
+        ).order_by('')
+
+    @staticmethod
+    def find_active_calculation_rule():
+        pass
+
 
 # Assignment and Mark Data Models ################################
 
