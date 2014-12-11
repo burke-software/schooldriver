@@ -7,7 +7,7 @@ from django.db.models.query import QuerySet
 from django.core.urlresolvers import reverse
 
 from ecwsp.sis.models import Student, GradeScaleRule
-from ecwsp.sis.helper_functions import round_as_decimal
+from ecwsp.sis.helper_functions import round_as_decimal, round_to_standard
 from ecwsp.grades.models import Grade
 from ecwsp.administration.models import Configuration
 from constance import config
@@ -241,6 +241,7 @@ WHERE grades_grade.course_section_id = %s
             grade_scale__schoolyear__markingperiod__coursesection=self,
             min_grade__lte=grade,
             max_grade__gte=grade).first()'''
+        grade = round_to_standard(grade)
         rule = GradeScaleRule.objects.filter(
             min_grade__lte=grade,
             max_grade__gte=grade,

@@ -64,6 +64,12 @@ def round_as_decimal(num, decimal_places=2):
     except:
         return num
 
+def round_to_standard(num):
+    """ Round to what our database supports
+    which is a Decimal(5,2) or two decimal places.
+    """
+    return round_as_decimal(num, 2)
+
 def strip_unicode_to_ascii(string):
     """ Returns a ascii string that doesn't contain utf8
     Don't use this unless you have to it remove data!
