@@ -4,6 +4,7 @@ from ecwsp.sis.models import SchoolYear
 from ecwsp.schedule.models import (
     Department, DepartmentGraduationCredits)
 from .models import *
+from .exceptions import WeightContainsNone
 #from .sample_data import BenchmarkSisData
 from ecwsp.sis.sample_data import SisData
 from decimal import Decimal
@@ -14,29 +15,37 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         self.data = SisData()
         self.data.create_basics()
         self.build_grade_cache()
+        self.data.course_section1.save()
+
+    def create_assignment(
+            self, points_possible, category=None, assignment_type=None):
+        return Assignment.objects.create(
+            name="A",
+            marking_period=self.data.marking_period,
+            points_possible=points_possible,
+            course_section=self.data.course_section1,
+            category=category,
+            assignment_type=assignment_type,
+        )
+
+    def create_and_check_mark(self, assignment, mark, check):
+        Mark.objects.create(
+            assignment=assignment, student=self.data.student, mark=mark)
+        grade = self.data.student.grade_set.get(
+            marking_period=self.data.marking_period,
+            course_section=self.data.course_section1)
+        self.assertAlmostEquals(grade.get_grade(), Decimal(check))
 
     def create_assignments(self, test_data):
         for data in test_data:
-            assignment = Assignment.objects.create(
-                name="Assignment" + str(data[2]),
-                marking_period=self.data.marking_period,
-                points_possible=data[0],
-                course_section=self.data.course_section1,
-            )
-            Mark.objects.create(
-                assignment=assignment, student=self.data.student, mark=data[1])
-            grade = self.data.student.grade_set.get(
-                marking_period=self.data.marking_period,
-                course_section=self.data.course_section1)
-            self.assertAlmostEquals(grade.get_grade(), Decimal(data[2]))
+            assignment = self.create_assignment(data[0])
+            self.create_and_check_mark(assignment, data[1], data[2])
 
     def create_assignments_api(self, test_data):
         pass  # 'STUB'
 
     def test_basic_grades(self):
         """ Keep creating assignments for student and check the grade """
-        course = self.data.course_section1
-        course.save()
         # [points_possible, points_earned, cumlative expected grade]
         test_data = [
             [10, 5, 50],
@@ -45,33 +54,129 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             [50, 50, 16.44],
             [10, 10, 18.67],
             [5000, 5000, 94.33],
+            [5000, None, 94.33],
         ]
         self.create_assignments(test_data)
         self.create_assignments_api(test_data)
 
     def test_find_calculation_rule(self):
-        year1, year2, year3 = SchoolYear.objects.all()[:3]
+        year1 = SchoolYear.objects.get(name="2013-2014")
+        year2 = SchoolYear.objects.get(name="2014-long time")
+        year3 = SchoolYear.objects.get(name="2015-16")
         rule1 = CalculationRule.objects.create(first_year_effective=year1)
         rule2 = CalculationRule.objects.create(first_year_effective=year2)
         active = CalculationRule.find_active_calculation_rule()
-        self.assertEquals(active, year2)
-        self.assertEquals(CalculationRule.find_calculation_rule(year1, rule1)
-        self.assertEquals(CalculationRule.find_calculation_rule(year2, rule2)
-        self.assertEquals(CalculationRule.find_calculation_rule(year3, rule2)
-
-
+        self.assertEquals(active, rule2)
+        self.assertEquals(CalculationRule.find_calculation_rule(year1), rule1)
+        self.assertEquals(CalculationRule.find_calculation_rule(year2), rule2)
+        self.assertEquals(CalculationRule.find_calculation_rule(year3), rule2)
 
     def test_calculation_rule(self):
         CalculationRule.objects.create(
             first_year_effective=self.data.school_year,
             points_possible=4,
         )
-        course = self.data.course_section1
-        course.save()
         test_data = [
             [10, 5, 2],
-            [5, 5, 2.64],
+            [5, 5, 2.67],
         ]
         self.create_assignments(test_data)
         self.create_assignments_api(test_data)
 
+    def test_calc_rule_per_course_category_department(self):
+        dept_eng = Department.objects.create(name="English")
+        dept_math = Department.objects.create(name="Math")
+        course_section = self.data.course_section1
+        course_section.save()
+        course_section.course.department=dept_eng
+        course_section.course.save()
+        calc_rule = CalculationRule.objects.create(
+            first_year_effective=self.data.school_year,
+        )
+
+        cat1 = AssignmentCategory.objects.create(name="Standards")
+        only_math_rule = CalculationRulePerCourseCategory.objects.create(
+            category=cat1,
+            weight=1,
+            calculation_rule=calc_rule,
+        )
+        only_math_rule.apply_to_departments.add(dept_math)
+        only_eng_rule = CalculationRulePerCourseCategory.objects.create(
+            category=cat1,
+            weight=5,
+            calculation_rule=calc_rule,
+        )
+        only_eng_rule.apply_to_departments.add(dept_eng)
+
+        cat2 = AssignmentCategory.objects.create(name="Engagement")
+        all_rule = CalculationRulePerCourseCategory.objects.create(
+            category=cat2,
+            weight=1,
+            calculation_rule=calc_rule,
+        )
+        test_data = [
+            [10, 5, 50, cat1],
+            [10, 5, 50, cat2],
+        ]
+        for data in test_data:
+            assignment = self.create_assignment(data[0], category=data[3])
+            self.create_and_check_mark(assignment, data[1], data[2])
+        course_section.course.department=dept_math
+        course_section.course.save()
+        test_data = [
+            [10, 5, 50, cat1],
+            [10, 5, 50, cat2],
+        ]
+        for data in test_data:
+            assignment = self.create_assignment(data[0], category=data[3])
+            self.create_and_check_mark(assignment, data[1], data[2])
+
+    def test_calc_rule_per_course_category(self):
+        calc_rule = CalculationRule.objects.create(
+            first_year_effective=self.data.school_year,
+        )
+        cat1 = AssignmentCategory.objects.create(name="Standards")
+        cat2 = AssignmentCategory.objects.create(name="Engagement")
+        CalculationRulePerCourseCategory.objects.create(
+            category=cat1,
+            weight=0.7,
+            calculation_rule=calc_rule,
+        )
+        CalculationRulePerCourseCategory.objects.create(
+            category=cat2,
+            weight=0.3,
+            calculation_rule=calc_rule,
+        )
+        test_data = [
+            [10, 0, 0, cat1],
+            [10, 10, 30, cat2],
+            [30, 27, 58.42, cat2],
+        ]
+        for data in test_data:
+            assignment = self.create_assignment(data[0], category=data[3])
+            self.create_and_check_mark(assignment, data[1], data[2])
+        # Test invalid weight
+        assignment = self.create_assignment(
+            10, category=None)
+        self.assertRaises(
+            WeightContainsNone,
+            self.create_and_check_mark, assignment, 10, 66.67)
+
+    def test_assignment_type(self):
+        type1 = AssignmentType.objects.create(name="A", weight=0.4)
+        type2 = AssignmentType.objects.create(name="A", weight=0.5)
+        type3 = AssignmentType.objects.create(name="A", weight=0.1)
+        test_data = [
+            [10, 5, 50, type1],
+            [10, 8, 66.67, type2],
+            [10, 10, 70, type3],
+        ]
+        for data in test_data:
+            assignment = self.create_assignment(
+                data[0], assignment_type=data[3])
+            self.create_and_check_mark(assignment, data[1], data[2])
+        assignment = self.create_assignment(
+            10, assignment_type=None)
+        self.assertRaises(
+            WeightContainsNone,
+            self.create_and_check_mark, assignment, 10, 1)

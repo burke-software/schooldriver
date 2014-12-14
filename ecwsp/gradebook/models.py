@@ -1,5 +1,9 @@
 from django.db import models
 from django.conf import settings
+from ecwsp.sis.models import SchoolYear
+from .exceptions import WeightContainsNone
+from decimal import Decimal
+import numpy as np
 
 
 class WeightField(models.DecimalField):
@@ -62,29 +66,18 @@ class CalculationRule(models.Model):
 
     @staticmethod
     def find_calculation_rule(school_year):
-        CalculationRule.objects.filter(
-            first_year_effective__active_year=True,
-        ).order_by('')
+        rules = CalculationRule.objects.filter(
+            first_year_effective__start_date__lte=school_year.start_date
+        ).order_by('-first_year_effective__start_date')
+        return rules.first()
 
     @staticmethod
     def find_active_calculation_rule():
-        pass
-
-
-# Assignment and Mark Data Models ################################
-
-class AssignmentType(models.Model):
-    """ A teacher selectable assignment type
-    Might be enforced as a school wide settings or teachers can create their
-    own as needed.
-    """
-    name = models.CharField(max_length=255)
-    weight = WeightField()
-    is_default = models.BooleanField(default=False)
-    teacher = models.ForeignKey('sis.Faculty', blank=True, null=True)
-
-    def __unicode__(self):
-        return self
+        """ Find the active calc rule
+        Potential target for raw sql optimization
+        """
+        school_year = SchoolYear.objects.filter(active_year=True).first()
+        return CalculationRule.find_calculation_rule(school_year)
 
 
 class AssignmentCategory(models.Model):
@@ -108,6 +101,34 @@ class AssignmentCategory(models.Model):
     class Meta:
         verbose_name_plural = 'categories'
         ordering = ['display_order']
+
+
+class CalculationRulePerCourseCategory(models.Model):
+    ''' A weight assignment for a category within each course section.
+    '''
+    category = models.ForeignKey(AssignmentCategory)
+    weight = WeightField()
+    apply_to_departments = models.ManyToManyField(
+        'schedule.Department', blank=True, null=True,
+        related_name='gradebook_calculationrulepercoursecategory_set')
+    calculation_rule = models.ForeignKey(
+        CalculationRule, related_name='per_course_category_set')
+
+
+# Assignment and Mark Data Models ################################
+
+class AssignmentType(models.Model):
+    """ A teacher selectable assignment type
+    Might be enforced as a school wide settings or teachers can create their
+    own as needed.
+    """
+    name = models.CharField(max_length=255)
+    weight = WeightField()
+    is_default = models.BooleanField(default=False)
+    teacher = models.ForeignKey('sis.Faculty', blank=True, null=True)
+
+    def __unicode__(self):
+        return self
 
 
 class Assignment(models.Model):
@@ -140,6 +161,14 @@ class Demonstration(models.Model):
         return self.name + u' - ' + unicode(self.item)
 
 
+def array_contains_anything(np_array):
+    """ Return true if numpy array contains any values above 0
+    Does not work with negative values """
+    if np.nansum(np_array) > 0:
+        return True
+    return False
+
+
 class Mark(models.Model):
     """ A Mark (aka grade) earned by a student in a particular Assignment """
     assignment = models.ForeignKey(Assignment)
@@ -156,25 +185,49 @@ class Mark(models.Model):
         unique_together = ('assignment', 'demonstration', 'student',)
 
     def calculate_student_course_grade(self):
-        from django.db.models import Sum
         student = self.student
         marking_period = self.assignment.marking_period
         course = self.assignment.course_section
+        calc_rule = CalculationRule.find_calculation_rule(
+            marking_period.school_year)
         grade = course.grade_set.filter(
             marking_period=marking_period,
             student=student,
             course_section=course,
         ).first()
         marks = student.gradebook_mark_set.filter(
-            assignment__marking_period=marking_period
-        ).aggregate(Sum('mark'))['mark__sum']
-        possible = Assignment.objects.filter(mark__student=student).aggregate(
-            Sum('points_possible'))['points_possible__sum']
-        total = marks/possible
+            assignment__marking_period=marking_period,
+            assignment__category__calculationrulepercoursecategory__apply_to_departments=course.course.department
+        ).values_list(
+            'mark',
+            'assignment__points_possible',
+            'assignment__category_id',
+            'assignment__category__calculationrulepercoursecategory__weight',
+            'assignment__assignment_type',
+            'assignment__assignment_type__weight',
+        )
+        marks_mark = np.array(marks, dtype=np.dtype(float))[:, 0]
+        marks_possible = np.array(marks, dtype=np.dtype(float))[:, 1]
+        marks_category_weight = np.array(marks, dtype=np.dtype(float))[:, 3]
+        marks_assignment_weight = np.array(marks, dtype=np.dtype(float))[:, 5]
+        marks_percent = marks_mark / marks_possible
+        weights = marks_possible
+
+        # Check if contains any weights at all
+        if (calc_rule is not None
+                and array_contains_anything(marks_category_weight)):
+            weights = weights * marks_category_weight
+        if array_contains_anything(marks_assignment_weight):
+            weights = weights * marks_assignment_weight
+        if np.isnan(np.sum(weights)):
+            raise WeightContainsNone()
+        total = np.average(marks_percent, weights=weights)
+        if calc_rule is not None and calc_rule.points_possible > 0:
+            total = Decimal(total) * calc_rule.points_possible / Decimal(100)
+
         grade.set_grade(total)
         grade.save()
 
     def save(self, *args, **kwargs):
         super(Mark, self).save(*args, **kwargs)
         self.calculate_student_course_grade()
-

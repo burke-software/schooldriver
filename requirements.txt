@@ -101,3 +101,4 @@ xlwt==0.7.5
 #-e git://github.com/bernardopires/django-tenant-schemas.git#egg=tenant_schemas
 git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99
 #django-hstore
+numpy
