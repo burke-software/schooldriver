@@ -2,12 +2,13 @@ from django.test import TestCase
 from ecwsp.sis.tests import SisTestMixin
 from ecwsp.sis.models import SchoolYear
 from ecwsp.schedule.models import (
-    Department, DepartmentGraduationCredits)
+    Department)
 from .models import *
 from .exceptions import WeightContainsNone
 #from .sample_data import BenchmarkSisData
 from ecwsp.sis.sample_data import SisData
 from decimal import Decimal
+from decimal import InvalidOperation
 
 
 class GradeCalculationTests(SisTestMixin, TestCase):
@@ -29,12 +30,17 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         )
 
     def create_and_check_mark(self, assignment, mark, check):
-        Mark.objects.create(
+        x = Mark.objects.create(
             assignment=assignment, student=self.data.student, mark=mark)
         grade = self.data.student.grade_set.get(
             marking_period=self.data.marking_period,
             course_section=self.data.course_section1)
-        self.assertAlmostEquals(grade.get_grade(), Decimal(check))
+        try:
+            check = Decimal(check)
+            self.assertAlmostEquals(grade.get_grade(), check)
+        except (InvalidOperation, TypeError):  # Letter grade
+            check = str(check)
+            self.assertEquals(grade.get_grade(), check)
 
     def create_assignments(self, test_data):
         for data in test_data:
@@ -57,7 +63,23 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             [5000, None, 94.33],
         ]
         self.create_assignments(test_data)
-        self.create_assignments_api(test_data)
+
+    def test_basic_grades_edge_high(self):
+        """ Keep creating assignments for student and check the grade
+        checking edge cases """
+        test_data = [
+            [10, 10, 100],
+            [10, None, 100],
+        ]
+        self.create_assignments(test_data)
+
+    def test_basic_grades_edge_low(self):
+        test_data = [
+            [10, None, ''],
+            [10, 0, 0],
+        ]
+        self.create_assignments(test_data)
+
 
     def test_find_calculation_rule(self):
         year1 = SchoolYear.objects.get(name="2013-2014")
@@ -88,7 +110,7 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         dept_math = Department.objects.create(name="Math")
         course_section = self.data.course_section1
         course_section.save()
-        course_section.course.department=dept_eng
+        course_section.course.department = dept_eng
         course_section.course.save()
         calc_rule = CalculationRule.objects.create(
             first_year_effective=self.data.school_year,
@@ -121,7 +143,7 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         for data in test_data:
             assignment = self.create_assignment(data[0], category=data[3])
             self.create_and_check_mark(assignment, data[1], data[2])
-        course_section.course.department=dept_math
+        course_section.course.department = dept_math
         course_section.course.save()
         test_data = [
             [10, 5, 50, cat1],
@@ -162,6 +184,59 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             WeightContainsNone,
             self.create_and_check_mark, assignment, 10, 66.67)
 
+    def test_rule_substitution(self):
+        course = self.data.course_section1
+        calc_rule = CalculationRule.objects.create(
+            first_year_effective=self.data.school_year,
+        )
+        sub_rule = CalculationRuleSubstitution.objects.create(
+            operator='<',
+            match_value='3.0',
+            display_as='INC',
+            calculation_rule=calc_rule,
+        )
+        test_data = [
+            [4, 3, 75],
+            [4, 2.5, 'INC'],
+            [4, 4, 'INC'],
+            [4, 3, 'INC'],
+        ]
+        for data in test_data:
+            assignment = self.create_assignment(data[0])
+            self.create_and_check_mark(assignment, data[1], data[2])
+
+    def test_rule_substitution_depts(self):
+        dept_eng = Department.objects.create(name="English")
+        dept_math = Department.objects.create(name="Math")
+        course = self.data.course_section1
+        course.course.department = dept_eng
+        course.course.save()
+        calc_rule = CalculationRule.objects.create(
+            first_year_effective=self.data.school_year,
+        )
+        eng_sub_rule = CalculationRuleSubstitution.objects.create(
+            operator='<',
+            match_value='3.0',
+            display_as='ENG',
+            calculation_rule=calc_rule,
+        )
+        eng_sub_rule.apply_to_departments.add(dept_eng)
+        math_sub_rule = CalculationRuleSubstitution.objects.create(
+            operator='>=',
+            match_value='3.0',
+            display_as='MATH',
+            calculation_rule=calc_rule,
+        )
+        math_sub_rule.apply_to_departments.add(dept_math)
+        test_data = [
+            [4, 4, 100],
+            [4, 2.5, 'ENG'],
+            [4, 4, 'ENG'],
+        ]
+        for data in test_data:
+            assignment = self.create_assignment(data[0])
+            self.create_and_check_mark(assignment, data[1], data[2])
+
     def test_assignment_type(self):
         type1 = AssignmentType.objects.create(name="A", weight=0.4)
         type2 = AssignmentType.objects.create(name="A", weight=0.5)
@@ -180,3 +255,6 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         self.assertRaises(
             WeightContainsNone,
             self.create_and_check_mark, assignment, 10, 1)
+
+    def test_demostration(self):
+        pass

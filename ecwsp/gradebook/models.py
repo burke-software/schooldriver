@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from ecwsp.sis.models import SchoolYear
 from .exceptions import WeightContainsNone
@@ -31,6 +32,14 @@ OPERATOR_CHOICES = (
     (u'!=', u'Not equal to'),
     (u'==', u'Equal to')
 )
+NP_OPERATOR_MAP = {
+    '>': np.greater,
+    '>=': np.greater_equal,
+    '<=':  np.less_equal,
+    '<': np.less,
+    '!=': np.not_equal,
+    '==': np.equal,
+}
 AGGREGATE_METHODS = (
     (u'Avg', u'Average'),
     (u'Count', u'Count'),
@@ -101,6 +110,32 @@ class AssignmentCategory(models.Model):
     class Meta:
         verbose_name_plural = 'categories'
         ordering = ['display_order']
+
+
+class CalculationRuleSubstitution(models.Model):
+    operator = models.CharField(max_length=2, choices=OPERATOR_CHOICES)
+    match_value = GradeField(
+        blank=False, null=False,
+        help_text="Use only (0..1) unless category has fixed points possible.")
+    display_as = models.CharField(max_length=16, blank=True, null=True)
+    calculate_as = GradeField()
+    flag_visually = models.BooleanField(default=False)
+    apply_to_departments = models.ManyToManyField(
+        'schedule.Department', blank=True, null=True, related_name="+")
+    apply_to_categories = models.ManyToManyField(
+        AssignmentCategory, blank=True, null=True)
+    calculation_rule = models.ForeignKey(
+        CalculationRule, related_name='substitution_set')
+
+    def np_check_if_matches(self, np_array):
+        """ Check a numpy array to see if it matchse the sub criteria
+        Assumes that the numpy array contains only marks that meet
+        the apply_to criteria of this substituion rule
+        Returns False when sub rules doesn't match """
+        desired_np_function = NP_OPERATOR_MAP[self.operator]
+        if any(desired_np_function(np_array, self.match_value)):
+            return True
+        return False
 
 
 class CalculationRulePerCourseCategory(models.Model):
@@ -196,8 +231,11 @@ class Mark(models.Model):
             course_section=course,
         ).first()
         marks = student.gradebook_mark_set.filter(
-            assignment__marking_period=marking_period,
-            assignment__category__calculationrulepercoursecategory__apply_to_departments=course.course.department
+            Q(assignment__marking_period=marking_period),
+            Q(assignment__category__calculationrulepercoursecategory__apply_to_departments=course.course.department) |
+            Q(assignment__category__calculationrulepercoursecategory__apply_to_departments=None),
+        ).exclude(
+            mark=None,
         ).values_list(
             'mark',
             'assignment__points_possible',
@@ -205,7 +243,13 @@ class Mark(models.Model):
             'assignment__category__calculationrulepercoursecategory__weight',
             'assignment__assignment_type',
             'assignment__assignment_type__weight',
+
         )
+
+        if not marks:
+            grade.set_grade(None)
+            return
+
         marks_mark = np.array(marks, dtype=np.dtype(float))[:, 0]
         marks_possible = np.array(marks, dtype=np.dtype(float))[:, 1]
         marks_category_weight = np.array(marks, dtype=np.dtype(float))[:, 3]
@@ -213,19 +257,43 @@ class Mark(models.Model):
         marks_percent = marks_mark / marks_possible
         weights = marks_possible
 
-        # Check if contains any weights at all
-        if (calc_rule is not None
-                and array_contains_anything(marks_category_weight)):
-            weights = weights * marks_category_weight
-        if array_contains_anything(marks_assignment_weight):
-            weights = weights * marks_assignment_weight
-        if np.isnan(np.sum(weights)):
-            raise WeightContainsNone()
-        total = np.average(marks_percent, weights=weights)
-        if calc_rule is not None and calc_rule.points_possible > 0:
-            total = Decimal(total) * calc_rule.points_possible / Decimal(100)
+        sub_rules = CalculationRuleSubstitution.objects.filter(
+            Q(calculation_rule=calc_rule),
+            Q(apply_to_departments=course.course.department) |
+            Q(apply_to_departments=None)
+        ).distinct()
 
-        grade.set_grade(total)
+        total = None
+        match_sub_rule = False
+        for rule in sub_rules:
+            cat_ids = rule.apply_to_categories.values_list('id', flat=True)
+            relevant_marks = marks_mark
+            match_sub_rule = rule.np_check_if_matches(relevant_marks)
+            if match_sub_rule is True:
+                match_sub_rule = rule
+                total = match_sub_rule.calculate_as
+                break
+
+        if match_sub_rule is False or total is None:
+            # Check if contains any weights at all
+            if (calc_rule is not None
+                    and array_contains_anything(marks_category_weight)):
+                weights = weights * marks_category_weight
+            if array_contains_anything(marks_assignment_weight):
+                weights = weights * marks_assignment_weight
+            if np.isnan(np.sum(weights)):
+                raise WeightContainsNone()
+            total = np.average(marks_percent, weights=weights)
+            if calc_rule is not None and calc_rule.points_possible > 0:
+                total = Decimal(total) * calc_rule.points_possible
+            else:  # Assume out of 100 unless specified
+                total = Decimal(total) * 100
+
+        if match_sub_rule is False:
+            grade.set_grade(total, treat_as_percent=False)
+        else:
+            grade.set_grade(
+                total, letter_grade=match_sub_rule.display_as, treat_as_percent=False)
         grade.save()
 
     def save(self, *args, **kwargs):
