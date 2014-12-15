@@ -7,8 +7,8 @@ from ecwsp.sis.models import EmergencyContact
 
 
 class ApplicantAdditionalInformationSerializer(serializers.ModelSerializer):
-
-    applicant = serializers.PrimaryKeyRelatedField()
+    applicant = serializers.PrimaryKeyRelatedField(
+        queryset=Applicant.objects.all())
 
     class Meta:
         model = ApplicantAdditionalInformation
@@ -24,8 +24,8 @@ class ApplicantCustomFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApplicantCustomField
 
-class JSONFieldSerializer(serializers.WritableField):
-    def to_native(self, obj):
+class JSONFieldSerializer(serializers.Field):
+    def to_representation(self, obj):
         return obj
 
 class StudentApplicationTemplateSerializer(serializers.ModelSerializer):
@@ -34,5 +34,5 @@ class StudentApplicationTemplateSerializer(serializers.ModelSerializer):
         model = StudentApplicationTemplate
 
 class EmergencyContactSerializer(serializers.ModelSerializer):
-    class Meta: 
+    class Meta:
         model = EmergencyContact
