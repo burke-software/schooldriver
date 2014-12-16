@@ -5,7 +5,7 @@ from ecwsp.admissions.models import Applicant
 from ecwsp.admissions.models import ApplicantCustomField
 from ecwsp.admissions.models import StudentApplicationTemplate
 from ecwsp.admissions.models import ApplicantAdditionalInformation
-from ecwsp.admissions.models import ReligionChoice, EthnicityChoice, HeardAboutUsOption
+from ecwsp.admissions.models import ReligionChoice, EthnicityChoice, HeardAboutUsOption, FeederSchool
 from api.admissions.serializers import ApplicantSerializer
 from api.admissions.serializers import ApplicantCustomFieldSerializer
 from api.admissions.serializers import StudentApplicationTemplateSerializer
@@ -88,6 +88,7 @@ class ApplicantForeignKeyRelatedFieldChoicesViewSet(viewsets.ViewSet):
             "family_preferred_language" : LanguageChoice,
             "ethnicity" : EthnicityChoice,
             "heard_about_us" : HeardAboutUsOption,
+            "present_school" : FeederSchool,
         }
         data = {}
 

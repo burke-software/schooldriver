@@ -1,0 +1,17 @@
+{% extends 'base_next.html' %}
+{% load staticfiles %}
+{% load static from staticfiles %}
+{% block extra_head %}
+<script type="text/javascript" src="{% static 'js/admissions/review-student-application.js' %}"></script>
+<base href="/">
+{% endblock %}
+
+{% block content %}
+
+<div class="container custom-application" ng-app="admissions">
+    {% verbatim %}
+    <div ng-view></div>
+    {% endverbatim %}
+</div>
+
+{% endblock %}

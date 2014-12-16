@@ -196,7 +196,8 @@ class StudentYearGrade(models.Model):
         """
         return self.calculate_grade_and_credits(date_report=date_report, prescale=prescale)[0]
 
-    def get_grade(self, date_report=None, rounding=2, numeric_scale=False, prescale=False, boost=True):
+    def get_grade(self, date_report=None, rounding=2, numeric_scale=False,
+                  prescale=False, boost=True):
         if numeric_scale == False and (date_report is None or date_report >= datetime.date.today()):
             # Cache will always have the latest grade, so it's fine for
             # today's date and any future date
@@ -347,7 +348,7 @@ class Grade(models.Model):
         return rule.numeric_scale
 
     def get_grade(self, letter=False, display=False, rounding=None,
-        minimum=None, number=False):
+                  minimum=None, number=False, letter_and_number=False):
         """
         letter: Converts to a letter based on GradeScale
         display: For letter grade - Return display name instead of abbreviation.
@@ -369,9 +370,12 @@ class Grade(models.Model):
             if rounding != None:
                 string = '%.' + str(rounding) + 'f'
                 grade = string % float(str(grade))
-            if letter == True:
+            if letter is True or letter_and_number is True:
                 try:
-                    return self.optimized_grade_to_scale(letter=True)
+                    result = self.optimized_grade_to_scale(letter=True)
+                    if letter_and_number is True:
+                        result = '{} ({})'.format(grade, result)
+                    return result
                 except GradeScaleRule.DoesNotExist:
                     return "No Grade Scale"
             return grade

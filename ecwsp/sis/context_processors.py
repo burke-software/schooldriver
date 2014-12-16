@@ -29,4 +29,5 @@ def global_stuff(request):
         "header_image": header_image,
         "settings": settings,
         'user_messages':user_messages,
+        'GOOGLE_ANALYTICS': settings.GOOGLE_ANALYTICS,
     }

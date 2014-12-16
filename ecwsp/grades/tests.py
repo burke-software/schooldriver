@@ -1,29 +1,56 @@
 from ecwsp.sis.models import *
 from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
-from models import *
+from .models import *
 from ecwsp.sis.sample_data import SisData
-from django.db import connection
-from ecwsp.schedule.models import CourseEnrollment, Course, CourseSection, MarkingPeriod
+from ecwsp.sis.sample_tc_data import SampleTCData
+from ecwsp.schedule.models import (
+    CourseEnrollment, Course, CourseSection, MarkingPeriod)
 import datetime
+from .tasks import build_grade_cache
 
 import time
-import unittest
+import datetime
 
 
 class GradeCalculationTests(SisTestMixin, TestCase):
     def setUp(self):
-        try:
-            sql = '''CREATE TABLE `sis_studentcohort` (
-                `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
-                `student_id` integer NOT NULL,
-                `cohort_id` integer NOT NULL,
-                `primary` bool NOT NULL);'''
-            cursor = connection.cursor()
-            cursor.execute(sql)
-        except:
-            pass
+        self.data = SisData()
+        self.data.create_basics()
+        self.build_grade_cache()
 
+    def test_course_average_respect_time(self):
+        """ See /docs/specs/course_grades.md#Time and averages
+        mp1 start_date=`2014-07-1` and end_date=`2014-9-1`
+        mp2 start_date=`2014-9-2` and end_date=`2015-3-1`
+        """
+        mark1 = 50
+        mark2 = 100
+        student = self.data.student
+        mp1 = self.data.marking_period
+        mp2 = self.data.marking_period2
+        section = self.data.course_section1
+        enroll = self.data.course_enrollment
+        grade1, created = Grade.objects.get_or_create(
+            student=student,
+            course_section=section,
+            marking_period=mp1,
+            grade=mark1,)
+        grade2, created = Grade.objects.get_or_create(
+            student=student,
+            course_section=section,
+            marking_period=mp2,
+            grade=mark2,)
+        self.assertEquals(
+            enroll.get_grade(date_report=datetime.date(2099, 1, 1)),
+            75)
+        self.assertEquals(
+            enroll.get_grade(date_report=datetime.date(2014, 10, 1)),
+            50)
+
+    # Test compares two ways of calling calculate_grade()
+    # There shouldn't be a discrepancy
+    def test_current_vs_older(self):
         self.student = Student(first_name='Billy', last_name='Bob', username='BillyB', id=12345)
         self.student.save()
         self.year = SchoolYear(name='2011-2012', start_date='2011-09-10', end_date='2012-06-15', grad_date='2012-06-17',
@@ -35,10 +62,6 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         self.mp2.save()
         self.mp3 = MarkingPeriod(name="tri3 2012", start_date='2011-09-10', end_date='2012-06-15', school_year=self.year, monday=True, friday=True)
         self.mp3.save()
-
-    # Test compares two ways of calling calculate_grade()
-    # There shouldn't be a discrepancy
-    def test_current_vs_older(self):
         courses = [Course(fullname='Algebra', shortname='alg', id=12, credits=4),
                    Course(fullname='English', shortname='eng', id=13, credits=4),
                    Course(fullname='History', shortname='hist', id=14, credits=4)]
@@ -87,6 +110,7 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         older = syg.calculate_grade_and_credits()
         self.assertEqual(current, older)
 
+
 class GradeBaltTests(SisTestMixin, TestCase):
     """ These test ensure we meet requirements defined by Cristo Rey Baltimore including
     Grade scales, course weights, and letter grades
@@ -98,6 +122,12 @@ class GradeBaltTests(SisTestMixin, TestCase):
         self.data.create_grade_scale_data()
         self.data.create_sample_honors_and_ap_data()
         self.build_grade_cache()
+
+    def test_grade_get_grade(self):
+        grade = self.data.grade
+        self.assertAlmostEquals(grade.get_grade(), Decimal(73.9))
+        self.assertEquals(grade.get_grade(letter=True), 'C')
+        self.assertEquals(grade.get_grade(letter_and_number=True), '73.90 (C)')
 
     def test_letter_grade(self):
         mp1 = self.data.mp1
@@ -181,6 +211,38 @@ class GradeBaltTests(SisTestMixin, TestCase):
             ce = CourseEnrollment.objects.get(user=self.data.student, course_section=getattr(self.data, 'course_section' + str(x[0])))
             self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), Decimal(x[2]))
             self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
+
+    def test_average_partial_round_before_letter(self):
+        """ Example:
+            ave(75.49, 77.50) = 76.495 = 76.50 = C+
+            See /docs/specs/grade_scales.md
+        """
+        score1 = 75.49
+        score2 = 77.50
+        s1_ids = [self.data.mp1.id ,self.data.mp2.id]
+        student = self.data.student
+        course = Course.objects.create(
+            fullname="Some", shortname="some", credits=1, graded=True)
+        section = CourseSection.objects.create(
+            name=course.shortname, course=course)
+        ce = CourseEnrollment.objects.create(
+            user=student,
+            course_section=section)
+        build_grade_cache()
+        grade1 = Grade.objects.get_or_create(
+            student=student,
+            course_section=section,
+            marking_period=self.data.mp1)[0]
+        grade2 = Grade.objects.get_or_create(
+            student=student,
+            course_section=section,
+            marking_period=self.data.mp2)[0]
+        grade1.set_grade(score1)
+        grade1.save()
+        grade2.set_grade(score2)
+        grade2.save()
+        self.assertEqual(ce.get_average_for_marking_periods(s1_ids, letter=True), 'C+')
+
 
     def test_scaled_average(self):
         """ Tests an asinine method for averages by converting to non linear scale first """
@@ -379,3 +441,34 @@ class GradeScaleTests(SisTestMixin, TestCase):
         print '{} scale lookups took {} seconds'.format(i, run_time)
         with self.assertNumQueries(1):
             grade.get_grade(letter=True)
+
+class GradeTestTCSampleData(TestCase):
+    def setUp(self):
+        self.data = SampleTCData()
+        self.data.create_sample_tc_data()
+        build_grade_cache()
+
+    def test_course_section_final_grades(self):
+        student = self.data.tc_student1
+        expected_data = [
+            {"section": "bus2-section1",    "grade":3.85},
+            {"section": "span-section1",    "grade":3.42},
+            {"section": "wlit-section1",    "grade":3.36},
+            {"section": "geom10-section1",  "grade":1.75},
+            {"section": "phys10-section1",  "grade":3.33},
+            {"section": "mchrist-section1", "grade":3.45},
+            {"section": "whist-section1",   "grade":3.51}
+        ]
+        for expected_data in expected_data:
+            section = CourseSection.objects.get(name=expected_data["section"])
+            expected_grade = expected_data["grade"]
+            actual_grade = section.calculate_final_grade(student)
+            self.assertEqual(round(actual_grade, 2), expected_grade)
+
+    def test_calculate_gpa_after_each_marking_period(self):
+        end_dates = [datetime.date(2014,10,3),datetime.date(2014,11,14),datetime.date(2015,1,23)]
+        expected_gpas = [3.31, 3.27, 3.24]
+        student = self.data.tc_student1
+        for i in range(3):
+            gpa = student.calculate_gpa(date_report=end_dates[i])
+            self.assertEqual(round(gpa, 2), expected_gpas[i])
