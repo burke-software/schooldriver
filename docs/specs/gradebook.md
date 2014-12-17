@@ -7,7 +7,7 @@ Grades are stored with 5 significant digits and 2 decimal places.
 
 If a student has not earned any mark for a assignment - it is not included in grade calculations.
 
-** Example ** [Unit test] GradeCalculationTests.test_basic_grades.
+**Example** [Unit test] GradeCalculationTests.test_basic_grades.
 
 A teacher creates an assignment with 10 points possible. A student earns a "mark" of 5 points. 
 By default the gradescale is out of 100 points. We will see later this can be configured.
@@ -23,7 +23,7 @@ If an assignment is given of 5000 points and the student has no grade entered. T
 See [models] AssignmentCategory.
 Assignment Categories are school wide defined categories for assignments. They are used in both benchmark driven grading or in a traditional gradebook.
 
-** NEEDS UNIT TEST **
+**NEEDS UNIT TEST**
 
 # Calculation Rules
 
@@ -31,7 +31,7 @@ See [models] CalculationRule.
 Rules must be set with a first year effective. Years after this will use the same calculation rule unless a new one is specified. [Unit test] GradeCalculationTests.test_find_calculation_rule. 
 The rule also specified the total points possible for a student to receive. For example this could be set to 4 to create a out of 4.0 scale. This should not be confused with a non linear 4.0 scale some schools use where percentage grades are boxed into arbitrary places between 0 and 4
 
-** Example ** [Unit test] GradeCalculationTests.test_calculation_rule
+**Example** [Unit test] GradeCalculationTests.test_calculation_rule
 
 A calculation rule defines the points possible as 4. An assignment is created with 10 points possible. A student earns a 5 points mark. The student's grade would be 002.00.
 
@@ -42,7 +42,7 @@ Calculation rules can include enforced weighting by category. These can optional
 
 When weights are used - all categories must be weigted. For instance it makes no sense to calculate a grade if one weight is 0.5 and another is None. This would raise an error.
 
-** Example ** [Unit test] GradeCalculationTests.test_calc_rule_per_course_category
+**Example** [Unit test] GradeCalculationTests.test_calc_rule_per_course_category
 
 Category1 has a weight of 0.7. Category2 has a weight of 0.3.
 Assignments include
@@ -60,7 +60,7 @@ Rules are set to compare a mark against. If the mark criteria is met - the grade
 Substitutions can optionally apply only to specific departments or categories.
 Grade substitutions can also be used to visually flag a grade that meets it's criteria.
 
-** Example ** [Unit test] GradeCalculationTests.test_rule_substitution
+**Example** [Unit test] GradeCalculationTests.test_rule_substitution
 
 Let a rule be any mark < 3.0 be displayed as 'INC' but calculated normally.
 Assignments include
@@ -72,7 +72,7 @@ Assignments include
 Assignment types are teacher defined categories. We'll use only the term Type for them to avoid confusion with AssignmentCategory. Default types can be set schoolwide too. Assignment types allow a teacher to define weights. Schooldriver supports setting both Category and Type weights. The double weights would be computed into a compound weight for the grade and then applied.
 Assignment type weights do not have to add up to one but are not allowed to be None.
 
-** Example ** [Unit test] GradeCalculationTests.test_assignment_type
+**Example** [Unit test] GradeCalculationTests.test_assignment_type
 
 Let type1 be weighted as 0.4
 Let type2 be weighted as 0.5
@@ -89,7 +89,7 @@ It's often used in benchmark driven grading systems.
 All but the best demostration is discarded in calculations. 
 Demostrations can only be enabled by checking Allow Multiple Demostrations from an Assignment Category.
 
-** Example **
+**Example**
 Let Assignment Category1 allow multiple demostrations
 Let an assignment be worth 4 points. Set this assignment's category to Category1
 A student earns 1 point on demostration1. The student's grade is now 25.00
