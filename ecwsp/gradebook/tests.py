@@ -257,4 +257,11 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             self.create_and_check_mark, assignment, 10, 1)
 
     def test_demostration(self):
-        pass
+        cat1 = AssignmentCategory.objects.create(
+            name="Standards", allow_multiple_demostrations=True)
+        test_data = [
+            [4, 1, 25],
+            [4, 4, 100],
+        ]
+        assignment = self.create_assignment(10, category=cat1)
+        self.create_and_check_mark(assignment, 1, 25)
