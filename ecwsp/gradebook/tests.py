@@ -29,9 +29,12 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             assignment_type=assignment_type,
         )
 
-    def create_and_check_mark(self, assignment, mark, check):
-        x = Mark.objects.create(
-            assignment=assignment, student=self.data.student, mark=mark)
+    def create_and_check_mark(
+            self, assignment, mark, check, demonstration=None):
+        Mark.objects.create(
+            assignment=assignment, student=self.data.student, mark=mark,
+            demonstration=demonstration
+        )
         grade = self.data.student.grade_set.get(
             marking_period=self.data.marking_period,
             course_section=self.data.course_section1)
@@ -256,12 +259,26 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             WeightContainsNone,
             self.create_and_check_mark, assignment, 10, 1)
 
-    def test_demostration(self):
+    def test_demonstration(self):
         cat1 = AssignmentCategory.objects.create(
-            name="Standards", allow_multiple_demostrations=True)
-        test_data = [
-            [4, 1, 25],
-            [4, 4, 100],
-        ]
-        assignment = self.create_assignment(10, category=cat1)
-        self.create_and_check_mark(assignment, 1, 25)
+            name="Standards", allow_multiple_demonstrations=True)
+        cat2 = AssignmentCategory.objects.create(name="No demon")
+        assignment1 = self.create_assignment(4, category=cat1)
+        assignment2 = self.create_assignment(4, category=cat1)
+        assignment3 = self.create_assignment(5, category=cat2)
+        assignment4 = self.create_assignment(6, category=cat2)
+        demonstration1 = Demonstration.objects.create(assignment=assignment1)
+        demonstration2 = Demonstration.objects.create(assignment=assignment1)
+        demonstration3 = Demonstration.objects.create(assignment=assignment1)
+        demonstration4 = Demonstration.objects.create(assignment=assignment2)
+        self.create_and_check_mark(
+            assignment1, 1, 25, demonstration=demonstration1)
+        self.create_and_check_mark(
+            assignment1, 4, 100, demonstration=demonstration2)
+        self.create_and_check_mark(
+            assignment1, 2, 100, demonstration=demonstration3)
+        self.create_and_check_mark(
+            assignment2, 3, 87.5, demonstration=demonstration4)
+        self.create_and_check_mark(assignment3, 3, 76.92)
+        self.create_and_check_mark(assignment4, 4, 73.68)
+

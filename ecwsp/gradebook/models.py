@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.conf import settings
 from ecwsp.sis.models import SchoolYear
 from .exceptions import WeightContainsNone
@@ -190,7 +190,7 @@ class Demonstration(models.Model):
     some assignment multiple times.
     """
     name = models.CharField(max_length=255, blank=True, null=True)
-    item = models.ForeignKey(Assignment)
+    assignment = models.ForeignKey(Assignment)
 
     def __unicode__(self):
         return self.name + u' - ' + unicode(self.item)
@@ -230,30 +230,37 @@ class Mark(models.Model):
             student=student,
             course_section=course,
         ).first()
+
+        # Holy crap. We need to deal with grades when demonstrations exist
+        # and pick the best score for a set of demonstrations. But also
+        # select marks that have no demonstrations. We'll use order_by
+        # to effectively group by demonstration assignment. But a mark with no
+        # demonstration will be it's own group. Then find the max mark in that
+        # group. See /docs/specs/gradebook.md for more info.
+        # Also see Django docs on order_by.
+        # https://docs.djangoproject.com/en/dev/topics/db/aggregation/#interaction-with-default-ordering-or-order-by
         marks = student.gradebook_mark_set.filter(
             Q(assignment__marking_period=marking_period),
             Q(assignment__category__calculationrulepercoursecategory__apply_to_departments=course.course.department) |
             Q(assignment__category__calculationrulepercoursecategory__apply_to_departments=None),
         ).exclude(
             mark=None,
+        ).order_by(  # Here is the magic - really this is grouping by
+            'assignment'
         ).values_list(
-            'mark',
             'assignment__points_possible',
-            'assignment__category_id',
             'assignment__category__calculationrulepercoursecategory__weight',
-            'assignment__assignment_type',
-            'assignment__assignment_type__weight',
-
-        )
+            'assignment__assignment_type__weight'
+        ).annotate(mark=Max('mark'))
 
         if not marks:
             grade.set_grade(None)
             return
 
-        marks_mark = np.array(marks, dtype=np.dtype(float))[:, 0]
-        marks_possible = np.array(marks, dtype=np.dtype(float))[:, 1]
-        marks_category_weight = np.array(marks, dtype=np.dtype(float))[:, 3]
-        marks_assignment_weight = np.array(marks, dtype=np.dtype(float))[:, 5]
+        marks_possible = np.array(marks, dtype=np.dtype(float))[:, 0]
+        marks_category_weight = np.array(marks, dtype=np.dtype(float))[:, 1]
+        marks_assignment_weight = np.array(marks, dtype=np.dtype(float))[:, 2]
+        marks_mark = np.array(marks, dtype=np.dtype(float))[:, 3]
         marks_percent = marks_mark / marks_possible
         weights = marks_possible
 
@@ -293,7 +300,9 @@ class Mark(models.Model):
             grade.set_grade(total, treat_as_percent=False)
         else:
             grade.set_grade(
-                total, letter_grade=match_sub_rule.display_as, treat_as_percent=False)
+                total,
+                letter_grade=match_sub_rule.display_as,
+                treat_as_percent=False)
         grade.save()
 
     def save(self, *args, **kwargs):

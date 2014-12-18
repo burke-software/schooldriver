@@ -84,12 +84,15 @@ Assignments:
 
 # Demonstrations
 
-Demostrations allow students to retake an assigment for a better score. 
+Demonstrations allow students to retake an assigment for a better score. 
 It's often used in benchmark driven grading systems.
-All but the best demostration is discarded in calculations. 
-Demostrations can only be enabled by checking Allow Multiple Demostrations from an Assignment Category.
+All but the best demonstration is discarded in calculations. 
+Demonstrations can only be enabled by checking Allow Multiple Demostrations from an Assignment Category.
+A grade calculation might average assignment grades that have demonstrations and some that don't. This is done by taking only the max mark for any assignment. 
+Technically speaking the demonstration table only is used for storing meta data about a demonstration that might be seen in a gradebook UI. It is not used in any calculations.
 
-**Example**
+**Example** [Unit test] GradeCalculationTest.test_demonstration
+
 Let Assignment Category1 allow multiple demostrations
 Let an assignment be worth 4 points. Set this assignment's category to Category1
 A student earns 1 point on demostration1. The student's grade is now 25.00
