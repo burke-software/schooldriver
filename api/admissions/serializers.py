@@ -15,6 +15,8 @@ class ApplicantAdditionalInformationSerializer(serializers.ModelSerializer):
 
 class ApplicantSerializer(serializers.ModelSerializer):
     additionals = ApplicantAdditionalInformationSerializer(many=True, required=False)
+    siblings = serializers.PrimaryKeyRelatedField(required = False)
+    place_of_worship = serializers.PrimaryKeyRelatedField(required = False)
 
     class Meta:
         model = Applicant
