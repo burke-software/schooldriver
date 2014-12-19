@@ -162,6 +162,7 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         )
         cat1 = AssignmentCategory.objects.create(name="Standards")
         cat2 = AssignmentCategory.objects.create(name="Engagement")
+        cat3 = AssignmentCategory.objects.create(name="Engagement")
         CalculationRulePerCourseCategory.objects.create(
             category=cat1,
             weight=0.7,
@@ -172,10 +173,16 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             weight=0.3,
             calculation_rule=calc_rule,
         )
+        CalculationRulePerCourseCategory.objects.create(
+            category=cat3,
+            weight=5,
+            calculation_rule=calc_rule,
+        )
         test_data = [
             [10, 0, 0, cat1],
             [10, 10, 30, cat2],
-            [30, 27, 58.42, cat2],
+            [10, 10, 30, cat2],
+            [30, 27, 28.2, cat2],
         ]
         for data in test_data:
             assignment = self.create_assignment(data[0], category=data[3])
@@ -246,6 +253,7 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         type3 = AssignmentType.objects.create(name="A", weight=0.1)
         test_data = [
             [10, 5, 50, type1],
+            [10, 5, 50, type1],
             [10, 8, 66.67, type2],
             [10, 10, 70, type3],
         ]
@@ -258,6 +266,37 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         self.assertRaises(
             WeightContainsNone,
             self.create_and_check_mark, assignment, 10, 1)
+
+    def test_assignment_type_and_category(self):
+        type1 = AssignmentType.objects.create(name="A", weight=0.4)
+        type2 = AssignmentType.objects.create(name="A", weight=0.6)
+        calc_rule = CalculationRule.objects.create(
+            first_year_effective=self.data.school_year,
+        )
+        cat1 = AssignmentCategory.objects.create(name="Standards")
+        cat2 = AssignmentCategory.objects.create(name="Engagement")
+        CalculationRulePerCourseCategory.objects.create(
+            category=cat1,
+            weight=0.7,
+            calculation_rule=calc_rule,
+        )
+        CalculationRulePerCourseCategory.objects.create(
+            category=cat2,
+            weight=0.3,
+            calculation_rule=calc_rule,
+        )
+        test_data = [
+            [10, 10, 100, type1, cat1],
+            [10, 0, 70, type1, cat2],
+            [10, 0, 28, type2, cat1],
+            [10, 0, 28, type2, cat2],
+            [6, 5, 33.62, type2, cat2],
+        ]
+        for data in test_data:
+            assignment = self.create_assignment(
+                data[0], assignment_type=data[3], category=data[4])
+            self.create_and_check_mark(assignment, data[1], data[2])
+
 
     def test_demonstration(self):
         cat1 = AssignmentCategory.objects.create(

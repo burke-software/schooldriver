@@ -48,9 +48,9 @@ Category1 has a weight of 0.7. Category2 has a weight of 0.3.
 Assignments include
 - 10 Points possible, category1, student earns 0
 - 10 points possible, category2, student earns 10
-- 30 points possible, category2, student earns 27
+- 30 points possible, category2, student earns 30
 
-The student would receive a 58.42%
+The student would receive a 30%
 
 ## Grade Substitutions
 

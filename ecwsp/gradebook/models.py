@@ -204,6 +204,49 @@ def array_contains_anything(np_array):
     return False
 
 
+def grade_weighted_average(
+    marks_category,
+    marks_category_weight,
+    marks_percent,
+    marks_possible,
+    marks_assignment=None,
+    marks_assignment_weight=None,
+):
+    if array_contains_anything(marks_category_weight):
+        if np.isnan(np.sum(marks_category_weight)):
+            raise WeightContainsNone()
+        all_categories, first_indexes = np.unique(
+            marks_category, return_index=True)
+        all_categories_weights = marks_category_weight[first_indexes]
+        cat_totals = []
+        for category in all_categories:
+            cat_indexes = np.where(marks_category == category)
+            if marks_assignment is not None and any(marks_assignment):
+                assign_total = grade_weighted_average(
+                    marks_assignment[cat_indexes],
+                    marks_assignment_weight[cat_indexes],
+                    marks_percent[cat_indexes],
+                    marks_possible[cat_indexes],
+                )
+                cat_totals += [assign_total]
+            else:
+                cat_percent = marks_percent[cat_indexes]
+                cat_weights = marks_possible[cat_indexes]
+                cat_totals += [np.average(cat_percent, weights=cat_weights)]
+    else:  # Easy then
+        if marks_assignment is not None and any(marks_assignment):
+            assign_total = grade_weighted_average(
+                marks_assignment,
+                marks_assignment_weight,
+                marks_percent,
+                marks_possible,
+            )
+            return assign_total
+        cat_totals = marks_percent
+        all_categories_weights = marks_possible
+    return np.average(cat_totals, weights=all_categories_weights)
+
+
 class Mark(models.Model):
     """ A Mark (aka grade) earned by a student in a particular Assignment """
     assignment = models.ForeignKey(Assignment)
@@ -249,20 +292,27 @@ class Mark(models.Model):
             'assignment'
         ).values_list(
             'assignment__points_possible',
+            'assignment__category__calculationrulepercoursecategory',
             'assignment__category__calculationrulepercoursecategory__weight',
-            'assignment__assignment_type__weight'
+            'assignment__assignment_type',
+            'assignment__assignment_type__weight',
         ).annotate(mark=Max('mark'))
 
         if not marks:
             grade.set_grade(None)
             return
 
-        marks_possible = np.array(marks, dtype=np.dtype(float))[:, 0]
-        marks_category_weight = np.array(marks, dtype=np.dtype(float))[:, 1]
-        marks_assignment_weight = np.array(marks, dtype=np.dtype(float))[:, 2]
-        marks_mark = np.array(marks, dtype=np.dtype(float))[:, 3]
+        np_marks = np.array(marks, dtype=np.dtype(float))
+        marks_possible = np_marks[:, 0]
+        marks_category = np_marks[:, 1]
+        marks_category_weight = np_marks[:, 2]
+        marks_assignment = np_marks[:, 3]
+        marks_assignment_weight = np_marks[:, 4]
+        marks_mark = np_marks[:, 5]
         marks_percent = marks_mark / marks_possible
-        weights = marks_possible
+
+        if np.isnan(np.sum(marks_possible)):
+            raise WeightContainsNone()
 
         sub_rules = CalculationRuleSubstitution.objects.filter(
             Q(calculation_rule=calc_rule),
@@ -283,14 +333,10 @@ class Mark(models.Model):
 
         if match_sub_rule is False or total is None:
             # Check if contains any weights at all
-            if (calc_rule is not None
-                    and array_contains_anything(marks_category_weight)):
-                weights = weights * marks_category_weight
-            if array_contains_anything(marks_assignment_weight):
-                weights = weights * marks_assignment_weight
-            if np.isnan(np.sum(weights)):
-                raise WeightContainsNone()
-            total = np.average(marks_percent, weights=weights)
+            total = grade_weighted_average(
+                marks_category, marks_category_weight, marks_percent,
+                marks_possible, marks_assignment, marks_assignment_weight)
+
             if calc_rule is not None and calc_rule.points_possible > 0:
                 total = Decimal(total) * calc_rule.points_possible
             else:  # Assume out of 100 unless specified
