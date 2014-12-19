@@ -448,23 +448,26 @@ class GradeTestTCSampleData(TestCase):
         self.data.create_sample_tc_data()
         build_grade_cache()
 
+    def verify_accuracy_of_grade_in_section_hash(self,student,section_hash):
+        section_name = section_hash["name"]
+        expected_grade = section_hash["grade"]
+        course_section = CourseSection.objects.get(name=section_name)
+        actual_grade = round(course_section.calculate_final_grade(student), 2)
+        self.assertEqual(actual_grade, expected_grade)
+
     def test_course_section_final_grades(self):
         student = self.data.tc_student1
         expected_data = [
-            {"section": "bus2",    "grade":3.85},
-            {"section": "span",    "grade":3.42},
-            {"section": "wlit",    "grade":3.36},
-            {"section": "geom10",  "grade":1.75},
-            {"section": "phys10",  "grade":3.33},
-            {"section": "mchrist", "grade":3.45},
-            {"section": "whist",   "grade":3.51}
+            {"name": "bus2-section-TC-2014-2015",    "grade":3.85},
+            {"name": "span-section-TC-2014-2015",    "grade":3.42},
+            {"name": "wlit-section-TC-2014-2015",    "grade":3.36},
+            {"name": "geom10-section-TC-2014-2015",  "grade":1.75},
+            {"name": "phys10-section-TC-2014-2015",  "grade":3.33},
+            {"name": "mchrist-section-TC-2014-2015", "grade":3.45},
+            {"name": "whist-section-TC-2014-2015",   "grade":3.51}
         ]
-        for expected_data in expected_data:
-            section_name = expected_data["section"] + "-section-TC-2014-2015"
-            section = CourseSection.objects.get(name=section_name)
-            expected_grade = expected_data["grade"]
-            actual_grade = section.calculate_final_grade(student)
-            self.assertEqual(round(actual_grade, 2), expected_grade)
+        for section_hash in expected_data:
+            self.verify_accuracy_of_grade_in_section_hash(student,section_hash)
 
     def test_calculate_gpa_after_each_marking_period(self):
         end_dates = [datetime.date(2014,10,3),datetime.date(2014,11,14),datetime.date(2015,1,23)]
