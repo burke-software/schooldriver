@@ -130,6 +130,7 @@ class SampleTCData(SisData):
 
     def create_sample_tc_student_grades(self):
         self.create_sample_tc_student1_grades()
+        self.create_sample_tc_student2_grades()
 
     def create_sample_tc_student1_grades(self):
         student = self.tc_student1
@@ -146,8 +147,26 @@ class SampleTCData(SisData):
         self.save_all_section_grade_data(student, section_grade_data)
 
     def create_sample_tc_student2_grades(self):
+        # ok this data is completely made up
         student = self.tc_student2
-        # this data is completely made up
+        section_grade_data = [
+            {"name": "bus2-section-TC-2014-2015",    "grades":[3, 3, 4, 3, 3, 3]},
+            {"name": "span-section-TC-2014-2015",    "grades":[2, 4, 4, 4, 3, 3]},
+            {"name": "wlit-section-TC-2014-2015",    "grades":[3, 3, 4, 3, 3, 3]},
+            {"name": "geom10-section-TC-2014-2015",  "grades":[2, 4, 4, 3, 2, 4]},
+            {"name": "phys10-section-TC-2014-2015",  "grades":[3, 4, 4, 4, 3, 3]},
+            {"name": "mchrist-section-TC-2014-2015", "grades":[2, 3, 4, 3, 4, 3]},
+            {"name": "whist-section-TC-2014-2015",   "grades":[3, 4, 4, 4, 3, 2]}
+            ]
+        # I'm splitting up the years visually just so it's easier to debug
+        section_grade_data += [
+            {"name": "bus3-section-TC-2015-2016",    "grades":[2, 3, 4, 3, 3, 4]},
+            {"name": "span3-section-TC-2015-2016",   "grades":[4, 4, 4, 4, 4, 4]},
+            {"name": "alg11-section-TC-2015-2016",   "grades":[2, 3, 4, 3, 3, 3]},
+            {"name": "chem11-section-TC-2015-2016",  "grades":[4, 4, 4, 4, 3, 4]},
+            {"name": "ushist-section-TC-2015-2016",  "grades":[3, 3, 4, 3, 3, 3]}
+        ]
+        self.save_all_section_grade_data(student, section_grade_data)
 
     def save_all_section_grade_data(self, student, section_grade_data):
         for section_data in section_grade_data:
