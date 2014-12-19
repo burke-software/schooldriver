@@ -451,16 +451,17 @@ class GradeTestTCSampleData(TestCase):
     def test_course_section_final_grades(self):
         student = self.data.tc_student1
         expected_data = [
-            {"section": "bus2-section1",    "grade":3.85},
-            {"section": "span-section1",    "grade":3.42},
-            {"section": "wlit-section1",    "grade":3.36},
-            {"section": "geom10-section1",  "grade":1.75},
-            {"section": "phys10-section1",  "grade":3.33},
-            {"section": "mchrist-section1", "grade":3.45},
-            {"section": "whist-section1",   "grade":3.51}
+            {"section": "bus2",    "grade":3.85},
+            {"section": "span",    "grade":3.42},
+            {"section": "wlit",    "grade":3.36},
+            {"section": "geom10",  "grade":1.75},
+            {"section": "phys10",  "grade":3.33},
+            {"section": "mchrist", "grade":3.45},
+            {"section": "whist",   "grade":3.51}
         ]
         for expected_data in expected_data:
-            section = CourseSection.objects.get(name=expected_data["section"])
+            section_name = expected_data["section"] + "-section-TC-2014-2015"
+            section = CourseSection.objects.get(name=section_name)
             expected_grade = expected_data["grade"]
             actual_grade = section.calculate_final_grade(student)
             self.assertEqual(round(actual_grade, 2), expected_grade)
