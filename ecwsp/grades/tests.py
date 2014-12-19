@@ -469,6 +469,25 @@ class GradeTestTCSampleData(TestCase):
         for section_hash in expected_data:
             self.verify_accuracy_of_grade_in_section_hash(student,section_hash)
 
+    def test_student2_course_section_final_grades(self):
+        student = self.data.tc_student2
+        expected_data = [
+            {"name": "bus2-section-TC-2014-2015",    "grade":3.17},
+            {"name": "span-section-TC-2014-2015",    "grade":3.33},
+            {"name": "wlit-section-TC-2014-2015",    "grade":3.17},
+            {"name": "geom10-section-TC-2014-2015",  "grade":3.17},
+            {"name": "phys10-section-TC-2014-2015",  "grade":3.50},
+            {"name": "mchrist-section-TC-2014-2015", "grade":3.17},
+            {"name": "whist-section-TC-2014-2015",   "grade":3.33},
+            {"name": "bus3-section-TC-2015-2016",    "grade":3.17},
+            {"name": "span3-section-TC-2015-2016",   "grade":4.00},
+            {"name": "alg11-section-TC-2015-2016",   "grade":3.00},
+            {"name": "chem11-section-TC-2015-2016",  "grade":3.83},
+            {"name": "ushist-section-TC-2015-2016",  "grade":3.17}
+        ]
+        for section_hash in expected_data:
+            self.verify_accuracy_of_grade_in_section_hash(student,section_hash)
+
     def test_calculate_gpa_after_each_marking_period(self):
         end_dates = [datetime.date(2014,10,3),datetime.date(2014,11,14),datetime.date(2015,1,23)]
         expected_gpas = [3.31, 3.27, 3.24]
