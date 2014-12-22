@@ -1155,6 +1155,7 @@ class SisReport(ScaffoldReport):
                 context['school_year'] = marking_periods[0].school_year
 
                 current_mp = marking_periods.first()
+                context['current_mp'] = current_mp
                 for student in students:
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,
