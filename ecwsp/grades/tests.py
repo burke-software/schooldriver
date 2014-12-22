@@ -495,3 +495,23 @@ class GradeTestTCSampleData(TestCase):
         for i in range(3):
             gpa = student.calculate_gpa(date_report=end_dates[i])
             self.assertEqual(round(gpa, 2), expected_gpas[i])
+
+    def test_student_2_year_grades(self):
+        student = self.data.tc_student2
+        year_grade_1 = StudentYearGrade.objects.get(student = student, year = self.data.year1)
+        year_grade_2 = StudentYearGrade.objects.get(student = student, year = self.data.year2)
+        self.assertEqual(round(year_grade_1.grade,2), 3.26)
+        self.assertEqual(round(year_grade_2.grade,2), 3.43)
+
+    def test_student2_lifetime_gpa(self):
+        student = self.data.tc_student2
+        year1_credits = 7
+        year2_credits = 5
+        year1_gpa = 3.26
+        year2_gpa = 3.43
+        total_points = (year1_gpa * year1_credits) + (year2_gpa * year2_credits)
+        total_credits = year1_credits + year2_credits
+        expected_gpa = total_points / total_credits
+        actual_gpa = student.calculate_gpa()
+        self.assertEqual(round(expected_gpa, 2), round(actual_gpa, 2))
+
