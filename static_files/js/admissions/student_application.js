@@ -96,9 +96,9 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
     };
 
     $scope.getCorrectFieldType = function(custom_field) {
-        // the field type is assumed to be "input"; if it is an integrated 
+        // the field type is assumed to be "input"; if it is an integrated
         // field, check the related field type and return 'data' or 'multiple'
-        // if it is a date or choice type applicant field. 
+        // if it is a date or choice type applicant field.
         var fieldType = 'input';
         if (custom_field.is_field_integrated_with_applicant == true) {
             var relatedField = $scope.getApplicantFieldByFieldName(custom_field.field_name)
@@ -137,7 +137,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                 return choices;
             }
         }
-        
+
     };
 
     $scope.getApplicantFieldByFieldName = function(field_name) {
@@ -206,7 +206,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             for (var field_name in integrated_fields) {
                 var field = integrated_fields[field_name];
                 $scope.applicantIntegratedFields.push({
-                    "name" : field_name, 
+                    "name" : field_name,
                     "required" : field.required,
                     "label" : field.label,
                     "type" : field.type,
@@ -216,7 +216,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                 if (field_name == 'state') {
                     $scope.stateOptions = field.choices;
                 }
-            };  
+            };
         });
     };
 
@@ -261,20 +261,20 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                     } else {
                         $scope.applicant_data[field.field_name] = field.value;
                     }
-                    
+
 
                 } else if (field.is_field_integrated_with_applicant === false) {
                     $scope.applicant_additional_information.push({
                         "custom_field" : field.id,
                         "answer" : field.value,
                     });
-                }  
+                }
                 if (field.field_type == 'emergency_contact') {
                     $scope.applicant_data.emergency_contacts.push(field.value);
                 }
             }
         }
-        
+
         // now, let's post the applicant data, and use the response to
         // post the additional information in separate requests...
         $http({
@@ -285,7 +285,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             // generate a list of fields from the Applicant Django model
             var applicant_id = data.id
             for (i in $scope.applicant_additional_information) {
-                // inject the applicant_id into the data 
+                // inject the applicant_id into the data
                 $scope.applicant_additional_information[i].applicant = applicant_id;
             }
             $http({
@@ -302,14 +302,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             for ( var i in data ) {
                 var field = $scope.getApplicationFieldByFieldName(i);
                 if ( field && data[i] ) {
-                    var error_msg = data[i][0]
-                    if ( error_msg.indexOf("Date has wrong format") > -1 ) {
-                        // let's re-write the error message to conform to the
-                        // front-end setting, instead of the incomprehensible
-                        // "Date has wrong format. Use one of these formats instead: YYYY[-MM[-DD]]"
-                        // which comes from Django validation
-                        error_msg = "Date has wrong format. Use the format MM-DD-YYYY instead";
-                    }
+                    var error_msg = data[i][0];
                     var error = {
                         "field_label" : field.field_label,
                         "error_msg" : error_msg
