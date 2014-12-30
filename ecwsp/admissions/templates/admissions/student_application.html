@@ -286,7 +286,12 @@
                 {{ userReadableDateField(field.value) }}
               </span>
               <span ng-if="field.field_type != 'date'">
-                {{ field.value }}
+                  <span ng-if="applicantForeignKeyFieldChoices[field.field_name] != undefined">
+                      {{ getForeignKeyFieldChoiceDisplayName(field.field_name, field.value) }}
+                  </span>
+                  <span ng-if="applicantForeignKeyFieldChoices[field.field_name] == undefined">
+                      {{ field.value }}
+                  </span>
               </span>
             </td>
             <td class="col-sm-6" ng-if="field.field_type =='emergency_contact'">

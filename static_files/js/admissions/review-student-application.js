@@ -18,7 +18,7 @@ admissionsApp.controller('ReviewStudentApplicationController', [
         $scope.applicationTemplate = {};
         $scope.applicationFields = [];
         $scope.submissionDate = "";
-        
+        $scope.applicantForeignKeyFieldChoices = {};
 
         $scope.init = function() {
             $scope.getDefaultApplicationTemplate();
@@ -32,6 +32,7 @@ admissionsApp.controller('ReviewStudentApplicationController', [
                     var jsonTemplate = JSON.parse(data[0].json_template)
                     $scope.applicationTemplate = jsonTemplate;
                     $scope.refreshCustomFieldList();
+                    $scope.getApplicantForeignKeyFieldChoices();
             });
         };
 
@@ -48,6 +49,24 @@ admissionsApp.controller('ReviewStudentApplicationController', [
                             $scope.populateApplicationTemplateWithStudentResponses(data);
                     });
             });
+        };
+
+        $scope.getApplicantForeignKeyFieldChoices = function() {
+            $http.get("/api/applicant-foreign-key-field-choices/")
+            .success(function(data, status, headers, config) {
+                $scope.applicantForeignKeyFieldChoices = data;
+            });
+        };
+
+        $scope.getForeignKeyFieldChoiceDisplayName = function(fieldName, choiceId) {
+            var fieldChoices = $scope.applicantForeignKeyFieldChoices[fieldName];
+            for (var i in fieldChoices) {
+                var choice = fieldChoices[i];
+                if (choice.value == choiceId) {
+                    return choice.display_name;
+                    break;
+                }
+            }
         };
 
         $scope.formatApplicationTemplate = function() {
@@ -85,6 +104,9 @@ admissionsApp.controller('ReviewStudentApplicationController', [
                     var field = section.fields[field_id];
                     if ( field.is_field_integrated_with_applicant == true ) {
                         field.value = studentResponses[field.field_name];
+                        if ( field.field_name in $scope.applicantForeignKeyFieldChoices ) {
+                            field.value = $scope.getForeignKeyFieldChoiceDisplayName(field.field_name, field.value);
+                        }
                     } else {
                         for (var i in studentResponses.additionals) {
                             var additional = studentResponses.additionals[i];

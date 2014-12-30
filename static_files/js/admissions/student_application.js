@@ -140,6 +140,17 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
 
     };
 
+    $scope.getForeignKeyFieldChoiceDisplayName = function(fieldName, choiceId) {
+        var fieldChoices = $scope.applicantForeignKeyFieldChoices[fieldName];
+        for (var i in fieldChoices) {
+            var choice = fieldChoices[i];
+            if (choice.value == choiceId) {
+                return choice.display_name;
+                break;
+            }
+        }
+    };
+
     $scope.getApplicantFieldByFieldName = function(field_name) {
         for (var i=0; i < $scope.applicantIntegratedFields.length; i ++ ) {
             var field = $scope.applicantIntegratedFields[i];
@@ -172,7 +183,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             .success(function(data, status, headers, config) {
                 $scope.applicantForeignKeyFieldChoices = data;
         });
-    }
+    };
 
     $scope.init = function() {
         $scope.getApplicantForeignKeyFieldChoices();
@@ -272,15 +283,6 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                 if (field.field_type == 'emergency_contact') {
                     $scope.applicant_data.emergency_contacts.push(field.value);
                 }
-            }
-        }
-
-        // this is a funky hack -- we need to go through the applicant fields
-        // and make sure that every field at least exists as a null value
-        for (var i in $scope.applicantIntegratedFields) {
-            var integratedFieldName = $scope.applicantIntegratedFields[i].name;
-            if ( !( integratedFieldName in $scope.applicant_data ) ) {
-                $scope.applicant_data[integratedFieldName] = "";
             }
         }
 
