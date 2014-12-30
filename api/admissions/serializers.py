@@ -14,13 +14,16 @@ class ApplicantAdditionalInformationSerializer(serializers.ModelSerializer):
         model = ApplicantAdditionalInformation
 
 class ApplicantSerializer(serializers.ModelSerializer):
-    additionals = ApplicantAdditionalInformationSerializer(many=True, required=False)
-    siblings = serializers.PrimaryKeyRelatedField(required = False)
-    place_of_worship = serializers.PrimaryKeyRelatedField(required = False)
+    additionals = ApplicantAdditionalInformationSerializer(many=True, read_only=True)
+    religion = serializers.PrimaryKeyRelatedField()
+    ethnicity = serializers.PrimaryKeyRelatedField()
+    family_preferred_language = serializers.PrimaryKeyRelatedField()
+    heard_about_us = serializers.PrimaryKeyRelatedField()
+    present_school = serializers.PrimaryKeyRelatedField()
 
     class Meta:
         model = Applicant
-        depth = 1
+        read_only_fields = ('id', 'unique_id')
 
 class ApplicantCustomFieldSerializer(serializers.ModelSerializer):
     class Meta:
