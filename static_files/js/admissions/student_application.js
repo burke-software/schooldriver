@@ -275,6 +275,15 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             }
         }
 
+        // this is a funky hack -- we need to go through the applicant fields
+        // and make sure that every field at least exists as a null value
+        for (var i in $scope.applicantIntegratedFields) {
+            var integratedFieldName = $scope.applicantIntegratedFields[i].name;
+            if ( !( integratedFieldName in $scope.applicant_data ) ) {
+                $scope.applicant_data[integratedFieldName] = "";
+            }
+        }
+
         // now, let's post the applicant data, and use the response to
         // post the additional information in separate requests...
         $http({
@@ -301,8 +310,8 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             $scope.submissionError.status = true;
             for ( var i in data ) {
                 var field = $scope.getApplicationFieldByFieldName(i);
+                var error_msg = data[i][0];
                 if ( field && data[i] ) {
-                    var error_msg = data[i][0];
                     var error = {
                         "field_label" : field.field_label,
                         "error_msg" : error_msg
