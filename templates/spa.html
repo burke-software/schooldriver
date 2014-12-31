@@ -21,16 +21,14 @@
     <script src="{% static 'bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js' %}"></script>
     <script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
     <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
-    {% block angular_app %}
-        {% compress js %}
-        <script src="{% static 'app/angular_sis.js' %}"></script>
-        <script src="{% static 'app/grades/grades.js' %}"></script>
-        <script src="{% static 'app/grades/course.js' %}"></script>
-        <script src="{% static 'app/admissions/admissions-common.js' %}"></script>
-        <script src="{% static 'app/admissions/review-student-application.js' %}"></script>
-        <script src="{% static 'app/admissions/student-application.js' %}"></script>
-        {% endcompress %}
-    {% endblock %}
+    <script src="{% static 'app/common/restfulModel.js' %}"></script>
+    <script src="{% static 'app/angular_sis.js' %}"></script>
+    <script src="{% static 'app/grades/grades.js' %}"></script>
+    <script src="{% static 'app/grades/course.js' %}"></script>
+    <script src="{% static 'app/admissions/admissions-common.js' %}"></script>
+    <script src="{% static 'app/admissions/review-student-application.js' %}"></script>
+    <script src="{% static 'app/admissions/student-application.js' %}"></script>
+    <script src="{% static 'app/admissions/custom-application-editor.js' %}"></script>
 {% endblock %}
 
 

@@ -1,4 +1,4 @@
-var app = angular.module("angular_sis", ['restangular', 'ngRoute', 'ui.bootstrap', 'uiHandsontable', 'pascalprecht.translate']);
+var app = angular.module("angular_sis", ['restangular', 'ngRoute', 'ui.bootstrap', 'uiHandsontable']);
 
 app.config([
     "$httpProvider", function($httpProvider) {
@@ -48,11 +48,11 @@ app.config(function($routeProvider, $locationProvider) {
       reloadOnSearch: false
     });
     $routeProvider.when('/admissions/application/:applicantId/', {
-      templateUrl: static('app/admissions/review_application.html'),
+      templateUrl: static('app/admissions/review-application.html'),
       controller: 'ReviewStudentApplicationController',
     });
     $routeProvider.when('/admissions/application', {
-      templateUrl: static('app/admissions/student_application.html'),
+      templateUrl: static('app/admissions/student-application.html'),
       controller: 'StudentApplicationController',
     });
     return $locationProvider.html5Mode(true);

@@ -1,12 +1,6 @@
 {% extends 'spa.html' %}
 {% load staticfiles %}
 
-{% block angular_app %}
-    {{ block.super }}
-    <script src="{% static 'app/admissions/student_application.js' %}"></script>
-    <script src="{% static 'app/admissions/custom_application_editor.js' %}"></script>
-{% endblock %}
-
 {% block content %}
 {% verbatim %}
 

@@ -4,15 +4,13 @@
 {% block extra_head %}
 <script type="text/javascript" src="{% static 'js/angular-translate.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/angular-translate-loader-url.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/admissions/student_application.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/admissions/student-application.js' %}"></script>
 <meta name="google-translate-customization" content="37da49fcf8973ccb-756457446a3cca53-g28961e43a5d7f19a-28"></meta>
 {% endblock %}
 
 
 {% block angular_app %}
     {{ block.super }}
-    <script src="{% static 'app/admissions/student_application.js' %}"></script>
-    <script src="{% static 'app/admissions/custom_application_editor.js' %}"></script>
 {% endblock %}
 
 {% block content %}
