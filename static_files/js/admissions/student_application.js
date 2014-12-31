@@ -9,6 +9,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
     $scope.applicant_data = {};
     $scope.applicant_additional_information = [];
     $scope.applicationComplete = false;
+    $scope.submitSaveInProgress = false;
     $scope.applicantForeignKeyFieldChoices = {};
     $scope.submissionError = {
         "status" : false,
@@ -257,6 +258,8 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
     };
 
     $scope.submitApplication = function() {
+        $scope.submitSaveInProgress = true;
+
         // turn previous errors off while we attempt to submit the app
         $scope.submissionError.status = false;
         $scope.submissionError.errors = [];
@@ -313,6 +316,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             // called asynchronously if an error occurs
             // or server returns response with an error status.
             $scope.submissionError.status = true;
+            $scope.submitSaveInProgress = false;
             for ( var i in data ) {
                 var field = $scope.getApplicationFieldByFieldName(i);
                 var error_msg = data[i][0];
@@ -321,6 +325,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                         "field_label" : field.field_label,
                         "error_msg" : error_msg
                     };
+
                     $scope.submissionError.errors.push(error);
                 }
             }

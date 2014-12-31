@@ -266,7 +266,10 @@
           <strong>{{ error.field_label }}</strong>: <em class="text-danger">{{ error.error_msg }}</em>
         </p>
       </div>
-      <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid">Submit Application</button>
+    <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid || submitSaveInProgress">
+      <span ng-if="submitSaveInProgress">Submitting...</span>
+      <span ng-if="!submitSaveInProgress">Submit Application</span>
+    </button>
     </form>
   </div>
   <div ng-if="applicationComplete">
