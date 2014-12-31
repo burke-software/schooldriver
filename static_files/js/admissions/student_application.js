@@ -234,7 +234,10 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
     $scope.reformatDateField = function(dateDict) {
         // Accept a dict in the form {year: "YYYY", month: "MM", day: "DD"}
         // and return a string in the form "YYYY-MM-DD"
-        var dateString = dateDict.year + "-" + dateDict.month + "-" + dateDict.day;
+        var dateString = '';
+        if ( dateDict ) {
+            dateString = dateDict.year + "-" + dateDict.month + "-" + dateDict.day;
+        }
         return dateString;
     };
 
