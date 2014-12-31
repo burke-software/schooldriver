@@ -1147,14 +1147,26 @@ class SisReport(ScaffoldReport):
             if template.general_student:
                 cal = Calendar()
                 schedule_days = self.report_context.get('schedule_days', None)
-                marking_periods = MarkingPeriod.objects.filter(start_date__gte=self.report_context['date_end'],
-                    end_date__lte=self.report_context['date_end']).order_by('start_date')
+                
+                # If either the start date or end date of a MP is 
+                # within the requested time period, we want that MP
+                marking_periods = MarkingPeriod.objects.filter(
+                    Q(
+                        end_date__gte=self.report_context['date_begin'],
+                        end_date__lte=self.report_context['date_end']
+                    ) | 
+                    Q(
+                        start_date__gte=self.report_context['date_begin'],
+                        start_date__lte=self.report_context['date_end']
+                    )).order_by('start_date')
+                
                 if not marking_periods.count():
                     marking_periods = MarkingPeriod.objects.filter(start_date__gte=self.report_context['date_begin']).order_by('start_date')
                 context['marking_periods'] = ', '.join(marking_periods.values_list('shortname',flat=True))
                 context['school_year'] = marking_periods[0].school_year
 
                 current_mp = marking_periods.first()
+                context['current_mp'] = current_mp
                 for student in students:
                     if current_mp:
                         student.schedule_days, student.periods = cal.build_schedule(student, current_mp,

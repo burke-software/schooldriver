@@ -20,7 +20,7 @@
 
 
 <!-- Google Translate -->
-<div class="container">
+<div class="container hidden-print">
   <div class="pull-right">
     <div id="google_translate_element"></div><script type="text/javascript">
     function googleTranslateElementInit() {
@@ -273,7 +273,10 @@
           <strong>{{ error.field_label }}</strong>: <em class="text-danger">{{ error.error_msg }}</em>
         </p>
       </div>
-      <button class="btn btn-success btn-lg" ng-click="submitApplication()" >Submit Application</button><!--ng-disabled="applicationForm.$invalid"-->
+    <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid || submitSaveInProgress">
+      <span ng-if="submitSaveInProgress">Submitting...</span>
+      <span ng-if="!submitSaveInProgress">Submit Application</span>
+    </button>
     </form>
   </div>
   <div ng-if="applicationComplete">
@@ -293,7 +296,12 @@
                 {{ userReadableDateField(field.value) }}
               </span>
               <span ng-if="field.field_type != 'date'">
-                {{ field.value }}
+                  <span ng-if="applicantForeignKeyFieldChoices[field.field_name] != undefined">
+                      {{ getForeignKeyFieldChoiceDisplayName(field.field_name, field.value) }}
+                  </span>
+                  <span ng-if="applicantForeignKeyFieldChoices[field.field_name] == undefined">
+                      {{ field.value }}
+                  </span>
               </span>
             </td>
             <td class="col-sm-6" ng-if="field.field_type =='emergency_contact'">

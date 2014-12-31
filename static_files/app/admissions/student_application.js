@@ -7,11 +7,12 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
     $scope.applicant_data = {};
     $scope.applicant_additional_information = [];
     $scope.applicationComplete = false;
+    $scope.submitSaveInProgress = false;
     $scope.applicantForeignKeyFieldChoices = {};
     $scope.submissionError = {
         "status" : false,
         "errors" : []
-    }
+    };
     $scope.stateOptions = [];
 
     $scope.monthOptions = [
@@ -87,19 +88,19 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
                 var section_field = section.fields[field_id];
                 var custom_field = $scope.getApplicationFieldById(section_field.id);
                 custom_field.choices = $scope.getApplicationFieldChoices(section_field.id);
-                custom_field.field_type = $scope.getCorrectFieldType(custom_field)
+                custom_field.field_type = $scope.getCorrectFieldType(custom_field);
                 section.fields[field_id] = custom_field;
             }
         }
     };
 
     $scope.getCorrectFieldType = function(custom_field) {
-        // the field type is assumed to be "input"; if it is an integrated 
+        // the field type is assumed to be "input"; if it is an integrated
         // field, check the related field type and return 'data' or 'multiple'
-        // if it is a date or choice type applicant field. 
+        // if it is a date or choice type applicant field.
         var fieldType = 'input';
-        if (custom_field.is_field_integrated_with_applicant == true) {
-            var relatedField = $scope.getApplicantFieldByFieldName(custom_field.field_name)
+        if (custom_field.is_field_integrated_with_applicant === true) {
+            var relatedField = $scope.getApplicantFieldByFieldName(custom_field.field_name);
             if ( relatedField.type == 'date' ) {
                 fieldType = 'date';
             } else if ( relatedField.type in ['choice', 'field']) {
@@ -111,7 +112,7 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
             fieldType = custom_field.field_type;
         }
         return fieldType;
-    }
+    };
 
     $scope.getApplicationFieldChoices = function(field_id) {
         var custom_field = $scope.getApplicationFieldById(field_id);
@@ -124,7 +125,7 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
             }
         } else if (custom_field.is_field_integrated_with_applicant === false ) {
             if (custom_field.field_choices) {
-                var choices = []
+                var choices = [];
                 var choice_array = custom_field.field_choices.split(',');
                 for (var i in choice_array) {
                     choices.push({
@@ -135,7 +136,18 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
                 return choices;
             }
         }
-        
+
+    };
+
+    $scope.getForeignKeyFieldChoiceDisplayName = function(fieldName, choiceId) {
+        var fieldChoices = $scope.applicantForeignKeyFieldChoices[fieldName];
+        for (var i in fieldChoices) {
+            var choice = fieldChoices[i];
+            if (choice.value == choiceId) {
+                return choice.display_name;
+                break;
+            }
+        }
     };
 
     $scope.getApplicantFieldByFieldName = function(field_name) {
@@ -170,7 +182,7 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
             .success(function(data, status, headers, config) {
                 $scope.applicantForeignKeyFieldChoices = data;
         });
-    }
+    };
 
     $scope.init = function() {
         $scope.getApplicantForeignKeyFieldChoices();
@@ -204,7 +216,7 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
             for (var field_name in integrated_fields) {
                 var field = integrated_fields[field_name];
                 $scope.applicantIntegratedFields.push({
-                    "name" : field_name, 
+                    "name" : field_name,
                     "required" : field.required,
                     "label" : field.label,
                     "type" : field.type,
@@ -214,14 +226,17 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
                 if (field_name == 'state') {
                     $scope.stateOptions = field.choices;
                 }
-            };  
+            }
         });
     };
 
     $scope.reformatDateField = function(dateDict) {
         // Accept a dict in the form {year: "YYYY", month: "MM", day: "DD"}
         // and return a string in the form "YYYY-MM-DD"
-        var dateString = dateDict.year + "-" + dateDict.month + "-" + dateDict.day;
+        var dateString = '';
+        if ( dateDict ) {
+            dateString = dateDict.year + "-" + dateDict.month + "-" + dateDict.day;
+        }
         return dateString;
     };
 
@@ -241,6 +256,8 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
     };
 
     $scope.submitApplication = function() {
+        $scope.submitSaveInProgress = true;
+
         // turn previous errors off while we attempt to submit the app
         $scope.submissionError.status = false;
         $scope.submissionError.errors = [];
@@ -254,19 +271,19 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
                 var field = section.fields[i];
                 if (field.is_field_integrated_with_applicant === true) {
                     if (field.field_type == 'date') {
-                        var reformattedDate = $scope.reformatDateField(field.value)
+                        var reformattedDate = $scope.reformatDateField(field.value);
                         $scope.applicant_data[field.field_name] = reformattedDate;
                     } else {
                         $scope.applicant_data[field.field_name] = field.value;
                     }
-                    
+
 
                 } else if (field.is_field_integrated_with_applicant === false) {
                     $scope.applicant_additional_information.push({
                         "custom_field" : field.id,
                         "answer" : field.value,
                     });
-                }  
+                }
                 if (field.field_type == 'emergency_contact') {
                     $scope.applicant_data.emergency_contacts.push(field.value);
                 }
@@ -281,9 +298,9 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
             data: $scope.applicant_data
         }).success(function(data, status, headers, config){
             // generate a list of fields from the Applicant Django model
-            var applicant_id = data.id
-            for (i in $scope.applicant_additional_information) {
-                // inject the applicant_id into the data 
+            var applicant_id = data.id;
+            for (var i in $scope.applicant_additional_information) {
+                // inject the applicant_id into the data
                 $scope.applicant_additional_information[i].applicant = applicant_id;
             }
             $http({
@@ -297,25 +314,19 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
             // called asynchronously if an error occurs
             // or server returns response with an error status.
             $scope.submissionError.status = true;
+            $scope.submitSaveInProgress = false;
             for ( var i in data ) {
                 var field = $scope.getApplicationFieldByFieldName(i);
+                var error_msg = data[i][0];
                 if ( field && data[i] ) {
-                    var error_msg = data[i][0]
-                    if ( error_msg.indexOf("Date has wrong format") > -1 ) {
-                        // let's re-write the error message to conform to the
-                        // front-end setting, instead of the incomprehensible
-                        // "Date has wrong format. Use one of these formats instead: YYYY[-MM[-DD]]"
-                        // which comes from Django validation
-                        error_msg = "Date has wrong format. Use the format MM-DD-YYYY instead";
-                    }
                     var error = {
                         "field_label" : field.field_label,
                         "error_msg" : error_msg
                     };
+
                     $scope.submissionError.errors.push(error);
                 }
-            };
-
+            }
         });
     };
 
