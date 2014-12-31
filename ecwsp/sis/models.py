@@ -276,9 +276,6 @@ class IntegerRangeField(models.IntegerField):
         defaults = {'min_value': self.min_value, 'max_value':self.max_value}
         defaults.update(kwargs)
         return super(IntegerRangeField, self).formfield(**defaults)
-if 'south' in settings.INSTALLED_APPS:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^ecwsp\.sis\.models\.IntegerRangeField"])
 
 class ClassYear(models.Model):
     """ Class year such as class of 2010.

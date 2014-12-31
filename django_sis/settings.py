@@ -368,7 +368,6 @@ SHARED_APPS = SHARED_APPS + (
     'constance.backends.database',
     'ecwsp.customers',
     'ecwsp.administration',
-    'south',
     'djcelery',
     'django.contrib.contenttypes',
     'grappelli.dashboard',
@@ -397,7 +396,6 @@ TENANT_APPS = (
     'ecwsp.counseling',
     'ecwsp.standard_test',
     'ecwsp.integrations.schoolreach',
-    'south',
     'reversion',
     'djcelery',
     'localflavor',
@@ -430,6 +428,7 @@ TENANT_APPS = (
 ) + INSTALLED_APPS
 
 INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+INSTALLED_APPS = list(set(INSTALLED_APPS))
 TENANT_MODEL = "customers.Client"
 
 if DEBUG_TOOLBAR == True:
@@ -484,15 +483,6 @@ CONSTANCE_CONFIG = {
     'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail")
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
-
-import django
-if django.get_version()[:3] != '1.7':
-    INSTALLED_APPS += ('south',)
-    if MULTI_TENANT:  # Would happen automatically otherwise
-        SOUTH_DATABASE_ADAPTERS = {
-            'default': 'south.db.postgresql_psycopg2',
-        }
-
 
 USE_S3 = False
 if 'USE_S3' in os.environ:
