@@ -13,7 +13,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
     $scope.submissionError = {
         "status" : false,
         "errors" : []
-    }
+    };
     $scope.stateOptions = [];
 
     $scope.monthOptions = [
@@ -89,7 +89,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                 var section_field = section.fields[field_id];
                 var custom_field = $scope.getApplicationFieldById(section_field.id);
                 custom_field.choices = $scope.getApplicationFieldChoices(section_field.id);
-                custom_field.field_type = $scope.getCorrectFieldType(custom_field)
+                custom_field.field_type = $scope.getCorrectFieldType(custom_field);
                 section.fields[field_id] = custom_field;
             }
         }
@@ -100,8 +100,8 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
         // field, check the related field type and return 'data' or 'multiple'
         // if it is a date or choice type applicant field.
         var fieldType = 'input';
-        if (custom_field.is_field_integrated_with_applicant == true) {
-            var relatedField = $scope.getApplicantFieldByFieldName(custom_field.field_name)
+        if (custom_field.is_field_integrated_with_applicant === true) {
+            var relatedField = $scope.getApplicantFieldByFieldName(custom_field.field_name);
             if ( relatedField.type == 'date' ) {
                 fieldType = 'date';
             } else if ( relatedField.type in ['choice', 'field']) {
@@ -113,7 +113,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             fieldType = custom_field.field_type;
         }
         return fieldType;
-    }
+    };
 
     $scope.getApplicationFieldChoices = function(field_id) {
         var custom_field = $scope.getApplicationFieldById(field_id);
@@ -126,7 +126,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             }
         } else if (custom_field.is_field_integrated_with_applicant === false ) {
             if (custom_field.field_choices) {
-                var choices = []
+                var choices = [];
                 var choice_array = custom_field.field_choices.split(',');
                 for (var i in choice_array) {
                     choices.push({
@@ -227,7 +227,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                 if (field_name == 'state') {
                     $scope.stateOptions = field.choices;
                 }
-            };
+            }
         });
     };
 
@@ -267,7 +267,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                 var field = section.fields[i];
                 if (field.is_field_integrated_with_applicant === true) {
                     if (field.field_type == 'date') {
-                        var reformattedDate = $scope.reformatDateField(field.value)
+                        var reformattedDate = $scope.reformatDateField(field.value);
                         $scope.applicant_data[field.field_name] = reformattedDate;
                     } else {
                         $scope.applicant_data[field.field_name] = field.value;
@@ -285,7 +285,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                 }
             }
         }
-
+        
         // now, let's post the applicant data, and use the response to
         // post the additional information in separate requests...
         $http({
@@ -294,8 +294,8 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
             data: $scope.applicant_data
         }).success(function(data, status, headers, config){
             // generate a list of fields from the Applicant Django model
-            var applicant_id = data.id
-            for (i in $scope.applicant_additional_information) {
+            var applicant_id = data.id;
+            for (var i in $scope.applicant_additional_information) {
                 // inject the applicant_id into the data
                 $scope.applicant_additional_information[i].applicant = applicant_id;
             }
@@ -320,8 +320,7 @@ admissionsApp.controller('StudentApplicationController', ['$scope', '$http', '$r
                     };
                     $scope.submissionError.errors.push(error);
                 }
-            };
-
+            }
         });
     };
 
