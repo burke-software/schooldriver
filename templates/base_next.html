@@ -46,6 +46,8 @@
 
 <body>
 
+{% block body %}
+{% block nav %}
 <div id="main-nav" class="navbar navbar-default" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header hidden-sm">
@@ -213,13 +215,17 @@
     </ul>
   </div>
 </div>
-<div class="container-fluid full-height">
-  <div class="row">
-    <div class="col-xs-12 main">
-      <h1>{% block title %}{% endblock %}</h1>
-      {% block content %}{% endblock %}
+{% endblock %}
+{% block content_full %}
+    <div class="container-fluid full-height">
+      <div class="row">
+        <div class="col-xs-12 main">
+          <h1>{% block title %}{% endblock %}</h1>
+          {% block content %}{% endblock %}
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+{% endblock %}
+{% endblock %}
 </body>
 </html>
