@@ -45,12 +45,11 @@ django-reversion==1.8.5
 django-rosetta==0.7.4
 django-simple-import==1.19
 django-storages-redux==1.2
-django-tenant-schemas==1.4.8
+#django-tenant-schemas==1.4.8
 django-widget-tweaks==1.3
 Django==1.7.1
 djangorestframework-bulk==0.1.3
 djangorestframework==3.0.2
-faulthandler==2.4
 flower==0.7.3
 hiredis==0.1.5
 html5lib==0.999
@@ -68,11 +67,10 @@ odfpy==0.9.6
 openpyxl==2.1.2
 Pillow==2.6.1
 polib==1.0.5
-poster==0.8.1
 psycopg2==2.5.4
 PyJWT==0.3.0
 python-dateutil==2.2
-python-ldap==2.4.18
+python3-ldap
 python-openid==2.2.5
 python-social-auth==0.2.1
 pytz==2014.9
@@ -83,14 +81,13 @@ requests-oauthlib==0.4.2
 requests==2.4.3
 simplejson==3.6.5
 six==1.8.0
-suds==0.4
-supervisor==3.1.3
-tenant-schemas-celery==0.1.1
+suds-jurko
+#tenant-schemas-celery==0.1.2
+-e git://github.com/bufke/tenant-schemas-celery.git#egg=tenant_schemas_celery
 urllib3==1.9.1
 uWSGI==2.0.8
-wsgiref==0.1.2
 xlrd==0.9.3
-xlwt==0.7.5
-#-e git://github.com/bernardopires/django-tenant-schemas.git#egg=tenant_schemas
+xlwt-future==0.8.0
+-e git://github.com/bernardopires/django-tenant-schemas.git#egg=tenant_schemas
 git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99
 #django-hstore
