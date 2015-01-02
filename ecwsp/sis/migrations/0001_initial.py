@@ -193,12 +193,6 @@ class Migration(migrations.Migration):
             bases=('auth.user', custom_field.custom_field.CustomFieldModel),
         ),
         migrations.AddField(
-            model_name='cohort',
-            name='students',
-            field=models.ManyToManyField(to='sis.Student', blank=True),
-            preserve_default=True,
-        ),
-        migrations.AddField(
             model_name='student',
             name='cache_cohort',
             field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, blank=True, editable=False, to='sis.Cohort', help_text=b'Cached primary cohort.', null=True),
@@ -208,12 +202,6 @@ class Migration(migrations.Migration):
             model_name='student',
             name='class_of_year',
             field=models.ForeignKey(verbose_name=b'Graduating Class', blank=True, to='sis.ClassYear', null=True),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='student',
-            name='cohorts',
-            field=models.ManyToManyField(to='sis.Cohort', blank=True),
             preserve_default=True,
         ),
         migrations.AddField(

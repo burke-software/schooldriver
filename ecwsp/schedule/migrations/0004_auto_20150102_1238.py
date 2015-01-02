@@ -11,14 +11,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.DeleteModel(
-            name='Day',
-        ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='courseenrollment',
             name='exclude_days',
-            field=models.CharField(help_text=b'Student does not need to attend on this day. Note course sections already specify meeting days; this field is for students who have a special reason to be away.', max_length=100, blank=True),
-            preserve_default=True,
+            field=models.CharField(default='', help_text=b'Student does not need to attend on this day. Note course sections already specify meeting days; this field is for students who have a special reason to be away.', max_length=100, blank=True),
+            preserve_default=False,
         ),
         migrations.AlterField(
             model_name='coursesection',

@@ -59,7 +59,10 @@ post_save.connect(create_faculty_profile, sender=User)
 m2m_changed.connect(create_faculty_profile_m2m, sender=User.groups.through)
 
 def get_prefered_format():
-    return config.PREFERED_FORMAT
+    try:
+        return config.PREFERED_FORMAT
+    except AttributeError:
+        return None
 class UserPreference(models.Model):
     """ User Preferences """
     file_format_choices = (

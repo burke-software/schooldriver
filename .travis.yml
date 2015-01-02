@@ -1,35 +1,13 @@
 language: python
+sudo: false
 python:
 - '2.7'
 install:
 - pip install -r requirements.txt
 - pip install -r dev-requirements.txt
-- pip install -q -e . --use-mirrors
-before_deploy:
-# Less efficient but required due to https://github.com/travis-ci/travis-ci/issues/2272
-- git fetch --unshallow
-script: python manage.py test ecwsp.sis
-# NOTE NOTE NOTE!!!
-# If you push to a branch not named in the `app:` section,
-# Travis CI will spit out this obnoxious message:
-# "Skipping deployment with the heroku provider because
-# this branch is not permitted to deploy."
-# Recognize that UNLESS this message appears once for each `provider:`,
-# the deployment has NOT actually failed.
-deploy:
-  - provider: heroku
-    api_key:
-      secure: YD9D6LCNYwr6F5uTKuMl5yZisokkJmCzLFh/84EZrVEtfkJMGX8KZu3bYKuO0b1lB4K57IqyJHk3gbIZt3PB/1mIbOdeiXJAMixTq9+bH2009UrHpkOFCRF3+f3FroZG1wf0rpjOdn0nnK6uDEIl8x3H8lKxICIdozH88xaiGR4=
-    strategy: git
-    app:
-      master: django-sis-staging
-      develop: django-sis-dev
-  # provider intentially duplicated to deploy demo instance; see
-  # https://github.com/travis-ci/travis-ci/issues/1272
-  # mind the hyphens!
-  - provider: heroku
-    api_key:
-      secure: YD9D6LCNYwr6F5uTKuMl5yZisokkJmCzLFh/84EZrVEtfkJMGX8KZu3bYKuO0b1lB4K57IqyJHk3gbIZt3PB/1mIbOdeiXJAMixTq9+bH2009UrHpkOFCRF3+f3FroZG1wf0rpjOdn0nnK6uDEIl8x3H8lKxICIdozH88xaiGR4=
-    strategy: git
-    app:
-      master: django-sis-demo
+addons:
+- postgresql: "9.3"
+before_script:
+- psql -c "CREATE DATABASE mydb;" -U postgres
+script: 
+- python manage.py test ecwsp.sis
