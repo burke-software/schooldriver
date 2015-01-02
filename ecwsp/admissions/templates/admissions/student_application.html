@@ -25,7 +25,7 @@
 
 <!-- End Google Translate -->
 
-<div class="container custom-application" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
+<div class="container custom-application app-div" ng-app="admissions" ng-controller="StudentApplicationController" ng-init="init()">
   <div ng-if="applicationNotComplete()" class="hidden-print">
 
 
@@ -93,8 +93,16 @@
                             <label class="control-label">
                               Month
                             </label>
-                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.month">
-                              <option ng-repeat="month in monthOptions" value="{{ month.value }}">
+                            <select 
+                              class="form-control month-control" 
+                              ng-required="section_field.required" 
+                              ng-model="section_field.value.month"
+                              name="{{ section_field.field_name }}"
+                              >
+                              <option 
+                                class = "month-option-{{ month.display_name }}"
+                                ng-repeat="month in monthOptions" 
+                                value="{{ month.value }}">
                                 {{ month.display_name }}</option>
                             </select>
                           </div>
@@ -102,8 +110,14 @@
                             <label class="control-label">
                               Day
                             </label>
-                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.day">
-                              <option ng-repeat="day in dayOptions" value="{{ day }}">
+                            <select 
+                              class="form-control day-control" 
+                              ng-required="section_field.required" 
+                              ng-model="section_field.value.day">
+                              <option 
+                                ng-repeat="day in dayOptions" 
+                                class = "day-option-{{ month.display_name }}"
+                                value="{{ day }}">
                                 {{ day }}</option>
                             </select>
                           </div>
@@ -111,8 +125,14 @@
                             <label class="control-label">
                               Year
                             </label>
-                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.year">
-                              <option ng-repeat="year in yearOptions" value="{{ year }}">
+                            <select 
+                              class="form-control year-control" 
+                              ng-required="section_field.required" 
+                              ng-model="section_field.value.year">
+                              <option 
+                                ng-repeat="year in yearOptions" 
+                                class = "year-option-{{ month.display_name }}"
+                                value="{{ year }}">
                                 {{ year }}</option>
                             </select>
                           </div>
@@ -126,13 +146,13 @@
                             <label class="control-label">
                               First Name
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.fname">
+                            <input type="text" class="form-control emergency-fname" ng-required="section_field.required" ng-model="section_field.value.fname">
                           </div>
                           <div class="col-sm-6">
                             <label class="control-label">
                               Last Name
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.lname">
+                            <input type="text" class="form-control emergency-lname" ng-required="section_field.required" ng-model="section_field.value.lname">
                           </div>
                         </div>
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
@@ -140,7 +160,7 @@
                             <label class="control-label">
                               Relationship to Student (Mother, Father, etc.)
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.relationship_to_student">
+                            <input type="text" class="form-control emergency-relationship" ng-required="section_field.required" ng-model="section_field.value.relationship_to_student">
                           </div>
                         </div>
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
@@ -148,19 +168,19 @@
                             <label class="control-label">
                               Street Address (include Apt. # if applicable)
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.street">
+                            <input type="text" class="form-control emergency-street" ng-required="section_field.required" ng-model="section_field.value.street">
                           </div>
                           <div class="col-sm-3">
                             <label class="control-label">
                               City
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.city">
+                            <input type="text" class="form-control emergency-city" ng-required="section_field.required" ng-model="section_field.value.city">
                           </div>
                           <div class="col-sm-2">
                             <label class="control-label">
                               State
                             </label>
-                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.state">
+                            <select class="form-control emergency-state" ng-required="section_field.required" ng-model="section_field.value.state">
                               <option ng-repeat="state in stateOptions" value="{{ state.value }}">
                                 {{ state.display_name }}</option>
                             </select>
@@ -169,7 +189,7 @@
                             <label class="control-label">
                               Zipcode
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.zip">
+                            <input type="text" class="form-control emergency-zip" ng-required="section_field.required" ng-model="section_field.value.zip">
                           </div>
                         </div>
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
@@ -177,13 +197,13 @@
                             <label class="control-label">
                               Phone Number
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.home_phone">
+                            <input type="text" class="form-control emergency-home-phone" ng-required="section_field.required" ng-model="section_field.value.home_phone">
                           </div>
                           <div class="col-sm-6">
                             <label class="control-label">
                               Email Address
                             </label>
-                            <input type="email" class="form-control" ng-required="section_field.required" ng-model="section_field.value.email" name="employer_email">
+                            <input type="email" class="form-control emergency-email" ng-required="section_field.required" ng-model="section_field.value.email" name="employer_email">
                             <span class="text-danger" ng-if="nestedField.employer_email.$error.email">Please enter a valid email address</span>
                           </div>
                         </div>
@@ -192,19 +212,19 @@
                             <label class="control-label">
                               Occupation
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.occupation">
+                            <input type="text" class="form-control emergency-occupation" ng-required="section_field.required" ng-model="section_field.value.occupation">
                           </div>
                           <div class="col-sm-5">
                             <label class="control-label">
                               Employer
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.employer">
+                            <input type="text" class="form-control emergency-employer" ng-required="section_field.required" ng-model="section_field.value.employer">
                           </div>
                           <div class="col-sm-2">
                             <label class="control-label">
                               Work Phone
                             </label>
-                            <input type="text" class="form-control" ng-required="section_field.required" ng-model="section_field.value.work_phone">
+                            <input type="text" class="form-control emergency-work-phone" ng-required="section_field.required" ng-model="section_field.value.work_phone">
                           </div>
                         </div>
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
@@ -212,7 +232,7 @@
                             Employment Status
                           </label>
                           <div class="col-sm-5">
-                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.employment_status">
+                            <select class="form-control emergency-employment-status" ng-required="section_field.required" ng-model="section_field.value.employment_status">
                               <option value='employed'>Employed</option>
                               <option value='unemployed'>Unemployed</option>
                               <option value='retired'>Retired</option>
@@ -226,7 +246,7 @@
                         <div ng-if="section_field.field_type == 'emergency_contact'" class="form-group row">
                           <label class="col-sm-3 control-label">Is this person a Legal Guardian?</label>
                           <div class="col-sm-5">
-                            <select class="form-control" ng-required="section_field.required" ng-model="section_field.value.legal_guardian">
+                            <select class="form-control emergency-is-guardian" ng-required="section_field.required" ng-model="section_field.value.legal_guardian">
                               <option value='yes'>Yes</option>
                               <option value='no'>No</option>
                             </select>
@@ -266,13 +286,13 @@
           <strong>{{ error.field_label }}</strong>: <em class="text-danger">{{ error.error_msg }}</em>
         </p>
       </div>
-    <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid || submitSaveInProgress">
+    <button class="btn btn-success btn-lg" ng-click="submitApplication()" ng-disabled="applicationForm.$invalid || submitSaveInProgress" id="application-submit-button">
       <span ng-if="submitSaveInProgress">Submitting...</span>
       <span ng-if="!submitSaveInProgress">Submit Application</span>
     </button>
     </form>
   </div>
-  <div ng-if="applicationComplete">
+  <div ng-if="applicationComplete" id="app-complete-div">
     <button onclick="window.print()" class="hidden-print pull-right btn btn-lg btn-primary">
       <i class="fa fa-print"></i> Print
     </button>
