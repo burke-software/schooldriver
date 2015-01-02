@@ -7,6 +7,8 @@ install:
 - pip install -r dev-requirements.txt
 addons:
 - postgresql: "9.3"
+services:
+- redis-server
 before_script:
 - psql -c "CREATE DATABASE mydb;" -U postgres
 script: 
