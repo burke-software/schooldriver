@@ -13,9 +13,11 @@
 2. Start webDriver server: 
 
     `webdriver-manager start`
+
 3. Run the tests with protractor: 
 
     `protractor conf.js`
+    
 4. Optionally run a particular test suite: 
 
     `protractor conf.js --suite admissions`
