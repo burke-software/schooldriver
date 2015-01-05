@@ -529,6 +529,7 @@ if USE_S3:
     #DATABASES['default'] = dj_database_url.config()
 
 if MULTI_TENANT:
+    print('WHATTTTTTTTTTT')
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
     DATABASE_ROUTERS = ('tenant_schemas.routers.TenantSyncRouter',)
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
