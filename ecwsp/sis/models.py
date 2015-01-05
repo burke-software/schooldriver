@@ -304,6 +304,11 @@ def get_default_language():
         return LanguageChoice.objects.filter(default=True)[0]
 
 
+if settings.MIGRATIONS_DISABLED is True:
+    family_ref = 'auth.User'
+else:
+    family_ref = 'FamilyAccessUser'
+
 class Student(User, CustomFieldModel):
     mname = models.CharField(max_length=150, blank=True, null=True, verbose_name="Middle Name")
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
@@ -332,7 +337,11 @@ class Student(User, CustomFieldModel):
     parent_email = models.EmailField(blank=True, editable=False)
 
     family_preferred_language = models.ForeignKey(LanguageChoice, blank=True, null=True, default=get_default_language)
-    family_access_users = models.ManyToManyField('FamilyAccessUser', blank=True, related_name="+")
+    family_access_users = models.ManyToManyField(
+        family_ref,
+        blank=True,
+        related_name="+",
+    )
     alt_email = models.EmailField(blank=True, help_text="Alternative student email that is not their school email.")
     notes = models.TextField(blank=True)
     emergency_contacts = models.ManyToManyField(EmergencyContact, verbose_name="Student Contact", blank=True)
@@ -778,7 +787,7 @@ class FamilyAccessUser(User):
         proxy = True
         ordering = ("last_name", "first_name")
     def __unicode__(self):
-        return u"{0}, {1}".format(self.last_name, self.first_name)
+        return u"{0}".format(self.username)
     def save(self, *args, **kwargs):
         super(FamilyAccessUser, self).save(*args, **kwargs)
         self.groups.add(Group.objects.get_or_create(name='family')[0])

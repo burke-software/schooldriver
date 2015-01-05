@@ -427,8 +427,7 @@ TENANT_APPS = (
     'impersonate',
 ) + INSTALLED_APPS
 
-INSTALLED_APPS = SHARED_APPS + TENANT_APPS
-INSTALLED_APPS = list(set(INSTALLED_APPS))
+INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
 TENANT_MODEL = "customers.Client"
 
 if DEBUG_TOOLBAR == True:
@@ -531,8 +530,9 @@ if USE_S3:
 
 if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
+    DATABASE_ROUTERS = ('tenant_schemas.routers.TenantSyncRouter',)
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
-    INSTALLED_APPS = INSTALLED_APPS + ('tenant_schemas',)
+    INSTALLED_APPS = INSTALLED_APPS + ['tenant_schemas',]
 
 SOUTH_TESTS_MIGRATE = False
 
@@ -542,6 +542,7 @@ REST_FRAMEWORK = {
     'PAGINATE_BY_PARAM': 'page_size',
 }
 
+MIGRATIONS_DISABLED = False
 if 'TRAVIS' in os.environ:
     DATABASES = {
         'default': {
@@ -553,3 +554,12 @@ if 'TRAVIS' in os.environ:
             'PORT':     '',
         }
     }
+elif 'test' in sys.argv:
+    # Don't take fucking years to run a test
+    class DisableMigrations(object):
+        def __contains__(self, item):
+            return True
+        def __getitem__(self, item):
+            return "notmigrations"
+    MIGRATION_MODULES = DisableMigrations()
+    MIGRATIONS_DISABLED = True
