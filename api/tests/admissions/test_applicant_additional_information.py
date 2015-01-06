@@ -4,15 +4,16 @@ from ecwsp.admissions.models import Applicant
 from ecwsp.admissions.models import ApplicantCustomField
 
 
-class ApplicantAdditionalInformationAPIGetTest(APITest):
+class ApplicantAdditionalInformationAPIGetTest(APITest): 
+    sample_applicant = {
+            "fname" : "Timmy",
+            "lname" : "Student",
+            "sex" : "M",
+        }
 
     def test_single_create_additional_information(self):
         self.teacher_login()
-        applicant = {
-            "fname" : "Timmy",
-            "lname" : "Student",
-            "sex" : "M"
-        }
+        applicant = self.sample_applicant
         new_custom_field = ApplicantCustomField()
         new_custom_field.save()
         previous_count = ApplicantAdditionalInformation.objects.count()
@@ -28,18 +29,14 @@ class ApplicantAdditionalInformationAPIGetTest(APITest):
         new_count = ApplicantAdditionalInformation.objects.count()
         self.assertEqual(new_count, previous_count + 1)
 
-    def test_bulm_create_additional_information(self):
+    def test_bulk_create_additional_information(self):
         self.teacher_login()
-
-        applicant = {
-            "fname" : "Timmy",
-            "lname" : "Student",
-            "sex" : "M"
-        }
+        applicant = self.sample_applicant
         new_custom_field = ApplicantCustomField()
         new_custom_field.save()
         previous_count = ApplicantAdditionalInformation.objects.count()
         response = self.client.post('/api/applicant/', data = applicant)
+        print response
         applicant_id = response.data["id"]
         data = [
             {"applicant": applicant_id, "custom_field" : new_custom_field.id, "answer" : "world"},
