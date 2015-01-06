@@ -64,7 +64,7 @@ def supervisor_xls(request):
             stu_total = timesheets.filter(student__id__iexact=timesheet.student.id).aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
             data.append(["", "", "", "Total", "", "", stu_total['hours__sum'], stu_total['school_net__sum']])
             studenti = 0
-            
+
     report = XlReport(file_name="Company Billing")
     report.add_sheet(data, header_row=titles, title="Company Billing", heading="Company Billing")
     return report.as_download()
@@ -82,8 +82,10 @@ def student_timesheet(request):
             {'msg': "Student or Company does not exist. Please notify a system admin if you believe this is a mistake."},
             RequestContext(request, {}))
     try:
-        supervisor_name = this_student.primary_contact.fname + " " + this_student.primary_contact.lname
-    except:
+        supervisor_name = u'{} {}'.format(
+            this_student.primary_contact.fname,
+            this_student.primary_contact.lname)
+    except AttributeError:
         supervisor_name = "No Supervisor"
     if request.method == 'POST':
         form = TimeSheetForm(request.POST)
@@ -95,10 +97,10 @@ def student_timesheet(request):
                 this_student.primary_contact = form.cleaned_data['my_supervisor']
                 this_student.save()
                 LogEntry.objects.log_action(
-                    user_id         = request.user.pk, 
+                    user_id         = request.user.pk,
                     content_type_id = ContentType.objects.get_for_model(this_student).pk,
                     object_id       = this_student.pk,
-                    object_repr     = unicode(this_student), 
+                    object_repr     = unicode(this_student),
                     action_flag     = CHANGE,
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
@@ -133,12 +135,12 @@ def student_timesheet(request):
     form.fields['performance'].widget.attrs['disabled'] = 'disabled'
     # Should for_pay be an option?
     pay, created = Configuration.objects.get_or_create(name="Allow for pay")
-    if created: 
+    if created:
         pay.value = "True"
         pay.save()
     if pay.value != "True" and pay.value != "true":
         form.fields['for_pay'].widget = forms.HiddenInput()
-    
+
     return render_to_response('work_study/student_timesheet.html', {
         'student': True,
         'form': form,
@@ -157,9 +159,9 @@ def timesheet_delete(request):
             {'supervisor': True,'msg': "Link not valid. Was this timesheet already approved?"},
             RequestContext(request, {}))
     sheet.delete()
-    
+
     return supervisor_dash(request, "Deleted time card")
-        
+
 def approve(request):
     """ first check if key is valid, this replaces the need for login.
     """
@@ -201,7 +203,7 @@ def approve(request):
         form.set_supers(comp_contacts)
         return render_to_response('work_study/student_timesheet.html', {'supervisor': True, 'approved': sheet.approved, 'form': form, \
             'studentName': sheet.student, 'supervisorName': sheet.student.primary_contact,}, RequestContext(request, {}))
-    
+
 
 @user_passes_test(lambda u: u.groups.filter(name='company').first())
 def supervisor_dash(request, msg=""):
@@ -242,7 +244,7 @@ def supervisor_dash(request, msg=""):
         'timeSheets': time_sheets, 'timeSheetsApprovedForm': time_sheets_approved_form}, RequestContext(request, {}))
 
 
-        
+
 @user_passes_test(lambda u: u.groups.filter(name='company').first())
 def supervisor_view(request):
     """ ?
@@ -253,7 +255,7 @@ def supervisor_view(request):
         'work_study/supervisor_view.html',
         {'supervisor': True, 'timeSheets': time_sheets},
         RequestContext(request, {}))
-    
+
 @user_passes_test(lambda u: u.groups.filter(name='students').first())
 def student_view(request):
     """ Student "dashboard"
@@ -270,7 +272,7 @@ def student_view(request):
         'work_study/student_view.html',
         {'timeSheets': time_sheets, 'student': this_student},
         RequestContext(request, {}))
-    
+
 @user_passes_test(lambda u: u.groups.filter(name='students').first())
 def student_edit(request, tsid):
     """ Student edits own timesheet
@@ -294,10 +296,10 @@ def student_edit(request, tsid):
                 thisStudent.primary_contact = form.cleaned_data['my_supervisor']
                 thisStudent.save()
                 LogEntry.objects.log_action(
-                    user_id         = request.user.pk, 
+                    user_id         = request.user.pk,
                     content_type_id = ContentType.objects.get_for_model(thisStudent).pk,
                     object_id       = thisStudent.pk,
-                    object_repr     = unicode(thisStudent), 
+                    object_repr     = unicode(thisStudent),
                     action_flag     = CHANGE,
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
@@ -311,7 +313,7 @@ def student_edit(request, tsid):
             access.save()
             return render_to_response('base.html', {'student': True, 'msg': "Timesheet has be successfully updated, no additional notification sent."}, RequestContext(request, {}))
         else:
-            return render_to_response('work_study/student_timesheet.html', {'student': True, 'form': form, 
+            return render_to_response('work_study/student_timesheet.html', {'student': True, 'form': form,
                 'studentName': thisStudent, 'supervisorName': supervisorName,}, RequestContext(request, {}))
     else:
         if thisStudent.primary_contact: initial_primary = thisStudent.primary_contact.id
@@ -335,10 +337,10 @@ def create_time_card(request, studentId):
                     thisStudent.primary_contact = form.cleaned_data['my_supervisor']
                     thisStudent.save()
                     LogEntry.objects.log_action(
-                        user_id         = request.user.pk, 
+                        user_id         = request.user.pk,
                         content_type_id = ContentType.objects.get_for_model(thisStudent).pk,
                         object_id       = thisStudent.pk,
-                        object_repr     = unicode(thisStudent), 
+                        object_repr     = unicode(thisStudent),
                         action_flag     = CHANGE,
                         change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                     )
@@ -360,12 +362,12 @@ def create_time_card(request, studentId):
                 return render_to_response('work_study/student_timesheet.html', {'supervisor': True,'new': True, 'form': form, 'studentName':\
                     thisStudent, 'supervisorName': supervisorName,}, RequestContext(request, {}))
         else:
-            # if student 
+            # if student
             if hasattr(thisStudent,"primary_contact") and thisStudent.primary_contact:
                 supervisorName = thisStudent.primary_contact.fname + " " + thisStudent.primary_contact.lname
             else:
                 supervisorName = comp.team_name
-            
+
             # check if student already submitted time sheet today
             sheet = TimeSheet.objects.filter(student=thisStudent, date=datetime.now(), approved=False)
             if sheet:
@@ -374,7 +376,7 @@ def create_time_card(request, studentId):
             else:
                 warning = False
                 key = None
-            
+
             if thisStudent.primary_contact: initial_primary = thisStudent.primary_contact.id
             else: initial_primary = None
             form = TimeSheetForm(initial={'student':thisStudent.id, 'company':thisStudent.placement.id, 'my_supervisor':initial_primary,
@@ -390,7 +392,7 @@ def contracts_report():
     submitted contracts """
     data = []
     titles = ["Company", "Contract?", "Date of last contract"]
-    
+
     # companies with at least one active student
     companies = Company.objects.distinct()
     for company in companies:
@@ -401,13 +403,13 @@ def contracts_report():
             contract = "No"
             last = ""
         data.append([company.name, contract, last])
-    
+
     report = XlReport(file_name="contract_report")
     report.add_sheet(data, header_row=titles, title="Contract Report", heading="Contract Report")
     return report.as_download()
-    
-    
-@user_passes_test(lambda u: u.groups.filter(name='company').first() or u.is_superuser)    
+
+
+@user_passes_test(lambda u: u.groups.filter(name='company').first() or u.is_superuser)
 def change_supervisor(request, studentId):
     thisStudent = StudentWorker.objects.get(id = studentId)
     try:
@@ -421,10 +423,10 @@ def change_supervisor(request, studentId):
                 if form.is_valid():
                     thisStudent = form.save()
                     LogEntry.objects.log_action(
-                        user_id         = request.user.pk, 
+                        user_id         = request.user.pk,
                         content_type_id = ContentType.objects.get_for_model(thisStudent).pk,
                         object_id       = thisStudent.pk,
-                        object_repr     = unicode(thisStudent), 
+                        object_repr     = unicode(thisStudent),
                         action_flag     = CHANGE,
                         change_message  = "Changed supervisor to " + unicode(thisStudent.primary_contact)
                     )
@@ -452,7 +454,7 @@ def change_supervisor(request, studentId):
                     return render_to_response('work_study/supervisor_edit.html', {'company': comp, 'student': thisStudent, 'form': form, 'supervisor':True}, RequestContext(request, {}))
             elif 'add' in request.POST:
                 form = AddSupervisor()
-                return render_to_response('work_study/supervisor_add.html', {'company': comp, 'student': thisStudent, 'form': form, 'supervisor':True}, RequestContext(request, {}))             
+                return render_to_response('work_study/supervisor_add.html', {'company': comp, 'student': thisStudent, 'form': form, 'supervisor':True}, RequestContext(request, {}))
             # save data from adding supervisor
             elif 'add_complete' in request.POST:
                 form = AddSupervisor(request.POST)
@@ -463,10 +465,10 @@ def change_supervisor(request, studentId):
                     thisStudent.primary_contact = cont
                     thisStudent.save()
                     LogEntry.objects.log_action(
-                        user_id         = request.user.pk, 
+                        user_id         = request.user.pk,
                         content_type_id = ContentType.objects.get_for_model(thisStudent).pk,
                         object_id       = thisStudent.pk,
-                        object_repr     = unicode(thisStudent), 
+                        object_repr     = unicode(thisStudent),
                         action_flag     = CHANGE,
                         change_message  = "Changed supervisor to " + unicode(thisStudent.primary_contact)
                     )
@@ -500,7 +502,7 @@ def report_builder_view(request):
             return gen_attendance_report_day('TH')
         elif 'attnFriday' in request.POST:
             return gen_attendance_report_day('F')
-            
+
         elif 'attnPMonday' in request.POST:
             return gen_attendance_report_day('M', is_pickup=True)
         elif 'attnPTuesday' in request.POST:
@@ -511,7 +513,7 @@ def report_builder_view(request):
             return gen_attendance_report_day('TH', is_pickup=True)
         elif 'attnPFriday' in request.POST:
             return gen_attendance_report_day('F', is_pickup=True)
-        
+
         elif 'pod_report' in request.POST:
             template_form = ReportTemplateForm(request.POST, request.FILES)
             if template_form.is_valid():
@@ -522,7 +524,7 @@ def report_builder_view(request):
                     report.data['workteams'] = WorkTeam.objects.all()
                     report.data['students'] = students
                     report.filename = 'Work Study Report'
-                    return report.pod_save(template)  
+                    return report.pod_save(template)
         else:
             form = ReportBuilderForm(request.POST)
             if form.is_valid():
@@ -559,10 +561,10 @@ def report_builder_view(request):
                         if at.billed: billed = "Yes"
                         else: billed = "No"
                         data.append([at.absence_date, at.student.first_name, at.student.last_name, at.student.year, half, at.reason, makeup, at.fee, billed])
-                    
+
                     report = XlReport(file_name="attendance_report")
                     report.add_sheet(data, header_row=titles, title="Total")
-                    
+
                     # waived
                     waivers = attend.filter(waive=True)
                     data = []
@@ -572,7 +574,7 @@ def report_builder_view(request):
                         else: half = "1"
                         data.append([at.absence_date, at.student.first_name, at.student.last_name, at.student.placement, at.student.year, half, at.reason, at.fee])
                     report.add_sheet(data, header_row=titles, title="Waived")
-                    
+
                     # pending meaning no makeup date and not waived
                     pend = attend.filter(makeup_date=None).filter(waive=None).order_by('billed')
                     data = []
@@ -586,7 +588,7 @@ def report_builder_view(request):
                         else: billed = "No"
                         data.append([at.absence_date, at.student.first_name, at.student.last_name, at.student.placement, at.student.year, half, at.reason, at.student.get_day_display(), makeup, at.fee, billed])
                     report.add_sheet(data, header_row=titles, title="Pending")
-                    
+
                     # scheduled
                     sced = attend.filter(~Q(makeup_date=None)).filter(waive=None)
                     data = []
@@ -598,7 +600,7 @@ def report_builder_view(request):
                         else: makeup = at.makeup_date
                         data.append([at.absence_date, at.student.first_name, at.student.last_name, at.student.placement, at.student.primary_contact, at.student.year, half, at.reason, makeup, at.fee])
                     report.add_sheet(data, header_row=titles, title="Scheduled")
-                    
+
                     # outstanding bills, sum of student's fee - paid
                     bills = attend.filter(billed=None)
                     summary = bills.values('student').annotate(Sum('fee__value'), Sum('paid')).values('student__first_name', 'student__last_name', 'fee__value__sum', 'paid__sum')
@@ -609,10 +611,10 @@ def report_builder_view(request):
                             if at['fee__value__sum'] and at['paid__sum']:
                                 total_owes = at['fee__value__sum'] - at['paid__sum']
                             data.append([at['student__first_name'], at['student__last_name'], at['fee__value__sum'], at['paid__sum'], total_owes])
-                        
+
                     titles = ["Fname", "Lname", "Total Fee", "Total Paid", "Total owes school (does not include students who were already billed)"]
                     report.add_sheet(data, header_row=titles, title="Bill Summary")
-                    
+
                     timesheets = TimeSheet.objects.filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end']))
                     data = []
                     titles = ["Date", "First Name", "Last", "Grade", "WorkTeam", "Hours", "School Net Pay", "Student Net Pay"]
@@ -620,8 +622,8 @@ def report_builder_view(request):
                         data.append([ts.date, ts.student.first_name, ts.student.last_name, ts.student.year, ts.company, ts.hours, ts.school_net, ts.student_net])
                     report.add_sheet(data, header_row=titles, title="TimeSheets")
                     return report.as_download()
-                
-                # All students and the the number of timesheets submitted for some time period    
+
+                # All students and the the number of timesheets submitted for some time period
                 elif 'student_timesheet' in request.POST:
                     data = []
                     titles = ["Student", "Work Day", "Placement", "Number of work study Presents", "Number of time sheets submitted", "Dates"]
@@ -636,7 +638,7 @@ def report_builder_view(request):
                     report = XlReport(file_name="Student_timesheets")
                     report.add_sheet(data, header_row=titles, title="Student Timesheets")
                     return report.as_download()
-                        
+
                 # billing report for time worked for own pay.
                 elif 'billing' in request.POST:
                     timesheets = TimeSheet.objects.filter(Q(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])) & \
@@ -683,7 +685,7 @@ def report_builder_view(request):
                     data.append(["Totals:", "", "", "", "", total_hours, total_student_salary, total_company_bill])
                     report = XlReport(file_name="Billing_Report")
                     report.add_sheet(data, header_row=titles, title="Detailed Hours")
-                    
+
                     ### WorkTeam Summary
                     data = []
                     comp_totals = timesheets.values('company').annotate(Count('student', distinct=True), Sum('hours'), Avg('hours'), Sum('student_net'), \
@@ -692,17 +694,17 @@ def report_builder_view(request):
                         data.append([c['company__company__name'], c['company__team_name'], c['student__count'], c['hours__sum'], c['hours__avg'], c['student_net__sum'], c['school_net__sum']])
                     titles = ["Company", "WorkTeam", "Workers Hired", "Hours Worked", "Avg Hours per Student", "Gross Amount Paid to Students", "Amount Billed to Company"]
                     report.add_sheet(data, header_row=titles, title="Work Team Summary")
-                    
+
                     ### Company Summary
                     data = []
                     comp_totals = timesheets.values('company__company__id').annotate(Count('student', distinct=True), Sum('hours'), Avg('hours'), Sum('student_net'), \
                             Sum('school_net')).values('company__company__name', 'student__count', 'hours__sum', 'hours__avg', 'student_net__sum', 'school_net__sum').order_by('company__company')
-                    
+
                     for c in comp_totals:
                         data.append([c['company__company__name'], c['student__count'], c['hours__sum'], c['hours__avg'], c['student_net__sum'], c['school_net__sum']])
                     titles = ["Company", "Workers Hired", "Hours Worked", "Avg Hours per Student", "Gross Amount Paid to Students", "Amount Billed to Company"]
                     report.add_sheet(data, header_row=titles, title="Company Summary")
-                    
+
                     ### Payroll (ADP #s)
                     data = []
                     students = StudentWorker.objects.filter(timesheet__in=timesheets)
@@ -711,7 +713,7 @@ def report_builder_view(request):
                         data.append([student.unique_id, student.first_name, student.last_name, student.adp_number, ts['hours__sum'], ts['student_net__sum']])
                     titles = ['Unique ID', 'First Name', 'Last Name', 'ADP #', 'Hours Worked', 'Gross Pay']
                     report.add_sheet(data, header_row=titles, title="Payroll (ADP #s)")
-                    
+
                     ### Student info wo ADP#
                     data = []
                     for student in students:
@@ -721,9 +723,9 @@ def report_builder_view(request):
                                 student.city, student.state, student.zip, student.ssn, ts['student_net__sum']])
                     titles = ['lname', 'fname', 'parent', 'address', 'city', 'state', 'zip', 'ss', 'pay']
                     report.add_sheet(data, header_row=titles, title="Student info wo ADP #")
-                    
+
                     return report.as_download()
-    
+
                 elif 'all_timesheets' in request.POST:
                     timesheets = TimeSheet.objects.filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])).order_by('student', 'date')
                     data = []
@@ -739,7 +741,7 @@ def report_builder_view(request):
                     report = XlReport(file_name="timesheets")
                     report.add_sheet(data, header_row=titles, title="timesheets")
                     return report.as_download()
-                    
+
                 # master contact list
                 elif 'master' in request.POST:
                     workers = (StudentWorker.objects.all()).exclude(is_active=False)
@@ -770,9 +772,9 @@ def report_builder_view(request):
                             supPhone = " "
                             supCell = " "
                             supEmail =" "
-                        
+
                         data.append([worker.first_name, worker.last_name, worker.mname, worker.year, worker.day, supFname,\
-                            supLname,supPhone, supCell,supEmail,number,eFname,eLname,eHome,eCell,eWork])   
+                            supLname,supPhone, supCell,supEmail,number,eFname,eLname,eHome,eCell,eWork])
                     titles = ['First Name', 'Last Name', 'Middle Name','Year', 'Work Day', 'Supervisor First Name', 'Supervisor Last Name', 'Supervisor Phone', \
                         'Supervisor Cell', 'Supervisor Email', 'Student Cell', 'Parent First Name', 'Parent Last Name', 'Parent Home', 'Parent Cell', 'Parent Work']
                     report = XlReport(file_name="StudentMasterContactList")
@@ -783,7 +785,7 @@ def report_builder_view(request):
     return render_to_response('work_study/reportBuilder.html', {'form': form,'request':request, 'template_form': template_form}, RequestContext(request, {}))
 
 
-@permission_required('discipline.change_clientvisit')   
+@permission_required('discipline.change_clientvisit')
 def dol_form(request, id=None):
     supervisors_text = ""
     if id:
@@ -813,11 +815,11 @@ def dol_form(request, id=None):
         else:
             form = DolForm()
         return render_to_response('work_study/DOL.html', {'form': form, 'supervisors':supervisors_text, 'request':request}, RequestContext(request, {}))
-   
+
 def dol_xls_report(begin_date, end_date,):
     data = []
     titles = ["Work Team", "CRA", "Total visits", "DOL visits (in specified dates)", "Visit in active year?", "Last visited"]
-    
+
     teams = WorkTeam.objects.all().annotate(Count('clientvisit'))
     for team in teams:
         if team.is_active():
@@ -827,14 +829,14 @@ def dol_xls_report(begin_date, end_date,):
                 dols = dols.filter(date__range=(begin_date, end_date))
             if dols.count() > 0:
                 if dols[0].date > SchoolYear.objects.get(active_year=True).start_date:
-                    dol_this_year = "Yes" 
-                else: 
+                    dol_this_year = "Yes"
+                else:
                     dol_this_year = "No"
                 dol_last = unicode(dols[0].date)
             else:
                 dol_this_year = "No"
             data.append([team.team_name, team.cra, team.clientvisit__count, dols.count(), dol_this_year, dol_last])
-    
+
     report = XlReport(file_name="Client_visit_report")
     report.add_sheet(data, header_row=titles, title="Client Visit Report")
     return report.as_download()
@@ -845,7 +847,7 @@ def student_meeting(request):
         start_date = SchoolYear.objects.get(active_year=True).start_date
     except: start_date = None
     meetings = []
-    
+
     for student in StudentWorker.objects.filter(is_active=True):
         meeting = struct()
         meeting.student = student
@@ -859,13 +861,13 @@ def student_meeting(request):
                     meeting.met = "No"
             except:
                 meeting.met = "Error"
-        
+
         meetings.append(meeting)
     return render_to_response('work_study/student_meeting.html', {'request': request, 'meetings': meetings}, RequestContext(request, {}))
 
 def company_contract1(request, id):
     company = get_object_or_404(Company, pk=id)
-    
+
     if request.method == 'POST':
         form = CompanyContactForm1(request.POST)
         if form.is_valid():
@@ -874,15 +876,15 @@ def company_contract1(request, id):
     else:
         form = CompanyContactForm1(initial={'company':company})
     return render_to_response('work_study/company_contract1.html', {'request': request, 'form':form, 'company':company}, RequestContext(request, {}))
-    
+
 def company_contract2(request, id):
     contract = CompContract.objects.get(id=id)
     company = contract.company
     payment_options = PaymentOption.objects.all()
-    
+
     for option in payment_options:
         option.cost = option.get_cost(contract.number_students)
-    
+
     if request.method == 'POST':
         form = CompanyContactForm2(request.POST, instance=contract)
         if form.is_valid():
@@ -892,12 +894,12 @@ def company_contract2(request, id):
     else:
         form = CompanyContactForm2()
     return render_to_response('work_study/company_contract2.html', {'request': request, 'form':form, 'company':company, 'payment_options':payment_options}, RequestContext(request, {}))
-    
+
 def company_contract3(request, id):
     contract = CompContract.objects.get(id=id)
     company = contract.company
     contact_info = Configuration.objects.get_or_create(name="Work Study Contract Number")[0].value
-    
+
     if request.method == 'POST':
         form = CompanyContactForm3(request.POST)
         if form.is_valid():
@@ -916,7 +918,7 @@ def company_contract3(request, id):
         'company':company,
         'contract':contract,
     }, RequestContext(request, {}))
-    
+
 def company_contract_complete(request, id):
     contract = CompContract.objects.get(id=id)
     company = contract.company
@@ -924,7 +926,7 @@ def company_contract_complete(request, id):
     if email:
         try:
             message = Configuration.get_or_default(
-                name="work_study_contract_complete_email_message", 
+                name="work_study_contract_complete_email_message",
                 default='Thank you for agreeing to hire Cristo Rey students.',
             ).value
             mail = EmailMessage(
@@ -944,23 +946,23 @@ def company_contract_complete(request, id):
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             logging.warning(
-                'Could not send email for a contract', 
+                'Could not send email for a contract',
                 exc_info=True,
                 extra={'request': request,'exception':exc_type,'traceback':'%s %s' % (fname,exc_tb.tb_lineno)}
             )
-    
+
     return render_to_response('work_study/company_contract_complete.html', {'request': request, 'company':company, 'contract':contract}, RequestContext(request, {}))
-    
+
 def company_contract_pdf(request, id):
     contract = CompContract.objects.get(id=id)
-    
+
      # Check if using IE
     if re.search('MSIE', request.META['HTTP_USER_AGENT']):
         return contract.get_contract_as_pdf(ie=True)
     else:
         return contract.get_contract_as_pdf()
-        
-        
+
+
 def fte_chart(request):
     workteams = WorkTeam.objects.filter(inactive=False,studentworker__isnull=False).exclude(industry_type="").annotate(no_students=Count('studentworker')).order_by('industry_type','company__name')
     fte_chart = {}
@@ -968,19 +970,19 @@ def fte_chart(request):
     for workteam in workteams:
         ftes = fte_chart.get(workteam.industry_type, 0.0)
         fte_chart[workteam.industry_type] = ftes + (workteam.no_students / float(fte_per_student))
-    
+
     # Now order it
     import operator
     fte_chart = sorted(fte_chart.iteritems(), key=operator.itemgetter(1))
     fte_chart.reverse()
-    
+
     # need the row to create anchors for a clickable chart
     row_index = {}
     i = 0
     for industry, fte in fte_chart:
         row_index[industry] = i
         i += 1
-    
+
     workteams_by_industry = []
     workteams_in_industry = None
     last_industry = None
@@ -992,8 +994,8 @@ def fte_chart(request):
             workteams_in_industry = []
         if workteam.company not in workteams_in_industry:
             workteams_in_industry += [workteam.company]
-    
-    
+
+
     return render_to_response(
         'work_study/fte_chart.html',
         {'request': request,'fte_chart': fte_chart, 'workteams_by_industry':workteams_by_industry,'embed': 'embed' in request.GET},
@@ -1021,7 +1023,7 @@ def take_attendance(request, work_day=None):
     students = StudentWorker.objects.filter(day=work_day, is_active=True)
     extra = students.count() - students.filter(attendance__absence_date=today).count()
     AttendanceFormSet = modelformset_factory(Attendance, form=QuickAttendanceForm, extra=extra)
-    
+
     if request.POST:
         formset = AttendanceFormSet(request.POST)
         if formset.is_valid():
@@ -1035,7 +1037,7 @@ def take_attendance(request, work_day=None):
             initial_data += [{'student': student}]
         formset = AttendanceFormSet(queryset=existing_attendance,initial=initial_data)
     i = 0
-    
+
     return render_to_response(
         'work_study/take_attendance.html',
         {'request': request, 'work_day': work_day, 'formset': formset, 'date': today},
