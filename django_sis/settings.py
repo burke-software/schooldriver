@@ -428,8 +428,8 @@ TENANT_APPS = (
 INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
 TENANT_MODEL = "customers.Client"
 INSTALLED_APPS = [
-    'constance.backends.database',
     'constance',
+    'constance.backends.database',
 ] + INSTALLED_APPS
 
 if DEBUG_TOOLBAR == True:

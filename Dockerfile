@@ -2,9 +2,11 @@ FROM ubuntu:12.04
 ENV PYTHONUNBUFFERED 1
 
 # Basics
-RUN apt-get update -qq && apt-get install -y python-psycopg2 libldap2-dev libsasl2-dev libpq-dev postgresql-client git-core python-pip python-dev g++ libjpeg-dev 
+RUN apt-get update -qq && apt-get install -y postgresql-client git-core libldap2-dev libsasl2-dev
 # Libreoffice
-RUN apt-get install -y libreoffice-base-core libreoffice-calc libreoffice-common libreoffice-core libreoffice-emailmerge libreoffice-math libreoffice-style-human libreoffice-writer python-uno
+RUN apt-get install -y libreoffice-base-core libreoffice-calc libreoffice-common libreoffice-core libreoffice-math libreoffice-writer python-uno
+# Probably can remove this if we use the docker python image and py3
+RUN apt-get install -y python-pip python-dev libpq-dev libjpeg-dev g++
 # Supervisor for libreoffice
 RUN apt-get install -y supervisor
 
@@ -14,8 +16,9 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 RUN mkdir /code
 WORKDIR /code
-ADD requirements.txt /code/
+ADD core-requirements.txt /code/
+RUN pip install -r core-requirements.txt
 ADD dev-requirements.txt /code/
-RUN pip install -r requirements.txt
 RUN pip install -r dev-requirements.txt
-ADD . /code/
+ADD requirements.txt /code/
+RUN pip install -r requirements.txt
