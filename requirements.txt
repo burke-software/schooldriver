@@ -15,7 +15,7 @@ django-autocomplete-light==2.0.3
 django-bower==5.0.1
 django-cached-field==1.2.8
 django-celery==3.1.16
-django-ckeditor-updated==4.4.4
+django-ckeditor==4.4.7
 django-compressor==1.4
 django-constance-updated==0.6.1
 django-custom-field==2.2

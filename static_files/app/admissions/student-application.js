@@ -89,6 +89,9 @@ app.controller('StudentApplicationController', ['$scope', '$http', '$rootScope',
                 var custom_field = $scope.getApplicationFieldById(section_field.id);
                 custom_field.choices = $scope.getApplicationFieldChoices(section_field.id);
                 custom_field.field_type = $scope.getCorrectFieldType(custom_field);
+                if ( !custom_field.field_name ) {
+                    custom_field.field_name = "custom_field_" + custom_field.id;
+                }
                 section.fields[field_id] = custom_field;
             }
         }
