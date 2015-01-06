@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('sis', '0002_percoursesectioncohort'),
+        ('database', '0001_initial')
     ]
 
     operations = [

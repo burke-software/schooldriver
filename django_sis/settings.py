@@ -364,8 +364,8 @@ DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 SHARED_APPS = ()
 
 SHARED_APPS = SHARED_APPS + (
-    'constance',
-    'constance.backends.database',
+    #'constance',
+    #'constance.backends.database',
     'ecwsp.customers',
     'ecwsp.administration',
     'djcelery',
@@ -378,10 +378,11 @@ SHARED_APPS = SHARED_APPS + (
     'django.contrib.sessions',
 )
 TENANT_APPS = (
+    #'constance',
+    #'constance.backends.database',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.admin',
-    'constance.backends.database',
     'autocomplete_light',
     'social.apps.django_app.default',
     'ldap_groups',
@@ -422,13 +423,15 @@ TENANT_APPS = (
     'rest_framework_bulk',
     'api',
     'compressor',
-    'constance',
-    'constance.backends.database',
     'impersonate',
 ) + INSTALLED_APPS
 
 INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
 TENANT_MODEL = "customers.Client"
+INSTALLED_APPS = [
+    'constance.backends.database',
+    'constance',
+] + INSTALLED_APPS
 
 if DEBUG_TOOLBAR == True:
     INSTALLED_APPS += ('debug_toolbar',)
@@ -529,7 +532,6 @@ if USE_S3:
     #DATABASES['default'] = dj_database_url.config()
 
 if MULTI_TENANT:
-    print('WHATTTTTTTTTTT')
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
     DATABASE_ROUTERS = ('tenant_schemas.routers.TenantSyncRouter',)
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES

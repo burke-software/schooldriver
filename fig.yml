@@ -7,8 +7,9 @@ web:
   command: ./run.sh
   volumes:
     - .:/code
-    - ../django-report-builder/report_builder:/usr/local/lib/python2.7/dist-packages/report_builder
+    #- ../django-report-builder/report_builder:/usr/local/lib/python2.7/dist-packages/report_builder
     #- ../django-report-utils/report_utils:/usr/local/lib/python2.7/dist-packages/report_utils
+    #- ../django-constance/constance:/usr/local/lib/python2.7/dist-packages/constance
   ports:
     - "8000:8000"
     - "5555:5555"
