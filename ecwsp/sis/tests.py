@@ -100,11 +100,3 @@ class AttendanceTest(SisTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
         #should test if attendance can be submitted
-
-    def test_grade(self):
-        """
-        Testing that GPA actually calculates
-        """
-        self.build_grade_cache()
-        gpa = self.data.student.gpa.quantize(Decimal('0.01'))
-        self.failUnlessEqual(gpa, Decimal('69.55'))
