@@ -3,7 +3,6 @@ from ecwsp.sis.models import *
 from ecwsp.attendance.models import *
 from ecwsp.grades.models import *
 from ecwsp.schedule.models import *
-from ecwsp.grades.tasks import *
 
 import random
 import string
@@ -118,21 +117,20 @@ class SisData(object):
         self.course_enrollment = CourseEnrollment.objects.all().first()
 
         grade_data = [
-            { 'student' : self.student2, 'section' : self.course_section2, 'mp' : self.marking_period, 'grade' : 75 },
             { 'student' : self.student2, 'section' : self.course_section, 'mp' : self.marking_period2, 'grade' : 100 },
-            { 'student' : self.student3, 'section' : self.course_section, 'mp' : self.marking_period2, 'grade' : 88 },
         ]
         for x in grade_data:
+            print x
+            enrollment = CourseEnrollment.objects.get(
+                user=x['student'], course_section=x['section'])
             grade_object, created = Grade.objects.get_or_create(
-                student = x['student'],
-                course_section = x['section'],
+                enrollment = enrollment,
                 marking_period = x['mp']
                 )
             grade_object.grade = x['grade']
             grade_object.save()
 
         self.grade = Grade.objects.all().first()
-        build_grade_cache()
 
     def create_100_courses(self):
         for i in xrange(100):

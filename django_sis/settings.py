@@ -481,7 +481,8 @@ CONSTANCE_CONFIG = {
     'APPLICANT_EMAIL_ALERT' : (False, "Send email alert on applicant submission"),
     'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('',
         "Email addresses to send alert to; only one email address per line"),
-    'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail")
+    'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail"),
+    'GRADE_COMMEND_LENGTH_LIMIT': (250, "Character limit on grade comments"),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

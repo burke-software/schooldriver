@@ -1,6 +1,7 @@
 from django.core.validators import MaxLengthValidator
 from django.db import models
 from constance import config
+import numpy as np
 
 
 class GradeComment(models.Model):
@@ -32,10 +33,7 @@ class LetterGradeChoices(models.Model):
         return self.letter
 
 
-class Grade(models.Model):
-    enrollment = models.ForeignKey('schedule.CourseEnrollment')
-    marking_period = models.ForeignKey(
-        'schedule.MarkingPeriod', blank=True, null=True)
+class CommonGrade(models.Model):
     date_created = models.DateField(auto_now_add=True)
     date_modified = models.DateField(auto_now=True)
     grade = models.DecimalField(
@@ -45,11 +43,33 @@ class Grade(models.Model):
     letter_grade = models.ForeignKey(LetterGradeChoices, blank=True, null=True)
 
     class Meta:
+        abstract = True
+
+    def __unicode__(self):
+        return str(self.grade)
+
+
+class Grade(CommonGrade):
+    enrollment = models.ForeignKey('schedule.CourseEnrollment')
+    marking_period = models.ForeignKey(
+        'schedule.MarkingPeriod', blank=True, null=True)
+
+    class Meta:
         unique_together = (("enrollment", "marking_period"),)
         permissions = (
             ("change_own_grade", "Change grades for own class"),
             ('change_own_final_grade', 'Change final YTD grades for own class'),
         )
 
-    def __unicode__(self):
-        return self.grade
+    def set_grade(self, grade):
+        self.grade = grade
+
+    @staticmethod
+    def get_course_grade(enrollment):
+        grades = enrollment.grade_set.all().values_list('grade', flat=True)
+        np_grades = np.array(grades, dtype=np.dtype(float))
+        return np.average(np_grades)
+
+
+class FinalGrade(CommonGrade):
+    enrollment = models.ForeignKey('schedule.CourseEnrollment', unique=True)
