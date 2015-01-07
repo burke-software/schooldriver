@@ -270,7 +270,7 @@ class Grade(models.Model):
     grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     override_final = models.BooleanField(default=False, help_text="Override final grade for marking period instead of calculating it.")
     comment = models.CharField(max_length=500, blank=True, validators=[grade_comment_length_validator])
-    letter_grade = models.CharField(max_length=2, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
+    letter_grade = models.CharField(max_length=10, blank=True, null=True, help_text="Will override grade.", choices=letter_grade_choices)
     letter_grade_choices = letter_grade_choices
 
     class Meta:
@@ -284,17 +284,19 @@ class Grade(models.Model):
         """ Returns full spelled out grade such as Fail, Pass, 60.05, B"""
         return self.get_grade(display=True)
 
-    def set_grade(self, grade):
-        """ set grade to decimal or letter
-            if grade is less than 1 assume it's a percentage
-            returns success (True or False)"""
+    def set_grade(self, grade, letter_grade=None, treat_as_percent=True):
+        """ Set grade to decimal or letter
+        If grade is less than 1 assume it's a percentage
+        letter_grade: If specified it will allow both numeric and letter
+        grades to be saved
+        returns success (True or False)"""
         try:
             grade = Decimal(str(grade))
-            if grade < 1:
+            if treat_as_percent is True and grade < 1:
                 # assume grade is a percentage
                 grade = grade * 100
             self.grade = grade
-            self.letter_grade = None
+            self.letter_grade = letter_grade
             return True
         except decimal.InvalidOperation:
             grade = unicode.upper(unicode(grade)).strip()
