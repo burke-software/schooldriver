@@ -32,19 +32,17 @@ class CourseView(TemplateView):
     # TODO: figure out if this is really for Course or should be CourseSection
     model = Course
     template_name = 'schedule/course.html'
-    
+
     @method_decorator(staff_member_required)
     def dispatch(self, *args, **kwargs):
         return super(CourseView, self).dispatch(*args, **kwargs)
-    
+
     def get_context_data(self, **kwargs):
         context = super(CourseView, self).get_context_data(**kwargs)
         return context
 
-    return render_to_response('schedule/schedule.html', {'request': request, 'years': years, 'mps': mps, 'periods': periods, 'courses': courses})
 
-
-@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser)   
+@user_passes_test(lambda u: u.groups.filter(name='faculty').count() > 0 or u.is_superuser)
 def schedule_enroll(request, id):
     course = get_object_or_404(CourseSection, pk=id)
     if request.method == 'POST':
