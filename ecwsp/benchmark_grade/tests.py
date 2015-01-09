@@ -4,8 +4,9 @@ from ecwsp.schedule.models import (
     Department, DepartmentGraduationCredits)
 from .models import *
 from .sample_data import BenchmarkSisData
+import unittest
 
-
+@unittest.skip("This is going to be deprecated soon...")
 class GradeCalculationTests(SisTestMixin, TestCase):
     def setUp(self):
         self.data = BenchmarkSisData()
