@@ -333,9 +333,9 @@ class SisData(object):
             section = CourseSection.objects.get(name=grd['section'])
             for i in range(6):
                 grade = Grade.objects.get(
-                    student=self.honors_student,
-                    course_section_id=section.id,
-                    marking_period=marking_periods[i]
+                    student = student,
+                    course_section_id = section.id,
+                    marking_period = marking_periods[i]
                     )
                 grade.grade = grd['grades'][i]
                 grade.save()
