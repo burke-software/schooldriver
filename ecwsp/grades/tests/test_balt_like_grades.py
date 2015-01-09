@@ -146,7 +146,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         test_data = [
             [self.data.mp1, Decimal(2.0)],
             [self.data.mp2, Decimal(2.4)],
-            [self.data.mp3, Decimal(1.9)],
+            [self.data.mp3, Decimal(1.8)],
             [self.data.mp4, Decimal(2.8)],
         ]
         for x in test_data:
