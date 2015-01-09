@@ -17,8 +17,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
     def populate_database(self):
         """ Override, not using traditional test data """
         self.data = SisData()
-        self.data.create_grade_scale_data()
-        self.data.create_sample_honors_and_ap_data()
+        self.data.create_balt_like_sample_data()
         self.build_grade_cache()
 
     def test_grade_get_grade(self):
