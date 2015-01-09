@@ -1,9 +1,6 @@
-from ecwsp.sis.models import *
 from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
-from .models import *
 from ecwsp.sis.sample_data import SisData
-from ecwsp.sis.sample_tc_data import SampleTCData
 from ecwsp.schedule.models import (
     CourseEnrollment, Course, CourseSection, MarkingPeriod)
 import datetime
@@ -165,9 +162,16 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """ Really just a normal run of the mill Marking Period grade
         Balt uses s1x, s2x as tests that affect final grades
         """
-        grade = Grade.objects.get(marking_period=self.data.mps1x, course_section=self.data.course_section1)
+        grade = Grade.objects.get(
+            student = self.data.student,
+            marking_period = self.data.mps1x, 
+            course_section = self.data.course_section1
+            )
         self.assertEqual(grade.get_grade(), 90)
-        grade = Grade.objects.get(marking_period=self.data.mps2x, course_section=self.data.course_section1)
+        grade = Grade.objects.get(
+            student = self.data.student,
+            marking_period = self.data.mps2x, 
+            course_section = self.data.course_section1)
         self.assertEqual(grade.get_grade(), 79)
 
     def test_partial_course_average_grade(self):
@@ -233,7 +237,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         test_data = [
             [self.data.mp1, Decimal(2.0)],
             [self.data.mp2, Decimal(2.4)],
-            [self.data.mp3, Decimal(1.9)],
+            [self.data.mp3, Decimal(1.8)],
             [self.data.mp4, Decimal(2.8)],
         ]
         for x in test_data:
@@ -372,127 +376,3 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """
         gpa = self.data.honors_student.calculate_gpa(rounding=1, prescale=True)
         self.assertAlmostEqual(gpa, Decimal(3.6))
-
-
-class GradeCacheTests(SisTestMixin, TestCase):
-    def setUp(self):
-        super(GradeCacheTests, self).setUp()
-
-    def test_passing_letter_grade(self):
-        student = self.data.student
-        section = self.data.course_section
-        grades = student.grade_set.filter(course_section=section)
-        for grade in grades:
-            grade.set_grade('HP')
-            grade.save()
-        ce = student.courseenrollment_set.filter(course_section=section).first()
-        self.assertEqual(ce.grade, 'P')
-
-
-class GradeScaleTests(SisTestMixin, TestCase):
-    def setUp(self):
-        super(GradeScaleTests, self).setUp()
-        scale = self.scale = GradeScale.objects.create(name="test")
-        GradeScaleRule.objects.create(min_grade=50, max_grade=59.99, letter_grade='F', numeric_scale=1, grade_scale=scale)
-        GradeScaleRule.objects.create(min_grade=60, max_grade=69.99, letter_grade='D', numeric_scale=1.5, grade_scale=scale)
-        GradeScaleRule.objects.create(min_grade=70, max_grade=79.99, letter_grade='C', numeric_scale=2, grade_scale=scale)
-        GradeScaleRule.objects.create(min_grade=80, max_grade=89.99, letter_grade='B', numeric_scale=3, grade_scale=scale)
-        GradeScaleRule.objects.create(min_grade=90, max_grade=90, letter_grade='A', numeric_scale=4, grade_scale=scale)
-        self.data.school_year.grade_scale = scale
-        self.data.school_year.save()
-
-    def test_grade_scale(self):
-        scale = self.scale
-        self.assertEqual(scale.to_letter(50), 'F')
-        self.assertEqual(scale.to_letter(59.99), 'F')
-        self.assertEqual(scale.to_letter(55.34234), 'F')
-        self.assertEqual(scale.to_letter(1000), None)
-        self.assertEqual(scale.to_numeric(50), 1)
-
-        grade = self.data.grade
-        self.assertEqual(grade.get_grade(letter=True), 'F')  # 50
-
-    def test_scale_lookup_speed(self):
-        grade = self.data.grade
-        start = time.time()
-        i = 1000
-        for _ in range(i):
-            grade.get_grade(letter=True)
-        end = time.time()
-        run_time = end - start
-        print '{} scale lookups took {} seconds'.format(i, run_time)
-        with self.assertNumQueries(1):
-            grade.get_grade(letter=True)
-
-class GradeTestTCSampleData(TestCase):
-    def setUp(self):
-        self.data = SampleTCData()
-        self.data.create_sample_tc_data()
-
-    def verify_accuracy_of_grade_in_section_hash(self,student,section_hash):
-        section_name = section_hash["name"]
-        expected_grade = section_hash["grade"]
-        course_section = CourseSection.objects.get(name=section_name)
-        actual_grade = round(course_section.calculate_final_grade(student), 2)
-        self.assertEqual(actual_grade, expected_grade)
-
-    def test_course_section_final_grades(self):
-        student = self.data.tc_student1
-        expected_data = [
-            {"name": "bus2-section-TC-2014-2015",    "grade":3.85},
-            {"name": "span-section-TC-2014-2015",    "grade":3.42},
-            {"name": "wlit-section-TC-2014-2015",    "grade":3.36},
-            {"name": "geom10-section-TC-2014-2015",  "grade":1.75},
-            {"name": "phys10-section-TC-2014-2015",  "grade":3.33},
-            {"name": "mchrist-section-TC-2014-2015", "grade":3.45},
-            {"name": "whist-section-TC-2014-2015",   "grade":3.51}
-        ]
-        for section_hash in expected_data:
-            self.verify_accuracy_of_grade_in_section_hash(student,section_hash)
-
-    def test_student2_course_section_final_grades(self):
-        student = self.data.tc_student2
-        expected_data = [
-            {"name": "bus2-section-TC-2014-2015",    "grade":3.17},
-            {"name": "span-section-TC-2014-2015",    "grade":3.33},
-            {"name": "wlit-section-TC-2014-2015",    "grade":3.17},
-            {"name": "geom10-section-TC-2014-2015",  "grade":3.17},
-            {"name": "phys10-section-TC-2014-2015",  "grade":3.50},
-            {"name": "mchrist-section-TC-2014-2015", "grade":3.17},
-            {"name": "whist-section-TC-2014-2015",   "grade":3.33},
-            {"name": "bus3-section-TC-2015-2016",    "grade":3.17},
-            {"name": "span3-section-TC-2015-2016",   "grade":4.00},
-            {"name": "alg11-section-TC-2015-2016",   "grade":3.00},
-            {"name": "chem11-section-TC-2015-2016",  "grade":3.83},
-            {"name": "ushist-section-TC-2015-2016",  "grade":3.17}
-        ]
-        for section_hash in expected_data:
-            self.verify_accuracy_of_grade_in_section_hash(student,section_hash)
-
-    def test_calculate_gpa_after_each_marking_period(self):
-        end_dates = [datetime.date(2014,10,3),datetime.date(2014,11,14),datetime.date(2015,1,23)]
-        expected_gpas = [3.31, 3.27, 3.24]
-        student = self.data.tc_student1
-        for i in range(3):
-            gpa = student.calculate_gpa(date_report=end_dates[i])
-            self.assertEqual(round(gpa, 2), expected_gpas[i])
-
-    def test_student_2_year_grades(self):
-        student = self.data.tc_student2
-        year_grade_1 = StudentYearGrade.objects.get(student = student, year = self.data.year1)
-        year_grade_2 = StudentYearGrade.objects.get(student = student, year = self.data.year2)
-        self.assertEqual(round(year_grade_1.grade,2), 3.26)
-        self.assertEqual(round(year_grade_2.grade,2), 3.43)
-
-    def test_student2_lifetime_gpa(self):
-        student = self.data.tc_student2
-        year1_credits = 7
-        year2_credits = 5
-        year1_gpa = 3.26
-        year2_gpa = 3.43
-        total_points = (year1_gpa * year1_credits) + (year2_gpa * year2_credits)
-        total_credits = year1_credits + year2_credits
-        expected_gpa = total_points / total_credits
-        actual_gpa = student.calculate_gpa()
-        self.assertEqual(round(expected_gpa, 2), round(actual_gpa, 2))
-
