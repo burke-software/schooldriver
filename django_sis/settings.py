@@ -541,6 +541,9 @@ if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
     INSTALLED_APPS = INSTALLED_APPS + ('tenant_schemas',)
+    DATABASE_ROUTERS = (
+            'tenant_schemas.routers.TenantSyncRouter',
+    )
 
 SOUTH_TESTS_MIGRATE = False
 
