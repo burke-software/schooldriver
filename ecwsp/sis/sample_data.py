@@ -138,7 +138,7 @@ class SisData(object):
         for i in xrange(100):
             random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
             course = Course.objects.create(fullname="Math 101 " + random_string, shortname="Alg " + random_string, credits=1, graded=True)
-            section = CourseSection.objects.create(name=course.shortname, course_id=course.id)
+            CourseSection.objects.create(name=course.shortname, course_id=course.id)
 
     def create_aa_superuser(self):
         aa = Faculty.objects.create(username="aa", first_name="aa", is_superuser=True, is_staff=True)
