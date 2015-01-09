@@ -21,10 +21,15 @@ class GradeBaltTests(SisTestMixin, TestCase):
         self.build_grade_cache()
 
     def test_grade_get_grade(self):
-        grade = self.data.grade
-        self.assertAlmostEquals(grade.get_grade(), Decimal(73.9))
+        """ Fetch a known grade """
+        grade = Grade.objects.get(
+            student = self.data.student,
+            course_section__name = 'English',
+            marking_period = self.data.mp1
+            )
+        self.assertAlmostEquals(grade.get_grade(), Decimal(72.7))
         self.assertEquals(grade.get_grade(letter=True), 'C')
-        self.assertEquals(grade.get_grade(letter_and_number=True), '73.90 (C)')
+        self.assertEquals(grade.get_grade(letter_and_number=True), '72.70 (C)')
 
     def test_letter_grade(self):
         mp1 = self.data.mp1
