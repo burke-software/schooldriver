@@ -1,6 +1,7 @@
 from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
 from ecwsp.sis.models import GradeScaleRule, GradeScale
+from ecwsp.grades.models import Grade
 import time
 
 class GradeScaleTests(SisTestMixin, TestCase):
@@ -24,11 +25,20 @@ class GradeScaleTests(SisTestMixin, TestCase):
         self.assertEqual(scale.to_letter(1000), None)
         self.assertEqual(scale.to_numeric(50), 1)
 
-        grade = self.data.grade
-        self.assertEqual(grade.get_grade(letter=True), 'F')  # 50
+        grade = Grade.objects.get(
+            student = self.data.student2,
+            course_section = self.data.course_section2,
+            marking_period = self.data.marking_period
+            )
+        # this grade is known to be "75"
+        self.assertEqual(grade.get_grade(letter=True), 'C')
 
     def test_scale_lookup_speed(self):
-        grade = self.data.grade
+        grade = Grade.objects.get(
+            student = self.data.student2,
+            course_section = self.data.course_section2,
+            marking_period = self.data.marking_period
+            )
         start = time.time()
         i = 1000
         for _ in range(i):
