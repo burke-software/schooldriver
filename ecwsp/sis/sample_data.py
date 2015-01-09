@@ -120,7 +120,6 @@ class SisData(object):
             { 'student' : self.student2, 'section' : self.course_section, 'mp' : self.marking_period2, 'grade' : 100 },
         ]
         for x in grade_data:
-            print x
             enrollment = CourseEnrollment.objects.get(
                 user=x['student'], course_section=x['section'])
             grade_object, created = Grade.objects.get_or_create(
@@ -137,6 +136,26 @@ class SisData(object):
             random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
             course = Course.objects.create(fullname="Math 101 " + random_string, shortname="Alg " + random_string, credits=1, graded=True)
             section = CourseSection.objects.create(name=course.shortname, course_id=course.id)
+    
+    def create_30_student_grades(self):
+        course_section = CourseSection.objects.all().first()
+        for i in xrange(30):
+            random_string = ''.join(
+                random.choice(
+                    string.ascii_uppercase + string.digits
+                ) for _ in range(6))
+            student = Student.objects.create(
+                first_name=random_string[:5],
+                last_name=random_string[:-5],
+                username=random_string)
+            enrollment = CourseEnrollment.objects.create(
+                course_section=course_section,
+                user=student,
+            )
+            for mp in MarkingPeriod.objects.all():
+                grade = Grade(enrollment=enrollment, marking_period=mp)
+                grade.set_grade(random.randint(0,100))
+                grade.save()
 
     def create_grade_scale_data(self):
         self.create_required()
@@ -239,9 +258,15 @@ class SisData(object):
             [8,mp3,100],
             [8,mp4,100],
         ]
-        Grade.objects.create(student=student, course_section=self.course_section3, override_final=True, grade=70)
+        final_grade = FinalGrade(grade=70)
+        final_grade.set_enrollment(student, self.course_section3)
+        final_grade.save()
         for x in grade_data:
-            grade = Grade.objects.get(student=student, course_section=getattr(self, 'course_section' + str(x[0])), marking_period=x[1])
+            enrollment = CourseEnrollment.objects.get(
+                user=student,
+                course_section=getattr(self, 'course_section' + str(x[0])))
+            grade = Grade.objects.get_or_create(
+                enrollment=enrollment, marking_period=x[1])[0]
             grade.grade = x[2]
             grade.save()
         self.grade = Grade.objects.all().first()
@@ -330,12 +355,12 @@ class SisData(object):
         for grd in grade_hash:
             section = CourseSection.objects.get(name=grd['section'])
             for i in range(6):
-                grade = Grade.objects.get(
-                    student=self.honors_student,
-                    course_section_id=section.id,
-                    marking_period=marking_periods[i]
-                    )
+                enrollment = CourseEnrollment.objects.get(
+                    user=self.honors_student,
+                    course_section=section)
+                grade = Grade.objects.get_or_create(
+                    enrollment=enrollment,
+                    marking_period=marking_periods[i])[0]
                 grade.grade = grd['grades'][i]
                 grade.save()
-
 

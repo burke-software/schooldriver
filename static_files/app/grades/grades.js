@@ -237,7 +237,7 @@
           value: 'row.' + marking_period.grade_key + '.grade',
           title: marking_period.marking_period
         };
-        if (edit === 'False') {
+        if (true === 'False') {
           new_column.readOnly = true;
         }
         columns.push(new_column);
@@ -261,7 +261,7 @@
         value: 'row.final.grade',
         title: 'Final'
       };
-      if (edit_final === 'False') {
+      if (true === 'False') {
         new_column.readOnly = true;
       }
       columns.push(new_column);

@@ -264,7 +264,6 @@ INSTALLED_APPS = (
     'ecwsp.work_study',
     'ecwsp.engrade_sync',
     'ecwsp.benchmarks',
-    'ecwsp.benchmark_grade',
     'ecwsp.naviance_sso',
     'rosetta',
     # These can be enabled if desired but the default is off
@@ -394,7 +393,6 @@ TENANT_APPS = (
     'ecwsp.attendance',
     'ecwsp.grades',
     #'ecwsp.gradebook',
-    'ecwsp.benchmark_grade',
     'ecwsp.counseling',
     'ecwsp.standard_test',
     'ecwsp.integrations.schoolreach',
@@ -485,6 +483,8 @@ CONSTANCE_CONFIG = {
         "Email addresses to send alert to; only one email address per line"),
     'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail"),
     'GRADE_COMMEND_LENGTH_LIMIT': (250, "Character limit on grade comments"),
+    'GRADE_ROUNDING_DECIMAL': (2, "Round grades to this many decimal places"),
+    'GRADE_DISPLAY_AS_LETTER': (False, "Display grades as letter grades using the Grade Scale"),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

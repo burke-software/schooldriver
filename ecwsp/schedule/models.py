@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 
 from ecwsp.sis.models import Student, GradeScaleRule
 from ecwsp.sis.helper_functions import round_as_decimal, round_to_standard
+from ecwsp.sis.constants import WeightField
 from ecwsp.grades.models import Grade
 from ecwsp.administration.models import Configuration
 from constance import config
@@ -59,7 +60,7 @@ class MarkingPeriod(models.Model):
     active = models.BooleanField(default=False, help_text="Teachers may only enter grades for active marking periods. There may be more than one active marking period.")
     show_reports = models.BooleanField(default=True, help_text="If checked this marking period will show up on reports.")
     school_days = models.IntegerField(blank=True, null=True, help_text="If set, this will be the number of days school is in session. If unset, the value is calculated by the days off.")
-    weight = models.DecimalField(max_digits=5, decimal_places=3, default=1, help_text="Weight for this marking period when calculating grades.")
+    weight = WeightField()
     monday = models.BooleanField(default=True)
     tuesday = models.BooleanField(default=True)
     wednesday = models.BooleanField(default=True)
@@ -79,13 +80,6 @@ class MarkingPeriod(models.Model):
         # Don't allow draft entries to have a pub_date.
         if self.start_date > self.end_date:
             raise ValidationError('Cannot end before starting!')
-
-    def save(self, **kwargs):
-        obj = super(MarkingPeriod, self).save(**kwargs)
-        if 'ecwsp.grades' in settings.INSTALLED_APPS:
-            from ecwsp.grades.tasks import build_grade_cache
-            build_grade_cache.apply_async()
-        return obj
 
     def get_number_days(self, date=datetime.date.today()):
         """ Get number of days in a marking period"""
@@ -164,31 +158,6 @@ class CourseEnrollment(models.Model):
 
     class Meta:
         unique_together = (("course_section", "user"),)
-
-    def save(self, populate_all_grades=True, *args, **kwargs):
-        """ populate_all_grades (default True) is intended to
-        recalculate any related grades to this enrollment.
-        It can be disabled to stop a recursive save.
-        """
-        super(CourseEnrollment, self).save(*args, **kwargs)
-        if populate_all_grades is True:
-            self.course_section.populate_all_grades()
-
-    def cache_grades(self):
-        """ Set cache on both grade and numeric_grade """
-        grade = self.calculate_grade_real()
-        if isinstance(grade, Decimal):
-            grade = grade.quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-            self.numeric_grade = grade
-        else:
-            self.numeric_grade = None
-        if grade == None:
-            grade = ''
-        self.grade = grade
-        self.grade_recalculation_needed = False
-        self.numeric_grade_recalculation_needed = False
-        self.save(populate_all_grades=False)  # Causes recursion otherwise.
-        return grade
 
     def get_average_for_marking_periods(self, marking_periods, letter=False, numeric=False):
         """ Get the average for only some marking periods
@@ -403,11 +372,7 @@ class CourseType(models.Model):
     name = models.CharField(max_length=255, unique=True)
     is_default = models.BooleanField(default=False, help_text="Only one course " \
         "type can be the default.")
-    weight = models.DecimalField(max_digits=5, decimal_places=2, default=1,
-        help_text="A course's weight in average calculations is this value "
-            "multiplied by the number of credits for the course. A course that "
-            "does not affect averages should have a weight of 0, while an "
-            "honors course might, for example, have a weight of 1.2.")
+    weight = WeightField()
     award_credits = models.BooleanField(default=True,
         help_text="When disabled, course will not be included in any student's "
             "credit totals. However, the number of credits and weight will "
@@ -554,29 +519,6 @@ class CourseSection(models.Model):
         """ Shim code to calculate final grade WITHOUT cache """
         enrollment = self.courseenrollment_set.get(user=student)
         return enrollment.calculate_grade_real()
-
-    def populate_all_grades(self):
-        """
-        calling this method calls Grade.populate_grade on each combination
-        of enrolled_student + marking_period + course_section
-        """
-        for student in self.enrollments.all():
-            for marking_period in self.marking_period.all():
-                Grade.populate_grade(
-                    student = student,
-                    marking_period = marking_period,
-                    course_section = self
-                    )
-
-    def save(self, *args, **kwargs):
-        super(CourseSection, self).save(*args, **kwargs)
-        ''' HEY, YOU! This save() method can't see any M2M changes!
-        Read http://stackoverflow.com/a/1925784. To handle users changing the
-        selected MarkingPeriods, I'm writing CourseSectionAdmin.save_model(),
-        which will also call populate_all_grades(). You may need additional
-        handling if you implement another edit interface outside of Django
-        admin. '''
-        self.populate_all_grades()
 
     def copy_instance(self, request):
         changes = (("name", self.name + " copy"),)

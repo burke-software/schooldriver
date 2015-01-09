@@ -93,7 +93,7 @@
             <ul class="dropdown-menu">
               <li><a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a></li>
             {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
-              <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
+              <li><a href="">{% trans 'Submit Grades' %}</a></li>
             {% endif %}
             </ul>
           </li>

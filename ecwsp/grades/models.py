@@ -1,5 +1,8 @@
 from django.core.validators import MaxLengthValidator
 from django.db import models
+from ecwsp.sis.models import GradeScaleRule
+from ecwsp.sis.constants import GradeField
+from ecwsp.sis.num_utils import array_contains_anything
 from constance import config
 import numpy as np
 
@@ -36,8 +39,7 @@ class LetterGradeChoices(models.Model):
 class CommonGrade(models.Model):
     date_created = models.DateField(auto_now_add=True)
     date_modified = models.DateField(auto_now=True)
-    grade = models.DecimalField(
-        max_digits=5, decimal_places=2, blank=True, null=True)
+    grade = GradeField()
     comment = models.CharField(
         max_length=500, blank=True, validators=[grade_comment_length_validator])
     letter_grade = models.ForeignKey(LetterGradeChoices, blank=True, null=True)
@@ -47,6 +49,10 @@ class CommonGrade(models.Model):
 
     def __unicode__(self):
         return str(self.grade)
+
+    def set_enrollment(self, student, course_section):
+        self.enrollment = student.courseenrollment_set.get(
+            course_section=course_section)
 
 
 class Grade(CommonGrade):
@@ -64,12 +70,55 @@ class Grade(CommonGrade):
     def set_grade(self, grade):
         self.grade = grade
 
+    def get_grade(self, letter=False, letter_and_number=False):
+        grade = self.grade
+        if letter is True or letter_and_number is True:
+            try:
+                result = self.grade_to_scale(letter=True)
+            except GradeScaleRule.DoesNotExist:
+                return "No Grade Scale"
+            if letter_and_number is True:
+                result = '{} ({})'.format(grade, result)
+            return result
+        return grade
+
+    def grade_to_scale(self, letter):
+        """ letter - True for letter grade, false for numeric (ex: 4.0 scale)
+        """
+        rule = GradeScaleRule.objects.filter(
+            grade_scale__schoolyear__markingperiod=self.marking_period_id,
+            min_grade__lte=self.grade,
+            max_grade__gte=self.grade,
+        ).first()
+        if letter is True:
+            return rule.letter_grade
+        return rule.numeric_scale
+
     @staticmethod
-    def get_course_grade(enrollment):
-        grades = enrollment.grade_set.all().values_list('grade', flat=True)
+    def get_course_grade(enrollment, date=None, rounding=None):
+        if rounding is None:
+            rounding = config.GRADE_ROUNDING_DECIMAL
+        grades = enrollment.grade_set.all()
+        if date is not None:
+            grades = grades.filter(marking_period__end_date__lte=date)
+        grades = grades.values_list(
+            'grade',
+            'marking_period__weight',
+            'enrollment__finalgrade__grade',
+        )
         np_grades = np.array(grades, dtype=np.dtype(float))
-        return np.average(np_grades)
+        np_grade_values = np_grades[:, 0]
+        np_mp_weights = np_grades[:, 1]
+        np_final_grades = np_grades[:, 2]
+        if array_contains_anything(np_final_grades):
+            average = np_final_grades[0]
+        else:
+            average = np.average(np_grade_values, weights=np_mp_weights)
+        return np.round(average, decimals=rounding)
 
 
 class FinalGrade(CommonGrade):
     enrollment = models.ForeignKey('schedule.CourseEnrollment', unique=True)
+
+    def set_grade(self, grade):
+        self.grade = grade

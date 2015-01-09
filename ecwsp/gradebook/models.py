@@ -2,26 +2,11 @@ from django.db import models
 from django.db.models import Q, Max
 from django.conf import settings
 from ecwsp.sis.models import SchoolYear
+from ecwsp.sis.constants import WeightField, GradeField
+from ecwsp.sis.num_utils import array_contains_anything
 from .exceptions import WeightContainsNone
 from decimal import Decimal
 import numpy as np
-
-
-class WeightField(models.DecimalField):
-    def __init__(self, separator=",", *args, **kwargs):
-        kwargs['max_digits'] = 5
-        kwargs['decimal_places'] = 4
-        kwargs['default'] = 1
-        super(WeightField, self).__init__(*args, **kwargs)
-
-
-class GradeField(models.DecimalField):
-    def __init__(self, separator=",", *args, **kwargs):
-        kwargs['max_digits'] = 8
-        kwargs['decimal_places'] = 2
-        kwargs['blank'] = True
-        kwargs['null'] = True
-        super(GradeField, self).__init__(*args, **kwargs)
 
 
 OPERATOR_CHOICES = (
@@ -194,14 +179,6 @@ class Demonstration(models.Model):
 
     def __unicode__(self):
         return self.name + u' - ' + unicode(self.item)
-
-
-def array_contains_anything(np_array):
-    """ Return true if numpy array contains any values above 0
-    Does not work with negative values """
-    if np.nansum(np_array) > 0:
-        return True
-    return False
 
 
 def grade_weighted_average(
