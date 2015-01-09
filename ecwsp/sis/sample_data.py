@@ -157,13 +157,21 @@ class SisData(object):
                 grade.set_grade(random.randint(0,100))
                 grade.save()
 
-    def create_grade_scale_data(self):
-        self.create_required()
+    def create_aa_superuser(self):
         aa = Faculty.objects.create(username="aa", first_name="aa", is_superuser=True, is_staff=True)
         aa.set_password('aa')
         aa.save()
-        self.student = student = Student.objects.create(first_name="Anon", last_name="Student", username="someone")
 
+    def create_balt_like_sample_data(self):
+        self.create_required()
+        self.create_course_types()
+        self.create_courses()
+        self.create_years_and_marking_periods()
+        self.assign_marking_periods_to_course_sections()
+        self.create_grade_scale_rules()
+        self.create_sample_students()
+
+    def create_course_types(self):
         CourseType.objects.create(name='NonCore', weight=0)
         self.non_core = CourseType.objects.get(name='NonCore')
         CourseType.objects.create(name='AP', weight=1, boost=1.0)
@@ -171,6 +179,7 @@ class SisData(object):
         CourseType.objects.create(name="Honors", weight = 1, boost = 0.5)
         self.honors = CourseType.objects.get(name="Honors")
 
+    def create_courses(self):
         self.course1 = Course.objects.create(fullname="English", shortname="English", credits=1, course_type=self.ap, graded=True)
         self.course2 = Course.objects.create(fullname="Precalculus", shortname="Precalc", credits=1, graded=True)
         self.course3 = Course.objects.create(fullname="Physics", shortname="Phys", credits=1, graded=True)
@@ -182,31 +191,33 @@ class SisData(object):
         self.course9 = Course.objects.create(fullname="English Honors", shortname="English-H", credits=1, course_type=self.honors, graded=True)
         self.course10 = Course.objects.create(fullname="Precalculus Honors", shortname="Precalc-H", credits=1, course_type=self.honors, graded=True)
         self.course11 = Course.objects.create(fullname="AP Modern World History", shortname="Hist-AP", credits=1, course_type=self.ap, graded=True)
-        self.course12 = Course.objects.create(fullname="Spanish III AP", shortname="Span-H", credits=1, graded=True, course_type=self.ap)
+        self.course12 = Course.objects.create(fullname="Spanish III AP", shortname="Span-AP", credits=1, graded=True, course_type=self.ap)
         self.course13 = Course.objects.create(fullname="Faith & Justice Honors", shortname="Faith-H", credits=1, graded=True, course_type=self.honors)
 
+    def create_years_and_marking_periods(self):
         self.year = year = SchoolYear.objects.create(name="balt year", start_date=datetime.date(2014,7,1), end_date=datetime.date(2050,5,1), active_year=True)
-        self.mp1 = mp1 = MarkingPeriod.objects.create(name="1st", weight=0.4, start_date=datetime.date(2014,7,1), end_date=datetime.date(2014,9,1), school_year=year)
-        self.mp2 = mp2 = MarkingPeriod.objects.create(name="2nd", weight=0.4, start_date=datetime.date(2014,7,2), end_date=datetime.date(2014,9,2), school_year=year)
-        self.mps1x = mps1x = MarkingPeriod.objects.create(name="S1X", weight=0.2, start_date=datetime.date(2014,7,2), end_date=datetime.date(2014,9,2), school_year=year)
-        self.mp3 = mp3 = MarkingPeriod.objects.create(name="3rd", weight=0.4, start_date=datetime.date(2014,7,3), end_date=datetime.date(2014,9,3), school_year=year)
-        self.mp4 = mp4 = MarkingPeriod.objects.create(name="4th", weight=0.4, start_date=datetime.date(2014,7,4), end_date=datetime.date(2014,9,4), school_year=year)
-        self.mps2x = mps2x = MarkingPeriod.objects.create(name="S2X", weight=0.2, start_date=datetime.date(2014,7,4), end_date=datetime.date(2014,9,4), school_year=year)
+        self.mp1 = MarkingPeriod.objects.create(name="1st", weight=0.4, start_date=datetime.date(2014,7,1), end_date=datetime.date(2014,9,1), school_year=year)
+        self.mp2 = MarkingPeriod.objects.create(name="2nd", weight=0.4, start_date=datetime.date(2014,7,2), end_date=datetime.date(2014,9,2), school_year=year)
+        self.mps1x = MarkingPeriod.objects.create(name="S1X", weight=0.2, start_date=datetime.date(2014,7,2), end_date=datetime.date(2014,9,2), school_year=year)
+        self.mp3 = MarkingPeriod.objects.create(name="3rd", weight=0.4, start_date=datetime.date(2014,7,3), end_date=datetime.date(2014,9,3), school_year=year)
+        self.mp4 = MarkingPeriod.objects.create(name="4th", weight=0.4, start_date=datetime.date(2014,7,4), end_date=datetime.date(2014,9,4), school_year=year)
+        self.mps2x = MarkingPeriod.objects.create(name="S2X", weight=0.2, start_date=datetime.date(2014,7,4), end_date=datetime.date(2014,9,4), school_year=year)
 
+    def assign_marking_periods_to_course_sections(self):
         courses = Course.objects.all()
         i = 0
         for course in courses:
             i += 1
             section = CourseSection.objects.create(name=course.shortname, course=course)
             setattr(self, 'course_section' + str(i), section)
-            section.marking_period.add(mp1)
-            section.marking_period.add(mp2)
+            section.marking_period.add(self.mp1)
+            section.marking_period.add(self.mp2)
             if course.credits > 0:
-                section.marking_period.add(mps1x)
-            section.marking_period.add(mp3)
-            section.marking_period.add(mp4)
+                section.marking_period.add(self.mps1x)
+            section.marking_period.add(self.mp3)
+            section.marking_period.add(self.mp4)
             if course.credits > 0:
-                section.marking_period.add(mps2x)
+                section.marking_period.add(self.mps2x)
 
             if course.shortname in ['English','Precalc','Phys','Hist','Span','Photo','Faith', 'Wrt Lab']:
                 # only enroll self.student in these particular classes,
@@ -280,15 +291,36 @@ class SisData(object):
         GradeScaleRule.objects.create(min_grade=86.50, max_grade=89.49, letter_grade='B+', numeric_scale=3.5, grade_scale=scale)
         GradeScaleRule.objects.create(min_grade=89.50, max_grade=92.49, letter_grade='A-', numeric_scale=3.7, grade_scale=scale)
         GradeScaleRule.objects.create(min_grade=92.50, max_grade=100, letter_grade='A', numeric_scale=4, grade_scale=scale)
-        year.grade_scale = scale
-        year.save()
+        self.year.grade_scale = scale
+        self.year.save()
 
-    def create_sample_honors_and_ap_data(self):
-        """
-        populate the gradebook with grades matching 'Report Car With Honors'
-        depends on create_grade_scale_data() being called first
-        """
+    def create_sample_students(self):
+        self.create_sample_normal_student()
+        self.create_sample_honors_student()
+        self.create_sample_honors_student_two()
 
+    def create_sample_normal_student(self):
+        self.student = Student.objects.create(first_name="Anon", last_name="Student", username="someone")
+        shortname_list = ['English','Precalc','Phys','Hist','Span','Photo','Faith', 'Wrt Lab']
+        self.enroll_student_in_sections(self.student, shortname_list)
+
+        known_grades = [
+            {'section': 'English',   'grades': [72.7, 77.5, 90,   66.5, 73.9, 79  ]},
+            {'section': 'Precalc',   'grades': [55,   81.4, 68,   73.9, 77.2, 52 ]},
+            {'section': 'Phys',      'grades': [69.1, 70.4, 61,   73.8, 72.3, 57 ]},
+            {'section': 'Hist',      'grades': [92.4, 84.4, 84,   72.6, 89.1, 81 ]},
+            {'section': 'Span',      'grades': [80.4, 72.1, 63,   74.4, 85.8, 80  ]},
+            {'section': 'Photo',     'grades': [92.8, 93.6, None, 83.3, 90,   None ]},
+            {'section': 'Faith',     'grades': [79.5, 83.1, 70,   78.3, 88.5, 82 ]},
+            {'section': 'Wrt Lab',   'grades': [100,  100,  None, 100,  100,  None ]},
+        ]
+
+        self.populate_student_grades(self.student, known_grades)
+
+        # There is an override grade for this student, so let's register that here
+        Grade.objects.create(student=self.student, course_section=self.course_section3, override_final=True, grade=70)
+
+    def create_sample_honors_student(self):
         # here we have an honors student
         self.honors_student = Student.objects.create(first_name="Snotty", last_name="McGillicuddy", username="snottymc")
 
@@ -311,11 +343,7 @@ class SisData(object):
         self.populate_student_grades(self.honors_student, known_grades)
 
 
-    def create_sample_student_two(self):
-        """
-        just some more data that might be useful
-        """
-        #create a sample student
+    def create_sample_honors_student_two(self):
         self.sample_student1 = Student.objects.create(first_name="Price", last_name="Isright", username="priceisright")
 
         # let's enroll him in each one of these sections
