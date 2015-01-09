@@ -82,9 +82,16 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """ Really just a normal run of the mill Marking Period grade
         Balt uses s1x, s2x as tests that affect final grades
         """
-        grade = Grade.objects.get(marking_period=self.data.mps1x, course_section=self.data.course_section1)
+        grade = Grade.objects.get(
+            student = self.data.student,
+            marking_period = self.data.mps1x, 
+            course_section = self.data.course_section1
+            )
         self.assertEqual(grade.get_grade(), 90)
-        grade = Grade.objects.get(marking_period=self.data.mps2x, course_section=self.data.course_section1)
+        grade = Grade.objects.get(
+            student = self.data.student,
+            marking_period = self.data.mps2x, 
+            course_section = self.data.course_section1)
         self.assertEqual(grade.get_grade(), 79)
 
     def test_partial_course_average_grade(self):
