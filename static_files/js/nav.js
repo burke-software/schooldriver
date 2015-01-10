@@ -1,0 +1,143 @@
+var menuItemPos, thirdItemPos, thirdItemWidth, oneThroughThreeWidth, triggerWidth;
+
+// This is used when the user clicks a directional arrow in the main nav.
+function getScrollValue(direction) {
+	var scrollValue = 0;
+	var currentLeft = $('.mm-menu-wrapper').scrollLeft();
+	var menuToWrapperProportion = $('.mm-menu-items').width() / $('.mm-menu-wrapper').width();
+
+	if (direction == 'right') {
+		if (menuToWrapperProportion <= 2) {
+			// If the quotient is less than 2, then we can scroll to the end and not miss anything
+			scrollValue = $('.mm-menu-items').width() - $('.mm-menu-wrapper').width();
+		} else {
+			// Otherwise, advance the scroll in increments equal to the wrapper's width
+			scrollValue = currentLeft + $('.mm-menu-wrapper').width();
+		}
+	}
+	if (direction == 'left') {
+		if (menuToWrapperProportion <= 2) {
+			scrollValue = 0;
+		} else {
+			scrollValue = currentLeft - $('.mm-menu-wrapper').width();
+		}
+	}
+
+	return scrollValue;
+}
+
+// Trigger the menu item left/right arrows if width is small enough,
+// and expand the search box if width is large enough.
+function fitMenuElements() {
+	var menuItemWidth = $('.mm-menu-items').width();
+	var menuWrapperWidth = $('.mm-menu-wrapper').width();
+
+	var menuUserInfoPos = $('.mm-user-info').position();
+	var menuItemPos = $('.mm-menu-items').position();
+
+	if (menuItemWidth > menuWrapperWidth) {
+		$('.mm-scroll-arrows').addClass('visible-inline-block');
+		$('.mm-menu-wrapper').addClass('mm-scroll-arrows-visible');
+	} else {
+		$('.mm-scroll-arrows').removeClass('visible-inline-block');
+		$('.mm-menu-wrapper').removeClass('mm-scroll-arrows-visible');
+	}
+
+	if (menuUserInfoPos.left - (menuItemPos.left + menuItemWidth) > 300) {
+		$('.mm-search-field').addClass('mm-search-field-full');
+	} else {
+		$('.mm-search-field').removeClass('mm-search-field-full');
+	}
+}
+
+function goToMobileSize() {
+	var menuWrapperWidth = $('.mm-menu-wrapper').width();
+
+	if ($('#flex-nav').hasClass('full-size') && menuWrapperWidth < oneThroughThreeWidth) {
+		triggerWidth = $(window).width();
+		$('#flex-nav').removeClass('full-size').removeClass('condensed-size').addClass('mobile-size');
+		$('.mm-minimize-button, .mm-maximize-button').css('display','none');
+	} 
+	if ($('#flex-nav').hasClass('mobile-size') && menuWrapperWidth > triggerWidth) {
+		$('#flex-nav').removeClass('mobile-size').addClass('full-size');
+		$('.mm-minimize-button').css('display','block');
+	}
+}
+
+$(document).ready(function() {
+	menuItemPos = $('.mm-menu-items').position();
+	thirdItemPos = $('.mm-menu-items > li:nth-child(3)').position();
+	thirdItemWidth = $('.mm-menu-items > li:nth-child(3)').width();
+	oneThroughThreeWidth = (thirdItemPos.left + thirdItemWidth) - menuItemPos.left;
+
+	// IE fallback for pointer-events on search button
+	if ($('html').hasClass('lt11')) {
+		$('.mm-search-icon').click(function() {
+			$('.mm-search-field').focus();
+		});
+	}
+
+	fitMenuElements();
+	goToMobileSize();
+
+
+	$(window).resize(function() {
+		fitMenuElements();
+		goToMobileSize();
+	});
+
+	$('.mm-arrow-right').click(function() {
+		$('.mm-menu-wrapper').animate({
+			scrollLeft: getScrollValue('right'),
+		}, 500, function() {
+			// Animation complete.
+		});
+	});
+
+	$('.mm-arrow-left').click(function() {
+		$('.mm-menu-wrapper').animate({
+			scrollLeft: getScrollValue('left'),
+		}, 500, function() {
+			// Animation complete.
+		});
+	});
+
+	$('.mm-search-field').on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function() {
+		fitMenuElements();
+	});
+
+	$('.mm-user-icon').click(function() {
+		$('.mm-user-mobile-menu-wrapper').toggleClass('active');
+		$('body').append('<div class="mm-user-menu-click-space"></div>');
+	});
+
+	$('.mm-user-name').click(function() {
+		if ($('.mm-user-mobile-menu-wrapper').hasClass('active')) {
+			$('.mm-user-mobile-menu-wrapper').toggleClass('active');
+			$('.mm-user-menu-click-space').remove();
+		}
+	});
+
+	$(document).on('click', '.mm-user-menu-click-space', function() {
+		$('.mm-user-mobile-menu-wrapper').toggleClass('active');
+		$('.mm-user-menu-click-space').remove();
+	});
+
+	$('.mm-minimize-button').click(function() {
+		$(this).css('display','none');
+		$('#main-menu').removeClass('full-size').addClass('condensed-size');
+		$('#flex-nav').removeClass('full-size').addClass('condensed-size');
+		$('.mm-maximize-button').css('display','block');
+
+		fitMenuElements();
+	});
+
+	$('.mm-maximize-button').click(function() {
+		$(this).css('display','none');
+		$('#main-menu').removeClass('condensed-size').addClass('full-size');
+		$('#flex-nav').removeClass('condensed-size').addClass('full-size');
+		$('.mm-minimize-button').css('display','block');
+
+		fitMenuElements();
+	});
+});
