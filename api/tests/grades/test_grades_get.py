@@ -1,6 +1,7 @@
 from api.tests.api_test_base import APITest
 from ecwsp.grades.models import Grade
 from ecwsp.schedule.models import CourseEnrollment
+from decimal import Decimal
 import logging
 
 class GradeAPIGetTest(APITest):
@@ -22,13 +23,10 @@ class GradeAPIGetTest(APITest):
         test a get request for a grade with a specific id
         """
         self.teacher_login()
-        response = self.client.get('/api/grades/1/')
-        logging.info(response.data)
-        self.assertEqual(response.data['grade'], 50)
-
-        # test another grade instance just to be certain
-        response = self.client.get('/api/grades/3/')
-        self.assertEqual(float(response.data['grade']), float(89.09))
+        known_grade = Grade.objects.all().first()
+        response = self.client.get('/api/grades/%s/' % known_grade.id)
+        expected_grade = known_grade.grade
+        self.assertEqual(Decimal(response.data['grade']), expected_grade)
 
     def test_student_filter(self):
         """
@@ -55,13 +53,23 @@ class GradeAPIGetTest(APITest):
         test a get request with multiple filters specified
         """
         self.teacher_login()
-        filters = {'student': 2, 'course_section': 1}
+        known_student = self.data.student2
+        known_course_section = self.data.course_section2
+        expected_grade_count = Grade.objects.filter(
+            student = known_student, 
+            course_section = known_course_section
+            ).count()
+
+        filters = {
+            'student': known_student.id, 
+            'course_section': known_course_section.id
+            }
         response = self.client.get('/api/grades/', filters)
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data), expected_grade_count)
 
     def test_num_queries(self):
         self.teacher_login()
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(1):
             self.client.get('/api/grades/')
 
     def test_ungraded_courses(self):
