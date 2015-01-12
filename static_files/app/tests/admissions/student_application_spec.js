@@ -2,7 +2,7 @@ describe('student application for admission', function() {
     beforeEach(function() {
         // this assumes you have multi-tenant correctly set up on your local
         // machine such that atlanta.crey.org points to your local server
-        browser.get('http://atlanta.crey.org:8000/admissions/application');
+        browser.get('localdocker:8000/admissions/application');
         browser.waitForAngular();
     });
 
