@@ -53,9 +53,19 @@ class GradeAPIGetTest(APITest):
         test a get request with multiple filters specified
         """
         self.teacher_login()
-        filters = {'student': 2, 'course_section': 1}
+        known_student = self.data.student2
+        known_course_section = self.data.course_section2
+        expected_grade_count = Grade.objects.filter(
+            student = known_student, 
+            course_section = known_course_section
+            ).count()
+
+        filters = {
+            'student': known_student.id, 
+            'course_section': known_course_section.id
+            }
         response = self.client.get('/api/grades/', filters)
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data), expected_grade_count)
 
     def test_num_queries(self):
         self.teacher_login()
