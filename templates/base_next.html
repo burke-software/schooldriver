@@ -5,62 +5,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/css/bootstrap.min.css" /> -->
-  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700,700italic' rel='stylesheet' type='text/css'>
-  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+  {% block head %}
+	  <!-- <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/css/bootstrap.min.css" /> -->
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700,700italic' rel='stylesheet' type='text/css'>
+	<link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+  
+	<script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	<!--
+	-->
+	<script src="{% static 'bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js' %}"></script>
 
-    <!--
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.4.0/restangular.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-route.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
-    -->
-    <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
-    <!--
-    -->
-    <script src="{% static 'angular/angular.min.js' %}"></script>
-    <script src="{% static 'underscore/underscore.js' %}"></script>
-    <script src="{% static 'restangular/dist/restangular.js' %}"></script>
-    <script src="{% static 'angular-route/angular-route.js' %}"></script>
-    <script src="{% static 'angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js' %}"></script>
-    <script src="{% static 'bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js' %}"></script>
-
-    {% include 'autocomplete_light/static.html' %}
-    <script type="text/javascript">
-        var csrf_token = '{{ csrf_token|escapejs }}'
-    </script>
+	{% include 'autocomplete_light/static.html' %}
+	<script type="text/javascript">
+	  var csrf_token = '{{ csrf_token|escapejs }}'
+	  var STATIC_URL = '{{ STATIC_URL }}'
+	</script>
 
 	{% compress css %}
-	<link type="text/x-scss" href="{% static 'styles.scss' %}" rel="stylesheet" charset="utf-8" />
+	  <link type="text/x-scss" href="{% static 'styles.scss' %}" rel="stylesheet" charset="utf-8" />
 	{% endcompress %}
-    
-    {% block extra_head %}{% endblock %}
-    
-    {% block angular_app %}
-        {% compress js %}
-        <script src="{% static "app/restfulModel.js" %}"></script>
-        <script src="{% static "app/angular_sis.js" %}"></script>
-        {% endcompress %}
-    {% endblock %}
+	
+	{% block extra_head %}{% endblock %}
+  {% endblock %}
+  
+  {% block angular_app %}
+  {% endblock %}
 
-    {% if GOOGLE_ANALYTICS %}
-        <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-                (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-                    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-            ga('create', '{{ GOOGLE_ANALYTICS }}', 'auto');
-            ga('send', 'pageview');
-        </script>
-    {% endif %}
+  {% if GOOGLE_ANALYTICS %}
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	  ga('create', '{{ GOOGLE_ANALYTICS }}', 'auto');
+	  ga('send', 'pageview');
+	</script>
+  {% endif %}
 </head>
 
 <body>
 
+{% block body %}
+{% block nav %}
 <div id="main-nav" class="navbar navbar-default" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header hidden-sm">
@@ -228,13 +215,17 @@
     </ul>
   </div>
 </div>
-<div class="container-fluid full-height">
-  <div class="row">
-    <div class="col-xs-12 main">
-      <h1>{% block title %}{% endblock %}</h1>
-      {% block content %}{% endblock %}
+{% endblock %}
+{% block content_full %}
+    <div class="container-fluid full-height">
+      <div class="row">
+        <div class="col-xs-12 main">
+          <h1>{% block title %}{% endblock %}</h1>
+          {% block content %}{% endblock %}
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+{% endblock %}
+{% endblock %}
 </body>
 </html>

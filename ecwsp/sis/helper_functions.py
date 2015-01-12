@@ -7,7 +7,8 @@ from django.utils.encoding import smart_unicode
 from functools import wraps
 import unicodedata
 from decimal import Decimal, ROUND_HALF_UP, getcontext
-from tenant_schemas.utils import get_tenant_model, tenant_context
+if settings.MULTI_TENANT:
+    from tenant_schemas.utils import get_tenant_model, tenant_context
 
 class Callable:
     def __init__(self, anycallable):

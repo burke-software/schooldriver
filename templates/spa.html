@@ -1,0 +1,40 @@
+{% extends "base_next.html" %}
+{% load staticfiles compress %}
+
+{% block extra_head %}
+<!-- This is a temporary customization of google translate, google translate
+    should go away altogether soon -->
+<meta name="google-translate-customization" content="37da49fcf8973ccb-756457446a3cca53-g28961e43a5d7f19a-28"></meta>
+{% endblock %}
+
+{% block head %}
+    {% block base_tag %}
+        <base href="/">
+    {% endblock %}
+
+    {{ block.super }}
+    <script src="{% static 'angular/angular.min.js' %}"></script>
+    <script src="{% static 'underscore/underscore.js' %}"></script>
+    <script src="{% static 'restangular/dist/restangular.min.js' %}"></script>
+    <script src="{% static 'angular-route/angular-route.min.js' %}"></script>
+    <script src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>
+    <script src="{% static 'bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js' %}"></script>
+    <script src="{% static 'angular-ui-handsontable/dist/angular-ui-handsontable.full.js' %}"></script>
+    <link rel="stylesheet" media="screen" href="{% static "angular-ui-handsontable/dist/angular-ui-handsontable.full.css" %}">
+    <script src="{% static 'app/common/restfulModel.js' %}"></script>
+    <script src="{% static 'app/angular_sis.js' %}"></script>
+    <script src="{% static 'app/grades/grades.js' %}"></script>
+    <script src="{% static 'app/grades/course.js' %}"></script>
+    <script src="{% static 'app/admissions/admissions-common.js' %}"></script>
+    <script src="{% static 'app/admissions/review-student-application.js' %}"></script>
+    <script src="{% static 'app/admissions/student-application.js' %}"></script>
+    <script src="{% static 'app/admissions/custom-application-editor.js' %}"></script>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid" ng-app="angular_sis">
+  <div class="row" ng-view>
+  </div>
+</div>
+{% endblock %}

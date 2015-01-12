@@ -4,8 +4,9 @@ from ecwsp.schedule.models import (
     Department, DepartmentGraduationCredits)
 from .models import *
 from .sample_data import BenchmarkSisData
+import unittest
 
-
+@unittest.skip("This is going to be deprecated soon...")
 class GradeCalculationTests(SisTestMixin, TestCase):
     def setUp(self):
         self.data = BenchmarkSisData()
@@ -17,16 +18,23 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         course = self.data.course_section1
         course.save()
         item = Item.objects.create(
-            name="A", marking_period=self.data.marking_period, points_possible=3,
+            name="A", 
+            marking_period=self.data.marking_period, 
+            points_possible=3,
             course_section=course,
             category=Category.objects.get(name="Standards"),
         )
         demonstration = Demonstration.objects.create(name="1", item=item)
-        mark = Mark.objects.create(demonstration=demonstration,
-            item=item, student=self.data.student, mark=2.0)
+        mark = Mark.objects.create(
+            demonstration=demonstration,
+            item=item, 
+            student=self.data.student, 
+            mark=2.0)
+
         grade = self.data.student.grade_set.get(
             marking_period=self.data.marking_period,
             course_section=course)
+
         self.assertEquals(grade.get_grade(), 'INC')
         mark.mark = 4.0
         mark.save()

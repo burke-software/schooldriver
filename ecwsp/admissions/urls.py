@@ -1,5 +1,6 @@
 from django.conf.urls import *
 from ecwsp.admissions import views
+from ecwsp.sis.views import SpaView
 from responsive_dashboard.views import generate_dashboard
 from django.views.generic.base import TemplateView
 
@@ -14,12 +15,6 @@ urlpatterns = patterns('',
         TemplateView.as_view(template_name='admissions/custom_application_editor.html'), 
         name="custom-application-editor"
         ),
-    url(r'^application/(?P<pk>\d+)/$', 
-        TemplateView.as_view(template_name='admissions/review_student_application.html'), 
-        name="review-student-application",
-        ),
-    url(r'^application/', 
-        TemplateView.as_view(template_name='admissions/student_application.html'), 
-        name="student-application"
-        ),
+    (r'^application/(?P<pk>\d+)/$', SpaView.as_view()),
+    (r'^application/$', SpaView.as_view()),
 )

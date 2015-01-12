@@ -100,7 +100,7 @@ class WorkTeamAdmin(VersionAdmin, CustomFieldAdmin):
         # only show login in group company
         compUsers = User.objects.filter(Q(groups__name='company'))
         context['adminform'].form.fields['login'].queryset = compUsers
-        if 'original' in context:
+        if 'original' in context and hasattr(context['original'], 'id'):
             students = StudentWorker.objects.filter(placement=context['original'].id)
             txt = "<h5>Students working here</h5>"
             for stu in students:

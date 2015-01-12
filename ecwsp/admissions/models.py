@@ -145,7 +145,9 @@ class ImmigrationOption(models.Model):
 
 
 def get_default_country():
-    return CountryOption.objects.get_or_create(name=config.ADMISSIONS_DEFAULT_COUNTRY)[0].pk
+    conf = getattr(config, 'ADMISSIONS_DEFAULT_COUNTRY', None)
+    if conf is not None:
+        return CountryOption.objects.get_or_create(name=conf)[0].pk
 
 def get_school_year():
     try:
@@ -161,7 +163,7 @@ class Applicant(models.Model, CustomFieldModel):
     lname = models.CharField(max_length=255, verbose_name="Last Name")
     pic = models.ImageField(upload_to="applicant_pics",blank=True, null=True)
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True)
-    bday = models.DateField(blank=True, null=True, verbose_name="Birth Date", validators=settings.DATE_VALIDATORS)
+    bday = models.DateField(blank=True, null=True, verbose_name="Birth Date")
     unique_id = models.IntegerField(blank=True, null=True, unique=True)
     street = models.CharField(max_length=150, blank=True)
     city = models.CharField(max_length=360, blank=True)
@@ -188,14 +190,14 @@ class Applicant(models.Model, CustomFieldModel):
     school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True, on_delete=models.SET_NULL, default=get_school_year)
     parent_guardians = models.ManyToManyField('sis.EmergencyContact', verbose_name="Student contact", blank=True, null=True)
     ethnicity = models.ForeignKey(EthnicityChoice, blank=True, null=True, on_delete=models.SET_NULL,)
-    hs_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)
-    elem_grad_yr = models.IntegerField(blank=True, null=True, max_length=4)
+    hs_grad_yr = models.IntegerField(blank=True, null=True)
+    elem_grad_yr = models.IntegerField(blank=True, null=True)
     present_school = models.ForeignKey(FeederSchool, blank=True, null=True, on_delete=models.SET_NULL,)
     present_school_typed = models.CharField(max_length=255, blank=True, help_text="This is intended for applicants to apply for the school. Administrators should use the above.")
     present_school_type_typed = models.CharField(max_length=255, blank=True)
     religion = models.ForeignKey(ReligionChoice, blank=True, null=True, on_delete=models.SET_NULL,)
     place_of_worship = models.ForeignKey(PlaceOfWorship, blank=True, null=True, on_delete=models.SET_NULL,)
-    follow_up_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
+    follow_up_date = models.DateField(blank=True, null=True,) # validators=settings.DATE_VALIDATORS)
     open_house_attended = models.ManyToManyField(OpenHouse, blank=True, null=True)
     parent_guardian_first_name = models.CharField(max_length=150, blank=True)
     parent_guardian_last_name = models.CharField(max_length=150, blank=True)
@@ -303,17 +305,17 @@ def email_alert_for_submitted_applicant(sender, instance, created, **kwargs):
             subject = "New Application Submitted"
             from_address = config.FROM_EMAIL_ADDRESS
             c = Context({
-                'applicant_id': instance.id, 
+                'applicant_id': instance.id,
                 'school_name' : config.SCHOOL_NAME,
                 'base_url' : settings.BASE_URL,
-                })    
+                })
             text_content = render_to_string('admissions/email/applicant_alert.txt', c)
             html_content = render_to_string('admissions/email/applicant_alert.html', c)
             msg = EmailMultiAlternatives(subject, text_content, from_address, [to_address,])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
-        
+
 
 post_save.connect(email_alert_for_submitted_applicant, sender=Applicant)
 
@@ -402,16 +404,16 @@ class ApplicantCustomField(models.Model):
             ('emergency_contact', 'Emergency Contact'),
         )
     field_name = models.CharField(blank=True, null=True, max_length=50)
-    is_field_integrated_with_applicant = models.BooleanField(default=False) 
+    is_field_integrated_with_applicant = models.BooleanField(default=False)
     field_type = models.CharField(
         blank = True,
         null = True,
-        max_length=50, 
+        max_length=50,
         choices = field_type_choices,
         help_text = "Choose the type of field"
         )
     field_label = models.CharField(
-        blank = True, 
+        blank = True,
         null = True,
         max_length = 255,
         help_text = "Give this field a recognizable name"
@@ -419,8 +421,8 @@ class ApplicantCustomField(models.Model):
     field_choices = models.TextField(
         blank = True,
         null= True,
-        help_text="""List the choices you want displayed, 
-seperated by commas. This is only valid for Dropdown, 
+        help_text="""List the choices you want displayed,
+seperated by commas. This is only valid for Dropdown,
 Multiple, and Checkbox field types"""
         )
     helptext = models.CharField(blank=True, null=True, max_length=500)

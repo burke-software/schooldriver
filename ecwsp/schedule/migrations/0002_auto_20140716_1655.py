@@ -147,23 +147,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(default=ecwsp.schedule.models.get_course_type_default, to='schedule.CourseType', help_text=b'Should only need adjustment when uncommon calculation methods are used.'),
             preserve_default=True,
         ),
-        migrations.CreateModel(
-            name='Day',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('day', models.CharField(max_length=1, choices=[(b'1', b'Monday'), (b'2', b'Tuesday'), (b'3', b'Wednesday'), (b'4', b'Thursday'), (b'5', b'Friday'), (b'6', b'Saturday'), (b'7', b'Sunday')])),
-            ],
-            options={
-                'ordering': (b'day',),
-            },
-            bases=(models.Model,),
-        ),
-        migrations.AddField(
-            model_name='courseenrollment',
-            name='exclude_days',
-            field=models.ManyToManyField(to='schedule.Day', blank=True),
-            preserve_default=True,
-        ),
         migrations.AlterUniqueTogether(
             name='courseenrollment',
             unique_together=set([(b'course_section', b'user')]),

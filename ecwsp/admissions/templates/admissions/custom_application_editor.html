@@ -1,14 +1,10 @@
-{% extends 'base_next.html' %}
+{% extends 'spa.html' %}
 {% load staticfiles %}
-{% load static from staticfiles %}
-{% block extra_head %}
-<script type="text/javascript" src="{% static 'js/admissions/custom_application_editor.js' %}"></script>
-{% endblock %}
 
 {% block content %}
 {% verbatim %}
 
-<div class="container custom-application" ng-app="admissions" ng-controller="CustomApplicationEditorController" ng-init="init()">
+<div class="container custom-application" ng-app="angular_sis" ng-controller="CustomApplicationEditorController" ng-init="init()">
   <button ng-click="syncApplicationTranslations()" class="btn btn-default pull-right">
     Sync Application Translations
   </button>

@@ -1,38 +1,19 @@
-{% extends "admin_base.html" %}
+{% extends "base_next.html" %}
 {% load static from staticfiles %}
 
-{% block extrahead %}
-  {{ block.super }}
-  {% block report_header %}
-    <script src="{% static 'report_builder/js/report_form.js' %}" type="text/javascript" ></script>
-    <script src="{% static 'report_builder/js/spin.js' %}" type="text/javascript" ></script>
-    <script src="{% static 'report_builder/js/jquery.spin.js' %}" type="text/javascript" ></script>
-    
-    <link rel="stylesheet" href="{% static 'jquery-ui-1.9.1/css/smoothness/jquery-ui-1.9.1.custom.min.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'report_builder/css/report_form.css' %}" />
-  {% endblock %}
-{% endblock %}
-
-
-{% block breadcrumbs %}
-  <ul class="grp-horizontal-list">
-    <li>
-      <a href="/"> Home </a> 
-    </li>
-    <li>
-     <a href="{% url "admin:report_builder_report_changelist" %}"> Reports </a> 
-    </li>
-    <li>
-      {{ report }}
-    </li>
-  </ul>
-{% endblock %}
-
-
-{% block content %}
-<div style="height: 700px" class="container row">
-    {% block report_form %}
-    {{ block.super }}
+{% block angular_app %}
+    {% block report_header %}
     {% endblock %}
-</div>
+{% endblock %}
+
+{% block body %}
+    <div style="height: 62px">
+    {% block nav %}
+        {{ block.super }}
+    {% endblock %}
+    </div>
+    <div style="height: calc(100% - 106px); margin-top: -20px;">
+    {% block content %}
+    {% endblock %}
+    </div>
 {% endblock %}

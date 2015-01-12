@@ -81,15 +81,6 @@
   }
 },
 {
-  "pk": 10, 
-  "model": "contenttypes.contenttype", 
-  "fields": {
-    "model": "migrationhistory", 
-    "name": "migration history", 
-    "app_label": "south"
-  }
-},
-{
   "pk": 11, 
   "model": "contenttypes.contenttype", 
   "fields": {

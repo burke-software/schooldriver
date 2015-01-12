@@ -9,22 +9,10 @@ from ecwsp.grades.models import *
 
 from datetime import date, datetime
 
-class ExampleTest(TestCase):
-    def test_basic_addition(self):
-        """ Tests that 1 + 1 always equals 2. """
-        self.failUnlessEqual(1 + 1, 2)
-
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
-
->>> 1 + 1 == 2
-True
-"""}
 
 class DashletTests(TestCase):
     def setup(self):
         """ Prepares simple school data. """
-        
         self.student = Student(first_name="Joe", last_name="Student", username="jstudent")
         self.student.save()
         self.year = SchoolYear(name="2010-2011", start_date=date(2010,7,1), end_date=date(2011,5,1), active_year=True)
@@ -35,17 +23,15 @@ class DashletTests(TestCase):
         self.mp2.save()
         self.mp3 = MarkingPeriod(name="tri3 2010", start_date=date(2011,3,2), end_date=date(2050,5,1), school_year=self.year, monday=True, friday=True)
         self.mp3.save()
-        
+
         self.teacher1 = Faculty(username="dburke", first_name="david", last_name="burke", teacher=True)
+        self.teacher1.set_password('aa1')
         self.teacher1.save()
         self.teacher2 = Faculty(username="jbayes", first_name="jeff", last_name="bayes", teacher=True)
+        self.teacher2.set_password('aa2')
         self.teacher2.save()
-        try:
-            self.user1 = User.objects.create_user('dburke', 'ffdfsf1@ffdsfsdf.com', 'aa1')
-            self.user2 = User.objects.create_user('jbayes', 'ffdfsf2@ffdsfsdf.com', 'aa2')
-        except:
-            self.user1 = User.objects.get(username="dburke")
-            self.user2 = User.objects.get(username="jbayes")
+        self.user1 = self.teacher1
+        self.user2 = self.teacher2
         self.user1.is_staff = True
         self.user2.is_staff = True
         self.user1.save()
@@ -60,10 +46,13 @@ class DashletTests(TestCase):
         self.user2.groups.add(group2)
         self.user1.save()
         self.user2.save()
-        
-        self.course1 = Course(fullname="Homeroom FX 2011", shortname="FX1", homeroom=True, credits=1)
+
+        self.course1 = Course(
+            fullname="Homeroom FX 2011",
+            shortname="FX1", homeroom=True, credits=1)
         self.course1.save()
-        self.course_section1 = CourseSection(name="Homeroom FX 2011")
+        self.course_section1 = CourseSection(
+            name="Homeroom FX 2011", course=self.course1)
         self.course_section1.save()
         self.course_section_teacher1 = CourseSectionTeacher(
             teacher=self.teacher1,
@@ -72,9 +61,12 @@ class DashletTests(TestCase):
         )
         self.course_section_teacher1.save()
 
-        self.course2 = Course(fullname="Homeroom FX 2012", shortname="FX2", homeroom=True, credits=1)
+        self.course2 = Course(
+            fullname="Homeroom FX 2012",
+            shortname="FX2", homeroom=True, credits=1)
         self.course2.save()
-        self.course_section2 = CourseSection(name="Homeroom FX 2012")
+        self.course_section2 = CourseSection(
+            name="Homeroom FX 2012", course=self.course2)
         self.course_section2.save()
         self.course_section_teacher2 = CourseSectionTeacher(
             teacher=self.teacher2,
@@ -89,53 +81,48 @@ class DashletTests(TestCase):
         self.course_meet1.save()
         self.course_meet2 = CourseMeet(course_section=self.course_section2, period=self.period, day="2")
         self.course_meet2.save()
-        self.course1.marking_period.add(self.mp)
-        self.course1.marking_period.add(self.mp2)
-        self.course1.marking_period.add(self.mp3)
-        self.course1.save()
-        self.course2.marking_period.add(self.mp)
-        self.course2.marking_period.add(self.mp2)
-        self.course2.marking_period.add(self.mp3)
-        self.course2.save()
-        
-        self.enroll1 = CourseEnrollment(course_section=self.course_section1, user=self.teacher1)
-        self.enroll1.save()
-        self.enroll2 = CourseEnrollment(course_section=self.course_section2, user=self.teacher2)
-        self.enroll2.save()
+        self.course_section1.marking_period.add(self.mp)
+        self.course_section1.marking_period.add(self.mp2)
+        self.course_section1.marking_period.add(self.mp3)
+        self.course_section1.save()
+        self.course_section2.marking_period.add(self.mp)
+        self.course_section2.marking_period.add(self.mp2)
+        self.course_section2.marking_period.add(self.mp3)
+        self.course_section2.save()
+
         self.present = AttendanceStatus(name="Present", code="P", teacher_selectable=True)
         self.present.save()
         self.absent = AttendanceStatus(name="Absent", code="A", teacher_selectable=True, absent=True)
         self.absent.save()
         self.excused = AttendanceStatus(name="Absent Excused", code="AX", absent=True, excused=True)
         self.excused.save()
-        
-    
+
     def test_teacher_attendance(self):
-        """ Tests to ensure that we can take attendance. This test covers 
+        """ Tests to ensure that we can take attendance. This test covers
                 the submission_percentage dashlet and teacher_submission view. """
         self.setup()
-        
+
         user = User.objects.get(username='dburke')
         user.set_password('aa') # Why is this needed?
         user.save()
-        
+
         c = Client()
-        
+
         c.login(username='dburke', password='aa')
-        
+
         response = c.get('/admin/')
         self.assertEqual(response.status_code, 200)
-        
+
         course_section = CourseSection.objects.get(name="Homeroom FX 2011")
-        
+
         response = c.get('/attendance/teacher_attendance/' + str(course_section.id), follow=True)
         self.assertEqual(response.status_code, 200)
-        
+
         AttendanceLog(user=user, course_section=self.course_section1).save()
         AttendanceLog(user=user, course_section=self.course_section2).save()
-        
+
         homerooms = CourseSection.objects.filter(course__homeroom=True)
         for homeroom in homerooms:
             log = AttendanceLog.objects.filter(course_section=homeroom)
             assert log.count() > 0
-                
+

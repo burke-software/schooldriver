@@ -135,6 +135,7 @@ BOWER_INSTALLED_APPS = (
     'jquery-color',
     'angular-route',
     'angular-ui-handsontable',
+    'angular-bootstrap',
     'underscore',
     'restangular',
     'bootstrap-sass-official',
@@ -362,11 +363,10 @@ DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 SHARED_APPS = ()
 
 SHARED_APPS = SHARED_APPS + (
-    'constance',
-    'constance.backends.database',
+    #'constance',
+    #'constance.backends.database',
     'ecwsp.customers',
     'ecwsp.administration',
-    'south',
     'djcelery',
     'django.contrib.contenttypes',
     'grappelli.dashboard',
@@ -377,10 +377,11 @@ SHARED_APPS = SHARED_APPS + (
     'django.contrib.sessions',
 )
 TENANT_APPS = (
+    #'constance',
+    #'constance.backends.database',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.admin',
-    'constance.backends.database',
     'autocomplete_light',
     'social.apps.django_app.default',
     'ldap_groups',
@@ -392,10 +393,11 @@ TENANT_APPS = (
     'ecwsp.discipline',
     'ecwsp.attendance',
     'ecwsp.grades',
+    #'ecwsp.gradebook',
+    'ecwsp.benchmark_grade',
     'ecwsp.counseling',
     'ecwsp.standard_test',
     'ecwsp.integrations.schoolreach',
-    'south',
     'reversion',
     'djcelery',
     'localflavor',
@@ -422,13 +424,15 @@ TENANT_APPS = (
     'rest_framework_bulk',
     'api',
     'compressor',
-    'constance',
-    'constance.backends.database',
     'impersonate',
 ) + INSTALLED_APPS
 
-INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
 TENANT_MODEL = "customers.Client"
+INSTALLED_APPS = [
+    'constance',
+    'constance.backends.database',
+] + INSTALLED_APPS
 
 if DEBUG_TOOLBAR == True:
     INSTALLED_APPS += ('debug_toolbar',)
@@ -483,15 +487,6 @@ CONSTANCE_CONFIG = {
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
-import django
-if django.get_version()[:3] != '1.7':
-    INSTALLED_APPS += ('south',)
-    if MULTI_TENANT:  # Would happen automatically otherwise
-        SOUTH_DATABASE_ADAPTERS = {
-            'default': 'south.db.postgresql_psycopg2',
-        }
-
-
 USE_S3 = False
 if 'USE_S3' in os.environ:
     USE_S3 = True
@@ -539,11 +534,9 @@ if USE_S3:
 
 if MULTI_TENANT:
     DATABASES['default']['ENGINE'] = 'tenant_schemas.postgresql_backend'
+    DATABASE_ROUTERS = ('tenant_schemas.routers.TenantSyncRouter',)
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
-    INSTALLED_APPS = INSTALLED_APPS + ('tenant_schemas',)
-    DATABASE_ROUTERS = (
-            'tenant_schemas.routers.TenantSyncRouter',
-    )
+    INSTALLED_APPS = INSTALLED_APPS + ['tenant_schemas',]
 
 SOUTH_TESTS_MIGRATE = False
 
@@ -552,3 +545,25 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'PAGINATE_BY_PARAM': 'page_size',
 }
+
+MIGRATIONS_DISABLED = False
+if 'TRAVIS' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE':   'django.db.backends.postgresql_psycopg2',
+            'NAME':     'travisci',
+            'USER':     'postgres',
+            'PASSWORD': '',
+            'HOST':     'localhost',
+            'PORT':     '',
+        }
+    }
+elif 'test' in sys.argv:
+    # Don't take fucking years to run a test
+    class DisableMigrations(object):
+        def __contains__(self, item):
+            return True
+        def __getitem__(self, item):
+            return "notmigrations"
+    MIGRATION_MODULES = DisableMigrations()
+    MIGRATIONS_DISABLED = True

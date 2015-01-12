@@ -17,7 +17,7 @@ class CourseNestedSerializer(serializers.ModelSerializer):
     a course serializer for nesting purposes
     should be passed "read_only=True"
     """
-    department = DepartmentNestedSerializer(source='department', read_only=True) 
+    department = DepartmentNestedSerializer(read_only=True)
 
     class Meta:
         model = Course
@@ -42,11 +42,14 @@ class CourseSerializer(serializers.ModelSerializer):
     serializing the Course Model for use with the API
     """
 
-    id = serializers.Field()
+    id = serializers.ReadOnlyField()
     #sections = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     sections = SimpleSectionSerializer()
-    department_id = serializers.PrimaryKeyRelatedField(source='department')
-    department = DepartmentNestedSerializer(source='department', read_only=True)
+    department_id = serializers.PrimaryKeyRelatedField(
+        source='department',
+        queryset=Department.objects.all(),
+    )
+    department = DepartmentNestedSerializer(read_only=True)
 
     class Meta:
         model = Course
@@ -58,9 +61,12 @@ class SectionSerializer(serializers.ModelSerializer):
     serializing the CourseSection Model for use with the API
     """
 
-    id = serializers.Field()
-    course_id = serializers.PrimaryKeyRelatedField(source='course')
-    course = CourseNestedSerializer(source='course', read_only=True)
+    id = serializers.ReadOnlyField()
+    course_id = serializers.PrimaryKeyRelatedField(
+        source='course',
+        queryset=Course.objects.all(),
+    )
+    course = CourseNestedSerializer(read_only=True)
 
     class Meta:
         model = CourseSection

@@ -1,0 +1,84 @@
+<div>
+  <form class="hidden-print">
+    <button onclick="window.print()" class="hidden-print pull-right btn btn-lg btn-primary">
+      <i class="fa fa-print"></i> Print
+    </button>
+    <h1>Review Submitted Application</h1>
+    <div class="well">
+      <p>Student Name: <strong>{{ applicantData.lname }}, {{ applicantData.fname }}</strong></p>
+      <p>Date Submitted: <strong>{{ applicantData.date_added }}</strong></p>
+    </div>
+    <div class="panel-group" id="accordion">
+      <div class="panel panel-default" ng-repeat="section in applicationTemplate.sections">
+        <div class="panel-heading">
+            <h4 style="display: inline-block;">
+              <a data-toggle="collapse" data-parent="#accordion" href="#section-{{section.id}}" onclick="return false;">
+                {{ section.name }}
+              </a>
+            </h4>
+        </div>
+        <div id="section-{{section.id}}" class="panel-collapse collapse">
+          <div class="panel-body">
+            <p>{{ section.help_text }}</p>
+            <div class="col-sm-12">
+              <div>
+                <div ng-repeat="section_field in section.fields track by $index">
+                  <div class="form-group col-sm-12">
+                    <label class="control-label col-sm-2" ng-if="section_field.field_label.length < 50">
+                      {{ section_field.field_label }}
+                    </label>
+                    <label class="control-label col-sm-10 col-sm-offset-2" ng-if="section_field.field_label.length > 50">
+                      <p class="text-left">
+                        <span ng-if="section_field.required">*</span>
+                        {{ section_field.field_label }}
+                      </p>
+                    </label>
+                    <div class="col-sm-2" ng-if="section_field.field_label.length > 50"></div>
+                    <div class="col-sm-10" >
+                      <div class="well well-sm" ng-if="section_field.field_type != 'emergency_contact'">
+                        <span ng-if="section_field.value.name != undefined">{{ section_field.value.name }}</span>
+                        <span ng-if="section_field.value.name == undefined">{{ section_field.value }}</span>
+                      </div>
+                      <div class="well well-sm" ng-if="section_field.field_type=='emergency_contact'">
+                        <!-- Emergency Contact Block -->
+                          <strong>Name:</strong> {{ section_field.value.fname }} {{section_field.value.lname }}, ({{ section_field.value.relationship_to_student }}) <br />
+                          <strong>Address:</strong> {{ section_field.value.street }} {{ section_field.value.city }}, {{ section_field.value.state }}, {{section_field.value.zip }} <br />
+                          <strong>Home:</strong> {{ section_field.value.home_phone }} {{ section_field.value.email }} <br />
+                          <strong>Work:</strong> {{ section_field.value.occupation }} {{ section_field.value.employer }} {{ section_field.value.work_phone }}<br />
+                          <strong>Employment Status:</strong> {{ section_field.value.employment_status }}<br />
+                          <strong>Legal Guardian:</strong> {{ section_field.value.legal_guardian }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+  <div ng-repeat="section in applicationTemplate.sections" class="visible-print">
+    <h3>{{ section.name }}</h3>
+    <table class="table table-condensed table-striped">
+      <tbody>
+        <tr ng-repeat="section_field in section.fields track by $index">
+          <td class="col-sm-6">{{ section_field.field_label }}</td>
+          <td class="col-sm-6" ng-if="section_field.field_type != 'emergency_contact'">
+            <span ng-if="section_field.value.name != undefined">{{ section_field.value.name }}</span>
+            <span ng-if="section_field.value.name == undefined">{{ section_field.value }}</span>
+          </td>
+          <td class="col-sm-6" ng-if="section_field.field_type == 'emergency_contact'">
+            <strong>Name:</strong> {{ section_field.value.fname }} {{section_field.value.lname }}, ({{ fsection_ield.value.relationship_to_student }}) <br />
+            <strong>Address:</strong> {{ section_field.value.street }} {{ section_field.value.city }}, {{ section_field.value.state }}, {{section_field.value.zip }} <br />
+            <strong>Home:</strong> {{ section_field.value.home_phone }} {{ section_field.value.email }} <br />
+            <strong>Work:</strong> {{ section_field.value.occupation }} {{ section_field.value.employer }} {{ section_field.value.work_phone }}<br />
+            <strong>Employment Status:</strong> {{ section_field.value.employment_status }}<br />
+            <strong>Legal Guardian:</strong> {{ section_field.value.legal_guardian }}
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
