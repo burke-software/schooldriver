@@ -1,5 +1,5 @@
 from rest_framework import routers
-from ecwsp.grades.views import GradeViewSet
+from ecwsp.grades.api_views import GradeViewSet
 from api.schedule.views import CourseViewSet, SectionViewSet
 from api.admissions.views import ApplicantViewSet
 from api.admissions.views import ApplicantCustomFieldViewSet

@@ -1,32 +1,14 @@
 from django.contrib.auth.decorators import user_passes_test
-from django.db.models import F, Q
+from django.core.urlresolvers import reverse
 from django.views.generic import DetailView
 from django.views.generic.edit import FormMixin
 from django.utils.decorators import method_decorator
-from rest_framework import filters, viewsets
-from rest_framework.permissions import IsAdminUser
 from ecwsp.schedule.models import CourseSection
 from ecwsp.sis.models import UserPreference
-from .serializers import GradeSerializer
-from .models import Grade, GradeComment
+from ecwsp.administration.models import Template
+from .models import GradeComment
 from .forms import GradeUpload
 from constance import config
-
-
-class GradeViewSet(viewsets.ModelViewSet):
-    """
-    an API endpoint for the Grade model
-    """
-    permission_classes = (IsAdminUser,)
-    queryset = Grade.objects.filter(
-        enrollment__course_section__course__graded=True,
-    ).select_related(
-    ).distinct()
-
-    filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
-    serializer_class = GradeSerializer
-    filter_fields = ()
-    ordering_fields = ('marking_period__start_date',)
 
 
 class CourseSectionGrades(FormMixin, DetailView):
@@ -101,9 +83,9 @@ def teacher_grade_download(request, id, type=None):
         profile = UserPreference.objects.get_or_create(user=request.user)[0]
         type = profile.get_format(type="spreadsheet")
     course_section = CourseSection.objects.get(id=id)
-    template, created = Template.objects.get_or_create(name="grade spreadsheet")
+    template = Template.objects.get_or_create(name="grade spreadsheet")[0]
     filename = unicode(course_section) + "_grade"
-    data={}
+    data = {}
     data['$students'] = []
     data['$username'] = []
 

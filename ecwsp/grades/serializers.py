@@ -7,4 +7,5 @@ from ecwsp.schedule.models import MarkingPeriod, CourseSection
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
-        fields = ('grade', 'marking_period')
+        fields = ('grade', 'marking_period', 'student_id', 'course_section_id',
+                  'enrollment')

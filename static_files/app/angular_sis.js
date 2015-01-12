@@ -1,4 +1,4 @@
-var app = angular.module("angular_sis", ['restangular', 'ngRoute', 'ui.bootstrap', 'uiHandsontable']);
+var app = angular.module("angular_sis", ['restangular', 'ngRoute', 'ui.bootstrap', 'ngHandsontable']);
 
 app.config([
     "$httpProvider", function($httpProvider) {
@@ -32,6 +32,7 @@ function static(path) {
 
 app.config(function($routeProvider, $locationProvider) {
     $routeProvider.when("/grades/course_section/:course_section_id/grades/", {
+      templateUrl: static('app/grades/course_grades.html'),
       controller: "CourseGradesController"
     });
     $routeProvider.when("/course/student_grades/:student_id/", {
