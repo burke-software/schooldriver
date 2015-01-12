@@ -46,7 +46,6 @@ django-reversion==1.8.5
 django-rosetta==0.7.4
 django-simple-import==1.19
 django-storages-redux==1.2
-django-tenant-schemas==1.5.1
 django-storages==1.1.8
 django-tenant-schemas==1.5.1
 django-toolbelt==0.0.1
