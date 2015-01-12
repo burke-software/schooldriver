@@ -143,6 +143,7 @@
 	list-style: none;
 	white-space: nowrap;
 	display: inline-block;
+	vertical-align: middle;
 	
 	li {
 		display: inline;
@@ -151,23 +152,38 @@
 		a {
 			padding: 5px 10px;
 			display: inline-block;
+			vertical-align: top;
 		}
 	}
 }
+.mm-has-submenu:hover {
+	background-color: rgba(0,0,0, 0.25);
+	display: inline-block;
+	transition: background-color 1s ease;
+}
 .mm-has-submenu:hover > .mm-submenu {
-	display: inline;
-	background-color: inherit;
-	margin: 0;
-	padding: 0;
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	transition: max-width 1s ease;
 }
 .mm-submenu {
-	display: none;
+	display: inline-block;
+	width: 0;
+	max-width: 0;
+	height: 0;
+	overflow: hidden;
+	margin: 0;
+	padding: 0;
+	// transition: none;
+	// transition: none;
 
 	li a {
-		background-color: rgba(255,255,255, 0.25);
+		
 	}
 }
 .mm-all-link {
+	vertical-align: -5px;
 	border-left: 1px solid currentColor;
 	/*border-left: 1px solid rgba(255,255,255, 0.67);*/ /* Might prefer transparency to solid */
 }
@@ -214,7 +230,7 @@
 	transition: width 0.25s ease;
 	cursor: pointer;
    -webkit-appearance: none;
-   outline: none;
+	outline: none;
 }
 .full-size .mm-search-field {
 	width: 38px;

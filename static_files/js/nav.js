@@ -86,6 +86,12 @@ $(document).ready(function() {
 		goToMobileSize();
 	});
 
+	$('.mm-has-submenu').hover(function() {
+		fitMenuElements();
+	}, function () {
+		fitMenuElements();
+	});
+
 	$('.mm-arrow-right').click(function() {
 		$('.mm-menu-wrapper').animate({
 			scrollLeft: getScrollValue('right'),
