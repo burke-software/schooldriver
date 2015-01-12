@@ -1,6 +1,7 @@
 from api.tests.api_test_base import APITest
 from ecwsp.grades.models import Grade
 from ecwsp.schedule.models import CourseEnrollment
+from decimal import Decimal
 import logging
 
 class GradeAPIGetTest(APITest):
@@ -22,13 +23,10 @@ class GradeAPIGetTest(APITest):
         test a get request for a grade with a specific id
         """
         self.teacher_login()
-        response = self.client.get('/api/grades/1/')
-        logging.info(response.data)
-        self.assertEqual(response.data['grade'], 50)
-
-        # test another grade instance just to be certain
-        response = self.client.get('/api/grades/3/')
-        self.assertEqual(float(response.data['grade']), float(89.09))
+        known_grade = Grade.objects.all().first()
+        response = self.client.get('/api/grades/%s/' % known_grade.id)
+        expected_grade = known_grade.grade
+        self.assertEqual(Decimal(response.data['grade']), expected_grade)
 
     def test_student_filter(self):
         """
