@@ -165,7 +165,6 @@
 	width: auto;
 	height: auto;
 	max-width: 100%;
-	transition: max-width 1s ease;
 }
 .mm-submenu {
 	display: inline-block;
@@ -175,8 +174,6 @@
 	overflow: hidden;
 	margin: 0;
 	padding: 0;
-	// transition: none;
-	// transition: none;
 
 	li a {
 		

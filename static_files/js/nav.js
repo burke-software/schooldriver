@@ -86,12 +86,20 @@ $(document).ready(function() {
 		goToMobileSize();
 	});
 
-	$('.mm-has-submenu').hover(function() {
-		fitMenuElements();
-	}, function () {
-		fitMenuElements();
+	$('.mm-has-submenu').mouseenter(function() {
+		setTimeout(function () { 
+			fitMenuElements();
+			$('.mm-menu-wrapper').scrollLeft(30);
+		}, 100);
 	});
 
+	$('.mm-has-submenu').mouseleave(function() {
+		setTimeout(function () { 
+			fitMenuElements();
+			$('.mm-menu-wrapper').scrollLeft(30);
+		}, 100);
+	});
+	
 	$('.mm-arrow-right').click(function() {
 		$('.mm-menu-wrapper').animate({
 			scrollLeft: getScrollValue('right'),
