@@ -69,7 +69,7 @@ class GradeAPIGetTest(APITest):
 
     def test_num_queries(self):
         self.teacher_login()
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(1):
             self.client.get('/api/grades/')
 
     def test_ungraded_courses(self):
