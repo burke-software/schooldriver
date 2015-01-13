@@ -21,7 +21,7 @@ django-constance==1.0.1
 git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99
 django-custom-field==2.3
 django-dajax-ng==0.9.4
-django-dajaxice-ng==0.6.0.0
+django-dajaxice==0.7
 django-daterange-filter==1.0.0
 django-extensions==1.4.6
 django-filter==0.8
