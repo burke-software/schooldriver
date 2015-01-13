@@ -22,28 +22,23 @@ class ApplicantAdditionalInformationSerializer(serializers.ModelSerializer):
 
 class ApplicantSerializer(serializers.ModelSerializer):
     religion = serializers.PrimaryKeyRelatedField(
-        many= True,
         queryset=ReligionChoice.objects.all(),
         required = False)
     ethnicity = serializers.PrimaryKeyRelatedField(
-        many= True,
         queryset=EthnicityChoice.objects.all(),
         required = False)
     family_preferred_language = serializers.PrimaryKeyRelatedField(
-        many= True,
         queryset=LanguageChoice.objects.all(),
         required = False)
     heard_about_us = serializers.PrimaryKeyRelatedField(
-        many= True,
         queryset=HeardAboutUsOption.objects.all(),
         required = False)
     present_school = serializers.PrimaryKeyRelatedField(
-        many= True,
         queryset=FeederSchool.objects.all(),
         required = False)
     siblings = serializers.PrimaryKeyRelatedField(
-        many= True,
-        queryset=Student.objects.all(),
+        many = True,
+        queryset = Student.objects.all(),
         required = False)
 
     class Meta:
