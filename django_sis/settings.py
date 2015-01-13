@@ -152,7 +152,7 @@ IMPERSONATE_ALLOW_SUPERUSER = True
 IMPERSONATE_REQUIRE_SUPERUSER = True
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
+    'ecwsp.sis.backends.CaseInsensitiveModelBackend',
 )
 
 #LDAP
@@ -537,8 +537,6 @@ if MULTI_TENANT:
     DATABASE_ROUTERS = ('tenant_schemas.routers.TenantSyncRouter',)
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
     INSTALLED_APPS = INSTALLED_APPS + ['tenant_schemas',]
-
-SOUTH_TESTS_MIGRATE = False
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
