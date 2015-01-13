@@ -38,14 +38,15 @@ django-pagination==1.0.7
 django-picklefield==0.3.1
 django-positions==0.5.1
 django-redis-cache==0.13.0
-django-report-builder==3.0.5
+django-report-builder==3.0.6
 django-report-scaffold==0.1.4
 django-report-utils==0.2.7
 django-responsive-dashboard==1.1
 django-reversion==1.8.5
 django-rosetta==0.7.4
 django-simple-import==1.19
-django-storages-redux==1.2.1
+#django-storages-redux==1.2.1
+django-storages
 django-tenant-schemas==1.5.1
 django-toolbelt==0.0.1
 django-widget-tweaks==1.3
