@@ -1,4 +1,4 @@
-{% load dajaxice_templatetags %}
+{% load dajaxice_templatetags compress %}
 <!DOCTYPE html>
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <head>
@@ -7,24 +7,18 @@
   {% block javascripts %}
   {% dajaxice_js_import %}
   {% load static from staticfiles %}
-  <!--[if IE]>
-    <script type="text/javascript" src="{% static "js/jquery-1.10.2.min.js" %}"></script>
-  <![endif]-->
-  <![if !IE]>
-    <script type="text/javascript" src='{% static 'jquery/dist/jquery.js' %}'></script>
-  <![endif]>
-  <script type="text/javascript" src="{% static 'jquery-migrate/jquery-migrate.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'jquery-ui/ui/minified/jquery-ui.min.js' %}"></script>
-  <script type="text/javascript" src="{% static "js/jquery.multiselect.js" %}"></script>
-  <script type="text/javascript" src="{% static "js/jquery.multiselect.filter.js" %}"></script>
-  {% include 'autocomplete_light/static.html' %}
-  <script>
-    $.fn.simple_multiselect = $.fn.multiselect;
-    delete $.fn.multiselect;
-</script>
-  {% endblock %}
-  
-  {% include "gumby/head.html" %}
+
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700,700italic' rel='stylesheet' type='text/css'>
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  {% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{% static "css/ui.core.css" %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static "css/cupertino/jquery-ui-1.10.3.custom.min.css" %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static "css/global.css" %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static "css/jquery.multiselect.css" %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static "css/jquery.multiselect.filter.css" %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static "jquery.uix.multiselect/jquery.uix.multiselect.css" %}"/>
+  <link rel="stylesheet" media="print" type="text/css" href="{% static "css/print.css" %}"/>
   
   <link rel="apple-touch-icon" sizes="57x57" href="{% static 'favicon/apple-touch-icon-57x57.png' %}">
   <link rel="apple-touch-icon" sizes="114x114" href="{% static 'favicon/apple-touch-icon-114x114.png' %}">
@@ -43,16 +37,31 @@
   <meta name="msapplication-config" content="none"/>
   <meta name="msapplication-TileColor" content="#1671b7">
   <meta name="msapplication-TileImage" content="{% static 'favicon/mstile-144x144.png' %}">
-
-  {% block stylesheets %}
-  <link rel="stylesheet" type="text/css" href="{% static "css/ui.core.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "css/cupertino/jquery-ui-1.10.3.custom.min.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "css/global.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "css/jquery.multiselect.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "css/jquery.multiselect.filter.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "jquery.uix.multiselect/jquery.uix.multiselect.css" %}"/>
-  <link rel="stylesheet" media="print" type="text/css" href="{% static "css/print.css" %}"/>
   {% endblock %}
+
+  {% compress css %}
+    <link type="text/x-scss" href="{% static 'scss/_nav.scss' %}" rel="stylesheet" charset="utf-8" />
+  {% endcompress %}
+
+  <!--[if IE]>
+    <script type="text/javascript" src="{% static "js/jquery-1.10.2.min.js" %}"></script>
+  <![endif]-->
+  <![if !IE]>
+    <script type="text/javascript" src='{% static 'jquery/dist/jquery.js' %}'></script>
+  <![endif]>
+  <script type="text/javascript" src="{% static 'jquery-migrate/jquery-migrate.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'jquery-ui/ui/minified/jquery-ui.min.js' %}"></script>
+  <script type="text/javascript" src="{% static "js/jquery.multiselect.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/jquery.multiselect.filter.js" %}"></script>
+  <script src="{% static 'js/nav.js' %}"></script>
+  {% include 'autocomplete_light/static.html' %}
+  <script>
+    $.fn.simple_multiselect = $.fn.multiselect;
+    delete $.fn.multiselect;
+</script>
+  {% endblock %}
+  
+  {% include "gumby/head.html" %}
   
   <title>Django School Information System</title>
 
