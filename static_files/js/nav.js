@@ -86,18 +86,21 @@ $(document).ready(function() {
 		goToMobileSize();
 	});
 
-	$('.mm-has-submenu').mouseenter(function() {
-		setTimeout(function () { 
-			fitMenuElements();
-			$('.mm-menu-wrapper').scrollLeft(30);
-		}, 100);
-	});
+	$('.mm-has-submenu > a').click(function(e) {
+		if (!$(this).parent().hasClass('active')) {
+			e.preventDefault();
 
-	$('.mm-has-submenu').mouseleave(function() {
-		setTimeout(function () { 
-			fitMenuElements();
-			$('.mm-menu-wrapper').scrollLeft(30);
-		}, 100);
+			$('.mm-has-submenu.active').each(function() {
+				$(this).removeClass('active');
+			});
+
+			$(this).parent().addClass('active');
+
+			setTimeout(function () { 
+				fitMenuElements();
+				// $('.mm-menu-wrapper').scrollLeft(30);
+			}, 100);
+		}
 	});
 	
 	$('.mm-arrow-right').click(function() {
