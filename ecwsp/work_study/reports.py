@@ -144,7 +144,7 @@ def gen_attendance_report_day(day, is_pickup=False):
             ws.write(y,7,unicode(number), myFontStyle)  
             y += 1
         
-    response = HttpResponse(mimetype="application/ms-excel")
+    response = HttpResponse(content_type="application/ms-excel")
     response['Content-Disposition'] = 'attachment; filename=%s' % ('Attendance_' + day[0] + '.xls' ,)
     wb.save(response)
     return response
