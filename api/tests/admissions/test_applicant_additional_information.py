@@ -36,7 +36,6 @@ class ApplicantAdditionalInformationAPIGetTest(APITest):
         new_custom_field.save()
         previous_count = ApplicantAdditionalInformation.objects.count()
         response = self.client.post('/api/applicant/', data = applicant)
-        print response
         applicant_id = response.data["id"]
         data = [
             {"applicant": applicant_id, "custom_field" : new_custom_field.id, "answer" : "world"},
