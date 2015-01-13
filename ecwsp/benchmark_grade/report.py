@@ -16,7 +16,13 @@ from ecwsp.benchmark_grade.views import gradebook
 
 import tempfile
 import os
-import uno
+
+if 'TRAVIS' not in os.environ:
+    """this import is killing us on TravisCI, so I'm removing it. There
+    may be a better way to do this, but we honestly don't need anything 
+    from this file during our test runs."""
+    import uno
+    
 import re
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import date
