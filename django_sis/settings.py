@@ -524,7 +524,7 @@ if USE_S3:
     AWS_PRELOAD_METADATA = True
     AWS_QUERYSTRING_AUTH = False
     DEFAULT_FILE_STORAGE = 'django_sis.s3utils.MediaRootS3BotoStorage'
-    COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    COMPRESS_STORAGE = STATICFILES_STORAGE = 'django_sis.s3utils.CachedS3BotoStorage''
     COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
     MEDIA_URL = STATIC_URL
     # Use Heroku's DB
