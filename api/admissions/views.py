@@ -74,11 +74,21 @@ class ApplicationTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = StudentApplicationTemplateSerializer
     filter_fields = ('is_default',)
 
-class ApplicantAdditionalInformationViewSet(viewsets.ModelViewSet, BulkCreateModelMixin):
+class ApplicantAdditionalInformationViewSet(viewsets.ModelViewSet):
 
     permission_classes = (ApplicantPermissions,)
     queryset = ApplicantAdditionalInformation.objects.all()
     serializer_class = ApplicantAdditionalInformationSerializer
+
+    def get_serializer(self, *args, **kwargs):
+        """ overriding the default behavior to support bulk create,
+        for reference: stackoverflow.com/questions/27869841/how-to-post-put-json-data-to-listserializer/27871396#27871396 
+        """
+        if "data" in kwargs:
+            data = kwargs["data"]
+            if isinstance(data, list):
+                kwargs["many"] = True
+        return super(ApplicantAdditionalInformationViewSet, self).get_serializer(*args, **kwargs)
 
 class ApplicantForeignKeyRelatedFieldChoicesViewSet(viewsets.ViewSet):
 
