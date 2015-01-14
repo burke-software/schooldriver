@@ -84,6 +84,26 @@ class TwinCitiesGradeCalculationTests(SisTestMixin, TestCase):
             )
         self.assertEqual(grade, Decimal('3.75'))
 
+    def test_adding_new_category_has_no_effect_on_existing_students(self):
+        grade, aggregate_id = gradebook_get_average_and_pk(
+            student = self.student, 
+            course_section = self.course_section, 
+            marking_period = self.marking_period
+            )
+        self.assertEqual(grade, Decimal('3.70'))
+        
+        self.data.create_new_category_and_adjust_all_category_weights()
+
+        grade, aggregate_id = gradebook_get_average_and_pk(
+            student = self.student, 
+            course_section = self.course_section, 
+            marking_period = self.marking_period
+            )
+        self.assertEqual(grade, Decimal('3.70'))
+
+
+
+
 
         
 
