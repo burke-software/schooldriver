@@ -18,6 +18,7 @@ class APITest(APITestCase):
         """ Extend me with more data to populate """
         self.data = SisData()
         self.data.create_basics()
+        self.data.create_admissions_choice_data()
 
     def teacher_login(self):
         """

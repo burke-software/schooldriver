@@ -1,6 +1,7 @@
 # never import * except test data (because who cares about clean tests)
 from ecwsp.sis.models import *
 from ecwsp.attendance.models import *
+from ecwsp.admissions.models import *
 from ecwsp.grades.models import *
 from ecwsp.schedule.models import *
 from ecwsp.grades.tasks import *
@@ -144,6 +145,13 @@ class SisData(object):
         aa = Faculty.objects.create(username="aa", first_name="aa", is_superuser=True, is_staff=True)
         aa.set_password('aa')
         aa.save()
+
+    def create_admissions_choice_data(self):
+        LanguageChoice.objects.create( name = "English" )
+        EthnicityChoice.objects.create( name = "Hispanic/Latino" )
+        HeardAboutUsOption.objects.create( name = "Radio" )
+        ReligionChoice.objects.create( name = "Roman Catholic" )
+        FeederSchool.objects.create( name = "Adamson Middle" )
 
     def create_balt_like_sample_data(self):
         self.create_required()

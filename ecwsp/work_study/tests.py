@@ -5,7 +5,6 @@ from django.test import TestCase
 from django.test.client import Client
 from django.core.management import call_command
 
-from ecwsp.work_study.forms import *
 from ecwsp.work_study.models import *
 from ecwsp.administration.models import *
 

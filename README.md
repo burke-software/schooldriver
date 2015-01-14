@@ -7,40 +7,32 @@ Burke Software and Consulting offers support and hosting for $3000/year for a sc
 [![Build Status](https://travis-ci.org/burke-software/django-sis.png)](https://travis-ci.org/burke-software/django-sis)
 
 # Quick Install
-You should have at least basic django deployment experience to run django-sis. We test only in Ubuntu 12.04 and mysql.
+You should have at least basic django deployment and docker experience to run django-sis. We test only in Ubuntu 12.04 and PostgreSQL.
 Other environments might work but are not supported.
 
-On debian/ubuntu run install/install.sh
-
-If not on debian install everything in requirements.txt using pip. Install reportlab from pip (requires gcc) or 
-from a package manager. 
+Run the docker images as described in fig.yml. We suggest creating a fig-production.yml file with your own configrations.
 
 **Configuration**
 
-Modify settings_local.py to add your own settings, such as your database.
+Modify settings_local.py or edit environment variables to add your own settings, such as your database.
 
 **Set up database**
 
-    ./manage.py syncdb --migrate
+    fig run --rm web ./manage.py migrate
 
 **Run a test server**
 
-    ./manage.py runserver
-
-You can deploy to production as you would any Django application. https://docs.djangoproject.com/en/dev/howto/deployment/
-We do make use of celery for tasks. For a true production environment this should be set up.
+    fig up
 
 ## Upgrades
 
-Use south to upgrade the database. Install requirements.txt in case any have updated. Collect static if on a 
-production environment. Restart your task scheduler. It should look something like
+1. `git pull`
+2. `fig build`
+3. `fig run --rm web ./manage.py migrate`
+4. `fig run --rm web ./manage.py collectstatic`
+5. `fig restart`
 
-    ./manage.py migrate
-    ./manage.py collectstatic
-    pip install --upgrade -r requirements.txt
-
-We don't currently release stable versions of django-sis. You can assume everything in git is as "stable" as possible. If you 
-require more stability consider paying for support.
+We don't currently release stable versions of django-sis. You can assume everything in git is as "stable" as possible. If you require more stability consider paying for support.
 
 # Apps
 

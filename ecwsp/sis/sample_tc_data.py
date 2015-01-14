@@ -3,6 +3,7 @@ from ecwsp.sis.models import *
 from ecwsp.attendance.models import *
 from ecwsp.grades.models import *
 from ecwsp.schedule.models import *
+from ecwsp.benchmark_grade.models import *
 
 import datetime
 
@@ -116,10 +117,13 @@ class SampleTCData(SisData):
     def create_sample_tc_students(self):
         self.tc_student1 = Student.objects.create(first_name="David", last_name="Twin", username="dtwin")
         self.tc_student2 = Student.objects.create(first_name="Quentin", last_name="Twin", username="qtwin")
+        self.tc_student3 = Student.objects.create(first_name="Lazzy", last_name="Mazzy", username="lazzymazzy")
         year1_course_sections = self.get_course_sections_by_year_name("TC-2014-2015")
         year2_course_sections = self.get_course_sections_by_year_name("TC-2015-2016")
-        # enroll our first student in the year 1 course sections
+        # enroll our first, third students in the year 1 course sections
         self.enroll_tc_student_in_course_sections(self.tc_student1, year1_course_sections)
+        self.enroll_tc_student_in_course_sections(self.tc_student3, year1_course_sections)
+
         # enroll our second student in both years
         self.enroll_tc_student_in_course_sections(self.tc_student2, year1_course_sections)
         self.enroll_tc_student_in_course_sections(self.tc_student2, year2_course_sections)
@@ -189,3 +193,179 @@ class SampleTCData(SisData):
                     )
                 grade_object.grade = Decimal(grade)
                 grade_object.save()
+
+    def create_sample_tc_benchmark_data(self):
+        self.toggle_benchmark_grade_on_active_year()
+        self.create_calculation_rule()
+        self.create_benchmark_categories()
+        self.create_calculation_rule_per_course_categories()
+        self.create_sample_benchmark_items()
+        self.create_sample_marks_for_sample_student()
+
+    def toggle_benchmark_grade_on_active_year(self):
+        school_year = self.year1
+        school_year.benchmark_grade = True
+        school_year.save()
+
+    def create_calculation_rule(self):
+        self.tc_calculation_rule = CalculationRule.objects.create(
+            first_year_effective=self.year1,
+            points_possible = 4,
+            decimal_places = 2,
+        )
+
+    def create_benchmark_categories(self):
+        Category.objects.bulk_create([
+            Category(
+                name="Standards",
+                fixed_points_possible=4.0,
+                display_in_gradebook=True,
+                fixed_granularity=0.5,
+                display_order=1,
+            ),
+            Category(
+                name="Engagement",
+                fixed_points_possible=4.0,
+                display_in_gradebook=True,
+                fixed_granularity=0.5,
+                display_order=2,
+            ),
+            Category(
+                name="Assignment Completion",
+                fixed_points_possible=4.0,
+                display_in_gradebook=True,
+                fixed_granularity=0.5,
+                display_order=3,
+            ),
+            Category(
+                name="Daily Practice",
+                display_order=4,
+                display_in_gradebook=True,
+                display_scale=100.00,
+                display_symbol='%',
+            ),
+        ])
+    
+    def create_calculation_rule_per_course_categories(self):
+        CalculationRulePerCourseCategory.objects.bulk_create([
+            CalculationRulePerCourseCategory(
+                category=Category.objects.get(name="Standards"),
+                weight=0.7,
+                calculation_rule = self.tc_calculation_rule,
+            ),
+            CalculationRulePerCourseCategory(
+                category = Category.objects.get(name="Engagement"),
+                weight = 0.1,
+                calculation_rule = self.tc_calculation_rule,
+            ),
+            CalculationRulePerCourseCategory(
+                category = Category.objects.get(name="Assignment Completion"),
+                weight = 0.1,
+                calculation_rule = self.tc_calculation_rule,
+            ),
+            CalculationRulePerCourseCategory(
+                category=Category.objects.get(name="Daily Practice"),
+                weight = 0.1,
+                calculation_rule = self.tc_calculation_rule,
+            ),
+        ])
+
+    def create_sample_benchmark_items(self):
+        """ create assignment for 1 marking period in 1 course section """
+        marking_period = MarkingPeriod.objects.get( name = "S1-TC" )
+        course_section = CourseSection.objects.get( name = "bus2-section-TC-2014-2015")
+        Item.objects.bulk_create([
+            Item(
+                name="Assignment1", 
+                marking_period= marking_period, 
+                points_possible= 4,
+                course_section = course_section,
+                category=Category.objects.get(name="Standards"),
+            ),
+            Item(
+                name="Assignment2", 
+                marking_period= marking_period, 
+                points_possible= 4,
+                course_section = course_section,
+                category=Category.objects.get(name="Engagement"),
+            ),
+            Item(
+                name="Assignment3", 
+                marking_period= marking_period, 
+                points_possible= 4,
+                course_section = course_section,
+                category=Category.objects.get(name="Assignment Completion"),
+            ),
+            Item(
+                name="Assignment4", 
+                marking_period= marking_period, 
+                points_possible= 4,
+                course_section = course_section,
+                category=Category.objects.get(name="Daily Practice"),
+            )
+        ])
+
+    def create_sample_marks_for_sample_student(self):
+        Mark.objects.bulk_create([
+            Mark(
+                item = Item.objects.get( name = "Assignment1" ),
+                student = self.tc_student3,
+                mark = 4.0
+            ),
+            Mark(
+                item = Item.objects.get( name = "Assignment2" ),
+                student = self.tc_student3,
+                mark = 3.0
+            ),
+            Mark(
+                item = Item.objects.get( name = "Assignment3" ),
+                student = self.tc_student3,
+                mark = 2.5
+            ),
+            Mark(
+                item = Item.objects.get( name = "Assignment4" ),
+                student = self.tc_student3,
+                mark = 3.5
+            ),
+        ])
+
+    def create_new_category_and_adjust_all_category_weights(self):
+        self.create_new_finals_category()
+        self.adjust_category_weights_to_reflect_new_finals_category_addition()
+        self.create_sample_finals_assignment()
+
+    def create_new_finals_category(self):
+        Category.objects.create(
+            name="Finals",
+            fixed_points_possible=4.0,
+            display_in_gradebook=True,
+            fixed_granularity=0.5,
+            display_order=5,
+        )
+
+        CalculationRulePerCourseCategory.objects.create(
+            category=Category.objects.get(name="Finals"),
+            weight=0.05,
+            calculation_rule = self.tc_calculation_rule,
+        )
+
+    def adjust_category_weights_to_reflect_new_finals_category_addition(self):
+        CalculationRulePerCourseCategory.objects.filter(category__name="Standards").update(weight=0.70)
+        CalculationRulePerCourseCategory.objects.filter(category__name="Assignment Completion").update(weight=0.0834)
+        CalculationRulePerCourseCategory.objects.filter(category__name="Engagement").update(weight=0.0833)
+        CalculationRulePerCourseCategory.objects.filter(category__name="Daily Practice").update(weight=0.0833)
+
+    def create_sample_finals_assignment(self):
+        marking_period = MarkingPeriod.objects.get( name = "S1-TC" )
+        course_section = CourseSection.objects.get( name = "bus2-section-TC-2014-2015")
+        Item.objects.create(
+            name="Final Exam 1", 
+            marking_period= marking_period, 
+            points_possible= 4,
+            course_section = course_section,
+            category=Category.objects.get(name="Finals"),
+        )
+
+
+            
+

@@ -9,8 +9,10 @@ from .exceptions import WeightContainsNone
 from ecwsp.sis.sample_data import SisData
 from decimal import Decimal
 from decimal import InvalidOperation
+import unittest
 
 
+@unittest.skip("Gradebook is an unreleased backend right now, we can unskip when it's ready")
 class GradeCalculationTests(SisTestMixin, TestCase):
     def setUp(self):
         self.data = SisData()

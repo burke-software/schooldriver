@@ -58,7 +58,7 @@ def benchmark_calculate_category_as_course_aggregate(student, category, marking_
     calculation_rule = benchmark_find_calculation_rule(marking_period.school_year)
     category_as_course = calculation_rule.category_as_course_set.get(category=category)
     category_numer = category_denom = Decimal(0)
-    for course_section in CourseSection.objects.filter(award_credits=True, courseenrollment__user__username=student.username, marking_period=marking_period, department__in=category_as_course.include_departments.all()).distinct():
+    for course_section in CourseSection.objects.filter(course__course_type__award_credits=True, courseenrollment__user__username=student.username, marking_period=marking_period, department__in=category_as_course.include_departments.all()).distinct():
         credits = Decimal(course_section.credits) / course_section.marking_period.count()
         try:
             category_aggregate = benchmark_get_or_flush(Aggregate, student=student, marking_period=marking_period, category=category, course_section=course_section)
