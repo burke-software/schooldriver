@@ -7,7 +7,7 @@ from .sample_data import BenchmarkSisData
 
 from ecwsp.sis.sample_tc_data import SampleTCData
 from ecwsp.grades.tasks import build_grade_cache
-from ecwsp.benchmark_grade.utility import gradebook_get_average_and_pk
+from ecwsp.benchmark_grade.utility import gradebook_get_average_and_pk, benchmark_calculate_course_aggregate
 from decimal import Decimal
 
 import unittest
@@ -84,22 +84,24 @@ class TwinCitiesGradeCalculationTests(SisTestMixin, TestCase):
             )
         self.assertEqual(grade, Decimal('3.75'))
 
-    def test_adding_new_category_has_no_effect_on_existing_students(self):
+    def test_adding_new_category_for_student_with_no_grade_in_the_new_category(self):
         grade, aggregate_id = gradebook_get_average_and_pk(
             student = self.student, 
             course_section = self.course_section, 
             marking_period = self.marking_period
             )
         self.assertEqual(grade, Decimal('3.70'))
-        
+
         self.data.create_new_category_and_adjust_all_category_weights()
+        benchmark_calculate_course_aggregate(
+            self.student, self.course_section, self.marking_period)
 
         grade, aggregate_id = gradebook_get_average_and_pk(
             student = self.student, 
             course_section = self.course_section, 
             marking_period = self.marking_period
             )
-        self.assertEqual(grade, Decimal('3.70'))
+        self.assertEqual(grade, Decimal('3.74'))
 
 
 
