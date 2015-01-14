@@ -19,7 +19,7 @@
       <div class="mm-menu-wrapper">
         <ul class="mm-menu-items">
           {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
-          <li class="mm-has-submenu {% if app_name == "sis" %}active {% endif %}">
+          <li class="mm-has-submenu{% if app_name == "sis" %} mm-current-page{% endif %}">
             <a href="/sis/dashboard/">Student</a>
             <ul class="mm-submenu">
                 <li><a href="/sis/dashboard/">{% trans 'Dashboard' %}</a></li>
@@ -45,7 +45,7 @@
 
           {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %}
           {% if perms.schedule.change_course or perms.grades.change_own_grade %}
-          <li class="mm-has-submenu">
+          <li class="mm-has-submenu{% if app_name == "schedule" %} mm-current-page{% endif %}">
             <a href="/schedule/dashboard/">{% trans 'Courses' %}</a>
             <ul class="mm-submenu">
               <li><a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a></li>
