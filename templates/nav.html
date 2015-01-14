@@ -26,7 +26,6 @@
               {% if perms.sis.change_student or perms.sis.view_student %}
                 <li><a href="{% url "admin:sis_student_changelist" %}">{% trans 'Edit Students' %}</a></li>
               {% endif %}
-              {% if 'ecwsp.attendance' in settings.INSTALLED_APPS %}
               {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
                   <li>
                   <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Attendance' %} </a>
@@ -35,7 +34,6 @@
                   <li>
                   <a href="/attendance/daily_attendance_report/">Daily Attendance Report</a>
                   </li>
-              {% endif %}
               {% if perms.sis.reports %}
                   <li><a href="/reports/student_report/">{% trans 'Reports' %}</a></li>
               {% endif %}
@@ -43,48 +41,44 @@
           </li>
           {% endif %}
 
-          {% if 'ecwsp.schedule' in settings.INSTALLED_APPS %}
           {% if perms.schedule.change_course or perms.grades.change_own_grade %}
           <li class="mm-has-submenu{% if app_name == "schedule" %} mm-current-page{% endif %}">
             <a href="/schedule/dashboard/">{% trans 'Courses' %}</a>
             <ul class="mm-submenu">
               <li><a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a></li>
-            {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
+            {% if perms.grades.change_own_grade %}
               <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
             {% endif %}
             </ul>
           </li>
           {% endif %}
-          {% endif %}
 
-          {% if 'ecwsp.discipline' in settings.INSTALLED_APPS %}
           {% if perms.discipline.change_studentdiscipline %}
           <li>
               <a href="/discipline/dashboard/"> {% trans 'Discipline' %} </a>
           </li>
           {% endif %}
-          {% endif %}
 
-          {% if perms.counseling.add_referralform and 'ecwsp.counseling' in settings.INSTALLED_APPS %}
+          {% if perms.counseling.add_referralform %}
           <li>
               <a href="/counseling/dashboard"> Counseling </a>
           </li>
           {% endif %}
 
-          {% if 'ecwsp.work_study' in settings.INSTALLED_APPS %} {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
+          {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
           <li>
               <a href="/work_study/dashboard/"> CWSP </a>
           </li>
-          {% endif %}{% endif %}
+          {% endif %}
 
 
-          {% if perms.alumni.change_alumni and 'ecwsp.alumni' in settings.INSTALLED_APPS %}
+          {% if perms.alumni.change_alumni %}
           <li>
               <a href="/alumni/dashboard/"> Alumni </a>
           </li>
           {% endif %}
 
-          {% if perms.admissions.change_applicant and 'ecwsp.admissions' in settings.INSTALLED_APPS %}
+          {% if perms.admissions.change_applicant %}
           <li>
               <a href="/admissions/dashboard/"> Admissions </a>
           </li>
