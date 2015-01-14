@@ -60,13 +60,28 @@ class TwinCitiesGradeCalculationTests(SisTestMixin, TestCase):
         self.marking_period = MarkingPeriod.objects.get( name = "S1-TC" )
         self.course_section = CourseSection.objects.get( name = "bus2-section-TC-2014-2015")
 
-    def test_baseline_grade_calculation(self):
-        """ test that benchmarl is calculating correctly the stock data """
+    def get_benchmark_grade(self):
+        """ get the benchmark grade for this particular student, 
+        course_section and marking_period """
         grade, aggregate_id = gradebook_get_average_and_pk(
             student = self.student, 
             course_section = self.course_section, 
             marking_period = self.marking_period
             )
+        return grade
+
+    def force_benchmark_to_recalculate_grades(self):
+        """ this wraps a function known to force a recalculation of 
+        benchmark grades """
+        benchmark_calculate_course_aggregate(
+            student = self.student, 
+            course_section = self.course_section, 
+            marking_period = self.marking_period
+            )
+
+    def test_baseline_grade_calculation(self):
+        """ assert benchmark is calculating correctly from the sample_data"""
+        grade = self.get_benchmark_grade()
         self.assertEqual(grade, Decimal('3.70'))
 
     def test_grade_after_adding_new_category(self):
@@ -77,31 +92,23 @@ class TwinCitiesGradeCalculationTests(SisTestMixin, TestCase):
             student = self.student,
             mark = 4.0
         )
-        grade, aggregate_id = gradebook_get_average_and_pk(
-            student = self.student, 
-            course_section = self.course_section, 
-            marking_period = self.marking_period
-            )
+        grade = self.get_benchmark_grade()
         self.assertEqual(grade, Decimal('3.75'))
 
     def test_adding_new_category_for_student_with_no_grade_in_the_new_category(self):
-        grade, aggregate_id = gradebook_get_average_and_pk(
-            student = self.student, 
-            course_section = self.course_section, 
-            marking_period = self.marking_period
-            )
+        # check the grade before adding a new category
+        grade = self.get_benchmark_grade()
         self.assertEqual(grade, Decimal('3.70'))
 
+        # add the new category and force a recalculation
         self.data.create_new_category_and_adjust_all_category_weights()
-        benchmark_calculate_course_aggregate(
-            self.student, self.course_section, self.marking_period)
+        self.force_benchmark_to_recalculate_grades()
 
-        grade, aggregate_id = gradebook_get_average_and_pk(
-            student = self.student, 
-            course_section = self.course_section, 
-            marking_period = self.marking_period
-            )
+        # check the new grade
+        grade = self.get_benchmark_grade()
         self.assertEqual(grade, Decimal('3.74'))
+
+
 
 
 
