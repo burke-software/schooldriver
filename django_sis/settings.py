@@ -44,6 +44,7 @@ for environment_variable in (
     'AWS_SECRET_ACCESS_KEY',
     'AWS_STORAGE_BUCKET_NAME',
     'GOOGLE_ANALYTICS',
+    'RAVEN_DSN',
 ):
     globals()[environment_variable] = os.getenv(environment_variable)
 
@@ -271,13 +272,6 @@ INSTALLED_APPS = (
     #'ecwsp.integrations.canvas_sync',
 )
 
-if os.getenv('RAVEN_DSN'):
-    INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
-    RAVEN_CONFIG = {
-        'dsn': os.getenv('RAVEN_DSN'),
-        'IGNORE_EXCEPTIONS': ['django.http.UnreadablePostError'],
-    }
-
 COMPRESS_PRECOMPILERS = (
    ('text/coffeescript', 'coffee --compile --stdio'),
    ('text/x-scss', 'django_libsass.SassCompiler'),
@@ -355,6 +349,15 @@ try:  # prefix cache based on school name to avoid collisions.
         CACHES['default']['KEY_PREFIX'] = SCHOOL_NAME
 except NameError:
     pass # Not using cache
+
+
+if RAVEN_DSN:
+    INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
+    RAVEN_CONFIG = {
+        'dsn': RAVEN_DSN,
+        'IGNORE_EXCEPTIONS': ['django.http.UnreadablePostError'],
+    }
+
 
 STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!

@@ -352,7 +352,7 @@ class AttendanceAdmin(admin.ModelAdmin):
                            ('fee','paid'),'billed','reason',('half_day','waive'),'notes']}),
     ]
     def render_change_form(self, request, context, *args, **kwargs):
-        if 'original' in context:
+        if 'original' in context and context['original'] is not None:
             sis_attendance = context['original'].sis_attendance
             if sis_attendance:
                 txt = '<span style="color:#444;">School attendance notes: %s %s</span>' % (sis_attendance.status, sis_attendance.notes)
