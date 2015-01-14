@@ -1,9 +1,15 @@
 from django.test import TestCase
 from ecwsp.sis.tests import SisTestMixin
 from ecwsp.schedule.models import (
-    Department, DepartmentGraduationCredits)
+    Department, DepartmentGraduationCredits, CourseSection, MarkingPeriod)
 from .models import *
 from .sample_data import BenchmarkSisData
+
+from ecwsp.sis.sample_tc_data import SampleTCData
+from ecwsp.grades.tasks import build_grade_cache
+from ecwsp.benchmark_grade.utility import gradebook_get_average_and_pk
+from decimal import Decimal
+
 import unittest
 
 @unittest.skip("This is going to be deprecated soon...")
@@ -39,4 +45,69 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         mark.mark = 4.0
         mark.save()
         self.assertEquals(grade.get_grade(), 4.0)
+
+
+class TwinCitiesGradeCalculationTests(SisTestMixin, TestCase):
+    def setUp(self):
+        self.data = SampleTCData()
+        self.data.create_sample_tc_data()
+        self.data.create_sample_tc_benchmark_data()
+        self.fetch_useful_data_and_bind_to_self()
+        build_grade_cache()
+
+    def fetch_useful_data_and_bind_to_self(self):
+        self.student = self.data.tc_student3
+        self.marking_period = MarkingPeriod.objects.get( name = "S1-TC" )
+        self.course_section = CourseSection.objects.get( name = "bus2-section-TC-2014-2015")
+
+    def test_baseline_grade_calculation(self):
+        """ test that benchmarl is calculating correctly the stock data """
+        grade, aggregate_id = gradebook_get_average_and_pk(
+            student = self.student, 
+            course_section = self.course_section, 
+            marking_period = self.marking_period
+            )
+        self.assertEqual(grade, Decimal('3.70'))
+
+    def test_grade_after_adding_new_category(self):
+        """ create new Finals category and assert grades are as expected """
+        self.data.create_new_category_and_adjust_all_category_weights()
+        Mark.objects.create(
+            item = Item.objects.get( name = "Final Exam 1" ),
+            student = self.student,
+            mark = 4.0
+        )
+        grade, aggregate_id = gradebook_get_average_and_pk(
+            student = self.student, 
+            course_section = self.course_section, 
+            marking_period = self.marking_period
+            )
+        self.assertEqual(grade, Decimal('3.75'))
+
+    def test_adding_new_category_has_no_effect_on_existing_students(self):
+        grade, aggregate_id = gradebook_get_average_and_pk(
+            student = self.student, 
+            course_section = self.course_section, 
+            marking_period = self.marking_period
+            )
+        self.assertEqual(grade, Decimal('3.70'))
+        
+        self.data.create_new_category_and_adjust_all_category_weights()
+
+        grade, aggregate_id = gradebook_get_average_and_pk(
+            student = self.student, 
+            course_section = self.course_section, 
+            marking_period = self.marking_period
+            )
+        self.assertEqual(grade, Decimal('3.70'))
+
+
+
+
+
+        
+
+
+
+
 
