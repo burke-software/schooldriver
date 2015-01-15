@@ -50,6 +50,9 @@ function fitMenuElements() {
 	}
 }
 
+// There are no traditional breakpoints. We go to the smaller size when we run out 
+// of room, which we're defining as when the window to scroll the menu gets smaller 
+// than the width of the first three elements.
 function goToMobileSize() {
 	var menuWrapperWidth = $('.mm-menu-wrapper').width();
 
@@ -70,6 +73,7 @@ $(document).ready(function() {
 	thirdItemWidth = $('.mm-menu-items > li:nth-child(3)').width();
 	oneThroughThreeWidth = (thirdItemPos.left + thirdItemWidth) - menuItemPos.left;
 
+
 	// IE fallback for pointer-events on search button
 	if ($('html').hasClass('lt11')) {
 		$('.mm-search-icon').click(function() {
@@ -80,6 +84,13 @@ $(document).ready(function() {
 	fitMenuElements();
 	goToMobileSize();
 
+	if($.cookie('mmSizePref') == "condensed") {
+		$(this).css('display','none');
+		$('#main-menu').removeClass('full-size').addClass('condensed-size');
+		$('#flex-nav').removeClass('full-size').addClass('condensed-size');
+		$('.mm-maximize-button').css('display','block');
+		fitMenuElements();
+	}
 
 	$(window).resize(function() {
 		fitMenuElements();
@@ -146,6 +157,9 @@ $(document).ready(function() {
 		$('#flex-nav').removeClass('full-size').addClass('condensed-size');
 		$('.mm-maximize-button').css('display','block');
 
+		$.removeCookie('mmSizePref');
+		$.cookie('mmSizePref', 'condensed', { expires: 1000, path: '/' });
+
 		fitMenuElements();
 	});
 
@@ -154,6 +168,9 @@ $(document).ready(function() {
 		$('#main-menu').removeClass('condensed-size').addClass('full-size');
 		$('#flex-nav').removeClass('condensed-size').addClass('full-size');
 		$('.mm-minimize-button').css('display','block');
+
+		$.removeCookie('mmSizePref');
+		$.cookie('mmSizePref', 'full', { expires: 1000, path: '/' });
 
 		fitMenuElements();
 	});
