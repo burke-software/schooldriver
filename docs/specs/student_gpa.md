@@ -40,17 +40,17 @@ The school year calculation is performed much in the same manner as the marking 
 ```
 
 
-============= ===== ===== ===== ======
-Course        MP1   MP2   MP3   MP4 
-============= ===== ===== ===== ======
 
-English       99    92    93    100 
+| Course     | MP1 | MP2 | MP3 | MP4 |
+|------------|-----|-----|-----|-----|
+| English    | 99  | 92  | 93  | 100 |
+|------------|-----|-----|-----|-----|
+| Math       | 95  | 92  | 98  | 89  |
+|------------|-----|-----|-----|-----|
+| Religion   | 95  | 92  |     |     |
+|------------|-----|-----|-----|-----|
+| Mission    |     |     | 92  | 94  |
 
-Math          95    92    98    89  
-
-Religion                  95    92            
-
-Mission                   92    94  
 
 
 Let's say for this calculation that each course recieves `1` credit per marking period, so we can calculate the total points and total credits for each course like so:
