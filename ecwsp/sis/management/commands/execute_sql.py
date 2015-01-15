@@ -8,7 +8,7 @@ from django.db import connection
 import os
 
 class Command(BaseCommand):
-    help = 'delete all existing custom fields'
+    help = 'run raw SQL command from a file'
 
     def handle(self, *args, **options):
         current_schema = connection.schema_name
