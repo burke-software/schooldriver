@@ -34,6 +34,7 @@ The school year calculation is performed much in the same manner as the marking 
 
 
 
+
 Let's say for this calculation that each course recieves `1` credit per marking period, so we can calculate the total points and total credits for each course like so:
 
 | Course    | Total Points | Total Credits |
@@ -42,6 +43,9 @@ Let's say for this calculation that each course recieves `1` credit per marking 
 | Math      |     374      |      4        |
 | Religion  |     190      |      2        |
 | Mission   |     186      |      2        |
+
+
+
 
 Now we simply add the total points for all classes and divide by the total credits for all classes:
 
@@ -60,6 +64,8 @@ Finally, let's consider a student who has attended a particular school for three
 | 2010-2011   |     95.00    |     32        |
 | 2011-2012   |     94.30    |     29        |
 | 2012-2013   |     91.15    |     31        |
+
+
 
 
 
