@@ -42,7 +42,6 @@ The school year calculation is performed much in the same manner as the marking 
 
 
 | Course     | MP1 | MP2 | MP3 | MP4 |
-======================================
 | English    | 99  | 92  | 93  | 100 |
 | Math       | 95  | 92  | 98  | 89  |
 | Religion   | 95  | 92  |     |     |
