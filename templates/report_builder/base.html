@@ -7,12 +7,40 @@
 {% endblock %}
 
 {% block body %}
-    <div style="height: 62px">
     {% block nav %}
         {{ block.super }}
+
+        <script>
+        $(document).ready(function () {
+            var condensedHeight = 32;
+            var fullHeight      = 64;
+
+            if($.cookie('mmSizePref') == "condensed" && !$('#flex-nav').hasClass('mobile-size')) {
+                $('#report-builder').css('height','calc(100% - '+condensedHeight+'px)');
+            } else {
+                $('#report-builder').css('height','calc(100% - '+fullHeight+'px)');
+            }
+
+            $('.mm-minimize-button').click(function() {
+                $('#report-builder').css('height','calc(100% - '+condensedHeight+'px)');
+            });
+
+            $('.mm-maximize-button').click(function() {
+                $('#report-builder').css('height','calc(100% - '+fullHeight+'px)');
+            });
+
+            $(window).resize(function () {
+                if ($('#flex-nav').hasClass('condensed-size')) {
+                    $('#report-builder').css('height','calc(100% - '+condensedHeight+'px)');
+                } else {
+                    $('#report-builder').css('height','calc(100% - '+fullHeight+'px)');
+                }
+            });
+        });
+        </script>
     {% endblock %}
-    </div>
-    <div style="height: calc(100% - 106px); margin-top: -20px;">
+
+    <div id="report-builder">
     {% block content %}
     {% endblock %}
     </div>

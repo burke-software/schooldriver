@@ -74,6 +74,25 @@ function goToMobileSize() {
 	}
 }
 
+function minimizeMenuBar() {
+	$('#main-menu').removeClass('full-size').addClass('condensed-size');
+	$('#flex-nav').removeClass('full-size').addClass('condensed-size');
+	
+	$('.mm-maximize-button').css('display','block');
+	$('.mm-minimize-button').css('display','none');
+
+	fitMenuElements();
+}
+function maximizeMenuBar() {
+	$('#main-menu').removeClass('condensed-size').addClass('full-size');
+	$('#flex-nav').removeClass('condensed-size').addClass('full-size');
+	
+	$('.mm-minimize-button').css('display','block');
+	$('.mm-maximize-button').css('display','none');
+
+	fitMenuElements();
+}
+
 $(document).ready(function() {
 	menuItemPos = $('.mm-menu-items').position();
 	thirdItemPos = $('.mm-menu-items > li:nth-child(3)').position();
@@ -92,12 +111,7 @@ $(document).ready(function() {
 	goToMobileSize();
 
 	if($.cookie('mmSizePref') == "condensed") {
-		$(this).css('display','none');
-		$('#main-menu').removeClass('full-size').addClass('condensed-size');
-		$('#flex-nav').removeClass('full-size').addClass('condensed-size');
-		$('.mm-maximize-button').css('display','block');
-		$('.mm-minimize-button').css('display','none');
-		fitMenuElements();
+		minimizeMenuBar();
 	}
 
 	$(window).resize(function() {
@@ -160,26 +174,16 @@ $(document).ready(function() {
 	});
 
 	$('.mm-minimize-button').click(function() {
-		$(this).css('display','none');
-		$('#main-menu').removeClass('full-size').addClass('condensed-size');
-		$('#flex-nav').removeClass('full-size').addClass('condensed-size');
-		$('.mm-maximize-button').css('display','block');
-
 		$.removeCookie('mmSizePref');
 		$.cookie('mmSizePref', 'condensed', { expires: 1000, path: '/' });
 
-		fitMenuElements();
+		minimizeMenuBar();
 	});
 
 	$('.mm-maximize-button').click(function() {
-		$(this).css('display','none');
-		$('#main-menu').removeClass('condensed-size').addClass('full-size');
-		$('#flex-nav').removeClass('condensed-size').addClass('full-size');
-		$('.mm-minimize-button').css('display','block');
-
 		$.removeCookie('mmSizePref');
 		$.cookie('mmSizePref', 'full', { expires: 1000, path: '/' });
 
-		fitMenuElements();
+		maximizeMenuBar();
 	});
 });

@@ -14,7 +14,6 @@
 	display: flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
-	z-index: 9997;
 
 	&.mm-legacy-color {
 		background-color: #4A4D50;
@@ -229,7 +228,6 @@
 	position: absolute;
 	top: 9px;
 	left: 26px;
-	z-index: 999;
 	pointer-events: none;
 	cursor: pointer;
 }
@@ -454,4 +452,10 @@ input[type="text"].mm-search-field:focus, .full-size input[type="text"].mm-searc
 .fa.mm-maximize-button {
 	display: none;
 	font-size: 12px;
+}
+
+
+
+#secondary-nav {
+	background-color: #F4F5F4;
 }

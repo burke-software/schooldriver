@@ -168,9 +168,9 @@
 
 
 
+{% if dashboard %}
 <div id="secondary-nav" role="navigation">
-  <div class="container-fluid">
-    <ol style="display:none;">
+    <ol>
       {% block breadcrumbs %}
       {% endblock %}
     </ol>
@@ -184,6 +184,5 @@
       </li>
       {% endif %}
     </ul>
-
-  </div>
 </div>
+{% endif %}
