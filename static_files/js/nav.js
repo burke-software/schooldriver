@@ -1,4 +1,4 @@
-var menuItemPos, thirdItemPos, thirdItemWidth, oneThroughThreeWidth, triggerWidth;
+var menuItemPos, thirdItemPos, thirdItemWidth, oneThroughThreeWidth, triggerWidth, requiresSetHeight;
 
 // This is used when the user clicks a directional arrow in the main nav.
 function getScrollValue(direction) {
@@ -96,10 +96,8 @@ function maximizeMenuBar() {
 // This makes the navbar work correctly with fixed-height content areas.
 // As of writing this, it's only necessary with report builder.
 function changeContentHeight() {
-	if ($('.requires-set-height').length > 0) {
-		var navHeight = $('#flex-nav').height();
-		$('.requires-set-height').css('height','calc(100% - '+navHeight+'px)');
-	}
+	var navHeight = $('#flex-nav').height();
+	$('.requires-set-height').css('height','calc(100% - '+navHeight+'px)');
 }
 
 $(document).ready(function() {
@@ -107,6 +105,7 @@ $(document).ready(function() {
 	thirdItemPos = $('.mm-menu-items > li:nth-child(3)').position();
 	thirdItemWidth = $('.mm-menu-items > li:nth-child(3)').width();
 	oneThroughThreeWidth = (thirdItemPos.left + thirdItemWidth) - menuItemPos.left;
+	requiresSetHeight = $('.requires-set-height').length;
 
 
 	// IE fallback for pointer-events on search button
@@ -122,13 +121,13 @@ $(document).ready(function() {
 	if($.cookie('mmSizePref') == "condensed") {
 		minimizeMenuBar();
 	}
-	changeContentHeight(); // Needs to happen after height of menu bar is set
+	if (requiresSetHeight > 0) { changeContentHeight(); } // Needs to happen after height of menu bar is set
 	// End of somewhat intentional progression
 
 	$(window).resize(function() {
 		fitMenuElements();
 		goToMobileSize();
-		changeContentHeight();
+		if (requiresSetHeight > 0) { changeContentHeight(); }
 	});
 
 	$('.mm-has-submenu > a').click(function(e) {
@@ -190,7 +189,7 @@ $(document).ready(function() {
 		$.cookie('mmSizePref', 'condensed', { expires: 1000, path: '/' });
 
 		minimizeMenuBar();
-	    changeContentHeight();
+	    if (requiresSetHeight > 0) { changeContentHeight(); }
 	});
 
 	$('.mm-maximize-button').click(function() {
@@ -198,6 +197,6 @@ $(document).ready(function() {
 		$.cookie('mmSizePref', 'full', { expires: 1000, path: '/' });
 
 		maximizeMenuBar();
-	    changeContentHeight();
+	    if (requiresSetHeight > 0) { changeContentHeight(); }
 	});
 });
