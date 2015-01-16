@@ -9,38 +9,9 @@
 {% block body %}
     {% block nav %}
         {{ block.super }}
-
-        <script>
-        $(document).ready(function () {
-            var condensedHeight = 32;
-            var fullHeight      = 64;
-
-            if($.cookie('mmSizePref') == "condensed" && !$('#flex-nav').hasClass('mobile-size')) {
-                $('#report-builder').css('height','calc(100% - '+condensedHeight+'px)');
-            } else {
-                $('#report-builder').css('height','calc(100% - '+fullHeight+'px)');
-            }
-
-            $('.mm-minimize-button').click(function() {
-                $('#report-builder').css('height','calc(100% - '+condensedHeight+'px)');
-            });
-
-            $('.mm-maximize-button').click(function() {
-                $('#report-builder').css('height','calc(100% - '+fullHeight+'px)');
-            });
-
-            $(window).resize(function () {
-                if ($('#flex-nav').hasClass('condensed-size')) {
-                    $('#report-builder').css('height','calc(100% - '+condensedHeight+'px)');
-                } else {
-                    $('#report-builder').css('height','calc(100% - '+fullHeight+'px)');
-                }
-            });
-        });
-        </script>
     {% endblock %}
 
-    <div id="report-builder">
+    <div class="requires-set-height">
     {% block content %}
     {% endblock %}
     </div>

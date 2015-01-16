@@ -93,6 +93,15 @@ function maximizeMenuBar() {
 	fitMenuElements();
 }
 
+// This makes the navbar work correctly with fixed-height content areas.
+// As of writing this, it's only necessary with report builder.
+function changeContentHeight() {
+	if ($('.requires-set-height').length > 0) {
+		var navHeight = $('#flex-nav').height();
+		$('.requires-set-height').css('height','calc(100% - '+navHeight+'px)');
+	}
+}
+
 $(document).ready(function() {
 	menuItemPos = $('.mm-menu-items').position();
 	thirdItemPos = $('.mm-menu-items > li:nth-child(3)').position();
@@ -107,16 +116,19 @@ $(document).ready(function() {
 		});
 	}
 
+	// There is a somewhat intentional progression here, so be careful if you shift around.
 	fitMenuElements();
 	goToMobileSize();
-
 	if($.cookie('mmSizePref') == "condensed") {
 		minimizeMenuBar();
 	}
+	changeContentHeight(); // Needs to happen after height of menu bar is set
+	// End of somewhat intentional progression
 
 	$(window).resize(function() {
 		fitMenuElements();
 		goToMobileSize();
+		changeContentHeight();
 	});
 
 	$('.mm-has-submenu > a').click(function(e) {
@@ -178,6 +190,7 @@ $(document).ready(function() {
 		$.cookie('mmSizePref', 'condensed', { expires: 1000, path: '/' });
 
 		minimizeMenuBar();
+	    changeContentHeight();
 	});
 
 	$('.mm-maximize-button').click(function() {
@@ -185,5 +198,6 @@ $(document).ready(function() {
 		$.cookie('mmSizePref', 'full', { expires: 1000, path: '/' });
 
 		maximizeMenuBar();
+	    changeContentHeight();
 	});
 });
