@@ -14,7 +14,7 @@ from ecwsp.administration.models import Template, Configuration
 from ecwsp.sis.models import Student, SchoolYear, GradeLevel, Faculty, Cohort
 from ecwsp.attendance.models import CourseSectionAttendance, StudentAttendance, AttendanceStatus
 from ecwsp.schedule.calendar import Calendar
-from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet, Period, CourseSection, Course
+from ecwsp.schedule.models import MarkingPeriod, Department, CourseMeet, Period, CourseSection, Course, CourseSectionTeacher, CourseEnrollment
 from ecwsp.grades.models import Grade
 from ecwsp.discipline.models import DisciplineAction, DisciplineActionInstance
 import autocomplete_light
@@ -628,8 +628,120 @@ class AggregateGradeButton(ReportButton):
 
         report_data['class_dept'] = dept_data
         return report_view.list_to_xlsx_response(report_data, 'Aggregate_grade_report')
-
-
+        
+class GradeDistributionByTeacherButton(ReportButton):
+    name = "grade_distribution_report"
+    name_verbose = "Grade Distribution By Teacher"
+    report_data = {'sheet_1': []}
+    column_headers = [
+        "Teacher name",
+        "Course",
+        "Cohort name",
+        "Average of all students in cohort",
+        "Average for all students in cohorts of this class taught by teacher",
+        "Average for all students in course (all teachers)",
+        "Average for all students taught by teacher (all cohorts and courses)"
+        ]
+    
+    def get_report(self, report_view, context):
+        
+        for teacher in Faculty.objects.all():
+            teacher_data = self.get_teacher_data(teacher)
+            self.add_teacher_data_to_report_sheet(teacher_data, "sheet_1")
+            if teacher_data['sections']:
+                # add blank row only for teachers with data, otherwise we'll
+                # have a bunch of blank rows on top of each other!
+                self.add_blank_row_to_report_sheet("sheet_1")
+            
+        return report_view.list_to_xlsx_response(self.report_data, "grade_distribution_report", header=self.column_headers)
+        
+    def get_teacher_data(self, teacher):
+        teacher_data = {
+            'teacher_name' : "%s, %s" % (teacher.last_name, teacher.first_name),
+            'teacher_avg' : self.get_teacher_average(teacher),
+            'sections' : self.get_all_sections_for_teacher(teacher)
+        }
+        return teacher_data
+        
+    def get_all_sections_for_teacher(self, teacher):
+        all_sections = []
+        for section in CourseSection.objects.filter(teachers__in = [teacher], is_active=True):
+            all_sections.append(self.get_individual_section_data(section))
+        return all_sections
+            
+    def get_individual_section_data(self, section):
+        individual_section_data = {
+            'section_avg' : self.get_section_average(section),
+            'course_avg' : self.get_course_average(section.course),
+            'section_name' : section.name,
+            'cohorts' : self.get_cohort_data_for_section(section)
+        }
+        return individual_section_data
+        
+    def get_cohort_data_for_section(self, section):
+        cohorts = section.cohorts.all()
+        cohort_data = []
+        for cohort in cohorts:
+            cohort_data.append({
+                'cohort_name' : cohort.name,
+                'cohort_avg' : self.get_cohort_section_average(cohort, section)
+            })
+        if not cohorts:
+            cohort_data.append({
+                'cohort_name' : "(no cohorts)",
+                'cohort_avg' : ""
+            })
+        return cohort_data
+        
+    def add_teacher_data_to_report_sheet(self, teacher_data, sheet_name):
+        for section in teacher_data['sections']:
+            for cohort in section['cohorts']:
+                new_row = [
+                    teacher_data['teacher_name'], 
+                    section['section_name'], 
+                    cohort['cohort_name'],
+                    cohort['cohort_avg'], 
+                    section['section_avg'], 
+                    section['course_avg'], 
+                    teacher_data['teacher_avg']
+                ]
+                self.report_data[sheet_name].append(new_row)
+                
+    def add_blank_row_to_report_sheet(self, sheet_name):
+        self.report_data[sheet_name].append([""])
+            
+    def get_cohort_section_average(self, cohort, section):
+        section_enrollments = CourseEnrollment.objects.filter(course_section=section, user__in=cohort.students.all())
+        return self.get_average_grade_from_enrollment_set(section_enrollments)
+            
+    def get_section_average(self, section):
+        section_enrollments = CourseEnrollment.objects.filter(course_section=section)
+        return self.get_average_grade_from_enrollment_set(section_enrollments)
+    
+    def get_course_average(self, course):
+        all_sections = CourseSection.objects.filter(course=course)
+        all_sections_enrollments = CourseEnrollment.objects.filter(course_section__in=all_sections)
+        return self.get_average_grade_from_enrollment_set(all_sections_enrollments)
+    
+    def get_teacher_average(self, teacher):
+        all_sections = CourseSection.objects.filter(teachers__in=[teacher])
+        all_sections_enrollments = CourseEnrollment.objects.filter(course_section__in=all_sections)
+        return self.get_average_grade_from_enrollment_set(all_sections_enrollments)
+        
+    def get_average_grade_from_enrollment_set(self, enrollments):
+        """ return the average grade for a given set of student enrollments """
+        non_null_grade_count = 0
+        sum_of_all_grades = Decimal('0.00')
+        for enrollment in enrollments:
+            if enrollment.numeric_grade is not None:
+                non_null_grade_count += 1
+                sum_of_all_grades += enrollment.numeric_grade
+        if non_null_grade_count > 0:
+            average = sum_of_all_grades / non_null_grade_count
+            return round(average, 1)
+        else:
+            return None
+            
 class AspReportButton(ReportButton):
     name = "asp_report"
     name_verbose = "ASP Report"
@@ -841,6 +953,7 @@ class SisReport(ScaffoldReport):
         AggregateGradeButton(),
         FailReportButton(),
         GPAReportButton(),
+        GradeDistributionByTeacherButton(),
     )
 
     def is_passing(self, grade):
