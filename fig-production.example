@@ -1,0 +1,37 @@
+redis:
+  image: dockerfile/redis
+worker:
+  build: .
+  command: ./manage.py celery worker -E -A django_sis --loglevel=INFO
+  volumes:
+    - .:/code
+  ports:
+    - "8000:8000"
+  links:
+    - db
+    - redis
+  environment:
+    - C_FORCE_ROOT=True
+    - DATABASE_ADDR=
+    - DATABASE_NAME=
+    - DATABASE_USER=
+    - DATABASE_PASSWORD=
+    - SECRET_KEY=
+    - IS_PRODUCTION=True
+web:
+  build: .
+  command: ./run-production.sh
+  volumes:
+    - .:/code
+  ports:
+    - "8000:8000"
+  links:
+    - db
+    - redis
+  environment:
+    - DATABASE_ADDR=
+    - DATABASE_NAME=
+    - DATABASE_USER=
+    - DATABASE_PASSWORD=
+    - SECRET_KEY=
+    - IS_PRODUCTION=True
