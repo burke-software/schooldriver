@@ -469,6 +469,10 @@ input[type="text"].mm-search-field:focus, .full-size input[type="text"].mm-searc
 		color: #4A4D50;
 		display: inline-block;
 	}
+
+	a:hover {
+		background-color: rgba(255,255,255, 0.25);
+	}
 }
 
 div.breadcrumb {
@@ -500,8 +504,11 @@ div.breadcrumb {
 		padding: 0px 10px;
 		margin: 0px -10px;
 	}
+}
 
-	a:hover {
-		background-color: rgba(255,255,255, 0.25);
+.mm-customize-dashboard {
+	padding: 0 10px;
+	i {
+		margin-left: 8px;
 	}
 }

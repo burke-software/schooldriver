@@ -6,9 +6,8 @@
 {% block nav_page_specific %}
   <div id="mm-page-specific" role="navigation">
     {% if dashboard %}
-      <a href="javascript:void(0)" onclick="customize_dashboard(this);">
-        Customize Dashboard
-        <i class="fa fa-cog fa-lg"></i>
+      <a class="mm-customize-dashboard" href="javascript:void(0)" onclick="customize_dashboard(this);">
+        Customize Dashboard<i class="fa fa-cog fa-lg"></i>
       </a>
     {% endif %}
   </div>
