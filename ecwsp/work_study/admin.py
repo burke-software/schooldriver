@@ -317,7 +317,7 @@ admin.site.register(TimeSheetPerformanceChoice, TimeSheetPerformanceChoiceAdmin)
 
 class TimeSheetAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
-        if 'original' in context:
+        if 'original' in context and context['original']:
             txt = context['original'].student.primary_contact
             context['adminform'].form.fields['supervisor_comment'].help_text = txt
 
