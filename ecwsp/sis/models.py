@@ -120,7 +120,7 @@ class EmergencyContact(models.Model):
     city = models.CharField(max_length=255, blank=True, null=True, default=get_city)
     state = USStateField(blank=True, null=True)
     zip = models.CharField(max_length=10, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(blank=True)
     primary_contact = models.BooleanField(default=True, help_text="This contact is where mailings should be sent to. In the event of an emergency, this is the person that will be contacted first.")
     emergency_only = models.BooleanField(default=False, help_text="Only contact in case of emergency")
     sync_schoolreach = models.BooleanField(help_text="Sync this contact with schoolreach",default=True)
