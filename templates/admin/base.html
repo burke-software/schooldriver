@@ -91,11 +91,16 @@
         <header id="grp-header" class="{% block header-class %}{% endblock %}">
             {% if not is_popup %}
 
-            
-            
-            
             <!-- NAVIGATION -->
             {% include "nav.html" %}
+
+            <div id="mm-page-specific" role="navigation">
+                <div class="breadcrumb">
+                {% block breadcrumbs %}
+                {% endblock %}
+                </div>
+            </div>
+
             {% endif %}
         </header>
 

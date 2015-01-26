@@ -3,16 +3,11 @@
 {% load i18n admin_modify grp_tags %}
 
 {% block breadcrumbs %}
- <div id="breadcrumbs">
-  <a href="/admin"> 
-  Home
-  </a> 
-  &rsaquo; 
-  <a href="/admin/attendance/studentattendance/"> 
-   Student Attendance
-  </a> 
-  &rsaquo; Attendance Submissions
- </div> 
+<ul>
+  <li><a href="/admin">Home</a></li>
+  <li><a href="/admin/attendance/studentattendance/">Student Attendance</a></li>
+  <li>Attendance Submissions</li>
+</ul>
 {% endblock %}
 
 {% block content %}

@@ -1,0 +1,19 @@
+{% load staticfiles %}
+{% load i18n %}
+
+<div id="secondary-nav" role="navigation">
+  <ol>
+    {% block breadcrumbs %}
+    {% endblock %}
+  </ol>
+  <ul class="nav navbar-nav navbar-left">
+    {% if dashboard %}
+    <li>
+      <a href="javascript:void(0)" onclick="customize_dashboard(this);">
+        CUSTOMIZE
+        <img class="nav_icon" src="{% static 'responsive_dashboard/img/gear.svg' %}"/>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+</div>

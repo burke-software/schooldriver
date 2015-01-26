@@ -118,9 +118,7 @@ $(document).ready(function() {
 	// There is a somewhat intentional progression here, so be careful if you shift around.
 	fitMenuElements();
 	goToMobileSize();
-	if($.cookie('mmSizePref') == "condensed") {
-		minimizeMenuBar();
-	}
+	if ($.cookie('mmSizePref') == "condensed") { minimizeMenuBar(); }
 	if (requiresSetHeight > 0) { changeContentHeight(); } // Needs to happen after height of menu bar is set
 	// End of somewhat intentional progression
 

@@ -456,6 +456,52 @@ input[type="text"].mm-search-field:focus, .full-size input[type="text"].mm-searc
 
 
 
-#secondary-nav {
-	background-color: #F4F5F4;
+#mm-page-specific {
+	// background-color: #F4F5F4; 
+	background-color: #D0DBE4; // This is the legacy color. We can remove it in favor of the lighter gray later.
+	height: 32px;
+	overflow: hidden;
+	font-size: 13px;
+	line-height: 32px;
+	color: #4A4D50;
+
+	a {
+		color: #4A4D50;
+		display: inline-block;
+	}
+}
+
+div.breadcrumb {
+
+	li {
+		display: inline-block;
+		padding: 0;
+		margin: 0;
+		cursor: default;
+		margin-right: 10px;
+
+		&:after {
+			font-family: "FontAwesome";
+			content: "\f105";
+			margin-left: 10px;
+		}
+
+		&:first-child {
+			margin-left: 10px;
+		}
+
+		&:last-child:after {
+			content: "";
+		}
+	}
+
+	a {
+		display: inline-block;
+		padding: 0px 10px;
+		margin: 0px -10px;
+	}
+
+	a:hover {
+		background-color: rgba(255,255,255, 0.25);
+	}
 }
