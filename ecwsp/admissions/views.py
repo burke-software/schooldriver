@@ -1,8 +1,7 @@
-from django.shortcuts import render_to_response, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
+from django.shortcuts import render_to_response
+from django.contrib.auth.decorators import user_passes_test, permission_required
 from django.template import RequestContext
-from django.http import HttpResponse, HttpResponseRedirect
-from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
 from django.db import transaction
 
@@ -11,12 +10,12 @@ from ecwsp.sis.importer import *
 from ecwsp.sis.template_report import TemplateReport
 from ecwsp.admissions.reports import *
 from ecwsp.admissions.models import *
-from ecwsp.admissions.forms import InquiryForm, ReportForm, ApplicantForm, TemplateReportForm
+from ecwsp.admissions.forms import InquiryForm, ReportForm, TemplateReportForm
 from ecwsp.administration.models import Configuration
 import zipfile
 
-
 import datetime
+
 
 def inquiry_form(request):
     """ A place for applicants to inquire for more info
@@ -43,7 +42,7 @@ def inquiry_form(request):
                 applicant.family_preferred_language = LanguageChoice.objects.get_or_create(name=data['language_other'])[0]
             if data['religion_other']:
                 applicant.religion = ReligionChoice.objects.get_or_create(name=data['religion_other'])[0]
-                
+
             if data['p_lname'] and data['p_fname']:
                 ec = EmergencyContact.objects.get_or_create(
                     fname=data['p_fname'],
@@ -56,7 +55,7 @@ def inquiry_form(request):
                     email=data['p_email'],
                 )[0]
                 applicant.parent_guardians.add(ec)
-                
+
                 if data['p_home']:
                     EmergencyContactNumber.objects.get_or_create(
                         contact=ec,
@@ -76,7 +75,7 @@ def inquiry_form(request):
                         number=data['p_mobile'],
                         type="C"
                     )
-                
+
             applicant.save()
             log = ContactLog(
                 applicant=applicant,
@@ -101,7 +100,7 @@ class AdmissionsTemplateReport(TemplateReport):
 
 
 
-@permission_required('admissions.view_applicant') 
+@permission_required('admissions.view_applicant')
 def reports(request):
     report_form = ReportForm()
     template_form = TemplateReportForm()
@@ -153,10 +152,12 @@ def reports(request):
 
 @permission_required('admissions.view_applicant')
 def funnel(request):
+    if 'year_ids' not in request.GET:
+        raise Http404("No year ids selected")
     years = SchoolYear.objects.filter(id__in=request.GET['year_ids'].split(','))
     levels = AdmissionLevel.objects.all().order_by('order')
     applicants = Applicant.objects.filter(school_year__in=years).distinct()
-    
+
     level_css_classes = ('one', 'two', 'three', 'four', 'five', 'six',)
     i = 0
     for level in levels:
@@ -165,7 +166,7 @@ def funnel(request):
         except:
             level.css_class = 'six'
         i += 1
-    
+
     i = 0
     running_total = 0
     running_male = 0
@@ -174,7 +175,7 @@ def funnel(request):
         running_total += applicants.filter(level=level).count()
         running_male += applicants.filter(level=level, sex='M').count()
         running_female += applicants.filter(level=level, sex='F').count()
-        
+
         level.students = running_total
         level.male = running_male
         try:
@@ -186,7 +187,7 @@ def funnel(request):
             level.female_p = float(level.female) / float(level.students)
         except ZeroDivisionError:
             level.female_p = 0
-            
+
         # Current
         level.c_students = applicants.filter(level=level).count()
         level.c_male = applicants.filter(level=level, sex='M').count()
@@ -199,12 +200,12 @@ def funnel(request):
             level.c_female_p = float(level.c_female) / float(level.c_students)
         except ZeroDivisionError:
             level.c_female_p = 0
-        
+
         i += 1
-        
+
         level.decisions = ApplicationDecisionOption.objects.filter(level=level)
         for decision in level.decisions:
-            
+
             decision.students = applicants.filter(level=level,application_decision=decision).count()
             decision.male = applicants.filter(level=level,application_decision=decision,sex='M').count()
             try:
@@ -216,15 +217,15 @@ def funnel(request):
                 decision.female_p = float(decision.female) / float(level.students)
             except ZeroDivisionError:
                 decision.female_p = 0
-            
-        
+
+
     return render_to_response('admissions/funnel.html', {
             'years': years,
             'levels': levels,
         },
         RequestContext(request, {}),
     )
-    
+
 
 @permission_required('admissions.change_applicant')
 def ajax_check_duplicate_applicant(request, fname, lname):
@@ -236,7 +237,7 @@ def ajax_check_duplicate_applicant(request, fname, lname):
 
 
 @transaction.commit_on_success
-@user_passes_test(lambda u: u.has_perm("sis.change_student") and u.has_perm("admissions.change_applicant"), login_url='/')   
+@user_passes_test(lambda u: u.has_perm("sis.change_student") and u.has_perm("admissions.change_applicant"), login_url='/')
 def applicants_to_students(request, year_id):
     """ Copies all applicants marked as ready for export to sis students
     Does not create copies. Once student is in sis he/she cannot be updated
@@ -264,11 +265,11 @@ def applicants_to_students(request, year_id):
             if not student.username:
                 student.username = imp.gen_username(student.first_name, student.last_name)
             student.save()
-            
+
             add_worker = Configuration.get_or_default("Admissions to student also makes student worker", "False")
             if add_worker.value == "True":
                 student.promote_to_worker()
-            
+
             appl.sis_student = student
             appl.save()
             for sib in appl.siblings.all():
@@ -280,9 +281,9 @@ def applicants_to_students(request, year_id):
                 contact.cache_student_addresses()
             msg += "Imported <a href='/admin/sis/student/%s'>%s</a>, %s<br/>" % (student.id, unicode(student), student.username)
         msg += "<br/>Maybe you want to save this list to add students to Active Directory or Google Apps?<br/><br/>"
-    
+
     num = Applicant.objects.filter(ready_for_export=True, sis_student=None, school_year=school_year).count()
     msg += "There are currently %s applicants marked as ready for export. This is not a reversable process! Note usernames will be generated, you may change them later.<br/>" % str(num)
     return render_to_response('admissions/applicants_to_students.html',
                               {'msg': msg},
-                              RequestContext(request, {}),) 
+                              RequestContext(request, {}),)
