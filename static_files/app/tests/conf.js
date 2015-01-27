@@ -20,7 +20,7 @@ if (process.env.TRAVIS) {
         build: process.env.TRAVIS_BUILD_NUMBER
     };
 } else {
-    config.seleniumAddress: 'http://localhost:4444/wd/hub';
+    config.seleniumAddress = 'http://localhost:4444/wd/hub';
 }
 
 exports.config = config;
