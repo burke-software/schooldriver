@@ -5,6 +5,7 @@ python:
 install:
 - pip install -r requirements.txt
 - pip install -r dev-requirements.txt
+- npm install -q
 addons:
 - postgresql: "9.3"
 - sauce_connect: true
@@ -12,7 +13,8 @@ services:
 - redis-server
 before_script:
 - psql -c "CREATE DATABASE mydb;" -U postgres
-- npm install -g protractor
+- npm install -g -q grunt-cli
+- npm install -g -q protractor
 script: 
 - python manage.py test
 env:
