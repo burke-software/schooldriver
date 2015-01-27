@@ -4,11 +4,18 @@ var config = {
   // all angular apps use the SpaView() page)
   rootElement: '.app-div',
 
+  specs: ['admissions/student_application_spec.js',],
+  
   // Spec patterns are relative to the location of the spec file. They may
   // include glob patterns.
   suites: {
-    admissions: ['admissions/student_application_spec.js',],
+      admissions: ['admissions/student_application_spec.js',],
   },
+  
+  capabilities: {
+      'browserName': 'chrome'
+  },
+  
 };
 
 
