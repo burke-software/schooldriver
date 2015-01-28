@@ -90,7 +90,7 @@ SWoRD allows users to save basic company information for each work site associat
 
 # Development Environment
 
-You can easily get Djanog-sis running in an isolated development environment using [Fig and Docker](http://fig.sh). We have testing this to work on both OSX and Ubuntu. 
+You can easily get Django-sis running in an isolated development environment using [Fig and Docker](http://fig.sh). We have tested this to work on both OSX and Ubuntu. 
 
 ## Fig And Docker
 
