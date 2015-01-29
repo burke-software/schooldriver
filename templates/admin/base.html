@@ -85,6 +85,9 @@
     {% endblock %}
 </head>
 <body class="{% if is_popup %}grp-popup {% endif %}{% block bodyclass %}{% endblock %}{% if LANGUAGE_BIDI %} rtl{% endif %}">
+
+    {% include "outdated-browser.html" %}
+
     <div id="grp-container">
 
         <!-- HEADER -->
