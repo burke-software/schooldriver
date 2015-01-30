@@ -124,8 +124,7 @@ chmod +x /usr/local/bin/fig
 *Note: this will change slightly when we move to 1.7*
 
 ```
-fig run web python manage.py syncdb --all
-fig run web python manage.py migrate --fake
+fig run web python manage.py migrate
 ```
 #### Run
 
@@ -140,6 +139,13 @@ boot2docker ip
 ```
 
 Let's say this is the docker-ip: `192.123.45.678`, you should then be able to see the server in your browser at `192.123.45.678:8000`
+
+## Sample Data
+We have some sample data that might be useful when testing out the development environment. To load the data, try this:
+
+```
+fig run web python manage.py populate_sample_data
+```
 
 ## Ubuntu
 
@@ -161,11 +167,9 @@ curl -L https://github.com/orchardup/fig/releases/download/0.5.1/linux > /usr/lo
 chmod +x /usr/local/bin/fig
 ```
 #### Syncdb & Migrate
-*Note: this will change slightly when we move to 1.7*
 
 ```
-fig run web python manage.py syncdb --all
-fig run web python manage.py migrate --fake
+fig run web python manage.py migrate
 ```
 #### Run
 
