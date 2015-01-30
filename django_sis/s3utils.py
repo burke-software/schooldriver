@@ -3,12 +3,16 @@ from storages.backends.s3boto import S3BotoStorage
 from django.db import connection
 
 class MediaRootS3BotoStorage(S3BotoStorage):
-    def __init__(self, *args, **kwargs):
+    @property
+    def location(self):
         path = 'media'
         if hasattr(connection, 'schema_name'):
             path = path + '/' + connection.schema_name
-        kwargs['location'] = path
-        super(MediaRootS3BotoStorage, self).__init__(*args, **kwargs)
+        return path
+
+    @location.setter
+    def location(self, value):
+        pass
 
 
 class CachedS3BotoStorage(S3BotoStorage):
