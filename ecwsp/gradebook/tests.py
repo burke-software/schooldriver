@@ -3,6 +3,11 @@ from ecwsp.sis.tests import SisTestMixin
 from ecwsp.sis.models import SchoolYear
 from ecwsp.schedule.models import (
     Department)
+from django.core.urlresolvers import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient 
+from ecwsp.gradebook.models import Assignment
+from ecwsp.schedule.models import Course, CourseSection
 from .models import *
 from .exceptions import WeightContainsNone
 #from .sample_data import BenchmarkSisData
@@ -10,8 +15,57 @@ from ecwsp.sis.sample_data import SisData
 from decimal import Decimal
 from decimal import InvalidOperation
 import unittest
+import json
 
-
+class AssignmentViewsetTests(APITestCase):
+	def setup(self):
+		self.client = APIClient()
+		
+	def test_get_assignment_list(self):
+		url = reverse('assignment-list')
+		response = self.client.get(url)
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		
+	def test_get_assignment_detail(self):
+		course_one = Course.objects.create(id=1, fullname="first course", shortname="first")
+		section_one = CourseSection.objects.create(course=course_one, name="section one")
+		assignment1 = Assignment.objects.create(name="first assignment", course_section=section_one)
+		url = reverse('assignment-detail', args=(assignment1.pk,))
+		response = self.client.get(url)
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		
+	def test_create_assignment(self):
+		url = reverse('assignment-list')
+		course_one = Course.objects.create(id=1, fullname="first course", shortname="first")
+		section_one = CourseSection.objects.create(course=course_one, name="section one")
+		data = {'name': 'first assignment', 'course_section': section_one.pk}
+		request = self.client.post('/api/assignments/', data, format='json')
+		self.assertEqual(request.status_code, status.HTTP_201_CREATED)
+		
+	def test_put_assignment(self):
+		course_one = Course.objects.create(id=1, fullname="first course", shortname="first")
+		section_one = CourseSection.objects.create(course=course_one, name="section one")
+		assignment1 = Assignment.objects.create(name="first assignment", course_section=section_one)
+		data = {'name': 'first assignment', 'course_section': section_one.pk}
+		request = self.client.post('/api/assignments/', data, format='json')
+		#data to update initially posted data
+		data_two = {'name': 'second name', 'course_section': section_one.pk}
+		url = reverse('assignment-detail', args=(assignment1.pk,))
+		response = self.client.put(url, data_two)
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		
+	def test_delete_assignment(self):
+		course_one = Course.objects.create(id=1, fullname="first course", shortname="first")
+		section_one = CourseSection.objects.create(course=course_one, name="section one")
+		assignment1 = Assignment.objects.create(name="first assignment", course_section=section_one)
+		course_one.save()
+		section_one.save()
+		assignment1.save()
+		url = reverse('assignment-detail', args=(assignment1.pk,))
+		request = self.client.delete(url)
+		self.assertEqual(request.status_code, 204)
+		
+		
 @unittest.skip("Gradebook is an unreleased backend right now, we can unskip when it's ready")
 class GradeCalculationTests(SisTestMixin, TestCase):
     def setUp(self):
