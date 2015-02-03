@@ -98,36 +98,34 @@
       <div class="mm-scroll-arrows"><i class="fa fa-angle-right mm-arrow-right"></i></div>
     </div>
   </div>
-  <form class="mm-search">
+  <form id="lookup-student-form" class="mm-search">
     <div class="mm-search-icon"><i class="fa fa-search"></i></div>
-    <form id="lookup-student-form" class="navbar-form navbar-right">
-      <input id="lookup-student" class="mm-search-field" type="text" placeholder="Look Up Student" />
-      <script>
-          $('#lookup-student').yourlabsAutocomplete({
-              url: '/autocomplete/StudentLookupStudentAutocomplete/',
-              choiceSelector: 'a',
-              box: $('<span class="yourlabs-autocomplete autocomplete-lookup-student"></span>'),
-              fixPosition: function() {
-                // Insert the autocomplete container after the input.
-                var pos = $.extend({}, this.input.position(), {
-                    height: this.input.outerHeight(),
-                    width:  this.input.outerWidth()
-                });
+    <input id="lookup-student" class="mm-search-field" type="text" placeholder="Look Up Student" />
+    <script>
+        $('#lookup-student').yourlabsAutocomplete({
+            url: '/autocomplete/StudentLookupStudentAutocomplete/',
+            choiceSelector: 'a',
+            box: $('<span class="yourlabs-autocomplete autocomplete-lookup-student"></span>'),
+            fixPosition: function() {
+              // Insert the autocomplete container after the input.
+              var pos = $.extend({}, this.input.position(), {
+                  height: this.input.outerHeight(),
+                  width:  this.input.outerWidth()
+              });
 
-                this.input.parents().filter(function() {
-                    return $(this).css('overflow') === 'hidden';
-                }).first().css('overflow', 'visible');
+              this.input.parents().filter(function() {
+                  return $(this).css('overflow') === 'hidden';
+              }).first().css('overflow', 'visible');
 
-                // +12 added to left for margin-left on input
-                this.box.insertAfter(this.input).css(
-                  {top: pos.top + pos.height, left: pos.left + 12, "min-width": pos.width }
-                );
-              }
-          }).input.bind('selectChoice', function(e, choice, autocomplete) {
-              window.location.href = choice.attr('href');
-          });
-      </script>
-    </form>
+              // +12 added to left for margin-left on input
+              this.box.insertAfter(this.input).css(
+                {top: pos.top + pos.height, left: pos.left + 12, "min-width": pos.width }
+              );
+            }
+        }).input.bind('selectChoice', function(e, choice, autocomplete) {
+            window.location.href = choice.attr('href');
+        });
+    </script>
   </form>
   <div class="mm-user-info">
     <div class="mm-user-icon"><i class="fa fa-user"></i></div>

@@ -119,36 +119,6 @@ blink {
   }
 }
 
-#lookup-student-form {
-  margin-right: 5px;
-  @media screen and (min-width: $screen-sm-min) and (max-width: 940px) {
-    padding-left: 0;
-    padding-right: 5px;
-  }
-
-  #lookup-student {
-    border-radius: 25px;
-    color: #f2f2f2;
-    background-color: #191A1B;
-    border: 1px solid #000;
-    outline: none;
-    box-shadow: none;
-
-    @media screen and (max-width: 1090px) {
-      width: 150px;
-    }
-    @media screen and (max-width: 895px) {
-      width: 100px;
-    }
-    @media screen and (max-width: 845px) {
-      width: 50px;
-    }
-    @media screen and (max-width: $screen-xs-max) {
-      width: 100%;
-    }
-  }
-}
-
 .autocomplete-lookup-student {
   background-color: #191A1B;
 
