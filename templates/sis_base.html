@@ -1,91 +1,74 @@
 {% load dajaxice_templatetags compress %}
+{% load static from staticfiles %}
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<head>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   {% block head %}
-  
-  {% block javascripts %}
-  {% dajaxice_js_import %}
-  {% load static from staticfiles %}
+      <title>Schooldriver</title>
+      
+      {% include "partials/favicons-etc.html" %}
 
-  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700,700italic' rel='stylesheet' type='text/css'>
-  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+      <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700,700italic' rel='stylesheet' type='text/css'>
+      <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-  {% block stylesheets %}
-  <link rel="stylesheet" type="text/css" href="{% static "css/ui.core.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "css/cupertino/jquery-ui-1.10.3.custom.min.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "css/global.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "css/jquery.multiselect.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "css/jquery.multiselect.filter.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% static "jquery.uix.multiselect/jquery.uix.multiselect.css" %}"/>
-  <link rel="stylesheet" media="print" type="text/css" href="{% static "css/print.css" %}"/>
-  
-  <link rel="apple-touch-icon" sizes="57x57" href="{% static 'favicon/apple-touch-icon-57x57.png' %}">
-  <link rel="apple-touch-icon" sizes="114x114" href="{% static 'favicon/apple-touch-icon-114x114.png' %}">
-  <link rel="apple-touch-icon" sizes="72x72" href="{% static 'favicon/apple-touch-icon-72x72.png' %}">
-  <link rel="apple-touch-icon" sizes="144x144" href="{% static 'favicon/apple-touch-icon-144x144.png' %}">
-  <link rel="apple-touch-icon" sizes="60x60" href="{% static 'favicon/apple-touch-icon-60x60.png' %}">
-  <link rel="apple-touch-icon" sizes="120x120" href="{% static 'favicon/apple-touch-icon-120x120.png' %}">
-  <link rel="apple-touch-icon" sizes="76x76" href="{% static 'favicon/apple-touch-icon-76x76.png' %}">
-  <link rel="apple-touch-icon" sizes="152x152" href="{% static 'favicon/apple-touch-icon-152x152.png' %}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon-180x180.png' %}">
-  <link rel="icon" type="image/png" href="{% static 'favicon/favicon-192x192.png' %}" sizes="192x192">
-  <link rel="icon" type="image/png" href="{% static 'favicon/favicon-160x160.png' %}" sizes="160x160">
-  <link rel="icon" type="image/png" href="{% static 'favicon/favicon-96x96.png' %}" sizes="96x96">
-  <link rel="icon" type="image/png" href="{% static 'favicon/favicon-16x16.png' %}" sizes="16x16">
-  <link rel="icon" type="image/png" href="{% static 'favicon/favicon-32x32.png' %}" sizes="32x32">
-  <meta name="msapplication-config" content="none"/>
-  <meta name="msapplication-TileColor" content="#1671b7">
-  <meta name="msapplication-TileImage" content="{% static 'favicon/mstile-144x144.png' %}">
-  {% endblock %}
+    {% block stylesheets %}
+      <link rel="stylesheet" type="text/css" href="{% static "css/ui.core.css" %}"/>
+      <link rel="stylesheet" type="text/css" href="{% static "css/cupertino/jquery-ui-1.10.3.custom.min.css" %}"/>
+      <link rel="stylesheet" type="text/css" href="{% static "css/global.css" %}"/>
+      <link rel="stylesheet" type="text/css" href="{% static "css/jquery.multiselect.css" %}"/>
+      <link rel="stylesheet" type="text/css" href="{% static "css/jquery.multiselect.filter.css" %}"/>
+      <link rel="stylesheet" type="text/css" href="{% static "jquery.uix.multiselect/jquery.uix.multiselect.css" %}"/>
+      <link rel="stylesheet" media="print" type="text/css" href="{% static "css/print.css" %}"/>
+    {% endblock stylesheets %}
 
-  {% compress css %}
-    <link type="text/x-scss" href="{% static 'scss/_nav.scss' %}" rel="stylesheet" charset="utf-8" />
-  {% endcompress %}
+      {% compress css %}
+      <link type="text/x-scss" href="{% static 'scss/_nav.scss' %}" rel="stylesheet" charset="utf-8" />
+      {% endcompress %}
 
-  <!--[if IE]>
-    <script type="text/javascript" src="{% static "js/jquery-1.10.2.min.js" %}"></script>
-  <![endif]-->
-  <![if !IE]>
-    <script type="text/javascript" src='{% static 'jquery/dist/jquery.js' %}'></script>
-  <![endif]>
-  <script src="{% static 'js/jquery.cookie-1.4.1.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'jquery-migrate/jquery-migrate.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'jquery-ui/ui/minified/jquery-ui.min.js' %}"></script>
-  <script type="text/javascript" src="{% static "js/jquery.multiselect.js" %}"></script>
-  <script type="text/javascript" src="{% static "js/jquery.multiselect.filter.js" %}"></script>
-  <script src="{% static 'js/nav.js' %}"></script>
-  {% include 'autocomplete_light/static.html' %}
-  <script>
-    $.fn.simple_multiselect = $.fn.multiselect;
-    delete $.fn.multiselect;
-</script>
-  {% endblock %}
-  
-  {% include "gumby/head.html" %}
-  
-  <title>Django School Information System</title>
+    {% block javascripts %}
+      {% dajaxice_js_import %}
 
-  {% if GOOGLE_ANALYTICS %}
-  <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      <!--[if IE]>
+        <script type="text/javascript" src="{% static "js/jquery-1.10.2.min.js" %}"></script>
+      <![endif]-->
+      <!--[if !IE]-->
+        <script type="text/javascript" src='{% static 'jquery/dist/jquery.js' %}'></script>
+      <!--[endif]-->
+      <script src="{% static 'js/jquery.cookie-1.4.1.min.js' %}"></script>
+      <script type="text/javascript" src="{% static 'jquery-migrate/jquery-migrate.min.js' %}"></script>
+      <script type="text/javascript" src="{% static 'jquery-ui/ui/minified/jquery-ui.min.js' %}"></script>
+      <script type="text/javascript" src="{% static "js/jquery.multiselect.js" %}"></script>
+      <script type="text/javascript" src="{% static "js/jquery.multiselect.filter.js" %}"></script>
+      <script src="{% static 'js/nav.js' %}"></script>
+      {% include 'autocomplete_light/static.html' %}
+      <script>
+        $.fn.simple_multiselect = $.fn.multiselect;
+        delete $.fn.multiselect;
+      </script>
+    {% endblock javascripts %}
+    
+      {% include "gumby/head.html" %}
 
-    ga('create', '{{ GOOGLE_ANALYTICS }}', 'auto');
-    ga('send', 'pageview');
+      {% if GOOGLE_ANALYTICS %}
+      <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+           m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+             })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  </script>
-  {% endif %}
-  
-  {% endblock %}
+        ga('create', '{{ GOOGLE_ANALYTICS }}', 'auto');
+        ga('send', 'pageview');
+      </script>
+      {% endif %}
+    
+  {% endblock head %}
+
   {% block extrahead %}
-
-  {% endblock %}
-</head>
+  {% endblock extrahead %}
+  </head>
 <body>
-  {% include "outdated-browser.html" %}
+  {% include "partials/outdated-browser.html" %}
 
   {% block nav %}
   {% endblock %}
