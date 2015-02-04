@@ -282,6 +282,53 @@ input[type="text"].mm-search-field:focus, .full-size input[type="text"].mm-searc
 	padding: 0 15px 0 25px;
 }
 
+.autocomplete-lookup-student {
+  background-color: #191A1B;
+
+  .choice {
+    color: #fff;
+    overflow: hidden;
+    padding: 3px 20px 3px 10px;
+
+    img {
+      float: left;
+      width: 37px;
+      margin: 2px 7px 2px 0;
+    }
+
+    .no-pic {
+      float: left;
+      margin: 2px 7px 2px 0;
+      width: 38px;
+      background-color: #333;
+      color: #555;
+      font-size: 35px;
+      vertical-align: -15%;
+      padding-left: 5px;
+      padding-top: 2px;
+    }
+
+    .student-name {
+      font-weight: 600;
+    }
+
+    &.hilight {
+      background-color: #868D92;
+      background-image: none;
+
+      .no-pic {
+        background-color: #bbb;
+        color: #999;
+      }
+    }
+  }
+
+  .no-results {
+    padding: 3px 20px 3px 10px;
+    color: #fff;
+  }
+}
+
 /* User info */
 .mm-user-info {
 	background-color: rgba(0,0,0, 0.25);
