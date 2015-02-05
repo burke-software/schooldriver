@@ -13,10 +13,9 @@ Preferences
         {{ form.as_p }}
     </form>
     
-    <p>
-      <strong>User Password:</strong> 
-        <a href="{% url 'admin:password_change' %}">
-          <i class="fa fa-lock"></i> Change Password
-        </a>
-    </p>
+    <h4>Change Password</h4>
+    <form action="" method="post">
+        {{ password_form.as_p }}
+        <button type="submit" name="password_change">save new password</button>
+    </form>
 {% endblock %}
