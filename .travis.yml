@@ -16,6 +16,7 @@ services:
 - redis-server
 before_script:
 - psql -c "CREATE DATABASE travisci;" -U postgres
+- python manage.py migrate
 - python manage.py populate_sample_application
 - npm install -g -q protractor
 script: 
