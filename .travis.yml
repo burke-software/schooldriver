@@ -12,6 +12,7 @@ services:
 - redis-server
 before_script:
 - psql -c "CREATE DATABASE mydb;" -U postgres
+- python manage.py populate_sample_application
 - npm install -g -q protractor
 script: 
 - python manage.py test
