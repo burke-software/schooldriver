@@ -10,8 +10,8 @@ install:
 - pip install -r requirements.txt
 - pip install -r dev-requirements.txt
 addons:
-- postgresql: "9.3"
-- sauce_connect: true
+ postgresql: "9.3"
+ sauce_connect: true
 services:
 - redis-server
 before_script:
