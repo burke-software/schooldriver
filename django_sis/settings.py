@@ -488,7 +488,8 @@ CONSTANCE_CONFIG = {
     'APPLICANT_EMAIL_ALERT' : (False, "Send email alert on applicant submission"),
     'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('',
         "Email addresses to send alert to; only one email address per line"),
-    'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail")
+    'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail"),
+    'GRADES_ALLOW_STUDENT_VIEWING': (True, "Allow students to view their grades online"),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

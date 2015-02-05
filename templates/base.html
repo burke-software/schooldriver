@@ -43,7 +43,7 @@
                                         {% if "ecwsp.volunteer_track" in settings.INSTALLED_APPS %}
                                             <li><a href="{% url "ecwsp.volunteer_track.views.student_dash" %}">Volunteer</a></li>
                                         {% endif %}
-                                        {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
+                                        {% if config.GRADES_ALLOW_STUDENT_VIEWING == True %}
                                             <li><a href="{% url "ecwsp.benchmark_grade.views.student_report" %}">Grades</a></li>
                                         {% endif %}
                                     {% endif %}
