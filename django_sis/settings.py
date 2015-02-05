@@ -254,6 +254,8 @@ LOGGING = {
     },
 }
 
+CELERYD_HIJACK_ROOT_LOGGER=False
+
 
 # django-report-builder
 REPORT_BUILDER_GLOBAL_EXPORT = True
