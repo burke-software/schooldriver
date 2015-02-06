@@ -3,6 +3,7 @@ from django.core.management import call_command
 from django.db.utils import OperationalError
 from ecwsp.sis.sample_data import *
 from ecwsp.sis.models import Student
+from ecwsp.sis.management.commands.populate_sample_application import ApplicationTemplateGenerator
 
 class Command(BaseCommand):
     help = 'Populate blank database'
@@ -18,4 +19,5 @@ class Command(BaseCommand):
             else:
                 call_command('migrate', interactive=False)
         SisData().create_all()
+        ApplicationTemplateGenerator().create_default_admission_application()
         self.stdout.write('Success. Good Job!')
