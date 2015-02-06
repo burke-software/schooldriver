@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "base_next.html" %}
 <!-- LOADING -->
 {% load i18n admin_modify grp_tags %}
 
@@ -10,32 +10,36 @@
 </ul>
 {% endblock %}
 
+{% block title %}Today&rsquo;s Attendance Submissions{% endblock %}
+
 {% block content %}
-	<h2> Today's Attendance Submissions </h2>
-       <div class='table'>
-            <table>
+
+
+            <table class="table table-striped">
+              <thead>
                 <tr>
                     <th>Course Section</th>
                     <th>Teacher</th>
                     <th>Submitted?</th>
                 </tr>
+              </thead>
+              <tbody>
                 {% for submission in submissions %}
                 <tr>
                     <td>{{ submission.homeroom }}</td>
                     <td>{{ submission.teacher }}</td>
                     <td>
-		     {{ submission.submitted }}
-		     {% if submission.submitted_by %}
-		      {% if submission.submitted_by != submission.teacher %}
-		       , by {{ submission.submitted_by }}
-		      {% endif %}
-		     {% endif %}
-		    </td>
-		    
+                     {{ submission.submitted }}
+                     {% if submission.submitted_by %}
+                      {% if submission.submitted_by != submission.teacher %}
+                       , by {{ submission.submitted_by }}
+                      {% endif %}
+                     {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
+              </tbody>
             </table>
-        </div>
      
 {% endblock %}
 
