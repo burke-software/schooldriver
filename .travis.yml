@@ -21,4 +21,5 @@ before_script:
 - npm install -g -q protractor
 script: 
 - python manage.py test
+- python manage.py runserver
 - protractor static_files/app/tests/conf.js
