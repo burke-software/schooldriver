@@ -8,39 +8,43 @@
     
 {% endblock %}
 
-{% block breadcrumbs %}{% if not is_popup %}
-<div class="breadcrumbs">
-     <a href="{% url "admin:index" %}">{% trans "Home" %}</a> &rsaquo;
-     <a href="{% url "admin:schedule_coursesection_changelist" %}"> Courses </a> &rsaquo; 
-     <a href="{% url "admin:schedule_coursesection_change" course.id %}"> {{ course }}  </a> &rsaquo; 
-     Enroll Students
+{% block nav_page_specific %}{% if not is_popup %}
+<div id="mm-page-specific" role="navigation">
+    <div class="breadcrumb">
+        <ul>
+            <li><a href="{% url "admin:index" %}">{% trans "Home" %}</a></li>
+            <li><a href="{% url "admin:schedule_coursesection_changelist" %}"> Courses </a></li>
+            <li><a href="{% url "admin:schedule_coursesection_change" course.id %}"> {{ course }} </a></li>
+            <li>Enroll Students</li>
+        </ul>
+    </div>
 </div>
 {% endif %}{% endblock %}
 
 {% block content %}
     <h2> Enroll Students </h2>
     <form action="" name="form" method="post">
-	 {% csrf_token %}
-	{{ form.errors }}
-	<div class="row">
-	  <div class="six columns">
-	       <h3>Select an entire cohort</h3>
-	       {{ form.cohorts }}
+     {% csrf_token %}
+    {{ form.errors }}
+    <div class="row">
+      <div class="six columns">
+           <h3>Select an entire cohort</h3>
+           {{ form.cohorts }}
           </div>
-	  <div class="six columns">
-	       <h3>Or select individual students</h3>
-	       {{ form.students }}    
+      <div class="six columns">
+           <h3>Or select individual students</h3>
+           {{ form.students }}    
           </div>
-	</div>
+    </div>
 
 
-	<footer class="grp-module grp-submit-row grp-fixed-footer"> 
-	  <ul>
-	    <li class="submit-button-container"><input type="submit" name="refresh" value="Save and Continue Editing"/></li>
-	    <li class="submit-button-container"><input type="submit" name="save" value="Save and go Back to Course"/></li>
-	    <input style="display:none;" id="hidden_del" type="submit" name="_delete" />
-	  </ul> 
-	</footer>
-	</form>
+    <footer class="grp-module grp-submit-row grp-fixed-footer"> 
+      <ul>
+        <li class="submit-button-container"><input type="submit" name="refresh" value="Save and Continue Editing"/></li>
+        <li class="submit-button-container"><input type="submit" name="save" value="Save and go Back to Course"/></li>
+        <input style="display:none;" id="hidden_del" type="submit" name="_delete" />
+      </ul> 
+    </footer>
+    </form>
      </form>       
 {% endblock %}

@@ -2,12 +2,16 @@
 <!-- LOADING -->
 {% load i18n admin_modify grp_tags %}
 
-{% block breadcrumbs %}
-<ul>
-  <li><a href="/admin">Home</a></li>
-  <li><a href="/admin/attendance/studentattendance/">Student Attendance</a></li>
-  <li>Attendance Submissions</li>
-</ul>
+{% block nav_page_specific %}
+<div id="mm-page-specific" role="navigation">
+    <div class="breadcrumb">
+        <ul>
+          <li><a href="/admin">Home</a></li>
+          <li><a href="/admin/attendance/studentattendance/">Student Attendance</a></li>
+          <li>Attendance Submissions</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}
 
 {% block title %}Today&rsquo;s Attendance Submissions{% endblock %}
