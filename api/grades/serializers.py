@@ -2,7 +2,7 @@ from ecwsp.grades.models import Grade
 from ecwsp.sis.models import Student
 from ecwsp.schedule.models import MarkingPeriod, CourseSection
 from rest_framework import serializers
-from django.core.exceptions import ValidationError
+
 
 class GradeSerializer(serializers.ModelSerializer):
     """
@@ -26,7 +26,8 @@ class GradeSerializer(serializers.ModelSerializer):
         required=False,
         queryset=CourseSection.objects.all(),
     )
-    grade = serializers.CharField(source='api_grade', required=False)
+    grade = serializers.CharField(
+        source='api_grade', required=False, allow_blank=True)
 
     class Meta:
         model = Grade
