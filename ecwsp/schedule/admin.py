@@ -63,7 +63,7 @@ class CourseSectionAdmin(reversion.VersionAdmin):
     inlines = [CourseMeetInline, CourseSectionTeacherInline, CourseEnrollmentInline]
     list_display = ['name', 'grades_link', 'course', 'is_active']
     list_filter = ['course__level', 'course__department', 'teachers']
-    search_fields = ['name', 'course__fullname', 'teachers__username', 'enrollments__username']
+    search_fields = ['name', 'course__fullname', 'teachers__username']
     readonly_fields = ['course_link']
     fields = ['course', 'course_link', 'name', 'is_active', 'marking_period', 'cohorts']
     actions = [copy]

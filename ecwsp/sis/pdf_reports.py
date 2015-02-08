@@ -8,7 +8,7 @@ from ecwsp.administration.models import *
 def student_thumbnail(request, year):
     from ecwsp.sis.models import Student
     
-    response = HttpResponse(mimetype="application/pdf")
+    response = HttpResponse(content_type="application/pdf")
     response['Content-Disposition'] = 'attachment; filename=%s' % "thumbnails.pdf"
     
     c = canvas.Canvas(response, pagesize=letter)  

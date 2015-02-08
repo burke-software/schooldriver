@@ -56,7 +56,7 @@ class CourseDashboard(Dashboard):
     app = 'schedule'
     dashlets = [
         CourseSectionDashlet(title="Course Sections"),
-        CourseDetailDashlet(title="Courses"),
+        #CourseDetailDashlet(title="Courses"),
         GradesDashlet(title="Grades"),
         AdminListDashlet(title="Schedule", app_label="schedule"),
         AdminListDashlet(title="GradesList", verbose_name="Grades", app_label="grades"),

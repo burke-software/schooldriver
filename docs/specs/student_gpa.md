@@ -25,35 +25,27 @@ GPA = Total Points / Total Credits = `352.00` / `4` = `88.00`
 
 The school year calculation is performed much in the same manner as the marking period calculation. Consider the gradebook below, which contains grades for 4 marking periods.
 
-```
-+------------+-----+-----+-----+-----+
 | Course     | MP1 | MP2 | MP3 | MP4 |
-+------------+-----+-----+-----+-----+
+|------------|-----|-----|-----|-----|
 | English    | 99  | 92  | 93  | 100 |
-+------------+-----+-----+-----+-----+
 | Math       | 95  | 92  | 98  | 89  |
-+------------+-----+-----+-----+-----+
 | Religion   | 95  | 92  |     |     |
-+------------+-----+-----+-----+-----+
 | Mission    |     |     | 92  | 94  |
-+------------+-----+-----+-----+-----+
-```
+
+
+
 
 Let's say for this calculation that each course recieves `1` credit per marking period, so we can calculate the total points and total credits for each course like so:
 
-```
-+------------+--------------+---------------+
-| Course     | Total Points | Total Credits |
-+------------+--------------+---------------+
-| English    |     384      |     4         |
-+------------+--------------+---------------+
-| Math       |     374      |     4         |
-+------------+--------------+---------------+
-| Religion   |     190      |     2         |
-+------------+--------------+---------------+
-| Mission    |     186      |     2         |
-+------------+--------------+---------------+
-```
+| Course    | Total Points | Total Credits |
+|-----------|--------------|---------------|
+| English   |     384      |      4        |
+| Math      |     374      |      4        |
+| Religion  |     190      |      2        |
+| Mission   |     186      |      2        |
+
+
+
 
 Now we simply add the total points for all classes and divide by the total credits for all classes:
 
@@ -67,18 +59,15 @@ GPA = `94.50`
 
 Finally, let's consider a student who has attended a particular school for three years and has recieved the yearly GPA and credits shown below:
 
-
-```
-+-------------+--------------+---------------+
 | School Year | Year GPA     | Year Credits  |
-+-------------+--------------+---------------+
+|-------------|--------------|---------------|
 | 2010-2011   |     95.00    |     32        |
-+-------------+--------------+---------------+
 | 2011-2012   |     94.30    |     29        |
-+-------------+--------------+---------------+
 | 2012-2013   |     91.15    |     31        |
-+-------------+--------------+---------------+
-```
+
+
+
+
 
 Since the student's career GPA is weighted by the number of credits they have earned, we need to weight the yearly GPA's according to the credits earned each year. To do this we simply multiply the year GPA by the total credits to get a total number of points for each year:
 

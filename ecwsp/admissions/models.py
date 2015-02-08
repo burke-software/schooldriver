@@ -167,7 +167,7 @@ class Applicant(models.Model, CustomFieldModel):
     unique_id = models.IntegerField(blank=True, null=True, unique=True)
     street = models.CharField(max_length=150, blank=True)
     city = models.CharField(max_length=360, blank=True)
-    state = USStateField(blank=True)
+    state = USStateField(blank=True, null=True)
     zip = models.CharField(max_length=10, blank=True)
     ssn = models.CharField(max_length=11, blank=True, verbose_name="SSN")
     parent_email = models.EmailField(blank=True)

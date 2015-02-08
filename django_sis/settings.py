@@ -44,6 +44,7 @@ for environment_variable in (
     'AWS_SECRET_ACCESS_KEY',
     'AWS_STORAGE_BUCKET_NAME',
     'GOOGLE_ANALYTICS',
+    'RAVEN_DSN',
 ):
     globals()[environment_variable] = os.getenv(environment_variable)
 
@@ -153,7 +154,7 @@ IMPERSONATE_ALLOW_SUPERUSER = True
 IMPERSONATE_REQUIRE_SUPERUSER = True
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
+    'ecwsp.sis.backends.CaseInsensitiveModelBackend',
 )
 
 #LDAP
@@ -271,13 +272,6 @@ INSTALLED_APPS = (
     #'ecwsp.integrations.canvas_sync',
 )
 
-if os.getenv('RAVEN_DSN'):
-    INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
-    RAVEN_CONFIG = {
-        'dsn': os.getenv('RAVEN_DSN'),
-        'IGNORE_EXCEPTIONS': ['django.http.UnreadablePostError'],
-    }
-
 COMPRESS_PRECOMPILERS = (
    ('text/coffeescript', 'coffee --compile --stdio'),
    ('text/x-scss', 'django_libsass.SassCompiler'),
@@ -356,6 +350,15 @@ try:  # prefix cache based on school name to avoid collisions.
 except NameError:
     pass # Not using cache
 
+
+if RAVEN_DSN:
+    INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
+    RAVEN_CONFIG = {
+        'dsn': RAVEN_DSN,
+        'IGNORE_EXCEPTIONS': ['django.http.UnreadablePostError'],
+    }
+
+
 STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
 DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
@@ -393,7 +396,7 @@ TENANT_APPS = (
     'ecwsp.discipline',
     'ecwsp.attendance',
     'ecwsp.grades',
-    #'ecwsp.gradebook',
+    'ecwsp.gradebook',
     'ecwsp.counseling',
     'ecwsp.standard_test',
     'ecwsp.integrations.schoolreach',
@@ -483,6 +486,7 @@ CONSTANCE_CONFIG = {
     'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('',
         "Email addresses to send alert to; only one email address per line"),
     'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail"),
+    'GRADES_ALLOW_STUDENT_VIEWING': (True, "Allow students to view their grades online"),
     'GRADE_COMMEND_LENGTH_LIMIT': (250, "Character limit on grade comments"),
     'GRADE_ROUNDING_DECIMAL': (2, "Round grades to this many decimal places"),
     'GRADE_DISPLAY_AS_LETTER': (False, "Display grades as letter grades using the Grade Scale"),
@@ -526,7 +530,7 @@ if USE_S3:
     AWS_PRELOAD_METADATA = True
     AWS_QUERYSTRING_AUTH = False
     DEFAULT_FILE_STORAGE = 'django_sis.s3utils.MediaRootS3BotoStorage'
-    COMPRESS_STORAGE = STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    COMPRESS_STORAGE = STATICFILES_STORAGE = 'django_sis.s3utils.CachedS3BotoStorage'
     COMPRESS_URL = STATIC_URL = 'https://{}.s3.amazonaws.com/'.format(AWS_STORAGE_BUCKET_NAME)
     MEDIA_URL = STATIC_URL
     # Use Heroku's DB
@@ -539,8 +543,6 @@ if MULTI_TENANT:
     DATABASE_ROUTERS = ('tenant_schemas.routers.TenantSyncRouter',)
     MIDDLEWARE_CLASSES = ('tenant_schemas.middleware.TenantMiddleware',) + MIDDLEWARE_CLASSES
     INSTALLED_APPS = INSTALLED_APPS + ['tenant_schemas',]
-
-SOUTH_TESTS_MIGRATE = False
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',

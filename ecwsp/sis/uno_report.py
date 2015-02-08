@@ -6,7 +6,13 @@ from django.core.servers.basehttp import FileWrapper
 import os
 import string
 import tempfile
-import uno
+
+if 'TRAVIS' not in os.environ:
+    """this import is killing us on TravisCI, so I'm removing it. There
+    may be a better way to do this, but we honestly don't need anything 
+    from this file during our test runs."""
+    import uno
+
 import re
 
 from ecwsp.sis.template_report import TemplateReport
