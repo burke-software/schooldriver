@@ -70,15 +70,15 @@ class Grade(CommonGrade):
     @property
     def student(self):
         return self.enrollment.user
-    
+
     @property
     def student_id(self):
         return self.student.id
-    
+
     @property
     def course_section(self):
         return self.enrollment.course_section
-    
+
     @property
     def course_section_id(self):
         return self.course_section.id
@@ -109,11 +109,12 @@ class Grade(CommonGrade):
         if letter is True:
             return rule.letter_grade
         return rule.numeric_scale
-    
+
     @staticmethod
     def set_grade_from_marking_period_student(marking_period, student, grade):
-        try:
-            grade Grade.objects.get()
+        pass
+        #try:
+        #    grade Grade.objects.get()
 
     @staticmethod
     def get_course_grade(enrollment, date=None, rounding=None):

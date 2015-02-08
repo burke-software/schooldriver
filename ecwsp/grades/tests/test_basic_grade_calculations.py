@@ -1,4 +1,4 @@
-from ecwsp.grades.models import Grade, StudentYearGrade
+from ecwsp.grades.models import Grade
 from ecwsp.sis.models import Student, SchoolYear
 from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase

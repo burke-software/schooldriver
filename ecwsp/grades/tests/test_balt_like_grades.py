@@ -2,9 +2,10 @@ from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
 from ecwsp.sis.sample_data import SisData
 from ecwsp.schedule.models import (
-    CourseEnrollment, Course, CourseSection, MarkingPeriod)
+    CourseEnrollment, Course, CourseSection)
+from ..models import Grade, FinalGrade
+from decimal import Decimal
 import datetime
-import time
 
 
 class GradeCalculationTests(SisTestMixin, TestCase):
@@ -164,13 +165,13 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """
         grade = Grade.objects.get(
             student = self.data.student,
-            marking_period = self.data.mps1x, 
+            marking_period = self.data.mps1x,
             course_section = self.data.course_section1
             )
         self.assertEqual(grade.get_grade(), 90)
         grade = Grade.objects.get(
             student = self.data.student,
-            marking_period = self.data.mps2x, 
+            marking_period = self.data.mps2x,
             course_section = self.data.course_section1)
         self.assertEqual(grade.get_grade(), 79)
 
