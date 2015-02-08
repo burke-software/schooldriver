@@ -17,6 +17,7 @@ class SisData(object):
     def create_all(self):
         """ This will populate all sample data """
         self.create_basics()
+        self.create_admissions_choice_data()
 
     def create_required(self):
         """ A place for 100% required data """

@@ -2,14 +2,24 @@ language: python
 sudo: false
 python:
 - '2.7'
+env:
+  global:
+    - secure: ldhPANju1rSMCws2HqtzCSUAzNwWSvWXNMoS6SkOoZd8Y7gl7ZWsZjRRfAmH9zu5ypavzuhW741VHbki4yTb2tWCMduZPOJ+I+KLJ3nISb1gzdb3PkinDJLqMoT+0VpB8M6pr1fJcbxianzQThjR7rqNsNgMneQgZ3eZ7UJZ+I8=
+    - secure: gcPqU2hAr7mDAc397k1/IiiQ0l3E9RA3UK8rxcRgSsHY35W78JqsgD5n1DdnDRjHxRIMc7pvtA3Lghi/aE4FCuLkJXDkqK0oRtwcPFV+cdotlDUVoaYi3rV8e2x4tmOdSJKn7by0PM+s83elMpBPOmrqWsl+YmSeumzOuOtgs3o=
 install:
 - pip install -r requirements.txt
 - pip install -r dev-requirements.txt
 addons:
-- postgresql: "9.3"
+ postgresql: "9.3"
+ sauce_connect: true
 services:
 - redis-server
 before_script:
-- psql -c "CREATE DATABASE mydb;" -U postgres
+- psql -c "CREATE DATABASE travisci;" -U postgres
+- python manage.py migrate
+- python manage.py populate_sample_data
+- npm install -g -q protractor
+- python manage.py runserver &
 script: 
 - python manage.py test
+- protractor static_files/app/tests/conf.js
