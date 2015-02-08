@@ -31,7 +31,7 @@ Prerequisites
 2. Edit fig-production.yml and set environment variables for PostgresSQL, email, and any further customizations. For a full list of environment variables see [settings.py](django_sis/settings.py)
 3. `fig run --rm web ./manage.py migrate`
 4. `fig run --rm web ./manage.py collectstatic`
-5. (optional) `fig run --rm web ./manage.py populate_sample_data`
+5. (optional) `fig run --rm web ./manage.py populate_sample_data` This creates a super user/password of aa/aa for convenience.
 6. Run docker via fig `fig -f fig-production.sh up`. Obviously you can run the docker images in many other ways. Learn more about how we do it [here](http://davidmburke.com/2014/09/26/docker-in-dev-and-in-production-a-complete-and-diy-guide/).
 7. It should now be running on port 8000. Consider changing the port in fig-production.yml, using nginx as a proxy, and using SSL with nginx. We also recommend not storing media or static files in docker even though fig does support persistence. Use S3 or mount a volume for media. To use S3 just set the related variables as defined in [settings.py](django_sis/settings.py).
 
