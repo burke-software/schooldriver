@@ -13,7 +13,10 @@
   <div class="mm-text">
     <div class="mm-school-name-wrapper">
       <div class="mm-school-name">
-        {{ config.SCHOOL_NAME }}&rsquo;s Schooldriver
+      {% if config.SCHOOL_NAME.is_modified != "Unnamed School" %}
+        {{ config.SCHOOL_NAME }}&rsquo;s 
+      {% endif %}
+      Schooldriver
       </div>
     </div>
     <div class="mm-hide-scrollbar">
