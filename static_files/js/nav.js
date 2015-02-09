@@ -185,6 +185,10 @@ $(document).ready(function() {
 		});
 	});
 
+	$('.mm-menu-wrapper').scroll(function() {
+		controlShadows();
+	});
+
 	$('.mm-search-field').on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function() {
 		fitMenuElements();
 	});
