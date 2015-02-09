@@ -65,17 +65,15 @@ if 'ecwsp.schedule' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^schedule/', include('ecwsp.schedule.urls')), )
     # Course is a nicer looking url
     urlpatterns += patterns('', (r'^course/', include('ecwsp.schedule.urls')), )
-if 'ecwsp.grades' in settings.INSTALLED_APPS:
-    urlpatterns += patterns('', (r'^grades/', include('ecwsp.grades.urls')), )
-    urlpatterns += patterns('', (r'^course/', include('ecwsp.grades.urls')), )
+    urlpatterns += patterns('', (r'^grades/', include('ecwsp.grades_new.urls')), )
+    urlpatterns += patterns('', (r'^course/', include('ecwsp.grades_new.urls')), )
 if 'ecwsp.work_study' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^work_study/', include('ecwsp.work_study.urls')), )
 if 'ecwsp.admissions' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^admissions/', include('ecwsp.admissions.urls')), )
 if 'ecwsp.volunteer_track' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^volunteer_track/', include('ecwsp.volunteer_track.urls')), )
-if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
-    urlpatterns += patterns('', (r'^benchmark_grade/', include('ecwsp.benchmark_grade.urls')), )
+    urlpatterns += patterns('', (r'^gradebook/', include('ecwsp.gradebook.urls')), )
 if 'ecwsp.inventory' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^inventory/', include('ecwsp.inventory.urls')), )
 if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS:
