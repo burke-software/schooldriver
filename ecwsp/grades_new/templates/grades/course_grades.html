@@ -1,0 +1,39 @@
+{% extends 'spa.html' %}
+{% load staticfiles %}
+{% load compress %}
+
+{% block extra_head %}
+    <script type="text/javascript">
+        var edit = '{{ edit }}'
+        var edit_final = '{{ edit_final }}'
+    </script>
+{% endblock %}
+
+
+{% block content %}
+<form action="" method="post" enctype="multipart/form-data" class="noprint">
+    {{ form }}
+    {% csrf_token %}
+    <button type="submit" name="upload" class="btn btn-primary">Upload Grades</button>
+    {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
+    <br/><p><a href="{% url 'ecwsp.benchmark_grade.views.gradebook' course_section_id=coursesection.id %}">Click here for Online Gradebook</a></p><br/>
+    {% endif %}
+</form>
+
+<a href="{% url "ecwsp.grades.views.view_comment_codes" %}" target="_blank">View comment codes</a>
+
+{{ block.super }}
+
+<div class="row">
+    <div class="col-lg-4 col-md-6">
+        <div class="well well-key">
+            <table class="table">
+                <h4>Key</h4>
+                <p><i class="fa fa-check-circle text-success"></i>Saved</p>
+                <p><i class="fa fa-pencil text-info"></i>Saved (Overriding Automatic Calculation)</p>
+                <p><i class="fa fa-times-circle text-danger"></i>Not Saved - Invalid Input</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
