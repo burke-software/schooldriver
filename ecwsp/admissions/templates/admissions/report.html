@@ -2,11 +2,11 @@
 {% load i18n %}
 
 {% block breadcrumbs %}
-    <div id="breadcrumbs">
-      <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
-      &rsaquo; <a href="{% url "admin:app_list" 'admissions' %}">{% trans 'Admissions' %}</a>
-      &rsaquo; {{ test }} Reports
-    </div>
+<ul>
+  <li><a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}</li>
+  <li><a href="{% url "admin:app_list" 'admissions' %}">{% trans 'Admissions' %}</a></li>
+  <li>{{ test }} Reports</li>
+</ul>
 {% endblock %}
 
 {% block content %}

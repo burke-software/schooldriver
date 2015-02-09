@@ -22,7 +22,7 @@
 @import "../components/bower_components/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap/input-groups";
 @import "../components/bower_components/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap/navs";
 @import "../components/bower_components/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap/navbar";
-@import "../components/bower_components/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap/breadcrumbs";
+// @import "../components/bower_components/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap/breadcrumbs";
 @import "../components/bower_components/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap/pagination";
 @import "../components/bower_components/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap/pager";
 @import "../components/bower_components/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap/labels";
@@ -50,5 +50,6 @@
 
 // Custom
 @import "scss/custom";
+@import "scss/nav";
 @import "scss/djangular-admin";
 @import "scss/admissions-application";

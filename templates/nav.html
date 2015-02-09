@@ -1,0 +1,159 @@
+{% load staticfiles %}
+{% load i18n %}
+
+<div id="flex-nav" class="full-size mm-legacy-color">
+  <div class="mm-schooldriver-logo">
+    <!--img src="schooldriver-logo-no-circle-white.svg" /-->
+    <a href="/">
+      <svg id="mm-sd-logo-svg" viewBox="0 0 500.8 556.3">
+        <path class="mm-sd-logo-path" d="M500,358.4c-4.1-27.9-18.5-50.7-56.7-64.4c-4.7-1.7-35.6-12.9-76.7-27.9c-3.5-62-54.7-111.2-117.6-111.2c-33.9,0-64.3,14.3-85.8,37.2c-25.8-9.4-43.6-15.9-46.3-16.9c-11.9-4.3-16.2-12.3-6.1-27.5c17.6-26.4,71.5-62.5,135.8-62.5c51.1,0,101.8,15.8,148.6,79.7l87.9-32.1C411.3,19,305.4,0,245.8,0c-48.3,0-100.7,15.7-144,42.9C58,70.4,8,131.3,8,184c0,32,16.7,57.3,61.5,73.5c6.5,2.4,30.4,11.1,62,22.6c3.8,61.8,54.9,110.7,117.6,110.7c33.7,0,63.9-14.2,85.4-36.8c23.9,8.7,40.5,14.7,43.7,15.9c14.3,5.2,19.6,11.3,10.6,27.4c-17.3,30.8-70.3,62.6-142.8,62.6c-62.9,0-116.8-23.8-144.9-88.7L0,408.3c31.4,62,120.6,148,245.4,148c139.4,0,214.3-91,231-114.1C491.3,421.6,504.1,386.3,500,358.4z M320.6,344.4c-1.1,1.1-2.3,2.1-3.5,3.2c-18,16.4-41.8,26.4-68,26.4c-28,0-53.2-11.3-71.6-29.6c-15.3-15.3-25.6-35.5-28.6-58c-0.2-1.1-0.4-2.3-0.5-3.4c-0.3-3.3-0.5-6.7-0.5-10.1c0-2,0.2-3.9,0.3-5.8l181.9,66.2c-2.8,3.7-5.7,7.2-8.9,10.5C321,344,320.8,344.2,320.6,344.4z M177.5,201.3c1-1,2.1-1.9,3.2-2.9c18-16.6,42-26.8,68.4-26.8c27.9,0,53.2,11.3,71.5,29.7c15.5,15.4,25.8,35.8,28.7,58.5c0.2,1.4,0.4,2.8,0.5,4.2c0.3,2.9,0.5,5.8,0.5,8.8c0,2.8-0.2,5.5-0.4,8.3l-183.3-66.7c3.3-4.6,6.9-9,10.9-13C177.5,201.4,177.5,201.3,177.5,201.3z"></path>
+      </svg>
+    </a>
+  </div>
+  <div class="mm-text">
+    <div class="mm-school-name-wrapper">
+      <div class="mm-school-name">
+        Cristo Rey New York&rsquo;s Schooldriver
+      </div>
+    </div>
+    <div class="mm-hide-scrollbar">
+      <div class="mm-scroll-arrows mm-scroll-left-arrow"><i class="fa fa-angle-left mm-arrow-left"></i></div>
+      <div class="mm-menu-wrapper">
+        <ul class="mm-menu-items">
+          {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
+          <li class="mm-has-submenu{% if app_name == "sis" %} mm-current-page{% endif %}">
+            <a href="/sis/dashboard/">Student</a>
+            <ul class="mm-submenu">
+                <li><a href="/sis/dashboard/">{% trans 'Dashboard' %}</a></li>
+              {% if perms.sis.change_student or perms.sis.view_student %}
+                <li><a href="{% url "admin:sis_student_changelist" %}">{% trans 'Edit Students' %}</a></li>
+              {% endif %}
+              {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
+                  <li>
+                  <a href="{% url 'ecwsp.attendance.views.teacher_attendance' %}"> {% trans 'Take Attendance' %} </a>
+                  </li>
+              {% endif %}
+                  <li>
+                  <a href="/attendance/daily_attendance_report/">Daily Attendance Report</a>
+                  </li>
+              {% if perms.sis.reports %}
+                  <li><a href="/reports/student_report/">{% trans 'Reports' %}</a></li>
+              {% endif %}
+            </ul>
+          </li>
+          {% endif %}
+
+          {% if perms.schedule.change_course or perms.grades.change_own_grade %}
+          <li class="mm-has-submenu{% if app_name == "schedule" %} mm-current-page{% endif %}">
+            <a href="/schedule/dashboard/">{% trans 'Courses' %}</a>
+            <ul class="mm-submenu">
+              <li><a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a></li>
+            {% if perms.grades.change_own_grade %}
+              <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
+            {% endif %}
+            </ul>
+          </li>
+          {% endif %}
+
+          {% if perms.discipline.change_studentdiscipline %}
+          <li>
+              <a href="/discipline/dashboard/"> {% trans 'Discipline' %} </a>
+          </li>
+          {% endif %}
+
+          {% if perms.counseling.add_referralform %}
+          <li>
+              <a href="/counseling/dashboard"> Counseling </a>
+          </li>
+          {% endif %}
+
+          {% if perms.work_study.change_studentworker or perms.work_study.view_studentworker or perm.work_study.reports %}
+          <li>
+              <a href="/work_study/dashboard/"> CWSP </a>
+          </li>
+          {% endif %}
+
+
+          {% if perms.alumni.change_alumni %}
+          <li>
+              <a href="/alumni/dashboard/"> Alumni </a>
+          </li>
+          {% endif %}
+
+          {% if perms.admissions.change_applicant %}
+          <li>
+              <a href="/admissions/dashboard/"> Admissions </a>
+          </li>
+          {% endif %}
+
+          {% if perms.alumni.change_alumni or perms.auth.change_user or perms.administration.change_configuration or perms.engrade_sync.change_coursesync %}
+          <li>
+              <a href="/administration/dashboard/"> Management </a>
+          </li>
+          {% endif %}
+          
+          <li class="mm-all-link"><a href="{% url 'admin:index' %}">All</a></li>
+        </ul>
+      </div>
+      <div class="mm-scroll-arrows mm-scroll-right-arrow"><i class="fa fa-angle-right mm-arrow-right"></i></div>
+    </div>
+  </div>
+  <form id="lookup-student-form" class="mm-search">
+    <label for="lookup-student" class="mm-search-icon"><i class="fa fa-search"></i></label>
+    <input id="lookup-student" class="mm-search-field" type="text" placeholder="Look Up Student" />
+    <script>
+        $('#lookup-student').yourlabsAutocomplete({
+            url: '/autocomplete/StudentLookupStudentAutocomplete/',
+            choiceSelector: 'a',
+            box: $('<span class="yourlabs-autocomplete autocomplete-lookup-student"></span>'),
+            fixPosition: function() {
+              // Insert the autocomplete container after the input.
+              var pos = $.extend({}, this.input.position(), {
+                  height: this.input.outerHeight(),
+                  width:  this.input.outerWidth()
+              });
+
+              this.input.parents().filter(function() {
+                  return $(this).css('overflow') === 'hidden';
+              }).first().css('overflow', 'visible');
+
+              // +12 added to left for margin-left on input
+              this.box.insertAfter(this.input).css(
+                {top: pos.top + pos.height, left: pos.left + 12, "min-width": pos.width }
+              );
+            }
+        }).input.bind('selectChoice', function(e, choice, autocomplete) {
+            window.location.href = choice.attr('href');
+        });
+    </script>
+  </form>
+  <div class="mm-user-info">
+    <div class="mm-user-icon"><i class="fa fa-user"></i></div>
+    <div class="mm-user-mobile-menu-wrapper">
+      <div class="mm-user-name">
+        {% if user.first_name or user.last_name %}
+            {{ user.first_name }} {{ user.last_name }}
+        {% else %}
+            {{ user }}
+        {% endif %}
+        <i class="fa fa-user"></i>
+      </div>
+      <ul class="mm-user-icons">
+        <li>
+          <a href="/sis/preferences">
+            <span>Preferences</span><i class="fa fa-sliders"></i>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'admin:logout' %}">
+            <span>Sign Out</span><i class="fa fa-sign-out"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="mm-min-max">
+    <i class="fa fa-chevron-up mm-minimize-button"></i>
+    <i class="fa fa-chevron-down mm-maximize-button"></i>
+  </div>
+</div>

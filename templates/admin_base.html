@@ -8,74 +8,12 @@
 {% endblock %}
 
 {% block stylesheets %}
-{{ block.super }}
-<link rel="stylesheet" type="text/css" href="{% static "css/grappelli_lite.css" %}"/> 
+      {{ block.super }}
+      <link rel="stylesheet" type="text/css" href="{% static "css/grappelli_lite.css" %}"/> 
 {% endblock %}
 
 {% block nav %}
-<div class="navcontain">
-<nav class="navbar" id="nav1" gumby-fixed="top">
-  <div class="sixteen colgrid">
-    {% include "gumby/nav.html" %}
-<div class="breadcrumbs">
-<div id="breadcrumbs_area" class="row">
-  <div class="sixteen columns">
-    <div class="pull_left" id="breadcrumbs"> 
-      {% block breadcrumbs %}
-      {% endblock %}
-    </div>
-    <div class="pull_left"> 
-      <ul>
-        {% if dashboard %}
-        <li>
-          <a href="javascript:void(0)" onclick="customize_dashboard(this);">
-            CUSTOMIZE
-            <img class="nav_icon" src="{% static "responsive_dashboard/img/gear.svg" %}"/>
-          </a>
-        </li>
-        {% endif %}
-      </ul>
-    </div>
-    <div class="pull_right">
-      <ul>
-        <li>
-          <a href="{% url 'admin:index' %}">
-            VIEW SITE ADMIN
-            <img class="nav_icon" src="{% static "images/adminview.svg" %}"/>
-          </a>
-        </li>
-        <li>
-          <a href="javascript:void(0);">
-            <img class="nav_icon" src="{% static "images/wrench_dark.svg" %}"/>
-            {% if user.first_name or user.last_name %}
-                {{ user.first_name }} {{ user.last_name }}
-            {% else %}
-                {{ user }}
-            {% endif %}
-            <i style="margin: 0px;" class="icon-down-dir"></i>
-          </a>
-          <div class="dropdown name_dropdown">
-            <ul>
-              <li>
-                <a href="/sis/preferences">Preferences</a>
-              </li>
-              <li>
-                <a href="{% url 'admin:password_change' %}">Change Password</a>
-              </li>
-              <li>
-                <a href="{% url 'admin:logout' %}">Log Out</a>
-              </li>
-            </ul>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
-</div>
-  </div>
-</nav>
-</div>
+  {% include "nav.html" %}
 {% endblock %}
 
 {% block messages %}

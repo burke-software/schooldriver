@@ -7,12 +7,11 @@
 {% endblock %}
 
 {% block body %}
-    <div style="height: 62px">
     {% block nav %}
         {{ block.super }}
     {% endblock %}
-    </div>
-    <div style="height: calc(100% - 106px); margin-top: -20px;">
+
+    <div class="requires-set-height">
     {% block content %}
     {% endblock %}
     </div>

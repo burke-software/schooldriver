@@ -25,21 +25,12 @@
 
 
 {% block breadcrumbs %}
-  <div id="breadcrumbs"> 
-  <a href="{% url "admin:index" %}"> 
-   Home
-  </a>
-  &rsaquo; 
-  <a href="{% url "admin:app_list" 'discipline' %}"> 
-   Discipline
-  </a> 
-  &rsaquo; 
-  <a href="{% url "admin:discipline_studentdiscipline_changelist" %}"> 
-   Student disciplines
-  </a> 
-  &rsaquo; 
-  Student disciplines statistics
-  </div> 
+<ul>
+  <li><a href="{% url "admin:index" %}">Home</a></li>
+  <li><a href="{% url "admin:app_list" 'discipline' %}">Discipline</a> </li>
+  <li><a href="{% url "admin:discipline_studentdiscipline_changelist" %}">Student disciplines</a> </li>
+  <li>Student disciplines statistics</li>
+</ul>
 {% endblock %}
 
 {% block content_title %}

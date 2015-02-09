@@ -5,26 +5,27 @@
     {{ formset.media }}
 {% endblock %}
 
-{% block breadcrumbs %}
-    <div id="grp-context-navigation">
-        <nav id="grp-breadcrumbs" class="">
-            <header style="display:none"><h1>Breadcrumbs</h1></header>
-            <ul class="grp-horizontal-list">
-                <li><a href="/">Home</a></li>
-                {% for crumb in breadcrumbs %}
-                    <li>
-                        {% if crumb.link %}
-                            <a href="{{ crumb.link }}">
-                        {% endif %}
-                        {{ crumb.name }}
-                        {% if crumb.link %}
-                            </a>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-	    </nav>
-	</div>
+{% block nav_page_specific %}
+{% if breadcrumbs %}
+<div id="mm-page-specific" role="navigation">
+    <div class="breadcrumb">
+        <ul>
+            <li><a href="/">Home</a></li>
+        {% for crumb in breadcrumbs %}
+            <li>
+                {% if crumb.link %}
+                    <a href="{{ crumb.link }}">
+                {% endif %}
+                {{ crumb.name }}
+                {% if crumb.link %}
+                    </a>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block content %}

@@ -2,10 +2,11 @@
 {% load i18n %}
 
 {% block breadcrumbs %}
-    <div id="breadcrumbs">
-      <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
-      &rsaquo; Upload
-    </div>
+<ul>
+  <li><a href="/">{% trans 'Home' %}</a></li>
+  {% if title %}<li>{{ title }}</li>{% endif %}
+  <li>Upload</li>
+</ul>
 {% endblock %}
 
 {% block content %}
