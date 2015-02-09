@@ -31,10 +31,9 @@ class TeacherSerializer(serializers.ModelSerializer):
 
 
 class SimpleSectionSerializer(serializers.ModelSerializer):
-    teachers = TeacherSerializer()
+    #teachers = TeacherSerializer()
     class Meta:
         model = CourseSection
-        depth = 0
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -44,7 +43,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     id = serializers.ReadOnlyField()
     #sections = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    sections = SimpleSectionSerializer()
+    sections = SimpleSectionSerializer(many=True)
     department_id = serializers.PrimaryKeyRelatedField(
         source='department',
         queryset=Department.objects.all(),
