@@ -4,22 +4,24 @@ var menuItemPos, thirdItemPos, thirdItemWidth, oneThroughThreeWidth, triggerWidt
 function getScrollValue(direction) {
 	var scrollValue = 0;
 	var currentLeft = $('.mm-menu-wrapper').scrollLeft();
-	var menuToWrapperProportion = $('.mm-menu-items').width() / $('.mm-menu-wrapper').width();
+	var menuItemWidth = $('.mm-menu-items').width();
+	var menuWrapperWidth = $('.mm-menu-wrapper').width();
+	var menuToWrapperProportion = menuItemWidth / menuWrapperWidth;
 
 	if (direction == 'right') {
 		if (menuToWrapperProportion <= 2) {
 			// If the quotient is less than 2, then we can scroll to the end and not miss anything
-			scrollValue = $('.mm-menu-items').width() - $('.mm-menu-wrapper').width();
+			scrollValue = menuItemWidth - menuWrapperWidth;
 		} else {
 			// Otherwise, advance the scroll in increments equal to the wrapper's width
-			scrollValue = currentLeft + $('.mm-menu-wrapper').width();
+			scrollValue = currentLeft + menuWrapperWidth;
 		}
 	}
 	if (direction == 'left') {
 		if (menuToWrapperProportion <= 2) {
 			scrollValue = 0;
 		} else {
-			scrollValue = currentLeft - $('.mm-menu-wrapper').width();
+			scrollValue = currentLeft - menuWrapperWidth;
 		}
 	}
 
@@ -100,6 +102,26 @@ function changeContentHeight() {
 	$('.requires-set-height').css('height','calc(100% - '+navHeight+'px)');
 }
 
+// Want to have drop shadows serve as a visual cue to scroll horizontally, but
+// don't want them to appear when you can't scroll in that direction.
+function controlShadows() {
+	var currentLeft = $('.mm-menu-wrapper').scrollLeft();
+	var menuItemWidth = $('.mm-menu-items').width();
+	var menuWrapperWidth = $('.mm-menu-wrapper').width();
+
+	if (currentLeft !== 0) {
+		$('.mm-scroll-left-arrow').addClass('has-shadow');
+	} else {
+		$('.mm-scroll-left-arrow').removeClass('has-shadow');
+	}
+
+	if (menuItemWidth - (menuWrapperWidth + currentLeft) >= 3) {
+		$('.mm-scroll-right-arrow').addClass('has-shadow');
+	} else {
+		$('.mm-scroll-right-arrow').removeClass('has-shadow');
+	}
+}
+
 $(document).ready(function() {
 	menuItemPos = $('.mm-menu-items').position();
 	thirdItemPos = $('.mm-menu-items > li:nth-child(3)').position();
@@ -117,6 +139,7 @@ $(document).ready(function() {
 
 	// There is a somewhat intentional progression here, so be careful if you shift around.
 	fitMenuElements();
+	controlShadows();
 	goToMobileSize();
 	if ($.cookie('mmSizePref') == "condensed") { minimizeMenuBar(); }
 	if (requiresSetHeight > 0) { changeContentHeight(); } // Needs to happen after height of menu bar is set
@@ -124,6 +147,7 @@ $(document).ready(function() {
 
 	$(window).resize(function() {
 		fitMenuElements();
+		controlShadows();
 		goToMobileSize();
 		if (requiresSetHeight > 0) { changeContentHeight(); }
 	});
@@ -149,7 +173,7 @@ $(document).ready(function() {
 		$('.mm-menu-wrapper').animate({
 			scrollLeft: getScrollValue('right'),
 		}, 500, function() {
-			// Animation complete.
+			controlShadows();
 		});
 	});
 
@@ -157,7 +181,7 @@ $(document).ready(function() {
 		$('.mm-menu-wrapper').animate({
 			scrollLeft: getScrollValue('left'),
 		}, 500, function() {
-			// Animation complete.
+			controlShadows();
 		});
 	});
 

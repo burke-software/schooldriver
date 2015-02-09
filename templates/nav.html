@@ -17,7 +17,7 @@
       </div>
     </div>
     <div class="mm-hide-scrollbar">
-      <div class="mm-scroll-arrows"><i class="fa fa-angle-left mm-arrow-left"></i></div>
+      <div class="mm-scroll-arrows mm-scroll-left-arrow"><i class="fa fa-angle-left mm-arrow-left"></i></div>
       <div class="mm-menu-wrapper">
         <ul class="mm-menu-items">
           {% if perms.sis.change_student or perms.sis.view_student or perms.sis.reports %}
@@ -95,7 +95,7 @@
           <li class="mm-all-link"><a href="{% url 'admin:index' %}">All</a></li>
         </ul>
       </div>
-      <div class="mm-scroll-arrows"><i class="fa fa-angle-right mm-arrow-right"></i></div>
+      <div class="mm-scroll-arrows mm-scroll-right-arrow"><i class="fa fa-angle-right mm-arrow-right"></i></div>
     </div>
   </div>
   <form id="lookup-student-form" class="mm-search">

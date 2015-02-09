@@ -148,13 +148,18 @@
 	height: 30px;
 	text-align: center;
 	overflow: hidden;
-}
-.mm-scroll-arrows i {
-	padding: 9px 13px;
 
-	&:hover {
-		cursor: pointer;
-		background-color: rgba(0,0,0, 0.25);
+	&.has-shadow {
+		box-shadow: 0px 0px 15px rgba(0,0,0,0.75);
+	}
+
+	i {
+		padding: 9px 13px;
+
+		&:hover {
+			cursor: pointer;
+			background-color: rgba(0,0,0, 0.25);
+		}
 	}
 }
 .mm-menu-wrapper {
@@ -359,7 +364,7 @@ input[type="text"].mm-search-field:focus, .full-size input[type="text"].mm-searc
 	text-align: center;
 	padding: 13px 10px;
 	height: 100%;
-	min-width: 105px;
+	min-width: 75px;
 	max-width: 200px;
 	margin: 0;
 }
