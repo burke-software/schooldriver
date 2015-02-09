@@ -45,12 +45,12 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    <div id="breadcrumbs">
-      <a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}
-      &rsaquo; <a href="{% url "admin:app_list" 'admissions' %}">{% trans 'Admissions' %}</a>
-      &rsaquo; <a href="../">{% trans 'Reports' %}</a>
-      &rsaquo; Funnel
-    </div>
+<ul>
+  <li><a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}</li>
+  <li><a href="{% url "admin:app_list" 'admissions' %}">{% trans 'Admissions' %}</a></li>
+  <li><a href="../">{% trans 'Reports' %}</a></li>
+  <li>Funnel</li>
+</ul>
 {% endblock %}
 
 {% block content %}
@@ -62,7 +62,7 @@
 	    {{ level }}
 	    <table style="margin-left: auto;margin-right: auto;">
 		<tr>
-		    <td class="level thin"">
+		    <td class="level thin">
 			Total:
 		    </td>
 		    <td class="level thin">

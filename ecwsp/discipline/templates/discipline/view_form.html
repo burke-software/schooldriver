@@ -2,21 +2,12 @@
 {% load i18n %}
 
 {% block breadcrumbs %}
-<div id="breadcrumbs"> 
-<a href="/admin"> 
-Home
-</a> 
-&rsaquo; 
-<a href="/admin/discipline/"> 
- Discipline
-</a> 
-&rsaquo;
-<a href="/admin/discipline/studentdiscipline/"> 
- Student disciplines
-</a> 
-&rsaquo; 
-View
-</div> 
+<ul> 
+    <li><a href="/admin">Home</a> </li>
+    <li><a href="/admin/discipline/">Discipline</a> </li>
+    <li><a href="/admin/discipline/studentdiscipline/">Student disciplines</a> </li>
+    <li>View</li>
+</ul> 
 {% endblock %}
 
 {% block content %}

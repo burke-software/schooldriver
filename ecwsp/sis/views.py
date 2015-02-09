@@ -2,7 +2,8 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import (
     login_required, user_passes_test, permission_required)
-from django.contrib.auth import logout
+from django.contrib.auth import logout, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
@@ -35,18 +36,24 @@ def user_preferences(request):
     """
     profile = UserPreference.objects.get_or_create(user=request.user)[0]
     if request.POST:
+        password_form = PasswordChangeForm(user=request.user, data=request.POST)
         form = UserPreferenceForm(request.POST, instance=profile)
-        if form.is_valid():
-            form.cleaned_data['user'] = request.user
-            form.save()
-            messages.info(request, 'Successfully updated preferences')
-            if 'refer' in request.GET and request.GET['refer']:
-                return HttpResponseRedirect(request.GET['refer'])
-            return HttpResponseRedirect(reverse('admin:index'))
+        if "password_change" in request.POST and password_form.is_valid():
+                password_form.save()
+                update_session_auth_hash(request, password_form.user)
+        elif form.is_valid():
+                form.cleaned_data['user'] = request.user
+                form.save()
+                messages.info(request, 'Successfully updated preferences')
+                if 'refer' in request.GET and request.GET['refer']:
+                    return HttpResponseRedirect(request.GET['refer'])
+                return HttpResponseRedirect(reverse('admin:index'))
     else:
         form = UserPreferenceForm(instance=profile)
+        password_form = PasswordChangeForm(user=request.user)
     return render_to_response('sis/user_preferences.html', {
         'form': form,
+        'password_form': password_form,
     }, RequestContext(request, {}),)
 
 

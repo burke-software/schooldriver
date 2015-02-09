@@ -1,17 +1,23 @@
-{% load admin_static %}{% load firstof from future %}{% load i18n grp_tags %}
+{% load admin_static %}{% load firstof from future %}{% load i18n grp_tags %}{% load compress %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}> <![endif]-->
+<!--[if IE 9]>    <html class="no-js ie9" lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}> <![endif]-->
+<!--[if gt IE 9]><!--> <html class="no-js" lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}> <!--<![endif]-->
 <head>
-    <title>{% block title %}{% endblock %}</title>
     <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+
+    <title>{% block title %}{% endblock %}</title>
     
+    {% include "partials/favicons-etc.html" %}
     
-    
-    
-    <! -- django-sis custom head files -->
+    <!-- django-sis custom head files -->
     <!-- jQuery, jQuery-UI -->
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="{% static 'js/jquery.cookie-1.4.1.min.js' %}"></script>
     {% include "gumby/head.html" %}
     <script type="text/javascript" src="{% static "js/admin_django_sis.js" %}"></script>
     
@@ -29,6 +35,11 @@
             <link href="{% static "grappelli/stylesheets/mueller/grid/output.css" %}" rel="stylesheet" type="text/css" media="screen" />
         {% endif %}
     {% endblock %}
+    {% compress css %}
+    <link type="text/x-scss" href="{% static 'scss/_nav.scss' %}" rel="stylesheet" charset="utf-8" />
+    {% endcompress %}
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700,700italic' rel='stylesheet' type='text/css'>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- EXTRASTYLES -->
     {% block extrastyle %}{% endblock %}
     <!-- JAVASCRIPTS -->
@@ -72,82 +83,35 @@
                 });
             })(grp.jQuery);
         </script>
+        <script src="{% static 'js/nav.js' %}"></script>
     {% endblock %}
     <!-- EXTRAHEAD -->
     {% block extrahead %}
         {% include 'autocomplete_light/static.html' %}
     {% endblock %}
+
+    {% include "partials/analytics.html" %}
 </head>
 <body class="{% if is_popup %}grp-popup {% endif %}{% block bodyclass %}{% endblock %}{% if LANGUAGE_BIDI %} rtl{% endif %}">
+
+    {% include "partials/outdated-browser.html" %}
+
     <div id="grp-container">
 
         <!-- HEADER -->
         <header id="grp-header" class="{% block header-class %}{% endblock %}">
             {% if not is_popup %}
 
-            
-            
-            
             <!-- NAVIGATION -->
-            <div class="navcontain">
-                <nav class="navbar" id="nav1" gumby-fixed="top">
-                  <div class="sixteen colgrid">
-                    {% include "gumby/nav.html" %}
-                    <div class="breadcrumbs">
-                    <div id="breadcrumbs_area" class="row">
-                      <div class="sixteen columns">
-                        <div class="pull_left" id="breadcrumbs"> 
-                          {% block breadcrumbs %}
-                          {% endblock %}
-                        </div>
-                        <div class="pull_right">
-                          <ul>
-                            {% if dashboard %}
-                            <li>
-                              <a href="javascript:void(0)" onclick="customize_dashboard(this);">
-                                CUSTOMIZE
-                                <img class="nav_icon" src="{% static "responsive_dashboard/img/gear.svg" %}"/>
-                              </a>
-                            </li>
-                            {% endif %}
-                            <li>
-                              <a href="{% url 'admin:index' %}">
-                                VIEW SITE ADMIN
-                                <img class="nav_icon" src="{% static "images/adminview.svg" %}"/>
-                              </a>
-                            </li>
-                            <li>
-                              <a href="javascript:void(0);">
-                                <img class="nav_icon" src="{% static "images/wrench_dark.svg" %}"/>
-                                {% if user.first_name or user.last_name %}
-                                    {{ user.first_name }} {{ user.last_name }}
-                                {% else %}
-                                    {{ user }}
-                                {% endif %}
-                                <i style="margin: 0px;" class="icon-down-dir"></i>
-                              </a>
-                              <div class="dropdown name_dropdown">
-                                <ul>
-                                  <li>
-                                    <a href="/sis/preferences">Preferences</a>
-                                  </li>
-                                  <li>
-                                    <a href="{% url 'admin:password_change' %}">Change Password</a>
-                                  </li>
-                                  <li>
-                                    <a href="{% url 'admin:logout' %}">Log Out</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    </div>
-                    </div>
-                  </nav>
-              </div>
+            {% include "nav.html" %}
+
+            <div id="mm-page-specific" role="navigation">
+                <div class="breadcrumb">
+                {% block breadcrumbs %}
+                {% endblock %}
+                </div>
+            </div>
+
             {% endif %}
         </header>
 
