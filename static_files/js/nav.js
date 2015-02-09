@@ -171,20 +171,18 @@ $(document).ready(function() {
 	
 	$('.mm-arrow-right').click(function() {
 		controlShadows();
-		
+
 		$('.mm-menu-wrapper').animate({
 			scrollLeft: getScrollValue('right'),
-		}, 500, function() {
-		});
+		}, 500);
 	});
 
 	$('.mm-arrow-left').click(function() {
 		controlShadows();
-		
+
 		$('.mm-menu-wrapper').animate({
 			scrollLeft: getScrollValue('left'),
-		}, 500, function() {
-		});
+		}, 500);
 	});
 
 	$('.mm-menu-wrapper').scroll(function() {
