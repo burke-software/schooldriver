@@ -7,8 +7,7 @@
     <div class="breadcrumb">
         <ul>
             <li><a href="/admin">Home</a></li>
-            <li><a href="/admin/attendance/studentattendance/">Student Attendance</a></li>
-            <li>Attendance Submissions</li>
+            <li>Preferences</li>
         </ul>
     </div>
 </div>
@@ -24,6 +23,6 @@
     <h4>Change Password</h4>
     <form action="" method="post">
         {{ password_form.as_p }}
-        <button type="submit" name="password_change">save new password</button>
+        <button class="btn btn-primary" type="submit" name="password_change">Save New Password</button>
     </form>
 {% endblock %}
