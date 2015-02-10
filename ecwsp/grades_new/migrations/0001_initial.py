@@ -2,7 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import ecwsp.grades.models
+import ecwsp.grades_new.models
+import ecwsp.sis.constants
 
 
 class Migration(migrations.Migration):
@@ -18,8 +19,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('date_created', models.DateField(auto_now_add=True)),
                 ('date_modified', models.DateField(auto_now=True)),
-                ('grade', models.DecimalField(null=True, max_digits=5, decimal_places=2, blank=True)),
-                ('comment', models.CharField(blank=True, max_length=500, validators=[ecwsp.grades.models.grade_comment_length_validator])),
+                ('grade', ecwsp.sis.constants.GradeField(null=True, max_digits=8, decimal_places=2, blank=True)),
+                ('comment', models.CharField(blank=True, max_length=500, validators=[ecwsp.grades_new.models.grade_comment_length_validator])),
                 ('enrollment', models.ForeignKey(to='schedule.CourseEnrollment', unique=True)),
             ],
             options={
@@ -33,8 +34,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('date_created', models.DateField(auto_now_add=True)),
                 ('date_modified', models.DateField(auto_now=True)),
-                ('grade', models.DecimalField(null=True, max_digits=5, decimal_places=2, blank=True)),
-                ('comment', models.CharField(blank=True, max_length=500, validators=[ecwsp.grades.models.grade_comment_length_validator])),
+                ('grade', ecwsp.sis.constants.GradeField(null=True, max_digits=8, decimal_places=2, blank=True)),
+                ('comment', models.CharField(blank=True, max_length=500, validators=[ecwsp.grades_new.models.grade_comment_length_validator])),
                 ('enrollment', models.ForeignKey(to='schedule.CourseEnrollment')),
             ],
             options={
@@ -66,7 +67,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='grade',
             name='letter_grade',
-            field=models.ForeignKey(blank=True, to='grades.LetterGradeChoices', null=True),
+            field=models.ForeignKey(blank=True, to='grades_new.LetterGradeChoices', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -82,7 +83,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='finalgrade',
             name='letter_grade',
-            field=models.ForeignKey(blank=True, to='grades.LetterGradeChoices', null=True),
+            field=models.ForeignKey(blank=True, to='grades_new.LetterGradeChoices', null=True),
             preserve_default=True,
         ),
     ]
