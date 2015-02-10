@@ -1,4 +1,4 @@
-app.controller('CourseController', function($scope, $routeParams, $route, RestfulModel) {
+  app.controller('CourseController', function($scope, $routeParams, $route, RestfulModel) {
     var courseModel, sectionModel, updateDetail;
     $scope.oneAtATime = false;
     $scope.status = {
