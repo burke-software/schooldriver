@@ -18,54 +18,36 @@ import unittest
 import json
 
 class AssignmentViewsetTests(APITestCase):
-	def setup(self):
-		self.client = APIClient()
+    def setUp(self):
+        self.client = APIClient()
+        self.course = Course.objects.create(id=1, fullname="first course", shortname="first")
+        self.section = CourseSection.objects.create(course=self.course, name="section one")
+        self.assignment = Assignment.objects.create(name="first assignment", course_section=self.section)
+        self.data = {'name': 'first assignment', 'course_section': self.section.pk}
 		
-	def test_get_assignment_list(self):
-		url = reverse('assignment-list')
-		response = self.client.get(url)
-		self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_get_assignment_list(self):
+        response = self.client.get(reverse('assignment-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 		
-	def test_get_assignment_detail(self):
-		course_one = Course.objects.create(id=1, fullname="first course", shortname="first")
-		section_one = CourseSection.objects.create(course=course_one, name="section one")
-		assignment1 = Assignment.objects.create(name="first assignment", course_section=section_one)
-		url = reverse('assignment-detail', args=(assignment1.pk,))
-		response = self.client.get(url)
-		self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_get_assignment_detail(self):
+        response = self.client.get(reverse('assignment-detail', args=(self.assignment.pk,)))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_assignment(self):
+        response = self.client.post(reverse('assignment-list'), self.data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		
-	def test_create_assignment(self):
-		url = reverse('assignment-list')
-		course_one = Course.objects.create(id=1, fullname="first course", shortname="first")
-		section_one = CourseSection.objects.create(course=course_one, name="section one")
-		data = {'name': 'first assignment', 'course_section': section_one.pk}
-		request = self.client.post('/api/assignments/', data, format='json')
-		self.assertEqual(request.status_code, status.HTTP_201_CREATED)
+    def test_put_assignment(self):
+        request = self.client.post(reverse('assignment-list'), self.data, format='json')
+        #data to update initially posted data
+        data_two = {'name': 'second name', 'course_section': self.section.pk}
+        response = self.client.put(reverse('assignment-detail', args=(self.assignment.pk,)), data_two)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 		
-	def test_put_assignment(self):
-		course_one = Course.objects.create(id=1, fullname="first course", shortname="first")
-		section_one = CourseSection.objects.create(course=course_one, name="section one")
-		assignment1 = Assignment.objects.create(name="first assignment", course_section=section_one)
-		data = {'name': 'first assignment', 'course_section': section_one.pk}
-		request = self.client.post('/api/assignments/', data, format='json')
-		#data to update initially posted data
-		data_two = {'name': 'second name', 'course_section': section_one.pk}
-		url = reverse('assignment-detail', args=(assignment1.pk,))
-		response = self.client.put(url, data_two)
-		self.assertEqual(response.status_code, status.HTTP_200_OK)
-		
-	def test_delete_assignment(self):
-		course_one = Course.objects.create(id=1, fullname="first course", shortname="first")
-		section_one = CourseSection.objects.create(course=course_one, name="section one")
-		assignment1 = Assignment.objects.create(name="first assignment", course_section=section_one)
-		course_one.save()
-		section_one.save()
-		assignment1.save()
-		url = reverse('assignment-detail', args=(assignment1.pk,))
-		request = self.client.delete(url)
-		self.assertEqual(request.status_code, 204)
-		
-		
+    def test_delete_assignment(self):
+        response = self.client.delete(reverse('assignment-detail', args=(self.assignment.pk,)))
+        self.assertEqual(response.status_code, 204)
+	
 @unittest.skip("Gradebook is an unreleased backend right now, we can unskip when it's ready")
 class GradeCalculationTests(SisTestMixin, TestCase):
     def setUp(self):
