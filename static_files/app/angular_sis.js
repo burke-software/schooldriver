@@ -1,4 +1,4 @@
-var app = angular.module("angular_sis", ['restangular', 'ngRoute', 'ui.bootstrap', 'uiHandsontable']);
+var app = angular.module("angular_sis", ['restangular', 'ngRoute', 'ui.bootstrap', 'ngHandsontable', 'gradeBookApp']);
 
 app.config([
     "$httpProvider", function($httpProvider) {

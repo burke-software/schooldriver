@@ -1,8 +1,8 @@
 {
-  "name": "angular",
+  "name": "angular-cookies",
   "version": "1.3.13",
-  "description": "HTML enhanced for web apps",
-  "main": "angular.js",
+  "description": "AngularJS module for cookies",
+  "main": "angular-cookies.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,6 +14,7 @@
     "angular",
     "framework",
     "browser",
+    "cookies",
     "client-side"
   ],
   "author": "Angular Core Team <angular-core+npm@google.com>",
