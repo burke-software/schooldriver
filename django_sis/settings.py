@@ -134,14 +134,20 @@ BOWER_INSTALLED_APPS = (
     'jquery-migrate',
     'blockui',
     'jquery-color',
+    'bootstrap',
+    'angular',
+    'angular-cookies',
     'angular-route',
-    'angular-ui-handsontable',
+    'angular-resource',
     'angular-bootstrap',
+    'angular-translate',
+    'ngHandsontable',
     'underscore',
     'restangular',
     'bootstrap-sass-official',
     'bootstrap-hover-dropdown',
     'angular-ui-bootstrap',
+
 )
 
 #GRAPPELLI
