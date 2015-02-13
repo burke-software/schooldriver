@@ -13,7 +13,7 @@
   <div class="mm-text">
     <div class="mm-school-name-wrapper">
       <div class="mm-school-name">
-      {% if config.SCHOOL_NAME.is_modified != "Unnamed School" %}
+      {% if config.SCHOOL_NAME != "Unnamed School" %}
         {{ config.SCHOOL_NAME }}&rsquo;s 
       {% endif %}
       Schooldriver

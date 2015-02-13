@@ -164,6 +164,7 @@ $(document).ready(function() {
 
 			setTimeout(function () { 
 				fitMenuElements();
+				controlShadows();
 				// $('.mm-menu-wrapper').scrollLeft(30);
 			}, 100);
 		}
@@ -191,6 +192,7 @@ $(document).ready(function() {
 
 	$('.mm-search-field').on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function() {
 		fitMenuElements();
+		controlShadows();
 	});
 
 	$('.mm-user-icon').click(function() {
