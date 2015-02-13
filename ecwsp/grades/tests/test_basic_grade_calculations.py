@@ -92,3 +92,28 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             self.set_grade(enrollment, data[2], data[3])
         self.set_final_grade(enrollment, 82)
         self.check_grade(enrollment, 82)
+
+    def test_set_marking_period_grade(self):
+        enroll = self.data.course_enrollment
+        marking_period = self.data.marking_period
+        #  [Set, expected result]
+        test_data = [
+            [50, 50],
+            #['P', 'P'],
+        ]
+        for data in test_data:
+            grade = Grade.set_marking_period_grade(marking_period, enroll, data[0])
+            self.assertAlmostEquals(grade.get_grade(), data[1])
+
+    def test_set_marking_period_student_course_grade(self):
+        marking_period = self.data.marking_period
+        student = self.data.student
+        course_section = self.data.course_section
+        #  [Set, expected result]
+        test_data = [
+            [50, 50],
+        ]
+        for data in test_data:
+            grade = Grade.set_marking_period_student_course_grade(
+                marking_period, student, course_section, data[0])
+            self.assertAlmostEquals(grade.get_grade(), data[1])

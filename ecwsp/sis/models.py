@@ -394,39 +394,7 @@ class Student(User, CustomFieldModel):
         """ Use StudentYearGrade calculation
         No further weighting needed.
         """
-        total = Decimal(0)
-        years_with_grade = 0
-        grade_years = self.studentyeargrade_set.filter(year__markingperiod__show_reports=True)
-        if date_report:
-            grade_years = grade_years.filter(year__start_date__lt=date_report)
-        for grade_year in grade_years.distinct():
-
-            # grade = grade_year.calculate_grade(date_report=date_report, prescale=prescale)
-
-            grade = grade_year.get_grade(
-                date_report = date_report,
-                numeric_scale = True,
-                rounding = rounding,
-                prescale = prescale,
-                boost = boost
-                )
-            if grade:
-                # Is this an incomplete complete year?
-                if date_report and date_report < grade_year.year.end_date:
-                    # This year hasn't finished. What fraction is complete?
-                    all_mps = grade_year.year.markingperiod_set.count()
-                    complete_mps = grade_year.year.markingperiod_set.filter(
-                        end_date__lte=date_report).count()
-                    fraction = Decimal(complete_mps) / all_mps
-                    total += grade * grade_year.credits * fraction
-                    years_with_grade += grade_year.credits * fraction
-                else:
-                    total += grade * grade_year.credits
-                    years_with_grade += grade_year.credits
-
-        if years_with_grade:
-            gpa = total / years_with_grade
-            return round_as_decimal(gpa, decimal_places=rounding)
+        pass
 
     @property
     def primary_cohort(self):

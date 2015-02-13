@@ -69,3 +69,4 @@ class SectionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CourseSection
+        depth = 1

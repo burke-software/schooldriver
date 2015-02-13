@@ -158,15 +158,6 @@ class CourseEnrollment(models.Model):
     class Meta:
         unique_together = (("course_section", "user"),)
 
-    def save(self, populate_all_grades=True, *args, **kwargs):
-        """ populate_all_grades (default True) is intended to
-        recalculate any related grades to this enrollment.
-        It can be disabled to stop a recursive save.
-        """
-        super(CourseEnrollment, self).save(*args, **kwargs)
-        if populate_all_grades is True:
-            self.course_section.populate_all_grades()
-
     def cache_grades(self):
         """ Set cache on both grade and numeric_grade """
         grade = self.calculate_grade_real()
@@ -547,19 +538,6 @@ class CourseSection(models.Model):
         """ Shim code to calculate final grade WITHOUT cache """
         enrollment = self.courseenrollment_set.get(user=student)
         return enrollment.calculate_grade_real()
-
-    def populate_all_grades(self):
-        """
-        calling this method calls Grade.populate_grade on each combination
-        of enrolled_student + marking_period + course_section
-        """
-        for student in self.enrollments.all():
-            for marking_period in self.marking_period.all():
-                Grade.populate_grade(
-                    student = student,
-                    marking_period = marking_period,
-                    course_section = self
-                    )
 
     def save(self, *args, **kwargs):
         super(CourseSection, self).save(*args, **kwargs)

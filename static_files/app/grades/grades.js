@@ -13,17 +13,17 @@ app.controller('CourseGradesController', ['$scope', '$routeParams', '$q', 'Cours
   $scope.htSettings = {};
   $scope.htSettings.afterChange = function(changes, source) {
     if (source !== 'loadData') {
-      row = $scope.gridData.rows[changes[0]];
-      console.log(changes);
-      prope = changes[1];
-      console.log(prop);
-      oldVal = changes[2];
-      newVal = changes[3];
-      if (prop.substring(0, 6) === 'grade_') {
-        marking_period = prop.substring(6);
-        student = row.id;
-        console.log('Save to api!' + student + marking_period);
-      }
+      angular.forEach(changes, function(change) { 
+        row = $scope.gridData.rows[change[0]];
+        prop = change[1];
+        oldVal = change[2];
+        newVal = change[3];
+        if (prop.substring(0, 6) === 'grade_') {
+          marking_period = prop.substring(6);
+          student = row.id;
+          console.log('Save to api!' + student + marking_period);
+        }
+      });
     }
   };
   

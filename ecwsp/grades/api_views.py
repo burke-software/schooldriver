@@ -21,6 +21,7 @@ class GradeViewSet(viewsets.ModelViewSet):
 
 class SetGradeView(APIView):
     def post(self, request, format=None):
-        Grade.objects.get_or_create()
+        Grade.set_grade_from_marking_period_student(
+            marking_period, student, grade)
         request.data
         return Response()

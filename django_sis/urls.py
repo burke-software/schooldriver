@@ -47,6 +47,7 @@ urlpatterns = patterns('',
     (r'^reports/', include('scaffold_report.urls')),
     url(r'^impersonate/', include('impersonate.urls')),
     url(r'^api/', include(api_urls)),
+    url(r'^api/', include('api.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 )
 

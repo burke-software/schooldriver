@@ -111,10 +111,37 @@ class Grade(CommonGrade):
         return rule.numeric_scale
 
     @staticmethod
-    def set_grade_from_marking_period_student(marking_period, student, grade):
-        pass
-        #try:
-        #    grade Grade.objects.get()
+    def set_marking_period_student_course_grade(marking_period, student,
+                                                course_section, grade):
+        """ Set a grade based looking up the enrollment object
+        Returns grade object or None """
+        enrollment = student.courseenrollment_set.get(
+            course_section=course_section)
+        return Grade.set_marking_period_grade(marking_period, enrollment, grade)
+
+    @staticmethod
+    def set_marking_period_grade(marking_period, enrollment, grade):
+        """ Set a grade from an enrollment and marking period
+        A grade of None will delete the grade object making it not used in
+        any calculations.
+        Create grade object when it doesn't exist and is not None
+        Returns grade object or None
+        """
+        search_kwargs = {
+            'enrollment': enrollment,
+            'marking_period': marking_period,
+        }
+        if grade is None:
+            try:
+                grade_obj = Grade.objects.get(**search_kwargs)
+                grade_obj.delete()
+            except Grade.DoesNotExist:
+                pass
+        else:
+            grade_obj, created = Grade.objects.get_or_create(**search_kwargs)
+            grade_obj.set_grade(grade)
+            grade_obj.save()
+            return grade_obj
 
     @staticmethod
     def get_course_grade(enrollment, date=None, rounding=None):

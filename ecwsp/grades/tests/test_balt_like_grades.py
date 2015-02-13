@@ -3,9 +3,8 @@ from django.test import TestCase
 from ecwsp.sis.sample_data import SisData
 from ecwsp.schedule.models import (
     CourseEnrollment, Course, CourseSection)
-from ..models import Grade, FinalGrade
+from ..models import Grade
 from decimal import Decimal
-import datetime
 
 
 class GradeBaltTests(SisTestMixin, TestCase):
