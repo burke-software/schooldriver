@@ -31,7 +31,8 @@ function static(path) {
 }
 
 app.config(function($routeProvider, $locationProvider) {
-    $routeProvider.when("/course/course_section_grades/:course_section_id/", {
+    $routeProvider.when("/course/course_section/:course_section_id/grades/", {
+      templateUrl: static('app/grades/course_grades.html'),
       controller: "CourseGradesController"
     });
     $routeProvider.when("/course/student_grades/:student_id/", {

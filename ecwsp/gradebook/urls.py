@@ -3,5 +3,5 @@ from ecwsp.sis.views import SpaView
 
 
 urlpatterns = patterns('',
-    url(r'^', SpaView.as_view()),
+    url(r'^', SpaView.as_view(), name="gradebook-index"),
 )

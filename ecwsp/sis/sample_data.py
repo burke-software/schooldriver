@@ -4,7 +4,6 @@ from ecwsp.attendance.models import *
 from ecwsp.admissions.models import *
 from ecwsp.grades.models import *
 from ecwsp.schedule.models import *
-from ecwsp.grades.tasks import *
 
 import random
 import string
@@ -120,27 +119,45 @@ class SisData(object):
         self.course_enrollment = CourseEnrollment.objects.all().first()
 
         grade_data = [
-            { 'student' : self.student2, 'section' : self.course_section2, 'mp' : self.marking_period, 'grade' : 75 },
             { 'student' : self.student2, 'section' : self.course_section, 'mp' : self.marking_period2, 'grade' : 100 },
-            { 'student' : self.student3, 'section' : self.course_section, 'mp' : self.marking_period2, 'grade' : 88 },
         ]
         for x in grade_data:
+            enrollment = CourseEnrollment.objects.get(
+                user=x['student'], course_section=x['section'])
             grade_object, created = Grade.objects.get_or_create(
-                student = x['student'],
-                course_section = x['section'],
+                enrollment = enrollment,
                 marking_period = x['mp']
                 )
             grade_object.grade = x['grade']
             grade_object.save()
 
         self.grade = Grade.objects.all().first()
-        build_grade_cache()
 
     def create_100_courses(self):
         for i in xrange(100):
             random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
             course = Course.objects.create(fullname="Math 101 " + random_string, shortname="Alg " + random_string, credits=1, graded=True)
-            CourseSection.objects.create(name=course.shortname, course_id=course.id)
+            section = CourseSection.objects.create(name=course.shortname, course_id=course.id)
+    
+    def create_30_student_grades(self):
+        course_section = CourseSection.objects.all().first()
+        for i in xrange(30):
+            random_string = ''.join(
+                random.choice(
+                    string.ascii_uppercase + string.digits
+                ) for _ in range(6))
+            student = Student.objects.create(
+                first_name=random_string[:5],
+                last_name=random_string[:-5],
+                username=random_string)
+            enrollment = CourseEnrollment.objects.create(
+                course_section=course_section,
+                user=student,
+            )
+            for mp in MarkingPeriod.objects.all():
+                grade = Grade(enrollment=enrollment, marking_period=mp)
+                grade.set_grade(random.randint(0,100))
+                grade.save()
 
     def create_aa_superuser(self):
         aa = Faculty.objects.create(username="aa", first_name="aa", is_superuser=True, is_staff=True)
@@ -211,8 +228,69 @@ class SisData(object):
             if course.credits > 0:
                 section.marking_period.add(self.mps2x)
 
-    def create_grade_scale_rules(self):
-        self.scale = scale = GradeScale.objects.create(name="Balt Test Scale")
+            if course.shortname in ['English','Precalc','Phys','Hist','Span','Photo','Faith', 'Wrt Lab']:
+                # only enroll self.student in these particular classes,
+                # the other ones will be used for other students later on
+                CourseEnrollment.objects.create(user=student, course_section=section)
+        grade_data = [
+            [1, mp1, 72.7],
+            [1, mp2, 77.5],
+            [1, mps1x, 90],
+            [1, mp3, 66.5],
+            [1, mp4, 73.9],
+            [1, mps2x, 79],
+            [2,mp1,55],
+            [2,mp2,81.4],
+            [2, mps1x, 68],
+            [2,mp3,73.9],
+            [2,mp4,77.2],
+            [2, mps2x, 52],
+            [3,mp1,69.1],
+            [3,mp2,70.4],
+            [3, mps1x, 61],
+            [3,mp3,73.8],
+            [3,mp4,72.3],
+            [3, mps2x, 57],
+            [4,mp1,92.4],
+            [4,mp2,84.4],
+            [4, mps1x, 84],
+            [4,mp3,72.6],
+            [4,mp4,89.1],
+            [4, mps2x, 81],
+            [5,mp1,80.4],
+            [5,mp2,72.1],
+            [5, mps1x, 63],
+            [5,mp3,74.4],
+            [5,mp4,85.8],
+            [5, mps2x, 80],
+            [6,mp1,92.8],
+            [6,mp2,93.6],
+            [6,mp3,83.3],
+            [6,mp4,90],
+            [7,mp1,79.5],
+            [7,mp2,83.1],
+            [7, mps1x, 70],
+            [7,mp3,78.3],
+            [7,mp4,88.5],
+            [7, mps2x, 82 ],
+            [8,mp1,100],
+            [8,mp2,100],
+            [8,mp3,100],
+            [8,mp4,100],
+        ]
+        final_grade = FinalGrade(grade=70)
+        final_grade.set_enrollment(student, self.course_section3)
+        final_grade.save()
+        for x in grade_data:
+            enrollment = CourseEnrollment.objects.get(
+                user=student,
+                course_section=getattr(self, 'course_section' + str(x[0])))
+            grade = Grade.objects.get_or_create(
+                enrollment=enrollment, marking_period=x[1])[0]
+            grade.grade = x[2]
+            grade.save()
+        self.grade = Grade.objects.all().first()
+        scale = self.scale = GradeScale.objects.create(name="Balt Test Scale")
         GradeScaleRule.objects.create(min_grade=0, max_grade=69.49, letter_grade='F', numeric_scale=0, grade_scale=scale)
         GradeScaleRule.objects.create(min_grade=69.50, max_grade=72.49, letter_grade='D', numeric_scale=1, grade_scale=scale)
         GradeScaleRule.objects.create(min_grade=72.50, max_grade=76.49, letter_grade='C', numeric_scale=2, grade_scale=scale)
@@ -314,12 +392,12 @@ class SisData(object):
         for grd in grade_hash:
             section = CourseSection.objects.get(name=grd['section'])
             for i in range(6):
-                grade = Grade.objects.get(
-                    student = student,
-                    course_section_id = section.id,
-                    marking_period = marking_periods[i]
-                    )
+                enrollment = CourseEnrollment.objects.get(
+                    user=self.honors_student,
+                    course_section=section)
+                grade = Grade.objects.get_or_create(
+                    enrollment=enrollment,
+                    marking_period=marking_periods[i])[0]
                 grade.grade = grd['grades'][i]
                 grade.save()
-
 

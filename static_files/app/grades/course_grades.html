@@ -1,0 +1,10 @@
+Grades - {{ course_name }}
+<button ng-click="showComments()" class="btn btn-primary">{{ comment_button_text }}</button>
+
+<hot-table id="gradeTable"
+                columnHeaders="true"
+                settings="htSettings"
+                columns="gridData.columns"
+                datarows="gridData.rows"
+                >
+</hot-table>

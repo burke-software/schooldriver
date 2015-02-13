@@ -399,7 +399,7 @@ TENANT_APPS = (
     'ecwsp.alumni',
     'ecwsp.discipline',
     'ecwsp.attendance',
-    'ecwsp.grades_new',
+    'ecwsp.grades',
     'ecwsp.gradebook',
     'ecwsp.counseling',
     'ecwsp.standard_test',
@@ -491,6 +491,8 @@ CONSTANCE_CONFIG = {
         "Email addresses to send alert to; only one email address per line"),
     'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail"),
     'GRADES_ALLOW_STUDENT_VIEWING': (True, "Allow students to view their grades online"),
+    'GRADE_ROUNDING_DECIMAL': (2, "Round grades to this many decimal places"),
+    'GRADE_DISPLAY_AS_LETTER': (False, "Display grades as letter grades using the Grade Scale"),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

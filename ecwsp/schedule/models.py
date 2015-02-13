@@ -80,13 +80,6 @@ class MarkingPeriod(models.Model):
         if self.start_date > self.end_date:
             raise ValidationError('Cannot end before starting!')
 
-    def save(self, **kwargs):
-        obj = super(MarkingPeriod, self).save(**kwargs)
-        if 'ecwsp.grades' in settings.INSTALLED_APPS:
-            from ecwsp.grades.tasks import build_grade_cache
-            build_grade_cache.apply_async()
-        return obj
-
     def get_number_days(self, date=datetime.date.today()):
         """ Get number of days in a marking period"""
         if (self.school_days or self.school_days == 0) and date >= self.end_date:

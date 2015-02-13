@@ -65,8 +65,8 @@ if 'ecwsp.schedule' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^schedule/', include('ecwsp.schedule.urls')), )
     # Course is a nicer looking url
     urlpatterns += patterns('', (r'^course/', include('ecwsp.schedule.urls')), )
-    urlpatterns += patterns('', (r'^grades/', include('ecwsp.grades_new.urls')), )
-    urlpatterns += patterns('', (r'^course/', include('ecwsp.grades_new.urls')), )
+    urlpatterns += patterns('', (r'^grades/', include('ecwsp.grades.urls')), )
+    urlpatterns += patterns('', (r'^course/', include('ecwsp.grades.urls')), )
 if 'ecwsp.work_study' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', (r'^work_study/', include('ecwsp.work_study.urls')), )
 if 'ecwsp.admissions' in settings.INSTALLED_APPS:
