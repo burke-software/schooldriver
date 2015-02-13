@@ -51,9 +51,21 @@
             <a href="/schedule/dashboard/">{% trans 'Courses' %}</a>
             <ul class="mm-submenu">
               <li><a href="/schedule/dashboard/"> {% trans 'Dashboard' %} </a></li>
-            {% if perms.grades.change_own_grade %}
-              <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
-            {% endif %}
+              
+              {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
+                
+                <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
+              {% endif %}
+              {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
+                  <li>
+                  <a href="{% url 'ecwsp.attendance.views.select_course_section_for_attendance' %}"> {% trans 'Take Course Attendance' %} </a>
+                  </li>
+              {% endif %}
+              {% if perms.attendance.change_coursesectionattendance %}
+                  <li>
+                  <a href="/reports/attendance_report/"> {% trans 'Course Attendance Reports' %} </a>
+                  </li>
+              {% endif %}
             </ul>
           </li>
           {% endif %}
