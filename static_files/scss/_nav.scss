@@ -202,13 +202,17 @@
 	font-weight: 700;
 }
 .mm-has-submenu.active {
-	background-color: rgba(0,0,0, 0.25);
+	background-color: rgba(255,255,255, 0.15);
 	display: inline-block;
 	transition: background-color 1s ease;
 }
 .mm-has-submenu.active > a {
-	background-color: rgba(0,0,0, 0.25);
+	background-color: rgba(0,0,0, 0.5);
 	outline: none;
+
+}
+#flex-nav .mm-has-submenu.active > a:hover {
+	background-color: rgba(0,0,0, 0.75);
 }
 .mm-has-submenu.active > .mm-submenu {
 	width: auto;
