@@ -125,6 +125,7 @@ class Grade(CommonGrade):
         A grade of None will delete the grade object making it not used in
         any calculations.
         Create grade object when it doesn't exist and is not None
+        Delete grade object when grade is set to None
         Returns grade object or None
         """
         search_kwargs = {

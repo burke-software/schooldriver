@@ -21,7 +21,7 @@ class SetGradeSerializer(serializers.Serializer):
         queryset=CourseSection.objects.all(), required=False, default=None)
     enrollment = serializers.PrimaryKeyRelatedField(
         queryset=CourseEnrollment.objects.all(), required=False, default=None)
-    grade = serializers.CharField(max_length=5, allow_blank=False)
+    grade = serializers.CharField(max_length=5, allow_blank=True)
 
     def validate(self, data):
         INVALID_STRING = (
@@ -30,3 +30,8 @@ class SetGradeSerializer(serializers.Serializer):
             if data['student'] is None or data['course_section'] is None:
                 raise serializers.ValidationError(INVALID_STRING)
         return data
+
+    def validate_grade(self, value):
+        if value == '':
+            value = None
+        return value
