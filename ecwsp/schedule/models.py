@@ -539,16 +539,6 @@ class CourseSection(models.Model):
         enrollment = self.courseenrollment_set.get(user=student)
         return enrollment.calculate_grade_real()
 
-    def save(self, *args, **kwargs):
-        super(CourseSection, self).save(*args, **kwargs)
-        ''' HEY, YOU! This save() method can't see any M2M changes!
-        Read http://stackoverflow.com/a/1925784. To handle users changing the
-        selected MarkingPeriods, I'm writing CourseSectionAdmin.save_model(),
-        which will also call populate_all_grades(). You may need additional
-        handling if you implement another edit interface outside of Django
-        admin. '''
-        self.populate_all_grades()
-
     def copy_instance(self, request):
         changes = (("name", self.name + " copy"),)
         new = duplicate(self, changes)

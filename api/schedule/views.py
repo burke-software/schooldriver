@@ -20,6 +20,6 @@ class SectionViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAdminUser,)
     queryset = CourseSection.objects.all()
-    serializer_class = SectionSerializer          
+    serializer_class = SectionSerializer
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('course',)

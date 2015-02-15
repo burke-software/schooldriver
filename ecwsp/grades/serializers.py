@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Grade
+from .models import Grade, FinalGrade
 from ecwsp.sis.models import Student
 from ecwsp.schedule.models import (
     MarkingPeriod, CourseSection, CourseEnrollment)
@@ -12,9 +12,13 @@ class GradeSerializer(serializers.ModelSerializer):
                   'enrollment')
 
 
-class SetGradeSerializer(serializers.Serializer):
-    marking_period = serializers.PrimaryKeyRelatedField(
-        queryset=MarkingPeriod.objects.all(), required=False)
+class FinalGradeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FinalGrade
+        fields = ('grade', 'student_id', 'course_section_id', 'enrollment')
+
+
+class SetFinalGradeSerializer(serializers.Serializer):
     student = serializers.PrimaryKeyRelatedField(
         queryset=Student.objects.all(), required=False, default=None)
     course_section = serializers.PrimaryKeyRelatedField(
@@ -35,3 +39,16 @@ class SetGradeSerializer(serializers.Serializer):
         if value == '':
             value = None
         return value
+
+
+class SetGradeSerializer(SetFinalGradeSerializer):
+    marking_period = serializers.PrimaryKeyRelatedField(
+        queryset=MarkingPeriod.objects.all(), required=False)
+
+    def validate(self, data):
+        INVALID_STRING = (
+            "Must set either enrollment, or student and course_sectoin")
+        if data['enrollment'] is None:
+            if data['student'] is None or data['course_section'] is None:
+                raise serializers.ValidationError(INVALID_STRING)
+        return data

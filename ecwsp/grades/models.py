@@ -54,19 +54,6 @@ class CommonGrade(models.Model):
         self.enrollment = student.courseenrollment_set.get(
             course_section=course_section)
 
-
-class Grade(CommonGrade):
-    enrollment = models.ForeignKey('schedule.CourseEnrollment')
-    marking_period = models.ForeignKey(
-        'schedule.MarkingPeriod', blank=True, null=True)
-
-    class Meta:
-        unique_together = (("enrollment", "marking_period"),)
-        permissions = (
-            ("change_own_grade", "Change grades for own class"),
-            ('change_own_final_grade', 'Change final YTD grades for own class'),
-        )
-
     @property
     def student(self):
         return self.enrollment.user
@@ -82,6 +69,24 @@ class Grade(CommonGrade):
     @property
     def course_section_id(self):
         return self.course_section.id
+
+    @staticmethod
+    def get_enrollment(student, course_section):
+        return student.courseenrollment_set.get(
+            course_section=course_section)
+
+
+class Grade(CommonGrade):
+    enrollment = models.ForeignKey('schedule.CourseEnrollment')
+    marking_period = models.ForeignKey(
+        'schedule.MarkingPeriod', blank=True, null=True)
+
+    class Meta:
+        unique_together = (("enrollment", "marking_period"),)
+        permissions = (
+            ("change_own_grade", "Change grades for own class"),
+            ('change_own_final_grade', 'Change final YTD grades for own class'),
+        )
 
     def set_grade(self, grade):
         self.grade = grade
@@ -110,14 +115,13 @@ class Grade(CommonGrade):
             return rule.letter_grade
         return rule.numeric_scale
 
-    @staticmethod
-    def set_marking_period_student_course_grade(marking_period, student,
+    @classmethod
+    def set_marking_period_student_course_grade(cls, marking_period, student,
                                                 course_section, grade):
         """ Set a grade based looking up the enrollment object
         Returns grade object or None """
-        enrollment = student.courseenrollment_set.get(
-            course_section=course_section)
-        return Grade.set_marking_period_grade(marking_period, enrollment, grade)
+        enrollment = cls.get_enrollment(student, course_section)
+        return cls.set_marking_period_grade(marking_period, enrollment, grade)
 
     @staticmethod
     def set_marking_period_grade(marking_period, enrollment, grade):
@@ -172,3 +176,29 @@ class FinalGrade(CommonGrade):
 
     def set_grade(self, grade):
         self.grade = grade
+
+    @classmethod
+    def set_student_course_final_grade(cls, student, course_section, grade):
+        """ Set a grade based looking up the enrollment object
+        Returns grade object or None """
+        enrollment = cls.get_enrollment(student, course_section)
+        return cls.set_final_grade(enrollment, grade)
+
+    @classmethod
+    def set_final_grade(cls, enrollment, grade):
+        """ Set a grade from an enrollment
+        A grade of None will delete the grade object making it not used in
+        any calculations.
+        """
+        search_kwargs = {'enrollment': enrollment}
+        if grade is None:
+            try:
+                grade_obj = cls.objects.get(**search_kwargs)
+                grade_obj.delete()
+            except Grade.DoesNotExist:
+                pass
+        else:
+            grade_obj, created = cls.objects.get_or_create(**search_kwargs)
+            grade_obj.set_grade(grade)
+            grade_obj.save()
+            return grade_obj
