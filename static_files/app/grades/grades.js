@@ -1,5 +1,5 @@
-app.controller('CourseGradesController', ['$scope', '$routeParams', '$q', 'Courses', 'Grades',
-    function($scope, $routeParams, $q, Courses, Grades) {
+app.controller('CourseGradesController', ['$scope', '$routeParams', '$http', '$q', 'Courses', 'Grades',
+    function($scope, $routeParams, $http, $q, Courses, Grades) {
   var course_section_id = $routeParams.course_section_id;
   var course;
   var grades;
@@ -21,7 +21,19 @@ app.controller('CourseGradesController', ['$scope', '$routeParams', '$q', 'Cours
         if (prop.substring(0, 6) === 'grade_') {
           marking_period = prop.substring(6);
           student = row.id;
-          console.log('Save to api!' + student + marking_period);
+          data = {
+            student: student,
+            marking_period: marking_period,
+            course_section: course_section_id,
+            grade: newVal
+          };
+          $http({
+            method: "POST",
+            url: "/api/set_grade/",
+            data: data
+          }).success(function(data, status){
+            console.log(data);
+          });
         }
       });
     }
