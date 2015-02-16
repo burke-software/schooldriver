@@ -14,7 +14,7 @@ class GradeViewSet(viewsets.ModelViewSet):
 
     filter_backends = (filters.DjangoFilterBackend,)
     serializer_class = GradeSerializer
-    filter_fields = ('enrollment__course_section',)
+    filter_fields = ('enrollment__course_section', 'enrollment__user')
 
 
 class FinalGradeViewSet(viewsets.ModelViewSet):

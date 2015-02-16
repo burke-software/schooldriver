@@ -35,11 +35,11 @@ app.config(function($routeProvider, $locationProvider) {
       templateUrl: static('app/grades/course_grades.html'),
       controller: "CourseGradesController"
     });
-    $routeProvider.when("/course/student_grades/:student_id/", {
+    $routeProvider.when("/course/student/:student_id/grades/", {
       templateUrl: static('app/grades/student_grades.html'),
       controller: "StudentGradesController"
     });
-    $routeProvider.when("/course/student_grades/:student_id/:year_id/", {
+    $routeProvider.when("/course/student/:student_id/grades/:year_id/", {
       templateUrl: static('app/grades/student_grades.html'),
       controller: "StudentGradesController"
     });

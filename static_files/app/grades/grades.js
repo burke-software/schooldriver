@@ -1,4 +1,6 @@
-app.controller('CourseGradesController', ['$scope', '$routeParams', '$http', '$filter', '$q', 'Courses', 'Grades', 'FinalGrades',
+app.controller(
+    'CourseGradesController',
+    ['$scope', '$routeParams', '$http', '$filter', '$q', 'Courses', 'Grades', 'FinalGrades',
     function($scope, $routeParams, $http, $filter, $q, Courses, Grades, FinalGrades) {
   var course_section_id = $routeParams.course_section_id;
   var course;
@@ -94,6 +96,50 @@ app.controller('CourseGradesController', ['$scope', '$routeParams', '$http', '$f
   })
 }]);
 
+
+app.controller(
+    'StudentGradesController',
+    ['$scope', '$routeParams', '$http', '$filter', '$q', 'Students', 'SchoolYears', 'Grades', 'FinalGrades',
+    function($scope, $routeParams, $http, $filter, $q, Students, SchoolYears, Grades, FinalGrades) {
+  var student_id = $routeParams.student_id;
+  var years;
+  var selectedYear;
+  $scope.gridData = {};
+  $scope.gridData.columns = [{
+    title: 'Course',
+    readOnly: true,
+    data: 'name',
+    width: 100}];
+  $scope.gridData.rows = [];
+  $scope.htSettings = {};
+  $q.all([
+    Students.one(student_id).get().then(function(data) {
+      $scope.student = data;
+    }),
+    Grades.getList({enrollment__user: student_id}).then(function(data){
+      grades = data;
+    }),
+    SchoolYears.getList({markingperiod__coursesection__enrollments: student_id}).then(function(data){
+      years = data;
+      $scope.years = years;
+      angular.forEach(years, function(year){
+        if (year.active_year === true) {
+          selectedYear = year;
+        }
+      });
+    }),
+  ]).then(function(){
+    angular.forEach($filter('orderBy')(selectedYear.markingperiod_set, 'start_date'), function(mp) {
+      $scope.gridData.columns.push({
+        title: mp.name,
+        data: 'grade_' + mp.id,
+        width: 100
+      });
+    });
+     
+  });
+}]);
+
 app.factory('Courses', ['Restangular', function(Restangular) {
   return Restangular.service('sections');
 }]);
@@ -104,4 +150,12 @@ app.factory('Grades', ['Restangular', function(Restangular) {
 
 app.factory('FinalGrades', ['Restangular', function(Restangular) {
   return Restangular.service('final_grades');
+}]);
+
+app.factory('Students', ['Restangular', function(Restangular) {
+  return Restangular.service('students');
+}]);
+
+app.factory('SchoolYears', ['Restangular', function(Restangular) {
+  return Restangular.service('school_years');
 }]);

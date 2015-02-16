@@ -1,4 +1,15 @@
+<h1>{{ student.first_name }} {{ student.last_name }} - Grades</h1>
+
+<div ng-repeat="year in years">
+    {{ year.name }}
+</div>
+
 <button ng-click="showComments()" class="btn btn-primary">{{ comment_button_text }}</button>
 
-<ui-handsontable id="handsontable" height="calcHeight" settings="{fixedColumnsLeft: 1}" onBeforeChange="beforeChangeGrade" onchange="changeGrade" datarows="row in rows" columns="columns">
-</ui-handsontable>
+<hot-table id="gradeTable"
+                columnHeaders="true"
+                settings="htSettings"
+                columns="gridData.columns"
+                datarows="gridData.rows"
+                >
+</hot-table>

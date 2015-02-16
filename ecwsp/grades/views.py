@@ -1,18 +1,21 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse
 from django.views.generic import DetailView
 from django.views.generic.edit import FormMixin
 from django.utils.decorators import method_decorator
 from ecwsp.schedule.models import CourseSection
-from ecwsp.sis.models import UserPreference
+from ecwsp.sis.models import UserPreference, Student, SchoolYear
 from ecwsp.administration.models import Template
 from .models import GradeComment
 from .forms import GradeUpload
 from constance import config
+import datetime
 
 
 class CourseSectionGrades(FormMixin, DetailView):
-    """ This view is for inputing grades. It supports manual entry or uploading a spreadsheet """
+    """ This view is for inputing grades. It supports manual entry or uploading
+    a spreadsheet """
     model = CourseSection
     template_name = "grades/course_grades.html"
     form_class = GradeUpload
@@ -20,7 +23,9 @@ class CourseSectionGrades(FormMixin, DetailView):
     def get_success_url(self):
         return reverse('course-section-grades', kwargs={'pk': self.object.pk})
 
-    @method_decorator(user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade')))
+    @method_decorator(user_passes_test(
+        lambda u: u.has_perm('schedule.change_grade')
+        or u.has_perm('grades.change_own_grade')))
     def dispatch(self, *args, **kwargs):
         return super(CourseSectionGrades, self).dispatch(*args, **kwargs)
 
@@ -28,21 +33,24 @@ class CourseSectionGrades(FormMixin, DetailView):
         context = super(CourseSectionGrades, self).get_context_data(**kwargs)
         form_class = self.get_form_class()
         form = self.get_form(form_class)
-        form.fields['marking_period'].queryset = form.fields['marking_period'].queryset.filter(coursesection=context['coursesection'])
+        form.fields['marking_period'].queryset = form.fields[
+            'marking_period'].queryset.filter(
+                coursesection=context['coursesection'])
         context['form'] = form
         if self.request.user.is_superuser or \
-            self.request.user.has_perm('grades.change_own_final_grade') or \
-            self.request.user.has_perm('grades.change_grade'):
+                self.request.user.has_perm('grades.change_own_final_grade') or \
+                self.request.user.has_perm('grades.change_grade'):
             context['edit_final'] = True
         else:
             context['edit_final'] = False
         if self.request.user.is_superuser or \
-            self.request.user.has_perm('grades.change_own_grade') or \
-            self.request.user.has_perm('grades.change_grade'):
+                self.request.user.has_perm('grades.change_own_grade') or \
+                self.request.user.has_perm('grades.change_grade'):
             context['edit'] = True
         else:
             context['edit'] = False
-        context['letter_grade_required_for_pass'] = config.LETTER_GRADE_REQUIRED_FOR_PASS
+        context['letter_grade_required_for_pass'] = \
+            config.LETTER_GRADE_REQUIRED_FOR_PASS
         return context
 
     def post(self, request, *args, **kwargs):
@@ -58,21 +66,23 @@ class CourseSectionGrades(FormMixin, DetailView):
         from ecwsp.sis.importer import Importer
         course_section = self.object
         importer = Importer(self.request.FILES['file'], self.request.user)
-        error = importer.import_grades(course_section, form.cleaned_data['marking_period'])
+        error = importer.import_grades(
+            course_section, form.cleaned_data['marking_period'])
         if error:
             messages.warning(self.request, error)
         else:
             course_section.last_grade_submission = datetime.datetime.now()
             course_section.save()
         return super(CourseSectionGrades, self).form_valid(form)
-    
+
 
 def view_comment_codes(request):
     comments = GradeComment.objects.all()
     msg = ""
     for comment in comments:
         msg += "%s <br/>" % (comment,)
-    return render_to_response('sis/generic_msg.html', {'msg': msg,}, RequestContext(request, {}),)
+    return render_to_response(
+        'sis/generic_msg.html', {'msg': msg}, RequestContext(request, {}),)
 
 @user_passes_test(lambda u: u.has_perm('schedule.change_grade') or u.has_perm('grades.change_own_grade'))
 def teacher_grade_download(request, id, type=None):
