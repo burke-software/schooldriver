@@ -99,19 +99,20 @@ app.controller(
 
 app.controller(
     'StudentGradesController',
-    ['$scope', '$routeParams', '$http', '$filter', '$q', 'Students', 'SchoolYears', 'Grades', 'FinalGrades',
-    function($scope, $routeParams, $http, $filter, $q, Students, SchoolYears, Grades, FinalGrades) {
+    ['$scope', '$routeParams', '$http', '$filter', '$q', 'Students', 'Courses', 'SchoolYears', 'Grades', 'FinalGrades',
+    function($scope, $routeParams, $http, $filter, $q, Students, Courses, SchoolYears, Grades, FinalGrades) {
   var student_id = $routeParams.student_id;
   var years;
-  var selectedYear;
+  var selectedYear = {};
+  var courses;
   $scope.gridData = {};
   $scope.gridData.columns = [{
     title: 'Course',
     readOnly: true,
     data: 'name',
     width: 100}];
-  $scope.gridData.rows = [];
   $scope.htSettings = {};
+  $scope.gridData.rows = [];
   $q.all([
     Students.one(student_id).get().then(function(data) {
       $scope.student = data;
@@ -128,6 +129,9 @@ app.controller(
         }
       });
     }),
+    Courses.getList({enrollments: student_id}).then(function(data) {
+      courses = data;
+    }),
   ]).then(function(){
     angular.forEach($filter('orderBy')(selectedYear.markingperiod_set, 'start_date'), function(mp) {
       $scope.gridData.columns.push({
@@ -136,7 +140,22 @@ app.controller(
         width: 100
       });
     });
-     
+    angular.forEach(years, function(year){
+      year.courses = [];
+      angular.forEach(courses, function(course) {
+        angular.forEach(year.markingperiod_set, function(marking_period) {
+          if (marking_period.school_year === year.id) {
+            year.courses.push(course);
+          };
+        });
+      });
+    });
+    while($scope.gridData.rows.length > 0) {
+          $scope.gridData.rows.pop();
+    }
+    angular.forEach(selectedYear.courses, function(course) {
+      $scope.gridData.rows.push(course);
+    });
   });
 }]);
 
