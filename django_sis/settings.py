@@ -538,7 +538,6 @@ Use 'demonstrations' to see counts of demonstrations for students and assignment
     'WORK_STUDY_SHOW_COMMENT_DEFAULT': ('True', ''),
     'WORK_STUDY_TIMESHEET_INITIAL_TIME': ('True', ''),
     'WORK_STUDY_CONTRACT_FROM_ADDRESS': ('donotreply@cristoreyny.org', ''),
-
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

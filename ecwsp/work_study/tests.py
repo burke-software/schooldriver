@@ -201,7 +201,7 @@ class StudentWorkerTest(TestCase):
     Test student worker information
     """
     def setUp(self):
-        """test that school_pay_rate is set to default when not specified"""
+        """test that school_pay_rate and student_pay_rate are set to default when not specified"""
         self.primary_contact = Contact.objects.create(fname="John", lname="Smith", email="john@smith.com")    
         self.student = StudentWorker.objects.create(day='M', primary_contact=self.primary_contact)
         self.school_pay_rate = Decimal(config.SCHOOL_PAY_RATE_PER_HOUR)

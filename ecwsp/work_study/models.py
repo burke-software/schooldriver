@@ -493,7 +493,6 @@ class StudentWorker(Student):
         if not self.school_pay_rate and not self.student_pay_rate:
             try:
                 self.school_pay_rate = Decimal(config.SCHOOL_PAY_RATE_PER_HOUR)
-                print "hello"
                 self.student_pay_rate = Decimal(config.STUDENT_PAY_RATE_PER_HOUR)
             except:
                 pass

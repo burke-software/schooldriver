@@ -5,7 +5,7 @@ from django.db import models, migrations
 from constance import config
 
 def configuration_to_constance(apps, schema_editor):
-    """adds Configuration object data to Constance Configuration in settings"""
+    """adds Configuration object data to Constance Config in settings"""
     Configuration = apps.get_model("administration", "Configuration")  
     configs = Configuration.objects.get(name="school pay rate per hour")
     formatted_config = configs.name.replace(" ", "_").upper
