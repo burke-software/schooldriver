@@ -145,28 +145,11 @@ app.controller(
       angular.forEach(courses, function(course) {
         angular.forEach(year.markingperiod_set, function(marking_period) {
           if (marking_period.school_year === year.id) {
-            if(year.courses.indexOf(course) == -1){
-              year.courses.push(course);
-            }
+            year.courses.push(course);
           }
         });
       });
     });
-
-    //while($scope.gridData.rows.length > 0) {
-    //      $scope.gridData.rows.pop();
-    //}
-    //angular.forEach(selectedYear.courses, function(course) {
-    //  $scope.gridData.rows.push(course);
-    //});
-    //
-    //angular.forEach($scope.gridData.rows, function(course) {
-    //  angular.forEach(grades, function(grade) {
-    //    if (grade.course_section_id === course.id) {
-    //      course['grade_' + grade.marking_period] = grade.grade;
-    //    }
-    //  });
-    //});
 
     for (var i = 0, lenI = selectedYear.courses.length; i< lenI; i++) {
       var course = selectedYear.courses[i];
@@ -175,7 +158,9 @@ app.controller(
         if (grade.course_section_id === course.id) {
           course['grade_' + grade.marking_period] = grade.grade;
         }
-        $scope.gridData.rows.push(course);
+        if($scope.gridData.rows.indexOf(course) == -1){
+          $scope.gridData.rows.push(course);
+        }
       }
     }
 
