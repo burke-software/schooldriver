@@ -29,9 +29,11 @@ app.config(function(RestangularProvider) {
 
 function static(path) {
     /* Works like django static files - adds the static path */
-    if (typeof STATIC_URL !== 'undefined') {
-        var STATIC_URL = 'static';
-    }
+    var STATIC_URL = window.STATIC_URL || 'static';
+
+    //if (typeof STATIC_URL !== 'undefined') {
+    //    var STATIC_URL = 'static';
+    //}
     return STATIC_URL + path;
 }
 
