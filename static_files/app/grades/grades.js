@@ -15,10 +15,24 @@ app.controller(
   $scope.htSettings = {};
   $scope.htSettings.afterChange = function(changes, source) {
     if (source !== 'loadData') {
-      angular.forEach(changes, function(change) { 
-        row = $scope.gridData.rows[change[0]];
-        saveGradeService.saveGrade(course_section_id, row.id, change[1], change[3]);
-      });
+
+      var hot = this;
+
+      for (var i = 0, len = changes.length; i < len; i++) {
+        var change = changes[i];
+        var cell = hot.getCell(change[0], hot.propToCol(change[1]));
+        var row = $scope.gridData.rows[change[0]];
+        //saveGradeService.saveGrade(course_section_id, row.id, change[1], change[3]);
+        saveGradeService.saveGrade(course_section_id, row.id, change, cell);
+      }
+
+      //angular.forEach(changes, function(change) {
+      //
+      //  var cell = hot.getCell(change[0], hot.propToCol(change[1]));
+      //  var row = $scope.gridData.rows[change[0]];
+      //  //saveGradeService.saveGrade(course_section_id, row.id, change[1], change[3]);
+      //  saveGradeService.saveGrade(course_section_id, row.id, change, cell);
+      //});
     }
   };
   
@@ -44,7 +58,7 @@ app.controller(
     }),
     FinalGrades.getList({enrollment__course_section: course_section_id}).then(function(data){
       finalGrades = data;
-    }),
+    })
   ]).then(function(){
     angular.forEach(course.enrollments, function(enrollment) {
       enrollment.name = enrollment.first_name + " " + enrollment.last_name;
@@ -80,10 +94,17 @@ app.controller(
     width: 100}];
   $scope.htSettings = {};
   $scope.htSettings.afterChange = function(changes, source) {
+
+    var hot = this;
+
     if (source !== 'loadData') {
-      angular.forEach(changes, function(change) { 
-        row = $scope.gridData.rows[change[0]];
-        saveGradeService.saveGrade(row.id, student_id, change[1], change[3]);
+      angular.forEach(changes, function(change) {
+        var cell = hot.getCell(change[0], hot.propToCol(change[1]));
+        var row = $scope.gridData.rows[change[0]];
+
+        //row = $scope.gridData.rows[change[0]];
+        //saveGradeService.saveGrade(row.id, student_id, change[1], change[3]);
+        saveGradeService.saveGrade(row.id, student_id, change, cell);
       });
     }
   };
@@ -145,7 +166,10 @@ app.controller(
 
 
 app.service('saveGradeService', ['$http', function($http) {
-  this.saveGrade = function(course_section_id, student_id, prop, newVal) {
+  this.saveGrade = function(course_section_id, student_id, change, cell) {
+  var prop = change[1],
+      newVal = change[3];
+  //this.saveGrade = function(course_section_id, student_id, prop, newVal) {
     if (prop === 'grade_final') {
       data = {
         student: student_id,
@@ -160,18 +184,21 @@ app.service('saveGradeService', ['$http', function($http) {
         console.log(data);
       });
     } else if (prop.substring(0, 6) === 'grade_') {
-      marking_period = prop.substring(6);
-      data = {
-        student: student_id,
-        marking_period: marking_period,
-        course_section: course_section_id,
-        grade: newVal
-      };
+      var marking_period = prop.substring(6),
+        data = {
+          student: student_id,
+          marking_period: marking_period,
+          course_section: course_section_id,
+          grade: newVal
+        };
+
       $http({
         method: "POST",
         url: "/api/set_grade/",
         data: data
       }).success(function(data, status){
+        //WE ARE SURE THAT THERE IS NO ERROR SO WE CAN ADD CLASS TO CELL
+        cell.classList.add('success');
         console.log(data);
       });
     }
