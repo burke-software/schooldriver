@@ -1,10 +1,12 @@
 var app = angular.module("angular_sis", ['restangular', 'ngRoute', 'ui.bootstrap', 'ngHandsontable', 'gradeBookApp']);
 
-app.config([
-    "$httpProvider", function($httpProvider) {
-      return $httpProvider.defaults.headers.common["X-CSRFToken"] = csrf_token;
-    }
-]);
+if (typeof csrf_token !== 'undefined') {
+    app.config([
+        "$httpProvider", function($httpProvider) {
+          return $httpProvider.defaults.headers.common["X-CSRFToken"] = csrf_token;
+        }
+    ]);
+}
 
 app.config(function(RestangularProvider) {
     RestangularProvider.setBaseUrl("/api");
@@ -27,6 +29,9 @@ app.config(function(RestangularProvider) {
 
 function static(path) {
     /* Works like django static files - adds the static path */
+    if (typeof STATIC_URL !== 'undefined') {
+        var STATIC_URL = 'static';
+    }
     return STATIC_URL + path;
 }
 

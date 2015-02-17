@@ -1,7 +1,7 @@
 app.controller(
     'CourseGradesController',
-    ['$scope', '$routeParams', '$http', '$filter', '$q', 'Courses', 'Grades', 'FinalGrades',
-    function($scope, $routeParams, $http, $filter, $q, Courses, Grades, FinalGrades) {
+    ['$scope', '$routeParams', '$filter', '$q', 'saveGradeService', 'Courses', 'Grades', 'FinalGrades',
+    function($scope, $routeParams, $filter, $q, saveGradeService, Courses, Grades, FinalGrades) {
   var course_section_id = $routeParams.course_section_id;
   var course;
   var grades;
@@ -17,40 +17,7 @@ app.controller(
     if (source !== 'loadData') {
       angular.forEach(changes, function(change) { 
         row = $scope.gridData.rows[change[0]];
-        prop = change[1];
-        oldVal = change[2];
-        newVal = change[3];
-        if (prop === 'grade_final') {
-          student = row.id;
-          data = {
-            student: student,
-            course_section: course_section_id,
-            grade: newVal
-          };
-          $http({
-            method: "POST",
-            url: "/api/set_final_grade/",
-            data: data
-          }).success(function(data, status){
-            console.log(data);
-          });
-        }else if (prop.substring(0, 6) === 'grade_') {
-          marking_period = prop.substring(6);
-          student = row.id;
-          data = {
-            student: student,
-            marking_period: marking_period,
-            course_section: course_section_id,
-            grade: newVal
-          };
-          $http({
-            method: "POST",
-            url: "/api/set_grade/",
-            data: data
-          }).success(function(data, status){
-            console.log(data);
-          });
-        }
+        saveGradeService.saveGrade(course_section_id, row.id, change[1], change[3]);
       });
     }
   };
@@ -99,8 +66,8 @@ app.controller(
 
 app.controller(
     'StudentGradesController',
-    ['$scope', '$routeParams', '$http', '$filter', '$q', 'Students', 'Courses', 'SchoolYears', 'Grades', 'FinalGrades',
-    function($scope, $routeParams, $http, $filter, $q, Students, Courses, SchoolYears, Grades, FinalGrades) {
+    ['$scope', '$routeParams', '$filter', '$q', 'saveGradeService', 'Students', 'Courses', 'SchoolYears', 'Grades', 'FinalGrades',
+    function($scope, $routeParams, $filter, $q, saveGradeService, Students, Courses, SchoolYears, Grades, FinalGrades) {
   var student_id = $routeParams.student_id;
   var years;
   var selectedYear = {};
@@ -112,6 +79,14 @@ app.controller(
     data: 'name',
     width: 100}];
   $scope.htSettings = {};
+  $scope.htSettings.afterChange = function(changes, source) {
+    if (source !== 'loadData') {
+      angular.forEach(changes, function(change) { 
+        row = $scope.gridData.rows[change[0]];
+        saveGradeService.saveGrade(row.id, student_id, change[1], change[3]);
+      });
+    }
+  };
   $scope.gridData.rows = [];
   $q.all([
     Students.one(student_id).get().then(function(data) {
@@ -167,6 +142,42 @@ app.controller(
 
   });
 }]);
+
+
+app.service('saveGradeService', ['$http', function($http) {
+  this.saveGrade = function(course_section_id, student_id, prop, newVal) {
+    if (prop === 'grade_final') {
+      data = {
+        student: student_id,
+        course_section: course_section_id,
+        grade: newVal
+      };
+      $http({
+        method: "POST",
+        url: "/api/set_final_grade/",
+        data: data
+      }).success(function(data, status){
+        console.log(data);
+      });
+    } else if (prop.substring(0, 6) === 'grade_') {
+      marking_period = prop.substring(6);
+      data = {
+        student: student_id,
+        marking_period: marking_period,
+        course_section: course_section_id,
+        grade: newVal
+      };
+      $http({
+        method: "POST",
+        url: "/api/set_grade/",
+        data: data
+      }).success(function(data, status){
+        console.log(data);
+      });
+    }
+  }
+}]);
+
 
 app.factory('Courses', ['Restangular', function(Restangular) {
   return Restangular.service('sections');
