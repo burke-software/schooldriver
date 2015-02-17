@@ -131,7 +131,7 @@ app.controller(
     }),
     Courses.getList({enrollments: student_id}).then(function(data) {
       courses = data;
-    }),
+    })
   ]).then(function(){
     angular.forEach($filter('orderBy')(selectedYear.markingperiod_set, 'start_date'), function(mp) {
       $scope.gridData.columns.push({
@@ -148,24 +148,38 @@ app.controller(
             if(year.courses.indexOf(course) == -1){
               year.courses.push(course);
             }
-          };
+          }
         });
       });
     });
-    while($scope.gridData.rows.length > 0) {
-          $scope.gridData.rows.pop();
-    }
-    angular.forEach(selectedYear.courses, function(course) {
-      $scope.gridData.rows.push(course);
-    });
 
-    angular.forEach($scope.gridData.rows, function(course) {
-      angular.forEach(grades, function(grade) {
+    //while($scope.gridData.rows.length > 0) {
+    //      $scope.gridData.rows.pop();
+    //}
+    //angular.forEach(selectedYear.courses, function(course) {
+    //  $scope.gridData.rows.push(course);
+    //});
+    //
+    //angular.forEach($scope.gridData.rows, function(course) {
+    //  angular.forEach(grades, function(grade) {
+    //    if (grade.course_section_id === course.id) {
+    //      course['grade_' + grade.marking_period] = grade.grade;
+    //    }
+    //  });
+    //});
+
+    for (var i = 0, lenI = selectedYear.courses.length; i< lenI; i++) {
+      var course = selectedYear.courses[i];
+      for (var j = 0, lenJ = grades.length; j < lenJ; j++) {
+        var grade = grades[j];
         if (grade.course_section_id === course.id) {
           course['grade_' + grade.marking_period] = grade.grade;
         }
-      });
-    });
+        $scope.gridData.rows.push(course);
+      }
+    }
+
+
   });
 }]);
 
