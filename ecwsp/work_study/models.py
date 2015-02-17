@@ -382,8 +382,6 @@ class StudentWorkerRoute(models.Model):
     name = models.CharField(max_length=100, unique=True)
     def __unicode__(self):
         return unicode(self.name)
-    
-
 class StudentWorker(Student):
     """A student in the database."""
     dayOfWeek = [
@@ -494,8 +492,9 @@ class StudentWorker(Student):
          # set pay rates
         if not self.school_pay_rate and not self.student_pay_rate:
             try:
-                self.school_pay_rate = Decimal(Configuration.get_or_default("school pay rate per hour", default="13.00").value)
-                self.student_pay_rate = Decimal(Configuration.objects.get("student pay rate per hour", default="9").value)
+                self.school_pay_rate = Decimal(config.SCHOOL_PAY_RATE_PER_HOUR)
+                print "hello"
+                self.student_pay_rate = Decimal(config.STUDENT_PAY_RATE_PER_HOUR)
             except:
                 pass
         super(StudentWorker, self).save(*args, **kwargs)

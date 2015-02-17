@@ -25,6 +25,7 @@ from ecwsp.work_study.reports import student_company_day_report
 from ecwsp.sis.models import StudentNumber, SchoolYear
 from ecwsp.sis.helper_functions import log_admin_entry
 from ecwsp.sis.template_report import TemplateReport
+from constance import config
 
 #from itertools import *
 from datetime import date
@@ -105,7 +106,7 @@ def student_timesheet(request):
                     change_message  = "Changed supervisor to " + unicode(form.cleaned_data['my_supervisor'])
                 )
             obj = form.save()
-            show_comment_default = Configuration.get_or_default(name="work_study show commment default", default='True',help_text="").value
+            show_comment_default = config.WORK_STUDY_SHOW_COMMENT_DEFAULT
             if show_comment_default == 'True':
                 obj.show_student_comments = True
                 obj.save()
@@ -932,7 +933,7 @@ def company_contract_complete(request, id):
             mail = EmailMessage(
                 'Work Study Contract Confirmation for %s.' % (company,),
                 message,
-                Configuration.get_or_default("work_study_contract_from_address", "donotreply@cristoreyny.org").value,
+                config.WORK_STUDY_CONTRACT_FROM_ADDRESS,
                 [email],
             )
 
