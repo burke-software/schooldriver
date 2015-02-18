@@ -14,5 +14,5 @@ before_script:
 script: 
 - python manage.py test
 notifications:
-  webhooks: internal.burkesoftware.com:5555/bot/travisci/54e373474169dd343c000003
+  webhooks: internal.burkesoftware.com:5555/bot/travisci/Schooldriver
   on_start: true
