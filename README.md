@@ -89,102 +89,38 @@ SWoRD allows users to save basic company information for each work site associat
 ![Alt text](https://raw.github.com/burke-software/django-sis/master/screenshots/cwsp4.jpg)
 
 # Development Environment
-You can easily get Djanog-sis running in an isolated development environment using [Fig and Docker](http://orchardup.github.io/fig/). We have testing this to work on both OSX and Ubuntu. 
 
-## OSX
+You can easily get Django-sis running in an isolated development environment using [Fig and Docker](http://fig.sh). We have tested this to work on both OSX and Ubuntu. 
 
-#### Pre-req's
-Before you begin, make sure you have both [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://www.vagrantup.com/downloads.html) installed. 
+## Fig And Docker
 
-#### Install boot2docker  (** Warning: This may take forever **)
+See fig [installation docs](http://www.fig.sh/install.html)
 
-Just follow the instructions [on the Docker website](https://docs.docker.com/installation/mac/). This should install the boot2docker application which you will be able to see in your launcher. 
+**Database**
 
-To launch boot2docker, simply click on the boot2docker application icon from the application launcher. 
+*The following commands need to run from Linux or from the boot2docker virtual machine shell.
 
-Alternatively, you can initiate boot2docker from the command line with these three commands:
+`fig run --rm web python manage.py migrate`
 
-```
-boot2docker init
-boot2docker start
-$(boot2docker shellinit)
-```
+**Run**
 
-You are now ready to install and use fig using the instructions below.
+`fig up`
 
-#### Install fig
+Enjoy your django-sis instance on `localhost:8000`*
 
-```
-curl -L https://github.com/orchardup/fig/releases/download/0.5.1/darwin > /usr/local/bin/fig
-```
-```
-chmod +x /usr/local/bin/fig
-```
-#### Syncdb & Migrate
-*Note: this will change slightly when we move to 1.7*
+*may be alternative address if using boot2docker.
 
-```
-fig run web python manage.py migrate
-```
-#### Run
+To log in set up sample data or run 
 
-```
-fig up
-```
-
-Now, the server is running, it may tell you that it's running at `localhost:8000` or `0.0.0.0:8000` but it's actually running at your docker-ip location, which you can find by running:
-
-```
-boot2docker ip
-```
-
-Let's say this is the docker-ip: `192.123.45.678`, you should then be able to see the server in your browser at `192.123.45.678:8000`
+`fig run --rm web python manage.py createsuperuser`
 
 ## Sample Data
+
 We have some sample data that might be useful when testing out the development environment. To load the data, try this:
 
-```
-fig run web python manage.py populate_sample_data
-```
+`fig run --rm web python manage.py populate_sample_data`
 
-## Ubuntu
-
-#### Install Docker
-Follow the instructions on the docker website, [here](http://docs.docker.com/installation/ubuntulinux/)
-
-#### Add user to group
-
-```
-sudo gpasswd -a ${USER} docker
-```
-
-#### Install Fig
-
-```
-curl -L https://github.com/orchardup/fig/releases/download/0.5.1/linux > /usr/local/bin/fig
-```
-```
-chmod +x /usr/local/bin/fig
-```
-#### Syncdb & Migrate
-
-```
-fig run web python manage.py migrate
-```
-#### Run
-
-```
-fig up
-```
-
-Enjoy your django-sis instance on **localhost:8000**
-
-## Sample Data
-We have some sample data that might be useful when testing out the development environment. To load the data, try this:
-
-```
-fig run web python manage.py populate_sample_data
-```
+This will create a superuser with username/password of aa/aa
 
 ## Multi tenant (optional)
 Set `MULTI_TENANT=True` in settings_local.py. You can create a new tenant with

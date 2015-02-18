@@ -39,12 +39,12 @@
 {% endblock %}
 
 {% block breadcrumbs %}{% if not is_popup %}
-<div id="breadcrumbs">
-    <a href="{% url "admin:index" %}">{% trans "Home" %}</a> &rsaquo;
-    <a href="{% url "admin:app_list" 'work_study' %}">{% trans "Work Study" %}</a> &rsaquo;
-    <a href="{% url "admin:work_study_clientvisit_changelist" %}"> Client Visit </a> &rsaquo; 
-    DOL
-</div>
+<ul>
+    <li><a href="{% url "admin:index" %}">{% trans "Home" %}</a></li>
+    <li><a href="{% url "admin:app_list" 'work_study' %}">{% trans "Work Study" %}</a></li>
+    <li><a href="{% url "admin:work_study_clientvisit_changelist" %}"> Client Visit </a> </li>
+    <li>DOL</li>
+</ul>
 {% endif %}{% endblock %}
 
 {% block content %}

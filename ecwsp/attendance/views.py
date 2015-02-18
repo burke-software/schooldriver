@@ -194,7 +194,8 @@ def teacher_submissions(request):
         submissions.append(submission)
     return render_to_response(
         'attendance/teacher_submissions.html',
-        {'request': request, 'submissions': submissions})
+        {'request': request, 'submissions': submissions},
+        RequestContext(request, {}),)
 
 
 def daily_attendance_report_wrapper(request):

@@ -171,7 +171,7 @@ class Assignment(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateField(
-        blank=True, null=True, validators=settings.DATE_VALIDATORS)
+        blank=True, null=True)#, validators=settings.DATE_VALIDATORS)
     marking_period = models.ForeignKey(
         'schedule.MarkingPeriod', blank=True, null=True)
     category = models.ForeignKey(AssignmentCategory, blank=True, null=True)

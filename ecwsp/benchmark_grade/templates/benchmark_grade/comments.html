@@ -15,24 +15,6 @@
     </style>
 {% endblock %}
 
-{% block nav %}
-<!-- only useful override here is removing gumby-fixed from <nav> tag -->
-<nav class="navbar" id="nav1">
-  <div class="sixteen colgrid">
-    {% include "gumby/nav.html" %}
-    <div class="breadcrumbs">
-    <div id="breadcrumbs_area" class="row">
-      <div class="sixteen columns">
-      {% block breadcrumbs %}
-        {{ block.super }}
-      {% endblock %}
-      </div>
-    </div>
-    </div>
-  </div>
-</nav>
-{% endblock %}
-
 {% block bigcontent %}
 <div class="row hidden" id="attention-getter">
   <div class="four columns centered text-center">
@@ -41,7 +23,7 @@
 </div>
 
 <div class="row">
-  <h2>{{ course_section.name }} Comments</h2>
+  <h2 style="padding-top: 20px;">{{ course_section.name }} Comments</h2>
 </div>
 
 <div class="row">

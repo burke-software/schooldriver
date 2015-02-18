@@ -5,16 +5,16 @@
     {{ form.media }}
 {% endblock %}
 
-{% block breadcrumbs %}
-<div id="breadcrumbs"> 
-<a href="/admin"> 
-Home
-</a> 
-&rsaquo; 
-<a href="{% url 'admin:attendance_studentattendance_changelist' %}"> 
- Student Attendance
-</a> 
-&rsaquo; Attendance Reports</div> 
+{% block nav_page_specific %}
+<div id="mm-page-specific" role="navigation">
+    <div class="breadcrumb">
+        <ul>
+            <li><a href="/admin">Home</a></li>
+            <li><a href="{% url 'admin:attendance_studentattendance_changelist' %}">Student Attendance</a></li>
+            <li>Attendance Reports</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}
 
 {% block content %}

@@ -1,9 +1,16 @@
 {% extends "base_next.html" %}
 {% load i18n %}
 
-{% block breadcrumbs %}
-<a href="/"> Home ></a>
-Preferences
+
+{% block nav_page_specific %}
+<div id="mm-page-specific" role="navigation">
+    <div class="breadcrumb">
+        <ul>
+            <li><a href="/admin">Home</a></li>
+            <li>Preferences</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}
 
 {% block content %}
@@ -11,5 +18,11 @@ Preferences
     
     <form action="" method="post">
         {{ form.as_p }}
+    </form>
+    
+    <h4>Change Password</h4>
+    <form action="" method="post">
+        {{ password_form.as_p }}
+        <button class="btn btn-primary" type="submit" name="password_change">Save New Password</button>
     </form>
 {% endblock %}
