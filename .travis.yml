@@ -13,3 +13,6 @@ before_script:
 - psql -c "CREATE DATABASE mydb;" -U postgres
 script: 
 - python manage.py test
+notifications:
+  webhooks: internal.burkesoftware.com:5555/bot/travisci/54e373474169dd343c000003
+  on_start: true
