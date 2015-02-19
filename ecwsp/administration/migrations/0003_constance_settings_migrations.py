@@ -8,8 +8,12 @@ def configuration_to_constance(apps, schema_editor):
     """adds Configuration object data to Constance Config in settings"""
     Configuration = apps.get_model("administration", "Configuration")  
     configs = Configuration.objects.filter(name="Default course credits").first()
-    formatted_config = configs.name.replace(" ", "_").upper
-    config.formatted_config() = (configs.value, configs.help_text)
+    if configs[0]:
+        formatted_config = configs[0].name.replace(" ", "_").upper
+        formatted = formatted_config()
+        config.name = (configs.value, configs.help_text)
+    else:
+        pass
 
 class Migration(migrations.Migration):
 
