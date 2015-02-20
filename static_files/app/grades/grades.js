@@ -84,6 +84,8 @@ app.controller(
     function($scope, $routeParams, $filter, $q, saveGradeService, Students, Courses, SchoolYears, Grades, FinalGrades) {
   var student_id = $routeParams.student_id;
   var years;
+  var grades;
+  var finalGrades;
   var selectedYear = {};
   var courses;
   $scope.gridData = {};
@@ -116,6 +118,9 @@ app.controller(
     Grades.getList({enrollment__user: student_id}).then(function(data){
       grades = data;
     }),
+    FinalGrades.getList({enrollment__user: student_id}).then(function(data){
+      finalGrades = data;
+    }),
     SchoolYears.getList({markingperiod__coursesection__enrollments: student_id}).then(function(data){
       years = data;
       $scope.years = years;
@@ -135,6 +140,11 @@ app.controller(
         data: 'grade_' + mp.id,
         width: 100
       });
+    });
+    $scope.gridData.columns.push({
+      title: 'Final',
+      data: 'grade_final',
+      width: 100
     });
     angular.forEach(years, function(year){
       year.courses = [];
@@ -158,6 +168,11 @@ app.controller(
           $scope.gridData.rows.push(course);
         }
       }
+      angular.forEach(finalGrades, function(grade) {
+        if (grade.course_section_id === course.id) {
+          course['grade_final'] = grade.grade;
+        }
+      });
     }
 
 
