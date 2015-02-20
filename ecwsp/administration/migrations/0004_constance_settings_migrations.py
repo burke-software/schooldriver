@@ -12,11 +12,12 @@ def configuration_to_constance(apps, schema_editor):
     Configuration = apps.get_model("administration", "Configuration")  
     configs = Configuration.objects.filter(name="Volunteer Track Required Hours").first()
     if configs:
-        formatted_config = configs[0].name.replace(" ", "_").upper
-        formatted = formatted_config()
-        config.formatted = (configs.value, configs.help_text)
+        formatted_config = config_name.replace(" ", "_").replace("-", "_").upper
+        formatted = str(formatted_config())
+        setattr(config, formatted, '')
     else:
         pass
+        
 
 class Migration(migrations.Migration):
 
