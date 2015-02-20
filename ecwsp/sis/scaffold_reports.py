@@ -471,7 +471,7 @@ class FailReportButton(ReportButton):
             titles += [str(department)]
         titles += ['Total', '', 'Username', 'Year','GPA', '', 'Failed course sections']
 
-        passing_grade = float(Configuration.get_or_default('Passing Grade','70').value)
+        passing_grade = float(config.PASSING_GRADE)
 
         data = []
         iy=2
@@ -1125,8 +1125,8 @@ class SisReport(ScaffoldReport):
             context['school_name'] = config.SCHOOL_NAME
 
             if template.transcript:
-                self.pass_score = float(Configuration.get_or_default("Passing Grade", '70').value)
-                self.pass_letters = Configuration.get_or_default("Letter Passing Grade", 'A,B,C,P').value
+                self.pass_score = float(config.PASSING_GRADE)
+                self.pass_letters = config.LETTER_PASSING_GRADE
                 for student in students:
                     self.get_student_transcript_data(student)
             if template.benchmark_report_card and \

@@ -77,8 +77,8 @@ class ReferralForm(models.Model):
                 subject = 'New counseling referral for %s.' % (self.student,)
                 msg = '%s has submitted a counseling referral form for %s. Click this link to view \n%s%s' % \
                 (self.referred_by, self.student, get_base_url(), reverse('admin:counseling_referralform_change',args=(self.id,)),)
-                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
-                to_addr = Configuration.get_or_default("counseling_referral_notice_email_to", "").value.split(',')
+                from_addr = config.FROM_EMAIL_ADDRESS
+                to_addr = config.COUNSELING_REFERRAL_NOTICE_EMAIL_TO.split(',')
                 if to_addr and to_addr != ['']:
                     send_mail(subject, msg, from_addr, to_addr)
             except:

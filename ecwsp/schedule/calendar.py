@@ -6,9 +6,9 @@ from ecwsp.administration.models import Configuration
 from datetime import datetime
 
 def get_active_class_config():
-    if Configuration.get_or_default("Only Active Classes in Schedule", None).value == "True" \
-    or Configuration.get_or_default("Only Active Classes in Schedule", None).value == "true" \
-    or Configuration.get_or_default("Only Active Classes in Schedule", None).value == "T":
+    if config.ONLY_ACTIVE_CLASSES_IN_SCHEDULE == "True" \
+    or config.ONLY_ACTIVE_CLASSES_IN_SCHEDULE == "true" \
+    or config.ONLY_ACTIVE_CLASSES_IN_SCHEDULE == "T":
         return "True"
     else:
         return "False"
@@ -54,9 +54,9 @@ class Calendar:
                 days.append(day[1])
                 arr_days.append(day)
                 
-        only_active = Configuration.get_or_default("Only Active Classes in Schedule", "False").value in \
+        only_active = config.ONLY_ACTIVE_CLASSES_IN_SCHEDULE in \
             ['T', 'True', '1', 't', 'true']
-        hide_meetingless = Configuration.get_or_default('Hide Empty Periods in Schedule').value in \
+        hide_meetingless = config.HIDE_EMPTY_PERIODS_IN_SCHEDULE in \
             ['T', 'True', '1', 't', 'true']
         
         useful_periods = []

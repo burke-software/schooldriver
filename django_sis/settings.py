@@ -491,6 +491,7 @@ CONSTANCE_CONFIG = {
     'FROM_EMAIL_ADDRESS' : ('donotreply@cristoreyny.org', "Default email address to use for sending mail"),
     'ADMISSIONS_NOTIFY_EMAIL': ('', 'Send admissions notifications to this email. Comma separated are ok.'),
     'GRADES_ALLOW_STUDENT_VIEWING': (True, "Allow students to view their grades online"),
+    'GRADES_ALLOW_SPREADSHEET_IMPORT': ('True', 'Allow users to import a spreadsheet to submit grades'),
     'DEFAULT_COURSE_CREDITS': (1, "This number will appear in the 'Credits' field when creating new courses."),    
     'VOLUNTEER_TRACK_REQUIRED_HOURS': ('20', ''),
     'VOLUNTEER_TRACK_MANAGER_EMAILS': ('', ''),
@@ -528,7 +529,12 @@ CONSTANCE_CONFIG = {
     'LETTER_PASSING_GRADE': ('A,B,C,P', ''),
     'GRADE_COMMENT_LENGTH_LIMIT': ('500', 'Maximum number of characters allowed in grade comments; values above 500 ignored'),
     'GRADEBOOK_EXTRA_INFORMATION': ('averages', "Set to 'averages' to see the class average for each assignment. \
-Use 'demonstrations' to see counts of demonstrations for students and assignments."),
+    Use 'demonstrations' to see counts of demonstrations for students and assignments."),
+    'GRADEBOOK_HIDE_FIELDS': ('', "Separate with commas. Options include: marking_period, assignment_type, benchmark, date, description."),
+    'ONLY_ACTIVE_CLASSES_IN_SCHEDULE': ('', ''),
+    'HIDE_EMPTY_PERIODS_IN_SCHEDULE': ('False', ''),
+    'ATTENDANCE_CREATE_WORK_ATTENDANCE': ('False', ''),
+    'GRADE_COMMENT_LENGTH_LIMIT': ('500', 'Maximum number of characters allowed in grade comments; values above 500 ignored'),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
