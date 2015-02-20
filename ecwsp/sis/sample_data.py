@@ -13,6 +13,7 @@ import datetime
 
 class SisData(object):
     """ Put data creation code here. sample data code not here is punishible by death .
+        Grammatical and spelling errors, however... --------------------^
     """
     def create_all(self):
         """ This will populate all sample data """
@@ -39,13 +40,43 @@ class SisData(object):
         # Set one archetypal object. If I want a year I will use this
         self.school_year = SchoolYear.objects.get(active_year=True)
 
+        # Add graduating classes, birthdays, etc. that won't get outdated
+        now = datetime.datetime.now()
+        
+        graduated_year = now.year - 1
+        senior_year = now.year
+        junior_year = now.year + 1
+        sophomore_year = now.year + 2
+        freshman_year = now.year + 3
+
+        self.class_year0 = ClassYear.objects.create(year=graduated_year, full_name="Class of " + str(graduated_year))
+        self.class_year1 = ClassYear.objects.create(year=senior_year, full_name="Class of " + str(senior_year))
+        self.class_year2 = ClassYear.objects.create(year=junior_year, full_name="Class of " + str(junior_year))
+        self.class_year3 = ClassYear.objects.create(year=sophomore_year, full_name="Class of " + str(sophomore_year))
+        self.class_year4 = ClassYear.objects.create(year=freshman_year, full_name="Class of " + str(freshman_year))
+
         # Note bulk does not call save() and other limitations
         # so it's ok to not use bulk
         # Don't change the order, other objects depend on the id being in this order
-        self.student = Student.objects.create(first_name="Joe", last_name="Student", username="jstudent")
-        self.student2 = Student.objects.create(first_name="Jane", last_name="Student", username="jastudent")
-        self.student3 = Student.objects.create(first_name="Tim", last_name="Duck", username="tduck")
-        Student.objects.create(first_name="Molly", last_name="Maltov", username="mmaltov")
+        self.student   = Student.objects.create(first_name="Alex", last_name="Jackson", username="ajackson", sex="M", class_of_year=self.class_year1, ssn="377-52-8781")
+        self.student2  = Student.objects.create(first_name="Pat", last_name="Williams", username="pwilliams", mname="Logan", sex="F", class_of_year=self.class_year2, ssn="382-17-5716")
+        self.student3  = Student.objects.create(first_name="Chris", last_name="Robinson", username="crobinson", sex="M", class_of_year=self.class_year3, ssn="525-10-9407")
+        self.student4  = Student.objects.create(first_name="Terry", last_name="Harris", username="tharris", mname="Quinn", sex="F", class_of_year=self.class_year4, ssn="445-50-9260")
+        self.student5  = Student.objects.create(first_name="Ashton", last_name="Thomas", username="athomas", sex="M", class_of_year=self.class_year1, ssn="306-23-0935")
+        self.student6  = Student.objects.create(first_name="Ashley", last_name="James", username="ajames", mname="Drew", sex="F", class_of_year=self.class_year2)
+        self.student7  = Student.objects.create(first_name="Cameron", last_name="Lee", username="clee", sex="M", class_of_year=self.class_year3, ssn="216-78-6801")
+        self.student8  = Student.objects.create(first_name="Casey", last_name="Jones", username="cjones", mname="Cameron", sex="F", class_of_year=self.class_year4, ssn="501-72-9501")
+        self.student9  = Student.objects.create(first_name="Drew", last_name="Jenkins", username="djenkins", sex="M", class_of_year=self.class_year1, ssn="242-56-7846")
+        self.student10 = Student.objects.create(first_name="Hayden", last_name="Carter", username="hcarter", sex="F", class_of_year=self.class_year2, ssn="311-86-1455")
+        self.student11 = Student.objects.create(first_name="Jordan", last_name="Brown", username="jbrown", sex="M", class_of_year=self.class_year3, ssn="440-34-8950")
+        self.student12 = Student.objects.create(first_name="Logan", last_name="Walker", username="lwalker", mname="Alex", sex="F", class_of_year=self.class_year4, ssn="184-14-5336")
+        self.student13 = Student.objects.create(first_name="Micah", last_name="Lewis", username="mlewis", sex="M", class_of_year=self.class_year1, ssn="574-43-8857")
+        self.student14 = Student.objects.create(first_name="Morgan", last_name="Johnson", username="mjohnson", sex="F", class_of_year=self.class_year2)
+        self.student15 = Student.objects.create(first_name="Parker", last_name="Scott", username="pscott", sex="M", class_of_year=self.class_year3, ssn="367-54-4634")
+        self.student16 = Student.objects.create(first_name="Quinn", last_name="Brooks", username="qbrooks", mname="Taylor", sex="F", class_of_year=self.class_year4, ssn="482-41-1298")
+        self.student17 = Student.objects.create(first_name="Riley", last_name="Richardson", username="rrichardson", sex="M", class_of_year=self.class_year1, ssn="647-03-7589")
+        self.student18 = Student.objects.create(first_name="Sidney", last_name="Sanders", username="ssanders", sex="F", class_of_year=self.class_year2, ssn="531-84-8031")
+        self.student19 = Student.objects.create(first_name="Taylor", last_name="Bell", username="tbell", sex="M", class_of_year=self.class_year3, ssn="514-72-2851")
 
         MarkingPeriod.objects.bulk_create([
             MarkingPeriod(name="tri1 2014", start_date=datetime.date(2014,7,1), end_date=datetime.date(2014,9,1), school_year=self.school_year, monday=True, friday=True),
