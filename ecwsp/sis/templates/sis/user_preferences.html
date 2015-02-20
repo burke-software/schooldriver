@@ -1,5 +1,6 @@
 {% extends "base_next.html" %}
 {% load i18n %}
+{% load widget_tweaks %}
 
 
 {% block nav_page_specific %}
@@ -14,15 +15,34 @@
 {% endblock %}
 
 {% block content %}
-    <h2>User Preferences</h2>
-    
-    <form action="" method="post">
-        {{ form.as_p }}
-    </form>
-    
-    <h4>Change Password</h4>
-    <form action="" method="post">
-        {{ password_form.as_p }}
-        <button class="btn btn-primary" type="submit" name="password_change">Save New Password</button>
-    </form>
+<div class="row">
+    <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+        <h2>User Preferences</h2>
+        
+        <form action="" method="post">
+            {% for field in form %}
+                {% if field|field_type == "booleanfield" %}
+                <div class="schooldriver-checkbox">
+                    <label for="{{ field.id_for_label }}">{{ field }} <i class="fa"></i> {{ field.label }} </label>
+                </div>
+                {% else %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field.errors }}
+                    {{ field|add_class:"form-control" }}
+                    {% if field.help_text %}<p class="help-block">{{ field.help_text }}</p>{% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            <button class="btn btn-primary" type="submit" name="prefs_change">Save Preferences</button>
+        </form>
+        
+        <h2>Change Password</h2>
+        <form action="" method="post">
+            {{ password_form.as_p }}
+            <button class="btn btn-primary" type="submit" name="password_change">Save New Password</button>
+        </form>
+    </div>
+</div>
 {% endblock %}
