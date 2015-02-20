@@ -24,3 +24,4 @@ class TestVolunteerSite(TestCase):
         required_hours = get_hours_default()
         self.assertEqual(self.required_hours, required_hours)
         
+ 

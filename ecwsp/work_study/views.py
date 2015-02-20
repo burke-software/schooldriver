@@ -126,7 +126,7 @@ def student_timesheet(request):
         if hasattr(this_student,"primary_contact"):
             if this_student.primary_contact:
                 initial_primary = this_student.primary_contact.id
-        if Configuration.get_or_default('work_study_timesheet_initial_time', 'True').value == 'True':
+        if config.WORK_STUDY_TIMESHEET_INITIAL_TIME == 'True':
             form = TimeSheetForm(initial={'student':this_student.id, 'company':this_student.placement.id, 'my_supervisor':initial_primary,
                 'date': date.today, 'time_in': "9:30 AM", 'time_lunch': "12:00 PM", 'time_lunch_return': "1:00 PM", 'time_out': "5:00 PM"})
         else:
@@ -135,7 +135,7 @@ def student_timesheet(request):
     form.set_supers(comp_contacts)
     form.fields['performance'].widget.attrs['disabled'] = 'disabled'
     # Should for_pay be an option?
-    pay, created = Configuration.objects.get_or_create(name="Allow for pay")
+    pay, created = config.ALLOW_FOR_PAY
     if created:
         pay.value = "True"
         pay.save()
@@ -899,7 +899,7 @@ def company_contract2(request, id):
 def company_contract3(request, id):
     contract = CompContract.objects.get(id=id)
     company = contract.company
-    contact_info = Configuration.objects.get_or_create(name="Work Study Contract Number")[0].value
+    contact_info = config.WORK_STUDY_CONTRACT_NUMBER
 
     if request.method == 'POST':
         form = CompanyContactForm3(request.POST)
@@ -926,10 +926,7 @@ def company_contract_complete(request, id):
     email = request.GET.get('email')
     if email:
         try:
-            message = Configuration.get_or_default(
-                name="work_study_contract_complete_email_message",
-                default='Thank you for agreeing to hire Cristo Rey students.',
-            ).value
+            message = config.WORK_STUDY_CONTRACT_COMPLETE_EMAIL_MESSAGE
             mail = EmailMessage(
                 'Work Study Contract Confirmation for %s.' % (company,),
                 message,
@@ -937,7 +934,7 @@ def company_contract_complete(request, id):
                 [email],
             )
 
-            cc = Configuration.get_or_default("work_study_contract_cc_address", "").value
+            cc = config.WORK_STUDY_CONTRACT_CC_ADDRESS
             if cc:
                 mail.cc = cc.split(',')
             attach = contract.get_contract_as_pdf(response=False)
@@ -967,7 +964,7 @@ def company_contract_pdf(request, id):
 def fte_chart(request):
     workteams = WorkTeam.objects.filter(inactive=False,studentworker__isnull=False).exclude(industry_type="").annotate(no_students=Count('studentworker')).order_by('industry_type','company__name')
     fte_chart = {}
-    fte_per_student = Configuration.get_or_default(name="Students per FTE",default=".2").value
+    fte_per_student = config.STUDENTS_PER_FTE
     for workteam in workteams:
         ftes = fte_chart.get(workteam.industry_type, 0.0)
         fte_chart[workteam.industry_type] = ftes + (workteam.no_students / float(fte_per_student))

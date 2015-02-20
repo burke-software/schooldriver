@@ -16,7 +16,7 @@ def fte_by_ind(request):
     """ FTE by industry
     """
     cursor = connection.cursor()
-    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
+    fte = int(config.STUDENTS_PER_FTE)
     cursor.execute("select industry_type, count(*)/" + str(fte) + \
         " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
         "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by industry_type;")
@@ -30,7 +30,7 @@ def fte_by_ind(request):
 
 def fte_by_day(request):
     cursor = connection.cursor()
-    fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
+    fte = int(config.STUDENTS_PER_FTE)
     cursor.execute("select day, count(*)/" + str(fte) + \
         " from work_study_studentworker left join work_study_workteam on work_study_workteam.id = "+\
         "work_study_studentworker.placement_id where work_study_workteam.inactive = False group by day;")
@@ -151,7 +151,7 @@ def gen_attendance_report_day(day, is_pickup=False):
 
 def fte_by_pay(request):
     report = XlReport(file_name="report_fteByPay")
-    student_fte = int(Configuration.get_or_default(name="Students per FTE"[0], default=5).value)
+    student_fte = int(config.STUDENTS_PER_FTE)
     
     cursor = connection.cursor()
     cursor.execute("select paying, count(*)/" + str(student_fte) + \

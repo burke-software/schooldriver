@@ -247,7 +247,7 @@ class StudentAdmin(admin.ModelAdmin):
     ]
 
     def get_readonly_fields(self, request, obj=None):
-        edit_all = Configuration.get_or_default("Edit all Student Worker Fields", "False")
+        edit_all = config.EDIT_ALL_STUDENT_WORKER_FIELDS
         if edit_all.value == "True":
             return ['parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']
         return super(StudentAdmin, self).get_readonly_fields(request, obj=obj)

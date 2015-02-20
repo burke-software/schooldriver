@@ -23,8 +23,8 @@ def inquiry_form(request):
     Places them in the database as an applicant
     Public view can be used by anyone
     """
-    css = Configuration.get_or_default('admissions_inquiry_form_css').value
-    exclude_years = Configuration.get_or_default('admissions_hide_inquiry_grade').value.split(',')
+    css = config.ADMISSIONS_INQUIRY_FORM_CSS
+    exclude_years = config.ADMISSIONS_HIDE_INQUIRY_GRADE.split(',')
     valid_years = GradeLevel.objects.all()
     if exclude_years:
         try:
@@ -265,7 +265,7 @@ def applicants_to_students(request, year_id):
                 student.username = imp.gen_username(student.first_name, student.last_name)
             student.save()
             
-            add_worker = Configuration.get_or_default("Admissions to student also makes student worker", "False")
+            add_worker = config.ADMISSIONS_TO_STUDENT_ALSO_MAKES_STUDENT_WORKER
             if add_worker.value == "True":
                 student.promote_to_worker()
             

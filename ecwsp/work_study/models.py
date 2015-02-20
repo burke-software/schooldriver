@@ -109,7 +109,7 @@ class Company(models.Model, CustomFieldModel):
     def fte(self):
         try:
             noStudents = StudentWorker.objects.filter(placement__company=self,is_active=True).count()
-            student_fte = Configuration.objects.get_or_create(name="Students per FTE")[0].value
+            student_fte = config.STUDENTS_PER_FTE
             return noStudents/float(student_fte)
         except:
             return None
@@ -204,7 +204,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     def fte(self):
         try:
             noStudents = StudentWorker.objects.filter(placement=self).count()
-            student_fte = Configuration.objects.get_or_create(name="Students per FTE")[0].value
+            student_fte = config.STUDENTS_PER_FTE
             return noStudents/float(student_fte)
         except:
             return None
@@ -589,7 +589,7 @@ class StudentInteraction(models.Model):
                 msg = msg[:-2] + " had a mentor meeting on " + unicode(self.date) + "\n" + unicode(self.comments) + "\n"
                 for com in self.preset_comment.all():
                     msg += unicode(com) + "\n"
-                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
+                from_addr = config.FROM_EMAIL_ADDRESS
                 send_mail(subject, msg, from_addr, [unicode(stu.placement.cra.name.email)])
             except:
                 print >> sys.stderr, "warning: could not e-mail CRA"
@@ -714,7 +714,7 @@ class TimeSheet(models.Model):
                     + unicode(self.supervisor_comment) + "\""
             else:
                 msg = "Hello " + unicode(self.student) + ",\nYour time card for " + self.date.strftime("%x") + " was approved."
-            from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
+            from_addr = config.FROM_EMAIL_ADDRESS
             send_mail(subject, msg, from_addr, [str(sendTo)])
         except:
             logging.warning('Could not e-mail student', exc_info=True, extra={
@@ -766,7 +766,7 @@ class TimeSheet(models.Model):
                 subject = "Time Sheet for " + str(self.student)
                 msg = "Hello " + unicode(self.student.primary_contact.fname) + ",\nPlease click on the link below to approve the time sheet.\n" + \
                     get_base_url() + "/work_study/approve?key=" + str(self.supervisor_key)
-                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
+                from_addr = config.FROM_EMAIL_ADDRESS
                 send_mail(subject, msg, from_addr, [sendTo])
             except:
                 print >> sys.stderr, "Unable to send e-mail to supervisor! %s" % (self,)
@@ -868,7 +868,7 @@ class ClientVisit(models.Model):
                     sendTo.append(user.email)
                 subject = "CRA visit at " + unicode(self.company)
                 msg = "A CRA report has been entered for " + unicode(self.company) + " on " + unicode(self.date) + ".\n" + unicode(self.notes)
-                from_addr = Configuration.get_or_default("From Email Address", "donotreply@cristoreyny.org").value
+                from_addr = config.FROM_EMAIL_ADDRESS
                 send_mail(subject, msg, from_addr, sendTo)
             except:
                 print >> sys.stderr, "warning: could not e-mail mentors"

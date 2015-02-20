@@ -105,11 +105,7 @@ class ApplicantAdmin(CustomFieldAdmin):
         # Attempt to guess next school year
         future_years = SchoolYear.objects.filter(start_date__gt=datetime.date.today()).order_by('start_date')
         if future_years:
-            override_date = Configuration.get_or_default(
-                name="admissions_override_year_start", 
-                default='',
-                help_text="Must be ISO date (ex 2012-10-25) or blank",
-            ).value
+            override_date = config.ADMISSIONS_OVERRIDE_YEAR_START
             if override_date:
                 try:
                     override_date = parser.parse(override_date)
@@ -139,11 +135,7 @@ class ApplicantAdmin(CustomFieldAdmin):
 		# Attempt to guess next school year
         future_years = SchoolYear.objects.filter(start_date__gt=datetime.date.today()).order_by('start_date')
         if future_years:
-            override_date = Configuration.get_or_default(
-                name="admissions_override_year_start", 
-                default='',
-                help_text="Must be ISO date (ex 2012-10-25) or blank",
-            ).value
+            override_date = config.ADMISSIONS_OVERRIDE_YEAR_START
             if override_date:
                 try:
                     override_date = parser.parse(override_date)

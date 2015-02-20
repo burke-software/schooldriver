@@ -110,7 +110,7 @@ class PhoneNumber(models.Model):
 
 
 def get_city():
-    return Configuration.get_or_default("Default City", "").value
+    return config.DEFAULT_CITY
 class EmergencyContact(models.Model):
     fname = models.CharField(max_length=255, verbose_name="First Name")
     mname = models.CharField(max_length=255, blank=True, null=True, verbose_name="Middle Name")
@@ -463,12 +463,9 @@ class Student(User, CustomFieldModel):
     @property
     def get_email(self):
         """ Returns email address using various configurable methods """
-        email_method = Configuration.get_or_default(
-            "How to obtain student email",
-            default="append",
-            help_text="append, user, or student.").value
+        email_method = config.HOW_TO_OBTAIN_STUDENT_EMAIL
         if email_method == "append":
-            email_end = Configuration.get_or_default("email", default="@change.me").value
+            email_end = config.EMAIL
             return '%s%s' % (self.student.username, email_end)
         elif email_method == "user":
             if User.objects.filter(username=self.student.username):
@@ -562,9 +559,9 @@ class Student(User, CustomFieldModel):
 
     def save(self, creating_worker=False, *args, **kwargs):
         self.cache_cohorts()
-        if self.is_active == False and (Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "True" \
-        or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "true" \
-        or Configuration.get_or_default("Clear Placement for Inactive Students","False").value == "T"):
+        if self.is_active == False and (config.CLEAR_PLACEMENT_FOR_INACTIVE_STUDENTS == "True" \
+        or config.CLEAR_PLACEMENT_FOR_INACTIVE_STUDENTS == "true" \
+        or config.CLEAR_PLACEMENT_FOR_INACTIVE_STUDENTS == "T"):
             try:
                 self.studentworker.placement = None
                 self.studentworker.save()
@@ -732,7 +729,7 @@ class GradeScaleRule(models.Model):
 
 
 def get_default_benchmark_grade():
-    return str(Configuration.get_or_default("Benchmark-based grading", "False").value).lower() == "true"
+    return str(config.BENCHMARK_BASED_GRADING).lower() == "true"
 
 class SchoolYear(models.Model):
     name = models.CharField(max_length=255, unique=True)
