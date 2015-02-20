@@ -488,9 +488,20 @@ CONSTANCE_CONFIG = {
     'APPLICANT_EMAIL_ALERT' : (False, "Send email alert on applicant submission"),
     'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('',
         "Email addresses to send alert to; only one email address per line"),
-    'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail"),
+    'FROM_EMAIL_ADDRESS' : ('donotreply@cristoreyny.org', "Default email address to use for sending mail"),
+    'ADMISSIONS_NOTIFY_EMAIL': ('', 'Send admissions notifications to this email. Comma separated are ok.'),
     'GRADES_ALLOW_STUDENT_VIEWING': (True, "Allow students to view their grades online"),
     'DEFAULT_COURSE_CREDITS': (1, "This number will appear in the 'Credits' field when creating new courses."),    
+    'VOLUNTEER_TRACK_REQUIRED_HOURS': ('20', ''),
+    'VOLUNTEER_TRACK_MANAGER_EMAILS': ('', ''),
+    'ATTENDANCE_DISC_TARDIES_BEFORE_DISC': ('1', ''),
+    'ATTENDANCE_DISC_INFRACTION': ('', ''),
+    'ATTENDANCE_DISC_ACTION': ('', ''),
+    'DISCIPLINE_MERIT_DEFAULT_DAYS': ('14', ''),
+    'DISCIPLINE_MERIT_LEVEL_ONE': ('0', ''),
+    'DISCIPLINE_MERIT_LEVEL_TWO': ('1', ''),
+    'DISCIPLINE_MERIT_LEVEL_THREE': ('3', ''),
+    'DISCIPLINE_MERIT_LEVEL_FOUR': ('5', ''),
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
