@@ -57,6 +57,12 @@ blink {
     overflow-x: hidden;
 }
 
+// Custom message control
+// Bootstrap uses 'alert-danger'; Django uses 'error'. This reconciles the two.
+.alert-error {
+  @extend .alert-danger;
+}
+
 
 // Custom checkbox control
 .schooldriver-checkbox {
