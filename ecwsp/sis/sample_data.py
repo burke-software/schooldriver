@@ -46,6 +46,14 @@ class SisData(object):
         self.class_year3 = ClassYear.objects.create(year=sophomore_year, full_name="Class of " + str(sophomore_year))
         self.class_year4 = ClassYear.objects.create(year=freshman_year, full_name="Class of " + str(freshman_year))
 
+        # Populate grade levels
+        GradeLevel.objects.bulk_create([
+            GradeLevel(id=9, name="Freshman"),
+            GradeLevel(id=10, name="Sophomore"),
+            GradeLevel(id=11, name="Junior"),
+            GradeLevel(id=12, name="Senior"),
+        ])
+
         # Populate some school years based on the current month/year
         school_year_base = now.year
         # If in 2015 and not yet August, active year will be 2014-2015. After August 1 it'll be 2015-2016
