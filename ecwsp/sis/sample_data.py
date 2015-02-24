@@ -31,15 +31,6 @@ class SisData(object):
         # Run dependencies first
         self.create_required()
 
-        # Use bulk create a few so it looks good in demo
-        SchoolYear.objects.bulk_create([
-            SchoolYear(name="2013-2014", start_date=datetime.date(2013,7,1), end_date=datetime.date(2014,5,1)),
-            SchoolYear(name="2014-long time", start_date=datetime.date(2014,7,1), end_date=datetime.date(2050,5,1), active_year=True),
-            SchoolYear(name="2015-16", start_date=datetime.date(2015,7,1), end_date=datetime.date(2016,5,1)),
-        ])
-        # Set one archetypal object. If I want a year I will use this
-        self.school_year = SchoolYear.objects.get(active_year=True)
-
         # Add graduating classes, birthdays, etc. that won't get outdated
         now = datetime.datetime.now()
         
@@ -54,6 +45,23 @@ class SisData(object):
         self.class_year2 = ClassYear.objects.create(year=junior_year, full_name="Class of " + str(junior_year))
         self.class_year3 = ClassYear.objects.create(year=sophomore_year, full_name="Class of " + str(sophomore_year))
         self.class_year4 = ClassYear.objects.create(year=freshman_year, full_name="Class of " + str(freshman_year))
+
+        # Populate some school years based on the current month/year
+        school_year_base = now.year
+        # If in 2015 and not yet August, active year will be 2014-2015. After August 1 it'll be 2015-2016
+        if now.month < 8:
+            school_year_base = now.year - 1
+
+        SchoolYear.objects.bulk_create([
+            SchoolYear(name=str(school_year_base+2)+"-"+str(school_year_base+3), start_date=datetime.date(school_year_base+2,8,1), end_date=datetime.date(school_year_base + 3,7,31)),
+            SchoolYear(name=str(school_year_base+1)+"-"+str(school_year_base+2), start_date=datetime.date(school_year_base+1,8,1), end_date=datetime.date(school_year_base + 2,7,31)),
+            SchoolYear(name=str(school_year_base)+"-"+str(school_year_base+1), start_date=datetime.date(school_year_base,8,1), end_date=datetime.date(school_year_base+1,7,31), active_year=True),
+            SchoolYear(name=str(school_year_base-1)+"-"+str(school_year_base), start_date=datetime.date(school_year_base-1,8,1), end_date=datetime.date(school_year_base,7,31)),
+            SchoolYear(name=str(school_year_base-2)+"-"+str(school_year_base-1), start_date=datetime.date(school_year_base-2,8,1), end_date=datetime.date(school_year_base-1,7,31)),
+            SchoolYear(name=str(school_year_base-3)+"-"+str(school_year_base-2), start_date=datetime.date(school_year_base-3,8,1), end_date=datetime.date(school_year_base-2,7,31)),
+        ])
+        # Set one archetypal object. If I want a year I will use this
+        self.school_year = SchoolYear.objects.get(active_year=True)
 
         # Note bulk does not call save() and other limitations
         # so it's ok to not use bulk
