@@ -36,12 +36,19 @@ def user_preferences(request):
     """
     profile = UserPreference.objects.get_or_create(user=request.user)[0]
     if request.POST:
-        password_form = PasswordChangeForm(user=request.user, data=request.POST)
-        form = UserPreferenceForm(request.POST, instance=profile)
-        if "password_change" in request.POST and password_form.is_valid():
+        if "password_change" in request.POST:
+            password_form = PasswordChangeForm(user=request.user, data=request.POST)
+            form = UserPreferenceForm(instance=profile)
+
+            if password_form.is_valid():
                 password_form.save()
+                messages.success(request, 'Your password has been successfully changed.')
                 update_session_auth_hash(request, password_form.user)
-        elif form.is_valid():
+        elif "prefs_change" in request.POST:
+            form = UserPreferenceForm(request.POST, instance=profile)
+            password_form = PasswordChangeForm(user=request.user)
+
+            if form.is_valid():
                 form.cleaned_data['user'] = request.user
                 form.save()
                 messages.info(request, 'Successfully updated preferences')
