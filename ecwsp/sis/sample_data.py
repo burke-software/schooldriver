@@ -93,22 +93,56 @@ class SisData(object):
         self.student   = Student.objects.create(first_name="Alex", last_name="Jackson", username="ajackson", sex="M", class_of_year=self.class_year1, bday=random_birthday(self.class_year1), ssn=random_ssn())
         self.student2  = Student.objects.create(first_name="Pat", last_name="Williams", username="pwilliams", mname="Logan", sex="F", class_of_year=self.class_year2, bday=random_birthday(self.class_year2), ssn=random_ssn())
         self.student3  = Student.objects.create(first_name="Chris", last_name="Robinson", username="crobinson", sex="M", class_of_year=self.class_year3, bday=random_birthday(self.class_year3), ssn=random_ssn())
-        self.student4  = Student.objects.create(first_name="Terry", last_name="Harris", username="tharris", mname="Quinn", sex="F", class_of_year=self.class_year4, bday=random_birthday(self.class_year4), ssn=random_ssn())
-        self.student5  = Student.objects.create(first_name="Ashton", last_name="Thomas", username="athomas", sex="M", class_of_year=self.class_year1, bday=random_birthday(self.class_year1), ssn=random_ssn())
-        self.student6  = Student.objects.create(first_name="Ashley", last_name="James", username="ajames", mname="Drew", sex="F", class_of_year=self.class_year2, bday=random_birthday(self.class_year2))
-        self.student7  = Student.objects.create(first_name="Cameron", last_name="Lee", username="clee", sex="M", class_of_year=self.class_year3, bday=random_birthday(self.class_year3), ssn=random_ssn())
-        self.student8  = Student.objects.create(first_name="Casey", last_name="Jones", username="cjones", mname="Cameron", sex="F", class_of_year=self.class_year4, bday=random_birthday(self.class_year4), ssn=random_ssn())
-        self.student9  = Student.objects.create(first_name="Drew", last_name="Jenkins", username="djenkins", sex="M", class_of_year=self.class_year1, bday=random_birthday(self.class_year1), ssn=random_ssn())
-        self.student10 = Student.objects.create(first_name="Hayden", last_name="Carter", username="hcarter", sex="F", class_of_year=self.class_year2, bday=random_birthday(self.class_year2), ssn=random_ssn())
-        self.student11 = Student.objects.create(first_name="Jordan", last_name="Brown", username="jbrown", sex="M", class_of_year=self.class_year3, bday=random_birthday(self.class_year3), ssn=random_ssn())
-        self.student12 = Student.objects.create(first_name="Logan", last_name="Walker", username="lwalker", mname="Alex", sex="F", class_of_year=self.class_year4, bday=random_birthday(self.class_year4), ssn=random_ssn())
-        self.student13 = Student.objects.create(first_name="Micah", last_name="Lewis", username="mlewis", sex="M", class_of_year=self.class_year1, bday=random_birthday(self.class_year1), ssn=random_ssn())
-        self.student14 = Student.objects.create(first_name="Morgan", last_name="Johnson", username="mjohnson", sex="F", class_of_year=self.class_year2, bday=random_birthday(self.class_year2))
-        self.student15 = Student.objects.create(first_name="Parker", last_name="Scott", username="pscott", sex="M", class_of_year=self.class_year3, bday=random_birthday(self.class_year3), ssn=random_ssn())
-        self.student16 = Student.objects.create(first_name="Quinn", last_name="Brooks", username="qbrooks", mname="Taylor", sex="F", class_of_year=self.class_year4, bday=random_birthday(self.class_year4), ssn=random_ssn())
-        self.student17 = Student.objects.create(first_name="Riley", last_name="Richardson", username="rrichardson", sex="M", class_of_year=self.class_year1, bday=random_birthday(self.class_year1), ssn=random_ssn())
-        self.student18 = Student.objects.create(first_name="Sidney", last_name="Sanders", username="ssanders", sex="F", class_of_year=self.class_year2, bday=random_birthday(self.class_year2), ssn=random_ssn())
-        self.student19 = Student.objects.create(first_name="Taylor", last_name="Bell", username="tbell", sex="M", class_of_year=self.class_year3, bday=random_birthday(self.class_year3), ssn=random_ssn())
+        
+        # Kept three names attached to variables, but it's time to go full rando here.
+        first_names = [
+            "Alex", "Pat", "Chris", "Terry", "Ashton", "Ashley", "Cameron", 
+            "Casey", "Drew", "Hayden", "Jordan", "Logan", "Micah", "Morgan", 
+            "Parker", "Quinn", "Riley", "Sidney", "Taylor", "Devon"
+        ]
+        last_names = [
+            "Jackson", "Williams", "Robinson", "Harris", "Thomas", "James",
+            "Lee", "Jones", "Jenkins", "Carter", "Brown", "Walker", "Lewis",
+            "Johnson", "Scott", "Brooks", "Richardson", "Sanders", "Bell", "Green"
+        ]
+
+        random_usernames = []
+
+        for i in xrange(100):
+            random_first = random.choice(first_names)
+            
+            random_middle = random.choice(first_names)
+            # People don't have the same first and middle names!
+            while random_middle == random_first:
+                random_middle = random.choice(first_names)
+
+            random_last = random.choice(last_names)
+            
+            random_class_year = random.choice([self.class_year1, self.class_year2, 
+                self.class_year3, self.class_year4])
+            
+            # Username generation: initials, 'st' for student, then a unique number
+            not_random_username = random_first[0].lower() + random_middle[0].lower() + \
+                random_last[0].lower() + "st"
+
+            number = 1
+            while not_random_username + str(number) in random_usernames:
+                number += 1
+
+            not_random_username = not_random_username + str(number)
+
+            random_usernames.append(not_random_username)
+
+            Student.objects.create(
+                first_name=random_first,
+                last_name=random_last,
+                username=not_random_username,
+                mname=random_middle,
+                sex=random.choice("MF"),
+                class_of_year=random_class_year,
+                bday=random_birthday(random_class_year),
+                ssn=random_ssn()
+            )
 
 
         MarkingPeriod.objects.bulk_create([
