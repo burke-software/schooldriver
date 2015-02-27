@@ -5,6 +5,7 @@ from ecwsp.admissions.models import *
 from ecwsp.grades.models import *
 from ecwsp.schedule.models import *
 from ecwsp.grades.tasks import *
+from django.contrib.auth.models import User, Group, Permission
 
 import random
 import string
@@ -60,10 +61,12 @@ class SisData(object):
         if now.month < 8:
             school_year_base = now.year - 1
 
+        current_school_year = str(school_year_base)+"-"+str(school_year_base+1)
+
         SchoolYear.objects.bulk_create([
             SchoolYear(name=str(school_year_base+2)+"-"+str(school_year_base+3), start_date=datetime.date(school_year_base+2,8,1), end_date=datetime.date(school_year_base + 3,7,31)),
             SchoolYear(name=str(school_year_base+1)+"-"+str(school_year_base+2), start_date=datetime.date(school_year_base+1,8,1), end_date=datetime.date(school_year_base + 2,7,31)),
-            SchoolYear(name=str(school_year_base)+"-"+str(school_year_base+1), start_date=datetime.date(school_year_base,8,1), end_date=datetime.date(school_year_base+1,7,31), active_year=True),
+            SchoolYear(name=current_school_year, start_date=datetime.date(school_year_base,8,1), end_date=datetime.date(school_year_base+1,7,31), active_year=True),
             SchoolYear(name=str(school_year_base-1)+"-"+str(school_year_base), start_date=datetime.date(school_year_base-1,8,1), end_date=datetime.date(school_year_base,7,31)),
             SchoolYear(name=str(school_year_base-2)+"-"+str(school_year_base-1), start_date=datetime.date(school_year_base-2,8,1), end_date=datetime.date(school_year_base-1,7,31)),
             SchoolYear(name=str(school_year_base-3)+"-"+str(school_year_base-2), start_date=datetime.date(school_year_base-3,8,1), end_date=datetime.date(school_year_base-2,7,31)),
@@ -146,19 +149,72 @@ class SisData(object):
 
 
         MarkingPeriod.objects.bulk_create([
-            MarkingPeriod(name="tri1 2014", start_date=datetime.date(2014,7,1), end_date=datetime.date(2014,9,1), school_year=self.school_year, monday=True, friday=True),
-            MarkingPeriod(name="tri2 2014", start_date=datetime.date(2014,9,2), end_date=datetime.date(2015,3,1), school_year=self.school_year, monday=True, friday=True),
-            MarkingPeriod(name="tri3 2014", start_date=datetime.date(2015,3,2), end_date=datetime.date(2050,5,1), school_year=self.school_year, monday=True, friday=True),
+            MarkingPeriod(
+                name="Trimester 1 "+current_school_year,
+                shortname="Tri 1",
+                start_date=datetime.date(school_year_base,8,1),
+                end_date=datetime.date(school_year_base,11,30),
+                school_year=self.school_year,
+                monday=True,
+                friday=True
+            ),
+            MarkingPeriod(
+                name="Trimester 2 "+current_school_year,
+                shortname="Tri 2",
+                start_date=datetime.date(school_year_base,12,1),
+                end_date=datetime.date(school_year_base+1,2,28),
+                school_year=self.school_year,
+                monday=True,
+                friday=True
+            ),
+            MarkingPeriod(
+                name="Trimester 3 "+current_school_year,
+                shortname="Tri 3",
+                start_date=datetime.date(school_year_base+1,3,1),
+                end_date=datetime.date(school_year_base+1,5,31),
+                school_year=self.school_year,
+                monday=True,
+                friday=True
+            ),
+            MarkingPeriod(
+                name="Summer Session "+current_school_year,
+                shortname="Summer",
+                start_date=datetime.date(school_year_base+1,6,1),
+                end_date=datetime.date(school_year_base+1,7,31),
+                school_year=self.school_year,
+                monday=True,
+                friday=True
+            ),
         ])
-        self.marking_period = MarkingPeriod.objects.get(name="tri1 2014")
-        self.marking_period2 = MarkingPeriod.objects.get(name="tri2 2014")
-        self.marking_period3 = MarkingPeriod.objects.get(name="tri3 2014")
+        self.marking_period = MarkingPeriod.objects.get(shortname="Tri 1")
+        self.marking_period2 = MarkingPeriod.objects.get(shortname="Tri 2")
+        self.marking_period3 = MarkingPeriod.objects.get(shortname="Tri 3")
 
-        self.teacher1 = self.faculty = Faculty.objects.create(username="dburke", first_name="david", last_name="burke", teacher=True)
-        self.teacher2 = Faculty.objects.create(username="jbayes", first_name="jeff", last_name="bayes", teacher=True)
+        # Add teacher group with some permissions
+        teacher_group = Group.objects.create(name="teacher")
+
+        teacher_perm1 = Permission.objects.get(codename="view_student")
+        teacher_perm2 = Permission.objects.get(codename="take_studentattendance")
+        teacher_perm3 = Permission.objects.get(codename="change_own_grade")
+        teacher_perm4 = Permission.objects.get(codename="add_referralform")
+
+        teacher_group.permissions.add(teacher_perm1)
+        teacher_group.permissions.add(teacher_perm2)
+        teacher_group.permissions.add(teacher_perm3)
+        teacher_group.permissions.add(teacher_perm4)
+
+        # Add some teachers and other users
+        self.teacher1 = self.faculty = Faculty.objects.create(username="dburke", first_name="David", last_name="Burke", teacher=True)
+
+        self.teacher2 = Faculty.objects.create(username="lbritner", first_name="Louis", last_name="Britner", teacher=True, is_staff=True)
+        self.teacher2.groups.add(teacher_group)
+        self.teacher2.set_password('aa')
+        self.teacher2.save()
+
         aa = Faculty.objects.create(username="aa", first_name="aa", is_superuser=True, is_staff=True)
         aa.set_password('aa')
         aa.save()
+
         admin = Faculty.objects.create(username="admin", first_name="admin", is_superuser=True, is_staff=True)
         admin.set_password('admin')
         admin.save()
@@ -201,10 +257,13 @@ class SisData(object):
         self.course_section2.marking_period.add(self.marking_period)
         self.course_section2.marking_period.add(self.marking_period2)
         self.course_section2.marking_period.add(self.marking_period3)
+        self.course_section3.marking_period.add(self.marking_period)
+        self.course_section3.marking_period.add(self.marking_period2)
+        self.course_section3.marking_period.add(self.marking_period3)
         self.course_section4.marking_period.add(self.marking_period)
 
         self.enroll1 = CourseSectionTeacher.objects.create(course_section=self.course_section, teacher=self.teacher1)
-        self.enroll2 = CourseSectionTeacher.objects.create(course_section=self.course_section3, teacher=self.teacher2)
+        self.enroll2 = CourseSectionTeacher.objects.create(course_section=self.course_section3, teacher=self.teacher2, is_primary=True)
         self.present = AttendanceStatus.objects.create(name="Present", code="P", teacher_selectable=True)
         self.absent = AttendanceStatus.objects.create(name="Absent", code="A", teacher_selectable=True, absent=True)
         self.excused = AttendanceStatus.objects.create(name="Absent Excused", code="AX", absent=True, excused=True)
@@ -214,6 +273,9 @@ class SisData(object):
             CourseEnrollment(user=self.student, course_section=self.course_section2),
             CourseEnrollment(user=self.student, course_section=self.course_section4),
             CourseEnrollment(user=self.student2, course_section=self.course_section),
+            CourseEnrollment(user=self.student, course_section=self.course_section3),
+            CourseEnrollment(user=self.student2, course_section=self.course_section3),
+            CourseEnrollment(user=self.student3, course_section=self.course_section3),
         ])
         self.course_enrollment = CourseEnrollment.objects.all().first()
 
