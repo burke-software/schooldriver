@@ -51,14 +51,14 @@ class AdmissionCheck(models.Model):
         return unicode(self.name)
 
 class EthnicityChoice(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     def __unicode__(self):
         return unicode(self.name)
     class Meta:
         ordering = ['name']
 
 class ReligionChoice(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     def __unicode__(self):
         return unicode(self.name)
     class Meta:
