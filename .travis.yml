@@ -22,4 +22,3 @@ before_script:
 - python manage.py runserver &
 script: 
 - python manage.py test
-- protractor static_files/app/tests/conf.js

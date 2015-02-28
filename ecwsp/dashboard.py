@@ -160,12 +160,12 @@ class CustomIndexDashboard(Dashboard):
             column=2,
             children=(
                 {
-                    'title': 'django-sis Wiki and Manual',
-                    'url': 'https://sword.readthedocs.org',
+                    'title': 'Schooldriver Manual',
+                    'url': 'http://docs.schooldriver.org',
                     'external': True,
                 },
                 {
-                    'title': 'Student Worker Relation Database Community',
+                    'title': 'Schooldriver Community',
                     'url': 'http://github.com/burke-software/django-sis',
                     'external': True,
                 },

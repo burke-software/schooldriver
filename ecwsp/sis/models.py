@@ -70,7 +70,7 @@ class UserPreference(models.Model):
         ('m', 'Microsoft Binary (.doc, .xls)'),
         ('x', 'Microsoft Office Open XML (.docx, .xlsx)'),
     )
-    prefered_file_format = models.CharField(default=get_prefered_format, max_length="1", choices=file_format_choices, help_text="Open Document recommened.")
+    prefered_file_format = models.CharField(verbose_name="Preferred file format", default=get_prefered_format, max_length="1", choices=file_format_choices, help_text="Open Document Format is recommended.")
     include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
     gradebook_preference = models.CharField(max_length=10, blank=True, choices=(
          ('O', 'Online Gradebook'), ('S','Spreadsheet'), ('E', 'Engrade'), ('M', 'Manual')))

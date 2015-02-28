@@ -1,28 +1,96 @@
 {% extends "base_next.html" %}
 {% load i18n %}
+{% load widget_tweaks %}
 
+{% block content %}
 
-{% block nav_page_specific %}
-<div id="mm-page-specific" role="navigation">
-    <div class="breadcrumb">
-        <ul>
-            <li><a href="/admin">Home</a></li>
-            <li>Preferences</li>
+{% if messages %}
+<div class="row">
+    <div class="col-xs-12">
+        <ul class="messages list-unstyled">
+            {% for message in messages %}
+            <li{% if message.tags %} class="alert alert-dismissable alert-{{ message.tags }}"{% endif %}>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ message }}
+            </li>
+            {% endfor %}
         </ul>
     </div>
 </div>
-{% endblock %}
+{% endif %}
 
-{% block content %}
-    <h2>User Preferences</h2>
-    
-    <form action="" method="post">
-        {{ form.as_p }}
-    </form>
-    
-    <h4>Change Password</h4>
-    <form action="" method="post">
-        {{ password_form.as_p }}
-        <button class="btn btn-primary" type="submit" name="password_change">Save New Password</button>
-    </form>
+<div class="row">
+    <div class="col-lg-4 col-md-5 col-sm-6 col-xs-12 col-lg-offset-2 col-md-offset-1">
+        <h2>User Preferences</h2>
+        
+        <form action="" method="post">
+            {% for field in form %}
+                {% if field|field_type == "booleanfield" %}
+                <div class="schooldriver-checkbox">
+                    <label for="{{ field.id_for_label }}">{{ field }} <i class="fa"></i> {{ field.label }} </label>
+                    {% if field.help_text or field.errors %}
+                        <p class="help-block">
+                            {% if field.errors %}
+                            <ul class="list-unstyled text-danger">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                            </ul>
+                            {% endif %}
+
+                            {{ field.help_text }}
+                        </p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field|add_class:"form-control" }}
+                    {% if field.help_text or field.errors %}
+                        <p class="help-block">
+                            {% if field.errors %}
+                            <ul class="list-unstyled text-danger">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                            </ul>
+                            {% endif %}
+
+                            {{ field.help_text }}
+                        </p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            <button class="btn btn-primary" type="submit" name="prefs_change">Save Preferences</button>
+        </form>
+    </div>
+    <div class="col-lg-4 col-md-5 col-sm-6 col-xs-12">
+        <h2>Change Password</h2>
+        <form action="" method="post">
+            {% for field in password_form %}
+                <div class="form-group{% if field.errors %} has-error{% endif %}">
+                    {{ field.label_tag }}
+                    {{ field|add_class:"form-control" }}
+                    {% if field.help_text or field.errors %}
+                        <p class="help-block">
+                            {% if field.errors %}
+                            <ul class="list-unstyled text-danger">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                            </ul>
+                            {% endif %}
+
+                            {{ field.help_text }}
+                        </p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button class="btn btn-primary" type="submit" name="password_change">Save New Password</button>
+        </form>
+    </div>
+</div>
 {% endblock %}
