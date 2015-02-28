@@ -160,6 +160,8 @@ class Grade(CommonGrade):
             'marking_period__weight',
             'enrollment__finalgrade__grade',
         )
+        if not grades:
+            return None
         np_grades = np.array(grades, dtype=np.dtype(float))
         np_grade_values = np_grades[:, 0]
         np_mp_weights = np_grades[:, 1]

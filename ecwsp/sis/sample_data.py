@@ -138,10 +138,10 @@ class SisData(object):
             random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
             course = Course.objects.create(fullname="Math 101 " + random_string, shortname="Alg " + random_string, credits=1, graded=True)
             section = CourseSection.objects.create(name=course.shortname, course_id=course.id)
-    
-    def create_30_student_grades(self):
+
+    def create_30_student_grades(self, number=30):
         course_section = CourseSection.objects.all().first()
-        for i in xrange(30):
+        for i in xrange(number):
             random_string = ''.join(
                 random.choice(
                     string.ascii_uppercase + string.digits
