@@ -10,27 +10,27 @@ Burke Software and Consulting offers support and hosting for $3000/year for a sc
 You should have at least basic django deployment and docker experience to run django-sis. We test only in Ubuntu 12.04 and PostgreSQL.
 Other environments might work but are not supported.
 
-Run the docker images as described in fig.yml. We suggest creating a fig-production.yml file with your own configrations.
+Run the docker images as described in docker-compose.yml. We suggest creating a docker-compose-production.yml file with your own condocker-composerations.
 
-**Configuration**
+**Condocker-composeuration**
 
 Modify settings_local.py or edit environment variables to add your own settings, such as your database.
 
 **Set up database**
 
-    fig run --rm web ./manage.py migrate
+    docker-compose run --rm web ./manage.py migrate
 
 **Run a test server**
 
-    fig up
+    docker-compose up
 
 ## Upgrades
 
 1. `git pull`
-2. `fig build`
-3. `fig run --rm web ./manage.py migrate`
-4. `fig run --rm web ./manage.py collectstatic`
-5. `fig restart`
+2. `docker-compose build`
+3. `docker-compose run --rm web ./manage.py migrate`
+4. `docker-compose run --rm web ./manage.py collectstatic`
+5. `docker-compose restart`
 
 We don't currently release stable versions of django-sis. You can assume everything in git is as "stable" as possible. If you require more stability consider paying for support.
 
@@ -90,21 +90,21 @@ SWoRD allows users to save basic company information for each work site associat
 
 # Development Environment
 
-You can easily get Django-sis running in an isolated development environment using [Fig and Docker](http://fig.sh). We have tested this to work on both OSX and Ubuntu. 
+You can easily get Django-sis running in an isolated development environment using [Fig and Docker](http://docker-compose.sh). We have tested this to work on both OSX and Ubuntu. 
 
 ## Fig And Docker
 
-See fig [installation docs](http://www.fig.sh/install.html)
+See docker-compose [installation docs](http://www.docker-compose.sh/install.html)
 
 **Database**
 
 *The following commands need to run from Linux or from the boot2docker virtual machine shell.
 
-`fig run --rm web python manage.py migrate`
+`docker-compose run --rm web python manage.py migrate`
 
 **Run**
 
-`fig up`
+`docker-compose up`
 
 Enjoy your django-sis instance on `localhost:8000`*
 
@@ -112,13 +112,13 @@ Enjoy your django-sis instance on `localhost:8000`*
 
 To log in set up sample data or run 
 
-`fig run --rm web python manage.py createsuperuser`
+`docker-compose run --rm web python manage.py createsuperuser`
 
 ## Sample Data
 
 We have some sample data that might be useful when testing out the development environment. To load the data, try this:
 
-`fig run --rm web python manage.py populate_sample_data`
+`docker-compose run --rm web python manage.py populate_sample_data`
 
 This will create a superuser with username/password of aa/aa
 
