@@ -177,7 +177,6 @@ class SisData(object):
         self.create_courses()
         self.create_years_and_marking_periods()
         self.assign_marking_periods_to_course_sections()
-        self.create_grade_scale_rules()
         self.create_sample_students()
 
     def create_course_types(self):
@@ -214,6 +213,15 @@ class SisData(object):
 
     def assign_marking_periods_to_course_sections(self):
         courses = Course.objects.all()
+        self.student = Student.objects.create(
+            first_name="Joe", last_name="Student", username="jstudent")
+        student = self.student
+        mp1 = self.mp1
+        mp2 = self.mp2
+        mps1x = self.mps1x
+        mp3 = self.mp3
+        mp4 = self.mp4
+        mps2x = self.mps2x
         i = 0
         for course in courses:
             i += 1
@@ -327,7 +335,9 @@ class SisData(object):
         self.populate_student_grades(self.student, known_grades)
 
         # There is an override grade for this student, so let's register that here
-        Grade.objects.create(student=self.student, course_section=self.course_section3, override_final=True, grade=70)
+        final = FinalGrade(grade=70)
+        final.set_enrollment(self.student, self.course_section3)
+        final.save()
 
     def create_sample_honors_student(self):
         # here we have an honors student
@@ -393,7 +403,7 @@ class SisData(object):
             section = CourseSection.objects.get(name=grd['section'])
             for i in range(6):
                 enrollment = CourseEnrollment.objects.get(
-                    user=self.honors_student,
+                    user=student,
                     course_section=section)
                 grade = Grade.objects.get_or_create(
                     enrollment=enrollment,

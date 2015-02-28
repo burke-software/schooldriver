@@ -15,8 +15,9 @@ class GradeBaltTests(SisTestMixin, TestCase):
     def populate_database(self):
         """ Override, not using traditional test data """
         self.data = SisData()
-        self.data.create_grade_scale_data()
-        self.data.create_sample_honors_and_ap_data()
+        self.data.create_balt_like_sample_data()
+        #self.data.create_grade_scale_data()
+        #self.data.create_sample_honors_and_ap_data()
 
     def test_grade_get_grade(self):
         grade = self.data.grade
@@ -65,9 +66,10 @@ class GradeBaltTests(SisTestMixin, TestCase):
         ]
         for x in test_data:
             grade = Grade.objects.get(
-                student = self.data.student,
+                enrollment__user=self.data.student,
                 marking_period=x[0],
-                course_section=getattr(self.data, 'course_section' + str(x[1]))
+                enrollment__course_section=getattr(
+                    self.data, 'course_section' + str(x[1]))
                 )
             self.assertEqual(grade.get_grade(letter=True), x[2])
 
@@ -76,21 +78,22 @@ class GradeBaltTests(SisTestMixin, TestCase):
         Balt uses s1x, s2x as tests that affect final grades
         """
         grade = Grade.objects.get(
-            student = self.data.student,
-            marking_period = self.data.mps1x,
-            course_section = self.data.course_section1
+            enrollment__user=self.data.student,
+            marking_period=self.data.mps1x,
+            enrollment__course_section=self.data.course_section1
             )
         self.assertEqual(grade.get_grade(), 90)
         grade = Grade.objects.get(
-            student = self.data.student,
-            marking_period = self.data.mps2x,
-            course_section = self.data.course_section1)
+            enrollment__user=self.data.student,
+            marking_period=self.data.mps2x,
+            enrollment__course_section=self.data.course_section1)
         self.assertEqual(grade.get_grade(), 79)
 
     def test_partial_course_average_grade(self):
-        """ Tests getting the average of some but not all marking period averages """
-        s1_ids = [self.data.mp1.id ,self.data.mp2.id ,self.data.mps1x.id]
-        s2_ids = [self.data.mp3.id ,self.data.mp4.id ,self.data.mps2x.id]
+        """ Tests getting the average of some but not all marking period
+        averages """
+        s1_ids = [self.data.mp1.id, self.data.mp2.id, self.data.mps1x.id]
+        s2_ids = [self.data.mp3.id, self.data.mp4.id, self.data.mps2x.id]
         test_data = [
             [1, s1_ids, 78.08, 'C+'],
             [1, s2_ids, 71.96, 'D'],
@@ -110,9 +113,14 @@ class GradeBaltTests(SisTestMixin, TestCase):
             [8, s2_ids, 100, 'A'],
         ]
         for x in test_data:
-            ce = CourseEnrollment.objects.get(user=self.data.student, course_section=getattr(self.data, 'course_section' + str(x[0])))
-            self.assertAlmostEqual(ce.get_average_for_marking_periods(x[1]), Decimal(x[2]))
-            self.assertEqual(ce.get_average_for_marking_periods(x[1], letter=True), x[3])
+            ce = CourseEnrollment.objects.get(
+                user=self.data.student,
+                course_section=getattr(
+                    self.data, 'course_section' + str(x[0])))
+            self.assertAlmostEqual(
+                ce.get_average_for_marking_periods(x[1]), Decimal(x[2]))
+            self.assertEqual(
+                ce.get_average_for_marking_periods(x[1], letter=True), x[3])
 
     def test_average_partial_round_before_letter(self):
         """ Example:

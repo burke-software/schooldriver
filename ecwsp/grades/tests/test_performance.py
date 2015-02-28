@@ -13,10 +13,10 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         self.data.create_30_student_grades()
 
     def test_final_grade_speed(self):
+        """ Ensure we can calculate a lot of course grades quickly """
         course_section = CourseSection.objects.all().first()
         start = time.time()
         for enrollment in course_section.courseenrollment_set.all():
             Grade.get_course_grade(enrollment)
         run_time = time.time() - start
-        print(run_time)
         self.assertLess(run_time, 0.3)
