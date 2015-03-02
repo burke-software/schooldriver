@@ -34,7 +34,7 @@ def update_contact_to_sugarcrm(contact):
 def email_cra_nightly():
     """ Email CRA nightly time sheet and student interaction information
     """
-    from_email = Configuration.objects.get_or_create(name="From Email Address")[0].value
+    from_email = config.FROM_EMAIL_ADDRESS
     cras = CraContact.objects.filter(email=True)
     for cra in cras:
         msg = "Student(s): "
@@ -140,10 +140,7 @@ def email_cra_nightly():
     subject = "Timesheet not submitted"
     for student in students:
         msg = u"Hello {0},\n".format(student.first_name)
-        conf_msg = Configuration.get_or_default(
-            "work_study message to student missing time sheet",
-            default="You did not submit a time card today. Please remember to do so. This is an automated message, please do not reply.")
-        msg += conf_msg.value
+        conf_msg = config.WORK_STUDY_MESSAGE_TO_STUDENT_MISSING_TIME_SHEET
         email = student.get_email
         if email and email[-9:] != "change.me":
             try:

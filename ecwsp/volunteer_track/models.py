@@ -8,6 +8,7 @@ from datetime import datetime
 import random
 import sys
 import logging
+from constance import config
 
 from ecwsp.sis.helper_functions import get_base_url
 from ecwsp.administration.models import Configuration
@@ -77,7 +78,7 @@ class VolunteerSite(models.Model):
             if old_volunteer.site_approval == "Submitted" and self.site_approval == "Accepted":
                 try:
                     from django.core.mail import send_mail
-                    from_email = Configuration.get_or_default("From Email Address",default="donotreply@change.me").value
+                    from_email = config.FROM_EMAIL_ADDRESS
                     msg = "Hello %s,\nYour site %s has been approved!" % (self.volunteer, self.site)
                     subject = "Site approval"
                     send_to = self.volunteer.student.get_email
@@ -103,7 +104,7 @@ class VolunteerSite(models.Model):
             subject = "Volunteer hours approval for " + unicode(self.student)
             msg = "Hello " + unicode(self.site_supervisor.name) + ",\nPlease click on the link below to approve the time sheet\n" + \
                 get_base_url() + "/volunteer_tracker/approve?key=" + str(self.secret_key)
-            from_addr = Configuration.get_or_default("From Email Address", "donotreply@example.org").value
+            from_addr = Configuration.get_or_default("dd", "donotreply@example.org").value
             send_mail(subject, msg, from_addr, [sendTo])
         except:
             logging.warning("Unable to send email to volunteer's supervisor! %s" % (self,), exc_info=True)
@@ -112,7 +113,7 @@ class VolunteerSite(models.Model):
         return self.hours_set.all().aggregate(Sum('hours'))['hours__sum']
 
 def get_hours_default():
-    return Configuration.get_or_default('Volunteer Track Required Hours', default=20).value
+    return config.VOLUNTEER_TRACK_REQUIRED_HOURS
 class Volunteer(models.Model):
     student = models.OneToOneField('sis.Student')
     sites = models.ManyToManyField(Site,blank=True,null=True,through='VolunteerSite')

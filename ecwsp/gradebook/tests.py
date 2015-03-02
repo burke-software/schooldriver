@@ -3,6 +3,11 @@ from ecwsp.sis.tests import SisTestMixin
 from ecwsp.sis.models import SchoolYear
 from ecwsp.schedule.models import (
     Department)
+from django.core.urlresolvers import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient 
+from ecwsp.gradebook.models import Assignment
+from ecwsp.schedule.models import Course, CourseSection
 from .models import *
 from .exceptions import WeightContainsNone
 #from .sample_data import BenchmarkSisData
@@ -10,8 +15,39 @@ from ecwsp.sis.sample_data import SisData
 from decimal import Decimal
 from decimal import InvalidOperation
 import unittest
+import json
 
+class AssignmentViewsetTests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.course = Course.objects.create(id=1, fullname="first course", shortname="first")
+        self.section = CourseSection.objects.create(course=self.course, name="section one")
+        self.assignment = Assignment.objects.create(name="first assignment", course_section=self.section)
+        self.data = {'name': 'first assignment', 'course_section': self.section.pk}
+		
+    def test_get_assignment_list(self):
+        response = self.client.get(reverse('assignment-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+		
+    def test_get_assignment_detail(self):
+        response = self.client.get(reverse('assignment-detail', args=(self.assignment.pk,)))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_create_assignment(self):
+        response = self.client.post(reverse('assignment-list'), self.data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+		
+    def test_put_assignment(self):
+        request = self.client.post(reverse('assignment-list'), self.data, format='json')
+        #data to update initially posted data
+        data_two = {'name': 'second name', 'course_section': self.section.pk}
+        response = self.client.put(reverse('assignment-detail', args=(self.assignment.pk,)), data_two)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+		
+    def test_delete_assignment(self):
+        response = self.client.delete(reverse('assignment-detail', args=(self.assignment.pk,)))
+        self.assertEqual(response.status_code, 204)
+	
 @unittest.skip("Gradebook is an unreleased backend right now, we can unskip when it's ready")
 class GradeCalculationTests(SisTestMixin, TestCase):
     def setUp(self):

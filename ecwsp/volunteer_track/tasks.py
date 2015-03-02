@@ -16,8 +16,8 @@ def handle():
     """
     volunteers = Volunteer.objects.filter(email_queue__isnull=False).exclude(email_queue="")
     if volunteers:
-        from_email = Configuration.objects.get_or_create(name="From Email Address")[0].value
-        to_emails = Configuration.get_or_default("Volunteer Track Manager Emails", default="").value
+        from_email = config.FROM_EMAIL_ADDRESS
+        to_emails = config.VOLUNTEER_TRACK_MANAGER_EMAILS
         msg = "Student(s): \n"
         subject = "SWORD daily volunteer changes"
 
