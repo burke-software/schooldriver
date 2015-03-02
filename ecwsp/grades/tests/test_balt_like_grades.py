@@ -117,10 +117,10 @@ class GradeBaltTests(SisTestMixin, TestCase):
                 user=self.data.student,
                 course_section=getattr(
                     self.data, 'course_section' + str(x[0])))
-            self.assertAlmostEqual(
-                ce.get_average_for_marking_periods(x[1]), Decimal(x[2]))
-            self.assertEqual(
-                ce.get_average_for_marking_periods(x[1], letter=True), x[3])
+            grade = ce.get_average_for_marking_periods(x[1])
+            self.assertAlmostEqual(grade, x[2])
+            grade = ce.get_average_for_marking_periods(x[1], letter=True)
+            self.assertEqual(grade, x[3])
 
     def test_average_partial_round_before_letter(self):
         """ Example:
@@ -129,7 +129,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """
         score1 = 75.49
         score2 = 77.50
-        s1_ids = [self.data.mp1.id ,self.data.mp2.id]
+        s1_ids = [self.data.mp1.id, self.data.mp2.id]
         student = self.data.student
         course = Course.objects.create(
             fullname="Some", shortname="some", credits=1, graded=True)
@@ -139,22 +139,21 @@ class GradeBaltTests(SisTestMixin, TestCase):
             user=student,
             course_section=section)
         grade1 = Grade.objects.get_or_create(
-            student=student,
-            course_section=section,
+            enrollment=ce,
             marking_period=self.data.mp1)[0]
         grade2 = Grade.objects.get_or_create(
-            student=student,
-            course_section=section,
+            enrollment=ce,
             marking_period=self.data.mp2)[0]
         grade1.set_grade(score1)
         grade1.save()
         grade2.set_grade(score2)
         grade2.save()
-        self.assertEqual(ce.get_average_for_marking_periods(s1_ids, letter=True), 'C+')
-
+        self.assertEqual(
+            ce.get_average_for_marking_periods(s1_ids, letter=True), 'C+')
 
     def test_scaled_average(self):
-        """ Tests an asinine method for averages by converting to non linear scale first """
+        """ Tests a method for averages by converting to non linear
+        scale first """
         test_data = [
             [self.data.mp1, Decimal(2.0)],
             [self.data.mp2, Decimal(2.4)],
@@ -162,7 +161,8 @@ class GradeBaltTests(SisTestMixin, TestCase):
             [self.data.mp4, Decimal(2.8)],
         ]
         for x in test_data:
-            smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
+            smpg = StudentMarkingPeriodGrade.objects.get(
+                student=self.data.student, marking_period=x[0])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x[1])
 
     def test_average(self):

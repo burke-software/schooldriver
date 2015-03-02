@@ -696,7 +696,26 @@ class GradeScaleRule(models.Model):
         unique_together = ('min_grade', 'max_grade', 'grade_scale')
 
     def __unicode__(self):
-        return '{}-{} {} {}'.format(self.min_grade, self.max_grade, self.letter_grade, self.numeric_scale)
+        return '{}-{} {} {}'.format(
+            self.min_grade,
+            self.max_grade,
+            self.letter_grade,
+            self.numeric_scale)
+
+    @staticmethod
+    def grade_to_scale(grade, marking_period=None, year=None, letter=False):
+        if marking_period is not None:
+            rule = GradeScaleRule.objects.filter(
+                grade_scale__schoolyear__markingperiod=marking_period)
+        elif year is not None:
+            rule = GradeScaleRule.objects.filter(grade_scale__schoolyear=year)
+        else:
+            raise Exception(
+                "grade_to_scale must have either marking_period or year")
+        rule = rule.filter(min_grade__lte=grade, max_grade__gte=grade).first()
+        if letter is True:
+            return rule.letter_grade
+        return rule.numeric_scale
 
 
 def get_default_benchmark_grade():

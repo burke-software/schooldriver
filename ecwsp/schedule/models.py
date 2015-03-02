@@ -147,77 +147,35 @@ class Location(models.Model):
 class CourseEnrollment(models.Model):
     course_section = models.ForeignKey('CourseSection')
     user = models.ForeignKey('sis.Student')
-    attendance_note = models.CharField(max_length=255, blank=True, help_text="This note will appear when taking attendance.")
-    exclude_days = models.CharField(max_length=100, blank=True,
-        help_text="Student does not need to attend on this day. Note course sections already specify meeting days; this field is for students who have a special reason to be away.")
-    grade = CachedCharField(max_length=8, blank=True, verbose_name="Final Course Section Grade", editable=False)
-    numeric_grade = CachedDecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    attendance_note = models.CharField(
+        max_length=255, blank=True,
+        help_text="This note will appear when taking attendance.")
+    exclude_days = models.CharField(
+        max_length=100, blank=True,
+        help_text="Student does not need to attend on this day. Note course "
+        "sections already specify meeting days; this field is for students who "
+        "have a special reason to be away.")
     is_active = models.BooleanField(default=True)
-
 
     class Meta:
         unique_together = (("course_section", "user"),)
 
-    def cache_grades(self):
-        """ Set cache on both grade and numeric_grade """
-        grade = self.calculate_grade_real()
-        if isinstance(grade, Decimal):
-            grade = grade.quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-            self.numeric_grade = grade
-        else:
-            self.numeric_grade = None
-        if grade == None:
-            grade = ''
-        self.grade = grade
-        self.grade_recalculation_needed = False
-        self.numeric_grade_recalculation_needed = False
-        self.save(populate_all_grades=False)  # Causes recursion otherwise.
-        return grade
-
-    def get_average_for_marking_periods(self, marking_periods, letter=False, numeric=False):
-        """ Get the average for only some marking periods
-        marking_periods - Queryset or optionally pass ids only as an optimization
+    def get_average_for_marking_periods(self,
+                                        marking_periods,
+                                        letter=False,
+                                        numeric=False):
+        """ Get the average for only some marking periods marking_periods
         letter - Letter grade scale
         numeric - non linear numeric scale
         """
-        if isinstance(marking_periods, QuerySet):
-            marking_periods = tuple(marking_periods.values_list('id', flat=True))
-        else:
-            # Check marking_periods because we can't use sql parameters because sqlite and django suck
-            if all(isinstance(item, int) for item in marking_periods) != True:
-                raise ValueError('marking_periods must be list or tuple of ints')
-            marking_periods = tuple(marking_periods)
-
-        cursor = connection.cursor()
-        sql_string = '''
-SELECT Sum(grade * weight) {over} / Sum(weight) {over} AS ave_grade FROM grades_grade
-LEFT JOIN schedule_markingperiod
-    ON schedule_markingperiod.id = grades_grade.marking_period_id
-WHERE grades_grade.course_section_id = %s
-    AND grades_grade.student_id = %s
-    AND schedule_markingperiod.id in {marking_periods}
-    AND ( grade IS NOT NULL OR letter_grade IS NOT NULL )'''
-        if settings.DATABASES['default']['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'tenant_schemas.postgresql_backend']:
-            sql_string = sql_string.format(over='over ()', marking_periods=marking_periods)
-        else:
-            sql_string = sql_string.format(over='', marking_periods=marking_periods)
-
-        cursor.execute(sql_string, (self.course_section_id, self.user_id))
-        result = cursor.fetchone()
-        if result:
-            grade = result[0]
-        else:
-            return None
-        if grade is not None:
-            if letter:
-                grade = self.optimized_grade_to_scale(grade, letter=True)
-            elif numeric:
-                grade = self.optimized_grade_to_scale(grade, letter=False)
-        return grade
+        return Grade.get_course_grade(
+            self,
+            marking_periods=marking_periods,
+            letter=letter,
+        )
 
     def optimized_grade_to_scale(self, grade, letter=True):
-        """ letter - True for letter grade, false for numeric (ex: 4.0 scale) """
-
+        """ letter - True for letter grade, false for numeric (ex: 4.0 scale)"""
         # not sure how this was working before, but I'm just commenting it out
         # if something else relies on the old method I have just broke it!
         # -Q
