@@ -7,6 +7,7 @@ from django.core.management import call_command
 
 from ecwsp.work_study.models import *
 from ecwsp.administration.models import *
+from constance import config
 
 
 class TimeSheetTest(TestCase):
@@ -190,3 +191,28 @@ class ContractTest(TestCase):
             u'initial-date': [u'2011-12-04 23:12:30.124712'], u'company': self.company.id, \
             u'company_name': [u'My Company'], u'date': [u'12/04/2011'], u'name': [u'David']}, follow=True)
         self.assertEquals(CompContract.objects.get(company=self.company).company_name, 'My Company')
+    
+    def test_company_contract_complete(self):
+        pass
+        
+        
+class StudentWorkerTest(TestCase):
+    """
+    Test student worker information
+    """
+    def setUp(self):
+        """test that school_pay_rate and student_pay_rate are set to default when not specified"""
+        self.primary_contact = Contact.objects.create(fname="John", lname="Smith", email="john@smith.com")    
+        self.student = StudentWorker.objects.create(day='M', primary_contact=self.primary_contact)
+        self.school_pay_rate = Decimal(config.SCHOOL_PAY_RATE_PER_HOUR)
+        self.student_pay_rate = Decimal(config.STUDENT_PAY_RATE_PER_HOUR)
+    
+    def test_school_pay_rate_set(self):
+        self.student.save()
+        self.assertEqual(self.student.school_pay_rate, self.school_pay_rate)
+         
+    def test_student_pay_rate_set(self):
+        self.student.save()
+        self.assertEqual(self.student.student_pay_rate, self.student_pay_rate)
+	    
+	

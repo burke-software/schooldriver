@@ -79,7 +79,7 @@ def gradebook(request, course_section_id, for_export=False):
         messages.add_message(request, messages.ERROR, e)
         return HttpResponseRedirect(reverse('admin:index'))
     teacher_course_sections = get_teacher_course_sections(request.user.username)
-    extra_info = Configuration.get_or_default('Gradebook extra information').value.lower().strip()
+    extra_info = config.GRADEBOOK_EXTRA_INFORMATION.lower().strip()
     quantizer = Decimal(10) ** (-1 * calculation_rule.decimal_places)
     if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() and \
     (teacher_course_sections is None or course_section not in teacher_course_sections):
@@ -441,8 +441,8 @@ def ajax_get_item_form(request, course_section_id, item_id=None):
                     if not students_missing: students_missing = ('None',)
                     lists = ({'heading':'Students Missing This Item', 'items':students_missing},)
             except Category.DoesNotExist:
-                pass_letters = Configuration.get_or_default("Letter Passing Grade").value.split(',')
-                pass_number = float(Configuration.get_or_default("Passing Grade").value) / 100 # yay, assumptions
+                pass_letters = config.LETTER_PASSING_GRADE.split(',')
+                pass_number = float(config.PASSING_GRADE) / 100 # yay, assumptions
                 students_missing = Student.objects.filter(mark__item=item).annotate(best_mark=Max('mark__normalized_mark')).filter(best_mark__lt=pass_number)
                 text_missing = []
                 for student in students_missing:
@@ -629,8 +629,8 @@ def ajax_get_student_info(request, course_section_id, student_id):
         if not standards_missing: standards_missing = ('None',)
         lists = ({'heading':'Standards Missing for {}'.format(student), 'items':standards_missing},)
     except Category.DoesNotExist:
-        pass_letters = Configuration.get_or_default("Letter Passing Grade").value.split(',')
-        pass_number = float(Configuration.get_or_default("Passing Grade").value) / 100 # yay, assumptions
+        pass_letters = config.LETTER_PASSING_GRADE.split(',')
+        pass_number = float(config.PASSING_GRADE) / 100 # yay, assumptions
         items_missing = Item.objects.filter(course_section=course_section, mark__student=student).annotate(best_mark=Max('mark__normalized_mark')).filter(
             best_mark__lt=pass_number)
         text_missing = []
@@ -958,5 +958,5 @@ def comments(request, course_section_id):
     return render_to_response('benchmark_grade/comments.html', {
         'course_section' : course_section,
         'marking_periods': marking_periods,
-        'max_length': Configuration.get_or_default('Grade comment length limit').value,
+        'max_length': config.GRADE_COMMENT_LENGTH_LIMIT,
     }, RequestContext(request, {}),)
