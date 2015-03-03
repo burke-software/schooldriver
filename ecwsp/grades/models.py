@@ -148,10 +148,29 @@ class Grade(CommonGrade):
             grade_obj.save()
             return grade_obj
 
-    @staticmethod
-    def get_course_grade(enrollment,
+
+class GradeCalculator(object):
+    def __init__(self, rounding=None):
+        if rounding is None:
+            self.rounding = config.GRADE_ROUNDING_DECIMAL
+        else:
+            self.rounding = None
+
+    def _calculate_course_grade(
+        self, marking_periods, np_grade_values, np_final_grades, np_mp_weights,
+    ):
+        np_grade_values_mask = ~np.isnan(np_grade_values)
+        # If marking periods are selected - don't return final override
+        if not marking_periods and array_contains_anything(np_final_grades):
+            average = np_final_grades[0]
+        else:
+            average = np.average(
+                np_grade_values[np_grade_values_mask],
+                weights=np_mp_weights[np_grade_values_mask])
+        return average
+
+    def get_course_grade(self, enrollment,
                          date=None,
-                         rounding=None,
                          marking_periods=None,
                          letter=False,
                          letter_and_number=False):
@@ -160,13 +179,10 @@ class Grade(CommonGrade):
         Args:
             enrollment: CourseEnrollment object
             date: Date of report - used to exclude grades that haven't happened
-            rounding: Explicit rounding - defaults to global config
             marking_periods: Filter grades by these
             letter: Return letter grade from scale
             letter_and_number: Return string like 87.65 (B+)
         """
-        if rounding is None:
-            rounding = config.GRADE_ROUNDING_DECIMAL
         grades = enrollment.grade_set.all()
         if date is not None:
             grades = grades.filter(marking_period__end_date__lte=date)
@@ -182,20 +198,18 @@ class Grade(CommonGrade):
             return None
         np_grades = np.array(grades, dtype=np.dtype(float))
         np_grade_values = np_grades[:, 0]
-        np_grade_values_mask = ~np.isnan(np_grade_values)
         np_mp = np_grades[:, 1]
         np_mp_weights = np_grades[:, 2]
         np_final_grades = np_grades[:, 3]
-        # If marking periods are selected - don't return final override
-        if not marking_periods and array_contains_anything(np_final_grades):
-            average = np_final_grades[0]
-        else:
-            average = np.average(
-                np_grade_values[np_grade_values_mask],
-                weights=np_mp_weights[np_grade_values_mask])
+        average = self._calculate_course_grade(
+            marking_periods,
+            np_grade_values,
+            np_final_grades,
+            np_mp_weights,
+        )
         result = grade = np.round(
             average + 0.00000000000001,  # Work around floating point rounding
-            decimals=rounding)
+            decimals=self.rounding)
         if letter is True:
             result = letter_grade = GradeScaleRule.grade_to_scale(
                 grade, np_mp[0], letter=True)
@@ -203,10 +217,27 @@ class Grade(CommonGrade):
                 result = '{} ({})'.format(grade, letter_grade)
         return result
 
-    @staticmethod
-    def get_marking_period_average(student, marking_period):
-        student.grade
+    def get_student_gpa(self, student, date=None):
+        grades = Grade.objects.filter(enrollment__user=student)
+        if date is not None:
+            grades = grades.filter(marking_period__end_date__lte=date)
+        grades = grades.values_list(
+            'grade',
+            'marking_period',
+            'marking_period__weight',
+            'enrollment__finalgrade__grade',
+        )
+        if not grades:
+            return None
+        np_grades = np.array(grades, dtype=np.dtype(float))
+        np_grade_values = np_grades[:, 0]
+        np_grade_values_mask = ~np.isnan(np_grade_values)
+        np_mp = np_grades[:, 1]
+        np_mp_weights = np_grades[:, 2]
+        np_final_grades = np_grades[:, 3]
 
+    def get_marking_period_average(self, student, marking_period):
+        student.grade
 
 
 class FinalGrade(CommonGrade):

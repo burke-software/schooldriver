@@ -1,9 +1,8 @@
-from ecwsp.grades.models import Grade
 from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
 from ecwsp.sis.sample_data import SisData
 from ecwsp.schedule.models import CourseEnrollment
-from ..models import FinalGrade
+from ..models import FinalGrade, Grade, GradeCalculator
 import datetime
 
 
@@ -35,7 +34,7 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         grade_obj.save()
 
     def check_grade(self, enrollment, expect, date=None):
-        average = Grade.get_course_grade(enrollment, date=date)
+        average = GradeCalculator().get_course_grade(enrollment, date=date)
         self.assertEquals(average, expect)
 
     def set_and_check_grade(self, enrollment, mp, grade, expect,
