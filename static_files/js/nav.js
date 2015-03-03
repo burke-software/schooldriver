@@ -123,6 +123,7 @@ function controlShadows() {
 }
 
 $(document).ready(function() {
+if ($('#flex-nav').length > 0) {	
 	menuItemPos = $('.mm-menu-items').position();
 	thirdItemPos = $('.mm-menu-items > li:nth-child(3)').position();
 	thirdItemWidth = $('.mm-menu-items > li:nth-child(3)').width();
@@ -227,4 +228,5 @@ $(document).ready(function() {
 		maximizeMenuBar();
 	    if (requiresSetHeight > 0) { changeContentHeight(); }
 	});
+}
 });
