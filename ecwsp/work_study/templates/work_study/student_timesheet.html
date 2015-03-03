@@ -173,10 +173,12 @@ You are logged in as
 		<td>{{ form.time_out|add_class:"timecard-datefield" }} {{ form.time_out.errors }}</td>
 		<td><a href="#" onclick="no_lunch()" class="button gray">No Lunch</a></td>
                             <script>
+                            $(document).ready(function(){
                                 $('#id_time_in').ptTimeSelect();
                                 $('#id_time_lunch').ptTimeSelect();
                                 $('#id_time_lunch_return').ptTimeSelect();
                                 $('#id_time_out').ptTimeSelect();
+                            });
                             </script>
 	</tr>
 </tbody>
