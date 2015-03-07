@@ -15,6 +15,8 @@ from models import *
 from forms import *
 import datetime
 
+from constance import config
+
 class BaseDisciplineFormSet(BaseModelFormSet):
     def add_fields(self, form, index):
         super(BaseDisciplineFormSet, self).add_fields(form, index)
@@ -98,9 +100,9 @@ def generate_from_attendance(request):
     Generate a list of students who meet various attendance requirements and thus
     should be given a discipline
     """
-    tardies_before_disc = Configuration.get_or_default("attendance_disc_tardies_before_disc", "1").value
-    conf_infraction = Configuration.get_or_default("attendance_disc_infraction", "").value
-    conf_action = Configuration.get_or_default("attendance_disc_action", "").value
+    tardies_before_disc = config.ATTENDANCE_DISC_TARDIES_BEFORE_DISC
+    conf_infraction = config.ATTENDANCE_DISC_INFRACTION
+    conf_action = config.ATTENDANCE_DISC_ACTION
     
     if request.POST:
         students = Student.objects.filter(id__in=request.POST.keys())

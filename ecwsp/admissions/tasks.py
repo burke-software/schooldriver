@@ -9,6 +9,8 @@ from django.conf import settings
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
+from constance import config
+
 from ecwsp.sis.helper_functions import get_base_url
 from django_sis.celery import app
 
@@ -19,8 +21,8 @@ import sys
 def email_admissions_new_inquiries():
     """ Email Admissions team about new online inquiries
     """
-    from_email = Configuration.get_or_default("From Email Address").value
-    to_email = Configuration.get_or_default('admissions_notify_email').value
+    from_email = config.FROM_EMAIL_ADDRESS
+    to_email = config.ADMISSIONS_NOTIFY_EMAIL
     if not len(to_email):
         # don't complain if no one wants this report, just quit
         return

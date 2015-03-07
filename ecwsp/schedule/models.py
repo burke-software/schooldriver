@@ -376,7 +376,7 @@ def get_course_type_default():
         return CourseType.build_default().pk
 
 def get_credits_default():
-    return Configuration.get_or_default(name='Default course credits').value
+    return config.DEFAULT_COURSE_CREDITS
 
 class Course(models.Model):
     is_active = models.BooleanField(default=True)

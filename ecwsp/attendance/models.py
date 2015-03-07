@@ -100,7 +100,7 @@ def post_save_attendance_handler(sender, instance, **kwargs):
         try:
             # Create work study attendance if student's workday is today
             if ('ecwsp.work_study' in settings.INSTALLED_APPS and
-                Configuration.get_or_default("attendance_create_work_attendance", "False").value == "True" and
+                config.ATTENDANCE_CREATE_WORK_ATTENDANCE == "True" and
                 instance.date == datetime.date.today() and
                 instance.status.absent and
                 hasattr(instance.student, 'studentworker') and

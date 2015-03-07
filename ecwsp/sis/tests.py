@@ -100,3 +100,22 @@ class AttendanceTest(SisTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
         #should test if attendance can be submitted
+
+class ConstanceConfigTests(TestCase):
+    def test_get_city(self):
+        default_city = get_city()
+        self.city = config.DEFAULT_CITY
+        self.assertEqual(default_city, self.city)
+    
+    def test_default_benchmark_grading_config(self):
+        """default for constance config BENCHMARK_BASED_GRADING should return False"""
+        is_default = config.BENCHMARK_BASED_GRADING
+        self.assertEqual(is_default, 'False')
+    
+        def test_benchmark_grade_method(self):
+            """testing method where config is used"""
+            is_default = get_default_benchmark_grade()
+            self.assertEqual(is_default, False)
+    
+    
+    
