@@ -156,9 +156,17 @@ class GradeCalculator(object):
         else:
             self.rounding = None
 
+    def _round(self, value):
+        return np.round(
+            value + 0.00000000000001,  # Work around floating point rounding
+            decimals=self.rounding
+        )
+
     def _calculate_course_grade(
         self, marking_periods, np_grade_values, np_final_grades, np_mp_weights,
     ):
+        if np_grade_values.size == 0:
+            return None
         np_grade_values_mask = ~np.isnan(np_grade_values)
         # If marking periods are selected - don't return final override
         if not marking_periods and array_contains_anything(np_final_grades):
@@ -196,6 +204,7 @@ class GradeCalculator(object):
         )
         if not grades:
             return None
+        # Maybe move dtype to values?
         np_grades = np.array(grades, dtype=np.dtype(float))
         np_grade_values = np_grades[:, 0]
         np_mp = np_grades[:, 1]
@@ -207,9 +216,7 @@ class GradeCalculator(object):
             np_final_grades,
             np_mp_weights,
         )
-        result = grade = np.round(
-            average + 0.00000000000001,  # Work around floating point rounding
-            decimals=self.rounding)
+        result = grade = self._round(average)
         if letter is True:
             result = letter_grade = GradeScaleRule.grade_to_scale(
                 grade, np_mp[0], letter=True)
@@ -225,16 +232,28 @@ class GradeCalculator(object):
             'grade',
             'marking_period',
             'marking_period__weight',
+            'enrollment__course_section',
             'enrollment__finalgrade__grade',
         )
         if not grades:
             return None
         np_grades = np.array(grades, dtype=np.dtype(float))
-        np_grade_values = np_grades[:, 0]
-        np_grade_values_mask = ~np.isnan(np_grade_values)
-        np_mp = np_grades[:, 1]
-        np_mp_weights = np_grades[:, 2]
-        np_final_grades = np_grades[:, 3]
+        np_course_section = np_grades[:, 3]
+        course_averages = []
+        for course in np.unique(np_course_section):
+            np_course_grades = np_grades[np.where(np_course_section == course)]
+            np_grade_values = np_course_grades[:, 0]
+            np_mp_weights = np_course_grades[:, 2]
+            np_final_grades = np_course_grades[:, 4]
+            course_averages += [self._calculate_course_grade(
+                None,
+                np_grade_values,
+                np_final_grades,
+                np_mp_weights,
+            )]
+        print course_averages
+        average = np.average(course_averages)
+        return self._round(average)
 
     def get_marking_period_average(self, student, marking_period):
         student.grade

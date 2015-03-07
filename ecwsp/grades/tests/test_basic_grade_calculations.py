@@ -23,6 +23,26 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             [student, course, mp3, 90.5, 80.17],
         ]
 
+    def create_test_data_student(self):
+        student = self.data.student
+        mp1 = self.data.marking_period
+        mp2 = self.data.marking_period2
+        mp3 = self.data.marking_period3
+        course = self.data.course_section1
+        course2 = self.data.course_section2
+        data = [
+            [student, course, mp1, 100],
+            [student, course, mp2, 51],
+            [student, course, mp3, 96.5],
+            [student, course2, mp1, 34],
+            [student, course2, mp2, 70],
+            [student, course2, mp3, 93.5],
+        ]
+        for item in data:
+            enrollment = CourseEnrollment.objects.get(
+                user=item[0], course_section=item[1])
+            self.set_grade(enrollment, item[2], item[3])
+
     def set_grade(self, enrollment, mp, grade):
         grade_obj = Grade(enrollment=enrollment, marking_period=mp)
         grade_obj.set_grade(grade)
@@ -116,3 +136,9 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             grade = Grade.set_marking_period_student_course_grade(
                 marking_period, student, course_section, data[0])
             self.assertAlmostEquals(grade.get_grade(), data[1])
+
+    def test_student_gpa(self):
+        self.create_test_data_student()
+        gpa = GradeCalculator().get_student_gpa(self.data.student)
+        self.assertAlmostEquals(gpa, 74.17)
+

@@ -134,14 +134,32 @@ class SisData(object):
         self.grade = Grade.objects.all().first()
 
     def create_100_courses(self):
-        for i in xrange(100):
-            random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
-            course = Course.objects.create(fullname="Math 101 " + random_string, shortname="Alg " + random_string, credits=1, graded=True)
-            section = CourseSection.objects.create(name=course.shortname, course_id=course.id)
+        self.create_x_courses(courses=100)
 
-    def create_30_student_grades(self, number=30):
-        course_section = CourseSection.objects.all().first()
-        for i in xrange(number):
+    def create_x_courses(self, courses=30, marking_periods=None):
+        for i in xrange(courses):
+            self.create_course(marking_periods=marking_periods)
+
+    def create_course(self, credits=1, marking_periods=None):
+        random_string = ''.join(
+            random.choice(
+                string.ascii_uppercase + string.digits
+            ) for _ in range(6))
+        course = Course.objects.create(
+            fullname=random_string,
+            shortname=random_string,
+            credits=credits,
+            graded=True)
+        section = CourseSection.objects.create(
+            name=course.shortname, course_id=course.id)
+        for marking_period in marking_periods:
+            section.marking_period.add(marking_period)
+        return section
+
+    def create_x_student_grades(self, students=30, courses_per=1):
+        mps = MarkingPeriod.objects.all()
+        self.create_x_courses(marking_periods=mps, courses=courses_per)
+        for i in xrange(students):
             random_string = ''.join(
                 random.choice(
                     string.ascii_uppercase + string.digits
@@ -150,14 +168,15 @@ class SisData(object):
                 first_name=random_string[:5],
                 last_name=random_string[:-5],
                 username=random_string)
-            enrollment = CourseEnrollment.objects.create(
-                course_section=course_section,
-                user=student,
-            )
-            for mp in MarkingPeriod.objects.all():
-                grade = Grade(enrollment=enrollment, marking_period=mp)
-                grade.set_grade(random.randint(0,100))
-                grade.save()
+            for course_section in CourseSection.objects.all():
+                enrollment = CourseEnrollment.objects.create(
+                    course_section=course_section,
+                    user=student,
+                )
+                for mp in mps:
+                    grade = Grade(enrollment=enrollment, marking_period=mp)
+                    grade.set_grade(random.randint(0, 100))
+                    grade.save()
 
     def create_aa_superuser(self):
         aa = Faculty.objects.create(username="aa", first_name="aa", is_superuser=True, is_staff=True)
