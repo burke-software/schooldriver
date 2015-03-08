@@ -1,7 +1,6 @@
 from django.test import TestCase
-from django.test import TransactionTestCase
 from django.test.client import Client
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 
 from ecwsp.sis.models import *
 from ecwsp.sis.sample_data import *
@@ -10,7 +9,7 @@ from ecwsp.attendance.models import *
 from ecwsp.grades.models import *
 
 import datetime
-from django.db import connection
+
 
 class SisTestMixin(object):
     """ Making a test, use me please """
@@ -22,10 +21,6 @@ class SisTestMixin(object):
         """ Extend me with more data to populate """
         self.data = SisData()
         self.data.create_basics()
-
-    def build_grade_cache(self):
-        from ecwsp.grades.tasks import build_grade_cache
-        build_grade_cache()
 
 
 class ReportTest(SisTestMixin, TestCase):
@@ -106,16 +101,16 @@ class ConstanceConfigTests(TestCase):
         default_city = get_city()
         self.city = config.DEFAULT_CITY
         self.assertEqual(default_city, self.city)
-    
+
     def test_default_benchmark_grading_config(self):
         """default for constance config BENCHMARK_BASED_GRADING should return False"""
         is_default = config.BENCHMARK_BASED_GRADING
         self.assertEqual(is_default, 'False')
-    
+
         def test_benchmark_grade_method(self):
             """testing method where config is used"""
             is_default = get_default_benchmark_grade()
             self.assertEqual(is_default, False)
-    
-    
-    
+
+
+

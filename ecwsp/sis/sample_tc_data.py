@@ -7,6 +7,7 @@ from ecwsp.benchmark_grade.models import *
 
 import datetime
 
+
 class SampleTCData(SisData):
     """some useful data modeled after Cristo Rey Twin Cities actual data"""
 
@@ -182,15 +183,19 @@ class SampleTCData(SisData):
 
     def save_section_marking_period_grades(self, student, section_name, grades):
         section = CourseSection.objects.get(name=section_name)
-        marking_periods = list(section.marking_period.all().extra(order_by=["name"]))
+        marking_periods = list(section.marking_period.all().extra(
+            order_by=["name"]))
         for i in range(6):
             grade = grades[i]
             if grade is not None:
-                grade_object = Grade.objects.get(
-                    student=student,
+                enrollment = CourseEnrollment.objects.get(
+                    user=student,
                     course_section=section,
+                )
+                grade_object = Grade.objects.create(
+                    enrollment=enrollment,
                     marking_period=marking_periods[i]
-                    )
+                )
                 grade_object.grade = Decimal(grade)
                 grade_object.save()
 
@@ -245,7 +250,7 @@ class SampleTCData(SisData):
                 display_symbol='%',
             ),
         ])
-    
+
     def create_calculation_rule_per_course_categories(self):
         CalculationRulePerCourseCategory.objects.bulk_create([
             CalculationRulePerCourseCategory(
@@ -276,29 +281,29 @@ class SampleTCData(SisData):
         course_section = CourseSection.objects.get( name = "bus2-section-TC-2014-2015")
         Item.objects.bulk_create([
             Item(
-                name="Assignment1", 
-                marking_period= marking_period, 
+                name="Assignment1",
+                marking_period= marking_period,
                 points_possible= 4,
                 course_section = course_section,
                 category=Category.objects.get(name="Standards"),
             ),
             Item(
-                name="Assignment2", 
-                marking_period= marking_period, 
+                name="Assignment2",
+                marking_period= marking_period,
                 points_possible= 4,
                 course_section = course_section,
                 category=Category.objects.get(name="Engagement"),
             ),
             Item(
-                name="Assignment3", 
-                marking_period= marking_period, 
+                name="Assignment3",
+                marking_period= marking_period,
                 points_possible= 4,
                 course_section = course_section,
                 category=Category.objects.get(name="Assignment Completion"),
             ),
             Item(
-                name="Assignment4", 
-                marking_period= marking_period, 
+                name="Assignment4",
+                marking_period= marking_period,
                 points_possible= 4,
                 course_section = course_section,
                 category=Category.objects.get(name="Daily Practice"),
@@ -359,13 +364,13 @@ class SampleTCData(SisData):
         marking_period = MarkingPeriod.objects.get( name = "S1-TC" )
         course_section = CourseSection.objects.get( name = "bus2-section-TC-2014-2015")
         Item.objects.create(
-            name="Final Exam 1", 
-            marking_period= marking_period, 
+            name="Final Exam 1",
+            marking_period= marking_period,
             points_possible= 4,
             course_section = course_section,
             category=Category.objects.get(name="Finals"),
         )
 
 
-            
+
 

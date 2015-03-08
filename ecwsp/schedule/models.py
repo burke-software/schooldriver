@@ -1,20 +1,15 @@
 from django.contrib import messages
 from django.conf import settings
-from django_cached_field import CachedCharField, CachedDecimalField
-from django.db import connection
 from django.db import models
-from django.db.models.query import QuerySet
 from django.core.urlresolvers import reverse
 
 from ecwsp.sis.models import Student, GradeScaleRule
 from ecwsp.sis.helper_functions import round_as_decimal, round_to_standard
-from ecwsp.grades.models import Grade
-from ecwsp.administration.models import Configuration
+from ecwsp.grades.utils import GradeCalculator
 from constance import config
 
 import datetime
-import decimal
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 import copy
 
 ISOWEEKDAY_TO_VERBOSE = (
@@ -26,6 +21,7 @@ ISOWEEKDAY_TO_VERBOSE = (
     ("6", 'Saturday'),
     ("7", 'Sunday'),
 )
+
 
 def duplicate(obj, changes=None):
     """ Duplicates any object including m2m fields
@@ -168,7 +164,7 @@ class CourseEnrollment(models.Model):
         letter - Letter grade scale
         numeric - non linear numeric scale
         """
-        return Grade.get_course_grade(
+        return GradeCalculator().get_course_grade(
             self,
             marking_periods=marking_periods,
             letter=letter,
@@ -227,90 +223,6 @@ class CourseEnrollment(models.Model):
         ignore_letter can be useful when computing averages
         when you don't care about letter grades
         """
-        cursor = connection.cursor()
-
-        # postgres requires a over () to run
-        # http://stackoverflow.com/questions/19271646/how-to-make-a-sum-without-group-by
-        sql_string = '''
-SELECT case when Sum(override_final{postgres_type_cast}) {over} = 1 then -9001 else (Sum(grade * weight) {over} / Sum(weight) {over}) end AS ave_grade
-FROM grades_grade
-    LEFT JOIN schedule_markingperiod
-    ON schedule_markingperiod.id = grades_grade.marking_period_id
-WHERE (grades_grade.course_section_id = %s
-    AND grades_grade.student_id = %s {extra_where} )
-    AND ( grade IS NOT NULL
-    OR letter_grade IS NOT NULL )'''
-
-        if date_report:
-            if settings.DATABASES['default']['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'tenant_schemas.postgresql_backend']:
-                cursor.execute(sql_string.format(
-                    postgres_type_cast='::int', over='over ()', extra_where='AND (schedule_markingperiod.end_date <= %s OR override_final = true)'),
-                               (self.course_section_id, self.user_id, date_report))
-            else:
-                cursor.execute(sql_string.format(
-                    postgres_type_cast='', over='', extra_where='AND (schedule_markingperiod.end_date <= %s OR grades_grade.override_final = true)'),
-                               (self.course_section_id, self.user_id, date_report))
-
-        else:
-            if settings.DATABASES['default']['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'tenant_schemas.postgresql_backend']:
-                cursor.execute(sql_string.format(
-                    postgres_type_cast='::int', over='over ()', extra_where=''),
-                               (self.course_section_id, self.user_id))
-            else:
-                cursor.execute(sql_string.format(
-                    postgres_type_cast='', over='', extra_where=''),
-                               (self.course_section_id, self.user_id))
-
-        result = cursor.fetchone()
-        if result:
-            ave_grade = result[0]
-        else: # No grades at all. The average of no grades is None
-            return None
-
-        # -9001 = override. We can't mix text and int in picky postgress.
-        if str(ave_grade) == "-9001":
-            course_section_grade = Grade.objects.get(override_final=True, student=self.user, course_section=self.course_section)
-            grade = course_section_grade.get_grade()
-            if ignore_letter and not isinstance(grade, (int, Decimal, float)):
-                return None
-            return grade
-
-        elif ave_grade:
-            return Decimal(ave_grade)
-
-        # about 0.5 s
-        # Letter Grade
-        if ignore_letter == False:
-            final = 0.0
-            grades = self.course_section.grade_set.filter(student=self.user)
-            if date_report:
-                grades = grades.filter(marking_period__end_date__lte=date_report)
-            if grades:
-                total_weight = Decimal(0)
-                for grade in grades:
-                    get_grade =  grade.get_grade()
-                    if get_grade in ["I", "IN", "YT"]:
-                        return get_grade
-                    elif get_grade in ["P","HP","LP"]:
-                        if grade.marking_period:
-                            final += float(100 * grade.marking_period.weight)
-                            total_weight += grade.marking_period.weight
-                    elif get_grade in ['F', 'M']:
-                        if grade.marking_period:
-                            total_weight += grade.marking_period.weight
-                    elif get_grade:
-                        try:
-                            final += get_grade
-                        except TypeError:
-                            return get_grade
-                if total_weight:
-                    final /= float(total_weight)
-                    final = Decimal(final).quantize(Decimal("0.01"), ROUND_HALF_UP)
-                    if final > config.LETTER_GRADE_REQUIRED_FOR_PASS:
-                        return "P"
-                    else:
-                        return "F"
-        return None
 
 
 class Department(models.Model):
@@ -493,9 +405,9 @@ class CourseSection(models.Model):
     grades_link.allow_tags = True
 
     def calculate_final_grade(self, student):
-        """ Shim code to calculate final grade WITHOUT cache """
+        """ Shortcut to GradeCalculator """
         enrollment = self.courseenrollment_set.get(user=student)
-        return enrollment.calculate_grade_real()
+        return GradeCalculator().get_course_grade(enrollment)
 
     def copy_instance(self, request):
         changes = (("name", self.name + " copy"),)

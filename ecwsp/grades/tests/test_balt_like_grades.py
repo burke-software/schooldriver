@@ -4,6 +4,7 @@ from ecwsp.sis.sample_data import SisData
 from ecwsp.schedule.models import (
     CourseEnrollment, Course, CourseSection)
 from ..models import Grade
+from ..models import GradeCalculator
 from decimal import Decimal
 
 
@@ -161,8 +162,8 @@ class GradeBaltTests(SisTestMixin, TestCase):
             [self.data.mp4, Decimal(2.8)],
         ]
         for x in test_data:
-            smpg = StudentMarkingPeriodGrade.objects.get(
-                student=self.data.student, marking_period=x[0])
+            average = GradeCalculator().get_student_marking_period_average(
+                self.data.student, x[0])
             self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x[1])
 
     def test_average(self):

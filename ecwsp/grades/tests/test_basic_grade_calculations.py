@@ -2,7 +2,8 @@ from ecwsp.sis.tests import SisTestMixin
 from django.test import TestCase
 from ecwsp.sis.sample_data import SisData
 from ecwsp.schedule.models import CourseEnrollment
-from ..models import FinalGrade, Grade, GradeCalculator
+from ..models import FinalGrade, Grade
+from ..utils import GradeCalculator
 import datetime
 
 

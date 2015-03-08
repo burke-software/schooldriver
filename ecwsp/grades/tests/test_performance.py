@@ -2,7 +2,7 @@ from django.test import TestCase
 from ecwsp.sis.sample_data import SisData
 from ecwsp.sis.tests import SisTestMixin
 from ecwsp.sis.models import Student
-from ecwsp.grades.models import GradeCalculator
+from ..utils import GradeCalculator
 from ecwsp.schedule.models import CourseSection
 import time
 
