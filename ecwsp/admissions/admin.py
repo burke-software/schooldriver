@@ -72,7 +72,8 @@ class ApplicantAdditionalInformationInline(admin.TabularInline):
     readonly_fields = ['custom_field', 'answer']
     ordering = ['custom_field']
 
-class ApplicantAdmin(CustomFieldAdmin):
+
+class ApplicantAdmin(CustomFieldAdmin, admin.ModelAdmin):
     form = ApplicantForm
     list_display = ('lname', 'fname', 'present_school', 'city', 'level', 'application_decision',
                     'school_year', 'ready_for_export', 'from_online_inquiry', 'follow_up_date')
@@ -99,14 +100,14 @@ class ApplicantAdmin(CustomFieldAdmin):
             'classes': ['collapse']}
         ),
     ]
-    
+
     def add_view(self, request, form_url='', extra_context=None):
         levels = []
         # Attempt to guess next school year
         future_years = SchoolYear.objects.filter(start_date__gt=datetime.date.today()).order_by('start_date')
         if future_years:
             override_date = Configuration.get_or_default(
-                name="admissions_override_year_start", 
+                name="admissions_override_year_start",
                 default='',
                 help_text="Must be ISO date (ex 2012-10-25) or blank",
             ).value
@@ -132,7 +133,7 @@ class ApplicantAdmin(CustomFieldAdmin):
             'year': year,
         }
         return super(ApplicantAdmin, self).add_view(request, form_url, extra_context=my_context)
-    
+
     def change_view(self, request, object_id, extra_context=None):
         levels = []
         applicant = get_object_or_404(Applicant,id=object_id)
@@ -140,7 +141,7 @@ class ApplicantAdmin(CustomFieldAdmin):
         future_years = SchoolYear.objects.filter(start_date__gt=datetime.date.today()).order_by('start_date')
         if future_years:
             override_date = Configuration.get_or_default(
-                name="admissions_override_year_start", 
+                name="admissions_override_year_start",
                 default='',
                 help_text="Must be ISO date (ex 2012-10-25) or blank",
             ).value
@@ -165,14 +166,14 @@ class ApplicantAdmin(CustomFieldAdmin):
                     else:
                         check.checked = False
             levels.append(level)
-           
+
         my_context = {
             'levels': levels,
             'current_level': applicant.level,
             'year': year,
         }
         return super(ApplicantAdmin, self).change_view(request, object_id, extra_context=my_context)
-    
+
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
         # save(commit=False) will soon stop deleting, so we have to do it manually
@@ -184,13 +185,13 @@ class ApplicantAdmin(CustomFieldAdmin):
         for instance in instances:
             if isinstance(instance, ContactLog) and instance.note: #Check if it is the correct type of inline
                 if(not instance.user):
-                    instance.user = request.user 
+                    instance.user = request.user
             # follow the modelo, always save!
             # https://docs.djangoproject.com/en/dev/ref/contrib/admin/#django.contrib.admin.ModelAdmin.save_formset
             instance.save()
         formset.save_m2m()
 
-    
+
     def save_model(self, request, obj, form, change):
         if 'checkmark_data' in request.POST: # This confirms the checks are there, in case we call this from somewhere odd say mass-edit.
             if not obj.id:
@@ -216,10 +217,10 @@ class ApplicantAdmin(CustomFieldAdmin):
                     )
                     contact_log.save()
                     LogEntry.objects.log_action(
-                        user_id         = request.user.pk, 
+                        user_id         = request.user.pk,
                         content_type_id = ContentType.objects.get_for_model(obj).pk,
                         object_id       = obj.pk,
-                        object_repr     = unicode(obj), 
+                        object_repr     = unicode(obj),
                         action_flag     = CHANGE,
                         change_message  = "Unchecked " + unicode(check)
                     )
@@ -234,10 +235,10 @@ class ApplicantAdmin(CustomFieldAdmin):
                         )
                         contact_log.save()
                         LogEntry.objects.log_action(
-                            user_id         = request.user.pk, 
+                            user_id         = request.user.pk,
                             content_type_id = ContentType.objects.get_for_model(obj).pk,
                             object_id       = obj.pk,
-                            object_repr     = unicode(obj), 
+                            object_repr     = unicode(obj),
                             action_flag     = CHANGE,
                             change_message  = "Checked " + unicode(check)
                         )
@@ -250,7 +251,7 @@ class ApplicantAdmin(CustomFieldAdmin):
             for level in obj.application_decision.level.all():
                 msg += '%s, ' % (level,)
             messages.warning(request, msg[:-2])
-    
+
 admin.site.register(Applicant, ApplicantAdmin)
 
 class ApplicantStandardCategoryGradeInline(admin.TabularInline):
@@ -266,7 +267,7 @@ admin.site.register(ApplicantStandardTestResult, ApplicantStandardTestResultAdmi
 
 class StudentApplicationTemplateAdmin(admin.ModelAdmin):
     model = StudentApplicationTemplate
-    extra = 0 
+    extra = 0
 admin.site.register(StudentApplicationTemplate, StudentApplicationTemplateAdmin)
 
 
@@ -274,5 +275,5 @@ admin.site.register(StudentApplicationTemplate, StudentApplicationTemplateAdmin)
 class ApplicantCustomFieldAdmin(admin.ModelAdmin):
     model = ApplicantCustomField
     list_display = ['field_name', 'field_label', 'is_field_integrated_with_applicant']
-    extra = 0 
+    extra = 0
 admin.site.register(ApplicantCustomField, ApplicantCustomFieldAdmin)
