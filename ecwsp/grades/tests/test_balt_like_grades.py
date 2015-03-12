@@ -4,7 +4,7 @@ from ecwsp.sis.sample_data import SisData
 from ecwsp.schedule.models import (
     CourseEnrollment, Course, CourseSection)
 from ..models import Grade
-from ..models import GradeCalculator
+from ..utils import GradeCalculator
 from decimal import Decimal
 
 
@@ -156,15 +156,15 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """ Tests a method for averages by converting to non linear
         scale first """
         test_data = [
-            [self.data.mp1, Decimal(2.0)],
-            [self.data.mp2, Decimal(2.4)],
-            [self.data.mp3, Decimal(1.8)],
-            [self.data.mp4, Decimal(2.8)],
+            [self.data.mp1, 2.0],
+            [self.data.mp2, 2.4],
+            [self.data.mp3, 1.8],
+            [self.data.mp4, 2.8],
         ]
         for x in test_data:
-            average = GradeCalculator().get_student_marking_period_average(
-                self.data.student, x[0])
-            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x[1])
+            average = GradeCalculator().get_marking_period_average(
+                self.data.student, x[0], scale_first=True)
+            self.assertAlmostEqual(average, x[1])
 
     def test_average(self):
         test_data = [

@@ -672,7 +672,8 @@ class GradeScale(models.Model):
 
     def get_rule(self, grade):
         if grade is not None:
-            return self.gradescalerule_set.filter(min_grade__lte=grade, max_grade__gte=grade).first()
+            return self.gradescalerule_set.filter(
+                min_grade__lte=grade, max_grade__gte=grade).first()
 
     def to_letter(self, grade):
         rule = self.get_rule(grade)
@@ -690,7 +691,8 @@ class GradeScaleRule(models.Model):
     min_grade = models.DecimalField(max_digits=5, decimal_places=2)
     max_grade = models.DecimalField(max_digits=5, decimal_places=2)
     letter_grade = models.CharField(max_length=50, blank=True)
-    numeric_scale = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    numeric_scale = models.DecimalField(
+        max_digits=5, decimal_places=2, blank=True, null=True)
     grade_scale = models.ForeignKey(GradeScale)
 
     class Meta:
@@ -721,6 +723,7 @@ class GradeScaleRule(models.Model):
 
 def get_default_benchmark_grade():
     return str(config.BENCHMARK_BASED_GRADING).lower() == "true"
+
 
 class SchoolYear(models.Model):
     name = models.CharField(max_length=255, unique=True)

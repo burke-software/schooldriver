@@ -11,7 +11,6 @@ from api.admissions.serializers import ApplicantCustomFieldSerializer
 from api.admissions.serializers import StudentApplicationTemplateSerializer
 from api.admissions.serializers import ApplicantAdditionalInformationSerializer
 from api.admissions.serializers import EmergencyContactSerializer
-from rest_framework_bulk import BulkCreateModelMixin
 from api.admissions.permissions import ApplicantPermissions
 from api.admissions.permissions import ApplicantTemplatePermissions
 from ecwsp.sis.models import LanguageChoice, EmergencyContact, EmergencyContactNumber
@@ -63,13 +62,13 @@ class EmergencyContactViewSet(viewsets.ModelViewSet):
 
 class ApplicantCustomFieldViewSet(viewsets.ModelViewSet):
 
-    permission_classes = (ApplicantTemplatePermissions, ) 
+    permission_classes = (ApplicantTemplatePermissions, )
     queryset = ApplicantCustomField.objects.all()
     serializer_class = ApplicantCustomFieldSerializer
 
 class ApplicationTemplateViewSet(viewsets.ModelViewSet):
 
-    permission_classes = (ApplicantTemplatePermissions, ) 
+    permission_classes = (ApplicantTemplatePermissions, )
     queryset = StudentApplicationTemplate.objects.all()
     serializer_class = StudentApplicationTemplateSerializer
     filter_fields = ('is_default',)
@@ -82,7 +81,7 @@ class ApplicantAdditionalInformationViewSet(viewsets.ModelViewSet):
 
     def get_serializer(self, *args, **kwargs):
         """ overriding the default behavior to support bulk create,
-        for reference: stackoverflow.com/questions/27869841/how-to-post-put-json-data-to-listserializer/27871396#27871396 
+        for reference: stackoverflow.com/questions/27869841/how-to-post-put-json-data-to-listserializer/27871396#27871396
         """
         if "data" in kwargs:
             data = kwargs["data"]
@@ -106,10 +105,10 @@ class ApplicantForeignKeyRelatedFieldChoicesViewSet(viewsets.ViewSet):
             data[choiceKey] = []
             for choice in choiceModel.objects.all():
                 data[choiceKey].append({
-                    "display_name":choice.name, 
+                    "display_name":choice.name,
                     "value":choice.id,
                     })
-        
+
         return Response(data)
 
 

@@ -6,6 +6,9 @@ from constance import config
 
 
 class GradeCalculator(object):
+    rule_marking_period = None
+    rule_year = None
+
     def __init__(self, rounding=None):
         if rounding is None:
             self.rounding = config.GRADE_ROUNDING_DECIMAL
@@ -20,7 +23,7 @@ class GradeCalculator(object):
 
     def _calculate_course_grade(
         self, np_grade_values, np_final_grades, np_mp_weights,
-        marking_periods=None
+        marking_periods=None, numeric_scale=False
     ):
         if np_grade_values.size == 0:
             return None
@@ -32,6 +35,13 @@ class GradeCalculator(object):
             average = np.average(
                 np_grade_values[np_grade_values_mask],
                 weights=np_mp_weights[np_grade_values_mask])
+        if numeric_scale is True:
+            average = GradeScaleRule.grade_to_scale(
+                average,
+                marking_period=self.rule_marking_period,
+                year=self.rule_year,
+            )
+            average = float(average)
         return average
 
     def _get_student_grades(self, student, date):
@@ -48,7 +58,7 @@ class GradeCalculator(object):
             grades = grades.filter(marking_period__end_date__lte=date)
         return grades
 
-    def _get_average_of_grades(self, grades):
+    def _get_average_of_grades(self, grades, scale_first=False):
         grades = grades.values_list(
             'grade',
             'marking_period',
@@ -66,11 +76,13 @@ class GradeCalculator(object):
             np_grade_values = np_course_grades[:, 0]
             np_mp_weights = np_course_grades[:, 2]
             np_final_grades = np_course_grades[:, 4]
-            course_averages += [self._calculate_course_grade(
+            average = self._calculate_course_grade(
                 np_grade_values,
                 np_final_grades,
                 np_mp_weights,
-            )]
+                numeric_scale=scale_first,
+            )
+            course_averages.append(average)
         average = np.average(course_averages)
         return self._round(average)
 
@@ -134,5 +146,21 @@ class GradeCalculator(object):
             enrollment__course_section__marking_period__school_year=year)
         return self._get_average_of_grades(grades)
 
-    def get_marking_period_average(self, student, marking_period):
-        student.grade
+    def get_marking_period_average(
+        self, student, marking_period, date=None, scale_first=False
+    ):
+        """ Return a marking period average
+
+        Args:
+            student: Student
+            marking_period: Marking period
+            date: Date of report - used to exclude grades that haven't happened
+            scale_first: Scale course grades to numeric scale then average.
+                Not recommended - probably should scale after averaging.
+        """
+        grades = self._get_student_grades(student, date)
+        grades = grades.filter(
+            enrollment__course_section__marking_period=marking_period)
+        self.rule_marking_period = marking_period
+        return self._get_average_of_grades(
+            grades, scale_first=scale_first)

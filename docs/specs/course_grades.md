@@ -58,7 +58,19 @@ Let mp2 grade = `100`
 For date 2099-1-1 the grade should be 75.
 For date 2014-10-1 the grade should be 50 because mp2 has not ended yet and credit is not yet earned.
 
+## Course Type Weights
+
+A Course has a reference to a Course Type which can affect grades.
+
+**Example** [Unit test] GradeCalculationTests.test_course_type_weight 
+
+Let Course1 have a course type with weight 0.5
+Let Course2 have a course type with weight 1.0
+Let Grade1 belong to Course1 with a grade of 50
+Let Grade2 belong to Course2 with a grade of 100
+
 
 [Student Reports]: https://github.com/burke-software/django-sis/blob/master/ecwsp/sis/scaffold_reports.py
 [test_course_average_respect_time]: https://github.com/burke-software/django-sis/blob/5d24e855284374997da9772d43589d554977be54/ecwsp/grades/tests.py#L21
 [Unit test]: https://github.com/burke-software/django-sis/blob/master/ecwsp/grades/tests.py
+

@@ -204,7 +204,7 @@ class SisData(object):
         self.non_core = CourseType.objects.get(name='NonCore')
         CourseType.objects.create(name='AP', weight=1, boost=1.0)
         self.ap = CourseType.objects.get(name='AP')
-        CourseType.objects.create(name="Honors", weight = 1, boost = 0.5)
+        CourseType.objects.create(name="Honors", weight=1, boost=0.5)
         self.honors = CourseType.objects.get(name="Honors")
 
     def create_courses(self):
@@ -244,8 +244,11 @@ class SisData(object):
         mps2x = self.mps2x
         i = 0
         for course in courses:
+            print course
+            print course.course_type
             i += 1
-            section = CourseSection.objects.create(name=course.shortname, course=course)
+            section = CourseSection.objects.create(
+                name=course.shortname, course=course)
             setattr(self, 'course_section' + str(i), section)
             section.marking_period.add(self.mp1)
             section.marking_period.add(self.mp2)

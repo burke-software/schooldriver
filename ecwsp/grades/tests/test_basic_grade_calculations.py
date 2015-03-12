@@ -143,3 +143,6 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         gpa = GradeCalculator().get_student_gpa(self.data.student)
         self.assertAlmostEquals(gpa, 74.17)
 
+    def test_course_type_weight(self):
+        """ See /docs/specs/course_grades.md#Marking Period Weights """
+
