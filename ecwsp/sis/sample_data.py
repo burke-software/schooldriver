@@ -244,8 +244,6 @@ class SisData(object):
         mps2x = self.mps2x
         i = 0
         for course in courses:
-            print course
-            print course.course_type
             i += 1
             section = CourseSection.objects.create(
                 name=course.shortname, course=course)
