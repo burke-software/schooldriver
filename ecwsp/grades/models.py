@@ -210,5 +210,4 @@ class FinalGrade(CommonGrade):
             grade_obj, created = cls.objects.get_or_create(**search_kwargs)
             grade_obj.set_grade(grade)
             grade_obj.save()
-            import ipdb; ipdb.set_trace()
             return grade_obj
