@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import Q, Max
-from django.conf import settings
 from ecwsp.sis.models import SchoolYear
+from ecwsp.grades.models import Grade
 from .exceptions import WeightContainsNone
 from decimal import Decimal
 import numpy as np
@@ -268,11 +268,6 @@ class Mark(models.Model):
         course = self.assignment.course_section
         calc_rule = CalculationRule.find_calculation_rule(
             marking_period.school_year)
-        grade = course.grade_set.filter(
-            marking_period=marking_period,
-            student=student,
-            course_section=course,
-        ).first()
 
         # Holy crap. We need to deal with grades when demonstrations exist
         # and pick the best score for a set of demonstrations. But also
@@ -283,10 +278,13 @@ class Mark(models.Model):
         # Also see Django docs on order_by.
         # https://docs.djangoproject.com/en/dev/topics/db/aggregation/#interaction-with-default-ordering-or-order-by
         marks = student.gradebook_mark_set.filter(
-            Q(assignment__marking_period=marking_period),
-            Q(assignment__category__calculationrulepercoursecategory__apply_to_departments=course.course.department) |
-            Q(assignment__category__calculationrulepercoursecategory__apply_to_departments=None),
-        ).exclude(
+            assignment__marking_period=marking_period)
+        if course.course.department is not None:
+            marks = marks.filter(
+                Q(assignment__category__calculationrulepercoursecategory__apply_to_departments=course.course.department) |
+                Q(assignment__category__calculationrulepercoursecategory__apply_to_departments=None),
+            )
+        marks = marks.exclude(
             mark=None,
         ).order_by(  # Here is the magic - really this is grouping by
             'assignment'
@@ -299,8 +297,8 @@ class Mark(models.Model):
         ).annotate(mark=Max('mark'))
 
         if not marks:
-            grade.set_grade(None)
-            return
+            return Grade.set_marking_period_student_course_grade(
+                marking_period, student, course, None)
 
         np_marks = np.array(marks, dtype=np.dtype(float))
         marks_possible = np_marks[:, 0]
@@ -323,7 +321,7 @@ class Mark(models.Model):
         total = None
         match_sub_rule = False
         for rule in sub_rules:
-            cat_ids = rule.apply_to_categories.values_list('id', flat=True)
+            # cat_ids = rule.apply_to_categories.values_list('id', flat=True)
             relevant_marks = marks_mark
             match_sub_rule = rule.np_check_if_matches(relevant_marks)
             if match_sub_rule is True:
@@ -343,13 +341,16 @@ class Mark(models.Model):
                 total = Decimal(total) * 100
 
         if match_sub_rule is False:
-            grade.set_grade(total, treat_as_percent=False)
-        else:
-            grade.set_grade(
-                total,
-                letter_grade=match_sub_rule.display_as,
-                treat_as_percent=False)
-        grade.save()
+            # this was here? treat_as_percent=False
+            return Grade.set_marking_period_student_course_grade(
+                marking_period, student, course, total)
+        return Grade.set_marking_period_student_course_grade(
+            marking_period, student, course, total,
+            letter_grade=match_sub_rule.display_as)
+        # grade.set_grade(
+        #    total,
+        #    letter_grade=match_sub_rule.display_as,
+        #    treat_as_percent=False)
 
     def save(self, *args, **kwargs):
         super(Mark, self).save(*args, **kwargs)

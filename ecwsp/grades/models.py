@@ -26,9 +26,15 @@ def grade_comment_length_validator(value):
     return validator(value)
 
 
-class LetterGradeChoices(models.Model):
+class LetterGrade(models.Model):
     """ Valid letter grade options """
     letter = models.CharField(max_length=50)
+    is_passing = models.BooleanField(
+        default=True,
+        help_text="True means this counts as a Passing or 100% grade.")
+    affects_grade = models.BooleanField(
+        default=True,
+        help_text="True means this has an affect on grade calculations")
 
     def __unicode__(self):
         return self.letter
@@ -40,7 +46,7 @@ class CommonGrade(models.Model):
     grade = GradeField()
     comment = models.CharField(
         max_length=500, blank=True, validators=[grade_comment_length_validator])
-    letter_grade = models.ForeignKey(LetterGradeChoices, blank=True, null=True)
+    letter_grade = models.ForeignKey(LetterGrade, blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -86,10 +92,31 @@ class Grade(CommonGrade):
             ('change_own_final_grade', 'Change final YTD grades for own class'),
         )
 
-    def set_grade(self, grade):
+    def set_grade(self, grade, letter_grade=None):
+        """ Set grade value of this grade object
+        Args:
+            grade: Grade value to set.
+            letter_grade: String of valid LetterGrade, int, or LetterGrade
+        """
         self.grade = grade
+        if type(letter_grade) in [str, unicode]:
+            self.letter_grade = LetterGrade.objects.get(letter=letter_grade)
+        elif type(letter_grade) in [int, LetterGrade]:
+            self.letter_grade = letter_grade
+        elif letter_grade is not None:
+            raise ValueError(
+                "letter_grade should be string, int, or LetterGrade")
+        else:
+            self.letter_grade = None
 
     def get_grade(self, letter=False, letter_and_number=False):
+        """ Get the grade, typically for display (not calculations)
+        If the grade object contains a letter grade - this will be returned
+        Otherwise the grade will.
+        Args:
+            letter: Convert numeric grade to letter
+            letter_and_number: Return both numeric and letter grade
+        """
         grade = self.grade
         if letter is True or letter_and_number is True:
             try:
@@ -99,6 +126,8 @@ class Grade(CommonGrade):
             if letter_and_number is True:
                 result = '{} ({})'.format(grade, result)
             return result
+        if self.letter_grade is not None:
+            return self.letter_grade.letter
         return grade
 
     def grade_to_scale(self, letter):
@@ -114,15 +143,19 @@ class Grade(CommonGrade):
         return rule.numeric_scale
 
     @classmethod
-    def set_marking_period_student_course_grade(cls, marking_period, student,
-                                                course_section, grade):
+    def set_marking_period_student_course_grade(
+        cls, marking_period, student, course_section, grade, letter_grade=None
+    ):
         """ Set a grade based looking up the enrollment object
         Returns grade object or None """
         enrollment = cls.get_enrollment(student, course_section)
-        return cls.set_marking_period_grade(marking_period, enrollment, grade)
+        return cls.set_marking_period_grade(
+            marking_period, enrollment, grade, letter_grade=letter_grade)
 
     @staticmethod
-    def set_marking_period_grade(marking_period, enrollment, grade):
+    def set_marking_period_grade(
+        marking_period, enrollment, grade, letter_grade=None
+    ):
         """ Set a grade from an enrollment and marking period
         A grade of None will delete the grade object making it not used in
         any calculations.
@@ -134,17 +167,17 @@ class Grade(CommonGrade):
             'enrollment': enrollment,
             'marking_period': marking_period,
         }
-        if grade is None:
+        if grade is None and letter_grade is None:
             try:
                 grade_obj = Grade.objects.get(**search_kwargs)
                 grade_obj.delete()
             except Grade.DoesNotExist:
                 pass
-        else:
-            grade_obj, created = Grade.objects.get_or_create(**search_kwargs)
-            grade_obj.set_grade(grade)
-            grade_obj.save()
-            return grade_obj
+            return
+        grade_obj, created = Grade.objects.get_or_create(**search_kwargs)
+        grade_obj.set_grade(grade, letter_grade=letter_grade)
+        grade_obj.save()
+        return grade_obj
 
 
 class FinalGrade(CommonGrade):
@@ -177,4 +210,5 @@ class FinalGrade(CommonGrade):
             grade_obj, created = cls.objects.get_or_create(**search_kwargs)
             grade_obj.set_grade(grade)
             grade_obj.save()
+            import ipdb; ipdb.set_trace()
             return grade_obj

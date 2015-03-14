@@ -5,55 +5,65 @@ from ecwsp.schedule.models import (
     Department)
 from django.core.urlresolvers import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient 
-from ecwsp.gradebook.models import Assignment
+from rest_framework.test import APITestCase, APIClient
+from ecwsp.grades.models import Grade, LetterGrade
 from ecwsp.schedule.models import Course, CourseSection
-from .models import *
 from .exceptions import WeightContainsNone
-#from .sample_data import BenchmarkSisData
+from .models import (
+    AssignmentCategory, Demonstration, CalculationRulePerCourseCategory,
+    AssignmentType, CalculationRule, CalculationRuleSubstitution, Mark,
+    Assignment
+)
 from ecwsp.sis.sample_data import SisData
 from decimal import Decimal
 from decimal import InvalidOperation
-import unittest
-import json
+
 
 class AssignmentViewsetTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        self.course = Course.objects.create(id=1, fullname="first course", shortname="first")
-        self.section = CourseSection.objects.create(course=self.course, name="section one")
-        self.assignment = Assignment.objects.create(name="first assignment", course_section=self.section)
-        self.data = {'name': 'first assignment', 'course_section': self.section.pk}
-		
+        self.course = Course.objects.create(
+            id=1, fullname="first course", shortname="first")
+        self.section = CourseSection.objects.create(
+            course=self.course, name="section one")
+        self.assignment = Assignment.objects.create(
+            name="first assignment", course_section=self.section)
+        self.data = {
+            'name': 'first assignment',
+            'course_section': self.section.pk}
+
     def test_get_assignment_list(self):
         response = self.client.get(reverse('assignment-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-		
+
     def test_get_assignment_detail(self):
-        response = self.client.get(reverse('assignment-detail', args=(self.assignment.pk,)))
+        response = self.client.get(reverse(
+            'assignment-detail', args=(self.assignment.pk,)))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_assignment(self):
-        response = self.client.post(reverse('assignment-list'), self.data, format='json')
+        response = self.client.post(
+            reverse('assignment-list'), self.data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		
+
     def test_put_assignment(self):
-        request = self.client.post(reverse('assignment-list'), self.data, format='json')
-        #data to update initially posted data
+        self.client.post(reverse('assignment-list'), self.data, format='json')
+        # data to update initially posted data
         data_two = {'name': 'second name', 'course_section': self.section.pk}
-        response = self.client.put(reverse('assignment-detail', args=(self.assignment.pk,)), data_two)
+        response = self.client.put(
+            reverse('assignment-detail', args=(self.assignment.pk,)), data_two)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-		
+
     def test_delete_assignment(self):
-        response = self.client.delete(reverse('assignment-detail', args=(self.assignment.pk,)))
+        response = self.client.delete(
+            reverse('assignment-detail', args=(self.assignment.pk,)))
         self.assertEqual(response.status_code, 204)
-	
-@unittest.skip("Gradebook is an unreleased backend right now, we can unskip when it's ready")
+
+
 class GradeCalculationTests(SisTestMixin, TestCase):
     def setUp(self):
         self.data = SisData()
         self.data.create_basics()
-        self.build_grade_cache()
         self.data.course_section1.save()
 
     def create_assignment(
@@ -68,14 +78,16 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         )
 
     def create_and_check_mark(
-            self, assignment, mark, check, demonstration=None):
+            self, assignment, mark, check, demonstration=None
+    ):
         Mark.objects.create(
             assignment=assignment, student=self.data.student, mark=mark,
             demonstration=demonstration
         )
-        grade = self.data.student.grade_set.get(
+        grade = Grade.objects.get(
+            enrollment__user=self.data.student,
             marking_period=self.data.marking_period,
-            course_section=self.data.course_section1)
+            enrollment__course_section=self.data.course_section1)
         try:
             check = Decimal(check)
             self.assertAlmostEquals(grade.get_grade(), check)
@@ -87,9 +99,6 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         for data in test_data:
             assignment = self.create_assignment(data[0])
             self.create_and_check_mark(assignment, data[1], data[2])
-
-    def create_assignments_api(self, test_data):
-        pass  # 'STUB'
 
     def test_basic_grades(self):
         """ Keep creating assignments for student and check the grade """
@@ -116,11 +125,9 @@ class GradeCalculationTests(SisTestMixin, TestCase):
 
     def test_basic_grades_edge_low(self):
         test_data = [
-            [10, None, ''],
             [10, 0, 0],
         ]
         self.create_assignments(test_data)
-
 
     def test_find_calculation_rule(self):
         year1 = SchoolYear.objects.get(name="2013-2014")
@@ -144,7 +151,6 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             [5, 5, 2.67],
         ]
         self.create_assignments(test_data)
-        self.create_assignments_api(test_data)
 
     def test_calc_rule_per_course_category_department(self):
         dept_eng = Department.objects.create(name="English")
@@ -172,7 +178,7 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         only_eng_rule.apply_to_departments.add(dept_eng)
 
         cat2 = AssignmentCategory.objects.create(name="Engagement")
-        all_rule = CalculationRulePerCourseCategory.objects.create(
+        CalculationRulePerCourseCategory.objects.create(
             category=cat2,
             weight=1,
             calculation_rule=calc_rule,
@@ -233,11 +239,11 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             self.create_and_check_mark, assignment, 10, 66.67)
 
     def test_rule_substitution(self):
-        course = self.data.course_section1
         calc_rule = CalculationRule.objects.create(
             first_year_effective=self.data.school_year,
         )
-        sub_rule = CalculationRuleSubstitution.objects.create(
+        LetterGrade.objects.create(letter="INC")
+        CalculationRuleSubstitution.objects.create(
             operator='<',
             match_value='3.0',
             display_as='INC',
@@ -262,6 +268,8 @@ class GradeCalculationTests(SisTestMixin, TestCase):
         calc_rule = CalculationRule.objects.create(
             first_year_effective=self.data.school_year,
         )
+        LetterGrade.objects.create(letter="ENG")
+        LetterGrade.objects.create(letter="MATH")
         eng_sub_rule = CalculationRuleSubstitution.objects.create(
             operator='<',
             match_value='3.0',
@@ -335,7 +343,6 @@ class GradeCalculationTests(SisTestMixin, TestCase):
                 data[0], assignment_type=data[3], category=data[4])
             self.create_and_check_mark(assignment, data[1], data[2])
 
-
     def test_demonstration(self):
         cat1 = AssignmentCategory.objects.create(
             name="Standards", allow_multiple_demonstrations=True)
@@ -358,4 +365,3 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             assignment2, 3, 87.5, demonstration=demonstration4)
         self.create_and_check_mark(assignment3, 3, 76.92)
         self.create_and_check_mark(assignment4, 4, 73.68)
-

@@ -302,10 +302,6 @@ BROKER_TRANSPORT_OPTIONS = {
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 from celery.schedules import crontab
 CELERYBEAT_SCHEDULE = {
-    'cache-grades-nightly': {
-        'task': 'ecwsp.grades.tasks.build_grade_cache_task',
-        'schedule': crontab(hour=23, minute=1),
-    },
     'sent-admissions-email': {
         'task': 'ecwsp.admissions.tasks.email_admissions_new_inquiries',
         'schedule': crontab(hour=23, minute=16),
@@ -398,8 +394,8 @@ TENANT_APPS = (
     'ecwsp.discipline',
     'ecwsp.attendance',
     'ecwsp.grades',
-    #'ecwsp.gradebook',
-    'ecwsp.benchmark_grade',
+    'ecwsp.gradebook',
+    #'ecwsp.benchmark_grade',
     'ecwsp.counseling',
     'ecwsp.standard_test',
     'ecwsp.integrations.schoolreach',
@@ -492,8 +488,8 @@ CONSTANCE_CONFIG = {
     'GRADES_ALLOW_STUDENT_VIEWING': (True, "Allow students to view their grades online"),
     'GRADES_ALLOW_SPREADSHEET_IMPORT': ('True', 'Allow users to import a spreadsheet to submit grades'),
     'GRADE_ROUNDING_DECIMAL': (2, "Round grades to this many decimal places"),
-    'GRADE_DISPLAY_AS_LETTER': (False, "Display grades as letter grades using the Grade Scale"),    
-    'DEFAULT_COURSE_CREDITS': (1, "This number will appear in the 'Credits' field when creating new courses."),    
+    'GRADE_DISPLAY_AS_LETTER': (False, "Display grades as letter grades using the Grade Scale"),
+    'DEFAULT_COURSE_CREDITS': (1, "This number will appear in the 'Credits' field when creating new courses."),
     'VOLUNTEER_TRACK_REQUIRED_HOURS': ('20', ''),
     'VOLUNTEER_TRACK_MANAGER_EMAILS': ('', ''),
     'ATTENDANCE_DISC_TARDIES_BEFORE_DISC': ('1', ''),
