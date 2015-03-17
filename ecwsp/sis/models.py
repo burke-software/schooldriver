@@ -14,7 +14,6 @@ from thumbs import ImageWithThumbsField
 from datetime import date
 from custom_field.custom_field import CustomFieldModel
 from ckeditor.fields import RichTextField
-from django_cached_field import CachedDecimalField
 from ecwsp.sis.helper_functions import round_as_decimal
 
 logger = logging.getLogger(__name__)
@@ -353,7 +352,6 @@ class Student(User, CustomFieldModel):
     cohorts = models.ManyToManyField(Cohort, through='StudentCohort', blank=True)
     cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
     individual_education_program = models.BooleanField(default=False)
-    gpa = CachedDecimalField(editable=False, max_digits=5, decimal_places=2, blank=True, null=True)
 
     class Meta:
         permissions = (

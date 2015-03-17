@@ -203,7 +203,7 @@ class StudentAdmin(VersionAdmin, CustomFieldAdmin):
     inlines = [StudentCourseSectionInline, StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
     actions = [mark_inactive]
     list_filter = ['is_active', 'year', 'class_of_year']
-    list_display = ['first_name','last_name','year','is_active','primary_cohort', 'phone', 'gpa']
+    list_display = ['first_name','last_name','year','is_active','primary_cohort', 'phone']
     if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
         filter_horizontal = ('family_access_users',)
 
