@@ -156,6 +156,10 @@ class CourseEnrollment(models.Model):
     class Meta:
         unique_together = (("course_section", "user"),)
 
+    def get_final_grade(self):
+        from ecwsp.grades.utils import GradeCalculator
+        return GradeCalculator().get_course_grade(self)
+
     def get_average_for_marking_periods(self,
                                         marking_periods,
                                         letter=False,
@@ -208,21 +212,6 @@ class CourseEnrollment(models.Model):
         if letter == True and isinstance(grade, (int, long, float, complex, Decimal)):
             return self.optimized_grade_to_scale(grade)
         return grade
-
-    def calculate_grade(self):
-        return self.cache_grades()
-
-    def calculate_numeric_grade(self):
-        grade = self.cache_grades()
-        if isinstance(grade, Decimal):
-            return grade
-        return None
-
-    def calculate_grade_real(self, date_report=None, ignore_letter=False):
-        """ Calculate the final grade for a course section
-        ignore_letter can be useful when computing averages
-        when you don't care about letter grades
-        """
 
 
 class Department(models.Model):

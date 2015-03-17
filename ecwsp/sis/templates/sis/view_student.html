@@ -141,7 +141,7 @@
                             </div>
 			<div class="sv-main">
                             {% if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS %}
-                                <a href="{% url "ecwsp.benchmark_grade.views.student_report" student.id %}">Benchmark grade details</a>
+                                <a href="ecwsp.benchmark_grade.views.student_report">Benchmark grade details</a>
                             {% endif %}
                             
                             {% if perms.grades.change_grade %} <a class="edit_link" href="/grades/student_grades/{{ student.id }}/"> Edit </a><br /> {% endif %}

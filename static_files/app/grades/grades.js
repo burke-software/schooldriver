@@ -150,7 +150,7 @@ app.controller(
       year.courses = [];
       angular.forEach(courses, function(course) {
         angular.forEach(year.markingperiod_set, function(marking_period) {
-          if (marking_period.school_year === year.id) {
+          if (marking_period.school_year.id === year.id) {
             year.courses.push(course);
           }
         });
@@ -164,15 +164,15 @@ app.controller(
         if (grade.course_section_id === course.id) {
           course['grade_' + grade.marking_period] = grade.grade;
         }
-        if($scope.gridData.rows.indexOf(course) == -1){
-          $scope.gridData.rows.push(course);
-        }
       }
       angular.forEach(finalGrades, function(grade) {
         if (grade.course_section_id === course.id) {
           course['grade_final'] = grade.grade;
         }
       });
+      if($scope.gridData.rows.indexOf(course) == -1){
+        $scope.gridData.rows.push(course);
+      }
     }
 
 

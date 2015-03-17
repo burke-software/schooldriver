@@ -347,13 +347,19 @@ def view_student(request, id=None):
             # Too much logic for the template here, so just generate html.
             course_section.grade_html = ""
             for marking_period in year.mps:
-                try:
+                grade = Grade.objects.filter(
+                    enrollment__user=student,
+                    enrollment__course_section=course_section,
+                    marking_period=marking_period
+                ).first()
+                if grade is not None:
                     course_section.grade_html += '<td> %s </td>' % (
-                        Grade.objects.get(student=student, course_section=course_section, marking_period=marking_period).get_grade(),)
-                except:
+                        grade.get_grade(),)
+                else:
                     course_section.grade_html += '<td> </td>'
             try:
-                course_section.grade_html += '<td> %s </td>' % (unicode(course_section.courseenrollment_set.get(user=student).grade),)
+                enroll = course_section.courseenrollment_set.get(user=student)
+                course_section.grade_html += '<td> %s </td>' % (unicode(enroll.get_final_grade()),)
             except CourseEnrollment.DoesNotExist:
                 course_section.grade_html += '<td></td>'
 
