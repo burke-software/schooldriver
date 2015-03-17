@@ -383,7 +383,7 @@ class ImageImporter(DocImporter):
             self.format = 'png'
         # Retrieve image size from self.size.
         width = height = None
-        if self.size:
+        if self.size and (self.sizeUnit != 'pc'):
             width, height = self.size
             if self.sizeUnit == 'px':
                 # Convert it to cm
@@ -397,6 +397,10 @@ class ImageImporter(DocImporter):
         # If width and/or height is missing, compute it.
         if not width or not height:
             width, height = getSize(self.importPath, self.format)
+            if self.sizeUnit == 'pc':
+                # Apply the given percentage to the real width and height.
+                width = width * (float(self.size[0])/100)
+                height = height * (float(self.size[1])/100)
         if width != None:
             size = ' %s:width="%fcm" %s:height="%fcm"' % (s, width, s, height)
         else:

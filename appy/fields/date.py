@@ -206,8 +206,8 @@ class Date(Field):
         except DateTime.DateError, ValueError:
             return obj.translate('bad_date')
 
-    def getFormattedValue(self, obj, value, showChanges=False):
-        if self.isEmptyValue(value): return ''
+    def getFormattedValue(self, obj, value, showChanges=False, language=None):
+        if self.isEmptyValue(obj, value): return ''
         tool = obj.getTool().appy()
         # A problem may occur with some extreme year values. Replace the "year"
         # part "by hand".
@@ -219,7 +219,8 @@ class Date(Field):
             res += ' %s' % value.strftime(tool.hourFormat)
         return res
 
-    def getRequestValue(self, request, requestName=None):
+    def getRequestValue(self, obj, requestName=None):
+        request = obj.REQUEST
         name = requestName or self.name
         # Manage the "date" part
         value = ''
@@ -238,8 +239,8 @@ class Date(Field):
             value = value[:-1]
         return value
 
-    def getStorableValue(self, value):
-        if not self.isEmptyValue(value):
+    def getStorableValue(self, obj, value):
+        if not self.isEmptyValue(obj, value):
             import DateTime
             return DateTime.DateTime(value)
 
@@ -267,7 +268,9 @@ class Date(Field):
         '''Gets the Javascript init code for displaying a calendar popup for
            this field, for an input named p_name (which can be different from
            self.name if, ie, it is a search field).'''
+        # Always express the range of years in chronological order.
+        years = [years[0], years[-1]]
+        years.sort()
         return 'Calendar.setup({inputField: "%s", button: "%s_img", ' \
-               'onSelect: onSelectDate, range:[%d,%d]});' % \
-               (name, name, years[0], years[-1])
+               'onSelect: onSelectDate, range:%s})' % (name, name, str(years))
 # ------------------------------------------------------------------------------

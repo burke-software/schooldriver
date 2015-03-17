@@ -6,6 +6,78 @@ except ImportError:
     ldap = None
 
 # ------------------------------------------------------------------------------
+class LdapConfig:
+    '''Parameters for authenticating users to an LDAP server. This class is
+       used by gen-applications. For a pure, appy-independent LDAP connector,
+       see the class LdapConnector below.'''
+    ldapAttributes = { 'loginAttribute':None, 'emailAttribute':'email',
+                       'fullNameAttribute':'title',
+                       'firstNameAttribute':'firstName',
+                       'lastNameAttribute':'name' }
+
+    def __init__(self):
+        self.server = '' # Name of the LDAP server
+        self.port = None # Port for this server.
+        # Login and password of the technical power user that the Appy
+        # application will use to connect to the LDAP.
+        self.adminLogin = ''
+        self.adminPassword = ''
+        # LDAP attribute to use as login for authenticating users.
+        self.loginAttribute = 'dn' # Can also be "mail", "sAMAccountName", "cn"
+        # LDAP attributes for storing email
+        self.emailAttribute = None
+        # LDAP attribute for storing full name (first + last name)
+        self.fullNameAttribute = None
+        # Alternately, LDAP attributes for storing 1st & last names separately.
+        self.firstNameAttribute = None
+        self.lastNameAttribute = None
+        # LDAP classes defining the users stored in the LDAP.
+        self.userClasses = ('top', 'person')
+        self.baseDn = '' # Base DN where to find users in the LDAP.
+        self.scope = 'SUBTREE' # Scope of the search within self.baseDn
+        # Is this server connection enabled ?
+        self.enabled = True
+
+    def getServerUri(self):
+        '''Returns the complete URI for accessing the LDAP, ie
+           "ldap://some.ldap.server:389".'''
+        port = self.port or 389
+        return 'ldap://%s:%d' % (self.server, port)
+
+    def getUserFilterValues(self, login):
+        '''Gets the filter values required to perform a query for finding user
+           corresponding to p_login in the LDAP.'''
+        res = [(self.loginAttribute, login)]
+        for userClass in self.userClasses:
+            res.append( ('objectClass', userClass) )
+        return res
+
+    def getUserAttributes(self):
+        '''Gets the attributes we want to get from the LDAP for characterizing
+           a user.'''
+        res = []
+        for name in self.ldapAttributes.iterkeys():
+            if getattr(self, name):
+                res.append(getattr(self, name))
+        return res
+
+    def getUserParams(self, ldapData):
+        '''Formats the user-related p_ldapData retrieved from the ldap, as a
+           dict of params usable for creating or updating the corresponding
+           Appy user.'''
+        res = {}
+        for name, appyName in self.ldapAttributes.iteritems():
+            if not appyName: continue
+            # Get the name of the attribute as known in the LDAP.
+            ldapName = getattr(self, name)
+            if not ldapName: continue
+            if ldapData.has_key(ldapName) and ldapData[ldapName]:
+                value = ldapData[ldapName]
+                if isinstance(value, list): value = value[0]
+                res[appyName] = value
+        return res
+
+# ------------------------------------------------------------------------------
 class LdapConnector:
     '''This class manages the communication with a LDAP server.'''
     def __init__(self, serverUri, tentatives=5, ssl=False, timeout=5,

@@ -254,6 +254,10 @@ class MemoryBuffer(Buffer):
         self.elements = {}
         self.action = None
 
+    def clone(self):
+        '''Produces an empty buffer that is a clone of this one.'''
+        return MemoryBuffer(self.env, self.parent)
+
     def addSubBuffer(self, subBuffer=None):
         sb = Buffer.addSubBuffer(self, subBuffer)
         self.content += ' ' # To avoid having several subbuffers referenced at
@@ -671,8 +675,6 @@ class MemoryBuffer(Buffer):
                         if escape: result.dumpContent(res)
                         else: result.write(res)
                     except Exception, e:
-                        #print "OHHH YEAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
-                        #result.dumpContent('')
                         if not self.env.raiseOnError:
                             PodError.dump(result, EVAL_EXPR_ERROR % (
                                           evalEntry.expr, e), dumpTb=False)

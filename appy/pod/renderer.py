@@ -314,7 +314,8 @@ class Renderer:
                      (width, height) expressing size in p_sizeUnit (see below).
                      If not specified, size will be computed from image info;
            * p_sizeUnit is the unit for p_size elements, it can be "cm"
-             (centimeters) or "px" (pixels);
+             (centimeters), "px" (pixels) or "pc" (percentage). Percentages, in
+             p_size, must be expressed as integers from 1 to 100.
            * if p_style is given, it is the content of a "style" attribute,
              containing CSS attributes. If "width" and "heigth" attributes are
              found there, they will override p_size and p_sizeUnit.

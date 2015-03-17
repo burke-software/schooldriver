@@ -73,6 +73,17 @@ def cleanFolder(folder, exts=extsToClean, folders=(), verbose=False):
                     FolderDeleter.delete(toDelete)
 
 # ------------------------------------------------------------------------------
+def resolvePath(path):
+    '''p_path is a file path that can contain occurences of "." and "..". This
+       function resolves them and procuces a minimal path.'''
+    res = []
+    for elem in path.split(os.sep):
+        if elem == '.': pass
+        elif elem == '..': res.pop()
+        else: res.append(elem)
+    return os.sep.join(res)
+
+# ------------------------------------------------------------------------------
 def copyFolder(source, dest, cleanDest=False):
     '''Copies the content of folder p_source to folder p_dest. p_dest is
        created, with intermediary subfolders if required. If p_cleanDest is
@@ -218,7 +229,12 @@ def normalizeString(s, usage='fileName'):
     '''
     strNeeded = isinstance(s, str)
     # We work in unicode. Convert p_s to unicode if not unicode.
-    if isinstance(s, str):           s = s.decode('utf-8')
+    if isinstance(s, str):
+        try:
+            s = s.decode('utf-8')
+        except UnicodeDecodeError:
+            # Another encoding may be in use.
+            s = s.decode('latin-1')
     elif not isinstance(s, unicode): s = unicode(s)
     if usage == 'extractedText':
         # Replace single quotes with blanks.

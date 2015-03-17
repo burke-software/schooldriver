@@ -119,8 +119,9 @@ class List(Field):
             res.append(elem)
         return res
 
-    def getRequestValue(self, request, requestName=None):
+    def getRequestValue(self, obj, requestName=None):
         '''Concatenates the list from distinct form elements in the request.'''
+        request = obj.REQUEST
         name = requestName or self.name # A List may be into another List (?)
         prefix = name + '*' + self.fields[0][0] + '*'
         res = {}
@@ -133,7 +134,7 @@ class List(Field):
             if rowIndex == -1: continue # Ignore the template row.
             for subName, subField in self.fields:
                 keyName = '%s*%s*%s' % (name, subName, rowIndex)
-                v = subField.getRequestValue(request, requestName=keyName)
+                v = subField.getRequestValue(obj, requestName=keyName)
                 setattr(row, subName, v)
             res[rowIndex] = row
         # Produce a sorted list.
@@ -148,7 +149,7 @@ class List(Field):
         request.set(name, res)
         return res
 
-    def getStorableValue(self, value):
+    def getStorableValue(self, obj, value):
         '''Gets p_value in a form that can be stored in the database.'''
         res = []
         for v in value:
@@ -156,11 +157,11 @@ class List(Field):
             for name, field in self.fields:
                 subValue = getattr(v, name)
                 try:
-                    setattr(sv, name, field.getStorableValue(subValue))
+                    setattr(sv, name, field.getStorableValue(obj, subValue))
                 except ValueError:
                     # The value for this field for this specific row is
                     # incorrect. It can happen in the process of validating the
-                    # whole List field (a call to getStorableValue occurs at
+                    # whole List field (a call to m_getStorableValue occurs at
                     # this time). We don't care about it, because later on we
                     # will have sub-field specific validation that will also
                     # detect the error and will prevent storing the wrong value

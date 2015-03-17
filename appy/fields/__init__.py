@@ -22,6 +22,7 @@ from appy.gen import utils as gutils
 from appy.px import Px
 from appy.shared import utils as sutils
 from group import Group
+from search import Search
 from page import Page
 
 # ------------------------------------------------------------------------------
@@ -39,6 +40,7 @@ class Field:
     # field, keyed by layoutType.
     cssFiles = {}
     jsFiles = {}
+    bLayouts = Table('lrv-f', width=None)
     dLayouts = 'lrv-d-f'
     hLayouts = 'lhrv-f'
     wLayouts = Table('lrv-f')
@@ -50,7 +52,7 @@ class Field:
     # * showChanges If True, a variant of the field showing successive changes
     #               made to it is shown.
     pxRender = Px('''
-     <x var="showChanges=showChanges|req.get('showChanges',False);
+     <x var="showChanges=showChanges|req.get('showChanges') == 'True';
              layoutType=layoutType|req.get('layoutType');
              isSearch = layoutType == 'search';
              layout=field.layouts[layoutType];
@@ -62,7 +64,7 @@ class Field:
              value=not isSearch and \
                    field.getFormattedValue(zobj, rawValue, showChanges);
              requestValue=not isSearch and zobj.getRequestFieldValue(name);
-             inRequest=req.has_key(name);
+             inRequest=field.valueIsInRequest(zobj, req, name);
              error=req.get('%s_error' % name);
              isMultiple=(field.multiplicity[1] == None) or \
                         (field.multiplicity[1] &gt; 1);
@@ -74,6 +76,26 @@ class Field:
              tagId='%s_%s' % (zobj.id, name);
              tagName=field.master and 'slave' or '';
              layoutTarget=field">:tool.pxLayoutedObject</x>''')
+
+    def doRender(self, layoutType, request, context=None, name=None):
+        '''Allows to call pxRender from code, to display the content of this
+           field in some specific context, for example in a Computed field.'''
+        if context == None: context = {}
+        context['layoutType'] = layoutType
+        context['field'] = self
+        context['name'] = name or self.name
+        # We may be executing a PX on a given object or on a given object tied
+        # through a Ref.
+        ctx = request.pxContext
+        if 'obj' not in context:
+            context['obj'] = ('tied' in ctx) and ctx['tied'] or ctx['obj']
+            context['zobj'] = context['obj'].o
+        # Copy some keys from the context of the currently executed PX.
+        for k in ('tool', 'ztool', 'req', '_', 'q', 'url', 'dir', 'dright',
+                  'dleft', 'inPopup'):
+            if k in context: continue
+            context[k] = ctx[k]
+        return self.pxRender(context).encode('utf-8')
 
     # Displays a field label.
     pxLabel = Px('''<label if="field.hasLabel and field.renderLabel"
@@ -96,14 +118,24 @@ class Field:
     pxRequired = Px('''<img src=":url('required.gif')"/>''')
 
     # Button for showing changes to the field.
-    pxChanges = Px('''<x if=":zobj.hasHistory(name)"><img class="clickable"
-     if="not showChanges" src=":url('changes')" title="_('changes_show')"
-     onclick=":'askField(%s,%s,%s,%s)' % \
-               (q(tagId), q(zobj.absolute_url()), q('view'), q('True'))"/><img
-     class="clickable" if="showChanges" src=":url('changesNo')"
-     onclick=":'askField(%s,%s,%s,%s)' % \
-               (q(tagId), q(zobj.absolute_url(), q('view'), q('True'))"
-     title=":_('changes_hide')"/></x>''')
+    pxChanges = Px('''
+     <x if="zobj.hasHistory(name)">
+      <!-- Button for showing the field version containing changes -->
+      <input type="button" class="button" if="not showChanges"
+             var="label=_('changes_show')" value=":label"
+             style=":'%s; %s' % (url('changes', bg=True), \
+                                 ztool.getButtonWidth(label))"
+             onclick=":'askField(%s,%s,%s,null,%s)' % \
+                       (q(tagId), q(obj.url), q('view'), q('True'))"/>
+
+      <!-- Button for showing the field version without changes -->
+      <input type="button" class="button" if="showChanges"
+             var="label=_('changes_hide')" value=":label"
+             style=":'%s; %s' % (url('changesNo', bg=True), \
+                                 ztool.getButtonWidth(label))"
+             onclick=":'askField(%s,%s,%s,null,%s)' % \
+                       (q(tagId), q(obj.url), q('view'), q('False'))"/>
+     </x>''')
 
     def __init__(self, validator, multiplicity, default, show, page, group,
                  layouts, move, indexed, searchable, specificReadPermission,
@@ -286,11 +318,8 @@ class Field:
 
     def isMultiValued(self):
         '''Does this type definition allow to define multiple values?'''
-        res = False
         maxOccurs = self.multiplicity[1]
-        if (maxOccurs == None) or (maxOccurs > 1):
-            res = True
-        return res
+        return (maxOccurs == None) or (maxOccurs > 1)
 
     def isSortable(self, usage):
         '''Can fields of this type be used for sorting purposes (when sorting
@@ -300,8 +329,9 @@ class Field:
             return self.indexed and not self.isMultiValued() and not \
                    ((self.type == 'String') and self.isSelection())
         elif usage == 'ref':
-            return self.type in ('Integer', 'Float', 'Boolean', 'Date') or \
-                   ((self.type == 'String') and (self.format == 0))
+            if self.type in ('Integer', 'Float', 'Boolean', 'Date'): return True
+            elif self.type == 'String':
+                return (self.format == 0) and not self.isMultilingual(None,True)
 
     def isShowable(self, obj, layoutType):
         '''When displaying p_obj on a given p_layoutType, must we show this
@@ -320,7 +350,7 @@ class Field:
             for r in res:
                 if r == layoutType: return True
             return
-        elif res in ('view', 'edit', 'result'):
+        elif res in ('view', 'edit', 'result', 'buttons'):
             return res == layoutType
         return bool(res)
 
@@ -332,7 +362,7 @@ class Field:
         else:
             master, masterValue = masterData
             if masterValue and callable(masterValue): return True
-            reqValue = master.getRequestValue(obj.REQUEST)
+            reqValue = master.getRequestValue(obj)
             # reqValue can be a list or not
             if type(reqValue) not in sutils.sequenceTypes:
                 return reqValue in masterValue
@@ -489,7 +519,7 @@ class Field:
     def getValue(self, obj):
         '''Gets, on_obj, the value conforming to self's type definition.'''
         value = getattr(obj.aq_base, self.name, None)
-        if self.isEmptyValue(value):
+        if self.isEmptyValue(obj, value):
             # If there is no value, get the default value if any: return
             # self.default, of self.default() if it is a method.
             if callable(self.default):
@@ -505,14 +535,28 @@ class Field:
                 return self.default
         return value
 
-    def getFormattedValue(self, obj, value, showChanges=False):
+    def getCopyValue(self, obj):
+        '''Gets the value of this field on p_obj as with m_getValue above. But
+           if this value is mutable, get a copy of it.'''
+        return self.getValue(obj)
+
+    def getFormattedValue(self, obj, value, showChanges=False, language=None):
         '''p_value is a real p_obj(ect) value from a field from this type. This
            method returns a pretty, string-formatted version, for displaying
            purposes. Needs to be overridden by some child classes. If
            p_showChanges is True, the result must also include the changes that
-           occurred on p_value across the ages.'''
-        if self.isEmptyValue(value): return ''
+           occurred on p_value across the ages. If the formatting implies
+           translating some elements, p_language will be used if given, the
+           user language else.'''
+        if self.isEmptyValue(obj, value): return ''
         return value
+
+    def getShownValue(self, obj, value, showChanges=False):
+        '''Similar to m_getFormattedValue, but in some contexts, only a part of
+           p_value must be shown. For example, sometimes we need to display only
+           a language-specific part of a multilingual field (see overridden
+           method in string.py).'''
+        return self.getFormattedValue(obj, value, showChanges)
 
     def getIndexType(self):
         '''Returns the name of the technical, Zope-level index type for this
@@ -531,22 +575,41 @@ class Field:
 
            If p_forSearch is True, it will return a "string" version of the
            index value suitable for a global search.'''
-        value = self.getValue(obj)
-        if forSearch and (value != None):
-            if isinstance(value, unicode):
-                res = value.encode('utf-8')
-            elif type(value) in sutils.sequenceTypes:
-                res = []
-                for v in value:
-                    if isinstance(v, unicode): res.append(v.encode('utf-8'))
-                    else: res.append(str(v))
-                res = ' '.join(res)
+        res = self.getValue(obj)
+        # Zope catalog does not like unicode strings.
+        if isinstance(res, unicode): res = res.encode('utf-8')
+        if forSearch and (res != None):
+            if type(res) in sutils.sequenceTypes:
+                vals = []
+                for v in res:
+                    if isinstance(v, unicode): vals.append(v.encode('utf-8'))
+                    else: vals.append(str(v))
+                res = ' '.join(vals)
             else:
-                res = str(value)
-            return res
-        return value
+                res = str(res)
+        return res
 
-    def getRequestValue(self, request, requestName=None):
+    def getCatalogValue(self, obj, usage='search'):
+        '''This method returns the index value that is currently stored in the
+           catalog for this field on p_obj.'''
+        if not self.indexed:
+            raise Exception('Field %s: cannot retrieve catalog version of ' \
+                            'unindexed field.' % self.name)
+        tool = obj.getTool()
+        indexName = Search.getIndexName(self.name, usage=usage)
+        catalogBrain = tool.getObject(obj.id, brain=True)
+        index = tool.getApp().catalog.Indexes[indexName]
+        return index.getEntryForObject(catalogBrain.getRID())
+
+    def valueIsInRequest(self, obj, request, name):
+        '''Is there a value corresponding to this field in the request? p_name
+           can be different from self.name (ie, if it is a field within another
+           (List) field). In most cases, checking that this p_name is in the
+           request is sufficient. But in some cases it may be more complex, ie
+           for string multilingual fields.'''
+        return request.has_key(name)
+
+    def getRequestValue(self, obj, requestName=None):
         '''Gets a value for this field as carried in the request object. In the
            simplest cases, the request value is a single value whose name in the
            request is the name of the field.
@@ -560,16 +623,29 @@ class Field:
            the container field). In this case, p_requestName must be used for
            searching into the request, instead of the field name (self.name).'''
         name = requestName or self.name
-        return request.get(name, None)
+        return obj.REQUEST.get(name, None)
 
-    def getStorableValue(self, value):
+    def getStorableValue(self, obj, value):
         '''p_value is a valid value initially computed through calling
            m_getRequestValue. So, it is a valid string (or list of strings)
            representation of the field value coming from the request.
            This method computes the real (potentially converted or manipulated
            in some other way) value as can be stored in the database.'''
-        if self.isEmptyValue(value): return
+        if self.isEmptyValue(obj, value): return
         return value
+
+    def setSlave(self, slaveField, masterValue):
+        '''Sets p_slaveField as slave of this field. Normally, master/slave
+           relationships are defined when a slave field is defined. At this time
+           you specify parameters "master" and "masterValue" for this field and
+           that's all. This method is used to add a master/slave relationship
+           that was not initially foreseen.'''
+        slaveField.master = self
+        slaveField.masterValue = gutils.initMasterValue(masterValue)
+        if slaveField not in self.slaves:
+            self.slaves.append(slaveField)
+        # Master's init method may not have been called yet.
+        slaveField.masterName = getattr(self, 'name', None)
 
     def getMasterData(self):
         '''Gets the master of this field (and masterValue) or, recursively, of
@@ -599,9 +675,21 @@ class Field:
         return 'updateSlaves(this,null,%s,%s,null,null%s)' % \
                (q(zobj.absolute_url()), q(layoutType), cName)
 
-    def isEmptyValue(self, value, obj=None):
+    def isEmptyValue(self, obj, value):
         '''Returns True if the p_value must be considered as an empty value.'''
         return value in self.nullValues
+
+    def isCompleteValue(self, obj, value):
+        '''Returns True if the p_value must be considered as "complete". While,
+           in most cases, a "complete" value simply means a "non empty" value
+           (see m_isEmptyValue above), in some special cases it is more subtle.
+           For example, a multilingual string value is not empty as soon as a
+           value is given for some language but will not be considered as
+           complete while a value is missing for some language. Another example:
+           a Date with the "hour" part required will not be considered as empty
+           if the "day, month, year" part is present but will not be considered
+           as complete without the "hour, minute" part.'''
+        return not self.isEmptyValue(obj, value)
 
     def validateValue(self, obj, value):
         '''This method may be overridden by child classes and will be called at
@@ -625,8 +713,8 @@ class Field:
            m_getRequestValue defined above, is valid according to this type
            definition. If it is the case, None is returned. Else, a translated
            error message is returned.'''
-        # Check that a value is given if required.
-        if self.isEmptyValue(value, obj):
+        # If the value is required, check that a (complete) value is present.
+        if not self.isCompleteValue(obj, value):
             if self.required and self.isClientVisible(obj):
                 # If the field is required, but not visible according to
                 # master/slave relationships, we consider it not to be required.
@@ -639,7 +727,7 @@ class Field:
         message = self.validateValue(obj, value)
         if message: return message
         # Evaluate the custom validator if one has been specified
-        value = self.getStorableValue(value)
+        value = self.getStorableValue(obj, value)
         if self.validator and (type(self.validator) in self.validatorTypes):
             obj = obj.appy()
             if type(self.validator) != self.validatorTypes[-1]:

@@ -68,10 +68,10 @@ class Integer(Field):
         except ValueError:
             return obj.translate('bad_%s' % self.pythonType.__name__)
 
-    def getStorableValue(self, value):
-        if not self.isEmptyValue(value): return self.pythonType(value)
+    def getStorableValue(self, obj, value):
+        if not self.isEmptyValue(obj, value): return self.pythonType(value)
 
-    def getFormattedValue(self, obj, value, showChanges=False):
-        if self.isEmptyValue(value): return ''
+    def getFormattedValue(self, obj, value, showChanges=False, language=None):
+        if self.isEmptyValue(obj, value): return ''
         return str(value)
 # ------------------------------------------------------------------------------

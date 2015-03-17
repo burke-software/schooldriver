@@ -21,6 +21,7 @@ from appy import Object
 class Page:
     '''Used for describing a page, its related phase, show condition, etc.'''
     subElements = ('save', 'cancel', 'previous', 'next', 'edit')
+
     def __init__(self, name, phase='main', show=True, showSave=True,
                  showCancel=True, showPrevious=True, showNext=True,
                  showEdit=True, label=None):
@@ -62,31 +63,24 @@ class Page:
         return res
 
     def isShowable(self, obj, layoutType, elem='page'):
-        '''Must this page be shown for p_obj? "Show value" can be True, False
-           or 'view' (page is available only in "view" mode).
+        '''Is this page showable for p_obj on p_layoutType ("view" or "edit")?
 
            If p_elem is not "page", this method returns the fact that a
            sub-element is viewable or not (buttons "save", "cancel", etc).'''
         # Define what attribute to test for "showability".
-        showAttr = 'show'
-        if elem != 'page':
-            showAttr = 'show%s' % elem.capitalize()
+        attr = (elem == 'page') and 'show' or ('show%s' % elem.capitalize())
         # Get the value of the show attribute as identified above.
-        show = getattr(self, showAttr)
-        if callable(show):
-            show = show(obj.appy())
-        # Show value can be 'view', for example. Thanks to p_layoutType,
-        # convert show value to a real final boolean value.
-        res = show
-        if res == 'view': res = layoutType == 'view'
+        res = getattr(self, attr)
+        if callable(res): res = res(obj.appy())
+        if isinstance(res, str): return res == layoutType
         return res
 
     def getInfo(self, obj, layoutType):
         '''Gets information about this page, for p_obj, as an object.'''
         res = Object()
         for elem in Page.subElements:
-            setattr(res, 'show%s' % elem.capitalize(), \
-                    self.isShowable(obj, layoutType, elem=elem))
+            showable = self.isShowable(obj, layoutType, elem)
+            setattr(res, 'show%s' % elem.capitalize(), showable)
         return res
 
     def getLabel(self, zobj):

@@ -249,6 +249,7 @@ class XmlParser(ContentHandler, ErrorHandler):
             from cStringIO import StringIO
         except ImportError:
             from StringIO import StringIO
+        self._xml = xml
         self.parser.setContentHandler(self)
         self.parser.setErrorHandler(self)
         self.parser.setFeature(feature_external_ges, False)
@@ -322,13 +323,18 @@ class XmlUnmarshaller(XmlParser):
         self.conversionFunctions = conversionFunctions
         self.utf8 = utf8
 
+    def encode(self, value):
+        '''Depending on self.utf8 we may need to encode p_value.'''
+        if self.utf8: return value
+        return value.encode('utf-8')
+
     def convertAttrs(self, attrs):
         '''Converts XML attrs to a dict.'''
         res = {}
         for k, v in attrs.items():
             if ':' in k: # An attr prefixed with a namespace. Remove this.
                 k = k.split(':')[-1]
-            res[str(k)] = v
+            res[str(k)] = self.encode(v)
         return res
 
     def startDocument(self):
@@ -365,9 +371,9 @@ class XmlUnmarshaller(XmlParser):
             elif elemType == 'file':
                 newObject = UnmarshalledFile()
                 if attrs.has_key('name'):
-                    newObject.name = attrs['name']
+                    newObject.name = self.encode(attrs['name'])
                 if attrs.has_key('mimeType'):
-                    newObject.mimeType = attrs['mimeType']
+                    newObject.mimeType = self.encode(attrs['mimeType'])
             else: newObject = Object(**self.convertAttrs(attrs))
             # Store the value on the last container, or on the root object.
             self.storeValue(elem, newObject)
@@ -411,7 +417,9 @@ class XmlUnmarshaller(XmlParser):
                 # will act in m_endElement, when the object will be finalized.
                 pass
             elif isinstance(currentContainer, UnmarshalledFile):
-                currentContainer.content += value or ''
+                val = value or ''
+                currentContainer.content += val
+                currentContainer.size += len(val)
             else:
                 # Current container is an object
                 if hasattr(currentContainer, name) and \
@@ -429,8 +437,7 @@ class XmlUnmarshaller(XmlParser):
                 setattr(currentContainer, name, attrValue)
 
     def characters(self, content):
-        if not self.utf8:
-            content = content.encode('utf-8')
+        content = self.encode(content)
         e = XmlParser.characters(self, content)
         if e.currentBasicType:
             e.currentContent += content
@@ -1177,4 +1184,28 @@ class XhtmlCleaner(XmlParser):
             toAdd = content
         # Re-transform XML special chars to entities.
         self.env.currentContent += cgi.escape(toAdd)
+
+# ------------------------------------------------------------------------------
+class XhtmlToText(XmlParser):
+    '''Produces a text version of XHTML content.'''
+    paraTags = ('p', 'li', 'center', 'div')
+
+    def startDocument(self):
+        XmlParser.startDocument(self)
+        self.res = []
+
+    def endDocument(self):
+        self.res = ''.join(self.res)
+        return XmlParser.endDocument(self)
+
+    def characters(self, content):
+        self.res.append(content.replace('\n', ''))
+
+    def startElement(self, elem, attrs):
+        '''Dumps a carriage return every time a "br" tag is encountered.'''
+        if elem == 'br': self.res.append('\n')
+
+    def endElement(self, elem):
+        '''Dumps a carriage return every time a paragraph is encountered.'''
+        if elem in self.paraTags: self.res.append('\n')
 # ------------------------------------------------------------------------------

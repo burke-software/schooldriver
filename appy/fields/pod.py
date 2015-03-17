@@ -27,13 +27,31 @@ from appy.pod.renderer import Renderer
 from appy.shared import utils as sutils
 
 # ------------------------------------------------------------------------------
+class Mailing:
+    '''Represents a mailing list as can be used by a pod field (see below).'''
+    def __init__(self, name=None, logins=None, subject=None, body=None):
+        # The mailing list name, as shown in the user interface
+        self.name = name
+        # The list of logins that will be used as recipients for sending
+        # emails.
+        self.logins = logins
+        # The mail subject
+        self.subject = subject
+        # The mail body
+        self.body = body
+
+# ------------------------------------------------------------------------------
 class Pod(Field):
     '''A pod is a field allowing to produce a (PDF, ODT, Word, RTF...) document
        from data contained in Appy class and linked objects or anything you
        want to put in it. It is the way gen uses pod.'''
-    # Layout for rendering a POD field for exporting query results.
-    rLayouts = {'view': 'fl!'}
+    # Some right-aligned layouts, convenient for pod fields exporting query
+    # results or multi-template pod fields.
+    rLayouts = {'view': Table('fl!', css_class='podTable')} # "r"ight
+    # "r"ight "m"ulti-template (where the global field label is not used
+    rmLayouts = {'view': Table('f!', css_class='podTable')}
     allFormats = {'.odt': ('pdf', 'doc', 'odt'), '.ods': ('xls', 'ods')}
+
     POD_ERROR = 'An error occurred while generating the document. Please ' \
                 'contact the system administrator.'
     NO_TEMPLATE = 'Please specify a pod template in field "template".'
@@ -45,66 +63,88 @@ class Pod(Field):
 
     # Icon allowing to generate a given template in a given format.
     pxIcon = Px('''
-     <img var="iconSuffix=frozen and 'Frozen' or ''"
+     <img var="iconSuffix=frozen and 'Frozen' or '';
+               gc=field.getChecked and q(field.getChecked) or 'null'"
           src=":url(fmt + iconSuffix)" class="clickable"
           title=":field.getIconTitle(obj, fmt, frozen)"
-          onclick=":'generatePod(%s,%s,%s,%s,%s)' % (q(uid), q(name), \
-                    q(info.template), q(fmt), q(ztool.getQueryInfo()))"/>''')
+          onclick=":'generatePod(%s,%s,%s,%s,%s,null,%s)' % (q(uid), q(name), \
+                   q(info.template), q(fmt), q(ztool.getQueryInfo()), gc)"/>''')
 
     pxView = pxCell = Px('''
      <x var="uid=obj.uid"
-        for="info in field.getVisibleTemplates(obj)">
+        for="info in field.getVisibleTemplates(obj)"
+        var2="mailings=field.getVisibleMailings(obj, info.template);
+              lineBreak=((loop.info.nb + 1) % field.maxPerRow) == 0">
       <x for="fmt in info.formats"
          var2="freezeAllowed=(fmt in info.freezeFormats) and \
                              (field.show != 'result');
+               hasMailings=mailings and (fmt in mailings);
+               dropdownEnabled=freezeAllowed or hasMailings;
                frozen=field.isFrozen(obj, info.template, fmt)">
-       <!-- A clickable icon if no freeze action is allowed -->
-       <x if="not freezeAllowed">:field.pxIcon</x>
+       <!-- A clickable icon if no freeze action is allowed and no mailing is
+            available for this format -->
+       <x if="not dropdownEnabled">:field.pxIcon</x>
        <!-- A clickable icon and a dropdown menu else. -->
-       <span if="freezeAllowed" class="dropdownMenu"
+       <span if="dropdownEnabled" class="dropdownMenu"
              var2="dropdownId='%s_%s' % (uid, \
                               field.getFreezeName(info.template, fmt, sep='_'))"
              onmouseover=":'toggleDropdown(%s)' % q(dropdownId)"
              onmouseout=":'toggleDropdown(%s,%s)' % (q(dropdownId), q('none'))">
         <x>:field.pxIcon</x>
         <!-- The dropdown menu containing freeze actions -->
-        <table id=":dropdownId" class="dropdown" width="75px">
+        <table id=":dropdownId" class="dropdown" width="100px">
          <!-- Unfreeze -->
-         <tr if="frozen" valign="top">
-          <td>
+         <tr if="freezeAllowed and frozen" valign="top">
+          <td width="85px">
            <a onclick=":'freezePod(%s,%s,%s,%s,%s)' % (q(uid), q(name), \
                         q(info.template), q(fmt), q('unfreeze'))"
               class="smaller">:_('unfreezeField')</a>
           </td>
-          <td align="center"><img src=":url('unfreeze')"/></td>
+          <td width="15px"><img src=":url('unfreeze')"/></td>
          </tr>
          <!-- (Re-)freeze -->
-         <tr valign="top">
-          <td>
+         <tr if="freezeAllowed" valign="top">
+          <td width="85px">
            <a onclick=":'freezePod(%s,%s,%s,%s,%s)' % (q(uid), q(name), \
                         q(info.template), q(fmt), q('freeze'))"
               class="smaller">:_('freezeField')</a>
           </td>
-          <td align="center"><img src=":url('freeze')"/></td>
+          <td width="15px"><img src=":url('freeze')"/></td>
          </tr>
          <!-- (Re-)upload -->
-         <tr valign="top">
-          <td>
+         <tr if="freezeAllowed" valign="top">
+          <td width="85px">
            <a onclick=":'uploadPod(%s,%s,%s,%s)' % (q(uid), q(name), \
                         q(info.template), q(fmt))"
               class="smaller">:_('uploadField')</a>
           </td>
-          <td align="center"><img src=":url('upload')"/></td>
+          <td width="15px"><img src=":url('upload')"/></td>
          </tr>
+         <!-- Mailing lists -->
+         <x if="hasMailings" var2="sendLabel=_('email_send')">
+          <tr for="mailing in mailings[fmt]" valign="top"
+              var2="mailingName=field.getMailingName(obj, mailing)">
+           <td colspan="2">
+            <a var="js='generatePod(%s,%s,%s,%s,%s,null,null,%s)' % \
+                       (q(uid), q(name), q(info.template), q(fmt), \
+                        q(ztool.getQueryInfo()), q(mailing))"
+               onclick=":'askConfirm(%s,%s)' % (q('script'), q(js, False))"
+               title=":sendLabel">
+             <img src=":url('email')" align="left" style="margin-right: 2px"/>
+             <x>:mailingName</x></a>
+            </td>
+          </tr>
+         </x>
         </table>
        </span>
-      </x> 
+      </x>
       <!-- Show the specific template name only if there is more than one
            template. For a single template, the field label already does the
            job. -->
       <span if="len(field.template) &gt; 1"
-            class=":not loop.info.last and 'pod smaller' or \
-                    'smaller'">:field.getTemplateName(obj, info.template)</span>
+            class=":(not loop.info.last and not lineBreak) and 'pod smaller' \
+                 or 'smaller'">:field.getTemplateName(obj, info.template)</span>
+      <br if="lineBreak"/>
      </x>''')
 
     pxEdit = pxSearch = ''
@@ -116,12 +156,20 @@ class Pod(Field):
                  maxChars=None, colspan=1, master=None, masterValue=None,
                  focus=False, historized=False, mapping=None, label=None,
                  template=None, templateName=None, showTemplate=None,
-                 freezeTemplate=None, context=None, stylesMapping={},
-                 formats=None):
-        # Param "template" stores the path to the pod template(s).
+                 freezeTemplate=None, maxPerRow=5, context=None,
+                 stylesMapping={}, formats=None, getChecked=None, mailing=None,
+                 mailingName=None, showMailing=None, mailingInfo=None):
+        # Param "template" stores the path to the pod template(s). If there is
+        # a single template, a string is expected. Else, a list or tuple of
+        # strings is expected. Every such path must be relative to your
+        # application. A pod template name Test.odt that is stored at the root
+        # of your app will be referred as "Test.odt" in self.template. If it is
+        # stored within sub-folder "pod", it will be referred as "pod/Test.odt".
         if not template: raise Exception(Pod.NO_TEMPLATE)
         if isinstance(template, basestring):
             self.template = [template]
+        elif isinstance(template, tuple):
+            self.template = list(template)
         else:
             self.template = template
         # Param "templateName", if specified, is a method that will be called
@@ -177,6 +225,9 @@ class Pod(Field):
         # - upload a document: the frozen or uploaded document will be replaced
         #   by a new document uploaded by the current user.
         self.freezeTemplate = freezeTemplate
+        # If p_template contains more than 1 template, "maxPerRow" tells how
+        # much templates must appear side by side.
+        self.maxPerRow = maxPerRow
         # The context is a dict containing a specific pod context, or a method
         # that returns such a dict.
         self.context = context
@@ -184,12 +235,42 @@ class Pod(Field):
         self.stylesMapping = stylesMapping
         # What are the output formats when generating documents from this pod ?
         self.formats = formats
-        if not formats:
-            # Compute default ones
-            if self.template[0].endswith('.ods'):
-                self.formats = ('xls', 'ods')
-            else:
-                self.formats = ('pdf', 'doc', 'odt')
+        if not formats: # Compute default ones
+            self.formats = self.getAllFormats(self.template[0])
+        # Parameter "getChecked" can specify the name of a Ref field belonging
+        # to the same gen class. If it is the case, the context of the pod
+        # template will contain an additional object, name "_checked", and
+        # "_checked.<name of the Ref field>" will contain the list of the
+        # objects linked via the Ref field that are currently selected in the
+        # user interface.
+        self.getChecked = getChecked
+        # Mailing lists can be defined for this pod field. For every visible
+        # mailing list, a menu item will be available in the user interface and
+        # will allow to send the pod result as attachment to the mailing list
+        # recipients. Attribute p_mailing stores a mailing list's id
+        # (as a string) or a list of ids.
+        self.mailing = mailing
+        if isinstance(mailing, basestring):
+            self.mailing = [mailing]
+        elif isinstance(mailing, tuple):
+            self.mailing = list(mailing)
+        # "mailingName" returns the name of the mailing as will be shown in the
+        # user interface. It must be a method accepting the mailing list id
+        # (from self.mailing) as single arg and returning the mailing list's
+        # name.
+        self.mailingName = mailingName
+        # "showMailing" below determines when the mailing list(s) must be shown.
+        # It may store a method accepting a mailing list's id (among
+        # self.mailing) and a template (among self.template) and returning the
+        # list or tuple of formats for which the pod result can be sent to the
+        # mailing list. If no such method is defined, the mailing list will be
+        # available for all visible templates and formats.
+        self.showMailing = showMailing
+        # When it it time to send an email, "mailingInfo" gives all the
+        # necessary information for this email: recipients, subject, body. It
+        # must be a method whose single arg is the mailing id (from
+        # self.mailing) and that returns an instance of class Mailing (above).
+        self.mailingInfo = mailingInfo
         Field.__init__(self, None, (0,1), default, show, page, group, layouts,
                        move, indexed, searchable, specificReadPermission,
                        specificWritePermission, width, height, None, colspan,
@@ -199,56 +280,189 @@ class Pod(Field):
         # field is determined by freezing.
         self.validable = False
 
+    def getExtension(self, template):
+        '''Gets a p_template's extension (".odt" or ".ods"). Because a template
+           can simply be a pointer to another template (ie, "Item.odt.variant"),
+           the logic for getting the extension is a bit more tricky.'''
+        elems = os.path.splitext(template)
+        if elems[1] in Pod.allFormats: return elems[1]
+        # p_template must be a pointer to another template and has one more
+        # extension.
+        return os.path.splitext(elems[0])[1]
+
     def getAllFormats(self, template):
-        '''Gets all the outputy formats that are available for a given
+        '''Gets all the output formats that are available for a given
            p_template.'''
-        ext = os.path.splitext(template)[1]
-        return self.allFormats[ext]
+        return Pod.allFormats[self.getExtension(template)]
+
+    def setTemplateFolder(self, folder):
+        '''This methods adds a prefix to every template name in
+           self.template. This can be useful if a plug-in module needs to
+           replace an application template by its own templates. Here is an
+           example: imagine a base application has a pod field with:
+           
+           self.templates = ["Item.odt", "Decision.odt"]
+           
+           The plug-in module, named "PlugInApp", wants to replace it with its
+           own templates Item.odt, Decision.odt and Other.odt, stored in its
+           sub-folder "pod". Suppose the base pod field is in <podField>. The
+           plug-in will write:
+           
+           <podField>.templates = ["Item.odt", "Decision.odt", "Other.odt"]
+           <podField>.setTemplateFolder('../PlugInApp/pod')
+           
+           The following code is equivalent, will work, but is precisely the
+           kind of things we want to avoid.
+
+           <podField>.templates = ["../PlugInApp/pod/Item.odt",
+                                   "../PlugInApp/pod/Decision.odt",
+                                   "../PlugInApp/pod/Other.odt"]
+        '''
+        for i in range(len(self.template)):
+            self.template[i] = os.path.join(folder, self.template[i])
 
     def getTemplateName(self, obj, fileName):
         '''Gets the name of a template given its p_fileName.'''
         res = None
         if self.templateName:
-            # Use the method specified in self.templateName.
+            # Use the method specified in self.templateName
             res = self.templateName(obj, fileName)
-        # Else, deduce a nice name from p_fileName.
+        # Else, deduce a nice name from p_fileName
         if not res:
             name = os.path.splitext(os.path.basename(fileName))[0]
             res = gutils.produceNiceMessage(name)
         return res
 
+    def getTemplatePath(self, diskFolder, template):
+        '''Return the absolute path to some pod p_template, by prefixing it with
+           the application path. p_template can be a pointer to another
+           template.'''
+        res = sutils.resolvePath(os.path.join(diskFolder, template))
+        if not os.path.isfile(res):
+            raise Exception(self.TEMPLATE_NOT_FOUND % templatePath)
+        # Unwrap the path if the file is simply a pointer to another one.
+        elems = os.path.splitext(res)
+        if elems[1] not in Pod.allFormats:
+            res = self.getTemplatePath(diskFolder, elems[0])
+        return res
+
     def getDownloadName(self, obj, template, format, queryRelated):
         '''Gets the name of the pod result as will be seen by the user that will
-           download it.'''
-        fileName = self.getTemplateName(obj, template)
+           download it. Ensure the returned name is not too long for the OS that
+           will store the downloaded file with this name.'''
+        norm = obj.tool.normalize
+        fileName = norm(self.getTemplateName(obj, template))[:100]
         if not queryRelated:
             # This is a POD for a single object: personalize the file name with
             # the object title.
-            fileName = '%s-%s' % (obj.title, fileName)
-        return obj.tool.normalize(fileName) + '.' + format
+            fileName = '%s-%s' % (norm(obj.title)[:140], fileName)
+        return fileName + '.' + format
 
     def getVisibleTemplates(self, obj):
         '''Returns, among self.template, the template(s) that can be shown.'''
         res = []
         if not self.showTemplate:
-            # Show them all in any format.
+            # Show them all in the formats spoecified in self.formats.
             for template in self.template:
-                res.append(Object(template=template,
-                        formats=self.getAllFormats(template),
-                        freezeFormats=self.getFreezeFormats(obj, template)))
+                res.append(Object(template=template, formats=self.formats,
+                            freezeFormats=self.getFreezeFormats(obj, template)))
         else:
             isManager = obj.user.has_role('Manager')
             for template in self.template:
                 formats = self.showTemplate(obj, template)
                 if not formats: continue
-                formats = isManager and self.getAllFormats(template) or formats
-                if isinstance(formats, basestring): formats = (formats,)
+                if isManager: formats = self.getAllFormats(template)
+                elif isinstance(formats, bool): formats = self.formats
+                elif isinstance(formats, basestring): formats = (formats,)
                 res.append(Object(template=template, formats=formats,
                            freezeFormats=self.getFreezeFormats(obj, template)))
         return res
 
+    def getVisibleMailings(self, obj, template):
+        '''Gets, among self.mailing, the mailing(s) that can be shown for
+           p_template, as a dict ~{s_format:[s_id]}~.'''
+        if not self.mailing: return
+        res = {}
+        for mailing in self.mailing:
+            # Is this mailing visible ? In which format(s) ?
+            if not self.showMailing:
+                # By default, the mailing is available in any format
+                formats = True
+            else:
+                formats = self.showMailing(obj, mailing, template)
+            if not formats: continue
+            if isinstance(formats, bool): formats = self.formats
+            elif isinstance(formats, basestring): formats = (formats,)
+            # Add this mailing to the result
+            for fmt in formats:
+                if fmt in res: res[fmt].append(mailing)
+                else: res[fmt] = [mailing]
+        return res
+
+    def getMailingName(self, obj, mailing):
+        '''Gets the name of a particular p_mailing.'''
+        res = None
+        if self.mailingName:
+            # Use the method specified in self.mailingName
+            res = self.mailingName(obj, mailing)
+        if not res:
+            # Deduce a nice name from p_mailing
+            res = gutils.produceNiceMessage(mailing)
+        return res
+
+    def getMailingInfo(self, obj, template, mailing):
+        '''Gets the necessary information for sending an email to
+           p_mailing list.'''
+        res = self.mailingInfo(obj, mailing)
+        subject = res.subject
+        if not subject:
+            # Give a predefined subject
+            mapping = {'site': obj.tool.o.getSiteUrl(),
+                       'title':  obj.o.getShownValue('title'),
+                       'template': self.getTemplateName(obj, template)}
+            subject = obj.translate('podmail_subject', mapping=mapping)
+        body = res.body
+        if not body:
+            # Give a predefined body
+            mapping = {'site': obj.tool.o.getSiteUrl()}
+            body = obj.translate('podmail_body', mapping=mapping)
+        return res.logins, subject, body
+
+    def sendMailing(self, obj, template, mailing, attachment):
+        '''Sends the emails for m_mailing.'''
+        logins, subject, body = self.getMailingInfo(obj, template, mailing)
+        if not logins:
+            obj.log('mailing %s contains no recipient.' % mailing)
+            return 'action_ko'
+        tool = obj.tool
+        # Collect logins corresponding to inexistent users and recipients
+        missing = []
+        recipients = []
+        for login in logins:
+            user = tool.search1('User', noSecurity=True, login=login)
+            if not user:
+                missing.append(login)
+                continue
+            else:
+                recipient = user.getMailRecipient()
+                if not recipient:
+                    missing.append(login)
+                else:
+                    recipients.append(recipient)
+        if missing:
+            obj.log('mailing %s: inexistent user or no email for %s.' % \
+                    (mailing, str(missing)))
+        if not recipients:
+            obj.log('mailing %s contains no recipient (after removing wrong ' \
+                    'entries, see above).' % mailing)
+            msg = 'action_ko'
+        else:
+            tool.sendMail(recipients, subject, body, [attachment])
+            msg = 'action_done'
+        return msg
+
     def getValue(self, obj, template=None, format=None, result=None,
-                 queryData=None, customParams=None, noSecurity=False):
+                 queryData=None, customContext=None, noSecurity=False):
         '''For a pod field, getting its value means computing a pod document or
            returning a frozen one. A pod field differs from other field types
            because there can be several ways to produce the field value (ie:
@@ -263,9 +477,9 @@ class Pod(Field):
              the OS temp folder;
            * if the pod document is related to a query, the query parameters
              needed to re-trigger the query are given in p_queryData;
-           * p_customParams may be specified. Every custom param must have form
-             "name:value". Custom params override any other value available in
-             the context, including values from the field-specific context.
+           * dict p_customContext may be specified and will override any other
+             value available in the context, including values from the
+             field-specific context.
         '''
         obj = obj.appy()
         template = template or self.template[0]
@@ -285,9 +499,7 @@ class Pod(Field):
         tool = obj.tool
         diskFolder = tool.getDiskFolder()
         # Get the path to the pod template.
-        templatePath = os.path.join(diskFolder, template)
-        if not os.path.isfile(templatePath):
-            raise Exception(self.TEMPLATE_NOT_FOUND % templatePath)
+        templatePath = self.getTemplatePath(diskFolder, template)
         # Get or compute the specific POD context
         specificContext = None
         if callable(self.context):
@@ -301,7 +513,8 @@ class Pod(Field):
         # Define parameters to give to the appy.pod renderer
         podContext = {'tool': tool, 'user': obj.user, 'self': obj, 'field':self,
                       'now': obj.o.getProductConfig().DateTime(),
-                      '_': obj.translate, 'projectFolder': diskFolder}
+                      '_': obj.translate, 'projectFolder': diskFolder,
+                      'template': template, 'request': tool.request}
         # If the pod document is related to a query, re-trigger it and put the
         # result in the pod context.
         if queryData:
@@ -315,13 +528,13 @@ class Pod(Field):
                      sortBy=sortKey, sortOrder=sortOrder, filterKey=filterKey,
                      filterValue=filterValue, maxResults='NO_LIMIT')
             podContext['objects'] = [o.appy() for o in objs.objects]
-        # Add the field-specific context if present.
-        if specificContext:
-            podContext.update(specificContext)
-        # If a custom param comes from the request, add it to the context.
-        if customParams:
-            paramsDict = eval(customParams)
-            podContext.update(paramsDict)
+            podContext['queryData'] = queryData.split(';')
+        # Add the field-specific and custom contexts if present.
+        if specificContext: podContext.update(specificContext)
+        if customContext: podContext.update(customContext)
+        # Variable "_checked" can be expected by a template but absent (ie,
+        # when generating frozen documents).
+        if '_checked' not in podContext: podContext['_checked'] = Object()
         # Define a potential global styles mapping
         if callable(self.stylesMapping):
             stylesMapping = self.callMethod(obj, self.stylesMapping)
@@ -354,6 +567,7 @@ class Pod(Field):
         '''Gets the name on disk on the frozen document corresponding to this
            pod field, p_template and p_format.'''
         template = template or self.template[0]
+        template = os.path.basename(template)
         templateName = os.path.splitext(template)[0].replace(os.sep, '_')
         return '%s_%s%s%s' % (self.name, templateName, sep, format)
 
@@ -401,19 +615,20 @@ class Pod(Field):
                         type='error')
                 if not freezeOdtOnError or (format == 'odt'):
                     raise Exception(self.FREEZE_FATAL_ERROR)
-                obj.log('Trying to freeze the ODT version...')
-                # Try to freeze the ODT version of the document, which does not
-                # require to call LibreOffice: the risk of error is smaller.
+                obj.log('freezing the ODT version...')
+                # Freeze the ODT version of the document, which does not require
+                # to call LibreOffice: the risk of error is smaller.
                 fileName = self.getFreezeName(template, 'odt')
                 result = os.path.join(dbFolder, folder, fileName)
                 if os.path.exists(result):
-                    obj.log('Freeze: overwriting %s...' % result)
+                    obj.log('freeze: overwriting %s...' % result)
                 doc = self.getValue(obj, template=template, format='odt',
                                     result=result)
                 if isinstance(doc, basestring):
                     self.log(self.FREEZE_ERROR % ('odt', self.name, doc),
                              type='error')
                     raise Exception(self.FREEZE_FATAL_ERROR)
+                obj.log('freezed at %s.' % result)
         else:
             # Store the uploaded file in the database.
             f = file(result, 'wb')
@@ -433,7 +648,9 @@ class Pod(Field):
         dbFolder, folder = obj.o.getFsFolder()
         fileName = self.getFreezeName(template, format)
         frozenName = os.path.join(dbFolder, folder, fileName)
-        if os.path.exists(frozenName): os.remove(frozenName)
+        if os.path.exists(frozenName):
+            os.remove(frozenName)
+            obj.log('removed (unfrozen) %s.' % frozenName)
 
     def getFreezeFormats(self, obj, template=None):
         '''What are the formats into which the current user may freeze
@@ -456,6 +673,37 @@ class Pod(Field):
             res += ' (%s)' % obj.translate('frozen')
         return res
 
+    def getCustomContext(self, obj, rq):
+        '''Before calling pod to compute a result, if specific elements must be
+           added to the context, compute it here. This request-dependent method
+           is not called when computing a pod field for freezing it into the
+           database.'''
+        res = {}
+        # Get potential custom params from the request. Custom params must be
+        # coded as a string containing a valid Python dict.
+        customParams = rq.get('customParams')
+        if customParams:
+            paramsDict = eval(customParams)
+            res.update(paramsDict)
+        # Compute the selected linked objects if self.getChecked is specified
+        # and if the user can read this Ref field.
+        if self.getChecked and \
+           obj.allows(obj.getField(self.getChecked).readPermission):
+            # Get the UIDs specified in the request
+            reqUids = rq['checkedUids'] and rq['checkedUids'].split(',') or []
+            unchecked = rq['checkedSem'] == 'unchecked'
+            objects = []
+            tool = obj.tool
+            for uid in getattr(obj.o.aq_base, self.getChecked, ()):
+                if unchecked: condition = uid not in reqUids
+                else:         condition = uid in reqUids
+                if condition:
+                    tied = tool.getObject(uid)
+                    if tied.allows('read'): objects.append(tied)
+            res['_checked'] = Object()
+            setattr(res['_checked'], self.getChecked, objects)
+        return res
+
     def onUiRequest(self, obj, rq):
         '''This method is called when an action tied to this pod field
            (generate, freeze, upload...) is triggered from the user
@@ -472,14 +720,26 @@ class Pod(Field):
             # Generate a (or get a frozen) document.
             res = self.getValue(obj, template=template, format=format,
                                 queryData=rq.get('queryData'),
-                                customParams=rq.get('customParams'))
+                                customContext=self.getCustomContext(obj, rq))
             if isinstance(res, basestring):
                 # An error has occurred, and p_res contains the error message.
                 obj.say(res)
                 return tool.goto(rq.get('HTTP_REFERER'))
             # res contains a FileInfo instance.
-            res.writeResponse(rq.RESPONSE)
-            return
+            # Must we return the res to the ui or send a mail with the res as
+            # attachment?
+            mailing = rq.get('mailing')
+            if not mailing:
+                # With disposition=inline, Google Chrome and IE may launch a PDF
+                # viewer that triggers one or many additional crashing HTTP GET
+                # requests.
+                res.writeResponse(rq.RESPONSE, disposition='attachment')
+                return
+            else:
+                # Send the email(s).
+                msg = self.sendMailing(obj, template, mailing, res)
+                obj.say(obj.translate(msg))
+                return tool.goto(rq.get('HTTP_REFERER'))
         # Performing any other action requires write access to p_obj.
         obj.o.mayEdit(self.writePermission, raiseError=True)
         msg = 'action_done'

@@ -35,11 +35,18 @@ class Computed(Field):
                  layouts=None, move=0, indexed=False, searchable=False,
                  specificReadPermission=False, specificWritePermission=False,
                  width=None, height=None, maxChars=None, colspan=1, method=None,
-                 plainText=False, master=None, masterValue=None, focus=False,
-                 historized=False, mapping=None, label=None, sdefault='',
-                 scolspan=1, swidth=None, sheight=None, context=None):
+                 formatMethod=None, plainText=False, master=None,
+                 masterValue=None, focus=False, historized=False, mapping=None,
+                 label=None, sdefault='', scolspan=1, swidth=None, sheight=None,
+                 context=None):
         # The Python method used for computing the field value, or a PX.
         self.method = method
+        # A specific method for producing the formatted value of this field.
+        # This way, if, for example, the value is a DateTime instance which is
+        # indexed, you can specify in m_formatMethod the way to format it in
+        # the user interface while m_method computes the value stored in the
+        # catalog.
+        self.formatMethod = formatMethod
         if isinstance(self.method, basestring):
             # A legacy macro identifier. Raise an exception
             raise Exception(self.WRONG_METHOD % self.method)
@@ -79,7 +86,11 @@ class Computed(Field):
             # self.method is a method that will return the field value
             return self.callMethod(obj, self.method, cache=False)
 
-    def getFormattedValue(self, obj, value, showChanges=False):
-        if not isinstance(value, basestring): return str(value)
-        return value
+    def getFormattedValue(self, obj, value, showChanges=False, language=None):
+        if self.formatMethod:
+            res = self.formatMethod(obj, value)
+        else:
+            res = value
+        if not isinstance(res, basestring): res = str(res)
+        return res
 # ------------------------------------------------------------------------------

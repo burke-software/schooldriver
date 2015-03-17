@@ -55,12 +55,16 @@ class Selection:
         # internationalized version of "text" if needed.
         self.methodName = methodName
 
-    def getText(self, obj, value, appyType):
+    def getText(self, obj, value, field, language=None):
         '''Gets the text that corresponds to p_value.'''
-        for v, text in appyType.getPossibleValues(obj, ignoreMasterValues=True,\
-                                                  withTranslations=True):
-            if v == value:
-                return text
+        if language:
+            withTranslations = language
+        else:
+            withTranslations = True
+        vals = field.getPossibleValues(obj, ignoreMasterValues=True,\
+                                       withTranslations=withTranslations)
+        for v, text in vals:
+            if v == value: return text
         return value
 
 # ------------------------------------------------------------------------------
@@ -77,40 +81,127 @@ class String(Field):
     URL = c('(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*(\.[a-z]{2,5})?' \
             '(([0-9]{1,5})?\/.*)?')
 
+    # Possible values for "format"
+    LINE = 0
+    TEXT = 1
+    XHTML = 2
+    PASSWORD = 3
+    CAPTCHA = 4
+
+    # Default ways to render multingual fields
+    defaultLanguagesLayouts = {
+      LINE:  {'edit': 'vertical',   'view': 'vertical'},
+      TEXT:  {'edit': 'horizontal', 'view': 'vertical'},
+      XHTML: {'edit': 'horizontal', 'view': 'horizontal'},
+    }
+
+    # pxView part for formats String.LINE (but that are not selections) and
+    # String.PASSWORD (a fake view for String.PASSWORD and no view at all for
+    # String.CAPTCHA).
+    pxViewLine = Px('''
+     <span if="not value" class="smaller">-</span>
+     <x if="value">
+      <!-- A password -->
+      <x if="fmt == 3">********</x>
+      <!-- A URL -->
+      <a if="(fmt != 3) and isUrl" target="_blank" href=":value">:value</a>
+      <!-- Any other value -->
+      <x if="(fmt != 3) and not isUrl">::value</x>
+     </x>''')
+
+    # pxView part for format String.TEXT.
+    pxViewText = Px('''
+     <span if="not value" class="smaller">-</span>
+     <x if="value">::zobj.formatText(value, format='html')</x>''')
+
+    # pxView part for format String.XHTML.
+    pxViewRich = Px('''
+     <div if="not mayAjaxEdit" class="xhtml">::value or '-'</div>
+     <x if="mayAjaxEdit" var2="name=lg and ('%s_%s' % (name, lg)) or name">
+      <div class="xhtml" contenteditable="true"
+           id=":'%s_%s_ck' % (zobj.id, name)">::value or '-'</div>
+      <script if="mayAjaxEdit">::field.getJsInlineInit(zobj, name, lg)</script>
+     </x>''')
+
+    # PX displaying the language code and name besides the part of the
+    # multilingual field storing content in this language.
+    pxLanguage = Px('''
+     <td style=":'padding-top:%dpx' % lgTop" width="25px">
+      <span class="language help"
+            title=":ztool.getLanguageName(lg)">:lg.upper()</span>
+     </td>''')
+
+    pxMultilingual = Px('''
+     <!-- Horizontally-layouted multilingual field -->
+     <table if="mLayout == 'horizontal'" width="100%"
+            var="count=len(languages)">
+      <tr valign="top"><x for="lg in languages"><x>:field.pxLanguage</x>
+       <td width=":'%d%%' % int(100.0/count)"
+           var="requestValue=requestValue[lg]|None;
+                value=value[lg]|emptyDefault">:field.subPx[layoutType][fmt]</td>
+      </x></tr></table>
+
+     <!-- Vertically-layouted multilingual field -->
+     <table if="mLayout == 'vertical'">
+      <tr valign="top" height="20px" for="lg in languages">
+       <x>:field.pxLanguage</x>
+       <td var="requestValue=requestValue[lg]|None;
+                value=value[lg]|emptyDefault">:field.subPx[layoutType][fmt]</td>
+     </tr></table>''')
+
     pxView = Px('''
      <x var="fmt=field.format; isUrl=field.isUrl;
+             languages=field.getAttribute(zobj, 'languages');
+             multilingual=len(languages) &gt; 1;
+             mLayout=multilingual and field.getLanguagesLayout('view');
              mayAjaxEdit=not showChanges and field.inlineEdit and \
+                         (layoutType != 'cell') and \
                          zobj.mayEdit(field.writePermission)">
-      <x if="fmt in (0, 3)">
-       <ul if="value and isMultiple">
-        <li for="sv in value"><i>::sv</i></li>
-       </ul>
-       <x if="value and not isMultiple">
-        <!-- A password -->
-        <x if="fmt == 3">********</x>
-        <!-- A URL -->
-        <a if="(fmt != 3) and isUrl" target="_blank" href=":value">:value</a>
-        <!-- Any other value -->
-        <x if="(fmt != 3) and not isUrl">::value</x>
-       </x>
+      <x if="field.isSelect">
+       <span if="not value" class="smaller">-</span>
+       <x if="value and not isMultiple">::value</x>
+       <ul if="value and isMultiple"><li for="sv in value"><i>::sv</i></li></ul>
       </x>
-      <!-- Unformatted text -->
-      <x if="value and (fmt == 1)">::zobj.formatText(value, format='html')</x>
-      <!-- XHTML text -->
-      <x if="fmt == 2">
-       <div if="not mayAjaxEdit" class="xhtml">::value or '-'</div>
-       <div if="mayAjaxEdit" class="xhtml" contenteditable="true"
-            id=":'%s_%s_ck' % (zobj.id, name)">::value or '-'</div>
-       <script if="mayAjaxEdit">::field.getJsInlineInit(zobj)</script>
-      </x>
-      <span if="not value and (fmt != 2)" class="smaller">-</span>
+      <!-- Any other unilingual field -->
+      <x if="not field.isSelect and not multilingual"
+         var2="lg=None">:field.subPx['view'][fmt]</x>
+      <!-- Any other multilingual field -->
+      <x if="not field.isSelect and multilingual"
+         var2="lgTop=1; emptyDefault='-'">:field.pxMultilingual</x>
+      <!-- If this field is a master field -->
       <input type="hidden" if="masterCss" class=":masterCss" value=":rawValue"
-             name=":name" id=":name"/>
-     </x>''')
+             name=":name" id=":name"/></x>''')
+
+    # pxEdit part for formats String.LINE (but that are not selections),
+    # String.PASSWORD and String.CAPTCHA.
+    pxEditLine = Px('''
+     <input var="inputId=not lg and name or '%s_%s' % (name, lg);
+                 placeholder=field.getAttribute(obj, 'placeholder') or ''"
+            id=":inputId" name=":inputId" size=":field.width"
+            maxlength=":field.maxChars" placeholder=":placeholder"
+            value=":inRequest and requestValue or value"
+            style=":'text-transform:%s' % field.transform"
+            type=":(fmt == 3) and 'password' or 'text'"/>
+     <!-- Display a captcha if required -->
+     <span if="fmt == 4">:_('captcha_text', \
+                            mapping=field.getCaptchaChallenge(req.SESSION))
+     </span>''')
+
+    # pxEdit part for formats String.TEXT and String.XHTML.
+    pxEditTextArea = Px('''
+     <textarea var="inputId=not lg and name or '%s_%s' % (name, lg)"
+               id=":inputId" name=":inputId" cols=":field.width"
+               style=":'text-transform:%s' % field.transform"
+               rows=":field.height">:inRequest and requestValue or value
+     </textarea>
+     <script if="fmt == 2"
+             type="text/javascript">::field.getJsInit(zobj, lg)</script>''')
 
     pxEdit = Px('''
      <x var="fmt=field.format;
-             isOneLine=fmt in (0,3,4)">
+             languages=field.getAttribute(zobj, 'languages');
+             multilingual=len(languages) &gt; 1;
+             mLayout=multilingual and field.getLanguagesLayout('edit')">
       <select if="field.isSelect"
               var2="possibleValues=field.getPossibleValues(zobj, \
                       withTranslations=True, withBlankValue=True)"
@@ -122,28 +213,14 @@ class String(Field):
                selected=":field.isSelected(zobj, name, val[0], rawValue)"
                title=":val[1]">:ztool.truncateValue(val[1],field.width)</option>
       </select>
-      <x if="isOneLine and not field.isSelect"
-         var2="placeholder=field.getAttribute(obj, 'placeholder') or ''">
-       <input id=":name" name=":name" size=":field.width"
-              maxlength=":field.maxChars" placeholder=":placeholder"
-              value=":inRequest and requestValue or value"
-              style=":'text-transform:%s' % field.transform"
-              type=":(fmt == 3) and 'password' or 'text'"/>
-       <!-- Display a captcha if required -->
-       <span if="fmt == 4">:_('captcha_text', \
-                              mapping=field.getCaptchaChallenge(req.SESSION))
-       </span>
-      </x>
-      <x if="fmt in (1,2)">
-       <textarea id=":name" name=":name" cols=":field.width"
-                 class=":(fmt == 2) and ('rich_%s' % name) or ''"
-                 style=":'text-transform:%s' % field.transform"
-                 rows=":field.height">:inRequest and requestValue or value
-       </textarea>
-       <script if="fmt == 2"
-               type="text/javascript">::field.getJsInit(zobj)</script>
-      </x>
-     </x>''')
+      <!-- Any other unilingual field -->
+      <x if="not field.isSelect and not multilingual"
+         var2="lg=None">:field.subPx['edit'][fmt]</x>
+      <!-- Any other multilingual field -->
+      <x if="not field.isSelect and multilingual"
+         var2="lgTop=(fmt!=2) and 3 or 1;
+               emptyDefault=''">:field.pxMultilingual</x>
+      </x>''')
 
     pxCell = Px('''
      <x var="multipleValues=value and isMultiple">
@@ -181,6 +258,15 @@ class String(Field):
                title=":v[1]">:ztool.truncateValue(v[1], field.swidth)</option>
       </select>
      </x><br/>''')
+
+    # Sub-PX to use according to String format.
+    subPx = {
+     'edit': {LINE:pxEditLine, TEXT:pxEditTextArea, XHTML:pxEditTextArea,
+              PASSWORD:pxEditLine, CAPTCHA:pxEditLine},
+     'view': {LINE:pxViewLine, TEXT:pxViewText, XHTML:pxViewRich,
+              PASSWORD:pxViewLine, CAPTCHA:pxViewLine}
+    }
+    subPx['cell'] = subPx['view']
 
     # Some predefined functions that may also be used as validators
     @staticmethod
@@ -285,12 +371,6 @@ class String(Field):
             if not alpha.match(c): return False
         return True
 
-    # Possible values for "format"
-    LINE = 0
-    TEXT = 1
-    XHTML = 2
-    PASSWORD = 3
-    CAPTCHA = 4
     def __init__(self, validator=None, multiplicity=(0,1), default=None,
                  format=LINE, show=True, page='main', group=None, layouts=None,
                  move=0, indexed=False, searchable=False,
@@ -300,7 +380,8 @@ class String(Field):
                  label=None, sdefault='', scolspan=1, swidth=None, sheight=None,
                  persist=True, transform='none', placeholder=None,
                  styles=('p','h1','h2','h3','h4'), allowImageUpload=True,
-                 spellcheck=False, contentLanguage=None, inlineEdit=False):
+                 spellcheck=False, languages=('en',), languagesLayouts=None,
+                 inlineEdit=False):
         # According to format, the widget will be different: input field,
         # textarea, inline editor... Note that there can be only one String
         # field of format CAPTCHA by page, because the captcha challenge is
@@ -314,8 +395,16 @@ class String(Field):
         self.allowImageUpload = allowImageUpload
         # When format is XHTML, do we run the CK spellchecker ?
         self.spellcheck = spellcheck
-        # What is the language of field content?
-        self.contentLanguage = contentLanguage
+        # If "languages" holds more than one language, the field will be
+        # multi-lingual and several widgets will allow to edit/visualize the
+        # field content in all the supported languages. The field is also used
+        # by the CK spell checker.
+        self.languages = languages
+        # When content exists in several languages, how to render them? Either
+        # horizontally (one below the other), or vertically (one besides the
+        # other). Specify here a dict whose keys are layouts ("edit", "view")
+        # and whose values are either "horizontal" or "vertical".
+        self.languagesLayouts = languagesLayouts
         # When format in XHTML, can the field be inline-edited (ckeditor)?
         self.inlineEdit = inlineEdit
         # The following field has a direct impact on the text entered by the
@@ -361,6 +450,17 @@ class String(Field):
                           not self.isSelect
         self.swidth = self.swidth or self.width
         self.sheight = self.sheight or self.height
+        self.checkParameters()
+
+    def checkParameters(self):
+        '''Ensures this String is correctly defined.'''
+        error = None
+        if self.isMultilingual(None):
+            if self.isSelect:
+                error = "A selection field can't be multilingual."
+            elif self.format in (String.PASSWORD, String.CAPTCHA):
+                error = "A password or captcha field can't be multilingual."
+        if error: raise Exception(error)
 
     def isSelection(self):
         '''Does the validator of this type definition define a list of values
@@ -375,6 +475,14 @@ class String(Field):
             if not isinstance(self.validator, Selection):
                 res = False
         return res
+
+    def isMultilingual(self, obj, dontKnow=False):
+        '''Is this field multilingual ? If we don't know, say p_dontKnow.'''
+        # In the following case, impossible to know: we say no.
+        if not obj:
+            if callable(self.languages): return dontKnow
+            else: return len(self.languages) > 1
+        return len(self.getAttribute(obj, 'languages')) > 1
 
     def getDefaultLayouts(self):
         '''Returns the default layouts for this type. Default layouts can vary
@@ -393,8 +501,15 @@ class String(Field):
         elif self.isMultiValued():
             return {'view': 'l-f', 'edit': 'lrv-f'}
 
+    def getLanguagesLayout(self, layoutType):
+        '''Gets the way to render a multilingual field on p_layoutType.'''
+        if self.languagesLayouts and (layoutType in self.languagesLayouts):
+            return self.languagesLayouts[layoutType]
+        # Else, return a default value that depends of the format.
+        return String.defaultLanguagesLayouts[self.format][layoutType]
+
     def getValue(self, obj):
-        # Cheat if this field represents p_obj's state
+        # Cheat if this field represents p_obj's state.
         if self.name == 'state': return obj.State()
         value = Field.getValue(self, obj)
         if not value:
@@ -406,44 +521,78 @@ class String(Field):
             value = list(value)
         return value
 
-    def store(self, obj, value):
-        '''When the value is XHTML, we perform some cleanup.'''
-        if not self.persist: return
-        if (self.format == String.XHTML) and value:
-            # When image upload is allowed, ckeditor inserts some "style" attrs
-            # (ie for image size when images are resized). So in this case we
-            # can't remove style-related information.
-            try:
-                value = XhtmlCleaner(keepStyles=False).clean(value)
-            except XhtmlCleaner.Error, e:
-                # Errors while parsing p_value can't prevent the user from
-                # storing it.
-                obj.log('Unparsable XHTML content in field "%s".' % self.name,
-                        type='warning')
-        Field.store(self, obj, value)
+    def getCopyValue(self, obj):
+        '''If the value is mutable (ie, a dict for a multilingual field), return
+           a copy of it instead of the value stored in the database.'''
+        res = self.getValue(obj)
+        if isinstance(res, dict): res = res.copy()
+        return res
 
-    def storeFromAjax(self, obj):
-        '''Stores the new field value from an Ajax request, or do nothing if
-           the action was canceled.'''
-        rq = obj.REQUEST
-        if rq.get('cancel') != 'True': self.store(obj, rq['fieldContent'])
+    def valueIsInRequest(self, obj, request, name):
+        languages = self.getAttribute(obj, 'languages')
+        if len(languages) == 1:
+            return Field.valueIsInRequest(self, obj, request, name)
+        # Is is sufficient to check that at least one of the language-specific
+        # values is in the request.
+        return request.has_key('%s_%s' % (name, languages[0]))
 
-    def getDiffValue(self, obj, value):
+    def getRequestValue(self, obj, requestName=None):
+        '''The request value may be multilingual.'''
+        request = obj.REQUEST
+        name = requestName or self.name
+        languages = self.getAttribute(obj, 'languages')
+        # A unilingual field.
+        if len(languages) == 1: return request.get(name, None)
+        # A multilingual field.
+        res = {}
+        for language in languages:
+            res[language] = request.get('%s_%s' % (name, language), None)
+        return res
+
+    def isEmptyValue(self, obj, value):
+        '''Returns True if the p_value must be considered as an empty value.'''
+        if not self.isMultilingual(obj):
+            return Field.isEmptyValue(self, obj, value)
+        # For a multilingual value, as soon as a value is not empty for a given
+        # language, the whole value is considered as not being empty.
+        if not value: return True
+        for v in value.itervalues():
+            if not Field.isEmptyValue(self, obj, v): return
+        return True
+
+    def isCompleteValue(self, obj, value):
+        '''Returns True if the p_value must be considered as complete. For a
+           unilingual field, being complete simply means not being empty. For a
+           multilingual field, being complete means that a value is present for
+           every language.'''
+        if not self.isMultilingual(obj):
+            return Field.isCompleteValue(self, obj, value)
+        # As soon as a given language value is empty, the global value is not
+        # complete.
+        if not value: return True
+        for v in value.itervalues():
+            if Field.isEmptyValue(self, obj, v): return
+        return True
+
+    def getDiffValue(self, obj, value, language):
         '''Returns a version of p_value that includes the cumulative diffs
-           between  successive versions.'''
+           between successive versions. If the field is non-multilingual, it
+           must be called with p_language being None. Else, p_language
+           identifies the language-specific part we will work on.'''
         res = None
         lastEvent = None
-        for event in obj.workflow_history.values()[0]:
+        name = language and ('%s-%s' % (self.name, language)) or self.name
+        for event in obj.workflow_history['appy']:
             if event['action'] != '_datachange_': continue
-            if self.name not in event['changes']: continue
+            if name not in event['changes']: continue
             if res == None:
                 # We have found the first version of the field
-                res = event['changes'][self.name][0] or ''
+                res = event['changes'][name][0] or ''
             else:
                 # We need to produce the difference between current result and
                 # this version.
                 iMsg, dMsg = obj.getHistoryTexts(lastEvent)
-                thisVersion = event['changes'][self.name][0] or ''
+                thisVersion = event['changes'][name][0] or ''
                 comparator = HtmlDiff(res, thisVersion, iMsg, dMsg)
                 res = comparator.get()
             lastEvent = event
@@ -452,45 +601,99 @@ class String(Field):
         comparator = HtmlDiff(res, value or '', iMsg, dMsg)
         return comparator.get()
 
-    def getFormattedValue(self, obj, value, showChanges=False):
-        if self.isEmptyValue(value): return ''
+    def getUnilingualFormattedValue(self, obj, value, showChanges=False,
+                                    userLanguage=None, language=None):
+        '''If no p_language is specified, this method is called by
+           m_getFormattedValue for getting a non-multilingual value (ie, in
+           most cases). Else, this method returns a formatted value for the
+           p_language-specific part of a multilingual value.'''
+        if Field.isEmptyValue(self, obj, value): return ''
         res = value
         if self.isSelect:
             if isinstance(self.validator, Selection):
                 # Value(s) come from a dynamic vocabulary
                 val = self.validator
                 if self.isMultiValued():
-                    return [val.getText(obj, v, self) for v in value]
+                    return [val.getText(obj, v, self, language=userLanguage) \
+                            for v in value]
                 else:
-                    return val.getText(obj, value, self)
+                    return val.getText(obj, value, self, language=userLanguage)
             else:
                 # Value(s) come from a fixed vocabulary whose texts are in
                 # i18n files.
-                t = obj.translate
+                _ = obj.translate
                 if self.isMultiValued():
-                    res = [t('%s_list_%s' % (self.labelId, v)) for v in value]
+                    res = [_('%s_list_%s' % (self.labelId, v), \
+                             language=userLanguage) for v in value]
                 else:
-                    res = t('%s_list_%s' % (self.labelId, value))
+                    res = _('%s_list_%s' % (self.labelId, value), \
+                            language=userLanguage)
         elif (self.format == String.XHTML) and showChanges:
             # Compute the successive changes that occurred on p_value.
-            res = self.getDiffValue(obj, res)
+            res = self.getDiffValue(obj, res, language)
         # If value starts with a carriage return, add a space; else, it will
         # be ignored.
         if isinstance(res, basestring) and \
            (res.startswith('\n') or res.startswith('\r\n')): res = ' ' + res
         return res
 
+    def getFormattedValue(self, obj, value, showChanges=False, language=None):
+        '''Be careful: p_language represents the UI language, while "languages"
+           below represents the content language(s) of this field. p_language
+           can be used, ie, to translate a Selection value.'''
+        languages = self.getAttribute(obj, 'languages')
+        if len(languages) == 1:
+            return self.getUnilingualFormattedValue(obj, value, showChanges,
+                                                    userLanguage=language)
+        # Return the dict of values whose individual, language-specific values
+        # have been formatted via m_getUnilingualFormattedValue.
+        if not value: return value
+        res = {}
+        for lg in languages:
+            res[lg] = self.getUnilingualFormattedValue(obj, value[lg],
+                                                       showChanges, language=lg)
+        return res
+
+    def getShownValue(self, obj, value, showChanges=False, language=None):
+        '''Be careful: p_language represents the UI language, while "languages"
+           below represents the content language(s) of this field. For a
+           multilingual field, this method only shows one specific language
+           part.'''
+        languages = self.getAttribute(obj, 'languages')
+        if len(languages) == 1:
+            return self.getUnilingualFormattedValue(obj, value, showChanges,
+                                                    userLanguage=language)
+        if not value: return value
+        # Try to propose the part that is in the user language, or the part of
+        # the first content language else.
+        lg = obj.getUserLanguage()
+        if lg not in value: lg = languages[0]
+        return self.getUnilingualFormattedValue(obj, value[lg], showChanges,
+                                                language=lg)
+
+    def extractText(self, value):
+        '''Extracts pure text from XHTML p_value.'''
+        return XhtmlTextExtractor(raiseOnError=False).parse('<p>%s</p>' % value)
+
     emptyStringTuple = ('',)
     emptyValuesCatalogIgnored = (None, '')
+
     def getIndexValue(self, obj, forSearch=False):
-        '''For indexing purposes, we return only strings, not unicodes.'''
-        res = Field.getIndexValue(self, obj, forSearch)
-        if isinstance(res, unicode):
-            res = res.encode('utf-8')
-        if res and forSearch and (self.format == String.XHTML):
-            # Convert the value to simple text.
-            extractor = XhtmlTextExtractor(raiseOnError=False)
-            res = extractor.parse('<p>%s</p>' % res)
+        '''Pure text must be extracted from rich content; multilingual content
+           must be concatenated.'''
+        isXhtml = self.format == String.XHTML
+        if self.isMultilingual(obj):
+            res = self.getValue(obj)
+            if res:
+                vals = []
+                for v in res.itervalues():
+                    if isinstance(v, unicode): v = v.encode('utf-8')
+                    if isXhtml: vals.append(self.extractText(v))
+                    else: vals.append(v)
+                res = ' '.join(vals)
+        else:
+            res = Field.getIndexValue(self, obj, forSearch)
+            if res and isXhtml: res = self.extractText(res)
         # Ugly catalog: if I give an empty tuple as index value, it keeps the
         # previous value. If I give him a tuple containing an empty string, it
         # is ok.
@@ -506,11 +709,15 @@ class String(Field):
         '''Returns the list of possible values for this field (only for fields
            with self.isSelect=True). If p_withTranslations is True, instead of
            returning a list of string values, the result is a list of tuples
-           (s_value, s_translation). If p_withBlankValue is True, a blank value
-           is prepended to the list, excepted if the type is multivalued. If
+           (s_value, s_translation). Moreover, p_withTranslations can hold a
+           given language: in this case, this language is used instead of the
+           user language. If p_withBlankValue is True, a blank value is
+           prepended to the list, excepted if the type is multivalued. If
            p_className is given, p_obj is the tool and, if we need an instance
            of p_className, we will need to use obj.executeQuery to find one.'''
         if not self.isSelect: raise Exception('This field is not a selection.')
+        # Get the user language for translations, from "withTranslations".
+        lg = isinstance(withTranslations, str) and withTranslations or None
         req = obj.REQUEST
         if ('masterValues' in req) and not ignoreMasterValues:
             # Get possible values from self.masterValue
@@ -521,7 +728,7 @@ class String(Field):
             else:
                 res = []
                 for v in values:
-                    res.append( (v, self.getFormattedValue(obj, v)) )
+                    res.append( (v, self.getFormattedValue(obj,v,language=lg)) )
         else:
             # If this field is an ajax-updatable slave, no need to compute
             # possible values: it will be overridden by method self.masterValue
@@ -572,13 +779,13 @@ class String(Field):
                 for value in self.validator:
                     label = '%s_list_%s' % (self.labelId, value)
                     if withTranslations:
-                        res.append( (value, obj.translate(label)) )
+                        res.append( (value, obj.translate(label, language=lg)) )
                     else:
                         res.append(value)
         if withBlankValue and not self.isMultiValued():
             # Create the blank value to insert at the beginning of the list
             if withTranslations:
-                blankValue = ('', obj.translate('choose_a_value'))
+                blankValue = ('', obj.translate('choose_a_value', language=lg))
             else:
                 blankValue = ''
             # Insert the blank value in the result
@@ -623,12 +830,26 @@ class String(Field):
         elif self.transform == 'capitalize': return value.capitalize()
         return value
 
-    def getStorableValue(self, value):
+    def getUnilingualStorableValue(self, obj, value):
         isString = isinstance(value, basestring)
+        isEmpty = Field.isEmptyValue(self, obj, value)
         # Apply transform if required
-        if isString and not self.isEmptyValue(value) and \
-           (self.transform != 'none'):
+        if isString and not isEmpty and (self.transform != 'none'):
            value = self.applyTransform(value)
+        # Clean XHTML strings
+        if not isEmpty and (self.format == String.XHTML):
+            # When image upload is allowed, ckeditor inserts some "style" attrs
+            # (ie for image size when images are resized). So in this case we
+            # can't remove style-related information.
+            try:
+                value = XhtmlCleaner(keepStyles=False).clean(value)
+            except XhtmlCleaner.Error, e:
+                # Errors while parsing p_value can't prevent the user from
+                # storing it.
+                pass
+        # Clean TEXT strings
+        if not isEmpty and (self.format == String.TEXT):
+            value = value.replace('\r', '')
         # Truncate the result if longer than self.maxChars
         if isString and self.maxChars and (len(value) > self.maxChars):
             value = value[:self.maxChars]
@@ -637,6 +858,55 @@ class String(Field):
            (type(value) not in sutils.sequenceTypes):
             value = [value]
         return value
+
+    def getStorableValue(self, obj, value):
+        languages = self.getAttribute(obj, 'languages')
+        if len(languages) == 1:
+            return self.getUnilingualStorableValue(obj, value)
+        # A multilingual value is stored as a dict whose keys are ISO 2-letters
+        # language codes and whose values are strings storing content in the
+        # language ~{s_language: s_content}~.
+        if not value: return
+        for lg in languages:
+            value[lg] = self.getUnilingualStorableValue(obj, value[lg])
+        return value
+
+    def store(self, obj, value):
+        '''Stores p_value on p_obj for this field.'''
+        languages = self.getAttribute(obj, 'languages')
+        if (len(languages) > 1) and value and \
+           (not isinstance(value, dict) or (len(value) != len(languages))):
+            raise Exception('Multilingual field "%s" accepts a dict whose '\
+                            'keys are in field.languages and whose ' \
+                            'values are strings.' % self.name)
+        Field.store(self, obj, value)
+
+    def storeFromAjax(self, obj):
+        '''Stores the new field value from an Ajax request, or do nothing if
+           the action was canceled.'''
+        rq = obj.REQUEST
+        if rq.get('cancel') == 'True': return
+        requestValue = rq['fieldContent']
+        # Remember previous value if the field is historized.
+        previousData = obj.rememberPreviousData([self])
+        if self.isMultilingual(obj):
+            # We take a copy of previousData because it is mutable (dict).
+            previousData[self.name] = previousData[self.name].copy()
+            # We get a partial value, for one language only.
+            language = rq['languageOnly']
+            v = self.getUnilingualStorableValue(obj, requestValue)
+            getattr(obj.aq_base, self.name)[language] = v
+            part = ' (%s)' % language
+        else:
+            self.store(obj, self.getStorableValue(obj, requestValue))
+            part = ''
+        # Update the object history when relevant
+        if previousData: obj.historizeData(previousData)
+        # Update obj's last modification date
+        from DateTime import DateTime
+        obj.modified = DateTime()
+        obj.reindex()
+        obj.log('Ajax-edited %s%s on %s.' % (self.name, part, obj.id))
 
     def getIndexType(self):
         '''Index type varies depending on String parameters.'''
@@ -679,19 +949,20 @@ class String(Field):
                    'fi': 'fi_FI', 'fr': 'fr_FR', 'de': 'de_DE', 'el': 'el_GR',
                    'it': 'it_IT', 'nb': 'nb_NO', 'pt': 'pt_PT', 'es': 'es_ES',
                    'sv': 'sv_SE'}
-    def getCkLanguage(self):
-        '''Gets the language for CK editor SCAYT. We will use
-           self.contentLanguage. If it is not supported by CK, we use
-           english.'''
-        lang = self.contentLanguage
-        if lang and (lang in self.ckLanguages): return self.ckLanguages[lang]
+    def getCkLanguage(self, obj, language):
+        '''Gets the language for CK editor SCAYT. p_language is one of
+           self.languages if the field is multilingual, None else. If p_language
+           is not supported by CK, we use english.'''
+        if not language:
+            language = self.getAttribute(obj, 'languages')[0]
+        if language in self.ckLanguages: return self.ckLanguages[language]
         return 'en_US'
 
-    def getCkParams(self, obj):
+    def getCkParams(self, obj, language):
         '''Gets the base params to set on a rich text field.'''
         ckAttrs = {'toolbar': 'Appy',
                    'format_tags': ';'.join(self.styles),
-                   'scayt_sLang': self.getCkLanguage()}
+                   'scayt_sLang': self.getCkLanguage(obj, language)}
         if self.width: ckAttrs['width'] = self.width
         if self.spellcheck: ckAttrs['scayt_autoStartup'] = True
         if self.allowImageUpload:
@@ -704,30 +975,29 @@ class String(Field):
             ck.append('%s: %s' % (k, sv))
         return ', '.join(ck)
 
-    def getJsInit(self, obj):
+    def getJsInit(self, obj, language):
         '''Gets the Javascript init code for displaying a rich editor for this
-           field (rich field only).'''
+           field (rich field only). If the field is multilingual, we must init
+           the rich text editor for a given p_language (among self.languages).
+           Else, p_languages is None.'''
+        name = not language and self.name or ('%s_%s' % (self.name, language))
         return 'CKEDITOR.replace("%s", {%s})' % \
-               (self.name, self.getCkParams(obj))
+               (name, self.getCkParams(obj, language))
 
-    def getJsInlineInit(self, obj):
+    def getJsInlineInit(self, obj, name, language):
         '''Gets the Javascript init code for enabling inline edition of this
-           field (rich text only).'''
+           field (rich text only). If the field is multilingual, the current
+           p_language is given and p_name includes it. Else, p_language is
+           None.'''
         uid = obj.id
+        fieldName = language and name.rsplit('_',1)[0] or name
+        lg = language or ''
         return "CKEDITOR.disableAutoInline = true;\n" \
                "CKEDITOR.inline('%s_%s_ck', {%s, on: {blur: " \
                "function( event ) { var content = event.editor.getData(); " \
-               "doInlineSave('%s', '%s', '%s', content)}}})" % \
-               (uid, self.name, self.getCkParams(obj), uid, self.name,
-                obj.absolute_url())
-
-        return "CKEDITOR.disableAutoInline = true;\n" \
-               "CKEDITOR.inline('%s_%s_ck', {on: {blur: " \
-               "function( event ) { var data = event.editor.getData(); " \
-               "askAjaxChunk('%s_%s','POST','%s','%s:pxSave', " \
-               "{'fieldContent': encodeURIComponent(data)}, " \
-               "null, evalInnerScripts);}}});"% \
-               (uid, self.name, uid, self.name, obj.absolute_url(), self.name)
+               "doInlineSave('%s','%s','%s',content,'%s')}}})" % \
+               (uid, name, self.getCkParams(obj, language), uid, fieldName,
+                obj.absolute_url(), lg)
 
     def isSelected(self, obj, fieldName, vocabValue, dbValue):
         '''When displaying a selection box (only for fields with a validator

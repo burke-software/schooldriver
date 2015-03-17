@@ -33,8 +33,11 @@ class Phase:
            class=":(aPage == page) and 'currentPage' or ''">
         <!-- First line: page name and icons -->
         <span if="not (singlePhase and singlePage)">
-         <a href=":zobj.getUrl(page=aPage, \
-                           inPopup=inPopup)">::aPageInfo.page.getLabel(zobj)</a>
+         <x var="label=aPageInfo.page.getLabel(zobj)">
+          <a if="aPageInfo.showOnView"
+             href=":zobj.getUrl(page=aPage, inPopup=inPopup)">::label</a>
+          <x if="not aPageInfo.showOnView">:label</x>
+         </x>
          <x var="locked=zobj.isLocked(user, aPage);
                  editable=mayEdit and aPageInfo.showOnEdit and \
                           aPageInfo.showEdit">
@@ -136,14 +139,14 @@ class Phase:
         if (field.page.name in self.pages) or \
            (field.page.name in self.hiddenPages): return
         # Add the page only if it must be shown.
-        isShowableOnView = field.page.isShowable(obj, 'view')
-        isShowableOnEdit = field.page.isShowable(obj, 'edit')
-        if isShowableOnView or isShowableOnEdit:
-            # The page must be added.
+        showOnView = field.page.isShowable(obj, 'view')
+        showOnEdit = field.page.isShowable(obj, 'edit')
+        if showOnView or showOnEdit:
+            # The page must be added
             self.pages.append(field.page.name)
             # Create the dict about page information and add it in self.pageInfo
-            pageInfo = Object(page=field.page, showOnView=isShowableOnView,
-                              showOnEdit=isShowableOnEdit, links=None)
+            pageInfo = Object(page=field.page, showOnView=showOnView,
+                              showOnEdit=showOnEdit, links=None)
             pageInfo.update(field.page.getInfo(obj, layoutType))
             self.pagesInfo[field.page.name] = pageInfo
         else:
@@ -204,4 +207,18 @@ class Phase:
                 return res, nextPhase.pagesInfo[res]
             else:
                 return None, None
+
+    def getPageInfo(self, page, layoutType):
+        '''Return the page info corresponding to the given p_page. If this page
+           cannot be shown on p_layoutType, this method returns page info about
+           the first showable page on p_layoutType, or None if no page is
+           showable at all.'''
+        res = self.pagesInfo[page]
+        showAttribute = 'showOn%s' % layoutType.capitalize()
+        if getattr(res, showAttribute): return res
+        # Find the first showable page in this phase on p_layoutType.
+        for pageName in self.pages:
+            if pageName == page: continue
+            pageInfo = self.pagesInfo[pageName]
+            if getattr(pageInfo, showAttribute): return pageInfo
 # ------------------------------------------------------------------------------

@@ -81,7 +81,7 @@ class Float(Field):
                        sheight, persist)
         self.pythonType = float
 
-    def getFormattedValue(self, obj, value, showChanges=False):
+    def getFormattedValue(self, obj, value, showChanges=False, language=None):
         return sutils.formatNumber(value, sep=self.sep[0],
                                    precision=self.precision, tsep=self.tsep)
 
@@ -94,8 +94,8 @@ class Float(Field):
         except ValueError:
             return obj.translate('bad_%s' % self.pythonType.__name__)
 
-    def getStorableValue(self, value):
-        if not self.isEmptyValue(value):
+    def getStorableValue(self, obj, value):
+        if not self.isEmptyValue(obj, value):
             for sep in self.sep: value = value.replace(sep, '.')
             value = value.replace(self.tsep, '')
             return self.pythonType(value)

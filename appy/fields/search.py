@@ -24,15 +24,18 @@ from group import Group
 # ------------------------------------------------------------------------------
 class Search:
     '''Used for specifying a search for a given class.'''
-    def __init__(self, name, group=None, sortBy='', sortOrder='asc', limit=None,
-                 default=False, colspan=1, translated=None, show=True,
-                 translatedDescr=None, **fields):
+    def __init__(self, name=None, group=None, sortBy='', sortOrder='asc',
+                 maxPerPage=30, default=False, colspan=1, translated=None,
+                 show=True, translatedDescr=None, checkboxes=False,
+                 checkboxesDefault=True, **fields):
+        # "name" is mandatory, excepted in some special cases (ie, when used as
+        # "select" param for a Ref field).
         self.name = name
         # Searches may be visually grouped in the portlet.
         self.group = Group.get(group)
         self.sortBy = sortBy
         self.sortOrder = sortOrder
-        self.limit = limit
+        self.maxPerPage = maxPerPage
         # If this search is the default one, it will be triggered by clicking
         # on main link.
         self.default = default
@@ -46,6 +49,10 @@ class Search:
         # In the dict below, keys are indexed field names or names of standard
         # indexes, and values are search values.
         self.fields = fields
+        # Do we need to display checkboxes for every object of the query result?
+        self.checkboxes = checkboxes
+        # Default value for checkboxes
+        self.checkboxesDefault = checkboxesDefault
 
     @staticmethod
     def getIndexName(fieldName, usage='search'):
@@ -140,6 +147,23 @@ class Search:
             return gutils.callMethod(tool, self.show, klass=klass)
         return self.show
 
+    def getCbJsInit(self, hookId):
+        '''Returns the code that creates JS data structures for storing the
+           status of checkboxes for every result of this search.'''
+        default = self.checkboxesDefault and 'unchecked' or 'checked'
+        return '''var node=document.getElementById('%s');
+                  node['_appy_objs_cbs'] = {};
+                  node['_appy_objs_sem'] = '%s';''' % (hookId, default)
+
+    def getSessionKey(self, className, full=True):
+        '''Returns the name of the key, in the session, where results for this
+           search are stored when relevant. If p_full is False, only the suffix
+           of the session key is returned (ie, without the leading
+           "search_").'''
+        res = (self.name == 'allSearch') and className or self.name
+        if not full: return res
+        return 'search_%s' % res
+
 class UiSearch:
     '''Instances of this class are generated on-the-fly for manipulating a
        Search from the User Interface.'''
@@ -167,12 +191,39 @@ class UiSearch:
                 label = '%s_plural' % className
             elif search.name == 'customSearch':
                 label = 'search_results'
+            elif search.name == '_field_':
+                label = None
             else:
                 label = '%s_search_%s' % (className, search.name)
                 labelDescr = label + '_descr'
-            self.translated = tool.translate(label)
-            if labelDescr:
-                self.translatedDescr = tool.translate(labelDescr)
-            else:
-                self.translatedDescr = ''
+            _ = tool.translate
+            self.translated = label and _(label) or ''
+            self.translatedDescr = labelDescr and _(labelDescr) or ''
+
+    def setInitiator(self, initiator, field, mode):
+        '''If the search is defined in an attribute Ref.select, we receive here
+           the p_initiator object, its Ref p_field and the p_mode, that can be:
+           - "repl" if the objects selected in the popup will replace already
+                    tied objects;
+           - "add"  if those objects will be added to the already tied ones.
+           .'''
+        self.initiator = initiator
+        self.initiatorField = field
+        self.initiatorMode = mode
+        # "initiatorHook" is the ID of the initiator field's XHTML tag.
+        self.initiatorHook = '%s_%s' % (initiator.uid, field.name)
+
+    def getRootHookId(self):
+        '''If an initiator field is there, return the initiator hook.
+           Else, simply return the name of the search.'''
+        return getattr(self, 'initiatorHook', self.name)
+
+    def showCheckboxes(self):
+        '''If checkboxes are enabled for this search (and if an initiator field
+           is there), they must be visible only if the initiator field is
+           multivalued. Indeed, if it is not the case, it has no sense to select
+           multiple objects. But in this case, we still want checkboxes to be in
+           the DOM because they store object UIDs.'''
+        if not self.search.checkboxes: return
+        return not self.initiator or self.initiatorField.isMultiValued()
 # ------------------------------------------------------------------------------

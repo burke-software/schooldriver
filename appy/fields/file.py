@@ -16,6 +16,7 @@
 
 # ------------------------------------------------------------------------------
 import time, os.path, mimetypes, shutil
+from cStringIO import StringIO
 from appy import Object
 from appy.fields import Field
 from appy.px import Px
@@ -36,6 +37,15 @@ def osPathJoin(*pathElems):
     '''Version of os.path.elems that takes care of path elems being empty
        strings.'''
     return os.path.join(*pathElems).rstrip(os.sep)
+
+def getShownSize(size):
+    '''Express p_size (a file size in bytes) in a human-readable way.'''
+    # Display the size in bytes if smaller than 1024 bytes
+    if size < 1024: return '%d byte(s)' % size
+    size = size / 1024.0 # This is the size, in Kb
+    if size < 1024: return '%s Kb' % sutils.formatNumber(size, precision=1)
+    size = size / 1024.0 # This is the size, in Mb
+    return '%s Mb' % sutils.formatNumber(size, precision=1)
 
 # ------------------------------------------------------------------------------
 class FileInfo:
@@ -112,19 +122,14 @@ class FileInfo:
         '''Normalizes file p_name.'''
         return name[max(name.rfind('/'), name.rfind('\\'), name.rfind(':'))+1:]
 
-    def getShownSize(self):
-        '''Displays this file's size in the user interface.'''
-        if self.size < 1024:
-            # Display the size in bytes
-            return '%d byte(s)' % self.size
-        else:
-            # Display the size in Kb
-            return '%d Kb' % (self.size / 1024)
+    def getShownSize(self): return getShownSize(self.size)
 
     def replicateFile(self, src, dest):
         '''p_src and p_dest are open file handlers. This method copies content
-           of p_src to p_dest and returns the file size.'''
+           of p_src to p_dest and returns the file size. Note that p_src can
+           also be binary data in a string.'''
         size = 0
+        if isinstance(src, str): src = StringIO(src)
         while True:
             chunk = src.read(self.BYTES)
             if not chunk: break
@@ -209,11 +214,12 @@ class FileInfo:
         self.modified = DateTime()
         self.size = os.stat(fsName).st_size
 
-    def writeResponse(self, response, dbFolder=''):
+    def writeResponse(self, response, dbFolder='', disposition='inline'):
         '''Writes this file in the HTTP p_response object.'''
         # As a preamble, initialise response headers.
         header = response.setHeader
-        header('Content-Disposition', 'inline;filename="%s"' % self.uploadName)
+        header('Content-Disposition',
+               '%s;filename="%s"' % (disposition, self.uploadName))
         header('Content-Type', self.mimeType)
         header('Content-Length', self.size)
         header('Accept-Ranges', 'bytes')
@@ -327,16 +333,16 @@ class File(Field):
                        historized, mapping, label, sdefault, scolspan, swidth,
                        sheight, True)
 
-    def getRequestValue(self, request, requestName=None):
+    def getRequestValue(self, obj, requestName=None):
         name = requestName or self.name
-        return request.get('%s_file' % name)
+        return obj.REQUEST.get('%s_file' % name)
 
+    def getCopyValue(self, obj): raise Exception('Not implemented yet.')
     def getDefaultLayouts(self): return {'view':'l-f','edit':'lrv-f'}
 
-    def isEmptyValue(self, value, obj=None):
+    def isEmptyValue(self, obj, value):
         '''Must p_value be considered as empty?'''
-        if not obj: return Field.isEmptyValue(self, value)
-        if value: return False
+        if value: return
         # If "nochange", the value must not be considered as empty
         return obj.REQUEST.get('%s_delete' % self.name) != 'nochange'
 
@@ -404,7 +410,7 @@ class File(Field):
                 info.copyFile(self.name, value, dbFolder)
             else:
                 # Cases e, f. Extract file name, content and MIME type.
-                fileName = None
+                fileName = mimeType = None
                 if len(value) == 2:
                     fileName, fileContent = value
                 elif len(value) == 3:

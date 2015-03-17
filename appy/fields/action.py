@@ -29,18 +29,22 @@ class Action(Field):
     pxView = pxCell = Px('''
      <form var="formId='%s_%s_form' % (zobj.id, name);
                 label=_(field.labelId);
+                descr=field.descrId and _(field.descrId) or None;
                 buttonWidth=ztool.getButtonWidth(label)"
            id=":formId" action=":ztool.absolute_url() + '/do'">
       <input type="hidden" name="action" value="ExecuteAction"/>
       <input type="hidden" name="objectUid" value=":zobj.id"/>
       <input type="hidden" name="fieldName" value=":name"/>
-      <input if="field.confirm" type="button" class="button"
-         var="labelConfirm=_(field.labelId + '_confirm')" value=":label"
+      <input type="hidden" name="comment" value=""/>
+      <input if="field.confirm" type="button" class="button" title=":descr"
+         var="labelConfirm=_(field.labelId + '_confirm');
+              commentParam=(field.confirm == 'text') and 'true' or 'false'"
+         value=":label"
          style=":'%s; %s' % (url('action', bg=True), buttonWidth)"
-         onclick=":'askConfirm(%s,%s,%s)' % (q('form'), q(formId), \
-                                             q(labelConfirm))"/>
+         onclick=":'askConfirm(%s,%s,%s,%s)' % (q('form'), q(formId), \
+                                               q(labelConfirm), commentParam)"/>
       <input if="not field.confirm" type="submit" class="button" name="do"
-             value=":label"
+             value=":label" title=":descr"
              style=":'%s; %s' % (url('action', bg=True), buttonWidth)"/>
      </form>''')
 
@@ -48,12 +52,13 @@ class Action(Field):
     pxEdit = pxSearch = ''
 
     def __init__(self, validator=None, multiplicity=(1,1), default=None,
-                 show=True, page='main', group=None, layouts=None, move=0,
-                 indexed=False, searchable=False, specificReadPermission=False,
-                 specificWritePermission=False, width=None, height=None,
-                 maxChars=None, colspan=1, action=None, result='computation',
-                 confirm=False, master=None, masterValue=None, focus=False,
-                 historized=False, mapping=None, label=None):
+                 show=('view', 'result'), page='main', group=None, layouts=None,
+                 move=0, indexed=False, searchable=False,
+                 specificReadPermission=False, specificWritePermission=False,
+                 width=None, height=None, maxChars=None, colspan=1, action=None,
+                 result='computation', confirm=False, master=None,
+                 masterValue=None, focus=False, historized=False, mapping=None,
+                 label=None):
         # Can be a single method or a list/tuple of methods
         self.action = action
         # For the 'result' param:
@@ -78,13 +83,24 @@ class Action(Field):
 
     def getDefaultLayouts(self): return {'view': 'l-f', 'edit': 'lrv-f'}
 
+    def callAction(self, obj, method, hasParam, param):
+        '''Calls p_method on p_obj. m_method can be the single action as defined
+           in self.action or one of them is self.action contains several
+           methods. Calling m_method can be done with a p_param (when p_hasParam
+           is True), ie, when self.confirm is "text".'''
+        if hasParam: return method(obj, param)
+        else: return method(obj)
+
     def __call__(self, obj):
         '''Calls the action on p_obj.'''
+        # Must we call the method(s) with a param ?
+        hasParam = self.confirm == 'text'
+        param = hasParam and obj.request.get('comment', None)
         if type(self.action) in sutils.sequenceTypes:
             # There are multiple Python methods
             res = [True, '']
             for act in self.action:
-                actRes = act(obj)
+                actRes = self.callAction(obj, act, hasParam, param)
                 if type(actRes) in sutils.sequenceTypes:
                     res[0] = res[0] and actRes[0]
                     if self.result.startswith('file'):
@@ -95,7 +111,7 @@ class Action(Field):
                     res[0] = res[0] and actRes
         else:
             # There is only one Python method
-            actRes = self.action(obj)
+            actRes = self.callAction(obj, self.action, hasParam, param)
             if type(actRes) in sutils.sequenceTypes:
                 res = list(actRes)
             else:
