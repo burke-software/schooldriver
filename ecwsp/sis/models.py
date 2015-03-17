@@ -15,6 +15,7 @@ from datetime import date
 from custom_field.custom_field import CustomFieldModel
 from ckeditor.fields import RichTextField
 from ecwsp.sis.helper_functions import round_as_decimal
+import ecwsp.grades as grades
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ class UserPreference(models.Model):
     include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
     gradebook_preference = models.CharField(max_length=10, blank=True, choices=(
          ('O', 'Online Gradebook'), ('S','Spreadsheet'), ('E', 'Engrade'), ('M', 'Manual')))
-    user = models.ForeignKey(User, unique=True, editable=False)
+    user = models.ForeignKey('auth.User', unique=True, editable=False)
     first = True
 
     def get_format(self, type="document"):
@@ -320,14 +321,14 @@ class Student(User, CustomFieldModel):
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     bday = models.DateField(blank=True, null=True, verbose_name="Birth Date", validators=settings.DATE_VALIDATORS)
     year = models.ForeignKey(
-        GradeLevel,
+        'sis.GradeLevel',
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
         verbose_name="Grade level")
-    class_of_year = models.ForeignKey(ClassYear, verbose_name="Graduating Class", blank=True, null=True)
+    class_of_year = models.ForeignKey('sis.ClassYear', verbose_name="Graduating Class", blank=True, null=True)
     date_dismissed = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
-    reason_left = models.ForeignKey(ReasonLeft, blank=True, null=True)
+    reason_left = models.ForeignKey('sis.ReasonLeft', blank=True, null=True)
     unique_id = models.IntegerField(blank=True, null=True, unique=True, help_text="For integration with outside databases")
     ssn = models.CharField(max_length=11, blank=True, null=True)  #Once 1.1 is out USSocialSecurityNumberField(blank=True)
 
@@ -339,7 +340,7 @@ class Student(User, CustomFieldModel):
     zip = models.CharField(max_length=10, blank=True, editable=False)
     parent_email = models.EmailField(blank=True, editable=False)
 
-    family_preferred_language = models.ForeignKey(LanguageChoice, blank=True, null=True, default=get_default_language)
+    family_preferred_language = models.ForeignKey('sis.LanguageChoice', blank=True, null=True, default=get_default_language)
     family_access_users = models.ManyToManyField(
         family_ref,
         blank=True,
@@ -349,8 +350,8 @@ class Student(User, CustomFieldModel):
     notes = models.TextField(blank=True)
     emergency_contacts = models.ManyToManyField(EmergencyContact, verbose_name="Student Contact", blank=True)
     siblings = models.ManyToManyField('Student', blank=True)
-    cohorts = models.ManyToManyField(Cohort, through='StudentCohort', blank=True)
-    cache_cohort = models.ForeignKey(Cohort, editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
+    cohorts = models.ManyToManyField('sis.Cohort', through='StudentCohort', blank=True)
+    cache_cohort = models.ForeignKey('sis.Cohort', editable=False, blank=True, null=True, on_delete=models.SET_NULL, help_text="Cached primary cohort.", related_name="cache_cohorts")
     individual_education_program = models.BooleanField(default=False)
 
     class Meta:
@@ -371,6 +372,12 @@ class Student(User, CustomFieldModel):
     # TC requested this for transcript template
     def get_long_grad_date(self):
         return self.grad_date.strftime('%B %d, %Y')
+
+    @property
+    def gpa(self):
+        gc = grades.utils.GradeCalculator()
+        return gc.get_student_gpa(self)
+
 
     def get_gpa(self, rounding=2, numeric_scale=False, boost=True):
         """ Get cached gpa but with rounding and scale options """
@@ -595,8 +602,8 @@ m2m_changed.connect(after_student_m2m, sender=Student.emergency_contacts.through
 
 
 class StudentCohort(models.Model):
-    student = models.ForeignKey(Student)
-    cohort = models.ForeignKey(Cohort)
+    student = models.ForeignKey('sis.Student')
+    cohort = models.ForeignKey('sis.Cohort')
     primary = models.BooleanField(default=False, )
 
     #class Meta:
@@ -631,8 +638,8 @@ class TranscriptNote(models.Model):
     text or a predefined choice. If both are entered they will be concatenated.
     """
     note = models.TextField(blank=True)
-    predefined_note = models.ForeignKey(TranscriptNoteChoices, blank=True, null=True)
-    student = models.ForeignKey(Student)
+    predefined_note = models.ForeignKey('sis.TranscriptNoteChoices', blank=True, null=True)
+    student = models.ForeignKey('sis.Student')
     def __unicode__(self):
         note = unicode(self.predefined_note)
         note = note.replace('$student', unicode(self.student))
@@ -644,7 +651,7 @@ class TranscriptNote(models.Model):
 
 
 class StudentNumber(PhoneNumber):
-    student = models.ForeignKey(Student, blank=True, null=True)
+    student = models.ForeignKey('sis.Student', blank=True, null=True)
 
     def __unicode__(self):
         return self.number
@@ -652,11 +659,11 @@ class StudentNumber(PhoneNumber):
 
 class StudentFile(models.Model):
     file = models.FileField(upload_to="student_files")
-    student = models.ForeignKey(Student)
+    student = models.ForeignKey('sis.Student')
 
 
 class StudentHealthRecord(models.Model):
-    student = models.ForeignKey(Student)
+    student = models.ForeignKey('sis.Student')
     record = models.TextField()
 
 
@@ -691,7 +698,7 @@ class GradeScaleRule(models.Model):
     letter_grade = models.CharField(max_length=50, blank=True)
     numeric_scale = models.DecimalField(
         max_digits=5, decimal_places=2, blank=True, null=True)
-    grade_scale = models.ForeignKey(GradeScale)
+    grade_scale = models.ForeignKey('sis.GradeScale')
 
     class Meta:
         unique_together = ('min_grade', 'max_grade', 'grade_scale')
@@ -728,7 +735,7 @@ class SchoolYear(models.Model):
     start_date = models.DateField(validators=settings.DATE_VALIDATORS)
     end_date = models.DateField(validators=settings.DATE_VALIDATORS)
     grad_date = models.DateField(blank=True, null=True, validators=settings.DATE_VALIDATORS)
-    grade_scale = models.ForeignKey(GradeScale, blank=True, null=True, help_text="Alternative grade scale such as letter grades or a 4.0 scale")
+    grade_scale = models.ForeignKey('sis.GradeScale', blank=True, null=True, help_text="Alternative grade scale such as letter grades or a 4.0 scale")
     active_year = models.BooleanField(default=False,
         help_text="DANGER!! This is the current school year. There can only be one and setting this will remove it from other years. " \
                   "If you want to change the active year you almost certainly want to click Management, Change School Year.")
