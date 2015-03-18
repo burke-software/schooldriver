@@ -267,7 +267,6 @@ INSTALLED_APPS = (
     'ecwsp.work_study',
     'ecwsp.engrade_sync',
     'ecwsp.benchmarks',
-    'ecwsp.benchmark_grade',
     'ecwsp.naviance_sso',
     'rosetta',
     # These can be enabled if desired but the default is off
@@ -395,7 +394,6 @@ TENANT_APPS = (
     'ecwsp.attendance',
     'ecwsp.grades',
     'ecwsp.gradebook',
-    #'ecwsp.benchmark_grade',
     'ecwsp.counseling',
     'ecwsp.standard_test',
     'ecwsp.integrations.schoolreach',

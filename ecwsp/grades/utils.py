@@ -23,13 +23,15 @@ class GradeCalculator(object):
 
     def _calculate_course_grade(
         self, np_grade_values, np_final_grades, np_mp_weights,
-        marking_periods=None, numeric_scale=False
+        marking_periods=None, numeric_scale=False, ignore_final=False
     ):
         if np_grade_values.size == 0:
             return None
         np_grade_values_mask = ~np.isnan(np_grade_values)
         # If marking periods are selected - don't return final override
-        if not marking_periods and array_contains_anything(np_final_grades):
+        if (ignore_final is False
+                and not marking_periods
+                and array_contains_anything(np_final_grades)):
             average = np_final_grades[0]
         else:
             average = np.average(
@@ -58,32 +60,46 @@ class GradeCalculator(object):
             grades = grades.filter(marking_period__end_date__lte=date)
         return grades
 
-    def _get_average_of_grades(self, grades, scale_first=False):
+    def _get_average_of_grades(
+        self, grades, scale_first=False, ignore_final=False
+    ):
         grades = grades.values_list(
             'grade',
             'marking_period',
             'marking_period__weight',
             'enrollment__course_section',
             'enrollment__finalgrade__grade',
+            'enrollment__course_section__course__course_type__weight',
+            'enrollment__course_section__course__course_type__boost',
         )
         if not grades:
             return None
         np_grades = np.array(grades, dtype=np.dtype(float))
         np_course_section = np_grades[:, 3]
+        np_course_weights = np_grades[:, 5]
+        np_course_boosts = np_grades[:, 6]
         course_averages = []
+        course_weights = []
         for course in np.unique(np_course_section):
             np_course_grades = np_grades[np.where(np_course_section == course)]
             np_grade_values = np_course_grades[:, 0]
             np_mp_weights = np_course_grades[:, 2]
             np_final_grades = np_course_grades[:, 4]
+            this_course_weight = np_course_weights[
+                np.where(np_course_section == course)]
+            this_course_boost = np_course_boosts[
+                np.where(np_course_section == course)]
             average = self._calculate_course_grade(
                 np_grade_values,
                 np_final_grades,
                 np_mp_weights,
                 numeric_scale=scale_first,
+                ignore_final=ignore_final,
             )
+            average += this_course_boost[0]
             course_averages.append(average)
-        average = np.average(course_averages)
+            course_weights.append(this_course_weight[0])
+        average = np.average(course_averages, weights=course_weights)
         return self._round(average)
 
     def get_course_grade(self, enrollment,
@@ -92,7 +108,6 @@ class GradeCalculator(object):
                          letter=False,
                          letter_and_number=False):
         """Get course final grade by calulating it or from override
-
         Args:
             enrollment: CourseEnrollment object
             date: Date of report - used to exclude grades that haven't happened
@@ -132,7 +147,6 @@ class GradeCalculator(object):
 
     def get_student_gpa(self, student, date=None):
         """ Return student gpa
-
         Args:
             student: Student for gpa
             date: Date of report - used to exclude grades that haven't happened
@@ -150,7 +164,6 @@ class GradeCalculator(object):
         self, student, marking_period, date=None, scale_first=False
     ):
         """ Return a marking period average
-
         Args:
             student: Student
             marking_period: Marking period
@@ -159,8 +172,7 @@ class GradeCalculator(object):
                 Not recommended - probably should scale after averaging.
         """
         grades = self._get_student_grades(student, date)
-        grades = grades.filter(
-            enrollment__course_section__marking_period=marking_period)
+        grades = grades.filter(marking_period=marking_period)
         self.rule_marking_period = marking_period
         return self._get_average_of_grades(
-            grades, scale_first=scale_first)
+            grades, scale_first=scale_first, ignore_final=True)
