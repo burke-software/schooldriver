@@ -1,0 +1,51 @@
+<div class="row">
+  <h2>Student grades</h2>
+</div>
+
+<div class="row">
+  <h3>Please select teacher and year</h3>
+</div>
+
+<div class="row field">
+  <label class="inline one column year-teacher">Year</label>
+  <div class="picker two columns">
+    <select ng-model="select.year" ng-options="year as year for year in years">
+      <option value="">Select year</option>
+    </select>
+  </div>
+</div>
+<div class="row field">
+  <label class="inline one column year-teacher">Teacher</label>
+
+  <div class="picker two columns">
+    <select ng-model="select.teacher" ng-options="teacher for teacher in teachers">
+      <option value="">Select teacher</option>
+    </select>
+  </div>
+
+</div>
+
+<div class="row" ng-if="select.teacher && select.year">
+  <h3>select a class section to edit grades</h3>
+  <table class="rounded">
+    <thead>
+    <tr>
+      <th>
+        CLASSES
+      </th>
+      <th>
+        SECTIONS
+      </th>
+    </tr>
+    </thead>
+    <tbody ng-repeat="course in courses">
+    <tr ng-repeat="section in course.sections">
+      <td rowspan="{{course.sections.length}}" ng-if="$index == 0">{{course.fullname}}</td>
+      <td>
+        <a ng-href="/gradebook/sections/{{section.id}}">{{section.name}}</a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
