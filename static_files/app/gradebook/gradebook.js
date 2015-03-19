@@ -17,14 +17,14 @@ angular.module('gradeBookApp', [
     function ($provide, $routeProvider) {
       $provide.factory('appConfig', function () {
         return {
-          apiUrl: 'http://192.168.59.103:8000/api/'
+          apiUrl: '/api/'
         }
       });
 
       $routeProvider.
         when('/gradebook/',{
           controller: 'gradeBookCtrl',
-          templateUrl: 'static/app/gradebook/modules/gradebook/gradebook.html'
+          templateUrl: STATIC_URL + 'app/gradebook/modules/gradebook/gradebook.html'
         })
         //.when('/gradebook/',{
         //  controller: 'coursesCtrl',
@@ -32,7 +32,7 @@ angular.module('gradeBookApp', [
         //})
         .when('/gradebook/sections/:sectionId',{
           controller: 'singleSectionCtrl',
-          templateUrl: 'singleSection/singleSection.html'
+          templateUrl: STATIC_URL + 'app/gradebook/modules/singleSection/singleSection.html'
         });
 
     }

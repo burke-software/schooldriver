@@ -67,7 +67,7 @@ angular.module('gradeBookApp.controllers')
 
         var modalInstance = $modal.open({
           windowClass: "modal fade in active",
-          templateUrl:'studentGrades/singleSection/_adjustGradeSettings.html',
+          templateUrl:STATIC_URL + 'app/gradebook/modules/singleSection/_adjustGradeSettings.html',
           controller: 'adjustGradeSettingsCtrl',
           resolve: {
             assignments: function () {
@@ -82,7 +82,7 @@ angular.module('gradeBookApp.controllers')
 
         var modalInstance = $modal.open({
           windowClass: "modal fade in active",
-          templateUrl:'studentGrades/singleSection/_addNewAssignment.html',
+          templateUrl:STATIC_URL + 'app/gradebook/modules/singleSection/_addNewAssignment.html',
           controller: 'addNewAssignmentCtrl'
         });
 
