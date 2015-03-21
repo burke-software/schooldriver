@@ -24,7 +24,7 @@ angular.module('gradeBookApp', [
       $routeProvider.
         when('/gradebook/',{
           controller: 'gradeBookCtrl',
-          templateUrl: STATIC_URL + 'app/gradebook/modules/gradebook/gradebook.html'
+          templateUrl: static('app/gradebook/modules/gradebook/gradebook.html')
         })
         //.when('/gradebook/',{
         //  controller: 'coursesCtrl',
@@ -32,7 +32,7 @@ angular.module('gradeBookApp', [
         //})
         .when('/gradebook/sections/:sectionId',{
           controller: 'singleSectionCtrl',
-          templateUrl: STATIC_URL + 'app/gradebook/modules/singleSection/singleSection.html'
+          templateUrl: static('app/gradebook/modules/singleSection/singleSection.html')
         });
 
     }

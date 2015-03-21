@@ -5,10 +5,6 @@
 <!-- This is a temporary customization of google translate, google translate
     should go away altogether soon -->
 <meta name="google-translate-customization" content="37da49fcf8973ccb-756457446a3cca53-g28961e43a5d7f19a-28"></meta>
-
-<script>
-var STATIC_URL = {{ settings.STATIC_URL }};
-</script>
 {% endblock %}
 
 {% block head %}
@@ -37,22 +33,19 @@ var STATIC_URL = {{ settings.STATIC_URL }};
     <script src="{% static 'app/admissions/student-application.js' %}"></script>
     <script src="{% static 'app/admissions/custom-application-editor.js' %}"></script>
 
-    {% comment %}
-        <script src="{% static 'app/gradebook/dist/app/gradebook.js' %}"></script>
-    {% endcomment %}
     {% compress js %}
-        <script src="{% static 'app/gradebook/gradebook.js' %}"></script>
-        <script src="{% static 'app/gradebook/modules/gradebook/gradebookCtrl.js' %}"></script>
-        <script src="{% static 'app/gradebook/modules/singleSection/singleSectionCtrl.js' %}"></script>
-        <script src="{% static 'app/gradebook/services/assignmentFactory.js' %}"></script>
-        <script src="{% static 'app/gradebook/services/categoryFactory.js' %}"></script>
-        <script src="{% static 'app/gradebook/services/classSectionFactory.js' %}"></script>
-        <script src="{% static 'app/gradebook/services/courseFactory.js' %}"></script>
-        <script src="{% static 'app/gradebook/services/gradeFactory.js' %}"></script>
-        <script src="{% static 'app/gradebook/services/schoolYearFactory.js' %}"></script>
-        <script src="{% static 'app/gradebook/services/sectionFactory.js' %}"></script>
-        <script src="{% static 'app/gradebook/services/studentFactory.js' %}"></script>
-        <script src="{% static 'app/gradebook/templates.js' %}"></script>
+    <script src="{% static 'app/gradebook/gradebook.js' %}"></script>
+    <script src="{% static 'app/gradebook/modules/gradebook/gradebookCtrl.js' %}"></script>
+    <script src="{% static 'app/gradebook/modules/singleSection/singleSectionCtrl.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/assignmentFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/categoryFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/classSectionFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/courseFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/gradeFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/schoolYearFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/sectionFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/studentFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/templates.js' %}"></script>
     {% endcompress %}
 {% endblock %}
 
