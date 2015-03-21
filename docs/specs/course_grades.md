@@ -80,6 +80,8 @@ Had no unit test.
 A course with a course type that has a boost will add the boost value to a course grade. 
 Could be used in honors classes.
 
+If a course has a score of 0 - the boost will not be applied.
+
 Let Course1 have a course type with boost of 1
 Let Grade1 belong to Course1 with a grade of 50.
 The calculated grade for the average of all courses is 51.

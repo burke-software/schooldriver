@@ -163,7 +163,7 @@ class GradeBaltTests(SisTestMixin, TestCase):
         ]
         for x in test_data:
             average = GradeCalculator().get_marking_period_average(
-                self.data.student, x[0], scale_first=True)
+                self.data.student, x[0], scale_first=True, rounding=1)
             self.assertAlmostEqual(average, x[1])
 
     def test_average(self):
@@ -172,8 +172,9 @@ class GradeBaltTests(SisTestMixin, TestCase):
             [self.data.mps2x, 71.8],
         ]
         for x in test_data:
-            smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.student, marking_period=x[0])
-            self.assertAlmostEqual(smpg.get_average(rounding=1), Decimal(x[1]))
+            average = GradeCalculator().get_marking_period_average(
+                self.data.student, x[0], rounding=1)
+            self.assertAlmostEqual(average, x[1])
 
     def test_scaled_multiple_mp_average(self):
         test_data = [
