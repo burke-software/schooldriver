@@ -94,7 +94,7 @@
         fieldOptions: "=",
         fieldForm: "="
       },
-      templateUrl: static('app/common/partials/field.html'),
+      templateUrl: staticURL('app/common/partials/field.html'),
       transclude: true
     };
   });
