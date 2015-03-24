@@ -32,8 +32,21 @@
     <script src="{% static 'app/admissions/review-student-application.js' %}"></script>
     <script src="{% static 'app/admissions/student-application.js' %}"></script>
     <script src="{% static 'app/admissions/custom-application-editor.js' %}"></script>
-    <script src="{% static 'handsontable-gradebook/dist/app/gradebook.js' %}"></script>
-    <link rel="stylesheet" media="screen" href="{% static 'handsontable-gradebook/dist/css/style.css' %}">
+
+    {% compress js %}
+    <script src="{% static 'app/gradebook/gradebook.js' %}"></script>
+    <script src="{% static 'app/gradebook/modules/gradebook/gradebookCtrl.js' %}"></script>
+    <script src="{% static 'app/gradebook/modules/singleSection/singleSectionCtrl.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/assignmentFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/categoryFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/classSectionFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/courseFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/gradeFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/schoolYearFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/sectionFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/services/studentFactory.js' %}"></script>
+    <script src="{% static 'app/gradebook/templates.js' %}"></script>
+    {% endcompress %}
 {% endblock %}
 
 

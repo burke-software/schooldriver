@@ -27,7 +27,7 @@ module.exports = function(config) {
       'components/bower_components/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js',
       'components/bower_components/handsontable/dist/handsontable.full.min.js',
       'components/bower_components/nghandsontable/dist/ngHandsontable.min.js',
-      'static_files/handsontable-gradebook/dist/app/gradebook.js',
+      'static_files/app/gradebook/dist/app/gradebook.js',
       'static_files/app/common/restfulModel.js',
       'static_files/app/angular_sis.js',
       'static_files/app/grades/grades.js',

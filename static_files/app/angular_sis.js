@@ -27,7 +27,7 @@ app.config(function(RestangularProvider) {
     });
 });
 
-function static(path) {
+function staticURL(path) {
     /* Works like django static files - adds the static path */
     var STATIC_URL = window.STATIC_URL || 'static';
 
@@ -39,28 +39,28 @@ function static(path) {
 
 app.config(function($routeProvider, $locationProvider) {
     $routeProvider.when("/course/course_section/:course_section_id/grades/", {
-      templateUrl: static('app/grades/course_grades.html'),
+      templateUrl: staticURL('app/grades/course_grades.html'),
       controller: "CourseGradesController"
     });
     $routeProvider.when("/course/student/:student_id/grades/", {
-      templateUrl: static('app/grades/student_grades.html'),
+      templateUrl: staticURL('app/grades/student_grades.html'),
       controller: "StudentGradesController"
     });
     $routeProvider.when("/course/student/:student_id/grades/:year_id/", {
-      templateUrl: static('app/grades/student_grades.html'),
+      templateUrl: staticURL('app/grades/student_grades.html'),
       controller: "StudentGradesController"
     });
     $routeProvider.when("/schedule/course/", {
-      templateUrl: static('app/common/partials/course_detail.html'),
+      templateUrl: staticURL('app/common/partials/course_detail.html'),
       controller: "CourseController",
       reloadOnSearch: false
     });
     $routeProvider.when('/admissions/application/:applicantId/', {
-      templateUrl: static('app/admissions/review-application.html'),
+      templateUrl: staticURL('app/admissions/review-application.html'),
       controller: 'ReviewStudentApplicationController',
     });
     $routeProvider.when('/admissions/application', {
-      templateUrl: static('app/admissions/student-application.html'),
+      templateUrl: staticURL('app/admissions/student-application.html'),
       controller: 'StudentApplicationController',
     });
     return $locationProvider.html5Mode(true);

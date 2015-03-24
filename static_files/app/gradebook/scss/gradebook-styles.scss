@@ -1,0 +1,162 @@
+#gradebook{
+  a{
+    cursor:pointer;
+  }
+
+  h2{
+    font-size: 2.625rem;
+    font-weight: normal;
+    line-height: 4rem;
+  }
+
+  .two-states{
+    padding:0;
+    margin-bottom: 15px;
+
+  }
+
+  .color-checker{
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    border: 1px solid #ddd;
+    display: inline-block;
+
+    &.pink{
+      background-color: pink;
+    }
+    &.orange{
+      background-color: orange;
+    }
+    &.blue{
+      background-color: blue;
+    }
+    &.green{
+      background-color: greenyellow;
+    }
+    &.red{
+      background-color: red;
+    }
+
+
+
+
+  }
+
+  .form-group.bordered{
+    border-bottom: 1px solid #000;
+  }
+
+  .form-control{
+    height: 30px;
+  }
+
+  .dl-horizontal dt{
+    width: 20px;
+    height: 30px;
+    line-height: 30px;
+  }
+  .dl-horizontal dd{
+    margin-left: 40px;
+    height: 30px;
+    line-height: 30px;
+  }
+
+  .left-filter{
+    border-right: 2px solid #9d9d9d;
+    background: #fff;
+    position: absolute;
+    min-height: 100%;
+  }
+
+  .right-settings{
+    position:absolute;
+    right:0;
+    border-left: 2px solid #9d9d9d;
+    z-index: 999;
+    background: #fff;
+    min-height: 100%;
+  }
+
+  .btn{
+    border-radius: 0;
+  }
+
+  .nav-pills > li > a {
+    border-radius : 0;
+  }
+
+  .form-control{
+    border-radius: 0;
+  }
+
+  .handsontable-container{
+    margin-top: 20px;
+  }
+
+  .handsontable .handsontable table{
+    box-shadow: none;
+    -webkit-box-shadow: none;
+  }
+
+  .handsontable thead th{
+    text-transform: uppercase;
+  }
+
+  .handsontable th{
+    color: #888;
+    white-space: nowrap;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .handsontable th,
+  .handsontable td{
+    background: #fff;
+    height: 30px;
+    line-height: 30px;
+  }
+
+  .ht_clone_corner thead th div{
+    font-weight: bold;
+  }
+
+  table thead tr th{
+    border-left: 0;
+    box-sizing:border-box;
+    border-bottom: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+  }
+
+  .ht_clone_corner tr th:first-child,
+  table tbody tr th:first-child{
+    background: #fff;
+    border-bottom-color: #fff;
+    border-left-color: #fff;
+    border-top-color:#fff;
+
+  }
+  .handsontableInput{
+    box-sizing: content-box;
+  }
+
+
+  .button{
+    margin-left: 5px;
+    margin-right: 10px;
+
+  }
+}
+
+.handsontable tr:first-child th,
+.handsontable tr:first-child td{
+  border-top:0;
+}
+
+
+table tbody tr td,
+table tbody tr th ,
+table tbody tr td:first-child,
+table tbody tr th:first-child{
+  vertical-align: top
+}
+
