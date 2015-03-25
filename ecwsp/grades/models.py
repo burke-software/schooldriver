@@ -46,7 +46,8 @@ class CommonGrade(models.Model):
     grade = GradeField()
     comment = models.CharField(
         max_length=500, blank=True, validators=[grade_comment_length_validator])
-    letter_grade = models.ForeignKey('grades.LetterGrade', blank=True, null=True)
+    letter_grade = models.ForeignKey(
+        'grades.LetterGrade', blank=True, null=True)
 
     class Meta:
         abstract = True

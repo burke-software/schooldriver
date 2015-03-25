@@ -1,5 +1,6 @@
+from django.db.models import Model, Sum
 from ecwsp.sis.num_utils import array_contains_anything
-from ecwsp.sis.models import GradeScaleRule
+from ecwsp.sis.models import GradeScaleRule, SchoolYear
 from .models import Grade
 import numpy as np
 from constance import config
@@ -42,12 +43,16 @@ class GradeCalculator(object):
                 np_grade_values[np_grade_values_mask],
                 weights=np_mp_weights[np_grade_values_mask])
         if numeric_scale is True:
-            average = GradeScaleRule.grade_to_scale(
-                average,
-                marking_period=self.rule_marking_period,
-                year=self.rule_year,
-            )
-            average = float(average)
+            average = self._to_scale(average)
+        return average
+
+    def _to_scale(self, average):
+        average = GradeScaleRule.grade_to_scale(
+            average,
+            marking_period=self.rule_marking_period,
+            year=self.rule_year,
+        )
+        average = float(average)
         return average
 
     def _get_student_grades(self, student, date):
@@ -64,8 +69,27 @@ class GradeCalculator(object):
             grades = grades.filter(marking_period__end_date__lte=date)
         return grades
 
+    def _get_boost_factor(self, grades):
+        """ Number of boosted courses over total number of courses
+        Useful for when non scaled calculations are performed and a boost
+        needs to be added at the end.
+        """
+        # Ugh gross django ORM
+        from ecwsp.schedule.models import Course
+        course_ids = Course.objects.filter(
+            sections__courseenrollment__grade__in=grades
+        ).values('id').distinct()
+        values = Course.objects.filter(
+            id__in=course_ids
+        ).aggregate(Sum('course_type__weight'), Sum('course_type__boost'))
+        return float(
+            values['course_type__boost__sum'] /
+            values['course_type__weight__sum']
+        )
+
     def _get_average_of_grades(
-        self, grades, scale_first=False, ignore_final=False, rounding=None
+        self, grades, scale_first=False, ignore_final=False, rounding=None,
+        disable_boost=False
     ):
         grades = grades.values_list(
             'grade',
@@ -100,7 +124,7 @@ class GradeCalculator(object):
                 numeric_scale=scale_first,
                 ignore_final=ignore_final,
             )
-            if average > 0 and scale_first is True:
+            if average > 0 and scale_first is True and disable_boost is False:
                 average += this_course_boost[0]
             if average is not None:
                 course_averages.append(average)
@@ -151,36 +175,71 @@ class GradeCalculator(object):
                 result = '{} ({})'.format(grade, letter_grade)
         return result
 
-    def get_student_gpa(self, student, date=None):
+    def get_student_gpa(
+        self, student, date=None, numeric_scale=False, scale_first=False,
+        rounding=None
+    ):
         """ Return student gpa
         Args:
             student: Student for gpa
             date: Date of report - used to exclude grades that haven't happened
         """
-        grades = self._get_student_grades(student, date)
-        return self._get_average_of_grades(grades)
+        if scale_first is True:  # Need each year grade then
+            year_averages = []
+            years = SchoolYear.objects.filter(
+                markingperiod__coursesection__courseenrollment__user=student
+            ).distinct()
+            for year in years:
+                self.rule_year = year
+                average = self.get_year_average(
+                    student, year, date=date, scale_first=True)
+                year_averages.append(average)
+            average = np.average(year_averages)
+        else:
+            grades = self._get_student_grades(student, date)
+            average = self._get_average_of_grades(grades)
+        return self._round(average, rounding=rounding)
 
-    def get_year_average(self, student, year, date=None):
+    def get_year_average(
+        self, student, year, date=None, numeric_scale=False, scale_first=False,
+        rounding=None, disable_boost=False
+    ):
         grades = self._get_student_grades(student, date)
         grades = grades.filter(
             enrollment__course_section__marking_period__school_year=year)
-        return self._get_average_of_grades(grades)
+        average = self._get_average_of_grades(
+            grades, scale_first=scale_first, disable_boost=disable_boost)
+        if numeric_scale is True and scale_first is False:
+            self.rule_year = year
+            average = self._to_scale(average)
+            average += self._get_boost_factor(grades)
+        return self._round(average, rounding=rounding)
 
     def get_marking_period_average(
         self, student, marking_period, date=None, scale_first=False,
-        rounding=None
+        rounding=None, numeric_scale=False, disable_boost=False
     ):
         """ Return a marking period average
         Args:
             student: Student
-            marking_period: Marking period
+            marking_period: Marking period. Can be one or many.
             date: Date of report - used to exclude grades that haven't happened
             scale_first: Scale course grades to numeric scale then average.
                 Not recommended - probably should scale after averaging.
         """
         grades = self._get_student_grades(student, date)
-        grades = grades.filter(marking_period=marking_period)
-        self.rule_marking_period = marking_period
-        return self._get_average_of_grades(
+        if isinstance(marking_period, Model):  # Is just one?
+            grades = grades.filter(marking_period=marking_period)
+            self.rule_marking_period = marking_period
+        else:
+            grades = grades.filter(marking_period__in=marking_period)
+            if isinstance(marking_period, list):
+                self.rule_marking_period = marking_period[0]
+            else:
+                self.rule_marking_period = marking_period.first()
+        average = self._get_average_of_grades(
             grades, scale_first=scale_first, ignore_final=True,
-            rounding=rounding)
+            rounding=rounding, disable_boost=disable_boost)
+        if numeric_scale is True and scale_first is False:
+            return self._to_scale(average)
+        return average

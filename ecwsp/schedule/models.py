@@ -174,6 +174,13 @@ class CourseEnrollment(models.Model):
             letter=letter,
         )
 
+    def get_grade(self, letter=False):
+        """ Shortcut for GradeCalculator get course grade """
+        return GradeCalculator().get_course_grade(
+            self,
+            letter=letter,
+        )
+
     def optimized_grade_to_scale(self, grade, letter=True):
         """ letter - True for letter grade, false for numeric (ex: 4.0 scale)"""
         # not sure how this was working before, but I'm just commenting it out
@@ -191,27 +198,6 @@ class CourseEnrollment(models.Model):
         if letter:
             return rule.letter_grade
         return rule.numeric_scale
-
-    def get_grade(self, date_report=None, rounding=2, letter=False):
-        """ Get the grade, use cache when no date change present
-        date_report:
-        rounding: Round to this many decimal places
-        letter: Convert to letter grade scale
-        """
-        if date_report is None or date_report >= datetime.date.today():
-            # Cache will always have the latest grade, so it's fine for
-            # today's date and any future date
-            if self.numeric_grade:
-                grade = self.numeric_grade
-            else:
-                grade = self.grade
-        else:
-            grade = self.calculate_grade_real(date_report=date_report)
-        if rounding and isinstance(grade, (int, long, float, complex, Decimal)):
-            grade = round_as_decimal(grade, rounding)
-        if letter == True and isinstance(grade, (int, long, float, complex, Decimal)):
-            return self.optimized_grade_to_scale(grade)
-        return grade
 
 
 class Department(models.Model):

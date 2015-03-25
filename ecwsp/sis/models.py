@@ -14,7 +14,7 @@ from thumbs import ImageWithThumbsField
 from datetime import date
 from custom_field.custom_field import CustomFieldModel
 from ckeditor.fields import RichTextField
-from ecwsp.sis.helper_functions import round_as_decimal
+from ecwsp.sis.helper_functions import round_as_decimal, round_to_standard
 import ecwsp.grades as grades
 
 logger = logging.getLogger(__name__)
@@ -378,32 +378,14 @@ class Student(User, CustomFieldModel):
         gc = grades.utils.GradeCalculator()
         return gc.get_student_gpa(self)
 
-
-    def get_gpa(self, rounding=2, numeric_scale=False, boost=True):
-        """ Get cached gpa but with rounding and scale options """
-        gpa = self.gpa
-
-        if numeric_scale == True:
-            # Get the scale for the last year the student was active in
-            grade_scale = GradeScale.objects.filter(
-                schoolyear__markingperiod__coursesection__courseenrollment__user=self).last()
-            if grade_scale:
-                gpa = grade_scale.to_numeric(gpa)
-                enrollments = self.courseenrollment_set.filter(
-                        course_section__course__course_type__weight__gt=0)
-                if boost:
-                    boost_sum = enrollments.aggregate(boost_sum=Sum('course_section__course__course_type__boost'))['boost_sum']
-                    boost_factor = boost_sum /  enrollments.count()
-                    gpa += boost_factor
-        if rounding:
-            gpa = round_as_decimal(gpa, rounding)
-        return gpa
-
-    def calculate_gpa(self, date_report=None, rounding=2, prescale=False,
-                      boost=True):
+    def calculate_gpa(self, date_report=None, rounding=None, scale_first=False,
+                      boost=True, numeric_scale=False):
         """ Shortcut for GradeCalculator.get_student_gpa """
-        from ecwsp.grades.utils import GradeCalculator
-        return GradeCalculator().get_student_gpa(self, date=date_report)
+        gc = grades.utils.GradeCalculator()
+        return gc.get_student_gpa(
+            self, date=date_report, scale_first=scale_first, rounding=rounding,
+            numeric_scale=numeric_scale
+        )
 
     @property
     def primary_cohort(self):
@@ -721,9 +703,16 @@ class GradeScaleRule(models.Model):
             raise Exception(
                 "grade_to_scale must have either marking_period or year")
         rule = rule.filter(min_grade__lte=grade, max_grade__gte=grade).first()
+        if rule is None:  # Hole due to decimal?
+            grade = round_to_standard(grade)
+            rule = rule.filter(min_grade__lte=grade, max_grade__gte=grade).first()
         if letter is True:
             return rule.letter_grade
-        return rule.numeric_scale
+        print rule
+        print grade
+        if rule:
+            return rule.numeric_scale
+        return None
 
 
 def get_default_benchmark_grade():

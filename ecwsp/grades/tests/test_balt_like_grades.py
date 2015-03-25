@@ -178,25 +178,27 @@ class GradeBaltTests(SisTestMixin, TestCase):
 
     def test_scaled_multiple_mp_average(self):
         test_data = [
-            [[self.data.mp1.id, self.data.mp2.id, self.data.mps1x.id], Decimal(1.9)],
-            [[self.data.mp3.id, self.data.mp4.id, self.data.mps2x.id], Decimal(2.1)],
+            [[self.data.mp1.id, self.data.mp2.id, self.data.mps1x.id], 1.9],
+            [[self.data.mp3.id, self.data.mp4.id, self.data.mps2x.id], 2.1],
         ]
         for x in test_data:
-            average = Grade.get_scaled_multiple_mp_average(self.data.student, x[0], rounding=1)
+            average = GradeCalculator().get_marking_period_average(
+                self.data.student, x[0], scale_first=True, rounding=1)
             self.assertAlmostEqual(average, x[1])
 
     def test_scaled_final_year_average(self):
         test_data = [
-            [self.data.year, Decimal(2.2)],
+            [self.data.year, 2.2],
         ]
         for x in test_data:
-            year_grade = self.data.student.studentyeargrade_set.get(year=x[0])
-            average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True)
+            average = GradeCalculator().get_year_average(
+                self.data.student, self.data.year, numeric_scale=True,
+                rounding=1)
             self.assertAlmostEqual(average, x[1])
 
     def test_balt_gpa(self):
-        gpa = self.data.student.calculate_gpa(rounding=1, prescale=True)
-        self.assertAlmostEqual(gpa, Decimal(2.2))
+        gpa = self.data.student.calculate_gpa(rounding=1, scale_first=True)
+        self.assertAlmostEqual(gpa, 2.2)
 
     def test_final_grade(self):
         test_data = [
@@ -213,46 +215,52 @@ class GradeBaltTests(SisTestMixin, TestCase):
             ce = CourseEnrollment.objects.get(
                 user=self.data.student,
                 course_section=getattr(self.data, 'course_section' + str(x[0])))
-            with self.assertNumQueries(1):
-                self.assertEqual(ce.get_grade(letter=True), x[1])
+            self.assertEqual(ce.get_grade(letter=True), x[1])
 
     def test_honors_and_ap_scaled_grades(self):
         """
         assert that the honors and ap grades receive correct boost by
         replicating the grades in our manual spreadsheet
         """
-
         # Now, test that the scaled averages are correct
         test_data = [
-            {'mp': self.data.mp1, 'boosted': Decimal(4.0), 'unboosted': Decimal(3.7)},
-            {'mp': self.data.mp2, 'boosted': Decimal(3.6), 'unboosted': Decimal(3.3)},
-            {'mp': self.data.mp3, 'boosted': Decimal(3.7), 'unboosted': Decimal(3.4)},
-            {'mp': self.data.mp4, 'boosted': Decimal(3.5), 'unboosted': Decimal(3.2)}
+            {'mp': self.data.mp1, 'boosted': 4.0, 'unboosted': 3.7},
+            {'mp': self.data.mp2, 'boosted': 3.6, 'unboosted': 3.3},
+            {'mp': self.data.mp3, 'boosted': 3.7, 'unboosted': 3.4},
+            {'mp': self.data.mp4, 'boosted': 3.5, 'unboosted': 3.2}
         ]
+        student = self.data.honors_student
+        gc = GradeCalculator()
         for x in test_data:
-            smpg = StudentMarkingPeriodGrade.objects.get(student=self.data.honors_student, marking_period=x['mp'])
-            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1), x['boosted'])
-            self.assertAlmostEqual(smpg.get_scaled_average(rounding=1, boost=False), x['unboosted'])
+            average = gc.get_marking_period_average(
+                student, x['mp'], scale_first=True, rounding=1)
+            self.assertAlmostEqual(average, x['boosted'])
+            average = gc.get_marking_period_average(
+                student, x['mp'], scale_first=True, rounding=1,
+                disable_boost=True)
+            self.assertAlmostEqual(average, x['unboosted'])
 
     def test_honors_and_ap_student_year_grade(self):
         """
         assert that the end of the year grade is correct
         """
-
+        student = self.data.honors_student
+        gc = GradeCalculator()
         # try without pre-scaling
-        year_grade = self.data.honors_student.studentyeargrade_set.get(year=self.data.year)
-        average = year_grade.get_grade(numeric_scale=True, rounding=1)
-        self.assertAlmostEqual(average, Decimal(3.8))
+        average = gc.get_year_average(
+            student, self.data.year, numeric_scale=True, rounding=1)
+        self.assertAlmostEqual(average, 3.8)
 
         # try with pre-scaling
-        year_grade = self.data.honors_student.studentyeargrade_set.get(year=self.data.year)
-        average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True)
-        self.assertAlmostEqual(average, Decimal(3.6))
+        average = gc.get_year_average(
+            student, self.data.year, scale_first=True, rounding=1)
+        self.assertAlmostEqual(average, 3.6)
 
         # try with pre-scaling but without boost
-        year_grade = self.data.honors_student.studentyeargrade_set.get(year=self.data.year)
-        average = year_grade.get_grade(numeric_scale=True, rounding=1, prescale=True, boost=False)
-        self.assertAlmostEqual(average, Decimal(3.3))
+        average = gc.get_year_average(
+            student, self.data.year, scale_first=True, rounding=1,
+            disable_boost=True)
+        self.assertAlmostEqual(average, 3.3)
 
     def test_honors_and_ap_letter_grades(self):
         """
@@ -271,24 +279,25 @@ class GradeBaltTests(SisTestMixin, TestCase):
             {'section': 'Wrt Lab',   's1': 'A',  's2': 'A',  'final': 'A' }
             ]
 
+        gc = GradeCalculator()
+        student = self.data.honors_student
         # first check final grades
         for x in expected_grades:
             section = CourseSection.objects.get(name = x['section'])
             ce = CourseEnrollment.objects.get(
-                user = self.data.honors_student,
-                course_section = section,
-                )
-            with self.assertNumQueries(1):
-                self.assertEqual(ce.get_grade(letter=True), x['final'])
+                user=student,
+                course_section=section,
+            )
+            self.assertEqual(ce.get_grade(letter=True), x['final'])
 
             sm1_grade = ce.get_average_for_marking_periods(
                 marking_periods = [self.data.mp1.id, self.data.mp2.id, self.data.mps1x.id],
                 letter = True,
-                )
+            )
             sm2_grade = ce.get_average_for_marking_periods(
                 marking_periods = [self.data.mp3.id, self.data.mp4.id, self.data.mps2x.id],
                 letter = True,
-                )
+            )
 
             self.assertEqual(sm1_grade, x['s1'])
             self.assertEqual(sm2_grade, x['s2'])
@@ -297,5 +306,6 @@ class GradeBaltTests(SisTestMixin, TestCase):
         """
         test that the student's gpa after 1 year is correct!
         """
-        gpa = self.data.honors_student.calculate_gpa(rounding=1, prescale=True)
-        self.assertAlmostEqual(gpa, Decimal(3.6))
+        gpa = self.data.honors_student.calculate_gpa(
+            rounding=1, scale_first=True)
+        self.assertAlmostEqual(gpa, 3.6)
