@@ -223,7 +223,6 @@ class SisGUIData(object):
                 ssn=random_ssn()
             )
 
-
         MarkingPeriod.objects.bulk_create([
             MarkingPeriod(
                 name="Trimester 1 "+current_school_year,
@@ -292,7 +291,7 @@ class SisGUIData(object):
             last_name="Britner", 
             teacher=True, 
             is_staff=True)
-        self.teacher2.groups.add(teacher_group)
+        # self.teacher2.groups.add(teacher_group)
         self.teacher2.set_password('aa')
         self.teacher2.save()
 
@@ -324,6 +323,7 @@ class SisGUIData(object):
         CourseSection.objects.bulk_create([
             CourseSection(course_id=self.course.id, name="Math A"),
             CourseSection(course_id=self.course.id, name="Math B"),
+            CourseSection(course_id=self.course.id, name="Math C"),
             CourseSection(course_id=self.course2.id, name="History A"),
             CourseSection(course_id=self.course2.id, name="History 1 MP only"),
         ])
@@ -331,6 +331,7 @@ class SisGUIData(object):
         self.course_section2 = CourseSection.objects.get(name="Math B")
         self.course_section3 = CourseSection.objects.get(name="History A")
         self.course_section4 = CourseSection.objects.get(name="History 1 MP only")
+        self.course_section5 = CourseSection.objects.get(name="Math C")
 
         Period.objects.bulk_create([
             Period(name="Homeroom (M)", start_time=datetime.time(8), end_time=datetime.time(8, 50)),
@@ -350,21 +351,53 @@ class SisGUIData(object):
         self.course_section2.marking_period.add(self.marking_period)
         self.course_section2.marking_period.add(self.marking_period2)
         self.course_section2.marking_period.add(self.marking_period3)
+        self.course_section3.marking_period.add(self.marking_period)
+        self.course_section3.marking_period.add(self.marking_period2)
+        self.course_section3.marking_period.add(self.marking_period3)
         self.course_section4.marking_period.add(self.marking_period)
+        self.course_section5.marking_period.add(self.marking_period)
+        self.course_section5.marking_period.add(self.marking_period2)
+        self.course_section5.marking_period.add(self.marking_period3)
 
-        self.enroll1 = CourseSectionTeacher.objects.create(course_section=self.course_section, teacher=self.teacher1)
-        self.enroll2 = CourseSectionTeacher.objects.create(course_section=self.course_section3, teacher=self.teacher2)
-        self.present = AttendanceStatus.objects.create(name="Present", code="P", teacher_selectable=True)
-        self.absent = AttendanceStatus.objects.create(name="Absent", code="A", teacher_selectable=True, absent=True)
-        self.excused = AttendanceStatus.objects.create(name="Absent Excused", code="AX", absent=True, excused=True)
+        self.enroll1 = CourseSectionTeacher.objects.create(
+            course_section=self.course_section, teacher=self.teacher1)
+        self.enroll2 = CourseSectionTeacher.objects.create(
+            course_section=self.course_section3, teacher=self.teacher2)
+        self.enroll3 = CourseSectionTeacher.objects.create(
+            course_section=self.course_section5, teacher=self.teacher2)
+        
+        self.present = AttendanceStatus.objects.create(
+            name="Present", code="P", teacher_selectable=True)
+        self.absent = AttendanceStatus.objects.create(
+            name="Absent", code="A", teacher_selectable=True, absent=True)
+        self.excused = AttendanceStatus.objects.create(
+            name="Absent Excused", code="AX", absent=True, excused=True)
 
         CourseEnrollment.objects.bulk_create([
             CourseEnrollment(user=self.student, course_section=self.course_section),
             CourseEnrollment(user=self.student, course_section=self.course_section2),
             CourseEnrollment(user=self.student, course_section=self.course_section4),
             CourseEnrollment(user=self.student2, course_section=self.course_section),
+            CourseEnrollment(user=self.student, course_section=self.course_section3),
+            CourseEnrollment(user=self.student2, course_section=self.course_section3),
+            CourseEnrollment(user=self.student3, course_section=self.course_section3),
         ])
         self.course_enrollment = CourseEnrollment.objects.all().first()
+
+        # Loading up Math C with the freshmen we created
+        self.freshman_students = Student.objects.filter(class_of_year=self.class_year4)
+
+        # Enroll all freshmen until we get to 25
+        self.class_size = 25
+        self.enroll_counter = 0
+
+        for student in self.freshman_students:
+            if self.enroll_counter == self.class_size:
+                break
+            else:
+                CourseEnrollment.objects.create(
+                    user=student, course_section=self.course_section5)
+                self.enroll_counter += 1
 
         grade_data = [
             {'student': self.student2, 'section': self.course_section, 'mp': self.marking_period, 'grade': 75},
