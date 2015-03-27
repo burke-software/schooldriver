@@ -702,16 +702,15 @@ class GradeScaleRule(models.Model):
         else:
             raise Exception(
                 "grade_to_scale must have either marking_period or year")
-        rule = rule.filter(min_grade__lte=grade, max_grade__gte=grade).first()
-        if rule is None:  # Hole due to decimal?
+        rule_obj = rule.filter(min_grade__lte=grade, max_grade__gte=grade).first()
+        if rule_obj is None:  # Hole due to decimal?
             grade = round_to_standard(grade)
-            rule = rule.filter(min_grade__lte=grade, max_grade__gte=grade).first()
+            rule_obj = rule.filter(
+                min_grade__lte=grade, max_grade__gte=grade).first()
         if letter is True:
-            return rule.letter_grade
-        print rule
-        print grade
-        if rule:
-            return rule.numeric_scale
+            return rule_obj.letter_grade
+        if rule_obj:
+            return rule_obj.numeric_scale
         return None
 
 

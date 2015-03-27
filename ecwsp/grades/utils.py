@@ -17,6 +17,8 @@ class GradeCalculator(object):
             self.rounding = None
 
     def _round(self, value, rounding=None):
+        if value is None:
+            return None
         if rounding is None:
             rounding = self.rounding
         return np.round(
