@@ -37,6 +37,18 @@
 			}
 		}
 
+		&.table-is-saving {
+			&:after {
+				font-family: FontAwesome;
+				content: "\f110"; // times in circle
+				display: inline-block;
+				float: right;
+				color: $gray-light;
+				animation: 1s steps(8, end) 0s normal none infinite running fa-spin;
+				line-height: 1.6em;
+			}
+		}
+
 		&.table-is-overridden {
 			border-bottom: 2px solid $brand-info;
 			// padding-left: 3px;
