@@ -1,8 +1,13 @@
 from rest_framework import serializers
-from .models import Grade, FinalGrade
+from .models import Grade, FinalGrade, GradeComment
 from ecwsp.sis.models import Student
 from ecwsp.schedule.models import (
     MarkingPeriod, CourseSection, CourseEnrollment)
+
+
+class GradeCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GradeComment
 
 
 class GradeSerializer(serializers.ModelSerializer):
