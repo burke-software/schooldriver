@@ -55,13 +55,11 @@ app.config(function($routeProvider, $locationProvider) {
       controller: "CourseController",
       reloadOnSearch: false
     });
-    $routeProvider.when('/admissions/application/:applicantId/', {
-      templateUrl: staticURL('app/admissions/review-application.html'),
-      controller: 'ReviewStudentApplicationController',
+
+    $routeProvider.when('/portal/grades/', {
+      templateUrl: staticURL('app/portal/templates/grades.html'),
+      controller: 'StudentGradeReportController'
     });
-    $routeProvider.when('/admissions/application', {
-      templateUrl: staticURL('app/admissions/student-application.html'),
-      controller: 'StudentApplicationController',
-    });
+
     return $locationProvider.html5Mode(true);
 });

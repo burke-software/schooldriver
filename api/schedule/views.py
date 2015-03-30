@@ -26,4 +26,4 @@ class SectionViewSet(viewsets.ModelViewSet):
     queryset = CourseSection.objects.all()
     serializer_class = SectionSerializer
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('course', 'enrollments')
+    filter_fields = ('course', 'enrollments', 'marking_period',)
