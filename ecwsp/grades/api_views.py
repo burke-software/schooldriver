@@ -1,10 +1,16 @@
-from rest_framework import filters, viewsets, status
+from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import (
     GradeSerializer, FinalGradeSerializer, SetGradeSerializer,
-    SetFinalGradeSerializer)
-from .models import Grade, FinalGrade
+    SetFinalGradeSerializer, GradeCommentSerializer)
+from .models import Grade, FinalGrade, GradeComment
+
+
+class GradeCommentViewSet(viewsets.ModelViewSet):
+    queryset = GradeComment.objects.all()
+    serializer_class = GradeCommentSerializer
+    filter_fields = ('enrollment__course_section', 'enrollment__user')
 
 
 class GradeViewSet(viewsets.ModelViewSet):
@@ -12,7 +18,6 @@ class GradeViewSet(viewsets.ModelViewSet):
         enrollment__course_section__course__graded=True,
     )
 
-    filter_backends = (filters.DjangoFilterBackend,)
     serializer_class = GradeSerializer
     filter_fields = ('enrollment__course_section', 'enrollment__user')
 

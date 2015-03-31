@@ -3,7 +3,7 @@ from ecwsp.sis.models import *
 from ecwsp.attendance.models import *
 from ecwsp.grades.models import *
 from ecwsp.schedule.models import *
-from ecwsp.benchmark_grade.models import *
+from ecwsp.gradebook.models import *
 
 import datetime
 

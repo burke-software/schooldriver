@@ -1,6 +1,8 @@
 from django.conf.urls import patterns, url
-from .views import transcript_nonofficial, photo_flash_card, thumbnail, paper_attendance
-from .views import user_preferences, view_student, ajax_include_deleted, import_naviance, increment_year, increment_year_confirm, StudentViewDashletView
+from .views import (
+    transcript_nonofficial, photo_flash_card, thumbnail, paper_attendance,
+    user_preferences, view_student, ajax_include_deleted, import_naviance,
+    increment_year, increment_year_confirm, StudentViewDashletView)
 from responsive_dashboard.views import generate_dashboard
 
 urlpatterns = patterns('',

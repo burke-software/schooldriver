@@ -21,7 +21,7 @@ class GradeComment(models.Model):
 
 
 def grade_comment_length_validator(value):
-    max_length = config.GRADE_COMMEND_LENGTH_LIMIT
+    max_length = config.GRADE_COMMENT_LENGTH_LIMIT
     validator = MaxLengthValidator(max_length)
     return validator(value)
 
@@ -40,12 +40,23 @@ class LetterGrade(models.Model):
         return self.letter
 
 
+class GradeComment(models.Model):
+    comment = models.CharField(
+        max_length=500, validators=[grade_comment_length_validator])
+    enrollment = models.ForeignKey('schedule.CourseEnrollment')
+    marking_period = models.ForeignKey(
+        'schedule.MarkingPeriod', blank=True, null=True)
+
+    class Meta:
+        unique_together = ('enrollment', 'marking_period')
+
+    def __unicode__(self):
+        return self.comment
+
+
 class CommonGrade(models.Model):
-    date_created = models.DateField(auto_now_add=True)
     date_modified = models.DateField(auto_now=True)
     grade = GradeField()
-    comment = models.CharField(
-        max_length=500, blank=True, validators=[grade_comment_length_validator])
     letter_grade = models.ForeignKey(
         'grades.LetterGrade', blank=True, null=True)
 
