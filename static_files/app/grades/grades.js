@@ -46,6 +46,11 @@ app.controller(
           data: 'grade_' + mp.id,
           width: 100
         });
+        $scope.gridData.columns.push({
+          title: "Comments for " + mp.name,
+          data: 'nothing',
+          width: 300
+        });
       });
       $scope.gridData.columns.push({
         title: 'Final',
@@ -206,7 +211,7 @@ app.service('saveGradeService', ['$http', function($http) {
           course_section: course_section_id,
           grade: newVal
         };
-        
+
       cell.classList.add('table-is-saving');
       
       // setTimeout( function() {
@@ -216,10 +221,10 @@ app.service('saveGradeService', ['$http', function($http) {
         data: data
       }).success(function(data, status){
         //WE ARE SURE THAT THERE IS NO ERROR SO WE CAN ADD CLASS TO CELL
-        // cell.classList.add('table-is-valid');
+        cell.classList.add('table-is-valid');
         console.log(data);
       }).error(function(data, status, headers, config) {
-        // cell.classList.add('table-is-not-valid');
+        cell.classList.add('table-is-not-valid');
         console.log(data);
         console.log(status);
       });
