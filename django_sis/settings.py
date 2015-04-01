@@ -588,6 +588,7 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'PAGINATE_BY_PARAM': 'page_size',
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.DjangoModelPermissions',),
 }
 
 MIGRATIONS_DISABLED = False
@@ -603,7 +604,7 @@ if 'TRAVIS' in os.environ:
         }
     }
 elif 'test' in sys.argv:
-    # Don't take fucking years to run a test
+    # Don't take years to run a test
     class DisableMigrations(object):
         def __contains__(self, item):
             return True
