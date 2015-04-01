@@ -10,6 +10,7 @@ from ecwsp.grades.api_views import (
 from ecwsp.gradebook.api_views import (
     AssignmentViewSet, MarkViewSet, AssignmentCategoryViewSet, 
     AssignmentTypeViewSet)
+from ecwsp.benchmarks.api_views import BenchmarkViewSet
 
 
 router = routers.DefaultRouter()
@@ -24,6 +25,7 @@ router.register(r'assignments', AssignmentViewSet)
 router.register(r'marks', MarkViewSet)
 router.register(r'assignment_categorys', AssignmentCategoryViewSet)
 router.register(r'assignment_types', AssignmentTypeViewSet)
+router.register(r'benchmarks', BenchmarkViewSet)
 router.register(r'applicant', ApplicantViewSet)
 router.register(r'applicant-custom-field', ApplicantCustomFieldViewSet)
 router.register(r'application-template', ApplicationTemplateViewSet )

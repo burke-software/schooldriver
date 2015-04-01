@@ -5,6 +5,7 @@ from ecwsp.admissions.models import *
 from ecwsp.grades.models import *
 from ecwsp.gradebook.models import *
 from ecwsp.schedule.models import *
+from ecwsp.benchmarks.models import *
 from django.contrib.auth.models import User, Group, Permission
 
 import random
@@ -456,6 +457,81 @@ class SisGUIData(object):
             AssignmentType(name="Test"),
             AssignmentType(name="Quiz"),
         ])
+
+        # Departments/Measurement Topics/Benchmarks out of the Benchmark model
+        self.dept1 = Department.objects.create(name="Mathematics")
+        self.dept2 = Department.objects.create(name="Science")
+        self.dept3 = Department.objects.create(name="Social Studies")
+
+
+        self.measurement_topic1 = MeasurementTopic.objects.create(
+            name="Problem Solving", department=self.dept1)
+        self.measurement_topic2 = MeasurementTopic.objects.create(
+            name="Reasoning and Proof", department=self.dept1)
+        self.measurement_topic3 = MeasurementTopic.objects.create(
+            name="Functions", department=self.dept1)
+        self.measurement_topic4 = MeasurementTopic.objects.create(
+            name="Geographic Thinking", department=self.dept3)
+        self.measurement_topic5 = MeasurementTopic.objects.create(
+            name="Historical Analysis", department=self.dept3)
+        self.measurement_topic6 = MeasurementTopic.objects.create(
+            name="Reading Informational Texts", department=self.dept3)
+
+        
+        self.benchmark01 = Benchmark.objects.create(
+            number="04.09.1", 
+            name="Use mathematical symbols and variables to express a " \
+                    "constant or linear relationship between quantities")
+        self.benchmark02 = Benchmark.objects.create(
+            number="04.09.2", 
+            name="Recognize which type of expression best fits the " \
+                "context of a basic application (for example: linear " \
+                "equations to solve distance/time problems, direct " \
+                "proportion problems")
+        self.benchmark03 = Benchmark.objects.create(
+            number="04.09.3", 
+            name="Recognize and apply appropriate formulas")
+        self.benchmark04 = Benchmark.objects.create(
+            number="04.09.4", 
+            name="Solve word problems that utilize linear functions")
+        self.benchmark05 = Benchmark.objects.create(
+            number="04.10.1", 
+            name="Apply definitions, postulates, and theorems about " \
+                "congruent segments and segment addition to find " \
+                "unknown lengths")
+        self.benchmark06 = Benchmark.objects.create(
+            number="04.10.2", 
+            name="Apply definitions, postulates, and theorems about " \
+                "congruent, complementary, and supplementary angles")
+        self.benchmark07 = Benchmark.objects.create(
+            number="04.10.3", 
+            name="Apply definitions, postulates, and theorems about angles " \
+                "formed by perpendicular lines and when parallel lines are " \
+                "cut by a transversal to find unknown angle measures")
+        self.benchmark08 = Benchmark.objects.create(
+            number="04.10.4", 
+            name="Solve simple triangle problems using the triangle angle " \
+                "sum property and/or the Pythagorean theorem")
+        self.benchmark09 = Benchmark.objects.create(
+            number="04.10.5", 
+            name="Apply right triangle trig to real-life application")
+        self.benchmark10 = Benchmark.objects.create(
+            number="04.10.6", 
+            name="Find and use measures of lateral areas, surface areas, " \
+                "and volumes of prisms, pyramids, spheres, cylinders, " \
+                "and cones")
+
+        self.benchmark01.measurement_topics.add(self.measurement_topic1)
+        self.benchmark02.measurement_topics.add(self.measurement_topic1)
+        self.benchmark03.measurement_topics.add(self.measurement_topic1)
+        self.benchmark04.measurement_topics.add(self.measurement_topic1)
+        self.benchmark05.measurement_topics.add(self.measurement_topic1)
+        self.benchmark06.measurement_topics.add(self.measurement_topic1)
+        self.benchmark07.measurement_topics.add(self.measurement_topic1)
+        self.benchmark08.measurement_topics.add(self.measurement_topic1)
+        self.benchmark09.measurement_topics.add(self.measurement_topic1)
+        self.benchmark10.measurement_topics.add(self.measurement_topic1)
+
 
     def create_100_courses(self):
         self.create_x_courses(courses=100)
