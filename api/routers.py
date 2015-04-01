@@ -7,7 +7,9 @@ from api.admissions.views import (
 from ecwsp.sis.api_views import StudentViewSet, SchoolYearViewSet
 from ecwsp.grades.api_views import (
     GradeCommentViewSet, GradeViewSet, FinalGradeViewSet)
-from ecwsp.gradebook.api_views import AssignmentViewSet, MarkViewSet
+from ecwsp.gradebook.api_views import (
+    AssignmentViewSet, MarkViewSet, AssignmentCategoryViewSet, 
+    AssignmentTypeViewSet)
 
 
 router = routers.DefaultRouter()
@@ -20,6 +22,8 @@ router.register(r'courses', CourseViewSet)
 router.register(r'sections', SectionViewSet)
 router.register(r'assignments', AssignmentViewSet)
 router.register(r'marks', MarkViewSet)
+router.register(r'assignment_categorys', AssignmentCategoryViewSet)
+router.register(r'assignment_types', AssignmentTypeViewSet)
 router.register(r'applicant', ApplicantViewSet)
 router.register(r'applicant-custom-field', ApplicantCustomFieldViewSet)
 router.register(r'application-template', ApplicationTemplateViewSet )
