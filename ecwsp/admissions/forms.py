@@ -19,7 +19,7 @@ class MonthYearField(forms.MultiValueField):
         if data_list:
             return datetime.date(year=int(data_list[1]), month=int(data_list[0]), day=1)
         return datetime.date.today()
-        
+
 
 class InquiryForm(forms.ModelForm):
     class Meta:
@@ -32,7 +32,7 @@ class InquiryForm(forms.ModelForm):
     ethnicity_other = forms.CharField(required=False)
     language_other = forms.CharField(required=False)
     religion_other = forms.CharField(required=False)
-    
+
     # Parent
     p_lname = forms.CharField(required=False)
     p_fname = forms.CharField(required=False)
@@ -46,10 +46,10 @@ class InquiryForm(forms.ModelForm):
     p_work_ext = forms.CharField(required=False, widget=forms.TextInput(attrs={'style':'width:3em;'}))
     p_mobile = us_forms.USPhoneNumberField(required=False)
     p_email = forms.EmailField(required=False)
-    
+
     spam_regex = re.compile(r'^[5\-]+$')
     spam = forms.CharField(required=True, validators=[RegexValidator(regex=spam_regex)])
-        
+
 
 
 class ApplicantForm(autocomplete_light.ModelForm):
@@ -60,18 +60,19 @@ class ApplicantForm(autocomplete_light.ModelForm):
             'adjusted_available_income': NumberInput(attrs={'style':'text-align:right;','step':.01}),
             'calculated_payment': NumberInput(attrs={'style':'text-align:right;','step':.01}),
         }
-    
+        fields='__all__'
+
     ssn = USSocialSecurityNumberField(required=False, label="SSN")
-    
-        
+
+
 class ReportForm(forms.Form):
     school_year = forms.ModelMultipleChoiceField(SchoolYear.objects.all())
-    
+
 class TemplateReportForm(forms.Form):
     school_year = forms.ModelMultipleChoiceField(SchoolYear.objects.all())
     level = forms.ModelMultipleChoiceField(AdmissionLevel.objects.all())
     ready_for_export = forms.NullBooleanField()
     template = forms.ModelChoiceField(Template.objects.all())
-    
-    
-    
+
+
+

@@ -16,8 +16,8 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 RUN mkdir /code
 WORKDIR /code
-ADD core-requirements.txt /code/
-RUN pip install -r core-requirements.txt
+ADD c-requirements.txt /code/
+RUN pip install -r c-requirements.txt
 ADD dev-requirements.txt /code/
 RUN pip install -r dev-requirements.txt
 ADD requirements.txt /code/

@@ -236,7 +236,7 @@ def ajax_check_duplicate_applicant(request, fname, lname):
     return HttpResponse(data)
 
 
-@transaction.commit_on_success
+@transaction.atomic
 @user_passes_test(lambda u: u.has_perm("sis.change_student") and u.has_perm("admissions.change_applicant"), login_url='/')
 def applicants_to_students(request, year_id):
     """ Copies all applicants marked as ready for export to sis students
@@ -265,7 +265,7 @@ def applicants_to_students(request, year_id):
             if not student.username:
                 student.username = imp.gen_username(student.first_name, student.last_name)
             student.save()
-            
+
             add_worker = config.ADMISSIONS_TO_STUDENT_ALSO_MAKES_STUDENT_WORKER
             if add_worker.value == "True":
                 student.promote_to_worker()
