@@ -9,16 +9,17 @@ import autocomplete_light
 class StudentMeetingAdmin(admin.ModelAdmin):
     list_display = ['category','display_students','date','reported_by']
     fields = ['category','students','date','notes','file','follow_up_action','follow_up_notes','reported_by']
-    form = autocomplete_light.modelform_factory(StudentMeeting)
-    
+    form = autocomplete_light.modelform_factory(
+        StudentMeeting, fields='__all__')
+
     search_fields = ['students__username', 'students__last_name', 'students__first_name', 'category__name', 'reported_by__username']
-    
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'reported_by':
             kwargs['initial'] = request.user.id
             return db_field.formfield(**kwargs)
         return super(StudentMeetingAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-    
+
     def lookup_allowed(self, lookup, *args, **kwargs):
         if lookup in ('students__id__exact',):
             return True
@@ -37,7 +38,7 @@ class ReferralFormAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.ManyToManyField: {'widget': CheckboxSelectMultiple},
     }
-    form = autocomplete_light.modelform_factory(ReferralForm)
+    form = autocomplete_light.modelform_factory(ReferralForm, fields='__all__')
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name in ['referred_by','classroom_teacher']:
             kwargs['initial'] = request.user.id

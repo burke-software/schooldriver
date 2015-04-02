@@ -69,7 +69,8 @@ class StudentAwardInline(admin.TabularInline):
 
 class StudentCohortInline(admin.TabularInline):
     model = Student.cohorts.through
-    form = autocomplete_light.modelform_factory(Student.cohorts.through)
+    form = autocomplete_light.modelform_factory(
+        Student.cohorts.through, fields='__all__')
     extra = 0
 
 class StudentECInline(admin.TabularInline):
@@ -105,7 +106,7 @@ admin.site.register(Faculty, FacultyAdmin)
 
 class StudentCourseSectionInline(admin.TabularInline):
     model = CourseEnrollment
-    form = autocomplete_light.modelform_factory(CourseEnrollment)
+    form = autocomplete_light.modelform_factory(CourseEnrollment, fields='__all__')
     fields = ('course_section', 'attendance_note')
     extra = 0
     classes = ('grp-collapse grp-closed',)
@@ -197,7 +198,7 @@ class StudentAdmin(VersionAdmin, CustomFieldAdmin):
         ),)
 
     change_list_template = "admin/sis/student/change_list.html"
-    form = autocomplete_light.modelform_factory(Student)
+    form = autocomplete_light.modelform_factory(Student, fields='__all__')
     readonly_fields = ['year']
     search_fields = ['first_name', 'last_name', 'username', 'unique_id', 'street', 'state', 'zip', 'id', 'studentnumber__number']
     inlines = [StudentCourseSectionInline, StudentNumberInline, StudentCohortInline, StudentFileInline, StudentHealthRecordInline, TranscriptNoteInline, StudentAwardInline]
@@ -341,6 +342,7 @@ class UserForm(UserChangeForm):
     """ Extended User form to provide extra validation """
     class Meta:
         model = User
+        fields='__all__'
 
     def clean(self):
         super(UserForm, self).clean()

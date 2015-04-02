@@ -14,7 +14,8 @@ class AlumniNoteForm(forms.ModelForm):
 class AlumniForm(forms.ModelForm):
     class Meta:
         model = Alumni
-    
+        fields='__all__'
+
     def clean(self):
         data = self.cleaned_data
         semesters = data.get("semesters")
@@ -23,9 +24,9 @@ class AlumniForm(forms.ModelForm):
             except InvalidOperation:
                 raise forms.ValidationError("Semesters must be a number or ALL")
         return data
-    
+
     alumniaction_set = forms.ModelMultipleChoiceField(
-        queryset=AlumniAction.objects.all(), 
+        queryset=AlumniAction.objects.all(),
         required=False,
         widget=FilteredSelectMultiple(
             verbose_name=('Actions'),
@@ -33,7 +34,7 @@ class AlumniForm(forms.ModelForm):
         ),
         help_text='<a href="/admin/alumni/alumniaction/add/" target="_blank"> Add Action </a>'
     )
-        
+
     def __init__(self, *args, **kwargs):
         super(AlumniForm, self).__init__(*args, **kwargs)
         if self.instance and self.instance.pk:

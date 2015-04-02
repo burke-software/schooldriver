@@ -82,6 +82,7 @@ class TdNoTextRadioRenderer(forms.RadioSelect.renderer):
 class TimeSheetForm(forms.ModelForm):
     class Meta:
         model = TimeSheet
+        fields = "__all__"
 
     my_supervisor = forms.ModelChoiceField(queryset=Contact.objects.all(), required=False)
     date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS, validators=settings.DATE_VALIDATORS)
@@ -190,6 +191,8 @@ class DolForm(forms.ModelForm):
             'accuracy_and_attention_to_detail': forms.RadioSelect(renderer=TdNoTextRadioRenderer),
             'organizational_skills': forms.RadioSelect(renderer=TdNoTextRadioRenderer),
         }
+        fields = "__all__"
+
     dol = forms.BooleanField(initial=True, required=False, widget=forms.CheckboxInput(attrs={'style':'visibility: hidden;'}))
 
     def save(self, *args, **kwargs):

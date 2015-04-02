@@ -23,6 +23,7 @@ class UserPreferenceForm(forms.ModelForm):
             'course_sort': forms.Select,
             'gradebook_preference': forms.Select,
         }
+        fields = '__all__'
 
 
 class DeletedStudentLookupForm(forms.Form):
