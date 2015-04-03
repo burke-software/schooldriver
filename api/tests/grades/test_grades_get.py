@@ -1,5 +1,5 @@
 from api.tests.api_test_base import APITest
-from ecwsp.grades.models import Grade
+from ecwsp.grades.models import Grade, CommonGrade
 from ecwsp.schedule.models import CourseEnrollment
 from decimal import Decimal
 import logging
@@ -33,18 +33,18 @@ class GradeAPIGetTest(APITest):
         test a get request using the filter parameter "student"
         """
         self.teacher_login()
-        # attempting to get a response from '/api/grades/?student=1'
-        response = self.client.get('/api/grades/', {'student': 1})
+        # attempting to get a response from '/api/grades/?enrollment__user=2'
+        response = self.client.get('/api/grades/', {'enrollment__user': 2})
         num_grades = Grade.objects.filter(
-            student_id=1
+            enrollment__user=2
             ).count()
         # there should be 2 grade instances for this student
         self.assertEqual(len(response.data), num_grades)
 
         #let's try another student
-        response = self.client.get('/api/grades/', {'student': 3})
+        response = self.client.get('/api/grades/', {'enrollment__user': 1})
         num_grades = Grade.objects.filter(
-            student_id=3
+            enrollment__user=1
             ).count()
         self.assertEqual(len(response.data), num_grades)
 
@@ -54,23 +54,18 @@ class GradeAPIGetTest(APITest):
         """
         self.teacher_login()
         known_student = self.data.student2
-        known_course_section = self.data.course_section2
+        known_course_section = self.data.course_section
         expected_grade_count = Grade.objects.filter(
-            student = known_student, 
-            course_section = known_course_section
+            enrollment__user = known_student,
+            enrollment__course_section = known_course_section
             ).count()
 
         filters = {
-            'student': known_student.id, 
-            'course_section': known_course_section.id
-            }
+            'enrollment__user': known_student.id,
+            'enrollment__course_section': known_course_section.id
+        }
         response = self.client.get('/api/grades/', filters)
         self.assertEqual(len(response.data), expected_grade_count)
-
-    def test_num_queries(self):
-        self.teacher_login()
-        with self.assertNumQueries(1):
-            self.client.get('/api/grades/')
 
     def test_ungraded_courses(self):
         """
