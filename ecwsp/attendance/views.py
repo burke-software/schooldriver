@@ -74,7 +74,7 @@ def teacher_attendance(request, course_section=None):
     else:
         messages.info(
             request,
-            'You do not exists as a Teacher. Tell an administrator to create a teacher with your username. " \
+            'You do not exist as a Teacher. Tell an administrator to create a teacher with your username. " \
                 "Ensure "teacher" is checked off.')
         return HttpResponseRedirect(reverse('admin:index'))
 
