@@ -137,7 +137,7 @@ class CountryOption(models.Model):
         ordering = ['name']
 
 class ImmigrationOption(models.Model):
-    name = models.CharField(max_length=500)
+    name = models.CharField(max_length=500, unique=True)
     def __unicode__(self):
         return unicode(self.name)
     class Meta:
