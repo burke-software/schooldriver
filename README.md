@@ -12,7 +12,7 @@ Other environments might work but are not supported.
 
 Run the docker images as described in docker-compose.yml. We suggest creating a docker-compose-production.yml file with your own condocker-composerations.
 
-**Condocker-composeuration**
+**Configuration**
 
 Modify settings_local.py or edit environment variables to add your own settings, such as your database.
 

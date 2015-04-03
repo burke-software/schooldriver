@@ -10,7 +10,8 @@ from ecwsp.work_study.models import StudentWorker
 from ecwsp.sis.uno_report import uno_save
 from ecwsp.schedule.models import MarkingPeriod, CourseSection
 from ecwsp.grades.models import StudentMarkingPeriodGrade
-from ecwsp.benchmark_grade.models import Category, Item, Aggregate, Demonstration
+from ecwsp.benchmark_grade.models import (
+    Category, Item, Aggregate, Demonstration, CalculationRulePerCourseCategory)
 from ecwsp.benchmark_grade.utility import benchmark_find_calculation_rule, gradebook_get_average
 from ecwsp.benchmark_grade.views import gradebook
 
@@ -19,10 +20,10 @@ import os
 
 if 'TRAVIS' not in os.environ:
     """this import is killing us on TravisCI, so I'm removing it. There
-    may be a better way to do this, but we honestly don't need anything 
+    may be a better way to do this, but we honestly don't need anything
     from this file during our test runs."""
     import uno
-    
+
 import re
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import date
@@ -136,8 +137,8 @@ def get_benchmark_report_card_data(report_context, appy_context, students):
             if value:
                 student.count_percentage_by_category_name[category_name] = (Decimal(student.count_passing_by_category_name[category_name]) / value * 100).quantize(Decimal('0', ROUND_HALF_UP))
 
-        # make categories available 
-        
+        # make categories available
+
         try:
             student.session_gpa = student.studentmarkingperiodgrade_set.get(
                 marking_period=marking_period).grade
@@ -175,7 +176,7 @@ def get_benchmark_report_card_data(report_context, appy_context, students):
 
 @staff_member_required
 def student_incomplete_course_sections(request):
-    if 'inverse' in request.GET: 
+    if 'inverse' in request.GET:
         inverse = True
     else:
         inverse = False
@@ -224,14 +225,14 @@ def student_incomplete_course_sections(request):
             course_section_detail = course_section_detail[1] # discard the course section id
             narrative.append(u'{} ({})'.format(course_section_detail['name'], u', '.join(course_section_detail['marking_periods'])))
         data.append([student.last_name, student.first_name, student.year, work_day, u'; '.join(narrative)])
-    
+
     report = XlReport()
     report.add_sheet(data, header_row=titles, title="Sheet1", auto_width=True)
-    return report.as_download()  
+    return report.as_download()
 
 @staff_member_required
 def student_zero_dp_standards(request):
-    if 'inverse' in request.GET: 
+    if 'inverse' in request.GET:
         inverse = True
     else:
         inverse = False
@@ -315,7 +316,7 @@ def gradebook_export(request, course_section_id):
     if type(gradebook_data) is not dict:
         # something we can't use, like a 404 or a redirect
         return gradebook_data
-    
+
     from ecwsp.sis.xl_report import XlReport
     report = XlReport(file_name=slugify(gradebook_data['course_section'].name))
     rows = []
@@ -377,7 +378,7 @@ def gradebook_export(request, course_section_id):
             rows[row_counter].append(mark.get_grade())
         rows[row_counter].append(student.average)
         row_counter += 1
-                    
+
     report.add_sheet(rows, title=gradebook_data['course_section'].name)
     sheet = report.workbook.get_active_sheet()
     if report.old_openpyxl:
@@ -390,4 +391,4 @@ def gradebook_export(request, course_section_id):
             cell.style = cell.style.copy(font=cell.style.font.copy(bold=True))
         cell = sheet.cell(row=course_section_average_row, column=course_section_average_column)
         cell.style = cell.style.copy(font=cell.style.font.copy(bold=True))
-    return report.as_download()  
+    return report.as_download()

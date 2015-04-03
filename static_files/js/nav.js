@@ -1,4 +1,5 @@
 var menuItemPos, thirdItemPos, thirdItemWidth, oneThroughThreeWidth, triggerWidth, requiresSetHeight;
+oneThroughThreeWidth = 150;
 
 // This is used when the user clicks a directional arrow in the main nav.
 function getScrollValue(direction) {
@@ -123,10 +124,14 @@ function controlShadows() {
 }
 
 $(document).ready(function() {
+// If current page has the nav, then do everything else.
+if ($('#flex-nav').length > 0) { 
 	menuItemPos = $('.mm-menu-items').position();
-	thirdItemPos = $('.mm-menu-items > li:nth-child(3)').position();
-	thirdItemWidth = $('.mm-menu-items > li:nth-child(3)').width();
-	oneThroughThreeWidth = (thirdItemPos.left + thirdItemWidth) - menuItemPos.left;
+	if ($('.mm-menu-items > li:nth-child(3)').length > 0) {
+		thirdItemPos = $('.mm-menu-items > li:nth-child(3)').position();
+		thirdItemWidth = $('.mm-menu-items > li:nth-child(3)').width();
+		oneThroughThreeWidth = (thirdItemPos.left + thirdItemWidth) - menuItemPos.left;
+	}
 	requiresSetHeight = $('.requires-set-height').length;
 
 
@@ -227,4 +232,5 @@ $(document).ready(function() {
 		maximizeMenuBar();
 	    if (requiresSetHeight > 0) { changeContentHeight(); }
 	});
+}
 });
