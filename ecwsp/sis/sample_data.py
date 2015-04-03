@@ -42,6 +42,9 @@ class SisData(object):
         # so it's ok to not use bulk
         # Don't change the order, other objects depend on the id being in this order
         self.student = Student.objects.create(first_name="Joe", last_name="Student", username="jstudent")
+        self.student.set_password('aa')
+        self.student.save()
+
         self.student2 = Student.objects.create(first_name="Jane", last_name="Student", username="jastudent")
         self.student3 = Student.objects.create(first_name="Tim", last_name="Duck", username="tduck")
         Student.objects.create(first_name="Molly", last_name="Maltov", username="mmaltov")
@@ -121,6 +124,7 @@ class SisData(object):
         grade_data = [
             {'student': self.student2, 'section': self.course_section, 'mp': self.marking_period, 'grade': 75},
             {'student': self.student2, 'section': self.course_section, 'mp': self.marking_period2, 'grade': 100},
+            {'student': self.student,  'section': self.course_section, 'mp': self.marking_period2, 'grade': 88},
         ]
         for x in grade_data:
             enrollment = CourseEnrollment.objects.get(
