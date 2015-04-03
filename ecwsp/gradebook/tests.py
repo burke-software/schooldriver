@@ -1,6 +1,6 @@
 from django.test import TestCase
 from ecwsp.sis.tests import SisTestMixin
-from ecwsp.sis.models import SchoolYear
+from ecwsp.sis.models import SchoolYear, Faculty
 from ecwsp.schedule.models import (
     Department)
 from django.core.urlresolvers import reverse
@@ -31,6 +31,10 @@ class AssignmentViewsetTests(APITestCase):
         self.data = {
             'name': 'first assignment',
             'course_section': self.section.pk}
+        self.teacher = Faculty.objects.create(
+            username="dburke", first_name="david", last_name="burke", 
+            teacher=True)
+        self.client.force_authenticate(user=self.teacher)
 
     def test_get_assignment_list(self):
         response = self.client.get(reverse('assignment-list'))

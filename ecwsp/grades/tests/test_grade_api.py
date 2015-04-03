@@ -10,6 +10,7 @@ class GradeApiTests(SisTestMixin, APITestCase):
         self.data = SisData()
         self.data.create_basics()
         self.client = APIClient()
+        self.teacher_login()
 
     def test_set_grade(self):
         data = {

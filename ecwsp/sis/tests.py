@@ -22,6 +22,18 @@ class SisTestMixin(object):
         self.data = SisData()
         self.data.create_basics()
 
+    def teacher_login(self):
+        """
+        provides a simple way to automatically log in a teacher
+        """
+        self.client.force_authenticate(user = self.data.teacher1)
+
+    def student_login(self):
+        """
+        provides a simple way to automatically log in a student
+        """
+        self.client.force_authenticate(user = self.data.student)
+
 
 class ReportTest(SisTestMixin, TestCase):
     def test_show_incomplete_without_grade(self):
