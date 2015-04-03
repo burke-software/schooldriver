@@ -44,7 +44,7 @@ class SisData(object):
         self.student = Student.objects.create(first_name="Joe", last_name="Student", username="jstudent")
         self.student.set_password('aa')
         self.student.save()
-        
+
         self.student2 = Student.objects.create(first_name="Jane", last_name="Student", username="jastudent")
         self.student3 = Student.objects.create(first_name="Tim", last_name="Duck", username="tduck")
         Student.objects.create(first_name="Molly", last_name="Maltov", username="mmaltov")
@@ -113,15 +113,12 @@ class SisData(object):
         self.absent = AttendanceStatus.objects.create(name="Absent", code="A", teacher_selectable=True, absent=True)
         self.excused = AttendanceStatus.objects.create(name="Absent Excused", code="AX", absent=True, excused=True)
 
-        self.course_enrollment1 = CourseEnrollment.objects.create(
-            user=self.student, course_section=self.course_section)
-        self.course_enrollment2 = CourseEnrollment.objects.create(
-            user=self.student, course_section=self.course_section2)
-        self.course_enrollment3 = CourseEnrollment.objects.create(
-            user=self.student, course_section=self.course_section4)
-        self.course_enrollment4 = CourseEnrollment.objects.create(
-            user=self.student2, course_section=self.course_section)
-
+        CourseEnrollment.objects.bulk_create([
+            CourseEnrollment(user=self.student, course_section=self.course_section),
+            CourseEnrollment(user=self.student, course_section=self.course_section2),
+            CourseEnrollment(user=self.student, course_section=self.course_section4),
+            CourseEnrollment(user=self.student2, course_section=self.course_section),
+        ])
         self.course_enrollment = CourseEnrollment.objects.all().first()
 
         grade_data = [

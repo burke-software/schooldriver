@@ -1,5 +1,5 @@
 from api.tests.api_test_base import APITest
-from ecwsp.grades.models import Grade, CommonGrade
+from ecwsp.grades.models import Grade
 from ecwsp.schedule.models import CourseEnrollment
 from decimal import Decimal
 import logging
