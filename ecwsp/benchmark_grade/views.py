@@ -114,7 +114,7 @@ def gradebook(request, course_section_id, for_export=False):
                     except TypeError:
                         # not everything has a len
                         pass
-                    if filter_key == 'cohort': 
+                    if filter_key == 'cohort':
                         students = students.filter(cohorts=filter_value)
                         temporary_aggregate = True
                     if filter_key == 'marking_period':
@@ -147,17 +147,17 @@ def gradebook(request, course_section_id, for_export=False):
         else:
             filter_form = GradebookFilterForm()
         filter_form.update_querysets(course_section)
-        
+
     # make a note of any aggregates pending recalculation
     pending_aggregate_pks = Aggregate.objects.filter(course_section=course_section, aggregatetask__in=AggregateTask.objects.all()).values_list('pk', flat=True).distinct()
-    
+
     # Freeze these now in case someone else gets in here!
     # TODO: something that actually works. all() does not evaluate a QuerySet.
     # https://docs.djangoproject.com/en/dev/ref/models/querysets/#when-querysets-are-evaluated
     items = items.order_by('id').all()
     # whoa, super roll of the dice. is Item.demonstration_set really guaranteed to be ordered by id?
     # precarious; sorting must match items (and demonstrations!) exactly
-    marks = Mark.objects.filter(item__in=items).order_by('item__id', 'demonstration__id').all() 
+    marks = Mark.objects.filter(item__in=items).order_by('item__id', 'demonstration__id').all()
     items_count = items.filter(demonstration=None).count() + Demonstration.objects.filter(item__in=items).count()
     for student in students:
         student_marks = marks.filter(student=student).exclude(item__category__allow_multiple_demonstrations=True, demonstration=None).select_related('item__category_id')
@@ -180,10 +180,10 @@ def gradebook(request, course_section_id, for_export=False):
                 pass
             else:
                 raise Exception('Multiple marks per student per item.')
-        
+
         for mark in student_marks:
             mark.category_id = mark.item.category_id
-        
+
         student.marks = student_marks
         student.average, student.average_pk = gradebook_get_average_and_pk(student, course_section, None, None, None)
         if student.average is not None:
@@ -316,7 +316,7 @@ def gradebook(request, course_section_id, for_export=False):
             RequestContext(request, {}),)
 
 @staff_member_required
-@transaction.commit_on_success
+@transaction.atomic
 def ajax_delete_item_form(request, course_section_id, item_id):
     item = get_object_or_404(Item, pk=item_id)
     if not request.user.has_perm('grades.delete_grade') and not item.marking_period.active:
@@ -333,7 +333,7 @@ def ajax_delete_item_form(request, course_section_id, item_id):
     return HttpResponse('SUCCESS')
 
 @staff_member_required
-@transaction.commit_on_success
+@transaction.atomic
 def ajax_get_item_form(request, course_section_id, item_id=None):
     ''' the transaction decorator helps, but people can still hammer the submit button
     and create tons of assignments. for some reason, only one shows up right away, and the rest
@@ -341,7 +341,7 @@ def ajax_get_item_form(request, course_section_id, item_id=None):
     course_section = get_object_or_404(CourseSection, pk=course_section_id)
     item = None
     lists = None
-    
+
     if request.POST:
         if item_id:
             # modifying an existing item
@@ -428,7 +428,7 @@ def ajax_get_item_form(request, course_section_id, item_id=None):
             # message handler.
             messages.success(request, '%s saved' % (item,))
             return HttpResponse('SUCCESS')
-        
+
     else:
         if item_id:
             item = get_object_or_404(Item, pk=item_id)
@@ -457,7 +457,7 @@ def ajax_get_item_form(request, course_section_id, item_id=None):
                 form = ItemForm(initial={'course_section': course_section, 'marking_period':active_mps[0]}, prefix="item")
             else:
                 form = ItemForm(initial={'course_section': course_section}, prefix="item")
-    
+
     # some fields may have been disabled by user configuration
     try: form.fields['marking_period'].queryset = course_section.marking_period.all()
     except KeyError: pass
@@ -516,7 +516,7 @@ def ajax_get_item_tooltip(request, course_section_id, item_id):
     }, RequestContext(request, {}),)
 
 @staff_member_required
-@transaction.commit_on_success
+@transaction.atomic
 def ajax_delete_demonstration_form(request, course_section_id, demonstration_id):
     demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
     item = demonstration.item
@@ -542,14 +542,14 @@ def ajax_delete_demonstration_form(request, course_section_id, demonstration_id)
     return HttpResponse('SUCCESS')
 
 @staff_member_required
-@transaction.commit_on_success
+@transaction.atomic
 def ajax_get_demonstration_form(request, course_section_id, demonstration_id=None):
     ''' the transaction decorator helps, but people can still hammer the submit button
     and create tons of assignments. for some reason, only one shows up right away, and the rest
     don't appear until reload '''
     course_section = get_object_or_404(CourseSection, pk=course_section_id)
     lists = None
-    
+
     if request.POST:
         if demonstration_id:
             # modifying an existing demonstration
@@ -595,7 +595,7 @@ def ajax_get_demonstration_form(request, course_section_id, demonstration_id=Non
             # message handler.
             messages.success(request, '%s saved' % (demonstration,))
             return HttpResponse('SUCCESS')
-        
+
     else:
         if demonstration_id:
             demonstration = get_object_or_404(Demonstration, pk=demonstration_id)
@@ -607,7 +607,7 @@ def ajax_get_demonstration_form(request, course_section_id, demonstration_id=Non
                 lists = ({'heading':'Students Missing This Demonstration', 'items':students_missing},)
         else:
             form = DemonstrationForm(initial={'course_section': course_section}, prefix="demonstration")
-    
+
     form.fields['item'].queryset = Item.objects.filter(course_section=course_section,
                                                        category__display_in_gradebook=True, category__allow_multiple_demonstrations=True)
 
@@ -663,7 +663,7 @@ def ajax_get_fill_all_form(request, course_section_id, object_type, object_id):
         raise Exception('This {} has no Marks.'.format(item_or_demonstration._meta.object_name))
 
     if request.POST:
-        # we must pass in an instance, otherwise we fail unique validation 
+        # we must pass in an instance, otherwise we fail unique validation
         instance = item_or_demonstration.mark_set.all()[0]
         form = FillAllForm(request.POST, instance=instance, prefix="fill_all")
         try:
@@ -701,7 +701,7 @@ def ajax_save_grade(request):
         mark_id = request.POST['mark_id'].strip()
         value = request.POST['value'].strip()
         try: mark = Mark.objects.get(id=mark_id)
-        except Mark.DoesNotExist: return HttpResponse('NO MARK WITH ID ' + mark_id, status=404) 
+        except Mark.DoesNotExist: return HttpResponse('NO MARK WITH ID ' + mark_id, status=404)
         if not request.user.is_superuser and not request.user.groups.filter(name='registrar').count() \
             and not mark.item.course_section.teachers.filter(username=request.user.username).exists():
             return HttpResponse(status=403)
@@ -733,10 +733,10 @@ def ajax_save_grade(request):
             affected_agg_pks = None
         # just the whole course section average for now
         # TODO: update filtered average
-        #average = gradebook_get_average(mark.student, mark.item.course, None, None, None) 
+        #average = gradebook_get_average(mark.student, mark.item.course, None, None, None)
         return HttpResponse(json.dumps({'success': 'SUCCESS', 'value': value, 'average': 'Please clear your browser\'s cache.', 'affected_aggregates': affected_agg_pks}))
     else:
-        return HttpResponse('POST DATA INCOMPLETE', status=400) 
+        return HttpResponse('POST DATA INCOMPLETE', status=400)
 
 @staff_member_required
 def ajax_task_poll(request, course_section_pk=None):
@@ -787,7 +787,7 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
             elif family_available_students.count():
                 student = family_available_students[0]
                 authorized = True
-    
+
     # did all that make us comfortable with proceeding?
     if not authorized:
         error_message = 'Sorry, you are not authorized to see grades for this student. Please contact the school registrar.'
@@ -895,7 +895,7 @@ def student_report(request, student_pk=None, course_section_pk=None, marking_per
                 category.item_groups = {}
                 for item_name_tuple in item_names:
                     item_name = item_name_tuple[0]
-                    category.item_groups[item_name] = category_items.filter(name=item_name).distinct() 
+                    category.item_groups[item_name] = category_items.filter(name=item_name).distinct()
                 if specific_items:
                     # get a disposable average for these specific items
                     category.average = gradebook_get_average(student, course_section, category, mp, category_items)

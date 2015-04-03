@@ -12,7 +12,7 @@ class ItemForm(forms.ModelForm):
         # get user-configured exclusions at runtime
         allowed_exclude = set(['marking_period', 'assignment_type', 'benchmark', 'date', 'description'])
         from ecwsp.administration.models import Configuration
-        exclude = [x.strip() for x in Configuration.get_or_default('Gradebook hide fields').value.lower().split(',')] 
+        exclude = [x.strip() for x in Configuration.get_or_default('Gradebook hide fields').value.lower().split(',')]
         exclude = set(exclude).intersection(allowed_exclude)
         return list(exclude)
 
@@ -45,6 +45,7 @@ class DemonstrationForm(forms.ModelForm):
             'name': forms.TextInput,
             'item': forms.Select,
         }
+        fields = '__all__'
 
 class FillAllForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -58,7 +59,7 @@ class FillAllForm(forms.ModelForm):
             'student': forms.HiddenInput,
         }
         exclude = ('normalized_mark', 'description')
-       
+
 class GradebookFilterForm(forms.Form):
     cohort = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
     marking_period = forms.ModelChoiceField(queryset=None, widget=forms.Select(attrs={'onchange':'submit_filter_form(this.form)'}), required=False)
@@ -68,7 +69,7 @@ class GradebookFilterForm(forms.Form):
     name = forms.CharField(required=False)
     date_begin = forms.DateField(required=False, widget=forms.DateInput(attrs={'placeholder':'Later than'}), validators=settings.DATE_VALIDATORS)
     date_end = forms.DateField(required=False, widget=forms.DateInput(attrs={'placeholder':'Earlier than'}), validators=settings.DATE_VALIDATORS)
-    
+
     def update_querysets(self, course_section):
         self.fields['cohort'].queryset = Cohort.objects.filter(Q(percoursesectioncohort=None, student__coursesection=course_section) | Q(percoursesectioncohort__coursesection=course_section)).distinct().order_by('name')
         self.fields['marking_period'].queryset = MarkingPeriod.objects.filter(coursesection=course_section).distinct()

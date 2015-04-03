@@ -18,6 +18,7 @@ class StudentAttendanceForm(forms.ModelForm):
             'date': forms.HiddenInput(),
             'notes': forms.TextInput(attrs={'tabindex':"-1",}),
         }
+        fields = "__all__"
     status = forms.ModelChoiceField(widget=forms.Select(attrs={'class':'status',}), queryset=AttendanceStatus.objects.filter(teacher_selectable=True))
 
 

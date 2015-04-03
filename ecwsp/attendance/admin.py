@@ -8,7 +8,7 @@ from ecwsp.attendance.models import StudentAttendance, CourseSectionAttendance, 
 import autocomplete_light
 
 class StudentAttendanceAdmin(admin.ModelAdmin):
-    form = autocomplete_light.modelform_factory(StudentAttendance)
+    form = autocomplete_light.modelform_factory(StudentAttendance, fields='__all__')
     list_display = ['student', 'date', 'status', 'notes', 'time']
     list_filter = [
         ('date', DateRangeFilter),

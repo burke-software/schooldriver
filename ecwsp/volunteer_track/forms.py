@@ -10,10 +10,12 @@ class inputTimeForm(forms.ModelForm):
             'date':adminwidgets.AdminDateWidget(),
             'volunteer_site':forms.HiddenInput(),
             }
-        
+        fields = "__all__"
+
 class NewSiteForm(forms.ModelForm):
     class Meta:
         model = Site
+        fields = "__all__"
     job_description = forms.CharField(widget=forms.Textarea(attrs={'rows':3}), required=True)
 
 class ExistingSiteForm(forms.ModelForm):
@@ -21,12 +23,12 @@ class ExistingSiteForm(forms.ModelForm):
         model = VolunteerSite
         fields = ['site','job_description']
         widgets = {'job_description':forms.Textarea(attrs={'rows':3})}
-        
+
 class SupervisorForm(forms.ModelForm):
     class Meta:
         model = SiteSupervisor
         exclude = ['site']
-    
-class SelectSupervisorForm(forms.Form):    
+
+class SelectSupervisorForm(forms.Form):
     select_existing = forms.ModelChoiceField(SiteSupervisor.objects.all(), required=False)
-    
+

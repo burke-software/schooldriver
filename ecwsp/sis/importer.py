@@ -42,8 +42,8 @@ class Importer:
             self.error_titles = {}
             self.errors = 0
             self.user = user
-    
-        
+
+
     def make_log_entry(self, user_note=""):
         self.log = ImportLog(user=self.user, user_note=user_note, import_file=self.file)
         file_name = datetime.datetime.now().strftime("%Y%m%d%H%M") + ".sql"
@@ -51,7 +51,7 @@ class Importer:
         # Clean up old log files
         for import_log in ImportLog.objects.filter(date__lt=datetime.datetime.now() - datetime.timedelta(60)):
             import_log.delete()
-        
+
     def handle_error(self, row, colname, exc, name):
         """ Add error infomation to exception list and error_date which will be
         transfered to html and a xls file. Also print to stderr. """
@@ -64,7 +64,7 @@ class Importer:
             value_row += [error]
             self.error_data[name] += [value_row]
             self.errors += 1
-    
+
     def sanitize_item(self, name, value):
         """ Checks to make sure column and cell have data, if not ignore them
         Returns true is valid data """
@@ -75,7 +75,7 @@ class Importer:
                 value = str(value).rstrip('0').rstrip('.')
             return True, name, value
         return False, name, value
-    
+
     def gen_username(self, fname, lname):
         """Generate a unique username for a ***User*** (not MdlUser) based on first and last name
         Try first the first letter of the first name plus the last name
@@ -114,7 +114,7 @@ class Importer:
                 number += 1
                 username = fname[:i] + lname + str(number)
         return username
-    
+
     def import_number(self, value):
         phonePattern = re.compile(r'''
                     # don't match beginning of string, number can start anywhere
@@ -131,7 +131,7 @@ class Importer:
         if ext == "0000":
             ext = ""
         return a + "-" + b + "-" + c, ext
-    
+
     def convert_date(self, value):
         """Tries to convert various ways of storing a date to a python date"""
         try:
@@ -151,12 +151,12 @@ class Importer:
             return datetime.datetime.strptime(str(date_split[0] + "-" +date_split[1]), "%Y-%m")
         except: pass
         return None
-    
+
     def get_student(self, items, allow_none=False, try_secondary=False):
         """ Lookup a student based on id, unique id, username, or ssn
         items: name and value from the imported data
         allow_none: Allow not finding a student. If False an exceptions
-        try_secondary: 
+        try_secondary:
         is raised if the student isn't found. default False"""
         for (name, value) in items:
             is_ok, name, value = self.sanitize_item(name, value)
@@ -179,7 +179,7 @@ class Importer:
                     ssn = str(value).translate(None, '- _') # Because student clearing house likes stray _
                     ssn = ssn[:3] + '-' + ssn[3:5] + '-' + ssn[-4:] # xxx-xx-xxxx
                     return Student.objects.get(ssn=ssn)
-        
+
         # No ID....try secondary keys.
         if try_secondary:
             fname = None
@@ -206,10 +206,10 @@ class Importer:
                         return Student.objects.get(fname=fname,lname=lname,address=address)
                 if Student.objects.filter(fname=fname,lname=lname).count() == 1:
                     return Student.objects.get(fname=fname,lname=lname)
-        
+
         if not allow_none:
             raise Exception("Could not find student, check unique id, username, or id")
-    
+
     def convert_day(self, value):
         """ Converts day of week to ISO day of week number
         Ex: Monday returns 1"""
@@ -222,7 +222,7 @@ class Importer:
         elif value == "saturday" or value == "sat": return 6
         elif value == "sunday" or value == "sun": return 7
         else: return value
-    
+
     def convert_time(self, value):
         """Tries to convert various ways of storing a date to a python time
         Includes excel date format"""
@@ -232,7 +232,7 @@ class Importer:
         except:
             pdate = time(*(xlrd.xldate_as_tuple(float(value), 0)[3:]))
         return pdate
-    
+
     def determine_truth(self, value):
         value = unicode(value)
         value = unicode.lower(value)
@@ -240,31 +240,31 @@ class Importer:
             return True
         else:
             return False
-    
+
     def log_and_commit(self, object, inserted=None, updated=None, addition=True):
         if addition:
             LogEntry.objects.log_action(
-                user_id         = self.user.pk, 
+                user_id         = self.user.pk,
                 content_type_id = ContentType.objects.get_for_model(object).pk,
                 object_id       = object.pk,
-                object_repr     = unicode(object), 
+                object_repr     = unicode(object),
                 action_flag     = ADDITION
             )
             if inserted != None:
                 inserted += 1
         else:
             LogEntry.objects.log_action(
-                user_id         = self.user.pk, 
+                user_id         = self.user.pk,
                 content_type_id = ContentType.objects.get_for_model(object).pk,
                 object_id       = object.pk,
-                object_repr     = unicode(object), 
+                object_repr     = unicode(object),
                 action_flag     = CHANGE
             )
             if updated != None:
                 updated += 1
         transaction.commit()
         return inserted, updated
-    
+
     def import_prep(self, sheet):
         x = 0
         header = sheet.row(x)
@@ -278,7 +278,7 @@ class Importer:
         self.error_titles[sheet.name] = [header_values]
         self.error_data[sheet.name] = []
         return (x, header, inserted, updated)
-    
+
     def get_sheet_by_case_insensitive_name(self, name):
         """ Use xlrd to get a sheet, but ignore case! """
         i = 0
@@ -286,14 +286,14 @@ class Importer:
             if sheet_name.lower() == name.lower():
                 return self.book.sheet_by_index(i)
             i += 1
-    
+
     def magic_import_everything(self):
         """Import a workbook using sheet names to determine what to import"""
         self.make_log_entry()
         inserted = 0
         updated = 0
         msg = ""
-        
+
         sheet = self.get_sheet_by_case_insensitive_name("standard test")
         if sheet:
             inserted = self.import_standard_test(sheet)
@@ -302,7 +302,7 @@ class Importer:
         if sheet:
             inserted, updated = self.import_alumni_note(sheet)
             msg += "%s alumni note entries inserted,<br/>" % (inserted,)
-            
+
         sheet = self.get_sheet_by_case_insensitive_name("alumni email")
         if sheet:
             inserted, updated = self.import_alumni_email(sheet)
@@ -311,17 +311,17 @@ class Importer:
         if sheet:
             inserted, updated = self.import_alumni_number(sheet)
             msg += "%s alumni numbers inserted,<br/>" % (inserted,)
-            
+
         sheet = self.get_sheet_by_case_insensitive_name("college enrollment")
         if sheet:
             inserted, updated = self.import_college_enrollment(sheet)
             msg += "%s college enrollments inserted, %s college enrollments updated. <br/>" % (inserted, updated)
-        
+
         if msg == "":
             msg = "No files found. Check if sheets are named correctly. "
-        
+
         msg += unicode(self.errors) + " error(s). "
-        
+
         filename = 'import_error.xlsx'
         if len(self.error_data):
             self.log.errors = True
@@ -337,7 +337,7 @@ class Importer:
             else:
                 filename = None
         return msg, filename
-    
+
     def import_just_alumni_data(self):
         inserted = 0
         msg = ""
@@ -347,12 +347,12 @@ class Importer:
         msg += "%s records inserted <br/>" % (inserted)
         msg += "%s records updated<br/>" % (updated)
         #except: pass
-        
+
         if msg == "":
             msg = "No files found. Check if sheets are named correctly. "
-        
+
         msg += unicode(self.errors) + " error(s). "
-        
+
         filename = 'import_error.xls'
         if len(self.error_data):
             report = XlReport()
@@ -366,7 +366,7 @@ class Importer:
             else:
                 filename = None
         return msg, filename
-    
+
     def import_just_standard_test(self, test=None):
         inserted = 0
         msg = ""
@@ -375,12 +375,12 @@ class Importer:
             inserted = self.import_standard_test(sheet, test)
             msg += "%s standard tests inserted <br/>" % (inserted)
         except: pass
-        
+
         if msg == "":
             msg = "No files found. Check if sheets are named correctly. "
-        
+
         msg += unicode(self.errors) + " error(s). "
-        
+
         filename = 'import_error.xls'
         if len(self.error_data):
             report = XlReport()
@@ -394,8 +394,8 @@ class Importer:
             else:
                 filename = None
         return msg, filename
-    
-    
+
+
     def import_standard_test(self, sheet, known_test=None):
         """Import Standardized tests. Does not allow updates.
         test: if the test name is already known. """
@@ -446,7 +446,7 @@ class Importer:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted
-    
+
     def import_alumni_note(self, sheet):
         from ecwsp.alumni.models import Alumni, AlumniNote, AlumniNoteCategory
         x, header, inserted, updated = self.import_prep(sheet)
@@ -485,7 +485,7 @@ class Importer:
                     if created:
                         self.log_and_commit(note, addition=created)
                         inserted += 1
-                            
+
                 except:
                     if hasattr(sheet, 'name'):
                         self.handle_error(row, name, sys.exc_info(), sheet.name)
@@ -493,7 +493,7 @@ class Importer:
                         self.handle_error(row, name, sys.exc_info(), "Unknown")
             x += 1
         return inserted, updated
-    
+
     def import_alumni_email(self, sheet):
         from ecwsp.alumni.models import Alumni, AlumniEmail
         x, header, inserted, updated = self.import_prep(sheet)
@@ -526,7 +526,7 @@ class Importer:
                     if created:
                         self.log_and_commit(note, addition=created)
                         inserted += 1
-                            
+
                 except:
                     if hasattr(sheet, 'name'):
                         self.handle_error(row, name, sys.exc_info(), sheet.name)
@@ -534,8 +534,8 @@ class Importer:
                         self.handle_error(row, name, sys.exc_info(), "Unknown")
             x += 1
         return inserted, updated
-    
-    
+
+
     def import_alumni_number(self, sheet):
         from ecwsp.alumni.models import Alumni, AlumniPhoneNumber
         x, header, inserted, updated = self.import_prep(sheet)
@@ -568,7 +568,7 @@ class Importer:
                     if created:
                         self.log_and_commit(note, addition=created)
                         inserted += 1
-                            
+
                 except:
                     if hasattr(sheet, 'name'):
                         self.handle_error(row, name, sys.exc_info(), sheet.name)
@@ -576,8 +576,8 @@ class Importer:
                         self.handle_error(row, name, sys.exc_info(), "Unknown")
             x += 1
         return inserted, updated
-    
-    
+
+
     def import_college_enrollment(self, sheet):
         from ecwsp.alumni.models import Alumni, College, CollegeEnrollment
         x, header, inserted, updated = self.import_prep(sheet)
@@ -631,7 +631,7 @@ class Importer:
                                 major = value
                             elif name in ['record_found', 'record_found_y/n']:
                                 record_found = self.determine_truth(value)
-                                
+
                     if record_found:
                         # First get or create college
                         college, c_created = College.objects.get_or_create(code=code)
@@ -655,7 +655,7 @@ class Importer:
                             model.graduation_date = graduation_date
                             model.degree_title = degree_title
                             model.major = major
-                        
+
                             model.full_clean()
                             model.save()
                             self.log_and_commit(model, addition=created)
@@ -689,8 +689,8 @@ class Importer:
                         self.handle_error(row, name, sys.exc_info(), "Unknown")
             x += 1
         return inserted, updated
-    
-    
+
+
     #@transaction.commit_manually
     def import_grades_comment(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
@@ -721,7 +721,7 @@ class Importer:
                     self.handle_error(row, name, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
-    
+
     def import_grades_admin(self, sheet):
         x, header, inserted, updated = self.import_prep(sheet)
         while x < sheet.nrows:
@@ -776,12 +776,12 @@ class Importer:
                     self.handle_error(row, header, sys.exc_info(), sheet.name)
             x += 1
         return inserted, updated
-    
-    
-    @transaction.commit_on_success
+
+
+    @transaction.atomic
     def import_grades(self, course_section, marking_period):
         """ Special import for teachers to upload grades
-        Returns Error Message """ 
+        Returns Error Message """
         from ecwsp.grades.models import Grade,GradeComment
         try:
             sheet = self.get_sheet_by_case_insensitive_name(marking_period.name)
@@ -835,5 +835,5 @@ class Importer:
                     model.save()
             except:
                 print >> sys.stderr, str(sys.exc_info())
-            x += 1  
+            x += 1
 

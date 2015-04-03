@@ -12,16 +12,19 @@ import datetime
 
 from constance import config
 
+
 class DisciplineViewForm(autocomplete_light.ModelForm):
     student = forms.ModelChoiceField(queryset=Student.objects.all())
-    
+
+
 class DisciplineForm(forms.ModelForm):
     class Meta:
         model = StudentDiscipline
         widgets = {
             'comments': forms.TextInput(),
         }
-        
+        fields = "__all__"
+
 
 class DisciplineStudentStatistics(TimeBasedForm):
     """Form to gather information to be used in a report of discipline issues"""
@@ -30,7 +33,7 @@ class DisciplineStudentStatistics(TimeBasedForm):
     minimum_action = forms.IntegerField(initial=0, help_text="Minimal number of above action needed to show student in Student Report")
     infraction = forms.ModelChoiceField(required=False, queryset=Infraction.objects.all())
     minimum_infraction = forms.IntegerField(initial=0, help_text="Minimal number of above infraction needed to show student in Student Report")
-    
+
 def get_start_date_default():
     """ Return default date for report. It should be X work days ago. """
     work_days = (0,1,2,3,4) # python day of weeks mon-fri
@@ -59,4 +62,4 @@ class MeritForm(forms.Form):
     level_three = forms.IntegerField(initial=get_default_three, required=False)
     level_four = forms.IntegerField(initial=get_default_four, required=False)
     sort_by = forms.ChoiceField(choices=(('last_name', 'Student last name'), ('year', 'School year'), ('cohort', 'Primary Cohort')), initial=1)
-    
+
