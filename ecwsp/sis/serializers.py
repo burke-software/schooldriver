@@ -5,6 +5,7 @@ from .models import Student, SchoolYear
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
+        depth = 1
 
 
 class SchoolYearSerializer(serializers.ModelSerializer):
