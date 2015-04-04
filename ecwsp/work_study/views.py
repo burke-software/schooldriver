@@ -61,8 +61,8 @@ def supervisor_xls(request):
                      timesheet.student_accomplishment,
                      timesheet.supervisor_comment,])
         studenti += 1
-        if studenti == timesheets.filter(student__id__iexact=timesheet.student.id).count():
-            stu_total = timesheets.filter(student__id__iexact=timesheet.student.id).aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
+        if studenti == timesheets.filter(student__id=timesheet.student.id).count():
+            stu_total = timesheets.filter(student__id=timesheet.student.id).aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
             data.append(["", "", "", "Total", "", "", stu_total['hours__sum'], stu_total['school_net__sum']])
             studenti = 0
 
@@ -482,6 +482,162 @@ def change_supervisor(request, studentId):
     else:
         return HttpResponse("Access Denied")
 
+
+def billing_report(form):
+    """ billing report for time worked for own pay """
+    timesheets = TimeSheet.objects.filter(
+        date__range=(
+            form.cleaned_data['custom_billing_begin'],
+            form.cleaned_data['custom_billing_end']
+        ),
+        for_pay=True,
+        approved=True,
+    ).order_by('student', 'date')
+    data = []
+    titles = ["Company", "Work Team", "Student", "", "Date", "Hours Worked",
+              "Student Salary", "Company Bill"]
+    companies = WorkTeam.objects.all()
+    total_hours = 0
+    total_student_salary = 0
+    total_company_bill = 0
+    for company in companies:
+        new_company = True
+        studenti = 0    # counter for # of days a student worked at a company.
+        for timesheet in timesheets:
+            if (timesheet.company == company):
+                if new_company:
+                    new_company = False
+                    company_total = timesheets.filter(
+                        company__id=company.id
+                    ).aggregate(Sum('school_net'))
+                    data.append(
+                        [company.company, company, "", "", "", "", "", ""])
+                data.append(
+                    ["", "", timesheet.student.first_name,
+                     timesheet.student.last_name, timesheet.date,
+                     timesheet.hours, timesheet.student_net,
+                     timesheet.school_net])
+                studenti += 1
+                # if last day for this student print out the student's totals
+                if (studenti == timesheets.filter(
+                    company__id=company.id
+                ).filter(student__id=timesheet.student.id).count()
+                ):
+                    stu_total = timesheets.filter(
+                        company__id=company.id
+                    ).filter(
+                        student__id=timesheet.student.id
+                    ).aggregate(
+                        Sum('hours'), Sum('student_net'), Sum('school_net'))
+                    # guard against aggregates that are None
+                    for k, v in stu_total.iteritems():
+                        if v is None:
+                            stu_total[k] = 0
+                    data.append(
+                        ["", "", "", "", "Total", stu_total['hours__sum'],
+                         stu_total['student_net__sum'],
+                         stu_total['school_net__sum']])
+                    total_hours += stu_total['hours__sum']
+                    if stu_total['student_net__sum']:
+                        total_student_salary += stu_total['student_net__sum']
+                    total_company_bill += stu_total['school_net__sum']
+                    studenti = 0
+        # if we did add a company, now the days are entered lets aggregate
+        if not new_company:
+            company_total = timesheets.filter(
+                company__id=company.id).aggregate(Sum('school_net'))
+            data.append(
+                ["Company Total:", "", "", "", "", "", "",
+                 company_total['school_net__sum']])
+            data.append([""])
+    data.append([""])
+    data.append(
+        ["Totals:", "", "", "", "", total_hours, total_student_salary,
+         total_company_bill])
+    report = XlReport(file_name="Billing_Report")
+    report.add_sheet(data, header_row=titles, title="Detailed Hours")
+
+    # WorkTeam Summary
+    data = []
+    comp_totals = timesheets.values(
+        'company'
+    ).annotate(
+        Count('student', distinct=True),
+        Sum('hours'),
+        Avg('hours'),
+        Sum('student_net'),
+        Sum('school_net')
+    ).values(
+        'company', 'company__company__name', 'company__team_name',
+        'student__count', 'hours__sum', 'hours__avg', 'student_net__sum',
+        'school_net__sum')
+    for c in comp_totals.order_by('company__company'):
+        data.append(
+            [c['company__company__name'], c['company__team_name'],
+             c['student__count'], c['hours__sum'], c['hours__avg'],
+             c['student_net__sum'], c['school_net__sum']])
+    titles = ["Company", "WorkTeam", "Workers Hired", "Hours Worked",
+              "Avg Hours per Student", "Gross Amount Paid to Students",
+              "Amount Billed to Company"]
+    report.add_sheet(data, header_row=titles, title="Work Team Summary")
+
+    # Company Summary
+    data = []
+    comp_totals = timesheets.values(
+        'company__company__id'
+    ).annotate(
+        Count('student', distinct=True),
+        Sum('hours'),
+        Avg('hours'),
+        Sum('student_net'),
+        Sum('school_net')
+    ).values(
+        'company__company__name', 'student__count', 'hours__sum', 'hours__avg',
+        'student_net__sum', 'school_net__sum'
+    ).order_by('company__company')
+
+    for c in comp_totals:
+        data.append([
+            c['company__company__name'], c['student__count'], c['hours__sum'],
+            c['hours__avg'], c['student_net__sum'], c['school_net__sum']])
+    titles = ["Company", "Workers Hired", "Hours Worked",
+              "Avg Hours per Student", "Gross Amount Paid to Students",
+              "Amount Billed to Company"]
+    report.add_sheet(data, header_row=titles, title="Company Summary")
+
+    # Payroll (ADP #s)
+    data = []
+    students = StudentWorker.objects.filter(timesheet__in=timesheets)
+    for student in students:
+        ts = timesheets.filter(
+            student=student
+        ).aggregate(Sum('hours'), Sum('student_net'))
+        data.append([
+            student.unique_id, student.first_name, student.last_name,
+            student.adp_number, ts['hours__sum'], ts['student_net__sum']])
+    titles = ['Unique ID', 'First Name', 'Last Name', 'ADP #', 'Hours Worked',
+              'Gross Pay']
+    report.add_sheet(data, header_row=titles, title="Payroll (ADP #s)")
+
+    # Student info wo ADP#
+    data = []
+    for student in students:
+        if not student.adp_number:
+            ts = timesheets.filter(
+                student=student
+            ).aggregate(Sum('student_net'))
+            data.append([
+                student.last_name, student.first_name, student.parent_guardian,
+                student.street, student.city, student.state, student.zip,
+                student.ssn, ts['student_net__sum']])
+    titles = [
+        'lname', 'fname', 'parent', 'address', 'city', 'state', 'zip', 'ss',
+        'pay']
+    report.add_sheet(data, header_row=titles, title="Student info wo ADP #")
+
+    return report.as_download()
+
+
 @user_passes_test(lambda u: u.has_perm('work_study.change_studentworker') or u.has_perm('sis.reports'))
 def report_builder_view(request):
     try:
@@ -640,92 +796,8 @@ def report_builder_view(request):
                     report.add_sheet(data, header_row=titles, title="Student Timesheets")
                     return report.as_download()
 
-                # billing report for time worked for own pay.
                 elif 'billing' in request.POST:
-                    timesheets = TimeSheet.objects.filter(Q(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])) & \
-                        Q(for_pay__iexact=1) & Q(approved__iexact=1)).order_by('student', 'date')
-                    data = []
-                    titles = ["Company", "Work Team", "Student", "", "Date", "Hours Worked", "Student Salary", "Company Bill"]
-                    companies = WorkTeam.objects.all()
-                    total_hours = 0
-                    total_student_salary = 0
-                    total_company_bill = 0
-                    for company in companies:
-                        new_company = True
-                        studenti = 0    # counter for # of days a student worked at a company.
-                        for timesheet in timesheets:
-                            if (timesheet.company == company):
-                                if new_company:
-                                    new_company = False
-                                    company_total = timesheets.filter(company__id__iexact=company.id).aggregate(Sum('school_net'))
-                                    data.append([company.company, company, "", "", "", "", "", ""])
-                                data.append(["", "", timesheet.student.first_name, timesheet.student.last_name, timesheet.date, timesheet.hours, \
-                                    timesheet.student_net, timesheet.school_net])
-                                studenti += 1
-                                # if last day for this student print out the student's totals
-                                if studenti == timesheets.filter(company__id__iexact=company.id).filter(student__id__iexact=timesheet.student.id).count():
-                                    stu_total = timesheets.filter(company__id__iexact=company.id).filter(student__id__iexact=timesheet.student.id). \
-                                        aggregate(Sum('hours'), Sum('student_net'), Sum('school_net'))
-                                    # guard against aggregates that are None
-                                    for k, v in stu_total.iteritems():
-                                        if v is None:
-                                            stu_total[k] = 0
-                                    data.append(["", "", "", "", "Total", stu_total['hours__sum'], stu_total['student_net__sum'], \
-                                        stu_total['school_net__sum']])
-                                    total_hours += stu_total['hours__sum']
-                                    if stu_total['student_net__sum']:
-                                        total_student_salary += stu_total['student_net__sum']
-                                    total_company_bill += stu_total['school_net__sum']
-                                    studenti = 0
-                        # if we did add a company, now the days are entered lets aggregate
-                        if not new_company:
-                            company_total = timesheets.filter(company__id__iexact=company.id).aggregate(Sum('school_net'))
-                            data.append(["Company Total:", "", "", "", "", "", "", company_total['school_net__sum']])
-                            data.append(["",])
-                    data.append(["",])
-                    data.append(["Totals:", "", "", "", "", total_hours, total_student_salary, total_company_bill])
-                    report = XlReport(file_name="Billing_Report")
-                    report.add_sheet(data, header_row=titles, title="Detailed Hours")
-
-                    ### WorkTeam Summary
-                    data = []
-                    comp_totals = timesheets.values('company').annotate(Count('student', distinct=True), Sum('hours'), Avg('hours'), Sum('student_net'), \
-                            Sum('school_net')).values('company', 'company__company__name', 'company__team_name', 'student__count', 'hours__sum', 'hours__avg', 'student_net__sum', 'school_net__sum')
-                    for c in comp_totals.order_by('company__company'):
-                        data.append([c['company__company__name'], c['company__team_name'], c['student__count'], c['hours__sum'], c['hours__avg'], c['student_net__sum'], c['school_net__sum']])
-                    titles = ["Company", "WorkTeam", "Workers Hired", "Hours Worked", "Avg Hours per Student", "Gross Amount Paid to Students", "Amount Billed to Company"]
-                    report.add_sheet(data, header_row=titles, title="Work Team Summary")
-
-                    ### Company Summary
-                    data = []
-                    comp_totals = timesheets.values('company__company__id').annotate(Count('student', distinct=True), Sum('hours'), Avg('hours'), Sum('student_net'), \
-                            Sum('school_net')).values('company__company__name', 'student__count', 'hours__sum', 'hours__avg', 'student_net__sum', 'school_net__sum').order_by('company__company')
-
-                    for c in comp_totals:
-                        data.append([c['company__company__name'], c['student__count'], c['hours__sum'], c['hours__avg'], c['student_net__sum'], c['school_net__sum']])
-                    titles = ["Company", "Workers Hired", "Hours Worked", "Avg Hours per Student", "Gross Amount Paid to Students", "Amount Billed to Company"]
-                    report.add_sheet(data, header_row=titles, title="Company Summary")
-
-                    ### Payroll (ADP #s)
-                    data = []
-                    students = StudentWorker.objects.filter(timesheet__in=timesheets)
-                    for student in students:
-                        ts = timesheets.filter(student=student).aggregate(Sum('hours'), Sum('student_net'))
-                        data.append([student.unique_id, student.first_name, student.last_name, student.adp_number, ts['hours__sum'], ts['student_net__sum']])
-                    titles = ['Unique ID', 'First Name', 'Last Name', 'ADP #', 'Hours Worked', 'Gross Pay']
-                    report.add_sheet(data, header_row=titles, title="Payroll (ADP #s)")
-
-                    ### Student info wo ADP#
-                    data = []
-                    for student in students:
-                        if not student.adp_number:
-                            ts = timesheets.filter(student=student).aggregate(Sum('student_net'))
-                            data.append([student.last_name, student.first_name, student.parent_guardian, student.street, \
-                                student.city, student.state, student.zip, student.ssn, ts['student_net__sum']])
-                    titles = ['lname', 'fname', 'parent', 'address', 'city', 'state', 'zip', 'ss', 'pay']
-                    report.add_sheet(data, header_row=titles, title="Student info wo ADP #")
-
-                    return report.as_download()
+                    return billing_report(form)
 
                 elif 'all_timesheets' in request.POST:
                     timesheets = TimeSheet.objects.filter(date__range=(form.cleaned_data['custom_billing_begin'], form.cleaned_data['custom_billing_end'])).order_by('student', 'date')
