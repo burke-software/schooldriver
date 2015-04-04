@@ -495,7 +495,8 @@ def billing_report(form):
     ).order_by('student', 'date')
     data = []
     titles = ["Company", "Work Team", "Student", "", "Date", "Hours Worked",
-              "Student Salary", "Company Bill"]
+              "Student Pay Rate", "Student Salary", "Company Bill Rate",
+              "Company Bill"]
     companies = WorkTeam.objects.all()
     total_hours = 0
     total_student_salary = 0
@@ -510,12 +511,12 @@ def billing_report(form):
                     company_total = timesheets.filter(
                         company__id=company.id
                     ).aggregate(Sum('school_net'))
-                    data.append(
-                        [company.company, company, "", "", "", "", "", ""])
+                    data.append([company.company, company,])
                 data.append(
                     ["", "", timesheet.student.first_name,
                      timesheet.student.last_name, timesheet.date,
-                     timesheet.hours, timesheet.student_net,
+                     timesheet.hours, timesheet.student_pay_rate,
+                     timesheet.student_net, timesheet.school_pay_rate,
                      timesheet.school_net])
                 studenti += 1
                 # if last day for this student print out the student's totals
@@ -534,8 +535,8 @@ def billing_report(form):
                         if v is None:
                             stu_total[k] = 0
                     data.append(
-                        ["", "", "", "", "Total", stu_total['hours__sum'],
-                         stu_total['student_net__sum'],
+                        ["", "", "", "", "Total", stu_total['hours__sum'], "",
+                         stu_total['student_net__sum'], "",
                          stu_total['school_net__sum']])
                     total_hours += stu_total['hours__sum']
                     if stu_total['student_net__sum']:
@@ -547,12 +548,12 @@ def billing_report(form):
             company_total = timesheets.filter(
                 company__id=company.id).aggregate(Sum('school_net'))
             data.append(
-                ["Company Total:", "", "", "", "", "", "",
+                ["Company Total:", "", "", "", "", "", "", "", "",
                  company_total['school_net__sum']])
             data.append([""])
     data.append([""])
     data.append(
-        ["Totals:", "", "", "", "", total_hours, total_student_salary,
+        ["Totals:", "", "", "", "", total_hours, "", total_student_salary, "",
          total_company_bill])
     report = XlReport(file_name="Billing_Report")
     report.add_sheet(data, header_row=titles, title="Detailed Hours")
