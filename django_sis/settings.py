@@ -492,7 +492,7 @@ CONSTANCE_CONFIG = {
     'ADMISSIONS_NOTIFY_EMAIL': ('', 'Send admissions notifications to this email. Comma separated are ok.'),
     'GRADES_ALLOW_STUDENT_VIEWING': (True, "Allow students to view their grades online"),
     'GRADES_ALLOW_SPREADSHEET_IMPORT': ('True', 'Allow users to import a spreadsheet to submit grades'),
-    'DEFAULT_COURSE_CREDITS': (1, "This number will appear in the 'Credits' field when creating new courses."),    
+    'DEFAULT_COURSE_CREDITS': (1, "This number will appear in the 'Credits' field when creating new courses."),
     'VOLUNTEER_TRACK_REQUIRED_HOURS': ('20', ''),
     'VOLUNTEER_TRACK_MANAGER_EMAILS': ('', ''),
     'ATTENDANCE_DISC_TARDIES_BEFORE_DISC': ('1', ''),

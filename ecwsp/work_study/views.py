@@ -565,21 +565,19 @@ def billing_report(form):
     ).annotate(
         Count('student', distinct=True),
         Sum('hours'),
-        Avg('hours'),
         Sum('student_net'),
         Sum('school_net')
     ).values(
         'company', 'company__company__name', 'company__team_name',
-        'student__count', 'hours__sum', 'hours__avg', 'student_net__sum',
+        'student__count', 'hours__sum', 'student_net__sum',
         'school_net__sum')
     for c in comp_totals.order_by('company__company'):
         data.append(
             [c['company__company__name'], c['company__team_name'],
-             c['student__count'], c['hours__sum'], c['hours__avg'],
-             c['student_net__sum'], c['school_net__sum']])
+             c['student__count'], c['hours__sum'], c['student_net__sum'],
+             c['school_net__sum']])
     titles = ["Company", "WorkTeam", "Workers Hired", "Hours Worked",
-              "Avg Hours per Student", "Gross Amount Paid to Students",
-              "Amount Billed to Company"]
+              "Gross Amount Paid to Students", "Amount Billed to Company"]
     report.add_sheet(data, header_row=titles, title="Work Team Summary")
 
     # Company Summary
@@ -589,24 +587,22 @@ def billing_report(form):
     ).annotate(
         Count('student', distinct=True),
         Sum('hours'),
-        Avg('hours'),
         Sum('student_net'),
         Sum('school_net')
     ).values(
-        'company__company__name', 'student__count', 'hours__sum', 'hours__avg',
+        'company__company__name', 'student__count', 'hours__sum',
         'student_net__sum', 'school_net__sum'
     ).order_by('company__company')
 
     for c in comp_totals:
         data.append([
             c['company__company__name'], c['student__count'], c['hours__sum'],
-            c['hours__avg'], c['student_net__sum'], c['school_net__sum']])
+            c['student_net__sum'], c['school_net__sum']])
     titles = ["Company", "Workers Hired", "Hours Worked",
-              "Avg Hours per Student", "Gross Amount Paid to Students",
-              "Amount Billed to Company"]
+              "Gross Amount Paid to Students", "Amount Billed to Company"]
     report.add_sheet(data, header_row=titles, title="Company Summary")
 
-    # Payroll (ADP #s)
+    # Student Payroll Report
     data = []
     students = StudentWorker.objects.filter(timesheet__in=timesheets)
     for student in students:
@@ -614,27 +610,15 @@ def billing_report(form):
             student=student
         ).aggregate(Sum('hours'), Sum('student_net'))
         data.append([
-            student.unique_id, student.first_name, student.last_name,
-            student.adp_number, ts['hours__sum'], ts['student_net__sum']])
-    titles = ['Unique ID', 'First Name', 'Last Name', 'ADP #', 'Hours Worked',
-              'Gross Pay']
-    report.add_sheet(data, header_row=titles, title="Payroll (ADP #s)")
-
-    # Student info wo ADP#
-    data = []
-    for student in students:
-        if not student.adp_number:
-            ts = timesheets.filter(
-                student=student
-            ).aggregate(Sum('student_net'))
-            data.append([
-                student.last_name, student.first_name, student.parent_guardian,
-                student.street, student.city, student.state, student.zip,
-                student.ssn, ts['student_net__sum']])
-    titles = [
-        'lname', 'fname', 'parent', 'address', 'city', 'state', 'zip', 'ss',
-        'pay']
-    report.add_sheet(data, header_row=titles, title="Student info wo ADP #")
+            '', student.unique_id, student.first_name, student.last_name,
+            student.sex, student.street, student.city, student.state, student.zip, student.ssn,
+            student.bday, 'TODO', student.student_pay_rate,
+            ts['hours__sum'], ts['student_net__sum']])
+    titles = ['Pay Period', 'Unique ID', 'First Name', 'Last Name', 'Gender',
+              'Address', 'City', 'State', 'Zip', 'SSN', 'DOB', 'Start Date',
+              'Hourly Pay Rate', 'Total Hours Worked',
+              'Total Amount To Be Paid']
+    report.add_sheet(data, header_row=titles, title="Student Payroll Report")
 
     return report.as_download()
 
