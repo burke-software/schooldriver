@@ -60,6 +60,10 @@ app.config(function($routeProvider, $locationProvider) {
       templateUrl: staticURL('app/portal/templates/grades.html'),
       controller: 'StudentGradeReportController'
     });
+    $routeProvider.when("/sis/student/:student_id/", {
+      templateUrl: staticURL('app/students/view_student.html'),
+      controller: "ViewStudentController"
+    });
 
     return $locationProvider.html5Mode(true);
 });

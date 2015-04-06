@@ -4,6 +4,7 @@ from .views import (
     user_preferences, view_student, ajax_include_deleted, import_naviance,
     increment_year, increment_year_confirm, StudentViewDashletView)
 from responsive_dashboard.views import generate_dashboard
+from ecwsp.sis.views import SpaView
 
 urlpatterns = patterns('',
     (r'^$', generate_dashboard, {'app_name': 'sis'}),
@@ -20,4 +21,5 @@ urlpatterns = patterns('',
     (r'^increment_year_confirm/(?P<year_id>\d+)/$', increment_year_confirm),
     (r'^thumbnail/(?P<year>\d+)/$', thumbnail),
     (r'^paper_attendance/(?P<day>\d+)/$', paper_attendance),
+    url(r'^student/', SpaView.as_view(), name="student-index"),
 )
