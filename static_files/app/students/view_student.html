@@ -1,6 +1,66 @@
 <div class="col-xs-12">
 	<h2>{{ student.first_name }} {{ student.last_name }}</h2>
-	<h3>{{ student.year.name }} &ndash; {{ student.class_of_year.full_name }}</h3>
+	<h3>{{ student.year }} &ndash; {{ student.class_of_year }}</h3>
+
+	<div class="alert alert-info" role="alert" ng-if="student.alert"><strong>ALERT: </strong> {{ student.alert }}</div>
+
+	<table class="table">
+		<tr>
+			<th colspan="2">General Information</th>
+		</tr>
+		<tr>
+			<td>Full name</td>
+			<td>{{ student.first_name }} {{ student.mname }} {{ student.last_name }}</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': !student.sex}">Sex</td>
+			<td>{{ student.sex | sex }}</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': !student.bday}">Birth Date</td>
+			<td>{{ student.bday | date }}</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': primaryCohort === undefined }">Primary Cohort</td>
+			<td>
+				{{ primaryCohort.name }}
+			</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': !student.notes}">Notes</td>
+			<td>{{ student.notes }}</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': !student.parent_guardian}">Parent/Guardian</td>
+			<td>{{ student.parent_guardian }}</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': !student.street || !student.state || !student.city || !student.zip}">Address</td>
+			<td>
+				<div ng-if="student.street">{{ student.street }}</div>
+				<div>
+					<span ng-if="student.city">{{ student.city }},</span>
+					<span ng-if="student.state">{{ student.state }}</span>
+					<span ng-if="student.zip">{{ student.zip }}</span>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': !student.parent_email}">Parent E-mail</td>
+			<td><a ng-href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a></td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': numbers.length === 0 }">Student Phone Number</td>
+			<td>
+				<div ng-repeat="number in numbers">
+					{{ number.number }}
+					<span ng-if="number.ext">ext. {{ number.ext }}</span>
+					<span ng-if="number.type"> <em>({{ number.type | phoneType }})</em></span>
+					<div ng-if="number.note"><small>{{ number.note }}</small></div>
+				</div>
+			</td>
+		</tr>
+	</table>
 
 	<textarea>
 		{{ student }}
