@@ -5,6 +5,7 @@ import openpyxl
 from openpyxl.workbook import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from openpyxl.cell import get_column_letter
+from openpyxl.styles import Border, Font, Side
 import re
 from ecwsp.sis.helper_functions import strip_unicode_to_ascii
 
@@ -23,13 +24,7 @@ class XlReport:
         self.workbook = Workbook()
         self.workbook.remove_sheet(self.workbook.get_active_sheet())
         self.file_name = file_name
-        # Sniff the openpyxl version
-        try:
-            from openpyxl import __major__ as openpyxl_major_version
-            self.old_openpyxl = openpyxl_major_version < 2
-        except ImportError:
-            self.old_openpyxl = False
-    
+
     def add_sheet(self, data, title=None, header_row=None, heading=None, auto_width=False, max_auto_width=50):
         """ Add a sheet with data to workbook
         title: sheet name
@@ -55,20 +50,10 @@ class XlReport:
             sheet.append(header_row)
             row = sheet.get_highest_row()
             for i, header_cell in enumerate(header_row):
-                if self.old_openpyxl:
-                    cell = sheet.cell(row=row-1, column=i)
-                    cell.style.font.bold = True
-                    cell.style.borders.bottom.border_style = openpyxl.style.Border.BORDER_THIN
-                else:
-                    cell = sheet.cell(row=row, column=i+1)
-                    cell.style = cell.style.copy(
-                        font=cell.style.font.copy(bold=True),
-                        border=openpyxl.styles.Border(
-                            bottom=openpyxl.styles.Side(
-                                border_style=openpyxl.styles.borders.BORDER_THIN
-                            )
-                        )
-                    )
+                cell = sheet.cell(row=row, column=i+1)
+                cell.font = Font(bold=True)
+                cell.border = Border(bottom=Side(
+                    border_style=openpyxl.styles.borders.BORDER_THIN))
         for row in data:
             row = map(unicode, row)
             sheet.append(row)
@@ -82,7 +67,7 @@ class XlReport:
                             column_widths[i] = len(cell)
                     else:
                         column_widths += [len(cell)]
-            
+
             for i, column_width in enumerate(column_widths):
                 if column_width > 3:
                     if column_width < max_auto_width:
@@ -90,10 +75,10 @@ class XlReport:
                         sheet.column_dimensions[get_column_letter(i+1)].width = column_width * 0.9
                     else:
                         sheet.column_dimensions[get_column_letter(i+1)].width = max_auto_width
-    
+
     def save(self, filename):
         self.workbook.save(settings.MEDIA_ROOT + filename)
-    
+
     def as_download(self):
         """ Returns a django HttpResponse with the xlsx file """
         myfile = StringIO.StringIO()
