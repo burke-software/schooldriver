@@ -511,7 +511,7 @@ def billing_report(form):
                     company_total = timesheets.filter(
                         company__id=company.id
                     ).aggregate(Sum('school_net'))
-                    data.append([company.company, company,])
+                    data.append([company.company, company])
                 data.append(
                     ["", "", timesheet.student.first_name,
                      timesheet.student.last_name, timesheet.date,
@@ -619,6 +619,99 @@ def billing_report(form):
               'Hourly Pay Rate', 'Total Hours Worked',
               'Total Amount To Be Paid']
     report.add_sheet(data, header_row=titles, title="Student Payroll Report")
+
+    # Work Team Billing Report
+    data = []
+    students = StudentWorker.objects.filter(
+        timesheet__in=timesheets
+    ).order_by('placement', 'last_name', 'first_name').distinct()
+    titles = ['Summer Work', 'Work Team', 'Billing Contact',
+             'Billing Contact Email', 'Workers Hired', 'Unique ID',
+              'Student Worker', 'Supervisor Name', 'Hours Worked',
+              'Student Pay Rate', 'Gross Amount Paid to Students',
+              'Company Bill Rate', 'Gross Amount Billed to Company',
+              'Amount Billed at Deposit', 'Amount Outstanding']
+    work_team = None
+    last_team = None
+    for student in students:
+        work_team = student.placement
+        worker_count = work_team.studentworker_set.filter(
+            is_active=True).count()
+        stu_total = timesheets.filter(
+            company=work_team
+        ).filter(
+            student=student
+        ).aggregate(
+            Sum('hours'), Sum('student_net'), Sum('school_net')
+        )
+        data.append([
+            '', work_team, '', '', worker_count, student.unique_id, student,
+            student.primary_contact, stu_total['hours__sum'],
+            student.student_pay_rate, stu_total['student_net__sum'],
+            student.school_pay_rate, stu_total['school_net__sum']
+        ])
+        team_total = timesheets.filter(
+            company=work_team
+        ).aggregate(
+            Sum('hours'), Sum('student_net'), Sum('school_net')
+        )
+        if work_team != last_team and last_team is not None:
+            data.append([
+                '', 'Total', '', '', '', '', '', '', team_total['hours__sum'],
+                '', team_total['student_net__sum'], '',
+                team_total['school_net__sum']])
+        last_team = work_team
+    data.append([
+        '', 'Total', '', '', '', '', '', '', team_total['hours__sum'],
+        '', team_total['student_net__sum'], '', team_total['school_net__sum']])
+    report.add_sheet(data, header_row=titles, title="Work Team Billing")
+
+    # Company Billing Report
+    data = []
+    students = StudentWorker.objects.filter(
+        timesheet__in=timesheets
+    ).order_by('placement__company', 'last_name', 'first_name').distinct()
+    titles = ['Summer Work', 'Company', 'Billing Contact',
+             'Billing Contact Email', 'Workers Hired', 'Unique ID',
+              'Student Worker', 'Supervisor Name', 'Hours Worked',
+              'Student Pay Rate', 'Gross Amount Paid to Students',
+              'Company Bill Rate', 'Gross Amount Billed to Company',
+              'Amount Billed at Deposit', 'Amount Outstanding']
+    company = None
+    last_company = None
+    for student in students:
+        company = student.placement.company
+        work_teams = company.workteam_set.all()
+        worker_count = students.filter(placement__in=work_teams).count()
+        stu_total = timesheets.filter(
+            company__in=work_teams
+        ).filter(
+            student=student
+        ).aggregate(
+            Sum('hours'), Sum('student_net'), Sum('school_net')
+        )
+        data.append([
+            '', company, '', '', worker_count, student.unique_id, student,
+            student.primary_contact, stu_total['hours__sum'],
+            student.student_pay_rate, stu_total['student_net__sum'],
+            student.school_pay_rate, stu_total['school_net__sum']
+        ])
+        team_total = timesheets.filter(
+            company__in=work_teams
+        ).aggregate(
+            Sum('hours'), Sum('student_net'), Sum('school_net')
+        )
+        if company != last_company and last_company is not None:
+            data.append([
+                '', 'Total', '', '', '', '', '', '', team_total['hours__sum'],
+                '', team_total['student_net__sum'], '',
+                team_total['school_net__sum']])
+        last_team = work_team
+    data.append([
+        '', 'Total', '', '', '', '', '', '', team_total['hours__sum'],
+        '', team_total['student_net__sum'], '', team_total['school_net__sum']])
+    report.add_sheet(data, header_row=titles, title="Company Billing")
+
 
     return report.as_download()
 
