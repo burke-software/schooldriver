@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Student, StudentNumber, SchoolYear, Cohort
+from .models import (
+	Student, StudentNumber, SchoolYear, Cohort, EmergencyContact, 
+	EmergencyContactNumber)
 
 
 class CohortSerializer(serializers.ModelSerializer):
@@ -11,13 +13,27 @@ class CohortSerializer(serializers.ModelSerializer):
 class StudentNumberSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentNumber
+        fields = ('id', 'number', 'ext', 'type', 'note')
+
+
+class EmergencyContactNumberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmergencyContactNumber
+
+
+class EmergencyContactSerializer(serializers.ModelSerializer):
+    emergencycontactnumber_set = EmergencyContactNumberSerializer(many=True)
+
+    class Meta:
+        model = EmergencyContact
 
 
 class StudentSerializer(serializers.ModelSerializer):
     cohorts = CohortSerializer(many=True)
     class_of_year = serializers.StringRelatedField()
     year = serializers.StringRelatedField()
-    # student_numbers = StudentNumberSerializer(many=True)
+    emergency_contacts = EmergencyContactSerializer(many=True)
+    studentnumber_set = StudentNumberSerializer(many=True)
 
     class Meta:
         model = Student

@@ -52,7 +52,7 @@
 		<tr>
 			<td ng-class="{'text-muted': numbers.length === 0 }">Student Phone Number</td>
 			<td>
-				<div ng-repeat="number in numbers">
+				<div ng-repeat="number in student.studentnumber_set">
 					{{ number.number }}
 					<span ng-if="number.ext">ext. {{ number.ext }}</span>
 					<span ng-if="number.type"> <em>({{ number.type | phoneType }})</em></span>
@@ -60,9 +60,26 @@
 				</div>
 			</td>
 		</tr>
+		<tr>
+			<th colspan="2">Additional Information</th>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': !student.ssn}">SSN</td>
+			<td>{{ student.ssn }}</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': student.emergency_contacts.length === 0 }">Emergency Contact(s)</td>
+			<td>
+				<div ng-repeat="contact in student.emergency_contacts">
+					{{ contact.fname }} {{ contact.mname }} {{ contact.lname }}
+					<div ng-repeat="number in contact.emergencycontactnumber_set">
+						{{ number.number }}
+						<span ng-if="number.ext">ext. {{ number.ext }}</span>
+						<span ng-if="number.type"> <em>({{ number.type | phoneType }})</em></span>
+						<div ng-if="number.note"><small>{{ number.note }}</small></div>
+					</div>
+				</div>
+			</td>
+		</tr>
 	</table>
-
-	<textarea>
-		{{ student }}
-	</textarea>
 </div>

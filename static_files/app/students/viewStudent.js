@@ -1,23 +1,21 @@
 app.controller('ViewStudentController', 
-  ['$scope', '$routeParams', '$route', 'Students', 'StudentNumbers', 
-  function($scope, $routeParams, $route, Students, StudentNumbers) {
+  ['$scope', '$routeParams', '$route', 'Students', 
+  function($scope, $routeParams, $route, Students) {
   
   var student_id = $routeParams.student_id;
 
   Students.one(student_id).get().then(function(data) {
     $scope.student = data;
 
+    // View student only requires the primary cohort, so let's filter
     var allCohorts = data.cohorts;
-    for (i=0; i<allCohorts.length; i++) {
+    for (var i=0; i<allCohorts.length; i++) {
       if (allCohorts[i].primary) {
         $scope.primaryCohort = allCohorts[i];
       }
     }
   });
 
-  StudentNumbers.getList({'student':student_id}).then(function(data) {
-    $scope.numbers = data;
-  });
   
 }]);
 
@@ -53,8 +51,4 @@ app.filter('sex', function () {
 
 app.factory('Students', ['Restangular', function(Restangular) {
   return Restangular.service('students');
-}]);
-
-app.factory('StudentNumbers', ['Restangular', function(Restangular) {
-  return Restangular.service('student_numbers');
 }]);
