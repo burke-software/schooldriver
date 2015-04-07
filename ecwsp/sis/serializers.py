@@ -11,9 +11,11 @@ class CohortSerializer(serializers.ModelSerializer):
 
 
 class StudentNumberSerializer(serializers.ModelSerializer):
+    type_display = serializers.CharField(source='get_type_display', read_only=True)
+
     class Meta:
         model = StudentNumber
-        fields = ('id', 'number', 'ext', 'type', 'note')
+        fields = ('id', 'number', 'ext', 'type_display', 'note')
 
 
 class EmergencyContactNumberSerializer(serializers.ModelSerializer):
@@ -34,6 +36,7 @@ class StudentSerializer(serializers.ModelSerializer):
     year = serializers.StringRelatedField()
     emergency_contacts = EmergencyContactSerializer(many=True)
     studentnumber_set = StudentNumberSerializer(many=True)
+    sex_display = serializers.CharField(source='get_sex_display', read_only=True)
 
     class Meta:
         model = Student

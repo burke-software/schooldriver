@@ -14,7 +14,7 @@
 		</tr>
 		<tr>
 			<td ng-class="{'text-muted': !student.sex}">Sex</td>
-			<td>{{ student.sex | sex }}</td>
+			<td>{{ student.sex_display }}</td>
 		</tr>
 		<tr>
 			<td ng-class="{'text-muted': !student.bday}">Birth Date</td>
@@ -55,7 +55,7 @@
 				<div ng-repeat="number in student.studentnumber_set">
 					{{ number.number }}
 					<span ng-if="number.ext">ext. {{ number.ext }}</span>
-					<span ng-if="number.type"> <em>({{ number.type | phoneType }})</em></span>
+					<span ng-if="number.type_display"> <em>({{ number.type_display }})</em></span>
 					<div ng-if="number.note"><small>{{ number.note }}</small></div>
 				</div>
 			</td>
@@ -75,7 +75,7 @@
 					<div ng-repeat="number in contact.emergencycontactnumber_set">
 						{{ number.number }}
 						<span ng-if="number.ext">ext. {{ number.ext }}</span>
-						<span ng-if="number.type"> <em>({{ number.type | phoneType }})</em></span>
+						<span ng-if="number.type_display"> <em>({{ number.type_display }})</em></span>
 						<div ng-if="number.note"><small>{{ number.note }}</small></div>
 					</div>
 				</div>
