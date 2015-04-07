@@ -17,7 +17,7 @@ django-ckeditor==4.4.7
 django-compressor==1.4
 django-constance==1.0.1
 git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99
-django-custom-field==2.4
+django-custom-field==2.8
 django-dajax-ng==0.9.4
 django-dajaxice==0.7
 django-daterange-filter==1.0.0
@@ -36,9 +36,9 @@ django-pagination==1.0.7
 django-picklefield==0.3.1
 django-positions==0.5.1
 django-redis-cache==0.13.0
-django-report-builder==3.1.1
+django-report-builder==3.1.5
 django-report-scaffold==0.1.4
-django-report-utils==0.3.0
+django-report-utils==0.3.3
 django-responsive-dashboard==1.1
 django-reversion==1.8.5
 django-rosetta==0.7.4
@@ -60,7 +60,7 @@ meld3==1.0.0
 newrelic==2.38.0.31
 oauthlib==0.7.2
 odfpy==0.9.6
-openpyxl==2.1.2
+openpyxl==2.2.1
 polib==1.0.5
 poster==0.8.1
 PyJWT==0.3.0

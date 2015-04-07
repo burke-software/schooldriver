@@ -66,20 +66,20 @@ class Contact(models.Model):
     phone_cell = models.CharField(max_length=25, blank=True, null=True)
     fax = models.CharField(max_length=25, blank=True, null=True)
     email = models.EmailField (max_length=75, blank=True, null=True)
-    
+
     def __unicode__(self):
         return unicode(self.fname) + " " + unicode(self.lname) + " - " + unicode(self.email)
-        
+
     class Meta:
         ordering = ('lname',)
         verbose_name = 'Contact supervisor'
-        
+
     def save(self, sync_sugar=True, *args, **kwargs):
         super(Contact, self).save(*args, **kwargs)
         if config.SUGAR_SYNC and sync_sugar:
             from ecwsp.work_study.tasks import update_contact_to_sugarcrm
             update_contact_to_sugarcrm.delay(self)
-    
+
     @property
     def edit_link(self):
         try:
@@ -95,17 +95,17 @@ class Company(models.Model, CustomFieldModel):
         blank=True,
         null=True,
         help_text="Optionally use this odt template instead of a global template for this particular company.")
-    
+
     def __unicode__(self):
         return unicode(self.name)
-    
+
     def clean(self):
         from django.core.exceptions import ValidationError
         if self.alternative_contract_template:
             filename = str(self.alternative_contract_template).lower()
             if not filename[-3:] in ('odt',):
                 raise ValidationError('Invalid file type. Must be odt file.')
-    
+
     def fte(self):
         try:
             noStudents = StudentWorker.objects.filter(placement__company=self,is_active=True).count()
@@ -113,7 +113,7 @@ class Company(models.Model, CustomFieldModel):
             return noStudents/float(student_fte)
         except:
             return None
-    
+
     class Meta:
         verbose_name_plural = 'Companies'
         ordering = ('name',)
@@ -159,13 +159,13 @@ class WorkTeam(models.Model, CustomFieldModel):
     time_earliest = models.TimeField(blank=True, null=True)
     time_latest = models.TimeField(blank=True, null=True)
     time_ideal = models.TimeField(blank=True, null=True)
-    
+
     class Meta:
         ordering = ('team_name',)
-    
+
     def __unicode__(self):
         return unicode(self.team_name)
-    
+
     # Legacy compatibility
     @property
     def dropoff_location(self):
@@ -176,7 +176,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     @property
     def train_line(self):
         return self.travel_route
-    
+
     def save(self, *args, **kwargs):
         if self.use_google_maps:
             self.use_google_maps = False;
@@ -188,19 +188,19 @@ class WorkTeam(models.Model, CustomFieldModel):
                 student.placement = None
                 student.save()
         super(WorkTeam, self).save(*args, **kwargs)
-        
+
     def delete(self):
         try:
             self.student_set.clear()
         except: pass
         super(WorkTeam, self).delete()
-    
+
     def is_active(self):
         if StudentWorker.objects.filter(placement=self).count() > 0:
             return True
         else:
             return False
-    
+
     def fte(self):
         try:
             noStudents = StudentWorker.objects.filter(placement=self).count()
@@ -208,23 +208,23 @@ class WorkTeam(models.Model, CustomFieldModel):
             return noStudents/float(student_fte)
         except:
             return None
-    
+
     def show_cras(self):
         txt = ""
         for cra in self.cras.all():
             txt += unicode(cra) + ", "
         return txt[:-2]
-    
+
     @property
     def cra(self):
         """ For legacy purposes, self.cras was once a fk cra """
         return self.show_cras()
-            
+
     @property
     def map_path(self):
         if self.placement and self.placement.map:
             map = self.placement.map.path
-    
+
     def edit_link(self):
         try:
             urlRes = urlresolvers.reverse('admin:work_study_workteam_change', args=(self.id,))
@@ -240,17 +240,17 @@ class PaymentOption(models.Model):
     cost_per_student = models.DecimalField(max_digits=10, decimal_places=2)
     def __unicode__(self):
         return unicode(self.name)
-        
+
     def get_cost(self, students):
         return unicode(students * self.cost_per_student)
-    
+
 class StudentFunctionalResponsibility(models.Model):
     name = models.CharField(max_length=255)
     class Meta:
         verbose_name_plural = "Student functional responsibilities"
     def __unicode__(self):
         return unicode(self.name)
-    
+
 class StudentDesiredSkill(models.Model):
     name = models.CharField(max_length=255)
     def __unicode__(self):
@@ -264,7 +264,7 @@ class CompContract(models.Model, CustomFieldModel):
     date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True)
     number_students = models.IntegerField(blank=True, null=True)
-    
+
     payment = models.ForeignKey(PaymentOption, blank=True, null=True)
     student_functional_responsibilities = models.ManyToManyField(StudentFunctionalResponsibility, blank=True, null=True)
     student_functional_responsibilities_other = models.TextField(blank=True)
@@ -274,16 +274,16 @@ class CompContract(models.Model, CustomFieldModel):
     student_leave_lunch = models.BooleanField(default=False, verbose_name="Student leaves for lunch.")
     student_leave_errands = models.BooleanField(default=False, verbose_name="Student leaves for errands.")
     student_leave_other = models.TextField(blank=True)
-    
+
     signed = models.BooleanField(default=False, )
     contract_file = models.FileField(upload_to='contracts', blank=True)
     ip_address = models.IPAddressField(blank=True, null=True, help_text="IP address when signed")
-    
+
     def __unicode__(self):
         return unicode(self.company)
     class Meta:
         verbose_name = "Company contract"
-    
+
     @property
     def get_payment_cost(self, strip=True):
         """ Returns cost of payment plan * number of students
@@ -293,28 +293,28 @@ class CompContract(models.Model, CustomFieldModel):
             return str(cost).split('.')[0]
         else:
             return str(cost)
-        
+
     @property
     def student_leave_yesno(self):
         if self.student_leave:
             return "Yes"
         else:
             return "No"
-    
+
     @property
     def student_leave_lunch_yesno(self):
         if self.student_leave_lunch:
             return "Student will leave for lunch."
         else:
             return "Student will not leave for lunch."
-        
+
     @property
     def student_leave_errands_yesno(self):
         if self.student_leave_errands:
             return "Student will leave for errands."
         else:
             return "Student will not leave for errands."
-        
+
     def generate_contract_file(self):
         report = TemplateReport()
         report.data['contract'] = self
@@ -330,7 +330,7 @@ class CompContract(models.Model, CustomFieldModel):
         if template :
             report_file = report.pod_save(template, get_tmp_file=True)
             self.contract_file.save(unicode(self.company) + "." + unicode(report.file_format), File(open(report_file)))
-    
+
     #filename, ext, data, template
     def get_contract_as_pdf(self, ie=False, response=True):
         from ecwsp.sis.uno_report import uno_open, save_to_response, save_as
@@ -376,7 +376,7 @@ class Personality(models.Model):
     class Meta:
         ordering = ('type',)
         verbose_name_plural = 'Personality types'
-    
+
 
 class StudentWorkerRoute(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -404,13 +404,13 @@ class StudentWorker(Student):
     primary_contact = models.ForeignKey(Contact, on_delete=models.SET_NULL, blank=True, null=True, help_text="This is the primary supervisor to whom e-mails will be sent. If the desired contact is not showing, they may need to be added to the company. New contacts are not automatically assigned to a company unless the supervisor adds them.")
     personality_type = models.ForeignKey(Personality, blank=True, null=True)
     adp_number = models.CharField(max_length=5, blank=True, verbose_name="ADP Number")
-    
+
     am_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="am_student_set")
     pm_route = models.ForeignKey(StudentWorkerRoute, blank=True, null=True, related_name="pm_student_set")
-    
+
     class Meta:
         ordering = ('is_active','last_name','first_name',)
-    
+
     def company(self):
         try:
             comp = self.placement
@@ -419,7 +419,7 @@ class StudentWorker(Student):
         except:
             return ""
     company.allow_tags = True
-    
+
     @property
     def fax(self):
         """ Legacy "fax" support
@@ -427,7 +427,7 @@ class StudentWorker(Student):
         if self.transport_exception == "PM":
             return True
         return False
-    
+
     def get_day_as_iso_date(self):
         if self.day == 'M':
             return 1
@@ -439,7 +439,7 @@ class StudentWorker(Student):
             return 4
         elif self.day == 'F':
             return 5
-    
+
     @property
     def get_contact(self):
         if self.primary_contact:
@@ -449,7 +449,7 @@ class StudentWorker(Student):
             if contacts:
                 return contacts[0]
         return None
-    
+
     def contact(self):
         contact = self.get_contact
         try:
@@ -458,7 +458,7 @@ class StudentWorker(Student):
         except:
             return ""
     contact.allow_tags = True
-    
+
     def edit_link(self):
         try:
             urlRes = urlresolvers.reverse('admin:work_study_studentworker_change', args=(self.id,))
@@ -466,13 +466,13 @@ class StudentWorker(Student):
         except:
             return ""
     edit_link.allow_tags = True
-    
+
     def clean(self):
         from django.core.exceptions import ValidationError
         if not self.id:
             if Student.objects.filter(username=self.username):
                 raise ValidationError('Username must be unique.')
-    
+
     # Override save, if placement changes record change in history table
     def save(self, *args, **kwargs):
         try:
@@ -485,10 +485,10 @@ class StudentWorker(Student):
                     self.primary_contact = None
         except:
             pass
-        
+
         if self.primary_contact and self.placement:
             self.placement.contacts.add(self.primary_contact)
-        
+
          # set pay rates
         if not self.school_pay_rate and not self.student_pay_rate:
             try:
@@ -497,15 +497,15 @@ class StudentWorker(Student):
             except:
                 pass
         super(StudentWorker, self).save(*args, **kwargs)
-    
+
     def pickUp(self):
         try: return self.placement.pickup_location
         except: return ""
-    
+
     def cra(self):
         try: return self.placement.cra
         except: return ""
-    
+
     def __unicode__(self):
         return unicode(self.last_name) + ", " + unicode(self.first_name)
 
@@ -523,27 +523,27 @@ class Survey(models.Model):
         super(Survey, self).save(*args, **kwargs)
     class Meta:
         ordering = ('survey','student','question')
-    
-    
-# student's company history, logs each job the student worked at    
+
+
+# student's company history, logs each job the student worked at
 class CompanyHistory(models.Model):
     student = models.ForeignKey(StudentWorker)
     placement = models.ForeignKey(WorkTeam)
     date = models.DateField(default=datetime.datetime.now, validators=settings.DATE_VALIDATORS)
     fired = models.BooleanField(default=False, )
-    
+
     def getStudent(self):
         if self.student != None:
             return self.student
         else:
             return "Error: no student"
-    
+
     def __unicode__(self):
         try:
             return unicode(self.getStudent()) + " left " + unicode(self.placement) + " on " + unicode(self.date)
         except:
             return "Company history object"
-    
+
     class Meta:
         verbose_name_plural = "Companies: History"
         ordering = ('-date',)
@@ -552,10 +552,10 @@ class CompanyHistory(models.Model):
 
 class PresetComment(models.Model):
     comment = models.CharField(max_length=255)
-    
+
     def __unicode__(self):
         return self.comment
-        
+
     class Meta:
         ordering = ('comment',)
 
@@ -573,7 +573,7 @@ class StudentInteraction(models.Model):
     comments = models.TextField(blank=True)
     preset_comment = models.ManyToManyField(PresetComment, blank=True, help_text="Double-click on the comment on the left to add or click (+) to add a new comment.")
     companies = models.ManyToManyField(WorkTeam,  blank=True)
-    
+
     def save(self, *args, **kwargs):
         if not self.id: new = True
         else: new = False
@@ -593,7 +593,7 @@ class StudentInteraction(models.Model):
                 send_mail(subject, msg, from_addr, [unicode(stu.placement.cra.name.email)])
             except:
                 print >> sys.stderr, "warning: could not e-mail CRA"
-    
+
     def students(self):
         if self.student.count() == 1:
             return self.student.all()[0]
@@ -601,13 +601,13 @@ class StudentInteraction(models.Model):
             return "Multiple students"
         else:
             return None
-    
+
     def comment_Brief(self):
-        txt = self.comments[:100] 
+        txt = self.comments[:100]
         for preCom in self.preset_comment.all():
             txt += ".." + str(preCom)[:40]
         return txt[:160]
-    
+
     def cra(self):
         try:
             if self.student.count() == 1:
@@ -619,14 +619,14 @@ class StudentInteraction(models.Model):
                 return ""
         except:
             return ""
-    
+
     def __unicode__(self):
         # don't attempt to traverse a m2m if we're not actually in the database yet
         if self.pk and self.student.count() == 1:
             stu = self.student.all()[0]
             return unicode(stu) + " " + unicode(self.date)
         return "Interaction: " + unicode(self.date)
-        
+
 # this handler sets the company field in student interaction based on student
 # company when it was added
 def set_stu_int_placement(sender, instance, action, reverse, model, pk_set, *args, **kwargs):
@@ -651,17 +651,17 @@ def get_next_rank():
 class TimeSheetPerformanceChoice(models.Model):
     name = models.CharField(max_length=255, unique=True)
     rank = models.IntegerField(unique=True, default=get_next_rank, help_text="Must be unique. Convention is that higher numbers are better.")
-    
+
     class Meta:
         ordering = ('rank',)
-    
+
     def edit(self):
         return "Edit"
-    
+
     def __unicode__(self):
         return self.name
-    
-    
+
+
 class TimeSheet(models.Model):
     student = models.ForeignKey(StudentWorker)
     for_pay = models.BooleanField(default=False, help_text="Student is working over break and will be paid separately for this work.")
@@ -685,25 +685,25 @@ class TimeSheet(models.Model):
     show_student_comments = models.BooleanField(default=True)
     supervisor_key = models.CharField(max_length=20, blank=True)
     cra_email_sent = models.BooleanField(default=False, help_text="This time sheet was sent to a CRA via nightly e-mail.", editable=False)
-    
+
     def student_Accomplishment_Brief(self):
         return unicode(self.student_accomplishment[:30])
     student_Accomplishment_Brief.short_description = "stu accomp."
-        
+
     def supervisor_Comment_Brief(self):
         return unicode(self.supervisor_comment[:40])
     supervisor_Comment_Brief.short_description = "super comment"
-    
+
     def genKey(self):
         key = ''
         alphabet = 'abcdefghijklmnopqrstuvwxyz1234567890_-'
         for x in random.sample(alphabet,20):
             key += x
         self.supervisor_key = key.strip('-')
-        
+
     def __unicode__(self):
         return unicode(self.student) + " " + unicode(self.date)
-    
+
     @task()
     def emailStudent(self, show_comment=True):
         try:
@@ -721,11 +721,11 @@ class TimeSheet(models.Model):
                 'exception': sys.exc_info()[0],
                 'exception2': sys.exc_info()[1],
             })
-        
+
     def save(self, *args, **kwargs):
         email = False
         emailStu = False
-        
+
         if not self.supervisor_key or self.supervisor_key == "":
             # Use previous key if one exists
             if self.id:
@@ -734,7 +734,7 @@ class TimeSheet(models.Model):
             else:
                 self.genKey()
                 email = True
-        
+
         # set hours
         hours = self.time_lunch.hour - self.time_in.hour
         mins = self.time_lunch.minute - self.time_in.minute
@@ -742,7 +742,7 @@ class TimeSheet(models.Model):
         mins += self.time_out.minute - self.time_lunch_return.minute
         hours += mins/Decimal(60)
         self.hours = hours
-        
+
         # set pay rates
         if self.for_pay and not self.school_pay_rate and not self.student_pay_rate:
             try:
@@ -750,15 +750,15 @@ class TimeSheet(models.Model):
                 self.student_pay_rate = self.student.student_pay_rate
             except:
                 print >> sys.stderr, "warning: pay rate for company not set. "
-        
+
         # set payment net sum
         if self.school_pay_rate:
             self.school_net = self.hours * self.school_pay_rate
         if self.student_pay_rate:
             self.student_net = self.hours * self.student_pay_rate
-        
+
         super(TimeSheet, self).save(*args, **kwargs)
-        
+
         self.student = StudentWorker.objects.get(id=self.student.id) # refresh data for p contact
         if email and self.student.primary_contact:
             try:
@@ -775,17 +775,17 @@ class AttendanceFee(models.Model):
     name = models.CharField(max_length=255)
     value = models.IntegerField(help_text="Dollar value of attendance fee")
     def __unicode__(self):
-        return str(self.name) + " $" + str(self.value) 
+        return str(self.name) + " $" + str(self.value)
     class Meta:
         verbose_name_plural = "Attendances: Fees"
-        
+
 class AttendanceReason(models.Model):
     name = models.CharField(max_length=255)
     def __unicode__(self):
         return self.name
     class Meta:
         verbose_name_plural = "Attendances: Reason"
-        
+
 class Attendance(models.Model):
     student = models.ForeignKey(StudentWorker, help_text="Student who was absent this day.")
     absence_date = models.DateField(default=datetime.datetime.now, verbose_name="date", validators=settings.DATE_VALIDATORS)
@@ -801,10 +801,10 @@ class Attendance(models.Model):
     notes = models.CharField(max_length=255, blank=True)
     if 'ecwsp.attendance' in settings.INSTALLED_APPS:
         sis_attendance = models.ForeignKey('attendance.StudentAttendance',blank=True,null=True,editable=False,on_delete=models.SET_NULL)
-    
+
     def __unicode__(self):
         return unicode(self.student) + " absent on " + unicode(self.absence_date)
-        
+
     class Meta:
         unique_together = ('student', 'absence_date')
         verbose_name_plural = 'Attendance'
@@ -844,20 +844,20 @@ class ClientVisit(models.Model):
     work_environment = models.CharField(max_length=1, blank=True, choices=env_choices)
     notify_mentors = models.BooleanField(default=False, help_text = "E-mail this report to all those in the mentors group.")
     notes = models.TextField(blank=True)
-    
+
     def __unicode__(self):
         return unicode(self.company) + ": " + unicode(self.date)
-        
+
     def comment_brief(self):
         return unicode(self.notes[:150]) + "..."
-        
+
     def student(self):
         students = StudentWorker.objects.filter(placement=self.company)
         output = ""
         for student in students:
             output += student.fname + " " + student.lname + ", "
         return output
-    
+
     def save(self, *args, **kwargs):
         super(ClientVisit, self).save(*args, **kwargs)
         if self.notify_mentors:

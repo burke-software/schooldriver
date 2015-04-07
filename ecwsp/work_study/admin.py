@@ -3,22 +3,22 @@ from django.http import HttpResponseRedirect
 from django.contrib import admin
 from django.utils.encoding import smart_unicode
 from django.utils.safestring import mark_safe
-from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from daterange_filter.filter import DateRangeFilter
 
-from .models import (CompContract, CompanyHistory, Company, WorkTeam, CraContact,
-        PickupLocation, WorkTeamUser, StudentWorker, StudentWorkerRoute, PresetComment,
-        StudentInteraction, Contact, TimeSheetPerformanceChoice, TimeSheet, Attendance,
-        AttendanceFee, AttendanceReason, Personality, ClientVisit, Survey, PaymentOption,
-        StudentDesiredSkill, StudentFunctionalResponsibility, MessageToSupervisor)
+from .models import (
+    CompContract, CompanyHistory, Company, WorkTeam, CraContact, PickupLocation,
+    WorkTeamUser, StudentWorker, StudentWorkerRoute, PresetComment,
+    StudentInteraction, Contact, TimeSheetPerformanceChoice, TimeSheet,
+    Attendance, AttendanceFee, AttendanceReason, Personality, ClientVisit,
+    Survey, PaymentOption, StudentDesiredSkill, StudentFunctionalResponsibility,
+    MessageToSupervisor)
 from ecwsp.sis.models import StudentNumber
 from ecwsp.sis.helper_functions import get_base_url
 from ecwsp.sis.admin import StudentFileInline
 from reversion.admin import VersionAdmin
-from ecwsp.administration.models import Configuration
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from custom_field.custom_field import CustomFieldAdmin
@@ -26,21 +26,27 @@ import autocomplete_light
 
 import logging
 import sys
+from constance import config
+
 
 class StudentNumberInline(admin.TabularInline):
     model = StudentNumber
     extra = 1
 
+
 class CompContractInline(admin.TabularInline):
     model = CompContract
     extra = 0
-    fields = ('contract_file', 'date', 'school_year', 'number_students', 'signed')
+    fields = (
+        'contract_file', 'date', 'school_year', 'number_students', 'signed')
+
 
 class CompanyHistoryInline(admin.TabularInline):
     model = CompanyHistory
     extra = 0
     max_num = 0
     readonly_fields = ['placement']
+
 
 class CompanyAdmin(admin.ModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
@@ -249,8 +255,10 @@ class StudentAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         edit_all = config.EDIT_ALL_STUDENT_WORKER_FIELDS
-        if edit_all.value == "True":
-            return ['parent_guardian', 'street', 'city', 'state', 'zip', 'parent_email', 'alt_email']
+        if edit_all == "True" or edit_all is True:
+            return [
+                'parent_guardian', 'street', 'city', 'state', 'zip',
+                'parent_email', 'alt_email']
         return super(StudentAdmin, self).get_readonly_fields(request, obj=obj)
 
     inlines = [StudentNumberInline, StudentFileInline, CompanyHistoryInline]

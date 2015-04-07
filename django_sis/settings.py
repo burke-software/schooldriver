@@ -483,6 +483,7 @@ CONSTANCE_CONFIG = {
     'APPLICANT_EMAIL_ALERT_ADDRESSES' : ('',
         "Email addresses to send alert to; only one email address per line"),
     'FROM_EMAIL_ADDRESS' : ('', "Default email address to use for sending mail"),
+    'ADMISSIONS_NOTIFY_EMAIL': ('', 'Send admissions notifications to this email. Comma separated are ok.'),
     'GRADES_ALLOW_STUDENT_VIEWING': (True, "Allow students to view their grades online"),
     'GRADES_ALLOW_SPREADSHEET_IMPORT': ('True', 'Allow users to import a spreadsheet to submit grades'),
     'GRADE_ROUNDING_DECIMAL': (2, "Round grades to this many decimal places"),
