@@ -363,8 +363,8 @@ DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 SHARED_APPS = ()
 
 SHARED_APPS = SHARED_APPS + (
-    #'constance',
-    #'constance.backends.database',
+    'constance',
+    'constance.backends.database',
     'ecwsp.customers',
     'ecwsp.administration',
     'djcelery',
@@ -377,8 +377,8 @@ SHARED_APPS = SHARED_APPS + (
     'django.contrib.sessions',
 )
 TENANT_APPS = (
-    #'constance',
-    #'constance.backends.database',
+    'constance',
+    'constance.backends.database',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.admin',
@@ -428,10 +428,6 @@ TENANT_APPS = (
 
 INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
 TENANT_MODEL = "customers.Client"
-INSTALLED_APPS = [
-    'constance',
-    'constance.backends.database',
-] + INSTALLED_APPS
 
 if DEBUG_TOOLBAR == True:
     INSTALLED_APPS += ('debug_toolbar',)

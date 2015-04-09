@@ -26,7 +26,7 @@ urlpatterns = patterns('',
     (r'^robots.txt', robots),
     (r'^admin/', include("massadmin.urls")),
     (r'^admin_export/', include("admin_export.urls")),
-    (r'^ckeditor/', include('ecwsp.ckeditor_urls')),#include('ckeditor.urls')),
+    (r'^ckeditor/', include('ckeditor.urls')),
     (r'^grappelli/', include('grappelli.urls')),
     (r'^$', 'ecwsp.sis.views.index'),
     (r'^sis/', include('ecwsp.sis.urls')),
@@ -85,6 +85,8 @@ if 'social.apps.django_app.default' in settings.INSTALLED_APPS:
     urlpatterns += patterns('', url('', include('social.apps.django_app.urls', namespace='social')),)
 if 'file_import' in settings.INSTALLED_APPS:
     urlpatterns += patterns('',(r'^file_import/', include('file_import.urls')),)
+if settings.MULTI_TENANT is True:
+    urlpatterns += patterns('', (r'', include('ecwsp.customers.urls')), )
 
 urlpatterns += patterns('', (r'^administration/', include('ecwsp.administration.urls')), )
 urlpatterns += patterns('', (r'^', include('responsive_dashboard.urls')), )

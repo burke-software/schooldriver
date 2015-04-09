@@ -9,7 +9,7 @@ import ecwsp.sis.constants
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schedule', '0004_auto_20150102_1238'),
+        ('schedule', '0005_auto_20150316_2148'),
     ]
 
     operations = [
@@ -17,10 +17,8 @@ class Migration(migrations.Migration):
             name='FinalGrade',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('date_created', models.DateField(auto_now_add=True)),
                 ('date_modified', models.DateField(auto_now=True)),
                 ('grade', ecwsp.sis.constants.GradeField(null=True, max_digits=8, decimal_places=2, blank=True)),
-                ('comment', models.CharField(blank=True, max_length=500, validators=[ecwsp.grades.models.grade_comment_length_validator])),
                 ('enrollment', models.ForeignKey(to='schedule.CourseEnrollment', unique=True)),
             ],
             options={
@@ -32,10 +30,8 @@ class Migration(migrations.Migration):
             name='Grade',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('date_created', models.DateField(auto_now_add=True)),
                 ('date_modified', models.DateField(auto_now=True)),
                 ('grade', ecwsp.sis.constants.GradeField(null=True, max_digits=8, decimal_places=2, blank=True)),
-                ('comment', models.CharField(blank=True, max_length=500, validators=[ecwsp.grades.models.grade_comment_length_validator])),
                 ('enrollment', models.ForeignKey(to='schedule.CourseEnrollment')),
             ],
             options={
@@ -46,28 +42,35 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='GradeComment',
             fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('comment', models.CharField(max_length=500)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('comment', models.CharField(max_length=500, validators=[ecwsp.grades.models.grade_comment_length_validator])),
+                ('enrollment', models.ForeignKey(to='schedule.CourseEnrollment')),
+                ('marking_period', models.ForeignKey(blank=True, to='schedule.MarkingPeriod', null=True)),
             ],
             options={
-                'ordering': ('id',),
             },
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='LetterGradeChoices',
+            name='LetterGrade',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('letter', models.CharField(max_length=50)),
+                ('is_passing', models.BooleanField(default=True, help_text=b'True means this counts as a Passing or 100% grade.')),
+                ('affects_grade', models.BooleanField(default=True, help_text=b'True means this has an affect on grade calculations')),
             ],
             options={
             },
             bases=(models.Model,),
         ),
+        migrations.AlterUniqueTogether(
+            name='gradecomment',
+            unique_together=set([('enrollment', 'marking_period')]),
+        ),
         migrations.AddField(
             model_name='grade',
             name='letter_grade',
-            field=models.ForeignKey(blank=True, to='grades.LetterGradeChoices', null=True),
+            field=models.ForeignKey(blank=True, to='grades.LetterGrade', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -83,7 +86,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='finalgrade',
             name='letter_grade',
-            field=models.ForeignKey(blank=True, to='grades.LetterGradeChoices', null=True),
+            field=models.ForeignKey(blank=True, to='grades.LetterGrade', null=True),
             preserve_default=True,
         ),
     ]
