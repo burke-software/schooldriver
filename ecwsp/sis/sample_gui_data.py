@@ -113,6 +113,15 @@ class SisGUIData(object):
         # Set one archetypal object. If I want a year I will use this
         self.school_year = SchoolYear.objects.get(active_year=True)
 
+        self.cohort1 = Cohort.objects.create(
+            name="Class of " + str(senior_year),
+            long_name="All Students in Class of " + str(senior_year),
+            primary=False)
+        self.cohort2 = Cohort.objects.create(
+            name="Small Senior Primary",
+            long_name="A smaller cohort that will be a primary one too",
+            primary=True)
+
         def random_birthday(class_year):
             day = random.randint(1,28)
             month = random.randint(1,12)
@@ -158,6 +167,81 @@ class SisGUIData(object):
             class_of_year=self.class_year3, 
             bday=random_birthday(self.class_year3), 
             ssn=random_ssn())
+        # Student 4 will have a lot of information attached to her.
+        # Created while working on the Angular view_student template.
+        self.student4  = Student.objects.create(
+            first_name="Rory", 
+            last_name="Robinson", 
+            username="rvrst1", 
+            mname="Viola",
+            sex="F", 
+            class_of_year=self.class_year1, 
+            bday=random_birthday(self.class_year1), 
+            ssn=random_ssn(),
+            alert="Watch out for this one!",
+            notes="Here is where I'll put some notes about Rory Robinson. " \
+                "want to give it more than a sentence so that it'll fill out " \
+                "more space. Who knows how long these notes are anyways!",
+            )
+        # Add Rory to the smaller cohort manually
+        StudentCohort.objects.create(
+            student=self.student4,
+            cohort=self.cohort2)
+        # Rory gets two phone numbers! Most students will probably have just
+        # one, but if we're iterating through a set it's good to have multiple
+        self.student_number1 = StudentNumber.objects.create(
+            student=self.student4,
+            number="412-523-6347",
+            type="C")
+        self.student_number2 = StudentNumber.objects.create(
+            student=self.student4,
+            number="724-835-9460",
+            ext="57",
+            type="W",
+            note="Rory works Saturdays from 8 to 5.")
+        # Give Rory two parents with some different fields
+        self.student_contact1 = EmergencyContact.objects.create(
+            fname="Zoe",
+            mname="Iris",
+            lname="Robinson",
+            relationship_to_student="Mother",
+            street="124 8th Ave",
+            city="Pittsburgh",
+            state="PA",
+            zip="15222",
+            email="zir_mom@examplemail.com")
+        self.student_contact2 = EmergencyContact.objects.create(
+            fname="Dante",
+            lname="Robinson",
+            relationship_to_student="Father",
+            street="124 8th Ave",
+            city="Pittsburgh",
+            state="PA",
+            zip="15222",
+            email="drobinson@examplemail.com",
+            emergency_only=True,
+            primary_contact=False)
+        # Parents get some phone numbers
+        self.student_contact_number1 = EmergencyContactNumber.objects.create(
+            contact=self.student_contact1,
+            primary=True,
+            number="412-214-4124",
+            type="H",)
+        self.student_contact_number2 = EmergencyContactNumber.objects.create(
+            contact=self.student_contact2,
+            primary=True,
+            number="412-724-7100",
+            ext="123",
+            note="Working hours 8:30 AM-5:00 PM",
+            type="W")
+        self.student_contact_number3 = EmergencyContactNumber.objects.create(
+            contact=self.student_contact2,
+            primary=False,
+            number="412-814-4023",
+            type="C")
+        # Link parents to Rory
+        self.student4.emergency_contacts.add(self.student_contact1)
+        self.student4.emergency_contacts.add(self.student_contact2)
         
         # Kept three names attached to variables, but it's time to go full rando here.
         first_names = [
@@ -223,6 +307,15 @@ class SisGUIData(object):
                 bday=random_birthday(random_class_year),
                 ssn=random_ssn()
             )
+
+        # Let's put all the seniors into our senior cohort
+        self.senior_students = Student.objects.filter(
+            class_of_year=self.class_year1)
+
+        for student in self.senior_students:
+            StudentCohort.objects.create(
+                student=student, 
+                cohort=self.cohort1)
 
         MarkingPeriod.objects.bulk_create([
             MarkingPeriod(

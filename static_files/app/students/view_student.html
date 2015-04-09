@@ -50,7 +50,7 @@
 			<td><a ng-href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a></td>
 		</tr>
 		<tr>
-			<td ng-class="{'text-muted': numbers.length === 0 }">Student Phone Number</td>
+			<td ng-class="{'text-muted': student.studentnumber_set.length === 0 }">Student Phone Number</td>
 			<td>
 				<div ng-repeat="number in student.studentnumber_set">
 					{{ number.number }}
