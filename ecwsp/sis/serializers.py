@@ -42,6 +42,7 @@ class StudentSerializer(serializers.ModelSerializer):
     studentnumber_set = StudentNumberSerializer(many=True)
     sex_display = serializers.CharField(
         source='get_sex_display', read_only=True)
+    siblings = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = Student

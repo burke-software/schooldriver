@@ -11,4 +11,4 @@ class StudentViewSet(viewsets.ModelViewSet):
 class SchoolYearViewSet(viewsets.ModelViewSet):
     queryset = SchoolYear.objects.all()
     serializer_class = SchoolYearSerializer
-    filter_fields = ('markingperiod__coursesection__enrollments',)
+    filter_fields = ('markingperiod__coursesection__enrollments', 'active_year')

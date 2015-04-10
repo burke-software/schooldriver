@@ -1,6 +1,6 @@
 app.controller('ViewStudentController', 
-  ['$scope', '$routeParams', '$route', 'Students', 
-  function($scope, $routeParams, $route, Students) {
+  ['$scope', '$routeParams', '$route', 'Students', 'CurrentEnrollments', 
+  function($scope, $routeParams, $route, Students, CurrentEnrollments) {
   
   var student_id = $routeParams.student_id;
 
@@ -15,9 +15,18 @@ app.controller('ViewStudentController',
       }
     }
   });
+
+  CurrentEnrollments.getList({'user':student_id}).then(function(data) {
+     $scope.enrollments = data;
+  });
   
 }]);
 
 app.factory('Students', ['Restangular', function(Restangular) {
   return Restangular.service('students');
+}]);
+
+
+app.factory('CurrentEnrollments', ['Restangular', function(Restangular) {
+  return Restangular.service('enrollments');
 }]);

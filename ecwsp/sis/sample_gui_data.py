@@ -242,6 +242,8 @@ class SisGUIData(object):
         # Link parents to Rory
         self.student4.emergency_contacts.add(self.student_contact1)
         self.student4.emergency_contacts.add(self.student_contact2)
+        # Rory and Chris are siblings!
+        self.student4.siblings.add(self.student3)
         
         # Kept three names attached to variables, but it's time to go full rando here.
         first_names = [
@@ -410,9 +412,11 @@ class SisGUIData(object):
             Course(fullname="History 101", shortname="Hist101", credits=3, graded=True),
             Course(fullname="Homeroom FX 2011", shortname="FX1", homeroom=True, credits=1),
             Course(fullname="Homeroom FX 2012", shortname="FX2", homeroom=True, credits=1),
+            Course(fullname="AP Spanish", shortname="AP-ES", credits=3, graded=True),
         ])
         self.course = Course.objects.get(fullname="Math 101")
         self.course2 = Course.objects.get(fullname="History 101")
+        self.course3 = Course.objects.get(fullname="AP Spanish")
 
         CourseSection.objects.bulk_create([
             CourseSection(course_id=self.course.id, name="Math A"),
@@ -420,23 +424,58 @@ class SisGUIData(object):
             CourseSection(course_id=self.course.id, name="Math C"),
             CourseSection(course_id=self.course2.id, name="History A"),
             CourseSection(course_id=self.course2.id, name="History 1 MP only"),
+            CourseSection(course_id=self.course3.id, name="Clase A"),
+            CourseSection(course_id=self.course3.id, name="Clase B"),
         ])
         self.course_section = self.course_section1 = CourseSection.objects.get(name="Math A")
         self.course_section2 = CourseSection.objects.get(name="Math B")
         self.course_section3 = CourseSection.objects.get(name="History A")
         self.course_section4 = CourseSection.objects.get(name="History 1 MP only")
         self.course_section5 = CourseSection.objects.get(name="Math C")
+        self.course_section6 = CourseSection.objects.get(name="Clase A")
 
-        Period.objects.bulk_create([
-            Period(name="Homeroom (M)", start_time=datetime.time(8), end_time=datetime.time(8, 50)),
-            Period(name="First Period", start_time=datetime.time(9), end_time=datetime.time(9, 50)),
-            Period(name="Second Period", start_time=datetime.time(10), end_time=datetime.time(10, 50)),
-        ])
-        self.period = Period.objects.get(name="Homeroom (M)")
+        self.period = Period.objects.create(
+            name="Homeroom (M)", 
+            start_time=datetime.time(7, 55), 
+            end_time=datetime.time(8, 05))
+        self.period1 = Period.objects.create(
+            name="First Period", 
+            start_time=datetime.time(8, 10), 
+            end_time=datetime.time(9))
+        self.period2 = Period.objects.create(
+            name="Second Period", 
+            start_time=datetime.time(9, 05), 
+            end_time=datetime.time(9, 55))
+        self.period3 = Period.objects.create(
+            name="Third Period", 
+            start_time=datetime.time(10), 
+            end_time=datetime.time(10, 50))
+        self.period4 = Period.objects.create(
+            name="Fourth Period", 
+            start_time=datetime.time(10, 55), 
+            end_time=datetime.time(11, 45))
+        self.period5 = Period.objects.create(
+            name="Fifth Period", 
+            start_time=datetime.time(12, 25), 
+            end_time=datetime.time(13, 15))
+        self.period6 = Period.objects.create(
+            name="Sixth Period", 
+            start_time=datetime.time(13, 20), 
+            end_time=datetime.time(14, 10))
+        self.period7 = Period.objects.create(
+            name="Seventh Period", 
+            start_time=datetime.time(14, 15), 
+            end_time=datetime.time(15, 05))
 
         CourseMeet.objects.bulk_create([
             CourseMeet(course_section_id=self.course_section.id, period=self.period, day="1"),
-            CourseMeet(course_section_id=self.course_section3.id, period=self.period, day="2"),
+            CourseMeet(course_section_id=self.course_section3.id, period=self.period1, day="2"),
+            CourseMeet(course_section_id=self.course_section3.id, period=self.period3, day="4"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="1"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="2"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="3"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="4"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="5"),
         ])
 
         self.course_section1.marking_period.add(self.marking_period)
@@ -452,6 +491,9 @@ class SisGUIData(object):
         self.course_section5.marking_period.add(self.marking_period)
         self.course_section5.marking_period.add(self.marking_period2)
         self.course_section5.marking_period.add(self.marking_period3)
+        self.course_section6.marking_period.add(self.marking_period)
+        self.course_section6.marking_period.add(self.marking_period2)
+        self.course_section6.marking_period.add(self.marking_period3)
 
         self.enroll1 = CourseSectionTeacher.objects.create(
             course_section=self.course_section, teacher=self.teacher1)
@@ -459,6 +501,8 @@ class SisGUIData(object):
             course_section=self.course_section3, teacher=self.teacher2)
         self.enroll3 = CourseSectionTeacher.objects.create(
             course_section=self.course_section5, teacher=self.teacher2)
+        self.enroll4 = CourseSectionTeacher.objects.create(
+            course_section=self.course_section6, teacher=self.teacher2)
         
         self.present = AttendanceStatus.objects.create(
             name="Present", code="P", teacher_selectable=True)
@@ -470,11 +514,14 @@ class SisGUIData(object):
         CourseEnrollment.objects.bulk_create([
             CourseEnrollment(user=self.student, course_section=self.course_section),
             CourseEnrollment(user=self.student, course_section=self.course_section2),
+            CourseEnrollment(user=self.student, course_section=self.course_section3),
             CourseEnrollment(user=self.student, course_section=self.course_section4),
             CourseEnrollment(user=self.student2, course_section=self.course_section),
-            CourseEnrollment(user=self.student, course_section=self.course_section3),
             CourseEnrollment(user=self.student2, course_section=self.course_section3),
             CourseEnrollment(user=self.student3, course_section=self.course_section3),
+            CourseEnrollment(user=self.student4, course_section=self.course_section),
+            CourseEnrollment(user=self.student4, course_section=self.course_section3),
+            CourseEnrollment(user=self.student4, course_section=self.course_section6),
         ])
         self.course_enrollment = CourseEnrollment.objects.all().first()
 
