@@ -3,6 +3,11 @@
     cursor:pointer;
   }
 
+  nav > li.active > a {
+    text-decoration: none;
+    background-color: #eeeeee;
+  }
+
   h2{
     font-size: 2.625rem;
     font-weight: normal;
@@ -147,16 +152,93 @@
   }
 }
 
-.handsontable tr:first-child th,
-.handsontable tr:first-child td{
+//.handsontable tr:first-child th,
+//.handsontable tr:first-child td{
+//  border-top:0;
+//}
+//
+//
+//table tbody tr td,
+//table tbody tr th ,
+//table tbody tr td:first-child,
+//table tbody tr th:first-child{
+//  vertical-align: top
+//}
+
+
+.handsontableInput{
+  box-sizing: content-box;
+}
+h2{
+  font-size: 2.625rem;
+  font-weight: normal;
+  line-height: 4rem;
+}
+
+h3{
+  font-size: 1.8rem;
+  font-weight: normal;
+  line-height: 3rem;
+}
+
+p{
+  font-weight: 400;
+  font-size: 16px;
+  font-size: 1rem;
+  margin-bottom: 13px;
+  line-height: 1.625em;
+}
+
+label.year-teacher{
+  line-height:36px;
+}
+a{
+  font-family: Arial, sans-serif;
+}
+
+.button{
+  margin-left: 5px;
+  margin-right: 10px;
+
+}
+
+.handsontable tr:first-child th, .handsontable tr:first-child td{
   border-top:0;
 }
+.handsontable thead th{
+  text-transform: uppercase;
+}
+.handsontable th, .handsontable td{
+  height: 30px;
+  line-height: 30px;
+}
 
+.handsontable th{
+  color: #888;
+  white-space: nowrap;
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgi…pZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+  background-size: 100%;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee),color-stop(100%, #e0e0e0));
+  background-image: -moz-linear-gradient(#eeeeee,#e0e0e0);
+  background-image: -webkit-linear-gradient(#eeeeee,#e0e0e0);
+  background-image: linear-gradient(#eeeeee,#e0e0e0);
+}
 
-table tbody tr td,
-table tbody tr th ,
-table tbody tr td:first-child,
-table tbody tr th:first-child{
+table tbody tr td,table tbody tr th ,
+table tbody tr td:first-child, table tbody tr th:first-child{
+  //  border-bottom: 1px solid #e0e0e0;
+  //  border-left: 1px solid #e4e4e4 !important;
   vertical-align: top
 }
+
+.modal{
+  background: rgba(255,255,255,.6);
+}
+.modal > .content{
+  border: 1px solid #e4e4e4;
+  border-radius: 4px;
+}
+
 

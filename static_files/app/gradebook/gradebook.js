@@ -26,10 +26,6 @@ angular.module('gradeBookApp', [
           controller: 'gradeBookCtrl',
           templateUrl: staticURL('app/gradebook/modules/gradebook/gradebook.html')
         })
-        //.when('/gradebook/',{
-        //  controller: 'coursesCtrl',
-        //  templateUrl: 'courses/courses.html'
-        //})
         .when('/gradebook/sections/:sectionId',{
           controller: 'singleSectionCtrl',
           templateUrl: staticURL('app/gradebook/modules/singleSection/singleSection.html')

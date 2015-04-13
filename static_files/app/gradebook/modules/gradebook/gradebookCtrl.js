@@ -4,12 +4,18 @@ angular.module('gradeBookApp.controllers')
   [
     '$scope',
     'courseFactory',
+    'assignmentCategoryFactory',
     'assignmentFactory',
+	  'assignmentTypeFactory',
+	  'benchmarkFactory',
     'schoolYearFactory',
     'sectionFactory',
     '$log',
-    function ($scope, courseFactory, assignmentFactory, schoolYearFactory, sectionFactory, $log) {
+    function ($scope, courseFactory, assignmentCategoryFactory, assignmentFactory, assignmentTypeFactory, benchmarkFactory, schoolYearFactory, sectionFactory, $log) {
 
+	    /***
+	     * GET LIST OF COURSES
+	     */
       var getCourses = function () {
         courseFactory.get().$promise.then(
           function (result) {
@@ -17,6 +23,40 @@ angular.module('gradeBookApp.controllers')
           }
         )
       };
+
+	    /***
+	     * GET LIST OF CATEGORIES
+	     */
+      var getCategoryList = function () {
+	      assignmentCategoryFactory.get().$promise.then(
+		        function (result) {
+              $scope.assignmentCategories = result;
+            }
+        )
+      };
+
+
+	    /***
+	     * GET LIST OF ASSIGNMENT TYPES
+	     */
+	    var getAssignmentTypeList = function () {
+		    assignmentTypeFactory.get().$promise.then(
+				    function (result) {
+					    $scope.assignmentTypes = result;
+				    }
+		    )
+	    };
+
+	    /***
+	     * GET BENCHMARK LIST
+	     */
+	    var getBenchmarkList = function () {
+		    benchmarkFactory.get().$promise.then(
+				    function (result) {
+					    $scope.benchmarkList = result;
+				    }
+		    )
+	    }
 
       var hideRightColumn = function () {
         $scope.filtersVisible = false;
@@ -27,6 +67,9 @@ angular.module('gradeBookApp.controllers')
         $scope.notificationType = null;
       };
 
+	    /***
+	     * GET ACTIVE MARKING PERIOD
+	     */
       var getActiveMarkingPeriod = function () {
         schoolYearFactory.get().$promise.then(
           function (result){
@@ -40,8 +83,20 @@ angular.module('gradeBookApp.controllers')
         )
       };
 
+	    var dateToYMD = function (date) {
+		    var d = date.getDate();
+		    var m = date.getMonth() + 1;
+		    var y = date.getFullYear();
+		    return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d);
+	    };
+
+	    /***
+	     * GET SECTION BY SECTION ID
+	     * @param sectionId
+	     */
       $scope.getSection = function (sectionId) {
-        $scope.activeSection = sectionId;
+
+	      $scope.activeSection = sectionId;
         sectionFactory.get({sectionId: sectionId}).$promise.then(
           function (result) {
             $scope.sectionSelected = true;
@@ -63,10 +118,17 @@ angular.module('gradeBookApp.controllers')
 
       $scope.markingPeriodSet = [];
 
+	    /***
+	     * SAVE ASSIGNMENT
+	     */
       $scope.saveAssignment = function () {
+
+				$scope.newAssignment.course_section = $scope.activeSection;
+
         assignmentFactory.create($scope.newAssignment).$promise.then(
           function (result) {
             console.log(result);
+	          $scope.newAssignment = {};
             hideRightColumn();
           }
         )
@@ -139,6 +201,9 @@ angular.module('gradeBookApp.controllers')
 
 
       getCourses();
+	    getCategoryList();
+	    getAssignmentTypeList();
+	    getBenchmarkList();
       getActiveMarkingPeriod();
 
     }

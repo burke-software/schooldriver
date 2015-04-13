@@ -34,34 +34,11 @@
         </ul>
       </li>
 
-      <li>Math 101
-        <ul class="nav">
-          <li>
-            <a href="">Group A</a>
-          </li>
-          <li>
-            <a href="">Group B</a>
-          </li>
-          <li>
-            <a href="">Gruop C</a>
-          </li>
-        </ul>
-      </li>
-      <li>Math 102
-        <ul class="nav">
-          <li>
-            <a href="">Group A</a>
-          </li>
-          <li>
-            <a href="">Group B</a>
-          </li>
-        </ul>
-      </li>
     </ul>
   </div>
 
-  <div class="col-sm-9 col-sm-offset-3">
-    <h2>Math 101: Group A</h2>
+  <div class="col-sm-9 col-sm-offset-3" data-ng-if="activeSection">
+    <h2>{{section.course.fullname}} : {{section.name}}</h2>
 
     <div class="col-xs-12">
       <div class="pull-left">
@@ -92,7 +69,7 @@
     </div>
   </div>
 
-  <div class="col-xs-3 right-settings"  data-ng-class="{'hidden':!assignmentVisible}">
+  <div class="col-xs-3 right-settings" data-ng-if="activeSection" data-ng-class="{'hidden':!assignmentVisible}">
     <h2 data-ng-if="!readOnly">
       <span data-ng-if="!multipleAssignments">Add Assignment</span>
       <span data-ng-if="multipleAssignments">Add Assignments</span>
@@ -113,12 +90,17 @@
 
       <div class="form-group">
         <label for="name">Name</label>
-        <input id="name" class="form-control" type="text" data-ng-if="!readOnly" data-ng-model="newAssignment.name">
+        <input id="name"
+               class="form-control"
+               type="text"
+               data-ng-if="!readOnly"
+               data-ng-model="newAssignment.name">
         <p data-ng-if="readOnly">Super long assignment</p>
       </div>
       <div class="form-group">
         <label for="date">Date</label>
-        <input id="date" class="form-control" type="date"  data-ng-if="!readOnly" data-ng-model="newAssignment.date">
+        <input id="date" class="form-control" type="text"  data-ng-if="!readOnly" data-ng-model="newAssignment.date"
+               placeholder="YYYY-MM-DD">
         <p data-ng-if="readOnly">1/1/15</p>
       </div>
       <div class="form-group">
@@ -128,23 +110,44 @@
       </div>
       <div class="form-group">
         <label for="assignmentCategory">Category</label>
-        <select id="assignmentCategory" class="form-control" data-ng-if="!readOnly" data-ng-model="newAssignment.category"></select>
+        <select id="assignmentCategory"
+                class="form-control"
+                data-ng-if="!readOnly"
+                data-ng-model="newAssignment.category"
+                data-ng-options="category.id as category.name for category in assignmentCategories">
+          <option value="">Select category</option>
+        </select>
         <p data-ng-if="readOnly">Category 1</p>
       </div>
       <div class="form-group">
         <label for="assignmentType">Assignment Type</label>
-        <select id="assignmentType" class="form-control" data-ng-if="!readOnly" data-ng-model="newAssignment.assignment_type"></select>
+        <select id="assignmentType"
+                class="form-control"
+                data-ng-if="!readOnly"
+                data-ng-model="newAssignment.assignment_type"
+                data-ng-options="type.id as type.name for type in assignmentTypes">
+          <option value="">Select type</option>
+        </select>
         <p data-ng-if="readOnly">Homework</p>
       </div>
       <div class="form-group">
         <label for="markingPeriod">Marking Period</label>
-        <select id="markingPeriod" class="form-control" data-ng-if="!readOnly" data-ng-model="newAssignment.marking_period" data-ng-options="period.id as period.name for period in markingPeriodSet">
+        <select id="markingPeriod"
+                class="form-control"
+                data-ng-if="!readOnly"
+                data-ng-model="newAssignment.marking_period"
+                data-ng-options="period.id as period.name for period in markingPeriodSet">
+          <option value="">Select period</option>
         </select>
         <p data-ng-if="readOnly">MAth101: Group A</p>
       </div>
       <div class="form-group">
         <label for="standard">Standard</label>
-        <select id="standard" class="form-control" data-ng-if="!readOnly"></select>
+        <select id="standard" class="form-control" data-ng-if="!readOnly"
+            data-ng-model="newAssignment.benchmark"
+            data-ng-options="benchmark.id as benchmark.name for benchmark in benchmarkList">
+          <option value="">Select standard</option>
+        </select>
         <p data-ng-if="readOnly">Normal</p>
       </div>
       <div class="form-group">
@@ -158,7 +161,7 @@
     </form>
   </div>
 
-  <div class="col-xs-3 right-settings" data-ng-class="{'hidden':!filtersVisible}">
+  <div class="col-xs-3 right-settings" data-ng-if="activeSection" data-ng-class="{'hidden':!filtersVisible}">
     <h2>Filters</h2>
 
     <form>
@@ -207,7 +210,7 @@
 
   </div>
 
-  <div class="col-xs-3 right-settings" data-ng-class="{'hidden':!settingsVisible}">
+  <div class="col-xs-3 right-settings" data-ng-if="activeSection" data-ng-class="{'hidden':!settingsVisible}">
     <h2>Settings</h2>
 
     <div class="form-group clearfix" data-ng-init="settings.position = 'left'">
@@ -401,7 +404,7 @@
     <button class="btn btn-primary" data-ng-click="cancel()">Close</button>
   </div>
 
-  <div class="col-xs-3 right-settings" data-ng-class="{'hidden': !colorGuideVisible}">
+  <div class="col-xs-3 right-settings" data-ng-if="activeSection" data-ng-class="{'hidden': !colorGuideVisible}">
     <h2>Icon/Color Guide</h2>
 
     <dl class="dl-horizontal">
@@ -422,7 +425,7 @@
     <button class="btn btn-primary" data-ng-click="cancel()">Close</button>
   </div>
 
-  <div class="col-xs-3 right-settings" data-ng-class="{'hidden': !notificationVisible}">
+  <div class="col-xs-3 right-settings" data-ng-if="activeSection" data-ng-class="{'hidden': !notificationVisible}">
     <div data-ng-if="notificationType === 'saving'">
       <h2><i class="fa fa-spinner"></i> Data is saving</h2>
       <p>sda dasd asdadadasd asdasdasd asdasdad asdada</p>
