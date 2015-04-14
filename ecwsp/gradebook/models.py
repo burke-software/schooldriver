@@ -163,7 +163,7 @@ class AssignmentType(models.Model):
     teacher = models.ForeignKey('sis.Faculty', blank=True, null=True)
 
     def __unicode__(self):
-        return self
+        return self.name
 
 
 class Assignment(models.Model):
