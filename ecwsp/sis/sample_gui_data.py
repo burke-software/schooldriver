@@ -598,6 +598,40 @@ class SisGUIData(object):
             AssignmentType(name="Quiz"),
         ])
 
+        self.assignment_type1 = AssignmentType.objects.get(name="Test")
+        self.assignment_type2 = AssignmentType.objects.get(name="Participation")
+        self.assignment_type3 = AssignmentType.objects.get(name="Quiz")
+
+        self.assignment1 = Assignment.objects.create(
+            name="Super Ultra Mega Test",
+            description="Such big, much wow",
+            marking_period=self.marking_period3,
+            points_possible=1000,
+            assignment_type=self.assignment_type1,
+            course_section=self.course_section)
+        self.assignment2 = Assignment.objects.create(
+            name="Big Test",
+            marking_period=self.marking_period3,
+            points_possible=100,
+            assignment_type=self.assignment_type1,
+            course_section=self.course_section6)
+        self.assignment3 = Assignment.objects.create(
+            name="10 point quiz #1",
+            marking_period=self.marking_period3,
+            assignment_type=self.assignment_type3,
+            course_section=self.course_section6)
+        self.assignment4 = Assignment.objects.create(
+            name="Class Participation Week 1",
+            date=datetime.date(2014,7,1),
+            marking_period=self.marking_period3,
+            assignment_type=self.assignment_type2,
+            course_section=self.course_section6)
+
+        self.mark1 = Mark.objects.create(
+            assignment=self.assignment1,
+            student=self.student4,
+            mark=901)
+
         # Departments/Measurement Topics/Benchmarks out of the Benchmark model
         self.dept1 = Department.objects.create(name="Mathematics")
         self.dept2 = Department.objects.create(name="Science")

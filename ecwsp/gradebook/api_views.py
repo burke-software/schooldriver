@@ -1,8 +1,10 @@
 from rest_framework import viewsets
 from .serializers import (
     AssignmentSerializer, MarkSerializer, AssignmentCategorySerializer, 
-    AssignmentTypeSerializer)
+    AssignmentTypeSerializer, StudentMarkSerializer)
 from .models import Assignment, Mark, AssignmentCategory, AssignmentType
+from ecwsp.schedule.models import CourseSection
+
 
 
 class AssignmentViewSet(viewsets.ModelViewSet):
@@ -13,6 +15,12 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 class MarkViewSet(viewsets.ModelViewSet):
     serializer_class = MarkSerializer
     queryset = Mark.objects.all()
+
+
+class StudentMarkViewSet(viewsets.ModelViewSet):
+    serializer_class = StudentMarkSerializer
+    queryset = CourseSection.objects.all()
+    filter_fields = ('id', 'enrollments__id')
 
 
 class AssignmentCategoryViewSet(viewsets.ModelViewSet):

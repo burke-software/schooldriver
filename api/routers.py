@@ -10,7 +10,7 @@ from ecwsp.grades.api_views import (
     GradeCommentViewSet, GradeViewSet, FinalGradeViewSet)
 from ecwsp.gradebook.api_views import (
     AssignmentViewSet, MarkViewSet, AssignmentCategoryViewSet, 
-    AssignmentTypeViewSet)
+    AssignmentTypeViewSet, StudentMarkViewSet)
 from ecwsp.benchmarks.api_views import BenchmarkViewSet
 
 
@@ -25,6 +25,7 @@ router.register(r'sections', SectionViewSet)
 router.register(r'enrollments', CourseEnrollmentViewSet)
 router.register(r'assignments', AssignmentViewSet)
 router.register(r'marks', MarkViewSet)
+router.register(r'student_marks', StudentMarkViewSet)
 router.register(r'assignment_categorys', AssignmentCategoryViewSet)
 router.register(r'assignment_types', AssignmentTypeViewSet)
 router.register(r'benchmarks', BenchmarkViewSet)
