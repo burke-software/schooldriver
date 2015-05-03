@@ -113,6 +113,15 @@ class SisGUIData(object):
         # Set one archetypal object. If I want a year I will use this
         self.school_year = SchoolYear.objects.get(active_year=True)
 
+        self.cohort1 = Cohort.objects.create(
+            name="Class of " + str(senior_year),
+            long_name="All Students in Class of " + str(senior_year),
+            primary=False)
+        self.cohort2 = Cohort.objects.create(
+            name="Small Senior Primary",
+            long_name="A smaller cohort that will be a primary one too",
+            primary=True)
+
         def random_birthday(class_year):
             day = random.randint(1,28)
             month = random.randint(1,12)
@@ -158,6 +167,83 @@ class SisGUIData(object):
             class_of_year=self.class_year3, 
             bday=random_birthday(self.class_year3), 
             ssn=random_ssn())
+        # Student 4 will have a lot of information attached to her.
+        # Created while working on the Angular view_student template.
+        self.student4  = Student.objects.create(
+            first_name="Rory", 
+            last_name="Robinson", 
+            username="rvrst1", 
+            mname="Viola",
+            sex="F", 
+            class_of_year=self.class_year1, 
+            bday=random_birthday(self.class_year1), 
+            ssn=random_ssn(),
+            alert="Watch out for this one!",
+            notes="Here is where I'll put some notes about Rory Robinson. " \
+                "want to give it more than a sentence so that it'll fill out " \
+                "more space. Who knows how long these notes are anyways!",
+            )
+        # Add Rory to the smaller cohort manually
+        StudentCohort.objects.create(
+            student=self.student4,
+            cohort=self.cohort2)
+        # Rory gets two phone numbers! Most students will probably have just
+        # one, but if we're iterating through a set it's good to have multiple
+        self.student_number1 = StudentNumber.objects.create(
+            student=self.student4,
+            number="412-523-6347",
+            type="C")
+        self.student_number2 = StudentNumber.objects.create(
+            student=self.student4,
+            number="724-835-9460",
+            ext="57",
+            type="W",
+            note="Rory works Saturdays from 8 to 5.")
+        # Give Rory two parents with some different fields
+        self.student_contact1 = EmergencyContact.objects.create(
+            fname="Zoe",
+            mname="Iris",
+            lname="Robinson",
+            relationship_to_student="Mother",
+            street="124 8th Ave",
+            city="Pittsburgh",
+            state="PA",
+            zip="15222",
+            email="zir_mom@examplemail.com")
+        self.student_contact2 = EmergencyContact.objects.create(
+            fname="Dante",
+            lname="Robinson",
+            relationship_to_student="Father",
+            street="124 8th Ave",
+            city="Pittsburgh",
+            state="PA",
+            zip="15222",
+            email="drobinson@examplemail.com",
+            emergency_only=True,
+            primary_contact=False)
+        # Parents get some phone numbers
+        self.student_contact_number1 = EmergencyContactNumber.objects.create(
+            contact=self.student_contact1,
+            primary=True,
+            number="412-214-4124",
+            type="H",)
+        self.student_contact_number2 = EmergencyContactNumber.objects.create(
+            contact=self.student_contact2,
+            primary=True,
+            number="412-724-7100",
+            ext="123",
+            note="Working hours 8:30 AM-5:00 PM",
+            type="W")
+        self.student_contact_number3 = EmergencyContactNumber.objects.create(
+            contact=self.student_contact2,
+            primary=False,
+            number="412-814-4023",
+            type="C")
+        # Link parents to Rory
+        self.student4.emergency_contacts.add(self.student_contact1)
+        self.student4.emergency_contacts.add(self.student_contact2)
+        # Rory and Chris are siblings!
+        self.student4.siblings.add(self.student3)
         
         # Kept three names attached to variables, but it's time to go full rando here.
         first_names = [
@@ -223,6 +309,15 @@ class SisGUIData(object):
                 bday=random_birthday(random_class_year),
                 ssn=random_ssn()
             )
+
+        # Let's put all the seniors into our senior cohort
+        self.senior_students = Student.objects.filter(
+            class_of_year=self.class_year1)
+
+        for student in self.senior_students:
+            StudentCohort.objects.create(
+                student=student, 
+                cohort=self.cohort1)
 
         MarkingPeriod.objects.bulk_create([
             MarkingPeriod(
@@ -317,9 +412,11 @@ class SisGUIData(object):
             Course(fullname="History 101", shortname="Hist101", credits=3, graded=True),
             Course(fullname="Homeroom FX 2011", shortname="FX1", homeroom=True, credits=1),
             Course(fullname="Homeroom FX 2012", shortname="FX2", homeroom=True, credits=1),
+            Course(fullname="AP Spanish", shortname="AP-ES", credits=3, graded=True),
         ])
         self.course = Course.objects.get(fullname="Math 101")
         self.course2 = Course.objects.get(fullname="History 101")
+        self.course3 = Course.objects.get(fullname="AP Spanish")
 
         CourseSection.objects.bulk_create([
             CourseSection(course_id=self.course.id, name="Math A"),
@@ -327,23 +424,58 @@ class SisGUIData(object):
             CourseSection(course_id=self.course.id, name="Math C"),
             CourseSection(course_id=self.course2.id, name="History A"),
             CourseSection(course_id=self.course2.id, name="History 1 MP only"),
+            CourseSection(course_id=self.course3.id, name="Clase A"),
+            CourseSection(course_id=self.course3.id, name="Clase B"),
         ])
         self.course_section = self.course_section1 = CourseSection.objects.get(name="Math A")
         self.course_section2 = CourseSection.objects.get(name="Math B")
         self.course_section3 = CourseSection.objects.get(name="History A")
         self.course_section4 = CourseSection.objects.get(name="History 1 MP only")
         self.course_section5 = CourseSection.objects.get(name="Math C")
+        self.course_section6 = CourseSection.objects.get(name="Clase A")
 
-        Period.objects.bulk_create([
-            Period(name="Homeroom (M)", start_time=datetime.time(8), end_time=datetime.time(8, 50)),
-            Period(name="First Period", start_time=datetime.time(9), end_time=datetime.time(9, 50)),
-            Period(name="Second Period", start_time=datetime.time(10), end_time=datetime.time(10, 50)),
-        ])
-        self.period = Period.objects.get(name="Homeroom (M)")
+        self.period = Period.objects.create(
+            name="Homeroom (M)", 
+            start_time=datetime.time(7, 55), 
+            end_time=datetime.time(8, 05))
+        self.period1 = Period.objects.create(
+            name="First Period", 
+            start_time=datetime.time(8, 10), 
+            end_time=datetime.time(9))
+        self.period2 = Period.objects.create(
+            name="Second Period", 
+            start_time=datetime.time(9, 05), 
+            end_time=datetime.time(9, 55))
+        self.period3 = Period.objects.create(
+            name="Third Period", 
+            start_time=datetime.time(10), 
+            end_time=datetime.time(10, 50))
+        self.period4 = Period.objects.create(
+            name="Fourth Period", 
+            start_time=datetime.time(10, 55), 
+            end_time=datetime.time(11, 45))
+        self.period5 = Period.objects.create(
+            name="Fifth Period", 
+            start_time=datetime.time(12, 25), 
+            end_time=datetime.time(13, 15))
+        self.period6 = Period.objects.create(
+            name="Sixth Period", 
+            start_time=datetime.time(13, 20), 
+            end_time=datetime.time(14, 10))
+        self.period7 = Period.objects.create(
+            name="Seventh Period", 
+            start_time=datetime.time(14, 15), 
+            end_time=datetime.time(15, 05))
 
         CourseMeet.objects.bulk_create([
             CourseMeet(course_section_id=self.course_section.id, period=self.period, day="1"),
-            CourseMeet(course_section_id=self.course_section3.id, period=self.period, day="2"),
+            CourseMeet(course_section_id=self.course_section3.id, period=self.period1, day="2"),
+            CourseMeet(course_section_id=self.course_section3.id, period=self.period3, day="4"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="1"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="2"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="3"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="4"),
+            CourseMeet(course_section_id=self.course_section6.id, period=self.period2, day="5"),
         ])
 
         self.course_section1.marking_period.add(self.marking_period)
@@ -359,6 +491,9 @@ class SisGUIData(object):
         self.course_section5.marking_period.add(self.marking_period)
         self.course_section5.marking_period.add(self.marking_period2)
         self.course_section5.marking_period.add(self.marking_period3)
+        self.course_section6.marking_period.add(self.marking_period)
+        self.course_section6.marking_period.add(self.marking_period2)
+        self.course_section6.marking_period.add(self.marking_period3)
 
         self.enroll1 = CourseSectionTeacher.objects.create(
             course_section=self.course_section, teacher=self.teacher1)
@@ -366,6 +501,8 @@ class SisGUIData(object):
             course_section=self.course_section3, teacher=self.teacher2)
         self.enroll3 = CourseSectionTeacher.objects.create(
             course_section=self.course_section5, teacher=self.teacher2)
+        self.enroll4 = CourseSectionTeacher.objects.create(
+            course_section=self.course_section6, teacher=self.teacher2)
         
         self.present = AttendanceStatus.objects.create(
             name="Present", code="P", teacher_selectable=True)
@@ -377,11 +514,14 @@ class SisGUIData(object):
         CourseEnrollment.objects.bulk_create([
             CourseEnrollment(user=self.student, course_section=self.course_section),
             CourseEnrollment(user=self.student, course_section=self.course_section2),
+            CourseEnrollment(user=self.student, course_section=self.course_section3),
             CourseEnrollment(user=self.student, course_section=self.course_section4),
             CourseEnrollment(user=self.student2, course_section=self.course_section),
-            CourseEnrollment(user=self.student, course_section=self.course_section3),
             CourseEnrollment(user=self.student2, course_section=self.course_section3),
             CourseEnrollment(user=self.student3, course_section=self.course_section3),
+            CourseEnrollment(user=self.student4, course_section=self.course_section),
+            CourseEnrollment(user=self.student4, course_section=self.course_section3),
+            CourseEnrollment(user=self.student4, course_section=self.course_section6),
         ])
         self.course_enrollment = CourseEnrollment.objects.all().first()
 
@@ -457,6 +597,40 @@ class SisGUIData(object):
             AssignmentType(name="Test"),
             AssignmentType(name="Quiz"),
         ])
+
+        self.assignment_type1 = AssignmentType.objects.get(name="Test")
+        self.assignment_type2 = AssignmentType.objects.get(name="Participation")
+        self.assignment_type3 = AssignmentType.objects.get(name="Quiz")
+
+        self.assignment1 = Assignment.objects.create(
+            name="Super Ultra Mega Test",
+            description="Such big, much wow",
+            marking_period=self.marking_period3,
+            points_possible=1000,
+            assignment_type=self.assignment_type1,
+            course_section=self.course_section)
+        self.assignment2 = Assignment.objects.create(
+            name="Big Test",
+            marking_period=self.marking_period3,
+            points_possible=100,
+            assignment_type=self.assignment_type1,
+            course_section=self.course_section6)
+        self.assignment3 = Assignment.objects.create(
+            name="10 point quiz #1",
+            marking_period=self.marking_period3,
+            assignment_type=self.assignment_type3,
+            course_section=self.course_section6)
+        self.assignment4 = Assignment.objects.create(
+            name="Class Participation Week 1",
+            date=datetime.date(2014,7,1),
+            marking_period=self.marking_period3,
+            assignment_type=self.assignment_type2,
+            course_section=self.course_section6)
+
+        self.mark1 = Mark.objects.create(
+            assignment=self.assignment1,
+            student=self.student4,
+            mark=901)
 
         # Departments/Measurement Topics/Benchmarks out of the Benchmark model
         self.dept1 = Department.objects.create(name="Mathematics")

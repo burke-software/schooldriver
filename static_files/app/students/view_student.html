@@ -50,7 +50,7 @@
 			<td><a ng-href="mailto:{{ student.parent_email }}">{{ student.parent_email }}</a></td>
 		</tr>
 		<tr>
-			<td ng-class="{'text-muted': numbers.length === 0 }">Student Phone Number</td>
+			<td ng-class="{'text-muted': student.studentnumber_set.length === 0 }">Student Phone Number</td>
 			<td>
 				<div ng-repeat="number in student.studentnumber_set">
 					{{ number.number }}
@@ -79,6 +79,47 @@
 						<div ng-if="number.note"><small>{{ number.note }}</small></div>
 					</div>
 				</div>
+			</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': student.siblings.length === 0}">Siblings</td>
+			<td>
+				<div ng-repeat="sibling in student.siblings">
+					{{ sibling }}
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td ng-class="{'text-muted': student.cohorts.length === 0}">Cohorts</td>
+			<td>
+				<div ng-repeat="cohort in student.cohorts">
+					{{ cohort.name }}
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th colspan="2">Current Trimester Schedule</th>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<table class="table">
+				<tr ng-repeat="enrollment in enrollments">
+					<td>
+					{{ enrollment.course_section.name }}
+					<div ng-repeat="teacher in enrollment.course_section.teachers">
+					{{ teacher }}
+					</div>
+					<div ng-repeat="period in enrollment.course_section.periods">
+						<div ng-repeat="meet in period.coursemeet_set">
+							<div ng-if="meet.course_section === enrollment.course_section.id">
+								{{ period.name }}: {{ meet.day_display }}, {{ period.start_time }}
+								&ndash; {{ period.end_time }}
+							</div>
+						</div>
+					</div>
+					</td>
+				</tr>
+				</table>
 			</td>
 		</tr>
 	</table>

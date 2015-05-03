@@ -1,7 +1,10 @@
 from rest_framework import viewsets
 from rest_framework import filters
-from ecwsp.schedule.models import Course, CourseSection
-from api.schedule.serializers import CourseSerializer, SectionSerializer
+from ecwsp.schedule.models import (
+    Course, CourseSection, CourseEnrollment, MarkingPeriod)
+from api.schedule.serializers import (
+    CourseSerializer, SectionSerializer, CourseEnrollmentSerializer)
+from datetime import date
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -24,3 +27,17 @@ class SectionViewSet(viewsets.ModelViewSet):
     serializer_class = SectionSerializer
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('course', 'enrollments', 'marking_period',)
+
+
+class CourseEnrollmentViewSet(viewsets.ModelViewSet):
+    """
+    an API endpoint for the CourseEnrollment model
+    """
+    today = date.today()
+    current_mp_id = MarkingPeriod.objects.filter(
+        start_date__lte=today, 
+        end_date__gte=today,
+    ).order_by('-start_date').first().id
+    queryset = CourseEnrollment.objects.filter(course_section__marking_period=current_mp_id)
+    serializer_class = CourseEnrollmentSerializer
+    filter_fields = ('user',)
