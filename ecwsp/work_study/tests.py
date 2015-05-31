@@ -75,7 +75,9 @@ class TimeSheetTest(TestCase):
         # check for student email
         self.assertEquals(mail.outbox[0].subject, "Time sheet approved for " + unicode(self.student))
         self.assertEquals(mail.outbox[0].body, u'Hello fjlkdsjfl321kev, studentaaaaa,\nYour time card for 06/15/10 was approved.')
-        self.assertEquals(mail.outbox[0].to[0], unicode(self.student.username) + "@cristoreyny.net")
+        self.assertEquals(
+            mail.outbox[0].to[0],
+            self.student.username + "@cristoreyny.net")
 
     def test_student_no_super(self, supervisor=False):
         """
