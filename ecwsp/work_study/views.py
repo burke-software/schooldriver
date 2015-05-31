@@ -135,10 +135,7 @@ def student_timesheet(request):
     form.set_supers(comp_contacts)
     form.fields['performance'].widget.attrs['disabled'] = 'disabled'
     # Should for_pay be an option?
-    pay, created = config.ALLOW_FOR_PAY
-    if created:
-        pay.value = "True"
-        pay.save()
+    pay = config.ALLOW_FOR_PAY
     if pay.value != "True" and pay.value != "true":
         form.fields['for_pay'].widget = forms.HiddenInput()
 
