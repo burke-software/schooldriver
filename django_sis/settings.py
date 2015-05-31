@@ -433,6 +433,7 @@ if DEBUG_TOOLBAR == True:
     INTERNAL_IPS = ['127.0.0.1', '172.17.42.1', '172.17.42.1', '10.0.1.21',]
 
 CONSTANCE_CONFIG = {
+    'SCHOOL_PAY_RATE_PER_HOUR': ('13.00, ''),
     'SCHOOL_NAME': ('Unnamed School', 'School name'),
     'SCHOOL_COLOR': ('', 'hex color code. Ex: $1122FF'),
     'ALLOW_GOOGLE_AUTH': (False, 'Allow users to log in with Google Apps. This requires setting the email field in student and staff.'),
