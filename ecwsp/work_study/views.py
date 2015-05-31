@@ -136,7 +136,7 @@ def student_timesheet(request):
     form.fields['performance'].widget.attrs['disabled'] = 'disabled'
     # Should for_pay be an option?
     pay = config.ALLOW_FOR_PAY
-    if pay.value != "True" and pay.value != "true":
+    if pay != "True" and pay != "true":
         form.fields['for_pay'].widget = forms.HiddenInput()
 
     return render_to_response('work_study/student_timesheet.html', {
