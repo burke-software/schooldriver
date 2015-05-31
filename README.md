@@ -1,6 +1,4 @@
-Regrettably this project is no longer active due to a lack of funding. If you would like to take the project over, please contact us via email or github issues. We can no longer offer SaaS style hosting for new customers.
-
-#Django-sis 
+# Schooldriver 
 This is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc). Below you will find a list of apps included in the software with a brief description of each.
 
 Burke Software and Consulting offers support and hosting for $3000/year for a school of < 500 students. 
