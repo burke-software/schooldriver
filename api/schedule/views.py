@@ -34,10 +34,14 @@ class CourseEnrollmentViewSet(viewsets.ModelViewSet):
     an API endpoint for the CourseEnrollment model
     """
     today = date.today()
-    current_mp_id = MarkingPeriod.objects.filter(
-        start_date__lte=today, 
+    current_mp = MarkingPeriod.objects.filter(
+        start_date__lte=today,
         end_date__gte=today,
-    ).order_by('-start_date').first().id
-    queryset = CourseEnrollment.objects.filter(course_section__marking_period=current_mp_id)
+    ).order_by('-start_date').first()
+    if current_mp:
+        queryset = CourseEnrollment.objects.filter(
+            course_section__marking_period=current_mp.id)
+    else:
+        queryset = CourseEnrollment.objects.none()
     serializer_class = CourseEnrollmentSerializer
     filter_fields = ('user',)

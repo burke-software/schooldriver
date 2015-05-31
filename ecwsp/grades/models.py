@@ -193,7 +193,7 @@ class Grade(CommonGrade):
 
 
 class FinalGrade(CommonGrade):
-    enrollment = models.ForeignKey('schedule.CourseEnrollment', unique=True)
+    enrollment = models.OneToOneField('schedule.CourseEnrollment')
 
     def set_grade(self, grade):
         self.grade = grade

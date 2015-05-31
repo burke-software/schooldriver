@@ -298,7 +298,7 @@ BROKER_TRANSPORT_OPTIONS = {
     'fanout_patterns': True,
 }
 
-CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+#CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 from celery.schedules import crontab
 CELERYBEAT_SCHEDULE = {
     'sent-admissions-email': {
@@ -363,24 +363,24 @@ DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 SHARED_APPS = ()
 
 SHARED_APPS = SHARED_APPS + (
+    'django.contrib.auth',
     'constance',
     'constance.backends.database',
-    'ecwsp.customers',
     'ecwsp.administration',
-    'djcelery',
     'django.contrib.contenttypes',
     'grappelli.dashboard',
     'grappelli',
     'django.contrib.admin',
     'django.contrib.staticfiles',
-    'django.contrib.auth',
     'django.contrib.sessions',
 )
+if MULTI_TENANT:
+    SHARED_APPS = ('ecwsp.customers',) + SHARED_APPS
 TENANT_APPS = (
+    'django.contrib.auth',
     'constance',
     'constance.backends.database',
     'django.contrib.contenttypes',
-    'django.contrib.auth',
     'django.contrib.admin',
     'autocomplete_light',
     'social.apps.django_app.default',
@@ -398,7 +398,6 @@ TENANT_APPS = (
     'ecwsp.standard_test',
     'ecwsp.integrations.schoolreach',
     'reversion',
-    'djcelery',
     'localflavor',
     'dajax',
     'dajaxice',
