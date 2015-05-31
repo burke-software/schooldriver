@@ -74,7 +74,7 @@ class UserPreference(models.Model):
     include_deleted_students = models.BooleanField(default=False, help_text="When searching for students, include deleted (previous) students.")
     gradebook_preference = models.CharField(max_length=10, blank=True, choices=(
          ('O', 'Online Gradebook'), ('S','Spreadsheet'), ('E', 'Engrade'), ('M', 'Manual')))
-    user = models.ForeignKey(User, unique=True, editable=False)
+    user = models.OneToOneField('auth.User', editable=False)
     first = True
 
     def get_format(self, type="document"):

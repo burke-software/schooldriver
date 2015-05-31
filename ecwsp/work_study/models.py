@@ -139,7 +139,7 @@ class WorkTeam(models.Model, CustomFieldModel):
     login = models.ManyToManyField(WorkTeamUser, blank=True, help_text="Optional. This creates users with \"company\" permissions, allowing them to sign into the database to review/approve pending and past time sheets for the assigned workteam.")
     paying = models.CharField(max_length=1, choices=(('P', 'Paying'), ('N', 'Non-Paying'), ('F', 'Funded')), blank=True)
     funded_by = models.CharField(max_length=150, blank=True)
-    cras = models.ManyToManyField(CraContact, blank=True, null=True)
+    cras = models.ManyToManyField(CraContact, blank=True)
     industry_type = models.CharField(max_length=100, blank=True)
     travel_route = models.CharField(max_length=50,help_text="Train or van route",blank=True,db_column="train_line")
     stop_location = models.CharField(max_length=150, blank=True)
@@ -266,9 +266,9 @@ class CompContract(models.Model, CustomFieldModel):
     number_students = models.IntegerField(blank=True, null=True)
 
     payment = models.ForeignKey(PaymentOption, blank=True, null=True)
-    student_functional_responsibilities = models.ManyToManyField(StudentFunctionalResponsibility, blank=True, null=True)
+    student_functional_responsibilities = models.ManyToManyField(StudentFunctionalResponsibility, blank=True)
     student_functional_responsibilities_other = models.TextField(blank=True)
-    student_desired_skills = models.ManyToManyField(StudentDesiredSkill, blank=True, null=True)
+    student_desired_skills = models.ManyToManyField(StudentDesiredSkill, blank=True)
     student_desired_skills_other = models.TextField(blank=True)
     student_leave = models.BooleanField(default=False, )
     student_leave_lunch = models.BooleanField(default=False, verbose_name="Student leaves for lunch.")
@@ -277,7 +277,7 @@ class CompContract(models.Model, CustomFieldModel):
 
     signed = models.BooleanField(default=False, )
     contract_file = models.FileField(upload_to='contracts', blank=True)
-    ip_address = models.IPAddressField(blank=True, null=True, help_text="IP address when signed")
+    ip_address = models.GenericIPAddressField(blank=True, null=True, help_text="IP address when signed")
 
     def __unicode__(self):
         return unicode(self.company)
@@ -817,7 +817,7 @@ class ClientVisit(models.Model):
     cra = models.ForeignKey(CraContact, blank=True, null=True)
     company = models.ForeignKey(WorkTeam)
     follow_up_of = models.ForeignKey('ClientVisit', blank=True, null=True, help_text="This report is a follow-up of selected report.")
-    supervisor = models.ManyToManyField(Contact, blank=True, null=True)
+    supervisor = models.ManyToManyField(Contact, blank=True)
     choices = (
         ('4', "Above and beyond"),
         ('3', "Represents high level of proficiency"),

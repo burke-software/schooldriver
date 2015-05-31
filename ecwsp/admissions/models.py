@@ -83,7 +83,6 @@ class ApplicationDecisionOption(models.Model):
     level = models.ManyToManyField(
         AdmissionLevel,
         blank=True,
-        null=True,
         help_text="This decision can apply for these levels.")
     def __unicode__(self):
         return unicode(self.name)
@@ -188,7 +187,8 @@ class Applicant(models.Model, CustomFieldModel):
         help_text="Applying for this grade level",
         default=get_year)
     school_year = models.ForeignKey('sis.SchoolYear', blank=True, null=True, on_delete=models.SET_NULL, default=get_school_year)
-    parent_guardians = models.ManyToManyField('sis.EmergencyContact', verbose_name="Student contact", blank=True, null=True)
+    parent_guardians = models.ManyToManyField(
+        'sis.EmergencyContact', verbose_name="Student contact", blank=True)
     ethnicity = models.ForeignKey(EthnicityChoice, blank=True, null=True, on_delete=models.SET_NULL,)
     hs_grad_yr = models.IntegerField(blank=True, null=True)
     elem_grad_yr = models.IntegerField(blank=True, null=True)
@@ -198,7 +198,7 @@ class Applicant(models.Model, CustomFieldModel):
     religion = models.ForeignKey(ReligionChoice, blank=True, null=True, on_delete=models.SET_NULL,)
     place_of_worship = models.ForeignKey(PlaceOfWorship, blank=True, null=True, on_delete=models.SET_NULL,)
     follow_up_date = models.DateField(blank=True, null=True,) # validators=settings.DATE_VALIDATORS)
-    open_house_attended = models.ManyToManyField(OpenHouse, blank=True, null=True)
+    open_house_attended = models.ManyToManyField(OpenHouse, blank=True)
     parent_guardian_first_name = models.CharField(max_length=150, blank=True)
     parent_guardian_last_name = models.CharField(max_length=150, blank=True)
     relationship_to_student = models.CharField(max_length=500, blank=True)
@@ -222,7 +222,7 @@ class Applicant(models.Model, CustomFieldModel):
 
     date_added = models.DateField(auto_now_add=True, blank=True, null=True, validators=settings.DATE_VALIDATORS)
     level = models.ForeignKey(AdmissionLevel, blank=True, null=True, on_delete=models.SET_NULL)
-    checklist = models.ManyToManyField(AdmissionCheck, blank=True, null=True)
+    checklist = models.ManyToManyField(AdmissionCheck, blank=True)
     application_decision = models.ForeignKey(ApplicationDecisionOption, blank=True, null=True, on_delete=models.SET_NULL,)
     application_decision_by = models.ForeignKey(Faculty, blank=True, null=True, on_delete=models.SET_NULL,)
     withdrawn = models.ForeignKey(WithdrawnChoices, blank=True, null=True, on_delete=models.SET_NULL,)
@@ -343,7 +343,7 @@ class ContactLog(models.Model):
 
 class ApplicantStandardTestResult(models.Model):
     """ Standardized test instance. This is the result of a student taking a test. """
-    date = models.DateField(default=datetime.date.today(), validators=settings.DATE_VALIDATORS)
+    date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     applicant = models.ForeignKey(Applicant)
     test = models.ForeignKey('standard_test.StandardTest')
     show_on_reports = models.BooleanField(default=True, help_text="If true, show this test result on a report such as a transcript. " + \

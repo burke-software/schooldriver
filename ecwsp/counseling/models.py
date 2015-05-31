@@ -28,7 +28,8 @@ class StudentMeeting(models.Model):
     follow_up_action = models.ForeignKey(FollowUpAction,blank=True,null=True)
     follow_up_notes = models.CharField(max_length=2024,blank=True)
     reported_by = models.ForeignKey(User,limit_choices_to = {'groups__name': 'faculty'})
-    referral_form = models.ForeignKey('ReferralForm',blank=True,null=True,editable=False)
+    referral_form = models.ForeignKey(
+        'ReferralForm', blank=True, editable=False)
     file = models.FileField(upload_to='student_meetings',blank=True,null=True)
     def __unicode__(self):
         students = ''
@@ -43,7 +44,7 @@ class StudentMeeting(models.Model):
         for student in self.students.all():
             txt += u'%s, ' % (student)
         return unicode(txt[:-2])
-        
+
     class Meta:
         ordering = ('-date',)
 
@@ -64,8 +65,8 @@ class ReferralForm(models.Model):
     referred_by = models.ForeignKey(User,limit_choices_to = {'groups__name': 'faculty'})
     student = models.ForeignKey(Student, related_name="+")
     comments = models.TextField(blank=True)
-    referral_reasons = models.ManyToManyField(ReferralReason, blank=True,null=True)
-    
+    referral_reasons = models.ManyToManyField(ReferralReason, blank=True)
+
     def save(self, *args, **kwargs):
         if not self.id:
             new = True
@@ -83,6 +84,6 @@ class ReferralForm(models.Model):
                     send_mail(subject, msg, from_addr, to_addr)
             except:
                 logging.error('Couldn\'t email counseling referral form.', exc_info=True)
-    
+
     def __unicode__(self):
         return 'Referral %s - %s - %s' % (self.date, self.classroom_teacher, self.student)

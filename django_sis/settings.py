@@ -505,7 +505,7 @@ CONSTANCE_CONFIG = {
     'DISCIPLINE_MERIT_LEVEL_FOUR': ('5', ''),
     'CLEAR_PLACEMENT_FOR_INACTIVE_STUDENTS': ('False', ''),
     'DEFAULT_CITY': ('', ''),
-    'HOW_TO_OBTAIN_STUDENT_EMAIL': ('append','append, user, or student', ''),
+    'HOW_TO_OBTAIN_STUDENT_EMAIL': ('append','append, user, or student'),
     'EMAIL': ('@change.me', ''),
     'CLEAR_PLACEMENT_FOR_INACTIVE_STUDENTS': ('False', ''),
     'BENCHMARK_BASED_GRADING': ('False', ''),
