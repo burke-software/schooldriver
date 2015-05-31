@@ -53,21 +53,21 @@ class VolunteerSite(models.Model):
     hours_confirmed = models.BooleanField(default=False, )
     comment = models.TextField(blank=True)
     secret_key = models.CharField(max_length=20, blank=True, editable=False)
-    
+
     def __unicode__(self):
         return u'%s at %s' % (self.volunteer,self.site)
-    
+
     def genKey(self):
         key = ''
         alphabet = 'abcdefghijklmnopqrstuvwxyz1234567890_-'
         for x in random.sample(alphabet,random.randint(19,20)):
             key += x
         self.secret_key = key
-    
+
     def save(self, saved_by_volunteer=False, *args, **kwargs):
         if not self.secret_key or self.secret_key == "":
             self.genKey()
-        
+
         if saved_by_volunteer:
             if not self.volunteer.email_queue:
                 self.volunteer.email_queue = ""
@@ -92,7 +92,7 @@ class VolunteerSite(models.Model):
                         extra={'request': request,'exception':exc_type,'traceback':'%s %s' % (fname,exc_tb.tb_lineno)}
                         )
         super(VolunteerSite, self).save(*args, **kwargs)
-    
+
     def send_email_approval(self):
         """
         Send email to supervisor for approval
@@ -108,7 +108,7 @@ class VolunteerSite(models.Model):
             send_mail(subject, msg, from_addr, [sendTo])
         except:
             logging.warning("Unable to send email to volunteer's supervisor! %s" % (self,), exc_info=True)
-    
+
     def hours_at_site(self):
         return self.hours_set.all().aggregate(Sum('hours'))['hours__sum']
 
@@ -116,7 +116,7 @@ def get_hours_default():
     return config.VOLUNTEER_TRACK_REQUIRED_HOURS
 class Volunteer(models.Model):
     student = models.OneToOneField('sis.Student')
-    sites = models.ManyToManyField(Site,blank=True,null=True,through='VolunteerSite')
+    sites = models.ManyToManyField(Site,blank=True, through='VolunteerSite')
     attended_reflection = models.BooleanField(default=False, verbose_name = "Attended")
     hours_required = models.IntegerField(default=get_hours_default, blank=True, null=True)
     notes = models.TextField(blank=True)
@@ -124,6 +124,6 @@ class Volunteer(models.Model):
     email_queue = models.CharField(default="", max_length=1000, blank=True, editable=False, help_text="Used to store nightly notification emails.")
     def __unicode__(self):
         return unicode(self.student)
-            
+
     def hours_completed(self):
         return self.volunteersite_set.all().aggregate(Sum('hours__hours'))['hours__hours__sum']

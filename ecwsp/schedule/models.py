@@ -321,8 +321,8 @@ class CourseSection(models.Model):
     marking_period = models.ManyToManyField(MarkingPeriod, blank=True)
     periods = models.ManyToManyField(Period, blank=True, through=CourseMeet)
     teachers = models.ManyToManyField('sis.Faculty', through=CourseSectionTeacher, blank=True)
-    enrollments = models.ManyToManyField('sis.Student', through=CourseEnrollment, blank=True, null=True)
-    cohorts = models.ManyToManyField('sis.Cohort', blank=True, null=True)
+    enrollments = models.ManyToManyField('sis.Student', through=CourseEnrollment, blank=True)
+    cohorts = models.ManyToManyField('sis.Cohort', blank=True)
     last_grade_submission = models.DateTimeField(blank=True, null=True, editable=False, validators=settings.DATE_VALIDATORS)
 
     def __unicode__(self):

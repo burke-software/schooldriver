@@ -13,7 +13,6 @@ web:
     #- ../django-constance/constance:/usr/local/lib/python2.7/dist-packages/constance
   ports:
     - "8000:8000"
-    - "5555:5555"
   links:
     - db
     - redis

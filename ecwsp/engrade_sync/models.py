@@ -7,14 +7,13 @@ class CourseSectionSync(models.Model):
     engrade_course_id = models.BigIntegerField(unique=True)
 
     class Meta:
-        unique_together = (('course_section', 'marking_period'), )
-
+        unique_together = (('course_section', 'marking_period'),)
     def __unicode__(self):
         return unicode(self.course_section)
 
 
 class TeacherSync(models.Model):
-    teacher = models.ForeignKey('sis.Faculty', unique=True)
+    teacher = models.OneToOneField('sis.Faculty')
     engrade_teacher_id = models.BigIntegerField(unique=True)
 
     def __unicode__(self):

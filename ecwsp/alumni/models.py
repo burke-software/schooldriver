@@ -13,7 +13,7 @@ import datetime
 program_years_choices = (
     ('4', '4-year or higher institution'),
     ('2', '2-year institution'),
-    ('L', 'less than 2-year institution'),  
+    ('L', 'less than 2-year institution'),
 )
 
 class College(models.Model):
@@ -48,16 +48,16 @@ class CollegeEnrollment(models.Model):
     major = models.CharField(max_length=255, blank=True, null=True)
     alumni = models.ForeignKey('Alumni')
     college_sequence = models.IntegerField(blank=True, null=True)
-    
+
     def __unicode__(self):
         return unicode(self.college)
-    
+
     def clean(self):
         from django.core.exceptions import ValidationError
         # Don't allow draft entries to have a pub_date.
         if self.begin > self.end:
             raise ValidationError('Cannot end before beginning.')
-    
+
     def save(self, *args, **kwargs):
         super(CollegeEnrollment, self).save(*args, **kwargs)
         # Cache these in the database
@@ -77,7 +77,7 @@ class Withdrawl(models.Model):
     date = models.DateField(default=datetime.date.today, validators=settings.DATE_VALIDATORS)
     semesters = models.DecimalField(blank=True, null=True, max_digits=5, decimal_places=3, help_text="Number of semesters/trimesters at this college.")
     from_enrollment = models.BooleanField(default=False, )
-    
+
     def __unicode__(self):
         return "%s left %s on %s" % (self.alumni, self.college, self.date)
 
@@ -92,21 +92,21 @@ class AlumniNote(models.Model):
     alumni = models.ForeignKey('Alumni')
     date = models.DateField(auto_now_add=True, validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
-    
+
     def get_note(self):
         return mark_safe(self.note)
-    
-    
+
+
     def __unicode__(self):
         return "%s %s: %s" % (self.user, self.date, self.note)
 
 class AlumniAction(models.Model):
     title = models.CharField(max_length=255)
     note = models.TextField(blank=True)
-    alumni = models.ManyToManyField('Alumni', blank=True, null=True)
+    alumni = models.ManyToManyField('Alumni', blank=True)
     date = models.DateField(default=datetime.date.today, blank=True, null=True, validators=settings.DATE_VALIDATORS)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
-    
+
     def __unicode__(self):
         return "%s %s" % (self.title, self.date)
 
@@ -138,20 +138,20 @@ class Alumni(models.Model):
     college = models.ForeignKey(College, blank=True, null=True, related_name="college_student")
     graduated = models.BooleanField(default=False, )
     graduation_date = models.DateField(blank=True, null=True, help_text="Expected or actual graduation date", validators=settings.DATE_VALIDATORS)
-    college_override = models.BooleanField(default=False, 
-        help_text="If checked, college enrollment data will not set college and graduated automatically.")  
+    college_override = models.BooleanField(default=False,
+        help_text="If checked, college enrollment data will not set college and graduated automatically.")
     status = models.ForeignKey(AlumniStatus, blank=True, null=True)
     program_years = models.CharField(max_length=1, choices=program_years_choices, blank=True, null=True)
     semesters = models.CharField(max_length="5", blank=True, help_text="Number of semesters or trimesters.")
     withdrawls = models.ManyToManyField(College, through=Withdrawl)
     on_track = models.BooleanField(default=False, help_text="On track to graduate")
-    
+
     class Meta:
         verbose_name_plural = "Alumni"
-    
+
     def __unicode__(self):
         return unicode(self.student)
-    
+
     def save(self, *args, **kwargs):
         if id:
             new = False
@@ -166,7 +166,7 @@ class Alumni(models.Model):
                 AlumniEmail.create(email=self.student.alt_email,type="Imported Email",alumni=self)
             for number in self.student.studentnumber_set.all():
                 AlumniPhoneNumber.create(phone_number=number.number,type=number.type,alumni=self)
-    
+
     def handle_cache(self):
         """ Sets cache and college unless college_override is checked """
         if not self.college_override:

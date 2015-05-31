@@ -59,9 +59,8 @@ class CalculationRule(models.Model):
     Potential calculation components:
         career, year, marking period, course section
     '''
-    first_year_effective = models.ForeignKey(
+    first_year_effective = models.OneToOneField(
         'sis.SchoolYear',
-        unique=True,
         related_name="gradebook_calculationrule_set",
         help_text='Rule also applies to subsequent years.')
     points_possible = GradeField(
@@ -121,9 +120,9 @@ class CalculationRuleSubstitution(models.Model):
     calculate_as = GradeField()
     flag_visually = models.BooleanField(default=False)
     apply_to_departments = models.ManyToManyField(
-        'schedule.Department', blank=True, null=True, related_name="+")
+        'schedule.Department', blank=True, related_name="+")
     apply_to_categories = models.ManyToManyField(
-        AssignmentCategory, blank=True, null=True)
+        AssignmentCategory, blank=True)
     calculation_rule = models.ForeignKey(
         CalculationRule, related_name='substitution_set')
 
@@ -144,7 +143,7 @@ class CalculationRulePerCourseCategory(models.Model):
     category = models.ForeignKey(AssignmentCategory)
     weight = WeightField()
     apply_to_departments = models.ManyToManyField(
-        'schedule.Department', blank=True, null=True,
+        'schedule.Department', blank=True,
         related_name='gradebook_calculationrulepercoursecategory_set')
     calculation_rule = models.ForeignKey(
         CalculationRule, related_name='per_course_category_set')
