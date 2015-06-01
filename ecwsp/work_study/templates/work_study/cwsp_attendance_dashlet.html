@@ -2,7 +2,6 @@
 {% load static from staticfiles %}
 
 {% block dashlet_body %}
-<script src="{% static "dajaxice/dajaxice.core.js" %}" type="text/javascript" charset="utf-8"></script>
 <ul>
     <li>
         <div class="medium primary btn"><a href="{% url "ecwsp.work_study.views.take_attendance" %}">Take Today's Attendance</a></div>
@@ -25,20 +24,8 @@
                 <span id="without_timesheets"></span> student(s) did not submit timesheets
             </td>
         </tr>
-        <!--<tr>
-            <td>
-                student have no make up days planned
-            </td>
-        </tr>-->
     </tbody>
 </table>
-<script>
-    function callback(data){
-        $('#working_today').html(data.working_today);
-        $('#without_timesheets').html(data.without_timesheets);
-    }
-    Dajaxice.ecwsp.work_study.attendance_dashlet(callback, {'date':$('#attendance_date').val()})
-</script>
 {% endblock %}
 
 {% block dashlet_footer %}

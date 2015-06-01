@@ -297,8 +297,7 @@ BROKER_TRANSPORT_OPTIONS = {
     'fanout_prefix': True,
     'fanout_patterns': True,
 }
-
-#CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+CELERY_RESULT_BACKEND = BROKER_URL
 from celery.schedules import crontab
 CELERYBEAT_SCHEDULE = {
     'sent-admissions-email': {
@@ -319,7 +318,6 @@ CELERYBEAT_SCHEDULE = {
     },
     'email_cra_nightly': {
         'task': 'ecwsp.work_study.tasks.email_cra_nightly',
-        # MUST complete before midnight! Could be an issue with multiple timezones.
         'schedule': crontab(hour=20, minute=27),
     },
     'update_contacts_from_sugarcrm': {
@@ -345,7 +343,7 @@ try:  # prefix cache based on school name to avoid collisions.
     if SCHOOL_NAME and CACHES:
         CACHES['default']['KEY_PREFIX'] = SCHOOL_NAME
 except NameError:
-    pass # Not using cache
+    pass  # Not using cache
 
 
 if RAVEN_DSN:
@@ -355,9 +353,6 @@ if RAVEN_DSN:
         'IGNORE_EXCEPTIONS': ['django.http.UnreadablePostError'],
     }
 
-
-STATICFILES_FINDERS += ('dajaxice.finders.DajaxiceFinder',)
-DAJAXICE_XMLHTTPREQUEST_JS_IMPORT = False # Breaks some jquery ajax stuff!
 
 # These are required add ons that we always want to have
 SHARED_APPS = ()
@@ -399,8 +394,6 @@ TENANT_APPS = (
     'ecwsp.integrations.schoolreach',
     'reversion',
     'localflavor',
-    'dajax',
-    'dajaxice',
     'ecwsp.volunteer_track',
     'daterange_filter',
     'django_filters',

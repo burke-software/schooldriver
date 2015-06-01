@@ -3,13 +3,11 @@ from ecwsp.sis import views as sis_views
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import admin
-from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 from api.routers import api_urls
 from responsive_dashboard import views as dashboard_views
 from ecwsp.sis.views import AttendanceReportView
 from django.http import HttpResponse
 
-dajaxice_autodiscover()
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
 
@@ -42,7 +40,6 @@ urlpatterns = patterns('',
     (r'^admin/jsi18n/$', 'django.views.i18n.javascript_catalog'),
     (r'^admin/', include(admin.site.urls) ),
     url(r'^autocomplete/', include('autocomplete_light.urls')),
-    url(dajaxice_config.dajaxice_url, include('ecwsp.dajaxice_urls')),
     (r'^reports/(?P<name>attendance_report)/$', AttendanceReportView.as_view()),
     (r'^reports/', include('scaffold_report.urls')),
     url(r'^impersonate/', include('impersonate.urls')),

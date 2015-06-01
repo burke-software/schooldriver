@@ -17,8 +17,6 @@ django-compressor==1.5
 django-constance-updated==1.0.1
 git+https://github.com/jnm/django-file-import@f9078d9751060b0c6adfdd772fc89c7e32c0cd99
 django-custom-field==2.8
-django-dajax-ng==0.9.4
-django-dajaxice-ng==0.7.0.1
 django-daterange-filter==1.1.1
 django-extensions==1.5.5
 django-filter==0.10.0

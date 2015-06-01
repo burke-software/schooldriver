@@ -1,4 +1,4 @@
-{% load dajaxice_templatetags compress %}
+{% load compress %}
 {% load static from staticfiles %}
 <!DOCTYPE html>
 <!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
@@ -34,8 +34,6 @@
       {% endcompress %}
 
     {% block javascripts %}
-      {% dajaxice_js_import %}
-
       <!--[if IE]>
         <script type="text/javascript" src="{% static "js/jquery-1.10.2.min.js" %}"></script>
       <![endif]-->
