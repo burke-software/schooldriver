@@ -9,6 +9,7 @@ from ecwsp.attendance.models import *
 from ecwsp.grades.models import *
 
 import datetime
+import unittest
 
 
 class SisTestMixin(object):
@@ -26,16 +27,17 @@ class SisTestMixin(object):
         """
         provides a simple way to automatically log in a teacher
         """
-        self.client.force_authenticate(user = self.data.teacher1)
+        self.client.force_authenticate(user=self.data.teacher1)
 
     def student_login(self):
         """
         provides a simple way to automatically log in a student
         """
-        self.client.force_authenticate(user = self.data.student)
+        self.client.force_authenticate(user=self.data.student)
 
 
 class ReportTest(SisTestMixin, TestCase):
+    @unittest.skip("Transcript isn't ported to new grades yet")
     def test_show_incomplete_without_grade(self):
         """ Test the setting TRANSCRIPT_SHOW_INCOMPLETE_COURSES_WITHOUT_GRADE
         """
@@ -62,13 +64,18 @@ class ReportTest(SisTestMixin, TestCase):
 class AttendanceTest(SisTestMixin, TestCase):
     def test_attendance(self):
         """
-        Tests two teachers entering attendance, then admin changing it. Tests conflict resolution
+        Tests two teachers entering attendance, then admin changing it.
+        Tests conflict resolution
         """
         attend = StudentAttendance(
-            student=self.data.student, date=datetime.date.today(), status=self.data.absent)
+            student=self.data.student,
+            date=datetime.date.today(), status=self.data.absent)
         attend.save()
+        # not a valid one! Should assume absent
         attend2 = StudentAttendance(
-            student=self.data.student, date=datetime.date.today(), status=self.data.present)    # not a valid one! Should assume absent
+            student=self.data.student,
+            date=datetime.date.today(),
+            status=self.data.present)
         attend2.save()
         # admin changes it
         attend3, created = StudentAttendance.objects.get_or_create(
@@ -91,7 +98,7 @@ class AttendanceTest(SisTestMixin, TestCase):
     def test_teacher_attendance(self):
         return
         user = User.objects.get(username='dburke')
-        user.set_password('aa') # Why is this needed?
+        user.set_password('aa')  # Why is this needed?
         user.save()
 
         c = Client()
@@ -103,10 +110,11 @@ class AttendanceTest(SisTestMixin, TestCase):
 
         course_section = CourseSection.objects.get(name="Homeroom FX 2011")
 
-        response = c.get('/attendance/teacher_attendance/' + str(course_section.id), follow=True)
+        response = c.get(
+            '/attendance/teacher_attendance/' + str(course_section.id),
+            follow=True)
         self.assertEqual(response.status_code, 200)
 
-        #should test if attendance can be submitted
 
 class ConstanceConfigTests(TestCase):
     def test_get_city(self):
@@ -115,7 +123,8 @@ class ConstanceConfigTests(TestCase):
         self.assertEqual(default_city, self.city)
 
     def test_default_benchmark_grading_config(self):
-        """default for constance config BENCHMARK_BASED_GRADING should return False"""
+        """default for constance config BENCHMARK_BASED_GRADING should
+        return False"""
         is_default = config.BENCHMARK_BASED_GRADING
         self.assertEqual(is_default, 'False')
 
@@ -123,6 +132,3 @@ class ConstanceConfigTests(TestCase):
             """testing method where config is used"""
             is_default = get_default_benchmark_grade()
             self.assertEqual(is_default, False)
-
-
-

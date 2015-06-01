@@ -45,9 +45,7 @@ class GradeCalculationTests(SisTestMixin, TestCase):
             self.set_grade(enrollment, item[2], item[3])
 
     def set_grade(self, enrollment, mp, grade):
-        grade_obj = Grade(enrollment=enrollment, marking_period=mp)
-        grade_obj.set_grade(grade)
-        grade_obj.save()
+        Grade.set_marking_period_grade(mp, enrollment, grade)
 
     def set_final_grade(self, enrollment, grade):
         grade_obj = FinalGrade(enrollment=enrollment)

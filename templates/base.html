@@ -44,13 +44,11 @@
                                             <li><a href="{% url "ecwsp.volunteer_track.views.student_dash" %}">Volunteer</a></li>
                                         {% endif %}
                                         {% if config.GRADES_ALLOW_STUDENT_VIEWING == True %}
-                                            <li><a href="{% url "ecwsp.benchmark_grade.views.student_report" %}">Grades</a></li>
+                                            <li><a href="">Grades</a></li>
                                         {% endif %}
                                     {% endif %}
                                     {% if user|in_group:"family" %}
-                                        {% if "ecwsp.benchmark_grade" in settings.INSTALLED_APPS %}
-                                            <li><a href="{% url "ecwsp.benchmark_grade.views.student_report" %}">Grades</a></li>
-                                        {% endif %}
+                                        <li><a href="">Grades</a></li>
                                     {% endif %}
             <li><a href="/accounts/password_change">Change Password</a></li>
                                     {% if not next %}

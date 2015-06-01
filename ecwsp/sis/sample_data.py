@@ -124,7 +124,6 @@ class SisData(object):
         grade_data = [
             {'student': self.student2, 'section': self.course_section, 'mp': self.marking_period, 'grade': 75},
             {'student': self.student2, 'section': self.course_section, 'mp': self.marking_period2, 'grade': 100},
-            {'student': self.student,  'section': self.course_section, 'mp': self.marking_period2, 'grade': 88},
         ]
         for x in grade_data:
             enrollment = CourseEnrollment.objects.get(
