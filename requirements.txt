@@ -20,7 +20,7 @@ django-floppyforms==1.4.1
 django-grappelli==2.6.5
 django-heroku-redisify==0.2.1
 django-impersonate==0.9.1
-django-ldap-groups-bsc==0.1.6
+django-ldap-groups-bsc==0.1.8.2
 django-libsass==0.3
 django-localflavor==1.1
 django-mass-edit==2.4
