@@ -18,6 +18,7 @@ class GradeSerializer(serializers.ModelSerializer):
     marking_period_id = serializers.PrimaryKeyRelatedField(
         source='marking_period',
         required=False,
+        allow_null=True,
         default=None,
         queryset=MarkingPeriod.objects.all(),
     )
