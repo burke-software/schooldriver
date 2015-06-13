@@ -9,7 +9,7 @@ import tempfile
 
 if 'TRAVIS' not in os.environ:
     """this import is killing us on TravisCI, so I'm removing it. There
-    may be a better way to do this, but we honestly don't need anything 
+    may be a better way to do this, but we honestly don't need anything
     from this file during our test runs."""
     import uno
 
@@ -28,7 +28,7 @@ def uno_open(file):
     resolver = local.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", local)
     context = resolver.resolve("uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
     desktop = context.ServiceManager.createInstanceWithContext("com.sun.star.frame.Desktop", context)
-    if 'amazonaws' in settings.STATIC_URL:
+    if 'amazonaws' in settings.STATIC_URL and hasattr(file, 'url'):
         file_url = file.url
     else:
         if isinstance(file, FieldFile):
