@@ -94,8 +94,8 @@
         <a href="/schedule/dashboard/"> {% trans 'Courses' %} </a>
         <div class="dropdown">
           <ul>
-              {% if perms.grades.change_own_grade and 'ecwsp.grades' in settings.INSTALLED_APPS %}
-                <li><a href="{% url "ecwsp.grades.views.select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
+              {% if perms.grades.change_own_grade %}
+                <li><a href="{% url "select_grade_method" %}?next=teacher_grade">{% trans 'Submit Grades' %}</a></li>
               {% endif %}
               {% if perms.attendance.take_studentattendance or perms.attendance.take_studentattendance %}
                   <li>

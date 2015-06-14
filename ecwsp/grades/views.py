@@ -1,7 +1,7 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.core.urlresolvers import reverse
-from django.views.generic import DetailView
+from django.views.generic import DetailView, TemplateView
 from django.views.generic.edit import FormMixin
 from django.utils.decorators import method_decorator
 from ecwsp.schedule.models import CourseSection
@@ -117,3 +117,45 @@ def teacher_grade_download(request, id, type=None):
                 })
                 time.sleep(3)
         return replace_spreadsheet(template_path, filename, data, type)
+
+
+class SelectGradeMethodView(TemplateView):
+    template_name = 'grades/select_grade_method.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(SelectGradeMethodView, self).dispatch(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(SelectGradeMethodView, self).get_context_data(**kwargs)
+        request = self.request
+        pref = UserPreference.objects.get_or_create(user=request.user)[0]
+        if request.POST and 'choice' in request.POST:
+            pref.gradebook_preference = request.POST['choice']
+            pref.save()
+        options = []
+        if 'ecwsp.benchmark_grade' in settings.INSTALLED_APPS:
+            options += ['O']
+        if 'ecwsp.engrade_sync' in settings.INSTALLED_APPS:
+            options += ['E']
+        allow_spreadsheet = Configuration.get_or_default('grades_allow_spreadsheet_import').value
+        if allow_spreadsheet == 'True':
+            options += ['S']
+        else:
+            allow_spreadsheet = False
+        if request.user.has_perm('grades.change_own_grade') or request.user.has_pem('grades.change_grade'):
+            options += ['M']
+            allow_manual = True
+
+        if not pref.gradebook_preference and len(options) == 1:
+            pref.gradebook_preference = options[0]
+            pref.save()
+
+        if pref.gradebook_preference and (not 'override' in request.GET or request.POST):
+            if 'next' in request.GET:
+                next_page = request.GET['next']
+                if next_page == "teacher_grade":
+                    return redirect('ecwsp.grades.views.teacher_grade')
+        context['allow_spreadsheet'] = allow_spreadsheet
+        context['allow_manual'] = allow_manual
+        return context

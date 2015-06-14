@@ -9,4 +9,5 @@ urlpatterns = patterns('',
     url(r'^view_comment_codes/$', views.view_comment_codes),
     url(r'^teacher_grade/download/(?P<id>\d+)/(?P<type>[a-z]+)$', views.teacher_grade_download),
     url(r'^teacher_grade/download/(?P<id>\d+)/$', views.teacher_grade_download),
+    url(r'^select_grade_method/$', views.SelectGradeMethodView.as_view(), name="select_grade_method"),
 )

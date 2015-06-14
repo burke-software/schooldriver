@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import admin
 from api.routers import api_urls
-from responsive_dashboard import views as dashboard_views
 from ecwsp.sis.views import AttendanceReportView
 from django.http import HttpResponse
 
