@@ -1,3 +1,5 @@
+This project is no longer active and you are not advised to use it. Read more [here](http://davidmburke.com/2015/07/18/mistakes-to-make-when-starting-a-business-with-python/) if you'd like.
+
 # Schooldriver 
 This is an open source school information system built with Django. It relies heavily on the django admin interface for backend usage (registrar, etc). Below you will find a list of apps included in the software with a brief description of each.
 
